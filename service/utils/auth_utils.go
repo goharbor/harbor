@@ -1,0 +1,190 @@
+/*
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package utils
+
+import (
+	"crypto"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/vmware/harbor/dao"
+
+	"github.com/docker/distribution/registry/auth/token"
+	"github.com/docker/libtrust"
+)
+
+const (
+	issuer     = "registry-token-issuer"
+	privateKey = "conf/private_key.pem"
+	expiration = 5 //minute
+)
+
+func GetResourceActions(scope string) []*token.ResourceActions {
+	var res []*token.ResourceActions
+	if scope == "" {
+		return res
+	}
+	items := strings.Split(scope, ":")
+	res = append(res, &token.ResourceActions{
+		Type:    items[0],
+		Name:    items[1],
+		Actions: strings.Split(items[2], ","),
+	})
+	return res
+}
+
+//Try to modify the action list in access based on permission
+//determine if the request needs to be authenticated.
+//for details see:https://github.com/docker/docker/issues/15640
+func FilterAccess(username string, authenticated bool, a *token.ResourceActions) {
+
+	if a.Type == "registry" && a.Name == "catalog" {
+		return
+	} else {
+		//clear action list to assign to new acess element after perm check.
+		a.Actions = []string{}
+		if a.Type == "repository" {
+			if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
+				projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
+				var permission string
+				var err error
+				if authenticated {
+					if username == "admin" {
+						exist, err := dao.ProjectExists(projectName)
+						if err != nil {
+							log.Printf("Error occurred in CheckExistProject: %v", err)
+							return
+						}
+						if exist {
+							permission = "RW"
+						} else {
+							permission = ""
+							log.Printf("project %s does not exist, set empty permission for admin", projectName)
+						}
+					} else {
+						permission, err = dao.GetPermission(username, projectName)
+						if err != nil {
+							log.Printf("Error occurred in GetPermission: %v", err)
+							return
+						}
+					}
+				}
+				if strings.Contains(permission, "W") {
+					a.Actions = append(a.Actions, "push")
+				}
+				if strings.Contains(permission, "R") || dao.IsProjectPublic(projectName) {
+					a.Actions = append(a.Actions, "pull")
+				}
+			}
+		}
+		log.Printf("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
+	}
+}
+
+//For the UI process to call, so it won't establish a https connection from UI to proxy.
+func GenTokenForUI(username, service, scope string) (string, error) {
+	access := GetResourceActions(scope)
+	for _, a := range access {
+		FilterAccess(username, true, a)
+	}
+	return MakeToken(username, service, access)
+}
+
+func MakeToken(username, service string, access []*token.ResourceActions) (string, error) {
+	pk, err := libtrust.LoadKeyFile(privateKey)
+	if err != nil {
+		return "", err
+	}
+	tk, err := makeTokenCore(issuer, username, service, expiration, access, pk)
+	if err != nil {
+		return "", err
+	}
+	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
+	return rs, nil
+}
+
+//make token core
+func makeTokenCore(issuer, subject, audience string, expiration int,
+	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (*token.Token, error) {
+
+	joseHeader := &token.Header{
+		Type:       "JWT",
+		SigningAlg: "RS256",
+		KeyID:      signingKey.KeyID(),
+	}
+
+	jwtID, err := randString(16)
+	if err != nil {
+		return nil, fmt.Errorf("Error to generate jwt id: %s", err)
+	}
+
+	now := time.Now()
+
+	claimSet := &token.ClaimSet{
+		Issuer:     issuer,
+		Subject:    subject,
+		Audience:   audience,
+		Expiration: now.Add(time.Duration(expiration) * time.Minute).Unix(),
+		NotBefore:  now.Unix(),
+		IssuedAt:   now.Unix(),
+		JWTID:      jwtID,
+		Access:     access,
+	}
+
+	var joseHeaderBytes, claimSetBytes []byte
+
+	if joseHeaderBytes, err = json.Marshal(joseHeader); err != nil {
+		return nil, fmt.Errorf("unable to marshal jose header: %s", err)
+	}
+	if claimSetBytes, err = json.Marshal(claimSet); err != nil {
+		return nil, fmt.Errorf("unable to marshal claim set: %s", err)
+	}
+
+	encodedJoseHeader := base64UrlEncode(joseHeaderBytes)
+	encodedClaimSet := base64UrlEncode(claimSetBytes)
+	payload := fmt.Sprintf("%s.%s", encodedJoseHeader, encodedClaimSet)
+
+	var signatureBytes []byte
+	if signatureBytes, _, err = signingKey.Sign(strings.NewReader(payload), crypto.SHA256); err != nil {
+		return nil, fmt.Errorf("unable to sign jwt payload: %s", err)
+	}
+
+	signature := base64UrlEncode(signatureBytes)
+	tokenString := fmt.Sprintf("%s.%s", payload, signature)
+	//log.Printf("token: %s", tokenString)
+	return token.NewToken(tokenString)
+}
+
+func randString(length int) (string, error) {
+	const alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	rb := make([]byte, length)
+	_, err := rand.Read(rb)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range rb {
+		rb[i] = alphanum[int(b)%len(alphanum)]
+	}
+	return string(rb), nil
+}
+
+func base64UrlEncode(b []byte) string {
+	return strings.TrimRight(base64.URLEncoding.EncodeToString(b), "=")
+}

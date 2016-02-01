@@ -1,0 +1,71 @@
+{
+	"ImportPath": "vmware/harbor",
+	"GoVersion": "go1.5.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-30-g4643a7e",
+			"Rev": "4643a7efec9b8fd7548882e7b30095711343100f"
+		},
+		{
+			"ImportPath": "github.com/Unknwon/goconfig",
+			"Rev": "18bc852dc01720ee9f0e9e0a01a1bdbc8744095c"
+		},
+		{
+			"ImportPath": "github.com/astaxie/beego",
+			"Comment": "v1.6.0-7-g23bb36d",
+			"Rev": "23bb36d35cf83ca8b95c4432aa846326530d24b9"
+		},
+		{
+			"ImportPath": "github.com/beego/i18n",
+			"Rev": "e87155e8f0c05bf323d0b13470e1b97af0cb5652"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/context",
+			"Comment": "v2.2.0-55-g226d8c4",
+			"Rev": "226d8c4f07955f1246308af3fdba9d89db6e4ca5"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/registry/auth",
+			"Comment": "v2.2.0-55-g226d8c4",
+			"Rev": "226d8c4f07955f1246308af3fdba9d89db6e4ca5"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/uuid",
+			"Comment": "v2.2.0-55-g226d8c4",
+			"Rev": "226d8c4f07955f1246308af3fdba9d89db6e4ca5"
+		},
+		{
+			"ImportPath": "github.com/docker/libtrust",
+			"Rev": "9cbd2a1374f46905c68a4eb3694a130610adc62a"
+		},
+		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "v1.2-119-g527bcd5",
+			"Rev": "527bcd55aab2e53314f1a150922560174b493034"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+		},
+		{
+			"ImportPath": "github.com/mqu/openldap",
+			"Comment": "v0.2-11-g91bfc21",
+			"Rev": "91bfc2150f6c4991335de476c800caf26a990324"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/pbkdf2",
+			"Comment": "release-20141215-1-g14213be",
+			"Rev": "14213be8fdd634b2e113c4f65cca53bdece9d8d4"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Comment": "release-20141215-1-g14213be",
+			"Rev": "14213be8fdd634b2e113c4f65cca53bdece9d8d4"
+		}
+	]
+}

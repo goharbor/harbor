@@ -1,0 +1,6 @@
+harbor
+my_start.sh
+Deploy/config/registry/config.yml
+Deploy/config/ui/env
+Deploy/config/ui/app.conf
+Deploy/prepare.my

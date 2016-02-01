@@ -1,0 +1,61 @@
+log:
+  build: ./log/
+  volumes:
+    - /var/log/harbor/:/var/log/docker/
+  ports:
+    - 1514:514
+registry:
+  image: library/registry:2.1.1
+  volumes:
+    - /data/registry:/storage
+    - ./config/registry/:/etc/registry/
+  ports:
+    - 5001:5001
+  command:
+    /etc/registry/config.yml
+  links:
+    - log
+  log_driver: "syslog"
+  log_opt:
+    syslog-address: "tcp://127.0.0.1:1514"
+    tag: "{{.Name}}"
+mysql:
+  build: ./db/
+  volumes:
+    - /data/database:/var/lib/mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: root
+  links:
+    - log
+  log_driver: "syslog"
+  log_opt:
+    syslog-address: "tcp://127.0.0.1:1514"
+    tag: "{{.Name}}"
+ui:
+  build: ../
+  env_file:
+    - ./config/ui/env
+  volumes:
+    - ./config/ui/app.conf:/etc/ui/app.conf
+  links:
+    - registry:registry
+    - mysql:mysql
+    - log
+  log_driver: "syslog"
+  log_opt:
+    syslog-address: "tcp://127.0.0.1:1514"
+    tag: "{{.Name}}"
+proxy:
+  image: library/nginx:1.9
+  volumes:
+    - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+  links:
+    - ui:ui
+    - registry:registry
+    - log
+  ports:
+    - 80:80
+  log_driver: "syslog"
+  log_opt:
+    syslog-address: "tcp://127.0.0.1:1514"
+    tag: "{{.Name}}"
