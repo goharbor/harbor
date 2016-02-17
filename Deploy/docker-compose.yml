@@ -18,7 +18,7 @@ registry:
   log_driver: "syslog"
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
-    tag: "{{.Name}}"
+    syslog-tag: "registry"
 mysql:
   build: ./db/
   volumes:
@@ -30,7 +30,7 @@ mysql:
   log_driver: "syslog"
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
-    tag: "{{.Name}}"
+    syslog-tag: "mysql"
 ui:
   build: ../
   env_file:
@@ -44,7 +44,7 @@ ui:
   log_driver: "syslog"
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
-    tag: "{{.Name}}"
+    syslog-tag: "ui"
 proxy:
   image: library/nginx:1.9
   volumes:
@@ -58,4 +58,4 @@ proxy:
   log_driver: "syslog"
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
-    tag: "{{.Name}}"
+    syslog-tag: "proxy"
