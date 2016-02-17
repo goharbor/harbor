@@ -53,7 +53,6 @@ func init() {
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/:pid/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
-	beego.Router("/api/projects/:id/logs", &api.ProjectAPI{}, "get:ListAccessLog")
 	beego.Router("/api/projects/:id/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/repositories", &api.RepositoryAPI{})

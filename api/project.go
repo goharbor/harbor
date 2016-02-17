@@ -38,6 +38,8 @@ type projectReq struct {
 	Public      bool   `json:"public"`
 }
 
+const PROJECT_NAME_MAX_LEN int = 30
+
 func (p *ProjectAPI) Prepare() {
 	p.userId = p.ValidateUser()
 	id_str := p.Ctx.Input.Param(":id")
@@ -48,12 +50,12 @@ func (p *ProjectAPI) Prepare() {
 			log.Printf("Error parsing project id: %s, error: %v", id_str, err)
 			p.CustomAbort(400, "invalid project id")
 		}
-		proj, err := dao.GetProjectById(models.Project{ProjectId: p.projectId})
+		exist, err := dao.ProjectExists(p.projectId)
 		if err != nil {
-			log.Printf("Error occurred in GetProjectById: %v", err)
+			log.Printf("Error occurred in ProjectExists: %v", err)
 			p.CustomAbort(500, "Internal error.")
 		}
-		if proj == nil {
+		if !exist {
 			p.CustomAbort(404, fmt.Sprintf("project does not exist, id: %v", p.projectId))
 		}
 	}
@@ -66,6 +68,12 @@ func (p *ProjectAPI) Post() {
 	if req.Public {
 		public = 1
 	}
+	err := validateProjectReq(req)
+	if err != nil {
+		beego.Error("Invalid project request, error: ", err)
+		p.RenderError(400, "Invalid request for creating project")
+		return
+	}
 	projectName := req.ProjectName
 	exist, err := dao.ProjectExists(projectName)
 	if err != nil {
@@ -76,13 +84,18 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 	project := models.Project{OwnerId: p.userId, Name: projectName, CreationTime: time.Now(), Public: public}
-	dao.AddProject(project)
+	err = dao.AddProject(project)
+	if err != nil {
+		beego.Error("Failed to add project, error: %v", err)
+		p.RenderError(500, "Failed to add project")
+	}
 }
 
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
 	result, err := dao.ProjectExists(projectName)
 	if err != nil {
+		beego.Error("Error while communicating with DB: ", err)
 		p.RenderError(500, "Error while communicating with DB")
 		return
 	}
@@ -130,16 +143,6 @@ func (p *ProjectAPI) Put() {
 	if req.Public {
 		public = 1
 	}
-
-	proj, err := dao.GetProjectById(models.Project{ProjectId: projectId})
-	if err != nil {
-		beego.Error("Error occurred in GetProjectById:", err)
-		p.CustomAbort(500, "Internal error.")
-	}
-	if proj == nil {
-		p.RenderError(404, "")
-		return
-	}
 	if !isProjectAdmin(p.userId, projectId) {
 		beego.Warning("Current user, id:", p.userId, ", does not have project admin role for project, id:", projectId)
 		p.RenderError(403, "")
@@ -150,18 +153,6 @@ func (p *ProjectAPI) Put() {
 		beego.Error("Error while updating project, project id:", projectId, ", error:", err)
 		p.RenderError(500, "Failed to update project")
 	}
-}
-
-func (p *ProjectAPI) ListAccessLog() {
-
-	query := models.AccessLog{ProjectId: p.projectId}
-	accessLogList, err := dao.GetAccessLogs(query)
-	if err != nil {
-		log.Printf("Error occurred in GetAccessLogs: %v", err)
-		p.CustomAbort(500, "Internal error.")
-	}
-	p.Data["json"] = accessLogList
-	p.ServeJSON()
 }
 
 func (p *ProjectAPI) FilterAccessLog() {
@@ -192,4 +183,15 @@ func isProjectAdmin(userId int, pid int64) bool {
 		return false
 	}
 	return len(rolelist) > 0
+}
+
+func validateProjectReq(req projectReq) error {
+	pn := req.ProjectName
+	if len(pn) == 0 {
+		return fmt.Errorf("Project name can not be empty")
+	}
+	if len(pn) > PROJECT_NAME_MAX_LEN {
+		return fmt.Errorf("Project name is too long")
+	}
+	return nil
 }

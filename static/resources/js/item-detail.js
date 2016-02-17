@@ -354,9 +354,9 @@ jQuery(function(){
 				
 				$.when(
 					new AjaxUtil({
-						url : "/api/projects/" + projectId + "/logs",
-						dataRaw: {"timestamp": new Date().getTime()},
-						type: "get",
+						url : "/api/projects/" + projectId + "/logs/filter",
+						data: {},
+						type: "post",
 						success: function(data){
 							return data || [];
 						}
