@@ -121,7 +121,7 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 		queryParam = append(queryParam, query.Name)
 	}
 
-	sql += " order by p.creation_time desc "
+	sql += " order by p.name "
 
 	var r []models.Project
 	_, err := o.Raw(sql, queryParam).QueryRows(&r)

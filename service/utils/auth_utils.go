@@ -168,7 +168,6 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 
 	signature := base64UrlEncode(signatureBytes)
 	tokenString := fmt.Sprintf("%s.%s", payload, signature)
-	//log.Printf("token: %s", tokenString)
 	return token.NewToken(tokenString)
 }
 

@@ -60,7 +60,8 @@ create table project (
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  public tinyint (1) DEFAULT 0 NOT NULL,
  primary key (project_id),
- FOREIGN KEY (owner_id) REFERENCES user(user_id)
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ UNIQUE (name)
 );
 
 insert into project values 
