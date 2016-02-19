@@ -374,24 +374,38 @@ jQuery(function(){
 				listUser(username);
 			});
 			
+			function toUTCSeconds(date, hour, min, sec) {
+				var t = new Date(date);
+				t.setHours(hour);
+				t.setMinutes(min);
+				t.setSeconds(sec);
+				var utcTime = new Date(t.getUTCFullYear(),
+								t.getUTCMonth(), 
+								t.getUTCDate(),
+								t.getUTCHours(),
+								t.getUTCMinutes(),
+								t.getUTCSeconds());
+				return utcTime.getTime() / 1000;
+			}
+			
 			$("#btnFilterLog").on("click", function(){
 
 				var projectId = $("#projectId").val();	
 				var username = $("#txtSearchUserName").val();
 				
-				var beginTime = "";
-				var endTime = "";
+				var beginTimestamp = 0;
+				var endTimestamp = 0;
 				
 				if($("#begindatepicker").val() != ""){
-					beginTime = moment(new Date($("#begindatepicker").val())).format("YYYY-MM-DD");	
+					beginTimestamp = toUTCSeconds($("#begindatepicker").val(), 0, 0, 0);	
 				}
 				if($("#enddatepicker").val() != ""){
-					endTime	= moment(new Date($("#enddatepicker").val())).format("YYYY-MM-DD");	
+					endTimestamp = toUTCSeconds($("#enddatepicker").val(), 23, 59, 59);	
 				}
 			
 				new AjaxUtil({
 					url: "/api/projects/" + projectId + "/logs/filter",
-					data:{"username":username, "project_id" : projectId, "keywords" : getKeyWords() , "beginTime" : beginTime, "endTime" : endTime},
+					data:{"username":username, "project_id" : projectId, "keywords" : getKeyWords() , "beginTimestamp" : beginTimestamp, "endTimestamp" : endTimestamp},
 					type: "post",
 					success: function(data, status, xhr){
 						if(xhr && xhr.status == 200){
