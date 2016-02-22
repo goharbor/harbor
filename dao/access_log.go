@@ -73,13 +73,13 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 			}
 		}
 	}
-	if accessLog.BeginTime != "" {
-		sql += ` and a.op_time >= str_to_date(?, '%Y-%m-%d %H:%i:%s') `
-		queryParam = append(queryParam, accessLog.BeginTime+" 00:00:00.000000")
+	if accessLog.BeginTimestamp > 0 {
+		sql += ` and a.op_time >= ? `
+		queryParam = append(queryParam, accessLog.BeginTime)
 	}
-	if accessLog.EndTime != "" {
-		sql += ` and a.op_time <= str_to_date(?, '%Y-%m-%d %H:%i:%s') `
-		queryParam = append(queryParam, accessLog.EndTime+" 23:59:59.99999")
+	if accessLog.EndTimestamp > 0 {
+		sql += ` and a.op_time <= ? `
+		queryParam = append(queryParam, accessLog.EndTime)
 	}
 
 	sql += ` order by a.op_time desc `
