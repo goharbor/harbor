@@ -3,4 +3,6 @@ my_start.sh
 Deploy/config/registry/config.yml
 Deploy/config/ui/env
 Deploy/config/ui/app.conf
+Deploy/config/db/env
 Deploy/prepare.my
+Deploy/harbor.cfg.my

@@ -32,7 +32,7 @@ import (
 
 const (
 	issuer     = "registry-token-issuer"
-	privateKey = "conf/private_key.pem"
+	privateKey = "/etc/ui/private_key.pem"
 	expiration = 5 //minute
 )
 
