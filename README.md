@@ -12,11 +12,12 @@ Harbor is a project to provide enterprise capabilities for Docker Registry V2.  
 Harbor is self contained and can be easily deployed via docker-compose.
 ```sh
 $ cd Deploy
-#make update to the parameters in ./prepare
+#make update to the parameters in ./harbor.cfg
 $ ./prepare
 Generated configuration file: ./config/ui/env
 Generated configuration file: ./config/ui/app.conf
 Generated configuration file: ./config/registry/config.yml
+Generated configuration file: ./config/db/env
 $ docker-compose up
 ```
 

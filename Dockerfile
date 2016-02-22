@@ -7,9 +7,14 @@ RUN apt-get update \
     && rm -r /var/lib/apt/lists/*
 
 COPY . /go/src/github.com/vmware/harbor
+#golang.org is blocked in China
+COPY ./vendor/golang.org /go/src/golang.org 
 WORKDIR /go/src/github.com/vmware/harbor
 
-ENV GOPATH /go/src/github.com/vmware/harbor/Godeps/_workspace:$GOPATH
+ENV GO15VENDOREXPERIMENT 1
+RUN go get -d github.com/docker/distribution \
+    && go get -d github.com/docker/libtrust \
+    && go get -d github.com/go-sql-driver/mysql
 RUN go install -v -a 
 
 ENV MYSQL_USR root \
