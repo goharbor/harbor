@@ -46,7 +46,7 @@ ui:
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
     syslog-tag: "ui"
-roxy:
+proxy:
   image: library/nginx:1.9
   volumes:
     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
