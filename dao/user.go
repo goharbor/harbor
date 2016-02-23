@@ -15,6 +15,8 @@
 package dao
 
 import (
+	"errors"
+
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
 
@@ -133,15 +135,22 @@ func ToggleUserAdminRole(u models.User) error {
 	return err
 }
 
-func ChangeUserPassword(u models.User) error {
+func ChangeUserPassword(u models.User, oldPassword string) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
+	_, err := o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword, u.Salt)).Exec()
 	return err
 }
 
 func ResetUserPassword(u models.User) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUuid).Exec()
+	r, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUuid).Exec()
+	if err != nil {
+		return err
+	}
+	count, err := r.RowsAffected()
+	if count == 0 {
+		return errors.New("No record be changed.")
+	}
 	return err
 }
 

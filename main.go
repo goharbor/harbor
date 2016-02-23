@@ -52,7 +52,7 @@ func updateInitPassword(userId int, password string) error {
 		}
 		user.Salt = salt
 		user.Password = password
-		err = dao.ChangeUserPassword(*user)
+		err = dao.ChangeUserPassword(*user, password)
 		if err != nil {
 			log.Printf("Failed to update user encrypted password, userId: %d, err: %v", userId, err)
 			return err
