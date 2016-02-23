@@ -15,8 +15,7 @@
 package test
 
 import (
-	"flag"
-	"fmt"
+	//	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -85,9 +84,7 @@ func clearUp(username string) {
 }
 
 const USERNAME string = "Tester01"
-
 const PROJECT_NAME string = "test_project"
-
 const SYS_ADMIN int = 1
 const PROJECT_ADMIN int = 2
 const DEVELOPER int = 3
@@ -98,35 +95,35 @@ const PUBLICITY_OFF = 0
 
 func TestMain(m *testing.M) {
 
-	//Create a custom flag set, let user to provide DB related configures for testing.
-	fs := flag.NewFlagSet("DB related configures", 0)
-
-	dbIp := fs.String("db_ip", "localhost", "IP address for connecting a test DB.")
-	dbPort := fs.String("db_port", "3306", "Port number for connecting a test DB.")
-	dbUser := fs.String("db_user", "root", "Username for logging in a test DB.")
-	dbPassword := fs.String("db_password", "root", "Password for logging in a test DB.")
-
-	fs.Parse([]string{"db_ip", "db_port", "db_user", "db_password"})
-
-	if fs.NFlag() == 0 {
-		fs.PrintDefaults()
-		fmt.Println("Now, use DEFAULT values if omit to set all of flags.")
+	dbHost := os.Getenv("DB_HOST")
+	if len(dbHost) == 0 {
+		log.Fatalf("environment variable DB_HOST is not set")
+	}
+	dbUser := os.Getenv("DB_USR")
+	if len(dbUser) == 0 {
+		log.Fatalf("environment variable DB_USR is not set")
+	}
+	dbPort := os.Getenv("DB_PORT")
+	if len(dbPort) == 0 {
+		log.Fatalf("environment variable DB_PWD is not set")
+	}
+	dbPassword := os.Getenv("DB_PWD")
+	if len(dbPassword) == 0 {
+		log.Fatalf("environment variable DB_PWD is not set")
 	}
 
-	if fs.Parsed() {
+	os.Setenv("MYSQL_PORT_3306_TCP_ADDR", dbHost)
+	os.Setenv("MYSQL_PORT_3306_TCP_PORT", dbPort)
+	os.Setenv("MYSQL_USR", dbUser)
+	os.Setenv("MYSQL_PWD", dbPassword)
+	os.Setenv("AUTH_MODE", "db_auth")
+	dao.InitDB()
+	clearUp(USERNAME)
+	os.Exit(m.Run())
 
-		clearUp(USERNAME)
-
-		os.Setenv("MYSQL_PORT_3306_TCP_ADDR", *dbIp)
-		os.Setenv("MYSQL_PORT_3306_TCP_PORT", *dbPort)
-		os.Setenv("MYSQL_USR", *dbUser)
-		os.Setenv("MYSQL_PWD", *dbPassword)
-		os.Setenv("AUTH_MODE", "db_auth")
-		os.Exit(m.Run())
-	}
 }
 
-func ExampleRegister() {
+func TestRegister(t *testing.T) {
 
 	user := models.User{
 		Username: USERNAME,
@@ -138,7 +135,7 @@ func ExampleRegister() {
 
 	_, err := dao.Register(user)
 	if err != nil {
-		log.Printf("Error occurred in Register: %v", err)
+		t.Errorf("Error occurred in Register: %v", err)
 	}
 
 	//Check if user registered successfully.
@@ -147,41 +144,46 @@ func ExampleRegister() {
 	}
 	newUser, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Fatalf("Error occurred in GetUser: %v", err)
+		t.Errorf("Error occurred in GetUser: %v", err)
 	}
 
-	fmt.Println(newUser.Username)
-	fmt.Println(newUser.Email)
-	// Output:
-	// Tester01
-	// tester01@vmware.com
-
+	if newUser.Username != USERNAME {
+		t.Errorf("Username does not match, expected: %s, actual: %s", USERNAME, newUser.Username)
+	}
+	if newUser.Email != "tester01@vmware.com" {
+		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
+	}
 }
 
-func ExampleUserExists() {
+func TestUserExists(t *testing.T) {
 	var exists bool
 	var err error
 
-	exists, err = dao.UserExists(models.User{Username: "Tester01"}, "username")
-	fmt.Println(exists)
-
+	exists, err = dao.UserExists(models.User{Username: USERNAME}, "username")
 	if err != nil {
-		log.Fatalf("Error occurred in UserExists: %v", err)
+		t.Errorf("Error occurred in UserExists: %v", err)
+	}
+	if !exists {
+		t.Errorf("User %s was inserted but does not exist", USERNAME)
 	}
 	exists, err = dao.UserExists(models.User{Email: "tester01@vmware.com"}, "email")
-	fmt.Println(exists)
 
 	if err != nil {
-		log.Fatalf("Error occurred in UserExists: %v", err)
+		t.Errorf("Error occurred in UserExists: %v", err)
 	}
-
-	//Output:
-	//true
-	//true
-
+	if !exists {
+		t.Errorf("User with email %s inserted but does not exist", "tester01@vmware.com")
+	}
+	exists, err = dao.UserExists(models.User{Username: "NOTHERE"}, "username")
+	if err != nil {
+		t.Errorf("Error occurred in UserExists: %v", err)
+	}
+	if exists {
+		t.Errorf("User %s was not inserted but does exist", "NOTHERE")
+	}
 }
 
-func ExampleLoginByUserName() {
+func TestLoginByUserName(t *testing.T) {
 
 	userQuery := models.User{
 		Username: USERNAME,
@@ -190,18 +192,18 @@ func ExampleLoginByUserName() {
 
 	loginUser, err := dao.LoginByDb(models.AuthModel{userQuery.Username, userQuery.Password})
 	if err != nil {
-		log.Fatalf("Error occurred in LoginByDb: %v", err)
+		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 	if loginUser == nil {
-		log.Fatalf("No found for user logined by username and password: %v", userQuery)
+		t.Errorf("No found for user logined by username and password: %v", userQuery)
 	}
 
-	fmt.Println(loginUser.Username)
-	// Output:
-	// Tester01
+	if loginUser.Username != USERNAME {
+		t.Errorf("User's username does not match after login, expected: %s, actual: %s", USERNAME, loginUser.Username)
+	}
 }
 
-func ExampleLoginByEmail() {
+func TestLoginByEmail(t *testing.T) {
 
 	userQuery := models.User{
 		Email:    "tester01@vmware.com",
@@ -210,105 +212,108 @@ func ExampleLoginByEmail() {
 
 	loginUser, err := dao.LoginByDb(models.AuthModel{userQuery.Email, userQuery.Password})
 	if err != nil {
-		log.Fatalf("Error occurred in LoginByDb: %v", err)
+		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 	if loginUser == nil {
-		log.Fatalf("No found for user logined by email and password : %v", userQuery)
+		t.Errorf("No found for user logined by email and password : %v", userQuery)
 	}
-	fmt.Println(loginUser.Username)
-	// Output:
-	// Tester01
+	if loginUser.Username != USERNAME {
+		t.Errorf("User's username does not match after login, expected: %s, actual: %s", USERNAME, loginUser.Username)
+	}
 }
 
 var currentUser *models.User
 
-func ExampleGetUser() {
+func TestGetUser(t *testing.T) {
 	queryUser := models.User{
 		Username: USERNAME,
 	}
 	var err error
 	currentUser, err = dao.GetUser(queryUser)
 	if err != nil {
-		log.Fatalf("Error occurred in GetUser", err)
+		t.Errorf("Error occurred in GetUser: %v", err)
 	}
 	if currentUser == nil {
-		log.Fatalf("No user found queried by username: %v", queryUser)
+		t.Errorf("No user found queried by user query: %+v", queryUser)
 	}
-	fmt.Println(currentUser.Username)
-	//Output:
-	//Tester01
+	if currentUser.Email != "tester01@vmware.com" {
+		t.Errorf("the user's email does not match, expected: tester01@vmware.com, actual: %s", currentUser.Email)
+	}
 }
 
-func ExampleListUsers() {
-	users, err := dao.ListUsers(models.User{Username: "tester01"})
+func TestListUsers(t *testing.T) {
+	users, err := dao.ListUsers(models.User{})
 	if err != nil {
-		log.Fatalf("Error occurred in ListUsers: %v", err)
+		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
-
-	for _, u := range users {
-		fmt.Println(u.Username)
+	if len(users) != 1 {
+		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
-	//Output:
-	//Tester01
+	users2, err := dao.ListUsers(models.User{Username: USERNAME})
+	if len(users2) != 1 {
+		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
+	}
+	if users2[0].Username != USERNAME {
+		t.Errorf("The username in result list does not match, expected: %s, actual: %s", USERNAME, users2[0].Username)
+	}
 }
 
-func ExampleResetUserPassword() {
+func TestResetUserPassword(t *testing.T) {
 	uuid, err := dao.GenerateRandomString()
 	if err != nil {
-		log.Fatalf("Error occurred in GenerateRandomString: %v", err)
+		t.Errorf("Error occurred in GenerateRandomString: %v", err)
 	}
 
 	err = dao.UpdateUserResetUuid(models.User{ResetUuid: uuid, Email: currentUser.Email})
 	if err != nil {
-		log.Fatalf("Error occurred in UpdateUserResetUuid: %v", err)
+		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
 	}
 
 	err = dao.ResetUserPassword(models.User{UserId: currentUser.UserId, Password: "HarborTester12345", ResetUuid: uuid, Salt: currentUser.Salt})
 	if err != nil {
-		log.Fatalf("Error occurred in ResetUserPassword: %v", err)
+		t.Errorf("Error occurred in ResetUserPassword: %v", err)
 	}
 
 	loginedUser, err := dao.LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "HarborTester12345"})
 	if err != nil {
-		log.Fatalf("Error occurred in LoginByDb: %v", err)
+		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 
-	fmt.Println(loginedUser.Username)
-	//Output:
-	//Tester01
+	if loginedUser.Username != USERNAME {
+		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", USERNAME, loginedUser.Username)
+	}
 }
 
-func ExampleChangeUserPassword() {
+func TestChangeUserPassword(t *testing.T) {
 	err := dao.ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NewHarborTester12345", Salt: currentUser.Salt})
 	if err != nil {
-		log.Fatalf("Error occurred in ChangeUserPassword: %v", err)
+		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
 
 	loginedUser, err := dao.LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewHarborTester12345"})
 	if err != nil {
-		log.Fatalf("Error occurred in LoginByDb: %v", err)
+		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 
-	fmt.Println(loginedUser.Username)
-	//Output:
-	//Tester01
+	if loginedUser.Username != USERNAME {
+		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", USERNAME, loginedUser.Username)
+	}
 }
 
-func ExampleQueryRelevantProjectsWhenNoProjectAdded() {
+func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
 	projects, err := dao.QueryRelevantProjects(currentUser.UserId)
 	if err != nil {
-		log.Fatalf("Error occurred in QueryRelevantProjects: %v", err)
+		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
-	fmt.Println(len(projects))
-	for _, p := range projects {
-		fmt.Println(p.Name)
+	if len(projects) != 1 {
+		t.Errorf("Expected only one project in DB, but actual: %d", len(projects))
 	}
-	//Output:
-	//1
-	//library
+	if projects[0].Name != "library" {
+		t.Errorf("There name of the project does not match, expected: %s, actual: %s", "library", projects[0].Name)
+	}
 }
 
-func ExampleAddProject() {
+func TestAddProject(t *testing.T) {
 
 	project := models.Project{
 		OwnerId:      currentUser.UserId,
@@ -319,134 +324,128 @@ func ExampleAddProject() {
 
 	err := dao.AddProject(project)
 	if err != nil {
-		log.Fatalf("Error occurred in AddProject: %v", err)
+		t.Errorf("Error occurred in AddProject: %v", err)
 	}
 
 	newProject, err := dao.GetProjectByName(PROJECT_NAME)
 	if err != nil {
-		log.Fatalf("Error occurred in GetProjectByName: %v", err)
+		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
 	if newProject == nil {
-		log.Fatalf("No project found queried by project name: %v", PROJECT_NAME)
+		t.Errorf("No project found queried by project name: %v", PROJECT_NAME)
 	}
-	fmt.Println(newProject.Name)
-	//Output:
-	//test_project
 }
 
 var currentProject *models.Project
 
-func ExampleGetProject() {
+func TestGetProject(t *testing.T) {
 	var err error
 	currentProject, err = dao.GetProjectByName(PROJECT_NAME)
 	if err != nil {
-		log.Fatalf("Error occurred in GetProjectByName: %v", err)
+		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
 	if currentProject == nil {
-		log.Fatalf("No project found queried by project name: %v", PROJECT_NAME)
+		t.Errorf("No project found queried by project name: %v", PROJECT_NAME)
 	}
-	fmt.Println(currentProject.Name)
-	//Output:
-	//test_project
+	if currentProject.Name != PROJECT_NAME {
+		t.Errorf("Project name does not match, expected: %s, actual: %s", PROJECT_NAME, currentProject.Name)
+	}
 }
 
 func getProjectRole(projectId int64) []models.Role {
 	o := orm.NewOrm()
 	var r []models.Role
 	_, err := o.Raw(`select r.role_id, r.name
-		from project_role pr 
+		from project_role pr
 		 left join role r on pr.role_id = r.role_id
 		where project_id = ?`, projectId).QueryRows(&r)
 	if err != nil {
-		log.Fatalf("Error occurred in querying project_role: %v", err)
+		log.Printf("Error occurred in querying project_role: %v", err)
 	}
 	return r
 }
 
-func ExampleCheckProjectRoles() {
+func TestCheckProjectRoles(t *testing.T) {
 	r := getProjectRole(currentProject.ProjectId)
-	fmt.Println(len(r))
-
-	for _, pr := range r {
-		fmt.Println(pr.RoleId, pr.Name)
+	if len(r) != 3 {
+		t.Errorf("The length of project roles is not 3")
 	}
-
-	//Output: 3
-	//2 projectAdmin
-	//3 developer
-	//4 guest
-
+	if r[1].RoleId != 3 {
+		t.Errorf("The role id does not match, expected: 3, acutal: %d", r[1].RoleId)
+	}
+	if r[1].Name != "developer" {
+		t.Errorf("The name of role id: 3 should be developer, actual:%s", r[1].Name)
+	}
 }
 
-func ExampleGetAccessLog() {
+func TestGetAccessLog(t *testing.T) {
 	queryAccessLog := models.AccessLog{
 		UserId:    currentUser.UserId,
 		ProjectId: currentProject.ProjectId,
 	}
 	accessLogs, err := dao.GetAccessLogs(queryAccessLog)
 	if err != nil {
-		log.Fatalf("Error occurred in GetAccessLog: %v", err)
+		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
-	fmt.Println(len(accessLogs))
-	for _, log := range accessLogs {
-		fmt.Println(log.Operation, log.RepoName)
+	if len(accessLogs) != 1 {
+		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogs))
 	}
-	//Output:
-	//1
-	//create test_project/
+	if accessLogs[0].RepoName != PROJECT_NAME {
+		t.Errorf("The project name does not match, expected: %s, actual: %s", PROJECT_NAME, accessLogs[0].RepoName)
+	}
 }
 
-func ExampleProjectExists() {
+func TestProjectExists(t *testing.T) {
 	var exists bool
 	var err error
 	exists, err = dao.ProjectExists(currentProject.ProjectId)
-	fmt.Println(exists)
 	if err != nil {
-		log.Fatalf("Error occurred in ProjectExists: %v", err)
+		t.Errorf("Error occurred in ProjectExists: %v", err)
+	}
+	if !exists {
+		t.Errorf("The project with id: %d, does not exist", currentProject.ProjectId)
 	}
 	exists, err = dao.ProjectExists(currentProject.Name)
-	fmt.Println(exists)
 	if err != nil {
-		log.Fatalf("Error occurred in ProjectExists: %v", err)
+		t.Errorf("Error occurred in ProjectExists: %v", err)
 	}
-	//Output:
-	//true
-	//true
-
+	if !exists {
+		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
+	}
 }
 
-func ExampleToggleProjectPublicity() {
+func TestToggleProjectPublicity(t *testing.T) {
 	err := dao.ToggleProjectPublicity(currentProject.ProjectId, PUBLICITY_ON)
 	if err != nil {
-		log.Fatalf("Error occurred in ToggleProjectPublicity: %v", err)
+		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
 
 	currentProject, err = dao.GetProjectByName(PROJECT_NAME)
 	if err != nil {
-		log.Fatalf("Error occurred in GetProjectByName: %v", err)
+		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
-	fmt.Println(currentProject.Public)
-
+	if currentProject.Public != PUBLICITY_ON {
+		t.Errorf("project, id: %d, its publicity is not on", currentProject.ProjectId)
+	}
 	err = dao.ToggleProjectPublicity(currentProject.ProjectId, PUBLICITY_OFF)
 	if err != nil {
-		log.Fatalf("Error occurred in ToggleProjectPublicity: %v", err)
+		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
 
 	currentProject, err = dao.GetProjectByName(PROJECT_NAME)
 	if err != nil {
-		log.Fatalf("Error occurred in GetProjectByName: %v", err)
+		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
 
-	fmt.Println(currentProject.Public)
-	//Output:
-	//1
-	//0
+	if currentProject.Public != PUBLICITY_OFF {
+		t.Errorf("project, id: %d, its publicity is not off", currentProject.ProjectId)
+	}
 }
 
 func getUserProjectRole(projectId int64, userId int) []models.Role {
 	o := orm.NewOrm()
 	var r []models.Role
-	_, err := o.Raw(`select r.role_id, r.name 
+	_, err := o.Raw(`select r.role_id, r.name
 		from user_project_role upr
 		 left join project_role pr on upr.pr_id = pr.pr_id
 		 left join role r on r.role_id = pr.role_id
@@ -457,99 +456,83 @@ func getUserProjectRole(projectId int64, userId int) []models.Role {
 	return r
 }
 
-func ExampleGetUserProjectRole() {
+func TestGetUserProjectRole(t *testing.T) {
 	r := getUserProjectRole(currentProject.ProjectId, currentUser.UserId)
 
 	//Get the size of current user project role.
-	fmt.Println(len(r))
-
-	//Iterating current user project role info.
-	for _, upr := range r {
-		fmt.Println(upr.RoleId, upr.Name)
+	if len(r) != 1 {
+		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserId, currentProject.ProjectId, len(r))
 	}
 
-	//Output:
-	//1
-	//2 projectAdmin
+	if r[0].Name != "projectAdmin" {
+		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
+	}
 }
 
-func ExampleProjectPermission() {
+func TestProjectPermission(t *testing.T) {
 	roleCode, err := dao.GetPermission(currentUser.Username, currentProject.Name)
 	if err != nil {
-		log.Fatalf("Error occurred in GetPermission: %v", err)
+		t.Errorf("Error occurred in GetPermission: %v", err)
 	}
-	fmt.Println(roleCode)
-	//Output:
-	//MDRWS
+	if roleCode != "MDRWS" {
+		t.Errorf("The expected role code is MDRWS,but actual: %s", roleCode)
+	}
 }
 
-func ExampleQueryRelevantProjects() {
+func TestQueryRelevantProjects(t *testing.T) {
 	projects, err := dao.QueryRelevantProjects(currentUser.UserId)
 	if err != nil {
-		log.Fatalf("Error occurred in QueryRelevantProjects: %v", err)
+		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
-	fmt.Println(len(projects))
-	for _, p := range projects {
-		fmt.Println(p.Name)
+	if len(projects) != 2 {
+		t.Errorf("Expected length of relevant projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
 	}
-	//Output:
-	//2
-	//library
-	//test_project
+	if projects[1].Name != PROJECT_NAME {
+		t.Errorf("Expected project name in the list: %s, actual: %s", PROJECT_NAME, projects[1].Name)
+	}
 }
 
-func ExampleAssignUserProjectRole() {
+func TestAssignUserProjectRole(t *testing.T) {
 	err := dao.AddUserProjectRole(currentUser.UserId, currentProject.ProjectId, DEVELOPER)
 	if err != nil {
-		log.Fatalf("Error occurred in AddUserProjectRole: %v", err)
+		t.Errorf("Error occurred in AddUserProjectRole: %v", err)
 	}
 
 	r := getUserProjectRole(currentProject.ProjectId, currentUser.UserId)
 
 	//Get the size of current user project role info.
-	fmt.Println(len(r))
-
-	//Iterating current user project role.
-	for _, upr := range r {
-		fmt.Println(upr.RoleId, upr.Name)
+	if len(r) != 2 {
+		t.Errorf("Expected length of role list is 2, actual: %d", len(r))
 	}
 
-	//Output:
-	//2
-	//2 projectAdmin
-	//3 developer
+	if r[1].RoleId != 3 {
+		t.Errorf("Expected role id of the second role in list is 3, actual: %d", r[1].RoleId)
+	}
 }
 
-func ExampleDeleteUserProjectRole() {
+func TestDeleteUserProjectRole(t *testing.T) {
 	err := dao.DeleteUserProjectRoles(currentUser.UserId, currentProject.ProjectId)
 	if err != nil {
-		log.Fatalf("Error occurred in DeleteUserProjectRoles: %v", err)
+		t.Errorf("Error occurred in DeleteUserProjectRoles: %v", err)
 	}
 
 	r := getUserProjectRole(currentProject.ProjectId, currentUser.UserId)
-
 	//Get the size of current user project role.
-	fmt.Println(len(r))
-
-	//Iterating current user project role info.
-	for _, upr := range r {
-		fmt.Println(upr.RoleId, upr.Name)
+	if len(r) != 0 {
+		t.Errorf("Expected role list length is 0, actual: %d, role list: %+v", len(r), r)
 	}
-
-	//Output:
-	//0
 }
 
-func ExampleDeleteUser() {
+func TestDeleteUser(t *testing.T) {
 	err := dao.DeleteUser(currentUser.UserId)
 	if err != nil {
-		log.Fatalf("Error occurred in DeleteUser: %v", err)
+		t.Errorf("Error occurred in DeleteUser: %v", err)
 	}
 	user, err := dao.GetUser(*currentUser)
 	if err != nil {
-		log.Fatalf("Error occurred in GetUser: %v", err)
+		t.Errorf("Error occurred in GetUser: %v", err)
 	}
-	fmt.Println(user)
-	//Output:
-	//<nil>
+	if user != nil {
+		t.Error("user is not nil after deletion, user: %+v", user)
+	}
 }

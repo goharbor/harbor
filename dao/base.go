@@ -59,9 +59,8 @@ func GenerateRandomString() (string, error) {
 
 }
 
-func init() {
+func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-
 	addr := os.Getenv("MYSQL_HOST")
 	if len(addr) == 0 {
 		addr = os.Getenv("MYSQL_PORT_3306_TCP_ADDR")
@@ -115,5 +114,8 @@ func init() {
 	case <-time.After(60 * time.Second):
 		panic("Failed to connect to DB after 60 seconds")
 	}
-	orm.RegisterDataBase("default", "mysql", db_str)
+	err := orm.RegisterDataBase("default", "mysql", db_str)
+	if err != nil {
+		panic(err)
+	}
 }
