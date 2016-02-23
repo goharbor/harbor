@@ -68,13 +68,6 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 
-	//conf/app.conf -> os.Getenv("config_path")
-	configPath := os.Getenv("CONFIG_PATH")
-	if len(configPath) != 0 {
-		beego.Debug(fmt.Sprintf("Config path: %s", configPath))
-		beego.AppConfigPath = configPath
-	}
-
 	updateInitPassword(ADMIN_USER_ID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
 
 	beego.Run()

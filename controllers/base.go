@@ -15,6 +15,7 @@
 package controllers
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -114,6 +115,16 @@ var langTypes []*langType
 
 func init() {
 
+	//conf/app.conf -> os.Getenv("config_path")
+	configPath := os.Getenv("CONFIG_PATH")
+	if len(configPath) != 0 {
+		log.Printf("Config path: %s", configPath)
+		beego.AppConfigPath = configPath
+		if err := beego.ParseConfig(); err != nil {
+			beego.Warning("Failed to parse config file: ", configPath, "error: ", err)
+		}
+	}
+
 	beego.AddFuncMap("i18n", i18n.Tr)
 
 	langs := strings.Split(beego.AppConfig.String("lang::types"), "|")
@@ -134,7 +145,6 @@ func init() {
 	for _, lang := range langs {
 		if err := i18n.SetMessage(lang, "static/i18n/"+"locale_"+lang+".ini"); err != nil {
 			beego.Error("Fail to set message file:" + err.Error())
-			return
 		}
 	}
 }
