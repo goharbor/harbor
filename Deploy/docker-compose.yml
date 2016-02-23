@@ -39,8 +39,8 @@ ui:
     - ./config/ui/app.conf:/etc/ui/app.conf
     - ./config/ui/private_key.pem:/etc/ui/private_key.pem
   links:
-    - registry:registry
-    - mysql:mysql
+    - registry
+    - mysql
     - log
   log_driver: "syslog"
   log_opt:
@@ -51,8 +51,8 @@ proxy:
   volumes:
     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
   links:
-    - ui:ui
-    - registry:registry
+    - ui
+    - registry
     - log
   ports:
     - 80:80
