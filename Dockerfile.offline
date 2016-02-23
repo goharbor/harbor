@@ -9,7 +9,6 @@ ENV REGISTRY_URL localhost:5000
 RUN apt-get update -qqy && apt-get install -qqy libldap2-dev
 
 ADD harbor /go/bin/harbor
-ADD conf /go/bin/conf
 ADD views /go/bin/views
 ADD static /go/bin/static
 
