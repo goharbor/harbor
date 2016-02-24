@@ -40,7 +40,7 @@ func (b *BaseAPI) DecodeJsonReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
 		beego.Error("Error while decoding the json request:", err)
-		b.CustomAbort(400, "Invalid json request")
+		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
 	}
 }
 
@@ -49,17 +49,17 @@ func (b *BaseAPI) ValidateUser() int {
 	sessionUserId := b.GetSession("userId")
 	if sessionUserId == nil {
 		beego.Warning("No user id in session, canceling request")
-		b.CustomAbort(401, "")
+		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	userId := sessionUserId.(int)
 	u, err := dao.GetUser(models.User{UserId: userId})
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
-		b.CustomAbort(500, "Internal error.")
+		b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if u == nil {
 		beego.Warning("User was deleted already, user id: ", userId, " canceling request.")
-		b.CustomAbort(401, "")
+		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	return userId
 }

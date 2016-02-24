@@ -55,9 +55,9 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 		return nil, err
 	}
 	defer response.Body.Close()
-	if response.StatusCode == 200 {
+	if response.StatusCode == http.StatusOK {
 		return result, nil
-	} else if response.StatusCode == 401 {
+	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
 		beego.Trace("url: " + url)
@@ -106,7 +106,7 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		if response.StatusCode == 200 {
+		if response.StatusCode == http.StatusOK {
 			tt := make(map[string]string)
 			json.Unmarshal(result, &tt)
 			request, err = http.NewRequest("GET", url, nil)

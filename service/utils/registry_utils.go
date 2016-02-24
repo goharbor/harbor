@@ -50,9 +50,9 @@ func RegistryApiGet(url, username string) ([]byte, error) {
 		return nil, err
 	}
 	defer response.Body.Close()
-	if response.StatusCode == 200 {
+	if response.StatusCode == http.StatusOK {
 		return result, nil
-	} else if response.StatusCode == 401 {
+	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
 		log.Println("url: " + url)
@@ -94,7 +94,7 @@ func RegistryApiGet(url, username string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		if response.StatusCode != 200 {
+		if response.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf("Unexpected return code from registry: %d", response.StatusCode)
 			log.Printf(errMsg)
 			return nil, fmt.Errorf(errMsg)

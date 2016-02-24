@@ -15,6 +15,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/opt_auth"
 
@@ -45,11 +47,11 @@ func (c *CommonController) Login() {
 	user, err := opt_auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		beego.Error("Error occurred in UserLogin:", err)
-		c.CustomAbort(500, "Internal error.")
+		c.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
 	if user == nil {
-		c.CustomAbort(401, "")
+		c.CustomAbort(http.StatusUnauthorized, "")
 	}
 
 	c.SetSession("userId", user.UserId)
@@ -62,7 +64,7 @@ func (c *CommonController) SwitchLanguage() {
 		c.SetSession("lang", lang)
 		c.Data["Lang"] = lang
 	}
-	c.Redirect(c.Ctx.Request.Header.Get("Referer"), 302)
+	c.Redirect(c.Ctx.Request.Header.Get("Referer"), http.StatusFound)
 }
 
 func (c *CommonController) Logout() {

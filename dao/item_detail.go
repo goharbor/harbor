@@ -20,7 +20,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-func GetUserByProject(queryProject models.Project, queryUser models.User) ([]models.User, error) {
+func GetUserByProject(projectId int64, queryUser models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
 	sql := `select 
@@ -35,14 +35,11 @@ func GetUserByProject(queryProject models.Project, queryUser models.User) ([]mod
 		  and pr.project_id = ? `
 
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, queryProject.ProjectId)
+	queryParam = append(queryParam, projectId)
 
 	if queryUser.Username != "" {
 		sql += " and u.username like ? "
 		queryParam = append(queryParam, queryUser.Username)
-	} else if queryUser.RoleId != 0 {
-		sql += ` and r.role_id <= ? `
-		queryParam = append(queryParam, queryUser.RoleId)
 	}
 	sql += ` order by u.user_id `
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)
