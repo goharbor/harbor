@@ -14,8 +14,8 @@ WORKDIR /go/src/github.com/vmware/harbor
 ENV GO15VENDOREXPERIMENT 1
 RUN go get -d github.com/docker/distribution \
     && go get -d github.com/docker/libtrust \
-    && go get -d github.com/go-sql-driver/mysql
-RUN go install -v -a 
+    && go get -d github.com/go-sql-driver/mysql \
+    && go install -v -a 
 
 ENV MYSQL_USR root \
     MYSQL_PWD root \
@@ -23,7 +23,6 @@ ENV MYSQL_USR root \
     MYSQL_PORT_3306_TCP_PORT 3306 \
     REGISTRY_URL localhost:5000
 
-COPY conf /go/bin/conf
 COPY views /go/bin/views
 COPY static /go/bin/static
 

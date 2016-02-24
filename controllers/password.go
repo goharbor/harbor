@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"bytes"
+	"net/http"
 	"os"
 	"regexp"
 	"text/template"
@@ -34,7 +35,7 @@ type ChangePasswordController struct {
 func (cpc *ChangePasswordController) Get() {
 	sessionUserId := cpc.GetSession("userId")
 	if sessionUserId == nil {
-		cpc.Redirect("/signIn", 302)
+		cpc.Redirect("/signIn", http.StatusFound)
 	}
 	cpc.Data["Username"] = cpc.GetSession("username")
 	cpc.ForwardTo("page_title_change_password", "change-password")
@@ -43,32 +44,40 @@ func (cpc *ChangePasswordController) Get() {
 func (cpc *CommonController) UpdatePassword() {
 
 	sessionUserId := cpc.GetSession("userId")
-	sessionUsername := cpc.GetSession("username")
 
-	if sessionUserId == nil || sessionUsername == nil {
+	if sessionUserId == nil {
 		beego.Warning("User does not login.")
-		cpc.CustomAbort(401, "please_login_first")
+		cpc.CustomAbort(http.StatusUnauthorized, "please_login_first")
 	}
 
 	oldPassword := cpc.GetString("old_password")
-	queryUser := models.User{UserId: sessionUserId.(int), Username: sessionUsername.(string), Password: oldPassword}
+	if oldPassword == "" {
+		beego.Error("Old password is blank")
+		cpc.CustomAbort(http.StatusBadRequest, "Old password is blank")
+	}
+
+	queryUser := models.User{UserId: sessionUserId.(int), Password: oldPassword}
 	user, err := dao.CheckUserPassword(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in CheckUserPassword:", err)
-		cpc.CustomAbort(500, "Internal error.")
+		cpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
 	if user == nil {
 		beego.Warning("Password input is not correct")
-		cpc.CustomAbort(403, "old_password_is_not_correct")
+		cpc.CustomAbort(http.StatusForbidden, "old_password_is_not_correct")
 	}
 
 	password := cpc.GetString("password")
 	if password != "" {
-		updateUser := models.User{UserId: sessionUserId.(int), Username: sessionUsername.(string), Password: password, Salt: user.Salt}
-		dao.ChangeUserPassword(updateUser)
+		updateUser := models.User{UserId: sessionUserId.(int), Password: password, Salt: user.Salt}
+		err = dao.ChangeUserPassword(updateUser, oldPassword)
+		if err != nil {
+			beego.Error("Error occurred in ChangeUserPassword:", err)
+			cpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
 	} else {
-		cpc.CustomAbort(404, "please_input_new_password")
+		cpc.CustomAbort(http.StatusBadRequest, "please_input_new_password")
 	}
 }
 
@@ -90,22 +99,26 @@ func (fpc *CommonController) SendEmail() {
 
 	email := fpc.GetString("email")
 
-	if ok, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, email); ok {
+	pass, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, email)
+
+	if !pass {
+		fpc.CustomAbort(http.StatusBadRequest, "email_content_illegal")
+	} else {
 
 		queryUser := models.User{Email: email}
 		exist, err := dao.UserExists(queryUser, "email")
 		if err != nil {
 			beego.Error("Error occurred in UserExists:", err)
-			fpc.CustomAbort(500, "Internal error.")
+			fpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		if !exist {
-			fpc.CustomAbort(404, "email_does_not_exist")
+			fpc.CustomAbort(http.StatusNotFound, "email_does_not_exist")
 		}
 
 		messageTemplate, err := template.ParseFiles("views/reset-password-mail.tpl")
 		if err != nil {
 			beego.Error("Parse email template file failed:", err)
-			fpc.CustomAbort(500, err.Error())
+			fpc.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
 
 		message := new(bytes.Buffer)
@@ -117,7 +130,7 @@ func (fpc *CommonController) SendEmail() {
 		uuid, err := dao.GenerateRandomString()
 		if err != nil {
 			beego.Error("Error occurred in GenerateRandomString:", err)
-			fpc.CustomAbort(500, "Internal error.")
+			fpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		err = messageTemplate.Execute(message, MessageDetail{
 			Hint: fpc.Tr("reset_email_hint"),
@@ -127,13 +140,13 @@ func (fpc *CommonController) SendEmail() {
 
 		if err != nil {
 			beego.Error("message template error:", err)
-			fpc.CustomAbort(500, "internal_error")
+			fpc.CustomAbort(http.StatusInternalServerError, "internal_error")
 		}
 
 		config, err := beego.AppConfig.GetSection("mail")
 		if err != nil {
 			beego.Error("Can not load app.conf:", err)
-			fpc.CustomAbort(500, "internal_error")
+			fpc.CustomAbort(http.StatusInternalServerError, "internal_error")
 		}
 
 		mail := utils.Mail{
@@ -146,14 +159,12 @@ func (fpc *CommonController) SendEmail() {
 
 		if err != nil {
 			beego.Error("send email failed:", err)
-			fpc.CustomAbort(500, "send_email_failed")
+			fpc.CustomAbort(http.StatusInternalServerError, "send_email_failed")
 		}
 
 		user := models.User{ResetUuid: uuid, Email: email}
 		dao.UpdateUserResetUuid(user)
 
-	} else {
-		fpc.CustomAbort(409, "email_content_illegal")
 	}
 
 }
@@ -164,39 +175,55 @@ type ResetPasswordController struct {
 
 func (rpc *ResetPasswordController) Get() {
 
-	q := rpc.GetString("q")
-	queryUser := models.User{ResetUuid: q}
+	resetUuid := rpc.GetString("reset_uuid")
+	if resetUuid == "" {
+		beego.Error("Reset uuid is blank.")
+		rpc.Redirect("/", http.StatusFound)
+	}
+
+	queryUser := models.User{ResetUuid: resetUuid}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
-		rpc.CustomAbort(500, "Internal error.")
+		rpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
 	if user != nil {
 		rpc.Data["ResetUuid"] = user.ResetUuid
 		rpc.ForwardTo("page_title_reset_password", "reset-password")
 	} else {
-		rpc.Redirect("/", 302)
+		rpc.Redirect("/", http.StatusFound)
 	}
 }
 
 func (rpc *CommonController) ResetPassword() {
 
 	resetUuid := rpc.GetString("reset_uuid")
+	if resetUuid == "" {
+		rpc.CustomAbort(http.StatusBadRequest, "Reset uuid is blank.")
+	}
 
 	queryUser := models.User{ResetUuid: resetUuid}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
-		rpc.CustomAbort(500, "Internal error.")
+		rpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if user == nil {
+		beego.Error("User does not exist")
+		rpc.CustomAbort(http.StatusBadRequest, "User does not exist")
 	}
 
 	password := rpc.GetString("password")
 
 	if password != "" {
 		user.Password = password
-		dao.ResetUserPassword(*user)
+		err = dao.ResetUserPassword(*user)
+		if err != nil {
+			beego.Error("Error occurred in ResetUserPassword:", err)
+			rpc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
 	} else {
-		rpc.CustomAbort(404, "password_is_required")
+		rpc.CustomAbort(http.StatusBadRequest, "password_is_required")
 	}
 }

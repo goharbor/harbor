@@ -38,7 +38,7 @@ func updateInitPassword(userId int, password string) error {
 	queryUser := models.User{UserId: userId}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Println("Failed to get user in initial password, userId:", userId)
+		log.Println("Failed to get user, userId:", userId)
 		return err
 	}
 	if user == nil {
@@ -67,15 +67,7 @@ func updateInitPassword(userId int, password string) error {
 func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
-
-	//conf/app.conf -> os.Getenv("config_path")
-	configPath := os.Getenv("CONFIG_PATH")
-	if len(configPath) != 0 {
-		beego.Debug(fmt.Sprintf("Config path: %s", configPath))
-		beego.AppConfigPath = configPath
-	}
-
+	dao.InitDB()
 	updateInitPassword(ADMIN_USER_ID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
-
 	beego.Run()
 }

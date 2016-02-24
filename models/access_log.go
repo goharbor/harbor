@@ -26,10 +26,11 @@ type AccessLog struct {
 	Guid      string
 	Operation string
 	OpTime    time.Time
-	OpTimeStr string
-
 	Username  string
 	Keywords  string
-	BeginTime string
-	EndTime   string
+
+	BeginTime      time.Time
+	BeginTimestamp int64
+	EndTime        time.Time
+	EndTimestamp   int64
 }
