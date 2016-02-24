@@ -135,9 +135,17 @@ func ToggleUserAdminRole(u models.User) error {
 	return err
 }
 
-func ChangeUserPassword(u models.User, oldPassword string) error {
+func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword, u.Salt)).Exec()
+	//In some cases, it may no need to check old password, just as Linux change password polies.
+	var err error
+	if len(oldPassword) == 0 {
+		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
+	} else if len(oldPassword) == 1 {
+		_, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
+	} else {
+		err = errors.New("Wrong numbers of params.")
+	}
 	return err
 }
 

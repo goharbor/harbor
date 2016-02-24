@@ -38,7 +38,7 @@ func updateInitPassword(userId int, password string) error {
 	queryUser := models.User{UserId: userId}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Println("Failed to get user in initial password, userId:", userId)
+		log.Println("Failed to get user's initial password, userId:", userId)
 		return err
 	}
 	if user == nil {
@@ -52,7 +52,7 @@ func updateInitPassword(userId int, password string) error {
 		}
 		user.Salt = salt
 		user.Password = password
-		err = dao.ChangeUserPassword(*user, password)
+		err = dao.ChangeUserPassword(*user)
 		if err != nil {
 			log.Printf("Failed to update user encrypted password, userId: %d, err: %v", userId, err)
 			return err
