@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/vmware/harbor/models"
@@ -137,14 +138,19 @@ func ToggleUserAdminRole(u models.User) error {
 
 func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	o := orm.NewOrm()
-	//In some cases, it may no need to check old password, just as Linux change password polies.
 	var err error
+	var r sql.Result
 	if len(oldPassword) == 0 {
-		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
+		//In some cases, it may no need to check old password, just as Linux change password policies.
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
 	} else if len(oldPassword) == 1 {
-		_, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
 	} else {
-		err = errors.New("Wrong numbers of params.")
+		return errors.New("Wrong numbers of params.")
+	}
+	count, err := r.RowsAffected()
+	if count == 0 {
+		return errors.New("No record be changed, change password failed.")
 	}
 	return err
 }
@@ -157,7 +163,7 @@ func ResetUserPassword(u models.User) error {
 	}
 	count, err := r.RowsAffected()
 	if count == 0 {
-		return errors.New("No record be changed.")
+		return errors.New("No record be changed, reset password failed.")
 	}
 	return err
 }

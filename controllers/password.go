@@ -217,7 +217,11 @@ func (rpc *CommonController) ResetPassword() {
 
 	if password != "" {
 		user.Password = password
-		dao.ResetUserPassword(*user)
+		err = dao.ResetUserPassword(*user)
+		if err != nil {
+			beego.Error("Error occurred in ResetUserPassword:", err)
+			rpc.CustomAbort(500, "Internal error.")
+		}
 	} else {
 		rpc.CustomAbort(400, "password_is_required")
 	}

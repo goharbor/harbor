@@ -300,6 +300,21 @@ func TestChangeUserPassword(t *testing.T) {
 	}
 }
 
+func TestChangeUserPasswordWithOldPassword(t *testing.T) {
+	err := dao.ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
+	if err != nil {
+		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
+	}
+	loginedUser, err := dao.LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewerHarborTester12345"})
+	if err != nil {
+		t.Errorf("Error occurred in LoginByDb: %v", err)
+	}
+
+	if loginedUser.Username != USERNAME {
+		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", USERNAME, loginedUser.Username)
+	}
+}
+
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
 	projects, err := dao.QueryRelevantProjects(currentUser.UserId)
 	if err != nil {
