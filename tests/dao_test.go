@@ -105,7 +105,7 @@ func TestMain(m *testing.M) {
 	}
 	dbPort := os.Getenv("DB_PORT")
 	if len(dbPort) == 0 {
-		log.Fatalf("environment variable DB_PWD is not set")
+		log.Fatalf("environment variable DB_PORT is not set")
 	}
 	dbPassword := os.Getenv("DB_PWD")
 	if len(dbPassword) == 0 {
@@ -390,8 +390,8 @@ func TestGetAccessLog(t *testing.T) {
 	if len(accessLogs) != 1 {
 		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogs))
 	}
-	if accessLogs[0].RepoName != PROJECT_NAME {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", PROJECT_NAME, accessLogs[0].RepoName)
+	if accessLogs[0].RepoName != PROJECT_NAME+"/" {
+		t.Errorf("The project name does not match, expected: %s, actual: %s", PROJECT_NAME+"/", accessLogs[0].RepoName)
 	}
 }
 
