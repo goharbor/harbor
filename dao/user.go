@@ -142,15 +142,21 @@ func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	var r sql.Result
 	if len(oldPassword) == 0 {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
-		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
+		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
 	} else if len(oldPassword) == 1 {
 		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
+		if err != nil {
+			return err
+		}
+		count, err := r.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return errors.New("No record be changed, change password failed.")
+		}
 	} else {
 		return errors.New("Wrong numbers of params.")
-	}
-	count, err := r.RowsAffected()
-	if count == 0 {
-		return errors.New("No record be changed, change password failed.")
 	}
 	return err
 }
@@ -162,6 +168,9 @@ func ResetUserPassword(u models.User) error {
 		return err
 	}
 	count, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
 	if count == 0 {
 		return errors.New("No record be changed, reset password failed.")
 	}
