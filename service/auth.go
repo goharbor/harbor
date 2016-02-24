@@ -16,6 +16,7 @@ package service
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/opt_auth"
@@ -46,7 +47,7 @@ func (a *AuthController) Auth() {
 
 	if len(scope) == 0 && !authenticated {
 		log.Printf("login request with invalid credentials")
-		a.CustomAbort(401, "")
+		a.CustomAbort(http.StatusUnauthorized, "")
 	}
 	access := svc_utils.GetResourceActions(scope)
 	for _, a := range access {
@@ -61,7 +62,7 @@ func (a *AuthController) serveToken(username, service string, access []*token.Re
 	rawToken, err := svc_utils.MakeToken(username, service, access)
 	if err != nil {
 		log.Printf("Failed to make token, error: %v", err)
-		writer.WriteHeader(500)
+		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	tk := make(map[string]string)

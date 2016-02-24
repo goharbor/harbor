@@ -15,6 +15,7 @@
 package controllers
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
@@ -33,7 +34,7 @@ func (rc *RegisterController) Get() {
 	if authMode == "" || authMode == "db_auth" {
 		rc.ForwardTo("page_title_registration", "register")
 	} else {
-		rc.Redirect("/signIn", 404)
+		rc.Redirect("/signIn", http.StatusNotFound)
 	}
 }
 
@@ -49,7 +50,7 @@ func (rc *CommonController) SignUp() {
 	_, err := dao.Register(user)
 	if err != nil {
 		beego.Error("Error occurred in Register:", err)
-		rc.CustomAbort(500, "Internal error.")
+		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
 
@@ -68,7 +69,7 @@ func (rc *CommonController) UserExists() {
 	exist, err := dao.UserExists(user, target)
 	if err != nil {
 		beego.Error("Error occurred in UserExists:", err)
-		rc.CustomAbort(500, "Internal error.")
+		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	rc.Data["json"] = exist
 	rc.ServeJSON()

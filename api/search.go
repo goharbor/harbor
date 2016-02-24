@@ -15,6 +15,7 @@
 package api
 
 import (
+	"net/http"
 	"sort"
 	"strings"
 
@@ -44,7 +45,7 @@ func (n *SearchAPI) Get() {
 	projects, err := dao.QueryRelevantProjects(userId)
 	if err != nil {
 		beego.Error("Failed to get projects of user id:", userId, ", error:", err)
-		n.CustomAbort(500, "Failed to get project search result")
+		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
 	}
 	projectSorter := &utils.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
@@ -66,7 +67,7 @@ func (n *SearchAPI) Get() {
 	repositories, err2 := svc_utils.GetRepoFromCache()
 	if err2 != nil {
 		beego.Error("Failed to get repos from cache, error :", err2)
-		n.CustomAbort(500, "Failed to get repositories search result")
+		n.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
