@@ -15,6 +15,7 @@
 package test
 
 import (
+	"fmt"
 	//	"fmt"
 	"log"
 	"os"
@@ -111,6 +112,8 @@ func TestMain(m *testing.M) {
 	if len(dbPassword) == 0 {
 		log.Fatalf("environment variable DB_PWD is not set")
 	}
+
+	fmt.Printf("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	os.Setenv("MYSQL_PORT_3306_TCP_ADDR", dbHost)
 	os.Setenv("MYSQL_PORT_3306_TCP_PORT", dbPort)
@@ -297,6 +300,34 @@ func TestChangeUserPassword(t *testing.T) {
 
 	if loginedUser.Username != USERNAME {
 		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", USERNAME, loginedUser.Username)
+	}
+}
+
+func TestChangeUserPasswordWithOldPassword(t *testing.T) {
+	err := dao.ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
+	if err != nil {
+		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
+	}
+	loginedUser, err := dao.LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewerHarborTester12345"})
+	if err != nil {
+		t.Errorf("Error occurred in LoginByDb: %v", err)
+	}
+	if loginedUser.Username != USERNAME {
+		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", USERNAME, loginedUser.Username)
+	}
+}
+
+func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
+	err := dao.ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NNewerHarborTester12345", Salt: currentUser.Salt}, "WrongNewerHarborTester12345")
+	if err == nil {
+		t.Errorf("Error does not occurred due to old password is incorrect.")
+	}
+	loginedUser, err := dao.LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NNewerHarborTester12345"})
+	if err != nil {
+		t.Errorf("Error occurred in LoginByDb: %v", err)
+	}
+	if loginedUser != nil {
+		t.Errorf("The login user is not nil, acutal: %+v", loginedUser)
 	}
 }
 
