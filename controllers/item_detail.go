@@ -51,8 +51,7 @@ func CheckProjectRole(userId int, projectId int64) bool {
 }
 
 func CheckPublicProject(projectId int64) bool {
-	projectQuery := models.Project{ProjectId: projectId}
-	project, err := dao.GetProjectById(projectQuery)
+	project, err := dao.GetProjectById(projectId)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		return false
@@ -72,8 +71,7 @@ func (idc *ItemDetailController) Get() {
 		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
 	}
 
-	projectQuery := models.Project{ProjectId: projectId}
-	project, err := dao.GetProjectById(projectQuery)
+	project, err := dao.GetProjectById(projectId)
 
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)

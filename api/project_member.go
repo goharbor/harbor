@@ -44,7 +44,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		return
 	}
-	p, err := dao.GetProjectById(models.Project{ProjectId: pid})
+	p, err := dao.GetProjectById(pid)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -79,10 +79,9 @@ func (pma *ProjectMemberAPI) Get() {
 		return
 	}
 	if pma.memberId == 0 { //member id not set return list of the members
-		queryProject := models.Project{ProjectId: pid}
 		username := pma.GetString("username")
 		queryUser := models.User{Username: "%" + username + "%"}
-		userList, err := dao.GetUserByProject(queryProject, queryUser)
+		userList, err := dao.GetUserByProject(pid, queryUser)
 		if err != nil {
 			beego.Error("Failed to query database for member list, error:", err)
 			pma.RenderError(http.StatusInternalServerError, "Internal Server Error")

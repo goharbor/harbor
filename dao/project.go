@@ -94,6 +94,7 @@ func IsProjectPublic(projectName string) bool {
 	return project.Public == 1
 }
 
+//Query the projects based on publicity and user, disregarding the names etc.
 func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
@@ -154,17 +155,13 @@ func ProjectExists(nameOrId interface{}) (bool, error) {
 
 }
 
-func GetProjectById(query models.Project) (*models.Project, error) {
+func GetProjectById(projectId int64) (*models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.public  
 		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, query.ProjectId)
-	if query.Public != 0 {
-		sql += " and p.public = ? "
-		queryParam = append(queryParam, query.Public)
-	}
+	queryParam = append(queryParam, projectId)
 
 	p := []models.Project{}
 	count, err := o.Raw(sql, queryParam).QueryRows(&p)
