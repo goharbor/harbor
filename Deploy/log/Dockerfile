@@ -1,6 +1,5 @@
 FROM library/ubuntu:14.04
 
-
 # run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
 RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
 	&& sed 's/$ModLoad imklog/#$ModLoad imklog/' -i /etc/rsyslog.conf \
