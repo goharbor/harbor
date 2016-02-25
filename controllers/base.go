@@ -42,7 +42,7 @@ type langType struct {
 }
 
 const (
-	DefaultLang = "en-US"
+	defaultLang = "en-US"
 )
 
 var supportLanguages map[string]langType
@@ -60,7 +60,7 @@ func (b *BaseController) Prepare() {
 	}
 
 	if _, exist := supportLanguages[lang]; exist == false { //Check if support the request language.
-		lang = DefaultLang //Set default language if not supported.
+		lang = defaultLang //Set default language if not supported.
 	}
 
 	sessionLang := b.GetSession("lang")
