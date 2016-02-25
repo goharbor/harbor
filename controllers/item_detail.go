@@ -36,6 +36,7 @@ func (idc *ItemDetailController) Get() {
 	if projectId <= 0 {
 		beego.Error("Invalid project id:", projectId)
 		idc.Redirect("/signIn", http.StatusFound)
+		return
 	}
 
 	project, err := dao.GetProjectById(projectId)
@@ -47,12 +48,14 @@ func (idc *ItemDetailController) Get() {
 
 	if project == nil {
 		idc.Redirect("/signIn", http.StatusFound)
+		return
 	}
 
 	sessionUserId := idc.GetSession("userId")
 
 	if project.Public != 1 && sessionUserId == nil {
 		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
+		return
 	}
 
 	if sessionUserId != nil {
@@ -68,6 +71,7 @@ func (idc *ItemDetailController) Get() {
 
 		if project.Public == 0 && len(roleList) == 0 {
 			idc.Redirect("/registry/project", http.StatusFound)
+			return
 		}
 
 		if len(roleList) > 0 {

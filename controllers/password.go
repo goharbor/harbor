@@ -36,6 +36,7 @@ func (cpc *ChangePasswordController) Get() {
 	sessionUserId := cpc.GetSession("userId")
 	if sessionUserId == nil {
 		cpc.Redirect("/signIn", http.StatusFound)
+		return
 	}
 	cpc.Data["Username"] = cpc.GetSession("username")
 	cpc.ForwardTo("page_title_change_password", "change-password")
@@ -179,6 +180,7 @@ func (rpc *ResetPasswordController) Get() {
 	if resetUuid == "" {
 		beego.Error("Reset uuid is blank.")
 		rpc.Redirect("/", http.StatusFound)
+		return
 	}
 
 	queryUser := models.User{ResetUuid: resetUuid}
