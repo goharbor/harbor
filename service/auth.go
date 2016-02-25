@@ -18,8 +18,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils"
 
@@ -72,7 +72,7 @@ func (a *AuthController) serveToken(username, service string, access []*token.Re
 }
 
 func authenticate(principal, password string) bool {
-	user, err := opt_auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		log.Printf("Error occurred in UserLogin: %v", err)
 		return false

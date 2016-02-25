@@ -33,16 +33,16 @@ import (
 
 type RepositoryAPI struct {
 	BaseAPI
-	userId   int
+	userID   int
 	username string
 }
 
 func (ra *RepositoryAPI) Prepare() {
-	userId, ok := ra.GetSession("userId").(int)
+	userID, ok := ra.GetSession("userId").(int)
 	if !ok {
-		ra.userId = dao.NON_EXIST_USER_ID
+		ra.userID = dao.NON_EXIST_USER_ID
 	} else {
-		ra.userId = userId
+		ra.userID = userID
 	}
 	username, ok := ra.GetSession("username").(string)
 	if !ok {
@@ -54,23 +54,23 @@ func (ra *RepositoryAPI) Prepare() {
 }
 
 func (ra *RepositoryAPI) Get() {
-	projectId, err0 := ra.GetInt64("project_id")
+	projectID, err0 := ra.GetInt64("project_id")
 	if err0 != nil {
 		beego.Error("Failed to get project id, error:", err0)
 		ra.RenderError(http.StatusBadRequest, "Invalid project id")
 		return
 	}
-	p, err := dao.GetProjectById(projectId)
+	p, err := dao.GetProjectById(projectID)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		ra.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if p == nil {
-		beego.Warning("Project with Id:", projectId, ", does not exist", projectId)
+		beego.Warning("Project with Id:", projectID, ", does not exist")
 		ra.RenderError(http.StatusNotFound, "")
 		return
 	}
-	if p.Public == 0 && !CheckProjectPermission(ra.userId, projectId) {
+	if p.Public == 0 && !CheckProjectPermission(ra.userID, projectID) {
 		ra.RenderError(http.StatusForbidden, "")
 		return
 	}
@@ -148,27 +148,24 @@ func (ra *RepositoryAPI) GetManifests() {
 		beego.Error("Failed to get manifests for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
-	} else {
-		mani := Manifest{}
-		err = json.Unmarshal(result, &mani)
-		if err != nil {
-			beego.Error("Failed to decode json from response for manifests, repo name:", repoName, ", tag:", tag, ", error:", err)
-			ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-			return
-		} else {
-			v1Compatibility := mani.History[0].V1Compatibility
-
-			err = json.Unmarshal([]byte(v1Compatibility), &item)
-			if err != nil {
-				beego.Error("Failed to decode V1 field for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
-				ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-				return
-			} else {
-				item.CreatedStr = item.Created.Format("2006-01-02 15:04:05")
-				item.DurationDays = strconv.Itoa(int(time.Since(item.Created).Hours()/24)) + " days"
-			}
-		}
 	}
+	mani := Manifest{}
+	err = json.Unmarshal(result, &mani)
+	if err != nil {
+		beego.Error("Failed to decode json from response for manifests, repo name:", repoName, ", tag:", tag, ", error:", err)
+		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	v1Compatibility := mani.History[0].V1Compatibility
+
+	err = json.Unmarshal([]byte(v1Compatibility), &item)
+	if err != nil {
+		beego.Error("Failed to decode V1 field for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
+		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	item.CreatedStr = item.Created.Format("2006-01-02 15:04:05")
+	item.DurationDays = strconv.Itoa(int(time.Since(item.Created).Hours()/24)) + " days"
 
 	ra.Data["json"] = item
 	ra.ServeJSON()

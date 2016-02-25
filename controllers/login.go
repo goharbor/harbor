@@ -17,8 +17,8 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 
 	"github.com/astaxie/beego"
 )
@@ -44,7 +44,7 @@ func (c *CommonController) Login() {
 	principal := c.GetString("principal")
 	password := c.GetString("password")
 
-	user, err := opt_auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		beego.Error("Error occurred in UserLogin:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Internal error.")

@@ -21,8 +21,8 @@ import (
 	"github.com/astaxie/beego"
 )
 
-func CheckProjectPermission(userId int, projectId int64) bool {
-	exist, err := dao.IsAdminRole(userId)
+func CheckProjectPermission(userID int, projectID int64) bool {
+	exist, err := dao.IsAdminRole(userID)
 	if err != nil {
 		beego.Error("Error occurred in IsAdminRole:", err)
 		return false
@@ -30,7 +30,7 @@ func CheckProjectPermission(userId int, projectId int64) bool {
 	if exist {
 		return true
 	}
-	roleList, err := dao.GetUserProjectRoles(models.User{UserId: userId}, projectId)
+	roleList, err := dao.GetUserProjectRoles(models.User{UserId: userID}, projectID)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
 		return false

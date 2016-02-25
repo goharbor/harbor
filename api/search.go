@@ -37,14 +37,14 @@ type SearchResult struct {
 }
 
 func (n *SearchAPI) Get() {
-	userId, ok := n.GetSession("userId").(int)
+	userID, ok := n.GetSession("userId").(int)
 	if !ok {
-		userId = dao.NON_EXIST_USER_ID
+		userID = dao.NON_EXIST_USER_ID
 	}
 	keyword := n.GetString("q")
-	projects, err := dao.QueryRelevantProjects(userId)
+	projects, err := dao.QueryRelevantProjects(userID)
 	if err != nil {
-		beego.Error("Failed to get projects of user id:", userId, ", error:", err)
+		beego.Error("Failed to get projects of user id:", userID, ", error:", err)
 		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
 	}
 	projectSorter := &utils.ProjectSorter{Projects: projects}
