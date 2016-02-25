@@ -15,15 +15,15 @@
 package db
 
 import (
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 )
 
-type DbAuth struct{}
+type Auth struct{}
 
-func (d *DbAuth) Validate(auth models.AuthModel) (*models.User, error) {
-	u, err := dao.LoginByDb(auth)
+func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
+	u, err := dao.LoginByDb(m)
 	if err != nil {
 		return nil, err
 	}
@@ -31,5 +31,5 @@ func (d *DbAuth) Validate(auth models.AuthModel) (*models.User, error) {
 }
 
 func init() {
-	opt_auth.Register("db_auth", &DbAuth{})
+	auth.Register("db_auth", &Auth{})
 }
