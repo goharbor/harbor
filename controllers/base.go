@@ -42,14 +42,14 @@ type langType struct {
 }
 
 const (
-	DEFAULT_LANG = "en-US"
+	defaultLang = "en-US"
 )
 
 var supportLanguages map[string]langType
 
 func (b *BaseController) Prepare() {
 
-	var lang string = ""
+	var lang string
 	al := b.Ctx.Request.Header.Get("Accept-Language")
 
 	if len(al) > 4 {
@@ -60,7 +60,7 @@ func (b *BaseController) Prepare() {
 	}
 
 	if _, exist := supportLanguages[lang]; exist == false { //Check if support the request language.
-		lang = DEFAULT_LANG //Set default language if not supported.
+		lang = defaultLang //Set default language if not supported.
 	}
 
 	sessionLang := b.GetSession("lang")
@@ -88,8 +88,8 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	sessionUserId := b.GetSession("userId")
-	if sessionUserId != nil {
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID != nil {
 		b.Data["Username"] = b.GetSession("username")
 	}
 	authMode := os.Getenv("AUTH_MODE")

@@ -79,7 +79,7 @@ func authenticate(principal, password string) bool {
 	}
 	if user == nil {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }

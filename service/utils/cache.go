@@ -38,7 +38,7 @@ func init() {
 }
 
 func RefreshCatalogCache() error {
-	result, err := RegistryApiGet(BuildRegistryUrl("_catalog"), "")
+	result, err := RegistryAPIGet(BuildRegistryURL("_catalog"), "")
 	if err != nil {
 		return err
 	}

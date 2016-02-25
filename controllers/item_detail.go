@@ -31,15 +31,15 @@ type ItemDetailController struct {
 
 func (idc *ItemDetailController) Get() {
 
-	projectId, _ := idc.GetInt64("project_id")
+	projectID, _ := idc.GetInt64("project_id")
 
-	if projectId <= 0 {
-		beego.Error("Invalid project id:", projectId)
+	if projectID <= 0 {
+		beego.Error("Invalid project id:", projectID)
 		idc.Redirect("/signIn", http.StatusFound)
 		return
 	}
 
-	project, err := dao.GetProjectById(projectId)
+	project, err := dao.GetProjectById(projectID)
 
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
@@ -51,19 +51,19 @@ func (idc *ItemDetailController) Get() {
 		return
 	}
 
-	sessionUserId := idc.GetSession("userId")
+	sessionUserID := idc.GetSession("userId")
 
-	if project.Public != 1 && sessionUserId == nil {
+	if project.Public != 1 && sessionUserID == nil {
 		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
 		return
 	}
 
-	if sessionUserId != nil {
+	if sessionUserID != nil {
 
 		idc.Data["Username"] = idc.GetSession("username")
-		idc.Data["UserId"] = sessionUserId.(int)
+		idc.Data["UserId"] = sessionUserID.(int)
 
-		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserId.(int)}, projectId)
+		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserID.(int)}, projectID)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
