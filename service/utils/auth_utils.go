@@ -57,45 +57,45 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 
 	if a.Type == "registry" && a.Name == "catalog" {
 		return
-	} else {
-		//clear action list to assign to new acess element after perm check.
-		a.Actions = []string{}
-		if a.Type == "repository" {
-			if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
-				projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
-				var permission string
-				var err error
-				if authenticated {
-					if username == "admin" {
-						exist, err := dao.ProjectExists(projectName)
-						if err != nil {
-							log.Printf("Error occurred in CheckExistProject: %v", err)
-							return
-						}
-						if exist {
-							permission = "RW"
-						} else {
-							permission = ""
-							log.Printf("project %s does not exist, set empty permission for admin", projectName)
-						}
+	}
+
+	//clear action list to assign to new acess element after perm check.
+	a.Actions = []string{}
+	if a.Type == "repository" {
+		if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
+			projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
+			var permission string
+			var err error
+			if authenticated {
+				if username == "admin" {
+					exist, err := dao.ProjectExists(projectName)
+					if err != nil {
+						log.Printf("Error occurred in CheckExistProject: %v", err)
+						return
+					}
+					if exist {
+						permission = "RW"
 					} else {
-						permission, err = dao.GetPermission(username, projectName)
-						if err != nil {
-							log.Printf("Error occurred in GetPermission: %v", err)
-							return
-						}
+						permission = ""
+						log.Printf("project %s does not exist, set empty permission for admin", projectName)
+					}
+				} else {
+					permission, err = dao.GetPermission(username, projectName)
+					if err != nil {
+						log.Printf("Error occurred in GetPermission: %v", err)
+						return
 					}
 				}
-				if strings.Contains(permission, "W") {
-					a.Actions = append(a.Actions, "push")
-				}
-				if strings.Contains(permission, "R") || dao.IsProjectPublic(projectName) {
-					a.Actions = append(a.Actions, "pull")
-				}
+			}
+			if strings.Contains(permission, "W") {
+				a.Actions = append(a.Actions, "push")
+			}
+			if strings.Contains(permission, "R") || dao.IsProjectPublic(projectName) {
+				a.Actions = append(a.Actions, "pull")
 			}
 		}
-		log.Printf("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
 	}
+	log.Printf("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
 }
 
 //For the UI process to call, so it won't establish a https connection from UI to proxy.

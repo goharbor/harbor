@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-func BuildRegistryUrl(segments ...string) string {
+func BuildRegistryURL(segments ...string) string {
 	registryURL := os.Getenv("REGISTRY_URL")
 	if registryURL == "" {
 		registryURL = "http://localhost:5000"
@@ -40,7 +40,7 @@ func BuildRegistryUrl(segments ...string) string {
 	return url
 }
 
-func RegistryApiGet(url, username string) ([]byte, error) {
+func RegistryAPIGet(url, username string) ([]byte, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err

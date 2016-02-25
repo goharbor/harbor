@@ -29,7 +29,7 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
-const MEDIA_TYPE_MANIFEST = "application/vnd.docker.distribution.manifest.v1+json"
+const MediaTypeManifest = "application/vnd.docker.distribution.manifest.v1+json"
 
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
@@ -43,7 +43,7 @@ func (n *NotificationHandler) Post() {
 	}
 	var username, action, repo, project string
 	for _, e := range notification.Events {
-		if e.Target.MediaType == MEDIA_TYPE_MANIFEST && strings.HasPrefix(e.Request.UserAgent, "docker") {
+		if e.Target.MediaType == MediaTypeManifest && strings.HasPrefix(e.Request.UserAgent, "docker") {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository

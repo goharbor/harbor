@@ -124,7 +124,7 @@ func (ra *RepositoryAPI) GetTags() {
 	var tags []string
 
 	repoName := ra.GetString("repo_name")
-	result, err := svc_utils.RegistryApiGet(svc_utils.BuildRegistryUrl(repoName, "tags", "list"), ra.username)
+	result, err := svc_utils.RegistryApiGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), ra.username)
 	if err != nil {
 		beego.Error("Failed to get repo tags, repo name:", repoName, ", error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
@@ -143,7 +143,7 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	item := models.RepoItem{}
 
-	result, err := svc_utils.RegistryApiGet(svc_utils.BuildRegistryUrl(repoName, "manifests", tag), ra.username)
+	result, err := svc_utils.RegistryApiGet(svc_utils.BuildRegistryURL(repoName, "manifests", tag), ra.username)
 	if err != nil {
 		beego.Error("Failed to get manifests for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
