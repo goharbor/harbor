@@ -29,46 +29,14 @@ type ItemDetailController struct {
 	BaseController
 }
 
-var SYS_ADMIN int = 1
-var PROJECT_ADMIN int = 2
-var DEVELOPER int = 3
-var GUEST int = 4
-
-func CheckProjectRole(userId int, projectId int64) bool {
-	if projectId == 0 {
-		return false
-	}
-	userQuery := models.User{UserId: int(userId)}
-	if userId == SYS_ADMIN {
-		return true
-	}
-	roleList, err := dao.GetUserProjectRoles(userQuery, projectId)
-	if err != nil {
-		beego.Error("Error occurred in GetUserProjectRoles:", err)
-		return false
-	}
-	return len(roleList) > 0
-}
-
-func CheckPublicProject(projectId int64) bool {
-	project, err := dao.GetProjectById(projectId)
-	if err != nil {
-		beego.Error("Error occurred in GetProjectById:", err)
-		return false
-	}
-	if project != nil && project.Public == 1 {
-		return true
-	}
-	return false
-}
-
 func (idc *ItemDetailController) Get() {
 
-	sessionUserId := idc.GetSession("userId")
 	projectId, _ := idc.GetInt64("project_id")
 
-	if CheckPublicProject(projectId) == false && (sessionUserId == nil || !CheckProjectRole(sessionUserId.(int), projectId)) {
-		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
+	if projectId <= 0 {
+		beego.Error("Invalid project id:", projectId)
+		idc.Redirect("/signIn", http.StatusFound)
+		return
 	}
 
 	project, err := dao.GetProjectById(projectId)
@@ -80,25 +48,41 @@ func (idc *ItemDetailController) Get() {
 
 	if project == nil {
 		idc.Redirect("/signIn", http.StatusFound)
+		return
+	}
+
+	sessionUserId := idc.GetSession("userId")
+
+	if project.Public != 1 && sessionUserId == nil {
+		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
+		return
+	}
+
+	if sessionUserId != nil {
+
+		idc.Data["Username"] = idc.GetSession("username")
+		idc.Data["UserId"] = sessionUserId.(int)
+
+		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserId.(int)}, projectId)
+		if err != nil {
+			beego.Error("Error occurred in GetUserProjectRoles:", err)
+			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+
+		if project.Public == 0 && len(roleList) == 0 {
+			idc.Redirect("/registry/project", http.StatusFound)
+			return
+		}
+
+		if len(roleList) > 0 {
+			idc.Data["RoleId"] = roleList[0].RoleId
+		}
 	}
 
 	idc.Data["ProjectId"] = project.ProjectId
 	idc.Data["ProjectName"] = project.Name
 	idc.Data["OwnerName"] = project.OwnerName
 	idc.Data["OwnerId"] = project.OwnerId
-
-	if sessionUserId != nil {
-		idc.Data["Username"] = idc.GetSession("username")
-		idc.Data["UserId"] = sessionUserId.(int)
-		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserId.(int)}, projectId)
-		if err != nil {
-			beego.Error("Error occurred in GetUserProjectRoles:", err)
-			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
-		if len(roleList) > 0 {
-			idc.Data["RoleId"] = roleList[0].RoleId
-		}
-	}
 
 	idc.Data["HarborRegUrl"] = os.Getenv("HARBOR_REG_URL")
 	idc.Data["RepoName"] = idc.GetString("repo_name")
