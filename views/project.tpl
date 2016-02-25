@@ -83,7 +83,7 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<a type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnClose">
+					<a type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnCancel">
 						<span aria-hidden="true">&times;</span>
 					</a>
 					<h4 class="modal-title" id="dlgAddProjectTitle">{{i18n .Lang "add_project"}}</h4>
@@ -105,7 +105,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-primary" id="btnSave">{{i18n .Lang "button_save"}}</button>
-					<button type="button" class="btn btn-default" data-dismiss="modal">{{i18n .Lang "button_close"}}</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{i18n .Lang "button_cancel"}}</button>
 				</div>
 			</div>
 		</div>
