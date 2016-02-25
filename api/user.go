@@ -26,46 +26,46 @@ import (
 
 type UserAPI struct {
 	BaseAPI
-	currentUid int
-	userId     int
+	currentUserID int
+	userID        int
 }
 
 func (ua *UserAPI) Prepare() {
 
-	ua.currentUid = ua.ValidateUser()
+	ua.currentUserID = ua.ValidateUser()
 	id := ua.Ctx.Input.Param(":id")
 	if id == "current" {
-		ua.userId = ua.currentUid
+		ua.userID = ua.currentUserID
 	} else if len(id) > 0 {
 		var err error
-		ua.userId, err = strconv.Atoi(id)
+		ua.userID, err = strconv.Atoi(id)
 		if err != nil {
 			beego.Error("Invalid user id, error:", err)
 			ua.CustomAbort(http.StatusBadRequest, "Invalid user Id")
 		}
-		userQuery := models.User{UserId: ua.userId}
+		userQuery := models.User{UserId: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			beego.Error("Error occurred in GetUser:", err)
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		if u == nil {
-			beego.Error("User with Id:", ua.userId, "does not exist")
+			beego.Error("User with Id:", ua.userID, "does not exist")
 			ua.CustomAbort(http.StatusNotFound, "")
 		}
 	}
 }
 
 func (ua *UserAPI) Get() {
-	exist, err := dao.IsAdminRole(ua.currentUid)
+	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
 		beego.Error("Error occurred in IsAdminRole:", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
-	if ua.userId == 0 { //list users
+	if ua.userID == 0 { //list users
 		if !exist {
-			beego.Error("Current user, id:", ua.currentUid, ", does not have admin role, can not list users")
+			beego.Error("Current user, id:", ua.currentUserID, ", does not have admin role, can not list users")
 			ua.RenderError(http.StatusForbidden, "User does not have admin role")
 			return
 		}
@@ -82,8 +82,8 @@ func (ua *UserAPI) Get() {
 		}
 		ua.Data["json"] = userList
 
-	} else if ua.userId == ua.currentUid || exist {
-		userQuery := models.User{UserId: ua.userId}
+	} else if ua.userID == ua.currentUserID || exist {
+		userQuery := models.User{UserId: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			beego.Error("Error occurred in GetUser:", err)
@@ -91,7 +91,7 @@ func (ua *UserAPI) Get() {
 		}
 		ua.Data["json"] = u
 	} else {
-		beego.Error("Current user, id:", ua.currentUid, "does not have admin role, can not view other user's detail")
+		beego.Error("Current user, id:", ua.currentUserID, "does not have admin role, can not view other user's detail")
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
@@ -99,32 +99,32 @@ func (ua *UserAPI) Get() {
 }
 
 func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
-	exist, err := dao.IsAdminRole(ua.currentUid)
+	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
 		beego.Error("Error occurred in IsAdminRole:", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if !exist {
-		beego.Warning("current user, id:", ua.currentUid, ", does not have admin role, can not update other user's role")
+		beego.Warning("current user, id:", ua.currentUserID, ", does not have admin role, can not update other user's role")
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
-	userQuery := models.User{UserId: ua.userId}
+	userQuery := models.User{UserId: ua.userID}
 	dao.ToggleUserAdminRole(userQuery)
 }
 
 func (ua *UserAPI) Delete() {
-	exist, err := dao.IsAdminRole(ua.currentUid)
+	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
 		beego.Error("Error occurred in IsAdminRole:", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if !exist {
-		beego.Warning("current user, id:", ua.currentUid, ", does not have admin role, can not remove user")
+		beego.Warning("current user, id:", ua.currentUserID, ", does not have admin role, can not remove user")
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
-	err = dao.DeleteUser(ua.userId)
+	err = dao.DeleteUser(ua.userID)
 	if err != nil {
 		beego.Error("Failed to delete data from database, error:", err)
 		ua.RenderError(http.StatusInternalServerError, "Failed to delete User")
