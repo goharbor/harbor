@@ -25,6 +25,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// GetUser ...
 func GetUser(query models.User) (*models.User, error) {
 
 	o := orm.NewOrm()
@@ -65,6 +66,7 @@ func GetUser(query models.User) (*models.User, error) {
 	}
 }
 
+// LoginByDb is used for user to login with database auth mode.
 func LoginByDb(auth models.AuthModel) (*models.User, error) {
 
 	query := models.User{Username: auth.Principal, Email: auth.Principal}
@@ -84,6 +86,7 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 
 }
 
+// ListUsers lists all users according to different conditions.
 func ListUsers(query models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
@@ -106,6 +109,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 	return u, err
 }
 
+// ToggleUserAdminRole gives a user admim role.
 func ToggleUserAdminRole(u models.User) error {
 
 	projectRole := models.ProjectRole{PrID: 1} //admin project role
@@ -136,6 +140,7 @@ func ToggleUserAdminRole(u models.User) error {
 	return err
 }
 
+// ChangeUserPassword ...
 func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	o := orm.NewOrm()
 	var err error
@@ -161,6 +166,7 @@ func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	return err
 }
 
+// ResetUserPassword ...
 func ResetUserPassword(u models.User) error {
 	o := orm.NewOrm()
 	r, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUUID).Exec()
@@ -177,12 +183,14 @@ func ResetUserPassword(u models.User) error {
 	return err
 }
 
+// UpdateUserResetUUID ...
 func UpdateUserResetUUID(u models.User) error {
 	o := orm.NewOrm()
 	_, err := o.Raw(`update user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
 	return err
 }
 
+// CheckUserPassword checks whether the password is correct.
 func CheckUserPassword(query models.User) (*models.User, error) {
 
 	currentUser, err := GetUser(query)
@@ -223,6 +231,7 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 	}
 }
 
+// DeleteUser ...
 func DeleteUser(userID int) error {
 	o := orm.NewOrm()
 	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()

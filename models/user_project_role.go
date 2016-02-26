@@ -14,6 +14,7 @@
 */
 package models
 
+// UserProjectRole holds information about relationship of user, project and role.
 type UserProjectRole struct {
 	UprID  int   `orm:"column(upr_id)" json:"UprId"`
 	UserID int   `orm:"column(user_id)" json:"UserId"`

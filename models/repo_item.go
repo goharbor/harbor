@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+// RepoItem holds manifest of an image.
 type RepoItem struct {
 	ID            string    `json:"Id"`
 	Parent        string    `json:"Parent"`

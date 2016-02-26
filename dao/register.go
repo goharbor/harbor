@@ -24,6 +24,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// Register is used for user to register, the password is encrypted before the record is inserted into database.
 func Register(user models.User) (int64, error) {
 
 	err := validate(user)
@@ -99,6 +100,7 @@ func validate(user models.User) error {
 	return nil
 }
 
+// UserExists returns whether a user exists according username or Email.
 func UserExists(user models.User, target string) (bool, error) {
 
 	if user.Username == "" && user.Email == "" {

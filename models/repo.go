@@ -14,12 +14,7 @@
 */
 package models
 
-type V1Repo struct {
-	NumResults int
-	Query      string
-	Results    []RepoItem
-}
-
+// Repo holds information about repositories.
 type Repo struct {
 	Repositories []string `json:"repositories"`
 }
