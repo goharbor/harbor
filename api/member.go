@@ -44,7 +44,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		return
 	}
-	p, err := dao.GetProjectById(pid)
+	p, err := dao.GetProjectByID(pid)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -72,7 +72,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 }
 
 func (pma *ProjectMemberAPI) Get() {
-	pid := pma.project.ProjectId
+	pid := pma.project.ProjectID
 	if !CheckProjectPermission(pma.currentUserID, pid) {
 		beego.Warning("Current user, user id :", pma.currentUserID, "does not have permission for project, id:", pid)
 		pma.RenderError(http.StatusForbidden, "")
@@ -89,14 +89,14 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 		pma.Data["json"] = userList
 	} else { //return detail of a  member
-		roleList, err := dao.GetUserProjectRoles(models.User{UserId: pma.memberID}, pid)
+		roleList, err := dao.GetUserProjectRoles(models.User{UserID: pma.memberID}, pid)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		//return empty role list to indicate if a user is not a member
 		result := make(map[string]interface{})
-		user, err := dao.GetUser(models.User{UserId: pma.memberID})
+		user, err := dao.GetUser(models.User{UserID: pma.memberID})
 		if err != nil {
 			beego.Error("Error occurred in GetUser:", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -110,8 +110,8 @@ func (pma *ProjectMemberAPI) Get() {
 }
 
 func (pma *ProjectMemberAPI) Post() {
-	pid := pma.project.ProjectId
-	userQuery := models.User{UserId: pma.currentUserID, RoleId: models.PROJECTADMIN}
+	pid := pma.project.ProjectID
+	userQuery := models.User{UserID: pma.currentUserID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
@@ -131,7 +131,7 @@ func (pma *ProjectMemberAPI) Post() {
 		pma.RenderError(http.StatusNotFound, "User does not exist")
 		return
 	}
-	rolelist, err = dao.GetUserProjectRoles(models.User{UserId: userID}, pid)
+	rolelist, err = dao.GetUserProjectRoles(models.User{UserID: userID}, pid)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
 		pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -153,9 +153,9 @@ func (pma *ProjectMemberAPI) Post() {
 }
 
 func (pma *ProjectMemberAPI) Put() {
-	pid := pma.project.ProjectId
+	pid := pma.project.ProjectID
 	mid := pma.memberID
-	userQuery := models.User{UserId: pma.currentUserID, RoleId: models.PROJECTADMIN}
+	userQuery := models.User{UserID: pma.currentUserID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
@@ -168,7 +168,7 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 	var req memberReq
 	pma.DecodeJSONReq(&req)
-	roleList, err := dao.GetUserProjectRoles(models.User{UserId: mid}, pid)
+	roleList, err := dao.GetUserProjectRoles(models.User{UserID: mid}, pid)
 	if len(roleList) == 0 {
 		beego.Warning("User is not in project, user id:", mid, ", project id:", pid)
 		pma.RenderError(http.StatusNotFound, "user not exist in project")
@@ -194,9 +194,9 @@ func (pma *ProjectMemberAPI) Put() {
 }
 
 func (pma *ProjectMemberAPI) Delete() {
-	pid := pma.project.ProjectId
+	pid := pma.project.ProjectID
 	mid := pma.memberID
-	userQuery := models.User{UserId: pma.currentUserID, RoleId: models.PROJECTADMIN}
+	userQuery := models.User{UserID: pma.currentUserID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if len(rolelist) == 0 {
 		beego.Warning("Current user, id:", pma.currentUserID, ", does not have project admin role for project, id:", pid)

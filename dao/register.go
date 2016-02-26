@@ -48,12 +48,12 @@ func Register(user models.User) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	userId, err := r.LastInsertId()
+	userID, err := r.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 
-	return userId, nil
+	return userID, nil
 }
 
 func validate(user models.User) error {

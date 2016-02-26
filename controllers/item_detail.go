@@ -39,7 +39,7 @@ func (idc *ItemDetailController) Get() {
 		return
 	}
 
-	project, err := dao.GetProjectById(projectID)
+	project, err := dao.GetProjectByID(projectID)
 
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
@@ -63,7 +63,7 @@ func (idc *ItemDetailController) Get() {
 		idc.Data["Username"] = idc.GetSession("username")
 		idc.Data["UserId"] = sessionUserID.(int)
 
-		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserID.(int)}, projectID)
+		roleList, err := dao.GetUserProjectRoles(models.User{UserID: sessionUserID.(int)}, projectID)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -75,14 +75,14 @@ func (idc *ItemDetailController) Get() {
 		}
 
 		if len(roleList) > 0 {
-			idc.Data["RoleId"] = roleList[0].RoleId
+			idc.Data["RoleId"] = roleList[0].RoleID
 		}
 	}
 
-	idc.Data["ProjectId"] = project.ProjectId
+	idc.Data["ProjectId"] = project.ProjectID
 	idc.Data["ProjectName"] = project.Name
 	idc.Data["OwnerName"] = project.OwnerName
-	idc.Data["OwnerId"] = project.OwnerId
+	idc.Data["OwnerId"] = project.OwnerID
 
 	idc.Data["HarborRegUrl"] = os.Getenv("HARBOR_REG_URL")
 	idc.Data["RepoName"] = idc.GetString("repo_name")

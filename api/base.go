@@ -52,7 +52,7 @@ func (b *BaseAPI) ValidateUser() int {
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	userID := sessionUserID.(int)
-	u, err := dao.GetUser(models.User{UserId: userID})
+	u, err := dao.GetUser(models.User{UserID: userID})
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
 		b.CustomAbort(http.StatusInternalServerError, "Internal error.")

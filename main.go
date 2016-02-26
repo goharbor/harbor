@@ -34,7 +34,7 @@ const (
 )
 
 func updateInitPassword(userID int, password string) error {
-	queryUser := models.User{UserId: userID}
+	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		log.Println("Failed to get user, userID:", userID)
@@ -42,7 +42,7 @@ func updateInitPassword(userID int, password string) error {
 	}
 	if user == nil {
 		log.Printf("User id: %d does not exist.", userID)
-		return fmt.Errorf("User id: %s does not exist.", userID)
+		return fmt.Errorf("User id: %d does not exist.", userID)
 	} else if user.Salt == "" {
 		salt, err := dao.GenerateRandomString()
 		if err != nil {

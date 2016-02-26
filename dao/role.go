@@ -20,7 +20,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-func GetUserProjectRoles(userQuery models.User, projectId int64) ([]models.Role, error) {
+func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role, error) {
 
 	o := orm.NewOrm()
 
@@ -32,15 +32,15 @@ func GetUserProjectRoles(userQuery models.User, projectId int64) ([]models.Role,
 		where u.deleted = 0 
 		  and u.user_id = ? `
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, userQuery.UserId)
+	queryParam = append(queryParam, userQuery.UserID)
 
-	if projectId > 0 {
+	if projectID > 0 {
 		sql += ` and pr.project_id = ? `
-		queryParam = append(queryParam, projectId)
+		queryParam = append(queryParam, projectID)
 	}
-	if userQuery.RoleId > 0 {
+	if userQuery.RoleID > 0 {
 		sql += ` and r.role_id = ? `
-		queryParam = append(queryParam, userQuery.RoleId)
+		queryParam = append(queryParam, userQuery.RoleID)
 	}
 
 	var roleList []models.Role
@@ -52,9 +52,9 @@ func GetUserProjectRoles(userQuery models.User, projectId int64) ([]models.Role,
 	return roleList, nil
 }
 
-func IsAdminRole(userId int) (bool, error) {
+func IsAdminRole(userID int) (bool, error) {
 	//role_id == 1 means the user is system admin
-	userQuery := models.User{UserId: userId, RoleId: models.SYSADMIN}
+	userQuery := models.User{UserID: userID, RoleID: models.SYSADMIN}
 	adminRoleList, err := GetUserProjectRoles(userQuery, 0)
 	if err != nil {
 		return false, err

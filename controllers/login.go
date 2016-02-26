@@ -54,7 +54,7 @@ func (c *CommonController) Login() {
 		c.CustomAbort(http.StatusUnauthorized, "")
 	}
 
-	c.SetSession("userId", user.UserId)
+	c.SetSession("userId", user.UserID)
 	c.SetSession("username", user.Username)
 }
 

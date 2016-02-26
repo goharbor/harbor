@@ -43,7 +43,7 @@ func (ua *UserAPI) Prepare() {
 			beego.Error("Invalid user id, error:", err)
 			ua.CustomAbort(http.StatusBadRequest, "Invalid user Id")
 		}
-		userQuery := models.User{UserId: ua.userID}
+		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			beego.Error("Error occurred in GetUser:", err)
@@ -83,7 +83,7 @@ func (ua *UserAPI) Get() {
 		ua.Data["json"] = userList
 
 	} else if ua.userID == ua.currentUserID || exist {
-		userQuery := models.User{UserId: ua.userID}
+		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			beego.Error("Error occurred in GetUser:", err)
@@ -109,7 +109,7 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
-	userQuery := models.User{UserId: ua.userID}
+	userQuery := models.User{UserID: ua.userID}
 	dao.ToggleUserAdminRole(userQuery)
 }
 

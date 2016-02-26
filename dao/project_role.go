@@ -27,7 +27,7 @@ func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 		return 0, err
 	}
 	defer p.Close()
-	r, err := p.Exec(projectRole.ProjectId, projectRole.RoleId)
+	r, err := p.Exec(projectRole.ProjectID, projectRole.RoleID)
 	if err != nil {
 		return 0, err
 	}
@@ -35,16 +35,16 @@ func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 	return id, err
 }
 
-func AddUserProjectRole(userId int, projectId int64, roleId int) error {
+func AddUserProjectRole(userID int, projectID int64, roleID int) error {
 
 	o := orm.NewOrm()
 
 	var pr []models.ProjectRole
 
-	var prId int
+	var prID int
 
 	sql := `select pr.pr_id, pr.project_id, pr.role_id from project_role pr where pr.project_id = ? and pr.role_id = ?`
-	n, err := o.Raw(sql, projectId, roleId).QueryRows(&pr)
+	n, err := o.Raw(sql, projectID, roleID).QueryRows(&pr)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func AddUserProjectRole(userId int, projectId int64, roleId int) error {
 			return err
 		}
 		defer p.Close()
-		r, err := p.Exec(projectId, roleId)
+		r, err := p.Exec(projectID, roleID)
 		if err != nil {
 			return err
 		}
@@ -63,20 +63,20 @@ func AddUserProjectRole(userId int, projectId int64, roleId int) error {
 		if err != nil {
 			return err
 		}
-		prId = int(id)
+		prID = int(id)
 	} else if n > 0 {
-		prId = pr[0].PrId
+		prID = pr[0].PrID
 	}
 	p, err := o.Raw("insert into user_project_role (user_id, pr_id) values (?, ?)").Prepare()
 	if err != nil {
 		return err
 	}
 	defer p.Close()
-	_, err = p.Exec(userId, prId)
+	_, err = p.Exec(userID, prID)
 	return err
 }
 
-func DeleteUserProjectRoles(userId int, projectId int64) error {
+func DeleteUserProjectRoles(userID int, projectID int64) error {
 	o := orm.NewOrm()
 	sql := `delete from user_project_role where user_id = ? and pr_id in
 		(select pr_id from project_role where project_id = ?)`
@@ -84,6 +84,6 @@ func DeleteUserProjectRoles(userId int, projectId int64) error {
 	if err != nil {
 		return err
 	}
-	_, err = p.Exec(userId, projectId)
+	_, err = p.Exec(userID, projectID)
 	return err
 }

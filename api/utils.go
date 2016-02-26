@@ -30,7 +30,7 @@ func CheckProjectPermission(userID int, projectID int64) bool {
 	if exist {
 		return true
 	}
-	roleList, err := dao.GetUserProjectRoles(models.User{UserId: userID}, projectID)
+	roleList, err := dao.GetUserProjectRoles(models.User{UserID: userID}, projectID)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
 		return false
@@ -45,7 +45,7 @@ func CheckUserExists(name string) int {
 		return 0
 	}
 	if u != nil {
-		return u.UserId
+		return u.UserID
 	}
 	return 0
 }

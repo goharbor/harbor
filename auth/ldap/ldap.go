@@ -107,7 +107,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		if err != nil {
 			return nil, err
 		}
-		u.UserId = currentUser.UserId
+		u.UserID = currentUser.UserID
 	} else {
 		u.Password = "12345678AbC"
 		u.Comment = "registered from LDAP."
@@ -115,7 +115,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		if err != nil {
 			return nil, err
 		}
-		u.UserId = int(userID)
+		u.UserID = int(userID)
 	}
 	return &u, nil
 }
