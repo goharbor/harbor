@@ -23,7 +23,7 @@ import (
 	"github.com/beego/i18n"
 )
 
-// CommonControler handles request from UI that doesn't expect a page, such as /login /logout ...
+// CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
 type CommonController struct {
 	BaseController
 }
