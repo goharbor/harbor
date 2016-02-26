@@ -47,36 +47,36 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	projectId, err := r.LastInsertId()
+	projectID, err := r.LastInsertId()
 	if err != nil {
 		return err
 	}
 
-	projectAdminRole := models.ProjectRole{ProjectID: projectId, RoleID: models.PROJECTADMIN}
+	projectAdminRole := models.ProjectRole{ProjectID: projectID, RoleID: models.PROJECTADMIN}
 	_, err = AddProjectRole(projectAdminRole)
 	if err != nil {
 		return err
 	}
 
-	projectDeveloperRole := models.ProjectRole{ProjectID: projectId, RoleID: models.DEVELOPER}
+	projectDeveloperRole := models.ProjectRole{ProjectID: projectID, RoleID: models.DEVELOPER}
 	_, err = AddProjectRole(projectDeveloperRole)
 	if err != nil {
 		return err
 	}
 
-	projectGuestRole := models.ProjectRole{ProjectID: projectId, RoleID: models.GUEST}
+	projectGuestRole := models.ProjectRole{ProjectID: projectID, RoleID: models.GUEST}
 	_, err = AddProjectRole(projectGuestRole)
 	if err != nil {
 		return err
 	}
 
 	//Add all project roles, after that when assigning a user to a project just update the upr table
-	err = AddUserProjectRole(project.OwnerID, projectId, models.PROJECTADMIN)
+	err = AddUserProjectRole(project.OwnerID, projectID, models.PROJECTADMIN)
 	if err != nil {
 		return err
 	}
 
-	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectId, RepoName: project.Name + "/", GUID: "N/A", Operation: "create", OpTime: time.Now()}
+	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", GUID: "N/A", Operation: "create", OpTime: time.Now()}
 	err = AddAccessLog(accessLog)
 
 	return err
@@ -133,21 +133,21 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	return r, nil
 }
 
-func ProjectExists(nameOrId interface{}) (bool, error) {
+func ProjectExists(nameOrID interface{}) (bool, error) {
 	o := orm.NewOrm()
 	type dummy struct{}
 	sql := `select project_id from project where deleted = 0 and `
-	switch nameOrId.(type) {
+	switch nameOrID.(type) {
 	case int64:
 		sql += `project_id = ?`
 	case string:
 		sql += `name = ?`
 	default:
-		return false, errors.New(fmt.Sprintf("Invalid nameOrId: %v", nameOrId))
+		return false, fmt.Errorf("Invalid nameOrId: %v", nameOrID)
 	}
 
 	var d []dummy
-	num, err := o.Raw(sql, nameOrId).QueryRows(&d)
+	num, err := o.Raw(sql, nameOrID).QueryRows(&d)
 	if err != nil {
 		return false, err
 	}
@@ -155,13 +155,13 @@ func ProjectExists(nameOrId interface{}) (bool, error) {
 
 }
 
-func GetProjectById(projectId int64) (*models.Project, error) {
+func GetProjectByID(projectID int64) (*models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.public  
 		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, projectId)
+	queryParam = append(queryParam, projectID)
 
 	p := []models.Project{}
 	count, err := o.Raw(sql, queryParam).QueryRows(&p)
@@ -209,21 +209,21 @@ func GetPermission(username, projectName string) (string, error) {
 	}
 }
 
-func ToggleProjectPublicity(projectId int64, publicity int) error {
+func ToggleProjectPublicity(projectID int64, publicity int) error {
 	o := orm.NewOrm()
 	sql := "update project set public = ? where project_id = ?"
-	_, err := o.Raw(sql, publicity, projectId).Exec()
+	_, err := o.Raw(sql, publicity, projectID).Exec()
 	return err
 }
 
-func QueryRelevantProjects(userId int) ([]models.Project, error) {
+func QueryRelevantProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `SELECT distinct p.project_id, p.name, p.public FROM registry.project p 
 		left join project_role pr on p.project_id = pr.project_id 
 		left join user_project_role upr on upr.pr_id = pr.pr_id 
 		where upr.user_id = ? or p.public = 1 and p.deleted = 0`
 	var res []models.Project
-	_, err := o.Raw(sql, userId).QueryRows(&res)
+	_, err := o.Raw(sql, userID).QueryRows(&res)
 	if err != nil {
 		return nil, err
 	}

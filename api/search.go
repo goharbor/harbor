@@ -39,7 +39,7 @@ type SearchResult struct {
 func (n *SearchAPI) Get() {
 	userID, ok := n.GetSession("userId").(int)
 	if !ok {
-		userID = dao.NON_EXIST_USER_ID
+		userID = dao.NonExistUserID
 	}
 	keyword := n.GetString("q")
 	projects, err := dao.QueryRelevantProjects(userID)

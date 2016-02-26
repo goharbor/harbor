@@ -177,7 +177,7 @@ func ResetUserPassword(u models.User) error {
 	return err
 }
 
-func UpdateUserResetUuid(u models.User) error {
+func UpdateUserResetUUID(u models.User) error {
 	o := orm.NewOrm()
 	_, err := o.Raw(`update user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
 	return err
@@ -223,8 +223,8 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 	}
 }
 
-func DeleteUser(userId int) error {
+func DeleteUser(userID int) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userId).Exec()
+	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
 	return err
 }

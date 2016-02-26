@@ -39,7 +39,7 @@ func (idc *ItemDetailController) Get() {
 		return
 	}
 
-	project, err := dao.GetProjectById(projectID)
+	project, err := dao.GetProjectByID(projectID)
 
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)

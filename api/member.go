@@ -44,7 +44,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		return
 	}
-	p, err := dao.GetProjectById(pid)
+	p, err := dao.GetProjectByID(pid)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		pma.CustomAbort(http.StatusInternalServerError, "Internal error.")

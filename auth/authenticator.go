@@ -40,7 +40,7 @@ func Register(name string, authenticator Authenticator) {
 
 func Login(m models.AuthModel) (*models.User, error) {
 
-	var authMode string = os.Getenv("AUTH_MODE")
+	var authMode = os.Getenv("AUTH_MODE")
 	if authMode == "" || m.Principal == "admin" {
 		authMode = "db_auth"
 	}

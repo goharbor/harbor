@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package utils
 
@@ -27,9 +27,9 @@ import (
 	"github.com/astaxie/beego"
 )
 
-const SESSION_COOKIE = "beegosessionID"
+const sessionCookie = "beegosessionID"
 
-func BuildRegistryUrl(segments ...string) string {
+func BuildRegistryURL(segments ...string) string {
 	registryURL := os.Getenv("REGISTRY_URL")
 	if registryURL == "" {
 		registryURL = "http://localhost:5000"
@@ -45,8 +45,8 @@ func BuildRegistryUrl(segments ...string) string {
 	return url
 }
 
-func HttpGet(url, sessionId, username, password string) ([]byte, error) {
-	response, err := http.Get(url)
+func HTTPGet(URL, sessionID, username, password string) ([]byte, error) {
+	response, err := http.Get(URL)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
-		beego.Trace("url: " + url)
+		beego.Trace("url: " + URL)
 		beego.Trace("Authentication Header: " + str)
 		var realm string
 		var service string
@@ -72,7 +72,7 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 			} else if strings.Contains(s, "service") {
 				service = s
 			} else if strings.Contains(s, "scope") {
-				strings.HasSuffix(url, "v2/_catalog")
+				strings.HasSuffix(URL, "v2/_catalog")
 				scope = s
 			}
 		}
@@ -80,18 +80,18 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 		service = strings.Split(service, "\"")[1]
 		scope = strings.Split(scope, "\"")[1]
 
-		authUrl := realm + "?service=" + service + "&scope=" + scope
+		authURL := realm + "?service=" + service + "&scope=" + scope
 		//skip certificate check if token service is https.
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 		client := &http.Client{Transport: tr}
-		request, err := http.NewRequest("GET", authUrl, nil)
+		request, err := http.NewRequest("GET", authURL, nil)
 		if err != nil {
 			return nil, err
 		}
-		if len(sessionId) > 0 {
-			cookie := &http.Cookie{Name: SESSION_COOKIE, Value: sessionId, Path: "/"}
+		if len(sessionID) > 0 {
+			cookie := &http.Cookie{Name: sessionCookie, Value: sessionID, Path: "/"}
 			request.AddCookie(cookie)
 		} else {
 			request.SetBasicAuth(username, password)
@@ -109,7 +109,7 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 		if response.StatusCode == http.StatusOK {
 			tt := make(map[string]string)
 			json.Unmarshal(result, &tt)
-			request, err = http.NewRequest("GET", url, nil)
+			request, err = http.NewRequest("GET", URL, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -136,9 +136,8 @@ func HttpGet(url, sessionId, username, password string) ([]byte, error) {
 			defer response.Body.Close()
 
 			return result, nil
-		} else {
-			return nil, errors.New(string(result))
 		}
+		return nil, errors.New(string(result))
 	} else {
 		return nil, errors.New(string(result))
 	}

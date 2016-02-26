@@ -27,7 +27,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const NON_EXIST_USER_ID = 0
+const NonExistUserID = 0
 
 func isIllegalLength(s string, min int, max int) bool {
 	if min == -1 {
@@ -74,7 +74,7 @@ func InitDB() {
 		password = os.Getenv("MYSQL_PWD")
 	}
 
-	var flag bool = true
+	var flag = true
 	if addr == "" {
 		beego.Error("Unset env of MYSQL_HOST")
 		flag = false
@@ -93,7 +93,7 @@ func InitDB() {
 		os.Exit(1)
 	}
 
-	db_str := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
+	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
 	ch := make(chan int, 1)
 	go func() {
 		var err error
@@ -114,7 +114,7 @@ func InitDB() {
 	case <-time.After(60 * time.Second):
 		panic("Failed to connect to DB after 60 seconds")
 	}
-	err := orm.RegisterDataBase("default", "mysql", db_str)
+	err := orm.RegisterDataBase("default", "mysql", dbStr)
 	if err != nil {
 		panic(err)
 	}

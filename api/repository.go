@@ -40,7 +40,7 @@ type RepositoryAPI struct {
 func (ra *RepositoryAPI) Prepare() {
 	userID, ok := ra.GetSession("userId").(int)
 	if !ok {
-		ra.userID = dao.NON_EXIST_USER_ID
+		ra.userID = dao.NonExistUserID
 	} else {
 		ra.userID = userID
 	}
@@ -60,7 +60,7 @@ func (ra *RepositoryAPI) Get() {
 		ra.RenderError(http.StatusBadRequest, "Invalid project id")
 		return
 	}
-	p, err := dao.GetProjectById(projectID)
+	p, err := dao.GetProjectByID(projectID)
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
 		ra.CustomAbort(http.StatusInternalServerError, "Internal error.")

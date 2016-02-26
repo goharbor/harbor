@@ -164,7 +164,7 @@ func (cc *CommonController) SendEmail() {
 		}
 
 		user := models.User{ResetUUID: uuid, Email: email}
-		dao.UpdateUserResetUuid(user)
+		dao.UpdateUserResetUUID(user)
 
 	}
 
