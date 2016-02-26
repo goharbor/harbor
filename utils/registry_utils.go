@@ -29,6 +29,7 @@ import (
 
 const sessionCookie = "beegosessionID"
 
+// BuildRegistryURL builds the URL of registry
 func BuildRegistryURL(segments ...string) string {
 	registryURL := os.Getenv("REGISTRY_URL")
 	if registryURL == "" {
@@ -45,6 +46,7 @@ func BuildRegistryURL(segments ...string) string {
 	return url
 }
 
+// HTTPGet is used to call the API of registry. If a token is needed, it will get a token first.
 func HTTPGet(URL, sessionID, username, password string) ([]byte, error) {
 	response, err := http.Get(URL)
 	if err != nil {

@@ -14,6 +14,7 @@
 */
 package models
 
+// User holds the details of a user.
 type User struct {
 	UserID       int    `orm:"column(user_id)" json:"UserId"`
 	Username     string `orm:"column(username)"`

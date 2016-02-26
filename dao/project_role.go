@@ -20,6 +20,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// AddProjectRole ...
 func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 	o := orm.NewOrm()
 	p, err := o.Raw("insert into project_role (project_id, role_id) values (?, ?)").Prepare()
@@ -35,6 +36,7 @@ func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 	return id, err
 }
 
+// AddUserProjectRole inserts role information to table project_role and user_project_role.
 func AddUserProjectRole(userID int, projectID int64, roleID int) error {
 
 	o := orm.NewOrm()
@@ -76,6 +78,7 @@ func AddUserProjectRole(userID int, projectID int64, roleID int) error {
 	return err
 }
 
+// DeleteUserProjectRoles ...
 func DeleteUserProjectRoles(userID int, projectID int64) error {
 	o := orm.NewOrm()
 	sql := `delete from user_project_role where user_id = ? and pr_id in

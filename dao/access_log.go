@@ -22,6 +22,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
 	o := orm.NewOrm()
 	p, err := o.Raw(`insert into access_log
@@ -37,6 +38,7 @@ func AddAccessLog(accessLog models.AccessLog) error {
 	return err
 }
 
+//GetAccessLogs gets access logs according to different conditions
 func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 
 	o := orm.NewOrm()
@@ -92,6 +94,7 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 	return accessLogList, nil
 }
 
+// AccessLog ...
 func AccessLog(username, projectName, repoName, action string) error {
 	o := orm.NewOrm()
 	sql := "insert into  access_log (user_id, project_id, repo_name, operation, op_time) " +

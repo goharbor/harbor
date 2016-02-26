@@ -26,6 +26,8 @@ import (
 )
 
 //TODO:transaction, return err
+
+// AddProject adds a project to the database along with project roles information and access log records.
 func AddProject(project models.Project) error {
 
 	if isIllegalLength(project.Name, 4, 30) {
@@ -82,6 +84,7 @@ func AddProject(project models.Project) error {
 	return err
 }
 
+// IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
 	if err != nil {
@@ -94,7 +97,7 @@ func IsProjectPublic(projectName string) bool {
 	return project.Public == 1
 }
 
-//Query the projects based on publicity and user, disregarding the names etc.
+// QueryProject querys the projects based on publicity and user, disregarding the names etc.
 func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
@@ -133,6 +136,7 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	return r, nil
 }
 
+//ProjectExists returns whether the project exists according to its name of ID.
 func ProjectExists(nameOrID interface{}) (bool, error) {
 	o := orm.NewOrm()
 	type dummy struct{}
@@ -155,6 +159,7 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 
 }
 
+// GetProjectByID ...
 func GetProjectByID(projectID int64) (*models.Project, error) {
 	o := orm.NewOrm()
 
@@ -175,6 +180,7 @@ func GetProjectByID(projectID int64) (*models.Project, error) {
 	}
 }
 
+// GetProjectByName ...
 func GetProjectByName(projectName string) (*models.Project, error) {
 	o := orm.NewOrm()
 	var p []models.Project
@@ -188,6 +194,7 @@ func GetProjectByName(projectName string) (*models.Project, error) {
 	}
 }
 
+// GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
 	o := orm.NewOrm()
 
@@ -209,6 +216,7 @@ func GetPermission(username, projectName string) (string, error) {
 	}
 }
 
+// ToggleProjectPublicity toggles the publicity of the project.
 func ToggleProjectPublicity(projectID int64, publicity int) error {
 	o := orm.NewOrm()
 	sql := "update project set public = ? where project_id = ?"
@@ -216,6 +224,7 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
+// QueryRelevantProjects returns all projects that the user is a member of.
 func QueryRelevantProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `SELECT distinct p.project_id, p.name, p.public FROM registry.project p 
