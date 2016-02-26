@@ -419,6 +419,24 @@ jQuery(function(){
 				$("#spnFilterOption input[name=chkOperation]").prop("checked", $(this).prop("checked"));
 			});
 		
+		    $("#spnFilterOption input[name=chkOperation]").on("click", function(){
+				if(!$(this).prop("checked")){
+					$("#spnFilterOption input[name=chkAll]").prop("checked", false);
+				}
+				
+				var selectedAll = true;
+	
+				$("#spnFilterOption input[name=chkOperation]").each(function(i, e){
+					if(!$(e).prop("checked")){
+						selectedAll = false;
+					}
+				});
+				
+				if(selectedAll){
+					$("#spnFilterOption input[name=chkAll]").prop("checked", true);
+				}
+			});
+		
 			function getKeyWords(){
 				var keywords = "";
 				var checkedItemList=$("#spnFilterOption input[name=chkOperation]:checked");
