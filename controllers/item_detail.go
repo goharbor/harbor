@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package controllers
 
 import (
@@ -25,21 +26,24 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ItemDetailController handles requet to /registry/detail, which shows the detail of a project.
 type ItemDetailController struct {
 	BaseController
 }
 
+// Get will check if user has permission to view a certain project, if not user will be redirected to signin or his homepage.
+// If the check is passed it renders the project detail page.
 func (idc *ItemDetailController) Get() {
 
-	projectId, _ := idc.GetInt64("project_id")
+	projectID, _ := idc.GetInt64("project_id")
 
-	if projectId <= 0 {
-		beego.Error("Invalid project id:", projectId)
+	if projectID <= 0 {
+		beego.Error("Invalid project id:", projectID)
 		idc.Redirect("/signIn", http.StatusFound)
 		return
 	}
 
-	project, err := dao.GetProjectById(projectId)
+	project, err := dao.GetProjectByID(projectID)
 
 	if err != nil {
 		beego.Error("Error occurred in GetProjectById:", err)
@@ -51,19 +55,19 @@ func (idc *ItemDetailController) Get() {
 		return
 	}
 
-	sessionUserId := idc.GetSession("userId")
+	sessionUserID := idc.GetSession("userId")
 
-	if project.Public != 1 && sessionUserId == nil {
+	if project.Public != 1 && sessionUserID == nil {
 		idc.Redirect("/signIn?uri="+url.QueryEscape(idc.Ctx.Input.URI()), http.StatusFound)
 		return
 	}
 
-	if sessionUserId != nil {
+	if sessionUserID != nil {
 
 		idc.Data["Username"] = idc.GetSession("username")
-		idc.Data["UserId"] = sessionUserId.(int)
+		idc.Data["UserId"] = sessionUserID.(int)
 
-		roleList, err := dao.GetUserProjectRoles(models.User{UserId: sessionUserId.(int)}, projectId)
+		roleList, err := dao.GetUserProjectRoles(models.User{UserID: sessionUserID.(int)}, projectID)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -75,14 +79,14 @@ func (idc *ItemDetailController) Get() {
 		}
 
 		if len(roleList) > 0 {
-			idc.Data["RoleId"] = roleList[0].RoleId
+			idc.Data["RoleId"] = roleList[0].RoleID
 		}
 	}
 
-	idc.Data["ProjectId"] = project.ProjectId
+	idc.Data["ProjectId"] = project.ProjectID
 	idc.Data["ProjectName"] = project.Name
 	idc.Data["OwnerName"] = project.OwnerName
-	idc.Data["OwnerId"] = project.OwnerId
+	idc.Data["OwnerId"] = project.OwnerID
 
 	idc.Data["HarborRegUrl"] = os.Getenv("HARBOR_REG_URL")
 	idc.Data["RepoName"] = idc.GetString("repo_name")

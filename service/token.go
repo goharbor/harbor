@@ -12,14 +12,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package service
 
 import (
 	"log"
 	"net/http"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils"
 
@@ -27,12 +28,15 @@ import (
 	"github.com/docker/distribution/registry/auth/token"
 )
 
-type AuthController struct {
+// TokenHandler handles request on /service/token, which is the auth provider for registry.
+type TokenHandler struct {
 	beego.Controller
 }
 
-//handle request
-func (a *AuthController) Auth() {
+// Get handles GET request, it checks the http header for user credentials
+// and parse service and scope based on docker registry v2 standard,
+// checkes the permission agains local DB and generates jwt token.
+func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
 
@@ -56,7 +60,7 @@ func (a *AuthController) Auth() {
 	a.serveToken(username, service, access)
 }
 
-func (a *AuthController) serveToken(username, service string, access []*token.ResourceActions) {
+func (a *TokenHandler) serveToken(username, service string, access []*token.ResourceActions) {
 	writer := a.Ctx.ResponseWriter
 	//create token
 	rawToken, err := svc_utils.MakeToken(username, service, access)
@@ -72,14 +76,14 @@ func (a *AuthController) serveToken(username, service string, access []*token.Re
 }
 
 func authenticate(principal, password string) bool {
-	user, err := opt_auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		log.Printf("Error occurred in UserLogin: %v", err)
 		return false
 	}
 	if user == nil {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }

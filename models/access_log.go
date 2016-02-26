@@ -12,20 +12,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package models
 
 import (
 	"time"
 )
 
+// AccessLog holds information about logs which are used to record the actions that user take to the resourses.
 type AccessLog struct {
-	LogId     int
-	UserId    int
-	ProjectId int64
-	RepoName  string
-	Guid      string
-	Operation string
-	OpTime    time.Time
+	LogID     int       `orm:"column(log_id)" json:"LogId"`
+	UserID    int       `orm:"column(user_id)"  json:"UserId"`
+	ProjectID int64     `orm:"column(project_id)"  json:"ProjectId"`
+	RepoName  string    `orm:"column(repo_name)"`
+	GUID      string    `orm:"column(GUID)"  json:"Guid"`
+	Operation string    `orm:"column(operation)"`
+	OpTime    time.Time `orm:"column(op_time)"`
 	Username  string
 	Keywords  string
 

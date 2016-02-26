@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package dao
 
 import (
@@ -25,6 +26,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// GetUser ...
 func GetUser(query models.User) (*models.User, error) {
 
 	o := orm.NewOrm()
@@ -38,9 +40,9 @@ func GetUser(query models.User) (*models.User, error) {
 		from user u
 		where deleted = 0 `
 	queryParam := make([]interface{}, 1)
-	if query.UserId != 0 {
+	if query.UserID != 0 {
 		sql += ` and user_id = ? `
-		queryParam = append(queryParam, query.UserId)
+		queryParam = append(queryParam, query.UserID)
 	}
 
 	if query.Username != "" {
@@ -48,9 +50,9 @@ func GetUser(query models.User) (*models.User, error) {
 		queryParam = append(queryParam, query.Username)
 	}
 
-	if query.ResetUuid != "" {
+	if query.ResetUUID != "" {
 		sql += ` and reset_uuid = ? `
-		queryParam = append(queryParam, query.ResetUuid)
+		queryParam = append(queryParam, query.ResetUUID)
 	}
 
 	var u []models.User
@@ -65,6 +67,7 @@ func GetUser(query models.User) (*models.User, error) {
 	}
 }
 
+// LoginByDb is used for user to login with database auth mode.
 func LoginByDb(auth models.AuthModel) (*models.User, error) {
 
 	query := models.User{Username: auth.Principal, Email: auth.Principal}
@@ -84,6 +87,7 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 
 }
 
+// ListUsers lists all users according to different conditions.
 func ListUsers(query models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
@@ -106,15 +110,16 @@ func ListUsers(query models.User) ([]models.User, error) {
 	return u, err
 }
 
+// ToggleUserAdminRole gives a user admim role.
 func ToggleUserAdminRole(u models.User) error {
 
-	projectRole := models.ProjectRole{PrId: 1} //admin project role
+	projectRole := models.ProjectRole{PrID: 1} //admin project role
 
 	o := orm.NewOrm()
 
 	var pr []models.ProjectRole
 
-	n, err := o.Raw(`select user_id from user_project_role where user_id = ? and pr_id = ? `, u.UserId, projectRole.PrId).QueryRows(&pr)
+	n, err := o.Raw(`select user_id from user_project_role where user_id = ? and pr_id = ? `, u.UserID, projectRole.PrID).QueryRows(&pr)
 	if err != nil {
 		return err
 	}
@@ -131,20 +136,21 @@ func ToggleUserAdminRole(u models.User) error {
 		return err
 	}
 	defer p.Close()
-	_, err = p.Exec(u.UserId, projectRole.PrId)
+	_, err = p.Exec(u.UserID, projectRole.PrID)
 
 	return err
 }
 
+// ChangeUserPassword ...
 func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	o := orm.NewOrm()
 	var err error
 	var r sql.Result
 	if len(oldPassword) == 0 {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
-		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId).Exec()
+		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID).Exec()
 	} else if len(oldPassword) == 1 {
-		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserId, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
 		if err != nil {
 			return err
 		}
@@ -161,9 +167,10 @@ func ChangeUserPassword(u models.User, oldPassword ...string) error {
 	return err
 }
 
+// ResetUserPassword ...
 func ResetUserPassword(u models.User) error {
 	o := orm.NewOrm()
-	r, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUuid).Exec()
+	r, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUUID).Exec()
 	if err != nil {
 		return err
 	}
@@ -177,12 +184,14 @@ func ResetUserPassword(u models.User) error {
 	return err
 }
 
-func UpdateUserResetUuid(u models.User) error {
+// UpdateUserResetUUID ...
+func UpdateUserResetUUID(u models.User) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set reset_uuid=? where email=?`, u.ResetUuid, u.Email).Exec()
+	_, err := o.Raw(`update user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
 	return err
 }
 
+// CheckUserPassword checks whether the password is correct.
 func CheckUserPassword(query models.User) (*models.User, error) {
 
 	currentUser, err := GetUser(query)
@@ -199,10 +208,10 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 
 	queryParam := make([]interface{}, 1)
 
-	if query.UserId != 0 {
+	if query.UserID != 0 {
 		sql += ` and password = ? and user_id = ?`
 		queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
-		queryParam = append(queryParam, query.UserId)
+		queryParam = append(queryParam, query.UserID)
 	} else {
 		sql += ` and username = ? and password = ?`
 		queryParam = append(queryParam, currentUser.Username)
@@ -223,8 +232,9 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 	}
 }
 
-func DeleteUser(userId int) error {
+// DeleteUser ...
+func DeleteUser(userID int) error {
 	o := orm.NewOrm()
-	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userId).Exec()
+	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
 	return err
 }

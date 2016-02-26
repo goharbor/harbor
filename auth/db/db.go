@@ -12,18 +12,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package db
 
 import (
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 )
 
-type DbAuth struct{}
+// Auth implements Authenticator interface to authenticate user against DB.
+type Auth struct{}
 
-func (d *DbAuth) Validate(auth models.AuthModel) (*models.User, error) {
-	u, err := dao.LoginByDb(auth)
+// Authenticate calls dao to authenticate user.
+func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
+	u, err := dao.LoginByDb(m)
 	if err != nil {
 		return nil, err
 	}
@@ -31,5 +34,5 @@ func (d *DbAuth) Validate(auth models.AuthModel) (*models.User, error) {
 }
 
 func init() {
-	opt_auth.Register("db_auth", &DbAuth{})
+	auth.Register("db_auth", &Auth{})
 }

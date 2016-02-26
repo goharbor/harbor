@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package controllers
 
 import (
@@ -25,10 +26,12 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// RegisterController handles request to /register
 type RegisterController struct {
 	BaseController
 }
 
+// Get renders the Sign In page, it only works if the auth mode is set to db_auth
 func (rc *RegisterController) Get() {
 	authMode := os.Getenv("AUTH_MODE")
 	if authMode == "" || authMode == "db_auth" {
@@ -38,6 +41,7 @@ func (rc *RegisterController) Get() {
 	}
 }
 
+// SignUp insert data into DB based on data in form.
 func (rc *CommonController) SignUp() {
 	username := strings.TrimSpace(rc.GetString("username"))
 	email := strings.TrimSpace(rc.GetString("email"))
@@ -54,6 +58,7 @@ func (rc *CommonController) SignUp() {
 	}
 }
 
+// UserExists checks if user exists when user input value in sign in form.
 func (rc *CommonController) UserExists() {
 	target := rc.GetString("target")
 	value := rc.GetString("value")

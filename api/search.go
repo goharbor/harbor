@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
 
 import (
@@ -27,24 +28,26 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// SearchAPI handles requesst to /api/search
 type SearchAPI struct {
 	BaseAPI
 }
 
-type SearchResult struct {
+type searchResult struct {
 	Project    []map[string]interface{} `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
 }
 
+// Get ...
 func (n *SearchAPI) Get() {
-	userId, ok := n.GetSession("userId").(int)
+	userID, ok := n.GetSession("userId").(int)
 	if !ok {
-		userId = dao.NON_EXIST_USER_ID
+		userID = dao.NonExistUserID
 	}
 	keyword := n.GetString("q")
-	projects, err := dao.QueryRelevantProjects(userId)
+	projects, err := dao.QueryRelevantProjects(userID)
 	if err != nil {
-		beego.Error("Failed to get projects of user id:", userId, ", error:", err)
+		beego.Error("Failed to get projects of user id:", userID, ", error:", err)
 		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
 	}
 	projectSorter := &utils.ProjectSorter{Projects: projects}
@@ -57,7 +60,7 @@ func (n *SearchAPI) Get() {
 		}
 		if match {
 			entry := make(map[string]interface{})
-			entry["id"] = p.ProjectId
+			entry["id"] = p.ProjectID
 			entry["name"] = p.Name
 			entry["public"] = p.Public
 			projectResult = append(projectResult, entry)
@@ -71,7 +74,7 @@ func (n *SearchAPI) Get() {
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
-	result := &SearchResult{Project: projectResult, Repository: repositoryResult}
+	result := &searchResult{Project: projectResult, Repository: repositoryResult}
 	n.Data["json"] = result
 	n.ServeJSON()
 }
@@ -93,7 +96,7 @@ func filterRepositories(repositories []string, projects []models.Project, keywor
 			entry := make(map[string]interface{})
 			entry["repository_name"] = r.Name
 			entry["project_name"] = projects[j].Name
-			entry["project_id"] = projects[j].ProjectId
+			entry["project_id"] = projects[j].ProjectID
 			entry["project_public"] = projects[j].Public
 			result = append(result, entry)
 		} else {

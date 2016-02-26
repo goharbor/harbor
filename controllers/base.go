@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package controllers
 
 import (
@@ -23,14 +24,17 @@ import (
 	"github.com/beego/i18n"
 )
 
+// CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
 type CommonController struct {
 	BaseController
 }
 
+// Render returns nil.
 func (c *CommonController) Render() error {
 	return nil
 }
 
+// BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
@@ -42,14 +46,15 @@ type langType struct {
 }
 
 const (
-	DEFAULT_LANG = "en-US"
+	defaultLang = "en-US"
 )
 
 var supportLanguages map[string]langType
 
+// Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
 
-	var lang string = ""
+	var lang string
 	al := b.Ctx.Request.Header.Get("Accept-Language")
 
 	if len(al) > 4 {
@@ -60,7 +65,7 @@ func (b *BaseController) Prepare() {
 	}
 
 	if _, exist := supportLanguages[lang]; exist == false { //Check if support the request language.
-		lang = DEFAULT_LANG //Set default language if not supported.
+		lang = defaultLang //Set default language if not supported.
 	}
 
 	sessionLang := b.GetSession("lang")
@@ -88,8 +93,8 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	sessionUserId := b.GetSession("userId")
-	if sessionUserId != nil {
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID != nil {
 		b.Data["Username"] = b.GetSession("username")
 	}
 	authMode := os.Getenv("AUTH_MODE")
@@ -99,6 +104,7 @@ func (b *BaseController) Prepare() {
 	b.Data["AuthMode"] = authMode
 }
 
+// ForwardTo setup layout and template for content for a page.
 func (b *BaseController) ForwardTo(pageTitle string, pageName string) {
 	b.Layout = "segment/base-layout.tpl"
 	b.TplName = "segment/base-layout.tpl"

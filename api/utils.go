@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
 
 import (
@@ -21,8 +22,8 @@ import (
 	"github.com/astaxie/beego"
 )
 
-func CheckProjectPermission(userId int, projectId int64) bool {
-	exist, err := dao.IsAdminRole(userId)
+func checkProjectPermission(userID int, projectID int64) bool {
+	exist, err := dao.IsAdminRole(userID)
 	if err != nil {
 		beego.Error("Error occurred in IsAdminRole:", err)
 		return false
@@ -30,7 +31,7 @@ func CheckProjectPermission(userId int, projectId int64) bool {
 	if exist {
 		return true
 	}
-	roleList, err := dao.GetUserProjectRoles(models.User{UserId: userId}, projectId)
+	roleList, err := dao.GetUserProjectRoles(models.User{UserID: userID}, projectID)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err)
 		return false
@@ -38,14 +39,14 @@ func CheckProjectPermission(userId int, projectId int64) bool {
 	return len(roleList) > 0
 }
 
-func CheckUserExists(name string) int {
+func checkUserExists(name string) int {
 	u, err := dao.GetUser(models.User{Username: name})
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
 		return 0
 	}
 	if u != nil {
-		return u.UserId
+		return u.UserID
 	}
 	return 0
 }

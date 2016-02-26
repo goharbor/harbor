@@ -12,39 +12,45 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package controllers
 
 import (
 	"net/http"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 
 	"github.com/astaxie/beego"
 )
 
+// IndexController handles request to /
 type IndexController struct {
 	BaseController
 }
 
+// Get renders the index page.
 func (c *IndexController) Get() {
 	c.Data["Username"] = c.GetSession("username")
 	c.ForwardTo("page_title_index", "index")
 }
 
+// SignInController handles request to /signIn
 type SignInController struct {
 	BaseController
 }
 
+// Get renders Sign In page.
 func (sic *SignInController) Get() {
 	sic.ForwardTo("page_title_sign_in", "sign-in")
 }
 
+// Login handles login request from UI.
 func (c *CommonController) Login() {
 	principal := c.GetString("principal")
 	password := c.GetString("password")
 
-	user, err := opt_auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		beego.Error("Error occurred in UserLogin:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -54,10 +60,11 @@ func (c *CommonController) Login() {
 		c.CustomAbort(http.StatusUnauthorized, "")
 	}
 
-	c.SetSession("userId", user.UserId)
+	c.SetSession("userId", user.UserID)
 	c.SetSession("username", user.Username)
 }
 
+// SwitchLanguage handles UI request to switch between different languages and re-render template based on language.
 func (c *CommonController) SwitchLanguage() {
 	lang := c.GetString("lang")
 	if lang == "en-US" || lang == "zh-CN" {
@@ -67,6 +74,7 @@ func (c *CommonController) SwitchLanguage() {
 	c.Redirect(c.Ctx.Request.Header.Get("Referer"), http.StatusFound)
 }
 
+// Logout handles UI request to logout.
 func (c *CommonController) Logout() {
 	c.DestroySession()
 }

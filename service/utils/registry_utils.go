@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package utils
 
 import (
@@ -24,7 +25,8 @@ import (
 	"strings"
 )
 
-func BuildRegistryUrl(segments ...string) string {
+// BuildRegistryURL ...
+func BuildRegistryURL(segments ...string) string {
 	registryURL := os.Getenv("REGISTRY_URL")
 	if registryURL == "" {
 		registryURL = "http://localhost:5000"
@@ -40,7 +42,9 @@ func BuildRegistryUrl(segments ...string) string {
 	return url
 }
 
-func RegistryApiGet(url, username string) ([]byte, error) {
+// RegistryAPIGet triggers GET request to the URL which is the endpoint of registry and returns the response body.
+// It will attach a valid jwt token to the request if registry requires.
+func RegistryAPIGet(url, username string) ([]byte, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
