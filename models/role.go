@@ -22,7 +22,7 @@ const (
 )
 
 type Role struct {
-	RoleID   int    `json:"role_id", orm:"column(role_id)"`
-	RoleCode string `json:"role_code, orm:"column(role_code)""`
-	Name     string `json:"role_name", orm:"column(name)"`
+	RoleID   int    `json:"role_id" orm:"column(role_id)"`
+	RoleCode string `json:"role_code" orm:"column(role_code)"`
+	Name     string `json:"role_name" orm:"column(name)"`
 }
