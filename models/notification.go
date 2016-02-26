@@ -18,10 +18,12 @@ import (
 	"time"
 )
 
+// Notification holds all events.
 type Notification struct {
 	Events []Event
 }
 
+// Event holds the details of a event.
 type Event struct {
 	ID        string `json:"Id"`
 	TimeStamp time.Time
@@ -31,6 +33,7 @@ type Event struct {
 	Actor     *Actor
 }
 
+// Target holds information about the target of a event.
 type Target struct {
 	MediaType  string
 	Digest     string
@@ -38,10 +41,12 @@ type Target struct {
 	URL        string `json:"Url"`
 }
 
+// Actor holds information about actor.
 type Actor struct {
 	Name string
 }
 
+// Request holds information about a request.
 type Request struct {
 	ID        string `json:"Id"`
 	Method    string

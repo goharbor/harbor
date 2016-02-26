@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+// AccessLog holds information about logs which are used to record the actions that user take to the resourses.
 type AccessLog struct {
 	LogID     int       `orm:"column(log_id)" json:"LogId"`
 	UserID    int       `orm:"column(user_id)"  json:"UserId"`

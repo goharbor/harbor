@@ -20,6 +20,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// GetUserProjectRoles returns roles that the user has according to the project.
 func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role, error) {
 
 	o := orm.NewOrm()
@@ -52,6 +53,7 @@ func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role,
 	return roleList, nil
 }
 
+// IsAdminRole returns whether the user  is admin.
 func IsAdminRole(userID int) (bool, error) {
 	//role_id == 1 means the user is system admin
 	userQuery := models.User{UserID: userID, RoleID: models.SYSADMIN}

@@ -23,9 +23,10 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" //register mysql driver
 )
 
+// NonExistUserID : if a user does not exist, the ID of the user will be 0.
 const NonExistUserID = 0
 
 func isIllegalLength(s string, min int, max int) bool {
@@ -47,6 +48,7 @@ func isContainIllegalChar(s string, illegalChar []string) bool {
 	return false
 }
 
+// GenerateRandomString generates a random string
 func GenerateRandomString() (string, error) {
 	o := orm.NewOrm()
 	var uuid string
@@ -58,6 +60,7 @@ func GenerateRandomString() (string, error) {
 
 }
 
+//InitDB initializes the database
 func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	addr := os.Getenv("MYSQL_HOST")

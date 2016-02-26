@@ -20,6 +20,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// GetUserByProject gets all members of the project.
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
