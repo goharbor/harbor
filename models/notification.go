@@ -23,7 +23,7 @@ type Notification struct {
 }
 
 type Event struct {
-	ID        string
+	ID        string `json:"Id"`
 	TimeStamp time.Time
 	Action    string
 	Target    *Target
@@ -35,7 +35,7 @@ type Target struct {
 	MediaType  string
 	Digest     string
 	Repository string
-	URL        string
+	URL        string `json:"Url"`
 }
 
 type Actor struct {
@@ -43,7 +43,7 @@ type Actor struct {
 }
 
 type Request struct {
-	ID        string
+	ID        string `json:"Id"`
 	Method    string
 	UserAgent string
 }

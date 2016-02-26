@@ -16,7 +16,6 @@ package dao
 
 import (
 	"fmt"
-	//	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -116,11 +115,8 @@ func TestMain(m *testing.M) {
 	os.Setenv("MYSQL_USR", dbUser)
 	os.Setenv("MYSQL_PWD", dbPassword)
 	os.Setenv("AUTH_MODE", "db_auth")
-	fmt.Println("a")
 	InitDB()
-	fmt.Println("b")
 	clearUp(username)
-	fmt.Println("c")
 	os.Exit(m.Run())
 
 }

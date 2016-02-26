@@ -15,7 +15,7 @@
 package models
 
 type ProjectRole struct {
-	PrID      int   `orm:"column(pr_id)"`
-	ProjectID int64 `orm:"column(project_id)"`
-	RoleID    int   `orm:"column(role_id)"`
+	PrID      int   `orm:"column(pr_id)" json:"PrId"`
+	ProjectID int64 `orm:"column(project_id)" json:"ProjectId"`
+	RoleID    int   `orm:"column(role_id)" json:"RoleId"`
 }

@@ -19,13 +19,13 @@ import (
 )
 
 type Project struct {
-	ProjectID       int64     `orm:"column(project_id)"`
-	OwnerID         int       `orm:"column(owner_id)"`
+	ProjectID       int64     `orm:"column(project_id)" json:"ProjectId"`
+	OwnerID         int       `orm:"column(owner_id)" json:"OwnerId"`
 	Name            string    `orm:"column(name)"`
 	CreationTime    time.Time `orm:"column(creation_time)"`
 	CreationTimeStr string
 	Deleted         int `orm:"column(deleted)"`
-	UserID          int
+	UserID          int `json:"UserId"`
 	OwnerName       string
 	Public          int `orm:"column(public)"`
 	//This field does not have correspondent column in DB, this is just for UI to disable button

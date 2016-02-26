@@ -15,7 +15,7 @@
 package models
 
 type UserProjectRole struct {
-	UprID  int   `orm:"column(upr_id)"`
-	UserID int   `orm:"column(user_id)"`
-	PrID   int64 `orm:"column(pr_id)"`
+	UprID  int   `orm:"column(upr_id)" json:"UprId"`
+	UserID int   `orm:"column(user_id)" json:"UserId"`
+	PrID   int64 `orm:"column(pr_id)" json:"PrId"`
 }

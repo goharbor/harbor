@@ -19,11 +19,11 @@ import (
 )
 
 type AccessLog struct {
-	LogID     int       `orm:"column(log_id)"`
-	UserID    int       `orm:"column(user_id)"`
-	ProjectID int64     `orm:"column(project_id)"`
+	LogID     int       `orm:"column(log_id)" json:"LogId"`
+	UserID    int       `orm:"column(user_id)"  json:"UserId"`
+	ProjectID int64     `orm:"column(project_id)"  json:"ProjectId"`
 	RepoName  string    `orm:"column(repo_name)"`
-	GUID      string    `orm:"column(GUID)"`
+	GUID      string    `orm:"column(GUID)"  json:"Guid"`
 	Operation string    `orm:"column(operation)"`
 	OpTime    time.Time `orm:"column(op_time)"`
 	Username  string

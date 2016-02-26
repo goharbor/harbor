@@ -15,7 +15,7 @@
 package models
 
 type User struct {
-	UserID       int    `orm:"column(user_id)"`
+	UserID       int    `orm:"column(user_id)" json:"UserId"`
 	Username     string `orm:"column(username)"`
 	Email        string `orm:"column(email)"`
 	Password     string `orm:"column(password)"`
@@ -23,9 +23,9 @@ type User struct {
 	Comment      string `orm:"column(comment)"`
 	Deleted      int    `orm:"column(deleted)"`
 	Rolename     string
-	RoleID       int
+	RoleID       int `json:"RoleId"`
 	RoleList     []Role
 	HasAdminRole int
-	ResetUUID    string `orm:"column(reset_uuid)"`
+	ResetUUID    string `orm:"column(reset_uuid)" json:"ResetUuid"`
 	Salt         string `orm:"column(salt)"`
 }
