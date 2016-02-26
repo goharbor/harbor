@@ -103,7 +103,7 @@ func (ra *RepositoryAPI) Get() {
 }
 
 type Tag struct {
-	Name string   `json: "name"`
+	Name string   `json:"name"`
 	Tags []string `json:"tags"`
 }
 

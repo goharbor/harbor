@@ -42,7 +42,7 @@ func updateInitPassword(userID int, password string) error {
 	}
 	if user == nil {
 		log.Printf("User id: %d does not exist.", userID)
-		return fmt.Errorf("User id: %s does not exist.", userID)
+		return fmt.Errorf("User id: %d does not exist.", userID)
 	} else if user.Salt == "" {
 		salt, err := dao.GenerateRandomString()
 		if err != nil {

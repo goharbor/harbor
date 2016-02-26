@@ -15,6 +15,6 @@
 package models
 
 type Tag struct {
-	Version string `json:version`
-	ImageID string `json:image_id`
+	Version string `json:"version"`
+	ImageID string `json:"image_id"`
 }

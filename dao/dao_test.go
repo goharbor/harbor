@@ -108,9 +108,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("environment variable DB_PORT is not set")
 	}
 	dbPassword := os.Getenv("DB_PWD")
-	if len(dbPassword) == 0 {
-		log.Fatalf("environment variable DB_PWD is not set")
-	}
 
 	fmt.Printf("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
@@ -468,14 +465,14 @@ func TestGetUserByProject(t *testing.T) {
 	}
 	users, err := GetUserByProject(pid, u1)
 	if err != nil {
-		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", u1)
+		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", err, pid, u1)
 	}
 	if len(users) != 1 {
 		t.Errorf("unexpected length of user list, expected: 1, the users list: %+v", users)
 	}
 	users, err = GetUserByProject(pid, u2)
 	if err != nil {
-		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", u2)
+		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", err, pid, u2)
 	}
 	if len(users) != 0 {
 		t.Errorf("unexpected length of user list, expected: 0, the users list: %+v", users)
@@ -682,6 +679,6 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("Error occurred in GetUser: %v", err)
 	}
 	if user != nil {
-		t.Error("user is not nil after deletion, user: %+v", user)
+		t.Errorf("user is not nil after deletion, user: %+v", user)
 	}
 }

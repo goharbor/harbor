@@ -22,7 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -72,25 +71,6 @@ func InitDB() {
 	password := os.Getenv("MYSQL_ENV_MYSQL_ROOT_PASSWORD")
 	if len(password) == 0 {
 		password = os.Getenv("MYSQL_PWD")
-	}
-
-	var flag = true
-	if addr == "" {
-		beego.Error("Unset env of MYSQL_HOST")
-		flag = false
-	} else if port == "" {
-		beego.Error("Unset env of MYSQL_PORT_3306_TCP_PORT")
-		flag = false
-	} else if username == "" {
-		beego.Error("Unset env of MYSQL_USR")
-		flag = false
-	} else if password == "" {
-		beego.Error("Unset env of MYSQL_PWD")
-		flag = false
-	}
-
-	if !flag {
-		os.Exit(1)
 	}
 
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"

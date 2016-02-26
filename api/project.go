@@ -87,7 +87,7 @@ func (p *ProjectAPI) Post() {
 	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
 	err = dao.AddProject(project)
 	if err != nil {
-		beego.Error("Failed to add project, error: %v", err)
+		beego.Error("Failed to add project, error: ", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
 }
