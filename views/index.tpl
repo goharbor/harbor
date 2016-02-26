@@ -31,6 +31,7 @@
 	   <p>{{i18n .Lang "index_desc_2"}}</p>
 	   <p>{{i18n .Lang "index_desc_3"}}</p>
 	   <p>{{i18n .Lang "index_desc_4"}}</p>
+	   <p>{{i18n .Lang "index_desc_5"}}</p>
      </div>
    </div>
  </div> <!-- /container -->  
