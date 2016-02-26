@@ -23,23 +23,28 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// IndexController handles request to /
 type IndexController struct {
 	BaseController
 }
 
+// Get renders the index page.
 func (c *IndexController) Get() {
 	c.Data["Username"] = c.GetSession("username")
 	c.ForwardTo("page_title_index", "index")
 }
 
+// SignInController handles request to /signIn
 type SignInController struct {
 	BaseController
 }
 
+// Get renders Sign In page.
 func (sic *SignInController) Get() {
 	sic.ForwardTo("page_title_sign_in", "sign-in")
 }
 
+// Login handles login request from UI.
 func (c *CommonController) Login() {
 	principal := c.GetString("principal")
 	password := c.GetString("password")
@@ -58,6 +63,7 @@ func (c *CommonController) Login() {
 	c.SetSession("username", user.Username)
 }
 
+// SwitchLanguage handles UI request to switch between different languages and re-render template based on language.
 func (c *CommonController) SwitchLanguage() {
 	lang := c.GetString("lang")
 	if lang == "en-US" || lang == "zh-CN" {
@@ -67,6 +73,7 @@ func (c *CommonController) SwitchLanguage() {
 	c.Redirect(c.Ctx.Request.Header.Get("Referer"), http.StatusFound)
 }
 
+// Logout handles UI request to logout.
 func (c *CommonController) Logout() {
 	c.DestroySession()
 }

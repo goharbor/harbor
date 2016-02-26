@@ -29,10 +29,14 @@ import (
 	"github.com/mqu/openldap"
 )
 
+// Auth implements Authenticator interface to authenticate against LDAP
 type Auth struct{}
 
 const metaChars = "&|!=~*<>()"
 
+// Authenticate checks user's credential agains LDAP based on basedn template and LDAP URL,
+// if the check is successful a dummy record will be insert into DB, such that this user can
+// be associated to other entities in the system.
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	ldapURL := os.Getenv("LDAP_URL")

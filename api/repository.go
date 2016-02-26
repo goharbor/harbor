@@ -28,15 +28,17 @@ import (
 	"github.com/astaxie/beego"
 )
 
-//For repostiories, we won't check the session in this API due to search functionality, querying manifest will be contorlled by
-//the security of registry
-
+// RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
+// in the query string as the web framework can not parse the URL if it contains veriadic sectors.
+// For repostiories, we won't check the session in this API due to search functionality, querying manifest will be contorlled by
+// the security of registry
 type RepositoryAPI struct {
 	BaseAPI
 	userID   int
 	username string
 }
 
+// Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
 func (ra *RepositoryAPI) Prepare() {
 	userID, ok := ra.GetSession("userId").(int)
 	if !ok {
@@ -53,6 +55,7 @@ func (ra *RepositoryAPI) Prepare() {
 	}
 }
 
+// Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err0 := ra.GetInt64("project_id")
 	if err0 != nil {
@@ -70,7 +73,7 @@ func (ra *RepositoryAPI) Get() {
 		ra.RenderError(http.StatusNotFound, "")
 		return
 	}
-	if p.Public == 0 && !CheckProjectPermission(ra.userID, projectID) {
+	if p.Public == 0 && !checkProjectPermission(ra.userID, projectID) {
 		ra.RenderError(http.StatusForbidden, "")
 		return
 	}
@@ -102,23 +105,24 @@ func (ra *RepositoryAPI) Get() {
 	ra.ServeJSON()
 }
 
-type Tag struct {
+type tag struct {
 	Name string   `json:"name"`
 	Tags []string `json:"tags"`
 }
 
-type HistroyItem struct {
+type histroyItem struct {
 	V1Compatibility string `json:"v1Compatibility"`
 }
 
-type Manifest struct {
+type manifest struct {
 	Name          string        `json:"name"`
 	Tag           string        `json:"tag"`
 	Architecture  string        `json:"architecture"`
 	SchemaVersion int           `json:"schemaVersion"`
-	History       []HistroyItem `json:"history"`
+	History       []histroyItem `json:"history"`
 }
 
+// GetTags handles GET /api/repositories/tags
 func (ra *RepositoryAPI) GetTags() {
 
 	var tags []string
@@ -129,7 +133,7 @@ func (ra *RepositoryAPI) GetTags() {
 		beego.Error("Failed to get repo tags, repo name:", repoName, ", error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
 	} else {
-		t := Tag{}
+		t := tag{}
 		json.Unmarshal(result, &t)
 		tags = t.Tags
 	}
@@ -137,6 +141,7 @@ func (ra *RepositoryAPI) GetTags() {
 	ra.ServeJSON()
 }
 
+// GetManifests handles GET /api/repositories/manifests
 func (ra *RepositoryAPI) GetManifests() {
 	repoName := ra.GetString("repo_name")
 	tag := ra.GetString("tag")
@@ -149,7 +154,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
-	mani := Manifest{}
+	mani := manifest{}
 	err = json.Unmarshal(result, &mani)
 	if err != nil {
 		beego.Error("Failed to decode json from response for manifests, repo name:", repoName, ", tag:", tag, ", error:", err)

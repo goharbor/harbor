@@ -25,9 +25,10 @@ import (
 	"github.com/astaxie/beego/cache"
 )
 
+// Cache is the global cache in system.
 var Cache cache.Cache
 
-const CATALOG string = "catalog"
+const catalogKey string = "catalog"
 
 func init() {
 	var err error
@@ -37,6 +38,7 @@ func init() {
 	}
 }
 
+// RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	result, err := RegistryAPIGet(BuildRegistryURL("_catalog"), "")
 	if err != nil {
@@ -47,19 +49,20 @@ func RefreshCatalogCache() error {
 	if err != nil {
 		return err
 	}
-	Cache.Put(CATALOG, repoResp.Repositories, 600*time.Second)
+	Cache.Put(catalogKey, repoResp.Repositories, 600*time.Second)
 	return nil
 }
 
+// GetRepoFromCache get repository list from cache, it refreshes the cache if it's empty.
 func GetRepoFromCache() ([]string, error) {
 
-	result := Cache.Get(CATALOG)
+	result := Cache.Get(catalogKey)
 	if result == nil {
 		err := RefreshCatalogCache()
 		if err != nil {
 			return nil, err
 		}
-		cached := Cache.Get(CATALOG)
+		cached := Cache.Get(catalogKey)
 		if cached != nil {
 			return cached.([]string), nil
 		}

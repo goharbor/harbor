@@ -24,12 +24,16 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// Authenticator provides interface to authenticate user credentials.
 type Authenticator interface {
+
+	// Authenticate ...
 	Authenticate(m models.AuthModel) (*models.User, error)
 }
 
 var registry = make(map[string]Authenticator)
 
+// Register add different authenticators to registry map.
 func Register(name string, authenticator Authenticator) {
 	if _, dup := registry[name]; dup {
 		log.Printf("authenticator: %s has been registered", name)
@@ -38,6 +42,7 @@ func Register(name string, authenticator Authenticator) {
 	registry[name] = authenticator
 }
 
+// Login authenticates user credentials based on setting.
 func Login(m models.AuthModel) (*models.User, error) {
 
 	var authMode = os.Getenv("AUTH_MODE")

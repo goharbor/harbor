@@ -36,6 +36,7 @@ const (
 	expiration = 5 //minute
 )
 
+// GetResourceActions ...
 func GetResourceActions(scope string) []*token.ResourceActions {
 	var res []*token.ResourceActions
 	if scope == "" {
@@ -50,9 +51,8 @@ func GetResourceActions(scope string) []*token.ResourceActions {
 	return res
 }
 
-//Try to modify the action list in access based on permission
-//determine if the request needs to be authenticated.
-//for details see:https://github.com/docker/docker/issues/15640
+// FilterAccess modify the action list in access based on permission
+// determine if the request needs to be authenticated.
 func FilterAccess(username string, authenticated bool, a *token.ResourceActions) {
 
 	if a.Type == "registry" && a.Name == "catalog" {
@@ -98,7 +98,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 	log.Printf("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
 }
 
-//For the UI process to call, so it won't establish a https connection from UI to proxy.
+// GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
 func GenTokenForUI(username, service, scope string) (string, error) {
 	access := GetResourceActions(scope)
 	for _, a := range access {
@@ -107,6 +107,7 @@ func GenTokenForUI(username, service, scope string) (string, error) {
 	return MakeToken(username, service, access)
 }
 
+// MakeToken makes a valid jwt token based on parms.
 func MakeToken(username, service string, access []*token.ResourceActions) (string, error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {

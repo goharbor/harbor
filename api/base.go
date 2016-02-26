@@ -24,18 +24,22 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
 	beego.Controller
 }
 
+// Render returns nil as it won't render template
 func (b *BaseAPI) Render() error {
 	return nil
 }
 
+// RenderError provides shortcut to render http error
 func (b *BaseAPI) RenderError(code int, text string) {
 	http.Error(b.Ctx.ResponseWriter, text, code)
 }
 
+// DecodeJSONReq decodes a json request
 func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
@@ -44,6 +48,7 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	}
 }
 
+// ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
 
 	sessionUserID := b.GetSession("userId")

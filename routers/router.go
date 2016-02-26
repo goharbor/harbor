@@ -61,5 +61,5 @@ func init() {
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
-	beego.Router("/service/token", &service.AuthController{}, "get:Auth")
+	beego.Router("/service/token", &service.TokenHandler{})
 }

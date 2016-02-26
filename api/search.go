@@ -27,15 +27,17 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// SearchAPI handles requesst to /api/search
 type SearchAPI struct {
 	BaseAPI
 }
 
-type SearchResult struct {
+type searchResult struct {
 	Project    []map[string]interface{} `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
 }
 
+// Get ...
 func (n *SearchAPI) Get() {
 	userID, ok := n.GetSession("userId").(int)
 	if !ok {
@@ -71,7 +73,7 @@ func (n *SearchAPI) Get() {
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
-	result := &SearchResult{Project: projectResult, Repository: repositoryResult}
+	result := &searchResult{Project: projectResult, Repository: repositoryResult}
 	n.Data["json"] = result
 	n.ServeJSON()
 }

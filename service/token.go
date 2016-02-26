@@ -27,12 +27,15 @@ import (
 	"github.com/docker/distribution/registry/auth/token"
 )
 
-type AuthController struct {
+// TokenHandler handles request on /service/token, which is the auth provider for registry.
+type TokenHandler struct {
 	beego.Controller
 }
 
-//handle request
-func (a *AuthController) Auth() {
+// Get handles GET request, it checks the http header for user credentials
+// and parse service and scope based on docker registry v2 standard,
+// checkes the permission agains local DB and generates jwt token.
+func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
 
@@ -56,7 +59,7 @@ func (a *AuthController) Auth() {
 	a.serveToken(username, service, access)
 }
 
-func (a *AuthController) serveToken(username, service string, access []*token.ResourceActions) {
+func (a *TokenHandler) serveToken(username, service string, access []*token.ResourceActions) {
 	writer := a.Ctx.ResponseWriter
 	//create token
 	rawToken, err := svc_utils.MakeToken(username, service, access)

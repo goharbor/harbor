@@ -28,10 +28,12 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ChangePasswordController handles request to /changePassword
 type ChangePasswordController struct {
 	BaseController
 }
 
+// Get renders the page for user to change password.
 func (cpc *ChangePasswordController) Get() {
 	sessionUserID := cpc.GetSession("userId")
 	if sessionUserID == nil {
@@ -42,6 +44,7 @@ func (cpc *ChangePasswordController) Get() {
 	cpc.ForwardTo("page_title_change_password", "change-password")
 }
 
+// UpdatePassword handles UI request to update user's password, it only works when the auth mode is db_auth.
 func (cc *CommonController) UpdatePassword() {
 
 	sessionUserID := cc.GetSession("userId")
@@ -82,20 +85,23 @@ func (cc *CommonController) UpdatePassword() {
 	}
 }
 
+// ForgotPasswordController handles request to /forgotPassword
 type ForgotPasswordController struct {
 	BaseController
 }
 
-type MessageDetail struct {
+// Get Renders the page for user to input Email to reset password.
+func (fpc *ForgotPasswordController) Get() {
+	fpc.ForwardTo("page_title_forgot_password", "forgot-password")
+}
+
+type messageDetail struct {
 	Hint string
 	URL  string
 	UUID string
 }
 
-func (fpc *ForgotPasswordController) Get() {
-	fpc.ForwardTo("page_title_forgot_password", "forgot-password")
-}
-
+// SendEmail verifies the Email address and contact SMTP server to send reset password Email.
 func (cc *CommonController) SendEmail() {
 
 	email := cc.GetString("email")
@@ -133,7 +139,7 @@ func (cc *CommonController) SendEmail() {
 			beego.Error("Error occurred in GenerateRandomString:", err)
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
-		err = messageTemplate.Execute(message, MessageDetail{
+		err = messageTemplate.Execute(message, messageDetail{
 			Hint: cc.Tr("reset_email_hint"),
 			URL:  harborURL,
 			UUID: uuid,
@@ -170,10 +176,12 @@ func (cc *CommonController) SendEmail() {
 
 }
 
+// ResetPasswordController handles request to /resetPassword
 type ResetPasswordController struct {
 	BaseController
 }
 
+// Get checks if reset_uuid in the reset link is valid and render the result page for user to reset password.
 func (rpc *ResetPasswordController) Get() {
 
 	resetUUID := rpc.GetString("reset_uuid")
@@ -198,6 +206,7 @@ func (rpc *ResetPasswordController) Get() {
 	}
 }
 
+// ResetPassword handles request from the reset page and reset password
 func (cc *CommonController) ResetPassword() {
 
 	resetUUID := cc.GetString("reset_uuid")

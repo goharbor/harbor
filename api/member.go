@@ -24,6 +24,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ProjectMemberAPI handles request to /api/projects/{}/members/{}
 type ProjectMemberAPI struct {
 	BaseAPI
 	memberID      int
@@ -37,6 +38,7 @@ type memberReq struct {
 	Roles    []int  `json:"roles"`
 }
 
+// Prepare validates the URL and parms
 func (pma *ProjectMemberAPI) Prepare() {
 	pid, err := strconv.ParseInt(pma.Ctx.Input.Param(":pid"), 10, 64)
 	if err != nil {
@@ -71,9 +73,10 @@ func (pma *ProjectMemberAPI) Prepare() {
 	}
 }
 
+// Get ...
 func (pma *ProjectMemberAPI) Get() {
 	pid := pma.project.ProjectID
-	if !CheckProjectPermission(pma.currentUserID, pid) {
+	if !checkProjectPermission(pma.currentUserID, pid) {
 		beego.Warning("Current user, user id :", pma.currentUserID, "does not have permission for project, id:", pid)
 		pma.RenderError(http.StatusForbidden, "")
 		return
@@ -109,6 +112,7 @@ func (pma *ProjectMemberAPI) Get() {
 	pma.ServeJSON()
 }
 
+// Post ...
 func (pma *ProjectMemberAPI) Post() {
 	pid := pma.project.ProjectID
 	userQuery := models.User{UserID: pma.currentUserID, RoleID: models.PROJECTADMIN}
@@ -125,7 +129,7 @@ func (pma *ProjectMemberAPI) Post() {
 	var req memberReq
 	pma.DecodeJSONReq(&req)
 	username := req.Username
-	userID := CheckUserExists(username)
+	userID := checkUserExists(username)
 	if userID <= 0 {
 		beego.Warning("User does not exist, user name:", username)
 		pma.RenderError(http.StatusNotFound, "User does not exist")
@@ -152,6 +156,7 @@ func (pma *ProjectMemberAPI) Post() {
 	}
 }
 
+// Put ...
 func (pma *ProjectMemberAPI) Put() {
 	pid := pma.project.ProjectID
 	mid := pma.memberID
@@ -193,6 +198,7 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 }
 
+// Delete ...
 func (pma *ProjectMemberAPI) Delete() {
 	pid := pma.project.ProjectID
 	mid := pma.memberID

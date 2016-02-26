@@ -23,14 +23,17 @@ import (
 	"github.com/beego/i18n"
 )
 
+// CommonControler handles request from UI that doesn't expect a page, such as /login /logout ...
 type CommonController struct {
 	BaseController
 }
 
+// Render returns nil.
 func (c *CommonController) Render() error {
 	return nil
 }
 
+// BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
@@ -47,6 +50,7 @@ const (
 
 var supportLanguages map[string]langType
 
+// Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
 
 	var lang string
@@ -99,6 +103,7 @@ func (b *BaseController) Prepare() {
 	b.Data["AuthMode"] = authMode
 }
 
+// ForwardTo setup layout and template for content for a page.
 func (b *BaseController) ForwardTo(pageTitle string, pageName string) {
 	b.Layout = "segment/base-layout.tpl"
 	b.TplName = "segment/base-layout.tpl"

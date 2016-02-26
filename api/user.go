@@ -24,12 +24,14 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// UserAPI handles request to /api/users/{}
 type UserAPI struct {
 	BaseAPI
 	currentUserID int
 	userID        int
 }
 
+// Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 
 	ua.currentUserID = ua.ValidateUser()
@@ -56,6 +58,7 @@ func (ua *UserAPI) Prepare() {
 	}
 }
 
+// Get ...
 func (ua *UserAPI) Get() {
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
@@ -98,6 +101,7 @@ func (ua *UserAPI) Get() {
 	ua.ServeJSON()
 }
 
+// Put ...
 func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
@@ -113,6 +117,7 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 	dao.ToggleUserAdminRole(userQuery)
 }
 
+// Delete ...
 func (ua *UserAPI) Delete() {
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {

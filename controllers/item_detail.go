@@ -25,10 +25,13 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ItemDetailController handles requet to /registry/detail, which shows the detail of a project.
 type ItemDetailController struct {
 	BaseController
 }
 
+// Get will check if user has permission to view a certain project, if not user will be redirected to signin or his homepage.
+// If the check is passed it renders the project detail page.
 func (idc *ItemDetailController) Get() {
 
 	projectID, _ := idc.GetInt64("project_id")

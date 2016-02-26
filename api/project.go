@@ -28,6 +28,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
 	BaseAPI
 	userID    int
@@ -41,6 +42,7 @@ type projectReq struct {
 
 const projectNameMaxLen int = 30
 
+// Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
 	p.userID = p.ValidateUser()
 	idStr := p.Ctx.Input.Param(":id")
@@ -62,6 +64,7 @@ func (p *ProjectAPI) Prepare() {
 	}
 }
 
+// Post ...
 func (p *ProjectAPI) Post() {
 	var req projectReq
 	var public int
@@ -92,6 +95,7 @@ func (p *ProjectAPI) Post() {
 	}
 }
 
+// Head ...
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
 	result, err := dao.ProjectExists(projectName)
@@ -106,6 +110,7 @@ func (p *ProjectAPI) Head() {
 	}
 }
 
+// Get ...
 func (p *ProjectAPI) Get() {
 	queryProject := models.Project{UserID: p.userID}
 	projectName := p.GetString("project_name")
@@ -129,6 +134,7 @@ func (p *ProjectAPI) Get() {
 	p.ServeJSON()
 }
 
+// Put ...
 func (p *ProjectAPI) Put() {
 	var req projectReq
 	var public int
@@ -156,6 +162,7 @@ func (p *ProjectAPI) Put() {
 	}
 }
 
+// FilterAccessLog handles GET to /api/projects/{}/logs
 func (p *ProjectAPI) FilterAccessLog() {
 
 	var filter models.AccessLog
