@@ -42,7 +42,7 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	r, err := p.Exec(project.OwnerId, project.Name, project.Deleted, project.Public)
+	r, err := p.Exec(project.OwnerID, project.Name, project.Deleted, project.Public)
 	if err != nil {
 		return err
 	}
@@ -52,31 +52,31 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	projectAdminRole := models.ProjectRole{ProjectId: projectId, RoleId: models.PROJECTADMIN}
+	projectAdminRole := models.ProjectRole{ProjectID: projectId, RoleID: models.PROJECTADMIN}
 	_, err = AddProjectRole(projectAdminRole)
 	if err != nil {
 		return err
 	}
 
-	projectDeveloperRole := models.ProjectRole{ProjectId: projectId, RoleId: models.DEVELOPER}
+	projectDeveloperRole := models.ProjectRole{ProjectID: projectId, RoleID: models.DEVELOPER}
 	_, err = AddProjectRole(projectDeveloperRole)
 	if err != nil {
 		return err
 	}
 
-	projectGuestRole := models.ProjectRole{ProjectId: projectId, RoleId: models.GUEST}
+	projectGuestRole := models.ProjectRole{ProjectID: projectId, RoleID: models.GUEST}
 	_, err = AddProjectRole(projectGuestRole)
 	if err != nil {
 		return err
 	}
 
 	//Add all project roles, after that when assigning a user to a project just update the upr table
-	err = AddUserProjectRole(project.OwnerId, projectId, models.PROJECTADMIN)
+	err = AddUserProjectRole(project.OwnerID, projectId, models.PROJECTADMIN)
 	if err != nil {
 		return err
 	}
 
-	accessLog := models.AccessLog{UserId: project.OwnerId, ProjectId: projectId, RepoName: project.Name + "/", Guid: "N/A", Operation: "create", OpTime: time.Now()}
+	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectId, RepoName: project.Name + "/", GUID: "N/A", Operation: "create", OpTime: time.Now()}
 	err = AddAccessLog(accessLog)
 
 	return err
@@ -111,10 +111,10 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	if query.Public == 1 {
 		sql += ` and p.public = ?`
 		queryParam = append(queryParam, query.Public)
-	} else if isAdmin, _ := IsAdminRole(query.UserId); isAdmin == false {
+	} else if isAdmin, _ := IsAdminRole(query.UserID); isAdmin == false {
 		sql += ` and (p.owner_id = ? or u.user_id = ?) `
-		queryParam = append(queryParam, query.UserId)
-		queryParam = append(queryParam, query.UserId)
+		queryParam = append(queryParam, query.UserID)
+		queryParam = append(queryParam, query.UserID)
 	}
 
 	if query.Name != "" {

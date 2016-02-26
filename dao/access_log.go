@@ -32,7 +32,7 @@ func AddAccessLog(accessLog models.AccessLog) error {
 	}
 	defer p.Close()
 
-	_, err = p.Exec(accessLog.UserId, accessLog.ProjectId, accessLog.RepoName, accessLog.Guid, accessLog.Operation)
+	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.GUID, accessLog.Operation)
 
 	return err
 }
@@ -44,11 +44,11 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 		from access_log a left join user u on a.user_id = u.user_id
 		where a.project_id = ? `
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, accessLog.ProjectId)
+	queryParam = append(queryParam, accessLog.ProjectID)
 
-	if accessLog.UserId != 0 {
+	if accessLog.UserID != 0 {
 		sql += ` and a.user_id = ? `
-		queryParam = append(queryParam, accessLog.UserId)
+		queryParam = append(queryParam, accessLog.UserID)
 	}
 	if accessLog.Operation != "" {
 		sql += ` and a.operation = ? `

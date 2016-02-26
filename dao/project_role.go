@@ -27,7 +27,7 @@ func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 		return 0, err
 	}
 	defer p.Close()
-	r, err := p.Exec(projectRole.ProjectId, projectRole.RoleId)
+	r, err := p.Exec(projectRole.ProjectID, projectRole.RoleID)
 	if err != nil {
 		return 0, err
 	}
@@ -65,7 +65,7 @@ func AddUserProjectRole(userId int, projectId int64, roleId int) error {
 		}
 		prId = int(id)
 	} else if n > 0 {
-		prId = pr[0].PrId
+		prId = pr[0].PrID
 	}
 	p, err := o.Raw("insert into user_project_role (user_id, pr_id) values (?, ?)").Prepare()
 	if err != nil {

@@ -34,7 +34,7 @@ const (
 )
 
 func updateInitPassword(userID int, password string) error {
-	queryUser := models.User{UserId: userID}
+	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		log.Println("Failed to get user, userID:", userID)

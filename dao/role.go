@@ -32,15 +32,15 @@ func GetUserProjectRoles(userQuery models.User, projectId int64) ([]models.Role,
 		where u.deleted = 0 
 		  and u.user_id = ? `
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, userQuery.UserId)
+	queryParam = append(queryParam, userQuery.UserID)
 
 	if projectId > 0 {
 		sql += ` and pr.project_id = ? `
 		queryParam = append(queryParam, projectId)
 	}
-	if userQuery.RoleId > 0 {
+	if userQuery.RoleID > 0 {
 		sql += ` and r.role_id = ? `
-		queryParam = append(queryParam, userQuery.RoleId)
+		queryParam = append(queryParam, userQuery.RoleID)
 	}
 
 	var roleList []models.Role
@@ -54,7 +54,7 @@ func GetUserProjectRoles(userQuery models.User, projectId int64) ([]models.Role,
 
 func IsAdminRole(userId int) (bool, error) {
 	//role_id == 1 means the user is system admin
-	userQuery := models.User{UserId: userId, RoleId: models.SYSADMIN}
+	userQuery := models.User{UserID: userId, RoleID: models.SYSADMIN}
 	adminRoleList, err := GetUserProjectRoles(userQuery, 0)
 	if err != nil {
 		return false, err

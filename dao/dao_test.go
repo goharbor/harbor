@@ -266,12 +266,12 @@ func TestResetUserPassword(t *testing.T) {
 		t.Errorf("Error occurred in GenerateRandomString: %v", err)
 	}
 
-	err = UpdateUserResetUuid(models.User{ResetUuid: uuid, Email: currentUser.Email})
+	err = UpdateUserResetUuid(models.User{ResetUUID: uuid, Email: currentUser.Email})
 	if err != nil {
 		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
 	}
 
-	err = ResetUserPassword(models.User{UserId: currentUser.UserId, Password: "HarborTester12345", ResetUuid: uuid, Salt: currentUser.Salt})
+	err = ResetUserPassword(models.User{UserID: currentUser.UserID, Password: "HarborTester12345", ResetUUID: uuid, Salt: currentUser.Salt})
 	if err != nil {
 		t.Errorf("Error occurred in ResetUserPassword: %v", err)
 	}
@@ -287,7 +287,7 @@ func TestResetUserPassword(t *testing.T) {
 }
 
 func TestChangeUserPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NewHarborTester12345", Salt: currentUser.Salt})
+	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
@@ -303,7 +303,7 @@ func TestChangeUserPassword(t *testing.T) {
 }
 
 func TestChangeUserPasswordWithOldPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
+	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
@@ -317,7 +317,7 @@ func TestChangeUserPasswordWithOldPassword(t *testing.T) {
 }
 
 func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserId: currentUser.UserId, Password: "NNewerHarborTester12345", Salt: currentUser.Salt}, "WrongNewerHarborTester12345")
+	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NNewerHarborTester12345", Salt: currentUser.Salt}, "WrongNewerHarborTester12345")
 	if err == nil {
 		t.Errorf("Error does not occurred due to old password is incorrect.")
 	}
@@ -331,7 +331,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := QueryRelevantProjects(currentUser.UserId)
+	projects, err := QueryRelevantProjects(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -346,7 +346,7 @@ func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
 func TestAddProject(t *testing.T) {
 
 	project := models.Project{
-		OwnerId:      currentUser.UserId,
+		OwnerID:      currentUser.UserID,
 		Name:         PROJECT_NAME,
 		CreationTime: time.Now(),
 		OwnerName:    currentUser.Username,
@@ -396,12 +396,12 @@ func getProjectRole(projectId int64) []models.Role {
 }
 
 func TestCheckProjectRoles(t *testing.T) {
-	r := getProjectRole(currentProject.ProjectId)
+	r := getProjectRole(currentProject.ProjectID)
 	if len(r) != 3 {
 		t.Errorf("The length of project roles is not 3")
 	}
-	if r[1].RoleId != 3 {
-		t.Errorf("The role id does not match, expected: 3, acutal: %d", r[1].RoleId)
+	if r[1].RoleID != 3 {
+		t.Errorf("The role id does not match, expected: 3, acutal: %d", r[1].RoleID)
 	}
 	if r[1].Name != "developer" {
 		t.Errorf("The name of role id: 3 should be developer, actual:%s", r[1].Name)
@@ -410,8 +410,8 @@ func TestCheckProjectRoles(t *testing.T) {
 
 func TestGetAccessLog(t *testing.T) {
 	queryAccessLog := models.AccessLog{
-		UserId:    currentUser.UserId,
-		ProjectId: currentProject.ProjectId,
+		UserID:    currentUser.UserID,
+		ProjectID: currentProject.ProjectID,
 	}
 	accessLogs, err := GetAccessLogs(queryAccessLog)
 	if err != nil {
@@ -428,12 +428,12 @@ func TestGetAccessLog(t *testing.T) {
 func TestProjectExists(t *testing.T) {
 	var exists bool
 	var err error
-	exists, err = ProjectExists(currentProject.ProjectId)
+	exists, err = ProjectExists(currentProject.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in ProjectExists: %v", err)
 	}
 	if !exists {
-		t.Errorf("The project with id: %d, does not exist", currentProject.ProjectId)
+		t.Errorf("The project with id: %d, does not exist", currentProject.ProjectID)
 	}
 	exists, err = ProjectExists(currentProject.Name)
 	if err != nil {
@@ -445,7 +445,7 @@ func TestProjectExists(t *testing.T) {
 }
 
 func TestGetProjectById(t *testing.T) {
-	id := currentProject.ProjectId
+	id := currentProject.ProjectID
 	p, err := GetProjectById(id)
 	if err != nil {
 		t.Errorf("Error in GetProjectById: %v, id: %d", err, id)
@@ -456,7 +456,7 @@ func TestGetProjectById(t *testing.T) {
 }
 
 func TestGetUserByProject(t *testing.T) {
-	pid := currentProject.ProjectId
+	pid := currentProject.ProjectID
 	u1 := models.User{
 		Username: "%%Tester%%",
 	}
@@ -481,7 +481,7 @@ func TestGetUserByProject(t *testing.T) {
 }
 
 func TestToggleProjectPublicity(t *testing.T) {
-	err := ToggleProjectPublicity(currentProject.ProjectId, PUBLICITY_ON)
+	err := ToggleProjectPublicity(currentProject.ProjectID, PUBLICITY_ON)
 	if err != nil {
 		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
@@ -491,9 +491,9 @@ func TestToggleProjectPublicity(t *testing.T) {
 		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
 	if currentProject.Public != PUBLICITY_ON {
-		t.Errorf("project, id: %d, its publicity is not on", currentProject.ProjectId)
+		t.Errorf("project, id: %d, its publicity is not on", currentProject.ProjectID)
 	}
-	err = ToggleProjectPublicity(currentProject.ProjectId, PUBLICITY_OFF)
+	err = ToggleProjectPublicity(currentProject.ProjectID, PUBLICITY_OFF)
 	if err != nil {
 		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
@@ -504,7 +504,7 @@ func TestToggleProjectPublicity(t *testing.T) {
 	}
 
 	if currentProject.Public != PUBLICITY_OFF {
-		t.Errorf("project, id: %d, its publicity is not off", currentProject.ProjectId)
+		t.Errorf("project, id: %d, its publicity is not off", currentProject.ProjectID)
 	}
 
 }
@@ -512,13 +512,13 @@ func TestToggleProjectPublicity(t *testing.T) {
 func TestIsProjectPublic(t *testing.T) {
 
 	if isPublic := IsProjectPublic(PROJECT_NAME); isPublic {
-		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectId)
+		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectID)
 	}
 }
 
 func TestQueryProject(t *testing.T) {
 	query1 := models.Project{
-		UserId: 1,
+		UserID: 1,
 	}
 	projects, err := QueryProject(query1)
 	if err != nil {
@@ -538,7 +538,7 @@ func TestQueryProject(t *testing.T) {
 		t.Errorf("Expecting get 1 project, but actual: %d, the list: %+v", len(projects), projects)
 	}
 	query3 := models.Project{
-		UserId: 9,
+		UserID: 9,
 	}
 	projects, err = QueryProject(query3)
 	if err != nil {
@@ -565,28 +565,28 @@ func getUserProjectRole(projectId int64, userId int) []models.Role {
 
 func TestGetUserProjectRoles(t *testing.T) {
 	user := *currentUser
-	r, err := GetUserProjectRoles(user, currentProject.ProjectId)
+	r, err := GetUserProjectRoles(user, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectId)
+		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectID)
 	}
 
 	//Get the size of current user project role.
 	if len(r) != 1 {
-		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserId, currentProject.ProjectId, len(r))
+		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserID, currentProject.ProjectID, len(r))
 	}
 
 	if r[0].Name != "projectAdmin" {
 		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
 	}
-	user.RoleId = 1
+	user.RoleID = 1
 
-	r, err = GetUserProjectRoles(user, currentProject.ProjectId)
+	r, err = GetUserProjectRoles(user, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectId)
+		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectID)
 	}
 	//Get the size of current user project role.
 	if len(r) != 0 {
-		t.Errorf("The user, id: %d, should not have role id: 1 in project id: %d, actual role list: %v", currentUser.UserId, currentProject.ProjectId, r)
+		t.Errorf("The user, id: %d, should not have role id: 1 in project id: %d, actual role list: %v", currentUser.UserID, currentProject.ProjectID, r)
 	}
 }
 
@@ -601,7 +601,7 @@ func TestProjectPermission(t *testing.T) {
 }
 
 func TestQueryRelevantProjects(t *testing.T) {
-	projects, err := QueryRelevantProjects(currentUser.UserId)
+	projects, err := QueryRelevantProjects(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -614,30 +614,30 @@ func TestQueryRelevantProjects(t *testing.T) {
 }
 
 func TestAssignUserProjectRole(t *testing.T) {
-	err := AddUserProjectRole(currentUser.UserId, currentProject.ProjectId, DEVELOPER)
+	err := AddUserProjectRole(currentUser.UserID, currentProject.ProjectID, DEVELOPER)
 	if err != nil {
 		t.Errorf("Error occurred in AddUserProjectRole: %v", err)
 	}
 
-	r := getUserProjectRole(currentProject.ProjectId, currentUser.UserId)
+	r := getUserProjectRole(currentProject.ProjectID, currentUser.UserID)
 
 	//Get the size of current user project role info.
 	if len(r) != 2 {
 		t.Errorf("Expected length of role list is 2, actual: %d", len(r))
 	}
 
-	if r[1].RoleId != 3 {
-		t.Errorf("Expected role id of the second role in list is 3, actual: %d", r[1].RoleId)
+	if r[1].RoleID != 3 {
+		t.Errorf("Expected role id of the second role in list is 3, actual: %d", r[1].RoleID)
 	}
 }
 
 func TestDeleteUserProjectRole(t *testing.T) {
-	err := DeleteUserProjectRoles(currentUser.UserId, currentProject.ProjectId)
+	err := DeleteUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in DeleteUserProjectRoles: %v", err)
 	}
 
-	r := getUserProjectRole(currentProject.ProjectId, currentUser.UserId)
+	r := getUserProjectRole(currentProject.ProjectID, currentUser.UserID)
 	//Get the size of current user project role.
 	if len(r) != 0 {
 		t.Errorf("Expected role list length is 0, actual: %d, role list: %+v", len(r), r)
@@ -649,28 +649,28 @@ func TestToggleAdminRole(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
-	isAdmin, err := IsAdminRole(currentUser.UserId)
+	isAdmin, err := IsAdminRole(currentUser.UserID)
 	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserId)
+		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
 	if !isAdmin {
-		t.Errorf("User is not admin after toggled, user id: %d", currentUser.UserId)
+		t.Errorf("User is not admin after toggled, user id: %d", currentUser.UserID)
 	}
 	err = ToggleUserAdminRole(*currentUser)
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
-	isAdmin, err = IsAdminRole(currentUser.UserId)
+	isAdmin, err = IsAdminRole(currentUser.UserID)
 	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserId)
+		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
 	if isAdmin {
-		t.Errorf("User is still admin after toggled, user id: %d", currentUser.UserId)
+		t.Errorf("User is still admin after toggled, user id: %d", currentUser.UserID)
 	}
 }
 
 func TestDeleteUser(t *testing.T) {
-	err := DeleteUser(currentUser.UserId)
+	err := DeleteUser(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in DeleteUser: %v", err)
 	}

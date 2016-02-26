@@ -84,7 +84,7 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
-	project := models.Project{OwnerId: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
+	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
 	err = dao.AddProject(project)
 	if err != nil {
 		beego.Error("Failed to add project, error: %v", err)
@@ -107,7 +107,7 @@ func (p *ProjectAPI) Head() {
 }
 
 func (p *ProjectAPI) Get() {
-	queryProject := models.Project{UserId: p.userID}
+	queryProject := models.Project{UserID: p.userID}
 	projectName := p.GetString("project_name")
 	if len(projectName) > 0 {
 		queryProject.Name = "%" + projectName + "%"
@@ -121,7 +121,7 @@ func (p *ProjectAPI) Get() {
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
-		if isProjectAdmin(p.userID, projectList[i].ProjectId) {
+		if isProjectAdmin(p.userID, projectList[i].ProjectID) {
 			projectList[i].Togglable = true
 		}
 	}
@@ -167,7 +167,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 	beginTime := time.Unix(filter.BeginTimestamp, 0)
 	endTime := time.Unix(filter.EndTimestamp, 0)
 
-	query := models.AccessLog{ProjectId: p.projectID, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
+	query := models.AccessLog{ProjectID: p.projectID, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
 
 	log.Printf("Query AccessLog: begin: %v, end: %v, keywords: %s", query.BeginTime, query.EndTime, query.Keywords)
 
@@ -181,7 +181,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 }
 
 func isProjectAdmin(userID int, pid int64) bool {
-	userQuery := models.User{UserId: userID, RoleId: models.PROJECTADMIN}
+	userQuery := models.User{UserID: userID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err, ", returning false")

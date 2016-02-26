@@ -57,7 +57,7 @@ func (n *SearchAPI) Get() {
 		}
 		if match {
 			entry := make(map[string]interface{})
-			entry["id"] = p.ProjectId
+			entry["id"] = p.ProjectID
 			entry["name"] = p.Name
 			entry["public"] = p.Public
 			projectResult = append(projectResult, entry)
@@ -93,7 +93,7 @@ func filterRepositories(repositories []string, projects []models.Project, keywor
 			entry := make(map[string]interface{})
 			entry["repository_name"] = r.Name
 			entry["project_name"] = projects[j].Name
-			entry["project_id"] = projects[j].ProjectId
+			entry["project_id"] = projects[j].ProjectID
 			entry["project_public"] = projects[j].Public
 			result = append(result, entry)
 		} else {

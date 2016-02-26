@@ -57,7 +57,7 @@ func (cc *CommonController) UpdatePassword() {
 		cc.CustomAbort(http.StatusBadRequest, "Old password is blank")
 	}
 
-	queryUser := models.User{UserId: sessionUserID.(int), Password: oldPassword}
+	queryUser := models.User{UserID: sessionUserID.(int), Password: oldPassword}
 	user, err := dao.CheckUserPassword(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in CheckUserPassword:", err)
@@ -71,7 +71,7 @@ func (cc *CommonController) UpdatePassword() {
 
 	password := cc.GetString("password")
 	if password != "" {
-		updateUser := models.User{UserId: sessionUserID.(int), Password: password, Salt: user.Salt}
+		updateUser := models.User{UserID: sessionUserID.(int), Password: password, Salt: user.Salt}
 		err = dao.ChangeUserPassword(updateUser, oldPassword)
 		if err != nil {
 			beego.Error("Error occurred in ChangeUserPassword:", err)
@@ -163,7 +163,7 @@ func (cc *CommonController) SendEmail() {
 			cc.CustomAbort(http.StatusInternalServerError, "send_email_failed")
 		}
 
-		user := models.User{ResetUuid: uuid, Email: email}
+		user := models.User{ResetUUID: uuid, Email: email}
 		dao.UpdateUserResetUuid(user)
 
 	}
@@ -183,7 +183,7 @@ func (rpc *ResetPasswordController) Get() {
 		return
 	}
 
-	queryUser := models.User{ResetUuid: resetUUID}
+	queryUser := models.User{ResetUUID: resetUUID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
@@ -191,7 +191,7 @@ func (rpc *ResetPasswordController) Get() {
 	}
 
 	if user != nil {
-		rpc.Data["ResetUuid"] = user.ResetUuid
+		rpc.Data["ResetUuid"] = user.ResetUUID
 		rpc.ForwardTo("page_title_reset_password", "reset-password")
 	} else {
 		rpc.Redirect("/", http.StatusFound)
@@ -205,7 +205,7 @@ func (cc *CommonController) ResetPassword() {
 		cc.CustomAbort(http.StatusBadRequest, "Reset uuid is blank.")
 	}
 
-	queryUser := models.User{ResetUuid: resetUUID}
+	queryUser := models.User{ResetUUID: resetUUID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
