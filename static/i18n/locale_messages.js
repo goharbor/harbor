@@ -82,7 +82,7 @@ var global_messages = {
 	 "zh-CN": "备注长度超出限制。（最长为20个字符）"
   },
   "comment_contains_illegal_chars" : {
-	 "en-US":  "Comment contains illegal characters.",
+	 "en-US":  "Comment contains illegal character(s).",
 	 "zh-CN": "备注包含不合法的字符。"
   },
   "project_name_is_required" : {
@@ -94,8 +94,8 @@ var global_messages = {
 	 "zh-CN": "项目名称至少要求 4个字符。"
   },
   "project_name_is_too_long" : {
-	 "en-US": "Project name is too long. (maximum is 30 characters)",
-	 "zh-CN": "项目名称内容长度超出字符数限制。（最长为30个字符）"
+	 "en-US": "Project name is too long. (maximum 30 characters)",
+	 "zh-CN": "项目名称长度超出限制。（最长为30个字符）"
   },
   "project_name_contains_illegal_chars" : {
 	 "en-US": "Project name contains illegal character(s).",
