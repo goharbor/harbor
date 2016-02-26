@@ -132,7 +132,7 @@ jQuery(function(){
 						409: i18n.getMessage("project_exists")
 					},
 					complete: function(jqXhr, status){
-						$("#btnClose").trigger("click");
+						$("#btnCancel").trigger("click");
 						listProject(null, currentPublic);
 					}
 				}).exec();
