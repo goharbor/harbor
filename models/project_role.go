@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package models
 
 // ProjectRole holds information about the relationship of project and role.
