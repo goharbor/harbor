@@ -57,7 +57,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer ldap.Close()
 
 	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
@@ -73,6 +72,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer ldap.Close()
 
 	scope := openldap.LDAP_SCOPE_SUBTREE // LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE
 	filter := "objectClass=*"

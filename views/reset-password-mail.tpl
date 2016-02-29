@@ -16,6 +16,6 @@
 <html>
   <body>
     <p>{{.Hint}}:</p>
-    <a href="{{.Url}}/resetPassword?reset_uuid={{.Uuid}}">{{.Url}}/resetPassword?reset_uuid={{.Uuid}}</a>
+    <a href="{{.URL}}/resetPassword?reset_uuid={{.UUID}}">{{.URL}}/resetPassword?reset_uuid={{.UUID}}</a>
   </body>
 </html>
