@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
 
 import (
@@ -24,19 +25,23 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
 	beego.Controller
 }
 
+// Render returns nil as it won't render template
 func (b *BaseAPI) Render() error {
 	return nil
 }
 
+// RenderError provides shortcut to render http error
 func (b *BaseAPI) RenderError(code int, text string) {
 	http.Error(b.Ctx.ResponseWriter, text, code)
 }
 
-func (b *BaseAPI) DecodeJsonReq(v interface{}) {
+// DecodeJSONReq decodes a json request
+func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
 		beego.Error("Error while decoding the json request:", err)
@@ -44,22 +49,23 @@ func (b *BaseAPI) DecodeJsonReq(v interface{}) {
 	}
 }
 
+// ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
 
-	sessionUserId := b.GetSession("userId")
-	if sessionUserId == nil {
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID == nil {
 		beego.Warning("No user id in session, canceling request")
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
-	userId := sessionUserId.(int)
-	u, err := dao.GetUser(models.User{UserId: userId})
+	userID := sessionUserID.(int)
+	u, err := dao.GetUser(models.User{UserID: userID})
 	if err != nil {
 		beego.Error("Error occurred in GetUser:", err)
 		b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if u == nil {
-		beego.Warning("User was deleted already, user id: ", userId, " canceling request.")
+		beego.Warning("User was deleted already, user id: ", userID, " canceling request.")
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
-	return userId
+	return userID
 }

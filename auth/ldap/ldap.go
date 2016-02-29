@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package ldap
 
 import (
@@ -21,35 +22,38 @@ import (
 	"os"
 	"strings"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
 
 	"github.com/astaxie/beego"
 	"github.com/mqu/openldap"
 )
 
-type LdapAuth struct{}
+// Auth implements Authenticator interface to authenticate against LDAP
+type Auth struct{}
 
-const META_CHARS = "&|!=~*<>()"
+const metaChars = "&|!=~*<>()"
 
-func (l *LdapAuth) Validate(auth models.AuthModel) (*models.User, error) {
+// Authenticate checks user's credential agains LDAP based on basedn template and LDAP URL,
+// if the check is successful a dummy record will be insert into DB, such that this user can
+// be associated to other entities in the system.
+func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
-	ldapUrl := os.Getenv("LDAP_URL")
-	if ldapUrl == "" {
+	ldapURL := os.Getenv("LDAP_URL")
+	if ldapURL == "" {
 		return nil, errors.New("Can not get any available LDAP_URL.")
 	}
-	beego.Debug("ldapUrl:", ldapUrl)
+	beego.Debug("ldapURL:", ldapURL)
 
-	p := auth.Principal
-	for _, c := range META_CHARS {
+	p := m.Principal
+	for _, c := range metaChars {
 		if strings.ContainsRune(p, c) {
-			log.Printf("The principal contains meta char: %q", c)
-			return nil, nil
+			return nil, fmt.Errorf("the principal contains meta char: %q", c)
 		}
 	}
 
-	ldap, err := openldap.Initialize(ldapUrl)
+	ldap, err := openldap.Initialize(ldapURL)
 	if err != nil {
 		return nil, err
 	}
@@ -62,10 +66,10 @@ func (l *LdapAuth) Validate(auth models.AuthModel) (*models.User, error) {
 		return nil, errors.New("Can not get any available LDAP_BASE_DN.")
 	}
 
-	baseDn := fmt.Sprintf(ldapBaseDn, auth.Principal)
+	baseDn := fmt.Sprintf(ldapBaseDn, m.Principal)
 	beego.Debug("baseDn:", baseDn)
 
-	err = ldap.Bind(baseDn, auth.Password)
+	err = ldap.Bind(baseDn, m.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -108,19 +112,19 @@ func (l *LdapAuth) Validate(auth models.AuthModel) (*models.User, error) {
 		if err != nil {
 			return nil, err
 		}
-		u.UserId = currentUser.UserId
+		u.UserID = currentUser.UserID
 	} else {
 		u.Password = "12345678AbC"
 		u.Comment = "registered from LDAP."
-		userId, err := dao.Register(u)
+		userID, err := dao.Register(u)
 		if err != nil {
 			return nil, err
 		}
-		u.UserId = int(userId)
+		u.UserID = int(userID)
 	}
 	return &u, nil
 }
 
 func init() {
-	opt_auth.Register("ldap_auth", &LdapAuth{})
+	auth.Register("ldap_auth", &Auth{})
 }

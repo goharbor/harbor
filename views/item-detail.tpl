@@ -82,7 +82,7 @@
 							<thead>
 								<tr>
 									<th>{{i18n .Lang "username"}}</th>
-									<th>{{i18n .Lang "role_info"}}</th>
+									<th>{{i18n .Lang "role"}}</th>
 									<th>{{i18n .Lang "operation"}}</th>
 								</tr>
 							</thead>
@@ -214,7 +214,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-primary" id="btnSave">{{i18n .Lang "button_save"}}</button>
-					<button type="button" class="btn btn-default" data-dismiss="modal" id="btnClose">{{i18n .Lang "button_close"}}</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal" id="btnCancel">{{i18n .Lang "button_cancel"}}</button>
 				</div>
 			</div>
 		</div>

@@ -218,14 +218,14 @@ jQuery(function(){
 				  type: ajaxOpts.type,
 				  complete: function(jqXhr, status){
 					  if(jqXhr && jqXhr.status == 200){
-					  	  $("#btnClose").trigger("click");
+					  	  $("#btnCancel").trigger("click");
 					      listUser(null);
 					  }
 				  },
 				  errors: {
 					404: i18n.getMessage("user_id_does_not_exist"),
 					409: i18n.getMessage("user_id_exists"),
-					403: i18n.getMessage("insuffient_authority")
+					403: i18n.getMessage("insufficient_privileges")
 				  }
 				}).exec();			
 			});
@@ -417,6 +417,24 @@ jQuery(function(){
 		
 			$("#spnFilterOption input[name=chkAll]").on("click", function(){
 				$("#spnFilterOption input[name=chkOperation]").prop("checked", $(this).prop("checked"));
+			});
+		
+		    $("#spnFilterOption input[name=chkOperation]").on("click", function(){
+				if(!$(this).prop("checked")){
+					$("#spnFilterOption input[name=chkAll]").prop("checked", false);
+				}
+				
+				var selectedAll = true;
+	
+				$("#spnFilterOption input[name=chkOperation]").each(function(i, e){
+					if(!$(e).prop("checked")){
+						selectedAll = false;
+					}
+				});
+				
+				if(selectedAll){
+					$("#spnFilterOption input[name=chkAll]").prop("checked", true);
+				}
 			});
 		
 			function getKeyWords(){

@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
 
 import (
@@ -28,10 +29,11 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
 	BaseAPI
-	userId    int
-	projectId int64
+	userID    int
+	projectID int64
 }
 
 type projectReq struct {
@@ -39,33 +41,35 @@ type projectReq struct {
 	Public      bool   `json:"public"`
 }
 
-const PROJECT_NAME_MAX_LEN int = 30
+const projectNameMaxLen int = 30
 
+// Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
-	p.userId = p.ValidateUser()
-	id_str := p.Ctx.Input.Param(":id")
-	if len(id_str) > 0 {
+	p.userID = p.ValidateUser()
+	idStr := p.Ctx.Input.Param(":id")
+	if len(idStr) > 0 {
 		var err error
-		p.projectId, err = strconv.ParseInt(id_str, 10, 64)
+		p.projectID, err = strconv.ParseInt(idStr, 10, 64)
 		if err != nil {
-			log.Printf("Error parsing project id: %s, error: %v", id_str, err)
+			log.Printf("Error parsing project id: %s, error: %v", idStr, err)
 			p.CustomAbort(http.StatusBadRequest, "invalid project id")
 		}
-		exist, err := dao.ProjectExists(p.projectId)
+		exist, err := dao.ProjectExists(p.projectID)
 		if err != nil {
 			log.Printf("Error occurred in ProjectExists: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		if !exist {
-			p.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", p.projectId))
+			p.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", p.projectID))
 		}
 	}
 }
 
+// Post ...
 func (p *ProjectAPI) Post() {
 	var req projectReq
 	var public int
-	p.DecodeJsonReq(&req)
+	p.DecodeJSONReq(&req)
 	if req.Public {
 		public = 1
 	}
@@ -84,14 +88,15 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
-	project := models.Project{OwnerId: p.userId, Name: projectName, CreationTime: time.Now(), Public: public}
+	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
 	err = dao.AddProject(project)
 	if err != nil {
-		beego.Error("Failed to add project, error: %v", err)
+		beego.Error("Failed to add project, error: ", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
 }
 
+// Head ...
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
 	result, err := dao.ProjectExists(projectName)
@@ -106,8 +111,9 @@ func (p *ProjectAPI) Head() {
 	}
 }
 
+// Get ...
 func (p *ProjectAPI) Get() {
-	queryProject := models.Project{UserId: p.userId}
+	queryProject := models.Project{UserID: p.userID}
 	projectName := p.GetString("project_name")
 	if len(projectName) > 0 {
 		queryProject.Name = "%" + projectName + "%"
@@ -121,7 +127,7 @@ func (p *ProjectAPI) Get() {
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
-		if isProjectAdmin(p.userId, projectList[i].ProjectId) {
+		if isProjectAdmin(p.userID, projectList[i].ProjectID) {
 			projectList[i].Togglable = true
 		}
 	}
@@ -129,37 +135,39 @@ func (p *ProjectAPI) Get() {
 	p.ServeJSON()
 }
 
+// Put ...
 func (p *ProjectAPI) Put() {
 	var req projectReq
 	var public int
 
-	projectId, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
+	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
-		beego.Error("Error parsing project id:", projectId, ", error: ", err)
+		beego.Error("Error parsing project id:", projectID, ", error: ", err)
 		p.RenderError(http.StatusBadRequest, "invalid project id")
 		return
 	}
 
-	p.DecodeJsonReq(&req)
+	p.DecodeJSONReq(&req)
 	if req.Public {
 		public = 1
 	}
-	if !isProjectAdmin(p.userId, projectId) {
-		beego.Warning("Current user, id:", p.userId, ", does not have project admin role for project, id:", projectId)
+	if !isProjectAdmin(p.userID, projectID) {
+		beego.Warning("Current user, id:", p.userID, ", does not have project admin role for project, id:", projectID)
 		p.RenderError(http.StatusForbidden, "")
 		return
 	}
-	err = dao.ToggleProjectPublicity(p.projectId, public)
+	err = dao.ToggleProjectPublicity(p.projectID, public)
 	if err != nil {
-		beego.Error("Error while updating project, project id:", projectId, ", error:", err)
+		beego.Error("Error while updating project, project id:", projectID, ", error:", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to update project")
 	}
 }
 
+// FilterAccessLog handles GET to /api/projects/{}/logs
 func (p *ProjectAPI) FilterAccessLog() {
 
 	var filter models.AccessLog
-	p.DecodeJsonReq(&filter)
+	p.DecodeJSONReq(&filter)
 
 	username := filter.Username
 	keywords := filter.Keywords
@@ -167,7 +175,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 	beginTime := time.Unix(filter.BeginTimestamp, 0)
 	endTime := time.Unix(filter.EndTimestamp, 0)
 
-	query := models.AccessLog{ProjectId: p.projectId, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
+	query := models.AccessLog{ProjectID: p.projectID, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
 
 	log.Printf("Query AccessLog: begin: %v, end: %v, keywords: %s", query.BeginTime, query.EndTime, query.Keywords)
 
@@ -180,8 +188,8 @@ func (p *ProjectAPI) FilterAccessLog() {
 	p.ServeJSON()
 }
 
-func isProjectAdmin(userId int, pid int64) bool {
-	userQuery := models.User{UserId: userId, RoleId: models.PROJECTADMIN}
+func isProjectAdmin(userID int, pid int64) bool {
+	userQuery := models.User{UserID: userID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if err != nil {
 		beego.Error("Error occurred in GetUserProjectRoles:", err, ", returning false")
@@ -195,7 +203,7 @@ func validateProjectReq(req projectReq) error {
 	if len(pn) == 0 {
 		return fmt.Errorf("Project name can not be empty")
 	}
-	if len(pn) > PROJECT_NAME_MAX_LEN {
+	if len(pn) > projectNameMaxLen {
 		return fmt.Errorf("Project name is too long")
 	}
 	return nil

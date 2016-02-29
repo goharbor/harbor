@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package dao
 
 import (
@@ -22,6 +23,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
 	o := orm.NewOrm()
 	p, err := o.Raw(`insert into access_log
@@ -32,11 +34,12 @@ func AddAccessLog(accessLog models.AccessLog) error {
 	}
 	defer p.Close()
 
-	_, err = p.Exec(accessLog.UserId, accessLog.ProjectId, accessLog.RepoName, accessLog.Guid, accessLog.Operation)
+	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.GUID, accessLog.Operation)
 
 	return err
 }
 
+//GetAccessLogs gets access logs according to different conditions
 func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 
 	o := orm.NewOrm()
@@ -44,11 +47,11 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 		from access_log a left join user u on a.user_id = u.user_id
 		where a.project_id = ? `
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, accessLog.ProjectId)
+	queryParam = append(queryParam, accessLog.ProjectID)
 
-	if accessLog.UserId != 0 {
+	if accessLog.UserID != 0 {
 		sql += ` and a.user_id = ? `
-		queryParam = append(queryParam, accessLog.UserId)
+		queryParam = append(queryParam, accessLog.UserID)
 	}
 	if accessLog.Operation != "" {
 		sql += ` and a.operation = ? `
@@ -92,6 +95,7 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 	return accessLogList, nil
 }
 
+// AccessLog ...
 func AccessLog(username, projectName, repoName, action string) error {
 	o := orm.NewOrm()
 	sql := "insert into  access_log (user_id, project_id, repo_name, operation, op_time) " +

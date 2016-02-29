@@ -12,17 +12,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
+	_ "github.com/vmware/harbor/auth/db"
+	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	_ "github.com/vmware/harbor/opt_auth/db"
-	_ "github.com/vmware/harbor/opt_auth/ldap"
 	_ "github.com/vmware/harbor/routers"
 
 	"os"
@@ -31,19 +31,19 @@ import (
 )
 
 const (
-	ADMIN_USER_ID = 1
+	adminUserID = 1
 )
 
-func updateInitPassword(userId int, password string) error {
-	queryUser := models.User{UserId: userId}
+func updateInitPassword(userID int, password string) error {
+	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Println("Failed to get user, userId:", userId)
+		log.Println("Failed to get user, userID:", userID)
 		return err
 	}
 	if user == nil {
-		log.Printf("User id: %d does not exist.", userId)
-		return errors.New(fmt.Sprintf("User id: %s does not exist.", userId))
+		log.Printf("User id: %d does not exist.", userID)
+		return fmt.Errorf("User id: %d does not exist.", userID)
 	} else if user.Salt == "" {
 		salt, err := dao.GenerateRandomString()
 		if err != nil {
@@ -54,12 +54,12 @@ func updateInitPassword(userId int, password string) error {
 		user.Password = password
 		err = dao.ChangeUserPassword(*user)
 		if err != nil {
-			log.Printf("Failed to update user encrypted password, userId: %d, err: %v", userId, err)
+			log.Printf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 			return err
 		}
-		log.Printf("User id: %d updated its encypted password successfully.", userId)
+		log.Printf("User id: %d updated its encypted password successfully.", userID)
 	} else {
-		log.Printf("User id: %d already has its encrypted password.", userId)
+		log.Printf("User id: %d already has its encrypted password.", userID)
 	}
 	return nil
 }
@@ -68,6 +68,6 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	dao.InitDB()
-	updateInitPassword(ADMIN_USER_ID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
+	updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
 	beego.Run()
 }

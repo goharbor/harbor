@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package dao
 
 import (
@@ -24,6 +25,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// Register is used for user to register, the password is encrypted before the record is inserted into database.
 func Register(user models.User) (int64, error) {
 
 	err := validate(user)
@@ -48,12 +50,12 @@ func Register(user models.User) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	userId, err := r.LastInsertId()
+	userID, err := r.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 
-	return userId, nil
+	return userID, nil
 }
 
 func validate(user models.User) error {
@@ -99,6 +101,7 @@ func validate(user models.User) error {
 	return nil
 }
 
+// UserExists returns whether a user exists according username or Email.
 func UserExists(user models.User, target string) (bool, error) {
 
 	if user.Username == "" && user.Email == "" {

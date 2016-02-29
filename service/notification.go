@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package service
 
 import (
@@ -25,12 +26,14 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
 	beego.Controller
 }
 
-const MEDIA_TYPE_MANIFEST = "application/vnd.docker.distribution.manifest.v1+json"
+const mediaTypeManifest = "application/vnd.docker.distribution.manifest.v1+json"
 
+// Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
 	//	log.Printf("Notification Handler triggered!\n")
@@ -43,7 +46,7 @@ func (n *NotificationHandler) Post() {
 	}
 	var username, action, repo, project string
 	for _, e := range notification.Events {
-		if e.Target.MediaType == MEDIA_TYPE_MANIFEST && strings.HasPrefix(e.Request.UserAgent, "docker") {
+		if e.Target.MediaType == mediaTypeManifest && strings.HasPrefix(e.Request.UserAgent, "docker") {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
@@ -67,6 +70,7 @@ func (n *NotificationHandler) Post() {
 
 }
 
+// Render returns nil as it won't render any template.
 func (n *NotificationHandler) Render() error {
 	return nil
 }

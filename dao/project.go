@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package dao
 
 import (
@@ -26,6 +27,8 @@ import (
 )
 
 //TODO:transaction, return err
+
+// AddProject adds a project to the database along with project roles information and access log records.
 func AddProject(project models.Project) error {
 
 	if isIllegalLength(project.Name, 4, 30) {
@@ -42,46 +45,47 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	r, err := p.Exec(project.OwnerId, project.Name, project.Deleted, project.Public)
+	r, err := p.Exec(project.OwnerID, project.Name, project.Deleted, project.Public)
 	if err != nil {
 		return err
 	}
 
-	projectId, err := r.LastInsertId()
+	projectID, err := r.LastInsertId()
 	if err != nil {
 		return err
 	}
 
-	projectAdminRole := models.ProjectRole{ProjectId: projectId, RoleId: models.PROJECTADMIN}
+	projectAdminRole := models.ProjectRole{ProjectID: projectID, RoleID: models.PROJECTADMIN}
 	_, err = AddProjectRole(projectAdminRole)
 	if err != nil {
 		return err
 	}
 
-	projectDeveloperRole := models.ProjectRole{ProjectId: projectId, RoleId: models.DEVELOPER}
+	projectDeveloperRole := models.ProjectRole{ProjectID: projectID, RoleID: models.DEVELOPER}
 	_, err = AddProjectRole(projectDeveloperRole)
 	if err != nil {
 		return err
 	}
 
-	projectGuestRole := models.ProjectRole{ProjectId: projectId, RoleId: models.GUEST}
+	projectGuestRole := models.ProjectRole{ProjectID: projectID, RoleID: models.GUEST}
 	_, err = AddProjectRole(projectGuestRole)
 	if err != nil {
 		return err
 	}
 
 	//Add all project roles, after that when assigning a user to a project just update the upr table
-	err = AddUserProjectRole(project.OwnerId, projectId, models.PROJECTADMIN)
+	err = AddUserProjectRole(project.OwnerID, projectID, models.PROJECTADMIN)
 	if err != nil {
 		return err
 	}
 
-	accessLog := models.AccessLog{UserId: project.OwnerId, ProjectId: projectId, RepoName: project.Name + "/", Guid: "N/A", Operation: "create", OpTime: time.Now()}
+	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", GUID: "N/A", Operation: "create", OpTime: time.Now()}
 	err = AddAccessLog(accessLog)
 
 	return err
 }
 
+// IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
 	if err != nil {
@@ -94,6 +98,7 @@ func IsProjectPublic(projectName string) bool {
 	return project.Public == 1
 }
 
+// QueryProject querys the projects based on publicity and user, disregarding the names etc.
 func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
@@ -110,10 +115,10 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	if query.Public == 1 {
 		sql += ` and p.public = ?`
 		queryParam = append(queryParam, query.Public)
-	} else if isAdmin, _ := IsAdminRole(query.UserId); isAdmin == false {
+	} else if isAdmin, _ := IsAdminRole(query.UserID); isAdmin == false {
 		sql += ` and (p.owner_id = ? or u.user_id = ?) `
-		queryParam = append(queryParam, query.UserId)
-		queryParam = append(queryParam, query.UserId)
+		queryParam = append(queryParam, query.UserID)
+		queryParam = append(queryParam, query.UserID)
 	}
 
 	if query.Name != "" {
@@ -132,21 +137,22 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	return r, nil
 }
 
-func ProjectExists(nameOrId interface{}) (bool, error) {
+//ProjectExists returns whether the project exists according to its name of ID.
+func ProjectExists(nameOrID interface{}) (bool, error) {
 	o := orm.NewOrm()
 	type dummy struct{}
 	sql := `select project_id from project where deleted = 0 and `
-	switch nameOrId.(type) {
+	switch nameOrID.(type) {
 	case int64:
 		sql += `project_id = ?`
 	case string:
 		sql += `name = ?`
 	default:
-		return false, errors.New(fmt.Sprintf("Invalid nameOrId: %v", nameOrId))
+		return false, fmt.Errorf("Invalid nameOrId: %v", nameOrID)
 	}
 
 	var d []dummy
-	num, err := o.Raw(sql, nameOrId).QueryRows(&d)
+	num, err := o.Raw(sql, nameOrID).QueryRows(&d)
 	if err != nil {
 		return false, err
 	}
@@ -154,17 +160,14 @@ func ProjectExists(nameOrId interface{}) (bool, error) {
 
 }
 
-func GetProjectById(query models.Project) (*models.Project, error) {
+// GetProjectByID ...
+func GetProjectByID(projectID int64) (*models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.public  
 		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, query.ProjectId)
-	if query.Public != 0 {
-		sql += " and p.public = ? "
-		queryParam = append(queryParam, query.Public)
-	}
+	queryParam = append(queryParam, projectID)
 
 	p := []models.Project{}
 	count, err := o.Raw(sql, queryParam).QueryRows(&p)
@@ -178,6 +181,7 @@ func GetProjectById(query models.Project) (*models.Project, error) {
 	}
 }
 
+// GetProjectByName ...
 func GetProjectByName(projectName string) (*models.Project, error) {
 	o := orm.NewOrm()
 	var p []models.Project
@@ -191,6 +195,7 @@ func GetProjectByName(projectName string) (*models.Project, error) {
 	}
 }
 
+// GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
 	o := orm.NewOrm()
 
@@ -212,21 +217,23 @@ func GetPermission(username, projectName string) (string, error) {
 	}
 }
 
-func ToggleProjectPublicity(projectId int64, publicity int) error {
+// ToggleProjectPublicity toggles the publicity of the project.
+func ToggleProjectPublicity(projectID int64, publicity int) error {
 	o := orm.NewOrm()
 	sql := "update project set public = ? where project_id = ?"
-	_, err := o.Raw(sql, publicity, projectId).Exec()
+	_, err := o.Raw(sql, publicity, projectID).Exec()
 	return err
 }
 
-func QueryRelevantProjects(userId int) ([]models.Project, error) {
+// QueryRelevantProjects returns all projects that the user is a member of.
+func QueryRelevantProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `SELECT distinct p.project_id, p.name, p.public FROM registry.project p 
 		left join project_role pr on p.project_id = pr.project_id 
 		left join user_project_role upr on upr.pr_id = pr.pr_id 
 		where upr.user_id = ? or p.public = 1 and p.deleted = 0`
 	var res []models.Project
-	_, err := o.Raw(sql, userId).QueryRows(&res)
+	_, err := o.Raw(sql, userID).QueryRows(&res)
 	if err != nil {
 		return nil, err
 	}

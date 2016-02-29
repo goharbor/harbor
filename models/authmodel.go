@@ -12,24 +12,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package db
 
-import (
-	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/opt_auth"
-)
+package models
 
-type DbAuth struct{}
-
-func (d *DbAuth) Validate(auth models.AuthModel) (*models.User, error) {
-	u, err := dao.LoginByDb(auth)
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
-}
-
-func init() {
-	opt_auth.Register("db_auth", &DbAuth{})
+// AuthModel holds information used to authenticate.
+type AuthModel struct {
+	Principal string
+	Password  string
 }

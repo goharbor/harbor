@@ -12,10 +12,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package opt_auth
+
+package auth
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/vmware/harbor/models"
@@ -23,31 +25,36 @@ import (
 	"github.com/astaxie/beego"
 )
 
-type OptAuth interface {
-	Validate(auth models.AuthModel) (*models.User, error)
+// Authenticator provides interface to authenticate user credentials.
+type Authenticator interface {
+
+	// Authenticate ...
+	Authenticate(m models.AuthModel) (*models.User, error)
 }
 
-var registry = make(map[string]OptAuth)
+var registry = make(map[string]Authenticator)
 
-func Register(name string, optAuth OptAuth) {
+// Register add different authenticators to registry map.
+func Register(name string, authenticator Authenticator) {
 	if _, dup := registry[name]; dup {
-		panic(name + " already exist.")
+		log.Printf("authenticator: %s has been registered", name)
 		return
 	}
-	registry[name] = optAuth
+	registry[name] = authenticator
 }
 
-func Login(auth models.AuthModel) (*models.User, error) {
+// Login authenticates user credentials based on setting.
+func Login(m models.AuthModel) (*models.User, error) {
 
-	var authMode string = os.Getenv("AUTH_MODE")
-	if authMode == "" || auth.Principal == "admin" {
+	var authMode = os.Getenv("AUTH_MODE")
+	if authMode == "" || m.Principal == "admin" {
 		authMode = "db_auth"
 	}
 	beego.Debug("Current AUTH_MODE is ", authMode)
 
-	optAuth := registry[authMode]
-	if optAuth == nil {
+	authenticator, ok := registry[authMode]
+	if !ok {
 		return nil, fmt.Errorf("Unrecognized auth_mode: %s", authMode)
 	}
-	return optAuth.Validate(auth)
+	return authenticator.Authenticate(m)
 }
