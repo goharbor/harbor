@@ -22,5 +22,5 @@ $ docker-compose up
 ```
 
 ### License
-Harbor is available under the [Apache 2 license](LICENSE).
+Harbor is available under the [Apache 2 license](License.txt).
 
