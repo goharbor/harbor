@@ -15,7 +15,31 @@
 
 package models
 
+import (
+	"time"
+)
+
 // Repo holds information about repositories.
 type Repo struct {
 	Repositories []string `json:"repositories"`
+}
+
+// RepoItem holds manifest of an image.
+type RepoItem struct {
+	ID            string    `json:"Id"`
+	Parent        string    `json:"Parent"`
+	Created       time.Time `json:"Created"`
+	CreatedStr    string    `json:"CreatedStr"`
+	DurationDays  string    `json:"Duration Days"`
+	Author        string    `json:"Author"`
+	Architecture  string    `json:"Architecture"`
+	DockerVersion string    `json:"Docker Version"`
+	Os            string    `json:"OS"`
+	//Size           int       `json:"Size"`
+}
+
+// Tag holds information about a tag.
+type Tag struct {
+	Version string `json:"version"`
+	ImageID string `json:"image_id"`
 }
