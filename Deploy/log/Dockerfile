@@ -8,6 +8,8 @@ RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
 	&& sed 's/#$UDPServerRun 514/$UDPServerRun 514/' -i /etc/rsyslog.conf \
 	&& sed 's/#$ModLoad imtcp/$ModLoad imtcp/' -i /etc/rsyslog.conf \
 	&& sed 's/#$InputTCPServerRun 514/$InputTCPServerRun 514/' -i /etc/rsyslog.conf \
+	&& sed 's/$PrivDropToUser syslog/#$PrivDropToUser syslog/' -i /etc/rsyslog.conf \
+	&& sed 's/$PrivDropToGroup syslog/#$PrivDropToGroup syslog/' -i /etc/rsyslog.conf \
 	&& rm /etc/rsyslog.d/*
 
 # logrotate configuration file for docker
@@ -20,5 +22,5 @@ VOLUME /var/log/docker/
 
 EXPOSE 514
 
-CMD cron &&  chown -R syslog:syslog /var/log/docker/ && rsyslogd -n
+CMD cron && rsyslogd -n
 
