@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.com/ywk253100/harbor.svg?token=FP9wRCueEGqB3QPRqzY5&branch=master)](https://travis-ci.com/ywk253100/harbor)
 # Harbor
 
 Harbor is a project to provide enterprise capabilities for Docker Registry V2.  It wraps the registry server to provide authorization and user interface.
