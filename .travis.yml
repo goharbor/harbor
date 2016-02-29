@@ -1,0 +1,28 @@
+language: go
+
+go: 
+  - 1.5.3
+
+go_import_path: github.com/vmware/harbor
+
+service: 
+  - mysql
+
+env: GO15VENDOREXPERIMENT=1 DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
+
+install: 
+  - sudo apt-get update && sudo apt-get install -y libldap2-dev
+  - go get -d github.com/docker/distribution
+  - go get -d github.com/docker/libtrust
+  - go get -d github.com/go-sql-driver/mysql
+  - go get github.com/golang/lint/golint
+  - go get github.com/GeertJohan/fgt
+
+before_script:
+  # create tables and load data
+  - mysql < ./Deploy/db/registry.sql -uroot --verbose
+
+script: 
+  - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
+  - go list ./... | grep -v 'vendor' | xargs -L1 go vet
+  - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
