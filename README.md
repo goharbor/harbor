@@ -1,12 +1,14 @@
 # Harbor
 
-Harbor is a project to provide enterprise capabilities for Docker Registry V2.  It wraps the registry server to provide authorization and user interface.
+Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from public network. This is very helpful to container users who do not have a good network to the Internet. In particular, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
 
 ### Features
 * **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have differernt permission for images under a namespace.
-* **Convenient user interface**: User can easily browse, search docker repositories, manage projects/namepaces.
-* **LDAP support**: harbor can easily integrate to the existing ldap of entreprise.
-* **Audting**: All the access to the repositories hosted on Harbor are immediately recorded and can be used for auditing purpose.
+* **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namepaces.
+* **AD/LDAP support**: Harbor integrates with existing AD/LDAP of enterprise for user authentication and management.
+* **Audting**: All the operations to the repositories are tracked and can be used for auditing purpose.
+* **Internationalization**: Localized for English and Chinese languages. More languages can be added.
+* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management software becomes easy.
 
 ### Try it
 Harbor is self contained and can be easily deployed via docker-compose.
@@ -22,5 +24,5 @@ $ docker-compose up
 ```
 
 ### License
-Harbor is available under the [Apache 2 license](License.txt).
+Harbor is available under the [Apache 2 license](LICENSE).
 
