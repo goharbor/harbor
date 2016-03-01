@@ -50,7 +50,7 @@ func (n *NotificationHandler) Post() {
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
 		if err != nil {
-			beego.Error("Failed to match the media type against pattern, error: %v", err)
+			beego.Error("Failed to match the media type against pattern, error: ", err)
 			matched = false
 		}
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
