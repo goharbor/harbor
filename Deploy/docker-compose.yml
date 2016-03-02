@@ -5,7 +5,7 @@ log:
   ports:
     - 1514:514
 registry:
-  image: library/registry:2.1.1
+  image: library/registry:2.3.0
   volumes:
     - /data/registry:/storage
     - ./config/registry/:/etc/registry/

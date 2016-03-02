@@ -17,6 +17,7 @@ package service
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/vmware/harbor/dao"
@@ -31,7 +32,7 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
-const mediaTypeManifest = "application/vnd.docker.distribution.manifest.v1+json"
+const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -45,8 +46,14 @@ func (n *NotificationHandler) Post() {
 		return
 	}
 	var username, action, repo, project string
+	var matched bool
 	for _, e := range notification.Events {
-		if e.Target.MediaType == mediaTypeManifest && strings.HasPrefix(e.Request.UserAgent, "docker") {
+		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
+		if err != nil {
+			beego.Error("Failed to match the media type against pattern, error: ", err)
+			matched = false
+		}
+		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
