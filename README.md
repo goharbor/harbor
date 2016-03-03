@@ -1,6 +1,6 @@
 # Harbor
 
-![alg tag](https://cloud.githubusercontent.com/assets/2390463/13481869/04fd1c86-e124-11e5-9fd8-a4645a711eed.png)
+![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
 
 Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from public network. This is very helpful to container users who do not have a good network to the Internet. In particular, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
 
