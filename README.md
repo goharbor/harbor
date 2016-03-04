@@ -25,6 +25,9 @@ Generated configuration file: ./config/db/env
 $ docker-compose up
 ```
 
+### Contribution
+We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
+
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
 
