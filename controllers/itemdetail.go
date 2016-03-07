@@ -64,6 +64,8 @@ func (idc *ItemDetailController) Get() {
 
 	if sessionUserID != nil {
 
+		userId := sessionUserID.(int)
+
 		idc.Data["Username"] = idc.GetSession("username")
 		idc.Data["UserId"] = sessionUserID.(int)
 
@@ -73,12 +75,20 @@ func (idc *ItemDetailController) Get() {
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 
-		if project.Public == 0 && len(roleList) == 0 {
+		isAdmin, err := dao.IsAdminRole(userId)
+		if err != nil {
+			beego.Error("Error occurred in IsAdminRole:", err)
+			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+
+		if !isAdmin && (project.Public == 0 && len(roleList) == 0) {
 			idc.Redirect("/registry/project", http.StatusFound)
 			return
 		}
 
-		if len(roleList) > 0 {
+		if isAdmin {
+			idc.Data["RoleId"] = models.SYSADMIN
+		} else if len(roleList) > 0 {
 			idc.Data["RoleId"] = roleList[0].RoleID
 		}
 	}
