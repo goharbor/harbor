@@ -64,7 +64,7 @@ func (idc *ItemDetailController) Get() {
 
 	if sessionUserID != nil {
 
-		userId := sessionUserID.(int)
+		userID := sessionUserID.(int)
 
 		idc.Data["Username"] = idc.GetSession("username")
 		idc.Data["UserId"] = sessionUserID.(int)
@@ -75,7 +75,7 @@ func (idc *ItemDetailController) Get() {
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 
-		isAdmin, err := dao.IsAdminRole(userId)
+		isAdmin, err := dao.IsAdminRole(userID)
 		if err != nil {
 			beego.Error("Error occurred in IsAdminRole:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
