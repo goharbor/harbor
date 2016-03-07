@@ -39,13 +39,9 @@ type TokenHandler struct {
 func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
-
 	log.Println("request url: " + request.URL.String())
-	authorization := request.Header["Authorization"]
-	log.Println("authorization:", authorization)
-	username, password := utils.ParseBasicAuth(authorization)
+	username, password := utils.ParseBasicAuth(request)
 	authenticated := authenticate(username, password)
-
 	service := a.GetString("service")
 	scope := a.GetString("scope")
 

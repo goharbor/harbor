@@ -17,11 +17,11 @@ package utils
 
 import (
 	"encoding/base64"
+	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/models"
-
 	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/models"
 )
 
 // Repository holds information about repository
@@ -30,7 +30,8 @@ type Repository struct {
 }
 
 // ParseBasicAuth parses the basic authorization
-func ParseBasicAuth(authorization []string) (username, password string) {
+func ParseBasicAuth(req *http.Request) (username, password string) {
+	authorization := req.Header["Authorization"]
 	if authorization == nil || len(authorization) == 0 {
 		beego.Debug("Authorization header is not set.")
 		return "", ""
