@@ -67,9 +67,9 @@ func (idc *ItemDetailController) Get() {
 		userID := sessionUserID.(int)
 
 		idc.Data["Username"] = idc.GetSession("username")
-		idc.Data["UserId"] = sessionUserID.(int)
+		idc.Data["UserId"] = userID
 
-		roleList, err := dao.GetUserProjectRoles(models.User{UserID: sessionUserID.(int)}, projectID)
+		roleList, err := dao.GetUserProjectRoles(models.User{UserID: userID}, projectID)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
