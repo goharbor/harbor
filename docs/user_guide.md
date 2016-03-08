@@ -23,8 +23,8 @@ Username, Email, full name and password are required to sign up in Harbor. The p
 "Change Password" and "Forgot Password" are also supported. You can follow the steps to reset your password:  
 
 1. Click the link "forgot password" in the sign in page.
-2. Input the Email used when you signed up and a email will be sent to it.
-3. Click the link contained in the email.
+2. Input the Email used when you signed up and a Email will be sent to it.
+3. Click the link contained in the Email.
 4. Input your new password and click "Submit".
 
 
