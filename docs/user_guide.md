@@ -2,11 +2,11 @@
 ##Overview
 This guide takes you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* Manage your projects
-* Manage members of a project
-* Search projects and repositories
-* Manage Harbor system if you are the system administrator
-* Pull and push images using Docker client
+* Manage your projects.
+* Manage members of a project.
+* Search projects and repositories.
+* Manage Harbor system if you are the system administrator.
+* Pull and push images using Docker client.
 
 
 ##Role Based Access Control
