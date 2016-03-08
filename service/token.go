@@ -22,7 +22,6 @@ import (
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
-	"github.com/vmware/harbor/utils"
 
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/registry/auth/token"
@@ -39,13 +38,9 @@ type TokenHandler struct {
 func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
-
 	log.Println("request url: " + request.URL.String())
-	authorization := request.Header["Authorization"]
-	log.Println("authorization:", authorization)
-	username, password := utils.ParseBasicAuth(authorization)
+	username, password, _ := request.BasicAuth()
 	authenticated := authenticate(username, password)
-
 	service := a.GetString("service")
 	scope := a.GetString("scope")
 
