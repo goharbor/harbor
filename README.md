@@ -15,8 +15,11 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management software becomes easy.
 
 ### Try it
-Harbor is self contained and can be easily deployed via docker-compose.
+Harbor is self contained and can be easily deployed via docker-compose.  
+**pre-requisite:** Harbor only works on linux OS, with docker 1.8+ and docker-compose 1.6.0+ 
 ```sh
+$ git clone https://github.com/vmware/harbor
+......
 $ cd Deploy
 #make update to the parameters in ./harbor.cfg
 $ ./prepare
@@ -26,10 +29,10 @@ Generated configuration file: ./config/registry/config.yml
 Generated configuration file: ./config/db/env
 $ docker-compose up
 ```
+*An installation package is provided, such that you don't need to clone the whole repo.  For details on how to use the installation package and parameters in harbor.cfg, please refer to:* [Installation Guide](docs/installation_guide.md)
 
 ### Contribution
 We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
 
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
-
