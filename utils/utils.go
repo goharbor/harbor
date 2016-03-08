@@ -16,30 +16,14 @@
 package utils
 
 import (
-	"encoding/base64"
-	"net/http"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/models"
 )
 
 // Repository holds information about repository
 type Repository struct {
 	Name string
-}
-
-// ParseBasicAuth parses the basic authorization
-func ParseBasicAuth(req *http.Request) (username, password string) {
-	authorization := req.Header["Authorization"]
-	if authorization == nil || len(authorization) == 0 {
-		beego.Debug("Authorization header is not set.")
-		return "", ""
-	}
-	auth := strings.SplitN(authorization[0], " ", 2)
-	payload, _ := base64.StdEncoding.DecodeString(auth[1])
-	pair := strings.SplitN(string(payload), ":", 2)
-	return pair[0], pair[1]
 }
 
 // GetProject parses the repository and return the name of project.

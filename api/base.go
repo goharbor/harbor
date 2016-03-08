@@ -23,7 +23,6 @@ import (
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/utils"
 
 	"github.com/astaxie/beego"
 )
@@ -55,8 +54,8 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 // ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
 
-	username, password := utils.ParseBasicAuth(b.Ctx.Request)
-	if username != "" {
+	username, password, ok := b.Ctx.Request.BasicAuth()
+	if ok {
 		log.Printf("Requst with Basic Authentication header, username: %s", username)
 		user, err := auth.Login(models.AuthModel{username, password})
 		if err != nil {
