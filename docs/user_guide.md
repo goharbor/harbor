@@ -16,15 +16,18 @@ RBAC (Role Based Access Control) is provided in Harbor and there are four roles 
 * **Developer**: Developer has read and write privileges for a project.
 * **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator and delete users. The public project "library" is also owned by the administrator.  
+* **Anonymous**: When a user is not logged in, the user is considered as an "anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
-##User account operations
-Username, Email, full name and password are required to sign up in Harbor. The password mast match the rule: at least 7 characters with 1 lowercase letter, 1 capital letter and 1 numeric character.  
+##User account
+As a new user, you can sign up an account by going through the self-registration process. The username and email must be unique in the Harbor system. The password must contain at least 7 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+
+If the administrator has configured LDAP/AD as authentication source, no sign-up is required. The LDAP/AD user id can be used directly to log in to Harbor.  
   
-"Change Password" and "Forgot Password" are also supported. You can follow the steps to reset your password:  
+When you forgot your password, you can follow the below steps to reset the password:  
 
 1. Click the link "forgot password" in the sign in page.
-2. Input the Email used when you signed up and a Email will be sent to it.
-3. Click the link contained in the Email.
+2. Input the email used when you signed up, an email will be sent out to you.
+3. After receiving the email, click on the link in the email which directs you to a password reset web page.
 4. Input your new password and click "Submit".
 
 
@@ -32,9 +35,9 @@ Username, Email, full name and password are required to sign up in Harbor. The p
 A project in Harbor contains all repositories of an application. RBAC is applied to a project. There are two types of projects in Harbor:  
 
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
-* **Private**: A private project can only been accessed by users with proper privileges.  
+* **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enable the "Public project" checkbox will make this project public.  
+You can create a project after you signed in. Enabling the "Public project" checkbox will make this project public.  
 
 ![create project](img/create_project.png)  
 
@@ -42,7 +45,7 @@ After the project is created, you can browse repositories, users and access logs
 
 ![browse project](img/browse_project.png)  
 
-All access logs will be listed by clicking "Logs", you can filter them by username or operations and date which are supported in "Advanced Search".  
+All access logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
 
 ![browse project](img/project_log.png)  
 
@@ -64,7 +67,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ##Administrator options
 ###Setting administrator and deleting user
-Administrator can add "SysAdmin" role to an ordinary user and delete users by clicking the icons.  
+Administrator can add "SysAdmin" role to an ordinary user by toggling the switch under "System Admin". To delete a user, click on the recycle bin icon.  
 
 ![browse project](img/set_admin_remove_user.png)
 
