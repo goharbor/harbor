@@ -17,8 +17,10 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
+	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 
@@ -52,6 +54,18 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 // ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
 
+	username, password, ok := b.Ctx.Request.BasicAuth()
+	if ok {
+		log.Printf("Requst with Basic Authentication header, username: %s", username)
+		user, err := auth.Login(models.AuthModel{username, password})
+		if err != nil {
+			log.Printf("Error while trying to login, username: %s, error: %v", username, err)
+			user = nil
+		}
+		if user != nil {
+			return user.UserID
+		}
+	}
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID == nil {
 		beego.Warning("No user id in session, canceling request")

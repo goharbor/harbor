@@ -53,7 +53,7 @@ func (c *CommonController) Login() {
 	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
 		beego.Error("Error occurred in UserLogin:", err)
-		c.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		c.CustomAbort(http.StatusUnauthorized, "")
 	}
 
 	if user == nil {
