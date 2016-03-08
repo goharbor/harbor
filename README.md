@@ -20,8 +20,11 @@ Harbor is self contained and can be easily deployed via docker-compose.
 ```sh
 $ git clone https://github.com/vmware/harbor
 ......
+
+#make changes to the parameters in ./harbor.cfg
+
 $ cd Deploy
-#make update to the parameters in ./harbor.cfg
+
 $ ./prepare
 Generated configuration file: ./config/ui/env
 Generated configuration file: ./config/ui/app.conf
