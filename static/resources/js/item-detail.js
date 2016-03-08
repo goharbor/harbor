@@ -152,7 +152,7 @@ jQuery(function(){
 		  		url: "/api/projects/" + $("#projectId").val() + "/members/current",
 		  		type: "get",
 			    success: function(data, status, xhr){
-					if(xhr && xhr.status == 200 && data.roles.length > 0){
+					if(xhr && xhr.status == 200 && data.roles != null && data.roles.length > 0){
 						hasAuthorization = true;
 					}
 		  		}
