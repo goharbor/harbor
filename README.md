@@ -18,14 +18,14 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 Harbor is self contained and can be easily deployed via docker-compose.  
 **System requirements:** Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
 
-1. Get the source code:
+* Get the source code:
 ```sh
 $ git clone https://github.com/vmware/harbor
 ```
 
-2. Make necessary configuration changes to the file Deploy/harbor.cfg . Refer to [Installation Guide](docs/installation_guide.md) for more info.
+* Make necessary configuration changes to the file Deploy/harbor.cfg . Refer to [Installation Guide](docs/installation_guide.md) for more info.
 
-3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
+* Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
 ```sh
 $ cd Deploy
 $ ./prepare
