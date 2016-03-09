@@ -29,7 +29,9 @@ Generated configuration file: ./config/registry/config.yml
 Generated configuration file: ./config/db/env
 $ docker-compose up
 ```
-*An installation package is provided, such that you don't need to clone the whole repo.  For details on how to use the installation package and parameters in harbor.cfg, please refer to:* [Installation Guide](docs/installation_guide.md)
+*An installation package is provided, such that you don't need to clone the whole repo.  For details on how to use the installation package and parameters in harbor.cfg, please refer to:* [Installation Guide](docs/installation_guide.md)  
+
+*For information on how to use Harbor, please see* [User Guide](docs/user_guide.md)
 
 ### Contribution
 We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
