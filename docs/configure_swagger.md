@@ -12,7 +12,7 @@ First, you should checkout the Harbor project from github.
 ```sh
    git clone git@github.com:vmware/harbor.git
 ```
-### Listed description only
+### Listed descriptions only
 * Download and untar the Swagger UI release package.
 ```sh
    wget https://github.com/swagger-api/swagger-ui/archive/v2.1.4.tar.gz \
