@@ -22,26 +22,24 @@ Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
 The host must be connected to the Internet.
 
 1. Get the source code:
-```sh
-$ git clone https://github.com/vmware/harbor
-```
-
-
+    ```sh
+    $ git clone https://github.com/vmware/harbor
+    ```
 2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as host name, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
 
 
 3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
-```sh
-$ cd Deploy
-
-$ ./prepare
-Generated configuration file: ./config/ui/env
-Generated configuration file: ./config/ui/app.conf
-Generated configuration file: ./config/registry/config.yml
-Generated configuration file: ./config/db/env
-
-$ docker-compose up
-```
+    ```sh
+    $ cd Deploy
+    
+    $ ./prepare
+    Generated configuration file: ./config/ui/env
+    Generated configuration file: ./config/ui/app.conf
+    Generated configuration file: ./config/registry/config.yml
+    Generated configuration file: ./config/db/env
+    
+    $ docker-compose up
+    ```
 If everything works fine, you can open a browser to visit the admin portal at:  http://yourhostname . The default administrator username and password is admin/Harbor12345 .
 
 **NOTE:**  
