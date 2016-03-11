@@ -15,9 +15,8 @@
 <!-- Main jumbotron for a primary marketing message or call to action -->
  <div class="jumbotron">
    <div class="container">
-	 <p>&nbsp;</p>
-     <h1>Harbor</h1>
-	 <p>&nbsp;</p>
+     <img class="pull-left" src="static/resources/image/Harbor_Logo_rec.png" alt="Harbor's Logo" height="180" width="360"/>
+	 <p class="pull-left" style="margin-top: 85px; color: #245580; font-size: 30pt;">An enterprise-class registry server</p>
    </div>
  </div>
 

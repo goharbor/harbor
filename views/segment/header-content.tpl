@@ -20,7 +20,7 @@
            <span class="icon-bar"></span>
            <span class="icon-bar"></span>
         </button>
-		<a class="navbar-brand" href="/">Harbor <sub>BETA</sub></a>
+		<a class="navbar-brand" href="/"><img src="static/resources/image/Harbor_Logo_rec.png" height="40px" width="80px"/></a>
     </div>
 	<div id="navbar" class="navbar-collapse collapse">
 		<form class="navbar-form navbar-right">
