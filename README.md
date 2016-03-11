@@ -37,9 +37,9 @@ Generated configuration file: ./config/db/env
 
 $ docker-compose up
 ```
-If everything works fine, you can open a browser to visit http://yourhostname . The default administrator username and password is admin/Harbor12345 .
+If everything works fine, you can open a browser to visit the admin portal at:  http://yourhostname . The default administrator username and password is admin/Harbor12345 .
 
-NOTE: 
+**NOTE:**  
 *To simplify the installation process, a pre-built package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use the installation package, please refer to* [Installation Guide](docs/installation_guide.md) .
 
 *For information on how to use Harbor, please see* [User Guide](docs/user_guide.md) .
