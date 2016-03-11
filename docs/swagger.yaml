@@ -1,0 +1,655 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Harbor API
+  description: These APIs provide services for manipulating Harbor project.
+  version: "0.1.0"
+# the domain of the service
+host: localhost
+# array of all schemes that your API supports
+schemes:
+  - http
+basePath: /api
+produces:
+  - application/json
+  - text/plain
+consumes:
+  - text/plain
+  - application/json
+paths:
+  /search:
+    get:
+      summary: Search for projects and repositories
+      description: |
+        The Search endpoint returns information about the projects and repositories
+        offered at public status or related to the current logged in user. The
+        response includes the project and repository list in a proper
+        display order.
+      parameters:
+        - name: q
+          in: query
+          description: Search parameter for project and repository name.
+          required: true
+          type: string
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Search'
+        500:
+          description: Unexpected internal errors.
+  /projects:
+    get:
+      summary: Return projects created by Harbor
+      description: |
+        This endpoint returns all projects created by Harbor, and can be filtered by project name.
+      parameters:
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+          format: string
+        - name: is_public
+          in: query
+          description: Public sign for filtering projects.
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        500:
+          description: Internal errors.
+    head:
+      summary: Check if the project name user provided already exists.
+      description: |
+        This endpoint is used to check if the project name user provided already exist.
+      parameters:
+        - name: project_name
+          in: query
+          description: Project name for checking exists.
+          required: true
+          type: string
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project name exists.
+        401:
+          description: User need to log in first.
+        404:
+          description: Project name does not exist.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Create a new project.
+      description: |
+        This endpoint is for user to create a new project.
+      parameters:
+        - name: project
+          in: body
+          description: New created project.
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project created successfully.
+        400:
+          description: Unsatisfied with constraints of the project creation.
+        401:
+          description: User need to log in first.
+        409:
+          description: Project name already exists.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}:
+    put:
+      summary: Update properties for a selected project.
+      description: |
+        This endpoint is aimed to toggle a project publicity status.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected project ID.
+        - name: project
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/Project'
+          description: Updates of project.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated project publicity status successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}/logs/filter:
+    post:
+      summary: Get access logs accompany with a relevant project.
+      description: |
+        This endpoint let user search access logs filtered by operations and date time ranges.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID
+        - name: access_log
+          in: body
+          schema:
+            $ref: '#/definitions/AccessLog'
+          description: Search results of access logs.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get access log successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AccessLog'
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}/members/:
+    get:
+      summary: Return a project's relevant role members.
+      description: |
+        This endpoint is for user to search a specified project's relevant role members.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get project's relevant role members successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}/members/{user_id}:
+    get:
+      summary: Return role members accompany with relevant project and user.
+      description: |
+        This endpoint is for user to get role members accompany with relevant project and user. 
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant user ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get project role members successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    put:
+      summary: Update project role members accompany with relevant project and user.
+      description: |
+        This endpoint is for user to update current project role members accompany with relevant project and user.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant user ID.
+        - name: roles
+          in: body
+          schema:
+            $ref: '#/definitions/RoleParam'
+          description: Updates for roles and username.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project role members updated successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.      
+    delete:
+      summary: Delete project role members accompany with relevant project and user.
+      description: |
+        This endpoint is aimed to remove project role members already added to the relevant project and user.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant user ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project role members deleted successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.   
+  /projects/{project_id}/members/:
+    post:
+      summary: Add project role member accompany with relevant project and user.
+      description: |
+        This endpoint is for user to add project role member accompany with relevant project and user.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: roles
+          in: body
+          description: Role members for adding to relevant project.
+          schema: 
+            $ref: '#/definitions/RoleParam'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Role members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        409:
+          description: User has already added as a project role member.
+        500:
+          description: Unexpected internal errors.
+  /users:
+    get:
+      summary: Get registered users of Harbor.
+      description: |
+        This endpoint is for user to search registered users, support for filtering results with username.Notice, by now this operation is only for administrator.
+      parameters:
+        - name: user_name
+          in: query
+          type: string
+          format: string
+          required: false
+          description: Username for filtering results.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Searched for users of Harbor successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /users/{user_id}:
+    put:
+      summary: Update a registered user to change to be an administrator of Harbor.
+      description: |
+        This endpoint let a registered user change to be an administrator
+        of Harbor.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Mark a registered user as be removed.
+      description: |
+        This endpoint let administrator of Harbor mark a registered user as
+        be removed.It actually won't be deleted from DB.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: User ID for marking as to be removed.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Marked user as be removed successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /repositories:
+    get:
+      summary: Get repositories accompany with relevant project and repo name.
+      description: |
+        This endpoint let user search repositories accompanying with relevant project ID and repo name.
+      parameters:
+        - name: project_id
+          in: query
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: q
+          in: query
+          type: string
+          format: string
+          required: false
+          description: Repo name for filtering results.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Searched for respositories successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        400:
+          description: Invalid project ID.
+        403:
+          description: Project is not public or current user is irrelevant to the repository.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /repositories/tags:
+    get:
+      summary: Get tags of a relevant repository.
+      description: |
+        This endpoint aims to retrieve tags from a relevant repository.
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          required: true
+          description: Relevant repository name.
+      tags:
+       - Products
+      responses:
+        200:
+          description: Retrieved tags from a relevant repository successfully.
+        500:
+          description: Unexpected internal errors.
+  /repositories/manifest:
+    get:
+      summary: Get manifests of a relevant repository.
+      description: |
+        This endpoint aims to retreive manifests from a relevant repository.
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: query
+          type: string
+          required: true
+          description: Tag name
+      tags:
+        - Products
+      responses:
+        200:
+          description: Retrieved manifests from a relevant repository successfully.
+        500:
+          description: Unexpected internal errors.
+definitions:
+  Search:
+    type: object
+    properties:
+      projects:
+        description: Search results of the projects that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/Project'
+      repositories:
+        description: Search results of the repositories that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/Repository'
+  Project:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: Project ID
+      owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the project always means the creator of the project.
+      project_name:
+        type: string
+        description: The name of the project.
+      creation_time:
+        type: string
+        description: The creation time of the project.
+      deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the project.
+      user_id:
+        type: integer
+        format: int32
+        description: A relation field to the user table.
+      owner_name:
+        type: string
+        description: The owner name of tthe project always means the creator of the project.
+      public:
+        type: boolean
+        format: boolean
+        description: The public status of the project.
+      togglable:
+        type: boolean
+        description: Correspond to the UI about showing the public status of the project.
+  Repository:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Repository ID
+      parent:
+        type: string
+        description: Parent of the image.
+      created:
+        type: string
+        format: date-time
+        description: Repository create time.
+      duration_days:
+        type: string
+        description: Duration days of the image.
+      author:
+        type: string
+        description: Author of the image.
+      architecture:
+        type: string
+        description: Architecture of the image.
+      docker_version:
+        type: string
+        description: Docker version of the image.
+      os:
+        type: string
+        description: OS of the image.
+  User:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int32
+      username:
+        type: string
+      email:
+        type: string
+      password: 
+        type: string
+      realname: 
+        type: string
+      comment:
+        type: string
+      deleted:
+        type: integer
+        format: int32
+  AccessLog:
+    type: object
+    properties:
+      username:
+        type: string
+        description: Relevant user's name that accessed this project.
+      keywords:
+        type: string
+        description: Operation name specified when project created.
+      beginTimestamp:
+        type: integer
+        format: int32
+        description: Begin timestamp for querying access logs.
+      endTimestamp:
+        type: integer
+        format: int32
+        description: End timestamp for querying accessl logs.
+  Role:
+    type: object
+    properties:
+      role_id: 
+        type: integer
+        format: int32
+        description: ID in table.
+      role_code: 
+        type: string
+        description: Description of permissions for the role.
+      role_name:
+        type: string
+        description: Name the the role.
+  RoleParam:
+    type: object
+    properties:
+      roles:
+        type: array
+        items:
+          type: integer  
+          format: int32
+        description: Role ID for updating project role member.
+      user_name:
+        type: string
+        description: Username relevant to a project role member.
