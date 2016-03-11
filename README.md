@@ -15,30 +15,38 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management software becomes easy.
 
 ### Try it
-Harbor is self contained and can be easily deployed via docker-compose.  
-**System requirements:** Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
+Harbor is self-contained and can be easily deployed via docker-compose.  
 
-* Get the source code:
-```sh
-$ git clone https://github.com/vmware/harbor
-```
+**System requirements:**  
+Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
+The host must be connected to the Internet.
 
-* Make necessary configuration changes to the file Deploy/harbor.cfg . Refer to [Installation Guide](docs/installation_guide.md) for more info.
+1. Get the source code:
+    
+    ```sh
+    $ git clone https://github.com/vmware/harbor
+    ```
+2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as host name, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
 
-* Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
-```sh
-$ cd Deploy
-$ ./prepare
-Generated configuration file: ./config/ui/env
-Generated configuration file: ./config/ui/app.conf
-Generated configuration file: ./config/registry/config.yml
-Generated configuration file: ./config/db/env
-$ docker-compose up
-```
 
-*An installation package is provided, such that you don't need to clone the whole repo. You can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use the installation package, please refer to* [Installation Guide](docs/installation_guide.md) .
+3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
+    ```sh
+    $ cd Deploy
+    
+    $ ./prepare
+    Generated configuration file: ./config/ui/env
+    Generated configuration file: ./config/ui/app.conf
+    Generated configuration file: ./config/registry/config.yml
+    Generated configuration file: ./config/db/env
+    
+    $ docker-compose up
+    ```
+If everything works fine, you can open a browser to visit the admin portal at:  http://yourhostname . The default administrator username and password is admin/Harbor12345 .
 
-*For information on how to use Harbor, please see* [User Guide](docs/user_guide.md) .
+**NOTE:**  
+To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation Guide](docs/installation_guide.md) .
+
+For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
 ### Contribution
 We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
