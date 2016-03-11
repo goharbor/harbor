@@ -25,6 +25,7 @@ ENV MYSQL_USR root \
 
 COPY views /go/bin/views
 COPY static /go/bin/static
+COPY favicon.ico /go/bin/favicon.ico
 
 RUN chmod u+x /go/bin/harbor \
     && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
