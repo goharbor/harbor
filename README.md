@@ -22,6 +22,7 @@ Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
 The host must be connected to the Internet.
 
 1. Get the source code:
+    
     ```sh
     $ git clone https://github.com/vmware/harbor
     ```
