@@ -23,20 +23,24 @@ Harbor is self contained and can be easily deployed via docker-compose.
 $ git clone https://github.com/vmware/harbor
 ```
 
-* Make necessary configuration changes to the file Deploy/harbor.cfg . Refer to [Installation Guide](docs/installation_guide.md) for more info.
+* Edit the file Deploy/harbor.cfg, make necessary configuration changes such as host name, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.
 
 * Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
 ```sh
 $ cd Deploy
+
 $ ./prepare
 Generated configuration file: ./config/ui/env
 Generated configuration file: ./config/ui/app.conf
 Generated configuration file: ./config/registry/config.yml
 Generated configuration file: ./config/db/env
+
 $ docker-compose up
 ```
+If everything works fine, you can open a browser to visit http://yourhostname . The default administrator username and password is admin/Harbor12345 .
 
-*An installation package is provided, such that you don't need to clone the whole repo. You can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use the installation package, please refer to* [Installation Guide](docs/installation_guide.md) .
+NOTE: 
+*To simplify the installation process, a pre-built package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use the installation package, please refer to* [Installation Guide](docs/installation_guide.md) .
 
 *For information on how to use Harbor, please see* [User Guide](docs/user_guide.md) .
 
