@@ -34,6 +34,7 @@ type Logger struct {
 	mu     sync.Mutex
 }
 
+// New returns a customized Logger
 func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
 	return &Logger{
 		out:    out,
@@ -42,6 +43,7 @@ func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
 	}
 }
 
+//SetOutput sets the output of Logger l
 func (l *Logger) SetOutput(out io.Writer) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -49,6 +51,7 @@ func (l *Logger) SetOutput(out io.Writer) {
 	l.out = out
 }
 
+//SetFormatter sets the formatter of Logger l
 func (l *Logger) SetFormatter(fmtter Formatter) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -56,6 +59,7 @@ func (l *Logger) SetFormatter(fmtter Formatter) {
 	l.fmtter = fmtter
 }
 
+//SetLevel sets the level of Logger l
 func (l *Logger) SetLevel(lvl Level) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -63,25 +67,19 @@ func (l *Logger) SetLevel(lvl Level) {
 	l.lvl = lvl
 }
 
+//SetOutput sets the output of default Logger
 func SetOutput(out io.Writer) {
-	logger.mu.Lock()
-	defer logger.mu.Unlock()
-
-	logger.out = out
+	logger.SetOutput(out)
 }
 
+//SetFormatter sets the formatter of default Logger
 func SetFormatter(fmtter Formatter) {
-	logger.mu.Lock()
-	defer logger.mu.Unlock()
-
-	logger.fmtter = fmtter
+	logger.SetFormatter(fmtter)
 }
 
+//SetLevel sets the level of default Logger
 func SetLevel(lvl Level) {
-	logger.mu.Lock()
-	defer logger.mu.Unlock()
-
-	logger.lvl = lvl
+	logger.SetLevel(lvl)
 }
 
 func (l *Logger) output(record *Record) (err error) {
@@ -98,6 +96,7 @@ func (l *Logger) output(record *Record) (err error) {
 	return
 }
 
+// Debug ...
 func (l *Logger) Debug(v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		line := line(2)
@@ -106,6 +105,7 @@ func (l *Logger) Debug(v ...interface{}) {
 	}
 }
 
+// Debugf ...
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		line := line(2)
@@ -114,6 +114,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	}
 }
 
+// Info ...
 func (l *Logger) Info(v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), "", InfoLevel)
@@ -121,6 +122,7 @@ func (l *Logger) Info(v ...interface{}) {
 	}
 }
 
+// Infof ...
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", InfoLevel)
@@ -128,6 +130,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	}
 }
 
+// Warning ...
 func (l *Logger) Warning(v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), "", WarningLevel)
@@ -135,6 +138,7 @@ func (l *Logger) Warning(v ...interface{}) {
 	}
 }
 
+// Warningf ...
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", WarningLevel)
@@ -142,6 +146,7 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 	}
 }
 
+// Error ...
 func (l *Logger) Error(v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		line := line(2)
@@ -150,6 +155,7 @@ func (l *Logger) Error(v ...interface{}) {
 	}
 }
 
+// Errorf ...
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		line := line(2)
@@ -158,6 +164,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	}
 }
 
+// Fatal ...
 func (l *Logger) Fatal(v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		line := line(2)
@@ -167,6 +174,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 	os.Exit(1)
 }
 
+// Fatalf ...
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		line := line(2)
@@ -176,6 +184,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 	os.Exit(1)
 }
 
+// Debug ...
 func Debug(v ...interface{}) {
 	if logger.lvl <= DebugLevel {
 		line := line(2)
@@ -184,6 +193,7 @@ func Debug(v ...interface{}) {
 	}
 }
 
+// Debugf ...
 func Debugf(format string, v ...interface{}) {
 	if logger.lvl <= DebugLevel {
 		line := line(2)
@@ -192,6 +202,7 @@ func Debugf(format string, v ...interface{}) {
 	}
 }
 
+// Info ...
 func Info(v ...interface{}) {
 	if logger.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), "", InfoLevel)
@@ -199,6 +210,7 @@ func Info(v ...interface{}) {
 	}
 }
 
+// Infof ...
 func Infof(format string, v ...interface{}) {
 	if logger.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", InfoLevel)
@@ -206,6 +218,7 @@ func Infof(format string, v ...interface{}) {
 	}
 }
 
+// Warning  ...
 func Warning(v ...interface{}) {
 	if logger.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), "", WarningLevel)
@@ -213,6 +226,7 @@ func Warning(v ...interface{}) {
 	}
 }
 
+// Warningf ...
 func Warningf(format string, v ...interface{}) {
 	if logger.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", WarningLevel)
@@ -220,6 +234,7 @@ func Warningf(format string, v ...interface{}) {
 	}
 }
 
+// Error ...
 func Error(v ...interface{}) {
 	if logger.lvl <= ErrorLevel {
 		line := line(2)
@@ -228,6 +243,7 @@ func Error(v ...interface{}) {
 	}
 }
 
+// Errorf ...
 func Errorf(format string, v ...interface{}) {
 	if logger.lvl <= ErrorLevel {
 		line := line(2)
@@ -236,6 +252,7 @@ func Errorf(format string, v ...interface{}) {
 	}
 }
 
+// Fatal ...
 func Fatal(v ...interface{}) {
 	if logger.lvl <= FatalLevel {
 		line := line(2)
@@ -245,6 +262,7 @@ func Fatal(v ...interface{}) {
 	os.Exit(1)
 }
 
+// Fatalf ...
 func Fatalf(format string, v ...interface{}) {
 	if logger.lvl <= FatalLevel {
 		line := line(2)

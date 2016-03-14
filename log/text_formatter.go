@@ -20,12 +20,14 @@ import (
 	"time"
 )
 
-var defaultTimeFormat string = time.RFC3339
+var defaultTimeFormat = time.RFC3339 // 2006-01-02T15:04:05Z07:00
 
+// TextFormatter represents a kind of formatter that formats the logs as plain text
 type TextFormatter struct {
 	timeFormat string
 }
 
+// NewTextFormatter returns a customized TextFormatter
 func NewTextFormatter(timeFormat string) *TextFormatter {
 	if len(timeFormat) == 0 {
 		timeFormat = defaultTimeFormat
