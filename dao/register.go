@@ -71,6 +71,10 @@ func validate(user models.User) error {
 		return errors.New("Username already exists.")
 	}
 
+	if exist, _ := ProjectExists(user.Username); exist {
+		return errors.New("Project " + user.Username + " already exists.")
+	}
+
 	if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
 		return errors.New("Email with illegal format.")
 	}

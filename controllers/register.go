@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -51,10 +52,16 @@ func (rc *CommonController) SignUp() {
 
 	user := models.User{Username: username, Email: email, Realname: realname, Password: password, Comment: comment}
 
-	_, err := dao.Register(user)
+	userId, err := dao.Register(user)
 	if err != nil {
 		beego.Error("Error occurred in Register:", err)
 		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	} else {
+		project := models.Project{OwnerID: int(userId), Name: username, CreationTime: time.Now(), Public: 0}
+		err = dao.AddProject(project)
+		if err != nil {
+			beego.Error("Failed to add project, error: ", err)
+		}
 	}
 }
 
