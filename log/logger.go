@@ -186,90 +186,52 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 
 // Debug ...
 func Debug(v ...interface{}) {
-	if logger.lvl <= DebugLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprint(v...), line, DebugLevel)
-		logger.output(record)
-	}
+	logger.Debug(v...)
 }
 
 // Debugf ...
 func Debugf(format string, v ...interface{}) {
-	if logger.lvl <= DebugLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), line, DebugLevel)
-		logger.output(record)
-	}
+	logger.Debugf(format, v...)
 }
 
 // Info ...
 func Info(v ...interface{}) {
-	if logger.lvl <= InfoLevel {
-		record := NewRecord(time.Now(), fmt.Sprint(v...), "", InfoLevel)
-		logger.output(record)
-	}
+	logger.Info(v...)
 }
 
 // Infof ...
 func Infof(format string, v ...interface{}) {
-	if logger.lvl <= InfoLevel {
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", InfoLevel)
-		logger.output(record)
-	}
+	logger.Infof(format, v...)
 }
 
 // Warning  ...
 func Warning(v ...interface{}) {
-	if logger.lvl <= WarningLevel {
-		record := NewRecord(time.Now(), fmt.Sprint(v...), "", WarningLevel)
-		logger.output(record)
-	}
+	logger.Warning(v...)
 }
 
 // Warningf ...
 func Warningf(format string, v ...interface{}) {
-	if logger.lvl <= WarningLevel {
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", WarningLevel)
-		logger.output(record)
-	}
+	logger.Warningf(format, v...)
 }
 
 // Error ...
 func Error(v ...interface{}) {
-	if logger.lvl <= ErrorLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprint(v...), line, ErrorLevel)
-		logger.output(record)
-	}
+	logger.Error(v...)
 }
 
 // Errorf ...
 func Errorf(format string, v ...interface{}) {
-	if logger.lvl <= ErrorLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), line, ErrorLevel)
-		logger.output(record)
-	}
+	logger.Errorf(format, v...)
 }
 
 // Fatal ...
 func Fatal(v ...interface{}) {
-	if logger.lvl <= FatalLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprint(v...), line, FatalLevel)
-		logger.output(record)
-	}
-	os.Exit(1)
+	logger.Fatal(v...)
 }
 
 // Fatalf ...
 func Fatalf(format string, v ...interface{}) {
-	if logger.lvl <= FatalLevel {
-		line := line(2)
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), line, FatalLevel)
-		logger.output(record)
-	}
-	os.Exit(1)
+	logger.Fatalf(format, v...)
 }
 
 func line(calldepth int) string {
