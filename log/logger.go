@@ -24,7 +24,25 @@ import (
 	"time"
 )
 
-var logger = New(os.Stdout, NewTextFormatter(""), WarningLevel)
+var logger = New(os.Stdout, NewTextFormatter(), WarningLevel)
+
+func init() {
+	// TODO add item in configuaration file
+	lvl := os.Getenv("LOG_LEVEL")
+	if len(lvl) == 0 {
+		logger.SetLevel(InfoLevel)
+		return
+	}
+
+	level, err := parseLevel(lvl)
+	if err != nil {
+		logger.SetLevel(InfoLevel)
+		return
+	}
+
+	logger.SetLevel(level)
+
+}
 
 // Logger provides a struct with fields that describe the details of logger.
 type Logger struct {

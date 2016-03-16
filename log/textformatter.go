@@ -27,14 +27,10 @@ type TextFormatter struct {
 	timeFormat string
 }
 
-// NewTextFormatter returns a customized TextFormatter
-func NewTextFormatter(timeFormat string) *TextFormatter {
-	if len(timeFormat) == 0 {
-		timeFormat = defaultTimeFormat
-	}
-
+// NewTextFormatter returns a TextFormatter, the format of time is time.RFC3339
+func NewTextFormatter() *TextFormatter {
 	return &TextFormatter{
-		timeFormat: timeFormat,
+		timeFormat: defaultTimeFormat,
 	}
 }
 
@@ -57,4 +53,10 @@ func (t *TextFormatter) Format(r *Record) (b []byte, err error) {
 	}
 
 	return
+}
+
+func (t *TextFormatter) SetTimeFormat(fmt string) {
+	if len(fmt) != 0 {
+		t.timeFormat = fmt
+	}
 }

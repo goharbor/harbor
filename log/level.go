@@ -15,6 +15,10 @@
 
 package log
 
+import (
+	"fmt"
+)
+
 // Level ...
 type Level int
 
@@ -31,19 +35,41 @@ const (
 	FatalLevel
 )
 
-func (l Level) string() string {
+func (l Level) string() (lvl string) {
 	switch l {
 	case DebugLevel:
-		return "DEBUG"
+		lvl = "DEBUG"
 	case InfoLevel:
-		return "INFO"
+		lvl = "INFO"
 	case WarningLevel:
-		return "WARNING"
+		lvl = "WARNING"
 	case ErrorLevel:
-		return "ERROR"
+		lvl = "ERROR"
 	case FatalLevel:
-		return "FATAL"
+		lvl = "FATAL"
+	default:
+		lvl = "UNKNOWN"
 	}
 
-	return "unknown"
+	return
+}
+
+func parseLevel(lvl string) (level Level, err error) {
+
+	switch lvl {
+	case "debug":
+		level = DebugLevel
+	case "info":
+		level = InfoLevel
+	case "warning":
+		level = WarningLevel
+	case "error":
+		level = ErrorLevel
+	case "fatal":
+		level = FatalLevel
+	default:
+		err = fmt.Errorf("invalid log level: %s", lvl)
+	}
+
+	return
 }
