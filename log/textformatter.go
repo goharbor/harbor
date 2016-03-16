@@ -55,6 +55,7 @@ func (t *TextFormatter) Format(r *Record) (b []byte, err error) {
 	return
 }
 
+// SetTimeFormat sets time format of TextFormatter if the parameter fmt is not null
 func (t *TextFormatter) SetTimeFormat(fmt string) {
 	if len(fmt) != 0 {
 		t.timeFormat = fmt
