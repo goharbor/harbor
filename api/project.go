@@ -65,6 +65,48 @@ func (p *ProjectAPI) Prepare() {
 	}
 }
 
+// Delete
+func (p *ProjectAPI) Delete() {
+	var req projectReq
+	var public int
+	p.DecodeJSONReq(&req)
+	if req.Public {
+		public = 1
+	}
+	err := validateProjectReq(req)
+	if err != nil {
+		beego.Error("Invalid project request, error: ", err)
+		p.RenderError(http.StatusBadRequest, "Invalid request for creating project")
+		return
+	}
+	projectName := req.ProjectName
+	exist, err := dao.ProjectExists(projectName)
+	if err != nil {
+		beego.Error("Error happened checking project existence in db:", err, ", project name:", projectName)
+		return
+	}
+	if !exist {
+		beego.Error("Project does not exist in db: ", projectName)
+		p.RenderError(http.StatusConflict, "")
+		return
+	}
+
+	project := dao.GetProjectByName(projectName)
+
+	if !isProjectAdmin(p.userID, project.ProjectID) {
+		beego.Warning("Current user, id:", p.userID, ", does not have project admin role for project, id:", project.ProjectID)
+		p.RenderError(http.StatusForbidden, "")
+		return
+	}
+
+	err = dao.DeleteProject(project)
+	if err != nil {
+		beego.Error("Failed to delete project, error: ", err)
+		p.RenderError(http.StatusInternalServerError, "Failed to delete project")
+		return
+	}
+}
+
 // Post ...
 func (p *ProjectAPI) Post() {
 	var req projectReq

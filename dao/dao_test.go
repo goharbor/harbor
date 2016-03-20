@@ -679,3 +679,22 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("user is not nil after deletion, user: %+v", user)
 	}
 }
+
+func TestDeleteProject(t *testing.T) {
+	project := models.Project{
+		OwnerID:      currentUser.UserID,
+		Name:         "test_proj2",
+		CreationTime: time.Now(),
+		OwnerName:    currentUser.Username,
+	}
+
+	err := AddProject(project)
+	if err != nil {
+		t.Errorf("Error occurred in AddProject: %v", err)
+	}
+
+	err = DeleteProject(project)
+	if err != nil {
+		t.Errorf("Error occurred in AddProject: %v", err)
+	}
+}

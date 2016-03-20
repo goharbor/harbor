@@ -91,3 +91,15 @@ func DeleteUserProjectRoles(userID int, projectID int64) error {
 	_, err = p.Exec(userID, projectID)
 	return err
 }
+
+// DeleteProjectRoles
+func DeleteProjectRole(projectID int64) error {
+	o := orm.NewOrm()
+	sql := `delete from project_role where project_id = ? `
+	p, err := o.Raw(sql).Prepare()
+	if err != nil {
+		return err
+	}
+	_, err = p.Exec(projectID)
+	return err
+}

@@ -85,6 +85,27 @@ func AddProject(project models.Project) error {
 	return err
 }
 
+// DeleteProject
+func DeleteProject(project models.Project) error {
+
+	err := DeleteUserProjectRoles(project.OwnerID, project.ProjectID)
+	if err != nil {
+		return err
+	}
+	err = DeleteProjectRole(project.ProjectID)
+	if err != nil {
+		return err
+	}
+	o := orm.NewOrm()
+	sql := `update project set deleted = 1 where project_id = ?`
+	p, err := o.Raw(sql).Prepare()
+	if err != nil {
+		return err
+	}
+	_, err = p.Exec(project.ProjectID)
+	return err
+}
+
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
