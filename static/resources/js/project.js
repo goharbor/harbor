@@ -65,8 +65,9 @@ jQuery(function(){
 		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_off")+ '</button></td>';
 		                  } else if (e.Public == 0) {
 		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
-		                      row += '</tr>';
 		                  }
+				  row += '<td style="padding-left: 30px; vertical-align: middle;"><a href="#" style="visibility: hidden;" class="tdDeleteProject" projectid="' + e.ProjectId + '"><span class="glyphicon glyphicon-trash"></span></a></td>';
+		                  row += '</tr>';
 		                  $("#tblProject tbody").append(row);
 		              });
 		          }
@@ -139,6 +140,27 @@ jQuery(function(){
 			});
 		});
 		
+		$("#tblProject tbody tr").on("mouseover", function(){
+			$(".tdDeleteProject", this).css({"visibility":"visible"});
+		}).on("mouseout", function(){
+			$(".tdDeleteProject", this).css({"visibility":"hidden"});
+		});
+
+		$("#tblProject tbody tr .tdDeleteProject").on("click", function(){
+			var projectId = $(this).attr("projectid");
+                        var self = this;
+                        new AjaxUtil({
+	                        url: "/api/projects/" + projectId,
+			        type: "delete",
+				complete: function(jqXhr, status){
+					if(jqXhr && jqXhr.status == 200){
+				//		$("#btnSearchUsername").trigger("click");
+					}
+				},
+				error: function(jqXhr){}
+		        }).exec();
+		});
+
 		$("#btnSearch").on("click", function(){
 			var projectName = $("#txtSearchProject").val();
 			if($.trim(projectName).length == 0){
