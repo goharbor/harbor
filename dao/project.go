@@ -86,9 +86,18 @@ func AddProject(project models.Project) error {
 }
 
 // DeleteProject
-func DeleteProject(project models.Project) error {
+func DeleteProject(projectID int64) error {
 
-	err := DeleteUserProjectRoles(project.OwnerID, project.ProjectID)
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		beego.Error("Error happened checking project existence in db:", err, ", project ID:", projectID)
+		return err
+	}
+	if project == nil {
+		beego.Error("Project does not exist in db, project ID: ", projectID)
+		return nil
+	}
+	err = DeleteUserProjectRoles(project.OwnerID, project.ProjectID)
 	if err != nil {
 		return err
 	}

@@ -39,6 +39,7 @@ type searchResult struct {
 }
 
 // Search a user and the relevant projects
+/*
 func (sa *SearchAPI) GetUserProject() {
 	userID, ok := sa.GetSession("userId").(int)
 	if !ok {
@@ -72,6 +73,7 @@ func (sa *SearchAPI) GetUserProject() {
 		}
 	}
 }
+*/
 
 // Get ...
 func (sa *SearchAPI) Get() {

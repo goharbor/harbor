@@ -693,7 +693,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Errorf("Error occurred in AddProject: %v", err)
 	}
 
-	err = DeleteProject(project)
+	err = DeleteProject(project.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in AddProject: %v", err)
 	}
