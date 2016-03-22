@@ -7,7 +7,7 @@
 Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from public network. This is very helpful to container users who do not have a good network to the Internet. For example, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
 
 ### Features
-* **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have differernt permission for images under a namespace.
+* **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have different permission for images under a namespace.
 * **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namepaces.
 * **AD/LDAP support**: Harbor integrates with existing AD/LDAP of enterprise for user authentication and management.
 * **Audting**: All the operations to the repositories are tracked and can be used for auditing purpose.
