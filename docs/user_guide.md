@@ -72,7 +72,17 @@ Administrator can add "SysAdmin" role to an ordinary user by toggling the switch
 ![browse project](img/set_admin_remove_user.png)
 
 ##Pulling and pushing images using Docker client
+
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
+
+Harbor supports HTTP by default and Docker client trys to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos):    
+*FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
+Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
+If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
+`--insecure-registry myregistrydomain.com:5000` to the daemon's arguments.  
+In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag;  
+simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com:5000/ca.crt*  
+
 ###Pulling images
 If the project that the image belongs to is private, you should sign in first:  
 
