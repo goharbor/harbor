@@ -4,15 +4,15 @@
 
 ![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
 
-Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from public network. This is very helpful to container users who do not have a good network to the Internet. For example, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
+Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from the public network. This is very helpful to container users who do not have a good network to the Internet. For example, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
 
 ### Features
 * **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have different permission for images under a namespace.
-* **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namepaces.
-* **AD/LDAP support**: Harbor integrates with existing AD/LDAP of enterprise for user authentication and management.
-* **Audting**: All the operations to the repositories are tracked and can be used for auditing purpose.
+* **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namespaces.
+* **AD/LDAP support**: Harbor integrates with existing AD/LDAP of the enterprise for user authentication and management.
+* **Auditing**: All the operations to the repositories are tracked and can be used for auditing purpose.
 * **Internationalization**: Localized for English and Chinese languages. More languages can be added.
-* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management software becomes easy.
+* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with another management software becomes easy.
 
 ### Try it
 Harbor is self-contained and can be easily deployed via docker-compose.  
@@ -26,7 +26,7 @@ The host must be connected to the Internet.
     ```sh
     $ git clone https://github.com/vmware/harbor
     ```
-2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as host name, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
+2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
 
 
 3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
@@ -41,7 +41,7 @@ The host must be connected to the Internet.
     
     $ docker-compose up
     ```
-If everything works fine, you can open a browser to visit the admin portal at:  http://yourhostname . The default administrator username and password is admin/Harbor12345 .
+If everything works fine, you can open a browser to visit the admin portal at http://yourhostname . The default administrator username and password are admin/Harbor12345 .
 
 **NOTE:**  
 To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation Guide](docs/installation_guide.md) .
