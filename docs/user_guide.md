@@ -75,7 +75,7 @@ Administrator can add "SysAdmin" role to an ordinary user by toggling the switch
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
-If you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos):    
+Harbor supports HTTP by default and Docker client trys to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos):    
 *FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
 Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
