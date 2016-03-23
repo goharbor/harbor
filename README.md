@@ -12,7 +12,7 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **AD/LDAP support**: Harbor integrates with existing AD/LDAP of the enterprise for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked and can be used for auditing purpose.
 * **Internationalization**: Localized for English and Chinese languages. More languages can be added.
-* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with another management software becomes easy.
+* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management softwares becomes easy.
 
 ### Try it
 Harbor is self-contained and can be easily deployed via docker-compose.  

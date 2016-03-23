@@ -1,6 +1,6 @@
 # Installation Guide of Harbor
 ### Download the installation package
-Harbor can be installed from the source code by using "docker-compose up" command, which goes through a full build process. Besides, a pre-built installation package for each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases). This guide describes the installation of Harbor by the pre-built package.
+Harbor can be installed from the source code by using "docker-compose up" command, which goes through a full build process. Besides, a pre-built installation package for each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases). This guide describes the installation of Harbor by the using pre-built package.
 ### Prerequisites for target machine
 Harbor is deployed as several Docker containers.  Hence, it can be deployed on any Linux distribution that supports Docker. 
 Before deploying Harbor, the target machine requires Python, Docker, Docker Compose to be installed.  
