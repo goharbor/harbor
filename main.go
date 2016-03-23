@@ -18,7 +18,7 @@ package main
 import (
 	"fmt"
 
-	log "github.com/vmware/harbor/log"
+	log "github.com/vmware/harbor/utils/log"
 
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
@@ -39,7 +39,7 @@ func updateInitPassword(userID int, password string) error {
 	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		return fmt.Errorf("Failed to get user, userID: %d", userID)
+		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
 	}
 	if user == nil {
 		return fmt.Errorf("User id: %d does not exist.", userID)
