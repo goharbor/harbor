@@ -17,7 +17,8 @@ package main
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/vmware/harbor/log"
 
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
@@ -38,28 +39,27 @@ func updateInitPassword(userID int, password string) error {
 	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Println("Failed to get user, userID:", userID)
-		return err
+		return fmt.Errorf("Failed to get user, userID: %d", userID)
 	}
 	if user == nil {
-		log.Printf("User id: %d does not exist.", userID)
 		return fmt.Errorf("User id: %d does not exist.", userID)
-	} else if user.Salt == "" {
+	}
+	if user.Salt == "" {
 		salt, err := dao.GenerateRandomString()
 		if err != nil {
-			log.Printf("Failed to generate salt for encrypting password, %v", err)
-			return err
+			return fmt.Errorf("Failed to generate salt for encrypting password, %v", err)
 		}
+
 		user.Salt = salt
 		user.Password = password
 		err = dao.ChangeUserPassword(*user)
 		if err != nil {
-			log.Printf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
-			return err
+			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
-		log.Printf("User id: %d updated its encypted password successfully.", userID)
+
+		log.Infof("User id: %d updated its encypted password successfully.", userID)
 	} else {
-		log.Printf("User id: %d already has its encrypted password.", userID)
+		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
 	return nil
 }
@@ -68,6 +68,8 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	dao.InitDB()
-	updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
+	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
+		log.Error(err)
+	}
 	beego.Run()
 }
