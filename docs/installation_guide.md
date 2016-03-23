@@ -1,15 +1,15 @@
 # Installation Guide of Harbor
 ### Download the installation package
-The installation package file for each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases).
+Harbor can be installed from the source code by using "docker-compose up" command, which goes through a full build process. Besides, a pre-built installation package for each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases).
 ### Prerequisites for target machine
 Harbor is deployed as several Docker containers.  Hence, it can be deployed on any Linux distribution that supports Docker. 
-Before deploying Harbor, the target machine requires python, docker-engine, docker compose installed.  
+Before deploying Harbor, the target machine requires Python, Docker, Docker Compose to be installed.  
 * Python should be version 2.7 or higher.  Some Linux distributions (Gentoo, Arch) may not have a Python interpreter installed by default. On those systems, you need to install Python manually.  
 * The Docker engine should be version 1.8 or higher.  For the details to install Docker engine, please refer to: https://docs.docker.com/engine/installation/
-* The docker-compose needs to be version 1.6.0 or higher.  For the details to install Docker compose, please refer to: https://docs.docker.com/compose/install/
+* The Docker Compose needs to be version 1.6.0 or higher.  For the details to install Docker compose, please refer to: https://docs.docker.com/compose/install/
 
 ### Configuration of Harbor 
-After downloading the package file **```harbor-<version>.tgz```** from release page, you need to extract the package. Before installing Harbor, configure the parameters in the file **harbor.cfg**. Then execute the **prepare** script to generate configuration files for Harbor's containers. Finally, use docker-compose to start the service.  
+After downloading the package file **```harbor-<version>.tgz```** from release page, you need to extract the package. Before installing Harbor, configure the parameters in the file **harbor.cfg**. Then execute the **prepare** script to generate configuration files for Harbor's containers. Finally, use Docker Compose to start the service.  
 At minimum, you only need to change the **hostname** attribute in **harbor.cfg** by updating the IP  address or fully qualified hostname of your target machine, for example 192.168.1.10.  Please see the next section for the description of each parameter.
 ```
 $ tar -xzvf harbor-0.1.0.tgz
