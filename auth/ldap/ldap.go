@@ -18,15 +18,15 @@ package ldap
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
+
+	log "github.com/vmware/harbor/utils/log"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 
-	"github.com/astaxie/beego"
 	"github.com/mqu/openldap"
 )
 
@@ -44,7 +44,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if ldapURL == "" {
 		return nil, errors.New("Can not get any available LDAP_URL.")
 	}
-	beego.Debug("ldapURL:", ldapURL)
+	log.Debug("ldapURL:", ldapURL)
 
 	p := m.Principal
 	for _, c := range metaChars {
@@ -66,7 +66,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 
 	baseDn := fmt.Sprintf(ldapBaseDn, m.Principal)
-	beego.Debug("baseDn:", baseDn)
+	log.Debug("baseDn:", baseDn)
 
 	err = ldap.Bind(baseDn, m.Password)
 	if err != nil {
@@ -83,7 +83,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	if len(result.Entries()) != 1 {
-		log.Printf("Found more than one entry.")
+		log.Infof("Found more than one entry.")
 		return nil, nil
 	}
 	en := result.Entries()[0]
@@ -100,7 +100,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	beego.Debug("username:", u.Username, ",email:", u.Email, ",realname:", u.Realname)
+	log.Debug("username:", u.Username, ",email:", u.Email, ",realname:", u.Realname)
 
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
