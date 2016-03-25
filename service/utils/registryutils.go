@@ -19,10 +19,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	log "github.com/vmware/harbor/utils/log"
 )
 
 // BuildRegistryURL ...
@@ -34,7 +35,7 @@ func BuildRegistryURL(segments ...string) string {
 	url := registryURL + "/v2"
 	for _, s := range segments {
 		if s == "v2" {
-			log.Printf("unnecessary v2 in %v", segments)
+			log.Infof("unnecessary v2 in %v", segments)
 			continue
 		}
 		url += "/" + s
@@ -59,7 +60,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
-		log.Println("url: " + url)
+		log.Info("url: " + url)
 		var service string
 		var scope string
 		strs := strings.Split(str, ",")
@@ -83,7 +84,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 		request.Header.Add("Authorization", "Bearer "+token)
 		client := &http.Client{}
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			//	log.Printf("via length: %d\n", len(via))
+			//	log.Infof("via length: %d\n", len(via))
 			if len(via) >= 10 {
 				return fmt.Errorf("too many redirects")
 			}
@@ -100,7 +101,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 		}
 		if response.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf("Unexpected return code from registry: %d", response.StatusCode)
-			log.Printf(errMsg)
+			log.Error(errMsg)
 			return nil, fmt.Errorf(errMsg)
 		}
 		result, err = ioutil.ReadAll(response.Body)

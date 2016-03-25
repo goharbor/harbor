@@ -20,8 +20,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
+	log "github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego/cache"
 )
@@ -35,7 +34,7 @@ func init() {
 	var err error
 	Cache, err = cache.NewCache("memory", `{"interval":720}`)
 	if err != nil {
-		beego.Error("Failed to initialize cache, error:", err)
+		log.Error("Failed to initialize cache, error:", err)
 	}
 }
 

@@ -23,6 +23,7 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
+	log "github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
 )
@@ -37,12 +38,12 @@ const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	//	log.Printf("Notification Handler triggered!\n")
-	//	log.Printf("request body in string: %s", string(n.Ctx.Input.CopyBody()))
+	//	log.Info("Notification Handler triggered!\n")
+	//	log.Infof("request body in string: %s", string(n.Ctx.Input.CopyBody()))
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
-		beego.Error("error while decoding json: ", err)
+		log.Error("error while decoding json: ", err)
 		return
 	}
 	var username, action, repo, project string
@@ -50,7 +51,7 @@ func (n *NotificationHandler) Post() {
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
 		if err != nil {
-			beego.Error("Failed to match the media type against pattern, error: ", err)
+			log.Error("Failed to match the media type against pattern, error: ", err)
 			matched = false
 		}
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
@@ -68,7 +69,7 @@ func (n *NotificationHandler) Post() {
 				go func() {
 					err2 := svc_utils.RefreshCatalogCache()
 					if err2 != nil {
-						beego.Error("Error happens when refreshing cache:", err2)
+						log.Error("Error happens when refreshing cache:", err2)
 					}
 				}()
 			}

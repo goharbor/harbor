@@ -16,12 +16,12 @@
 package service
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
+	log "github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/registry/auth/token"
@@ -38,14 +38,14 @@ type TokenHandler struct {
 func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
-	log.Println("request url: " + request.URL.String())
+	log.Info("request url: " + request.URL.String())
 	username, password, _ := request.BasicAuth()
 	authenticated := authenticate(username, password)
 	service := a.GetString("service")
 	scope := a.GetString("scope")
 
 	if len(scope) == 0 && !authenticated {
-		log.Printf("login request with invalid credentials")
+		log.Info("login request with invalid credentials")
 		a.CustomAbort(http.StatusUnauthorized, "")
 	}
 	access := svc_utils.GetResourceActions(scope)
@@ -60,7 +60,7 @@ func (a *TokenHandler) serveToken(username, service string, access []*token.Reso
 	//create token
 	rawToken, err := svc_utils.MakeToken(username, service, access)
 	if err != nil {
-		log.Printf("Failed to make token, error: %v", err)
+		log.Errorf("Failed to make token, error: %v", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -73,7 +73,7 @@ func (a *TokenHandler) serveToken(username, service string, access []*token.Reso
 func authenticate(principal, password string) bool {
 	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
-		log.Printf("Error occurred in UserLogin: %v", err)
+		log.Errorf("Error occurred in UserLogin: %v", err)
 		return false
 	}
 	if user == nil {
