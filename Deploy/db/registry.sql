@@ -11,7 +11,6 @@ create table access (
 );
 
 insert into access values 
-( null, 'A', 'All access for the system'),
 ( null, 'M', 'Management access for project'),
 ( null, 'R', 'Read access for project'),
 ( null, 'W', 'Write access for project'),
@@ -21,16 +20,20 @@ insert into access values
 
 create table role (
  role_id int NOT NULL AUTO_INCREMENT,
+ role_mask int DEFAULT 0 NOT NULL,
  role_code varchar(20),
  name varchar (20),
  primary key (role_id)
 );
+/*
+role mask is used for future enhancement when a project member can have multi-roles
+currently set to 0
+*/
 
 insert into role values 
-( null, 'AMDRWS', 'sysAdmin'),
-( null, 'MDRWS', 'projectAdmin'),
-( null, 'RWS', 'developer'),
-( null, 'RS', 'guest');
+( null, 0, 'MDRWS', 'projectAdmin'),
+( null, 0, 'RWS', 'developer'),
+( null, 0, 'RS', 'guest');
 
 
 create table user (
@@ -43,20 +46,24 @@ create table user (
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  reset_uuid varchar(40) DEFAULT NULL,
  salt varchar(40) DEFAULT NULL,
+ sysadmin_flag tinyint (1),
+ creation_time timestamp,
+ update_time timestamp,
  primary key (user_id),
  UNIQUE (username),
  UNIQUE (email)
 );
 
 insert into user values 
-(1, 'admin', 'admin@example.com', '', 'system admin', 'admin user',0, null, ''),
-(2, 'anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, null, '');
+(1, 'admin', 'admin@example.com', '', 'system admin', 'admin user',0, null, '', 1, NOW(), NOW()),
+(2, 'anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, null, '', 0, NOW(), NOW());
                                                                           
 create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  name varchar (30) NOT NULL,
  creation_time timestamp,
+ update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  public tinyint (1) DEFAULT 0 NOT NULL,
  primary key (project_id),
@@ -65,31 +72,22 @@ create table project (
 );
 
 insert into project values 
-(null, 1, 'library', NOW(), 0, 1);
+(null, 1, 'library', NOW(), NOW(), 0, 1);
 
-create table project_role (
- pr_id int NOT NULL AUTO_INCREMENT,
+create table project_member (
  project_id int NOT NULL,
- role_id int NOT NULL,
- primary key (pr_id),
- FOREIGN KEY (role_id) REFERENCES role(role_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
-);
-
-insert into project_role values
-( 1,1,1 );
-
-create table user_project_role (
- upr_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,
- pr_id int NOT NULL,
- primary key (upr_id),
- FOREIGN KEY (user_id) REFERENCES user(user_id),
- FOREIGN KEY (pr_id) REFERENCES project_role (pr_id)
-);
+ role int NOT NULL,
+ creation_time timestamp,
+ update_time timestamp,
+ PRIMARY KEY (project_id, user_id),
+ FOREIGN KEY (role) REFERENCES role(role_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id),
+ FOREIGN KEY (user_id) REFERENCES user(user_id)
+ );
 
-insert into user_project_role values
-( 1,1,1 );
+insert into project_member values
+(1, 1, 1, NOW(), NOW());
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
