@@ -10,12 +10,12 @@ create table access (
  primary key (access_id)
 );
 
-insert into access values 
-( null, 'M', 'Management access for project'),
-( null, 'R', 'Read access for project'),
-( null, 'W', 'Write access for project'),
-( null, 'D', 'Delete access for project'),
-( null, 'S', 'Search access for project');
+insert into access (access_code, comment) values 
+('M', 'Management access for project'),
+('R', 'Read access for project'),
+('W', 'Write access for project'),
+('D', 'Delete access for project'),
+('S', 'Search access for project');
 
 
 create table role (
@@ -30,10 +30,10 @@ role mask is used for future enhancement when a project member can have multi-ro
 currently set to 0
 */
 
-insert into role values 
-( null, 0, 'MDRWS', 'projectAdmin'),
-( null, 0, 'RWS', 'developer'),
-( null, 0, 'RS', 'guest');
+insert into role (role_code, name) values 
+('MDRWS', 'projectAdmin'),
+('RWS', 'developer'),
+('RS', 'guest');
 
 
 create table user (
@@ -54,9 +54,9 @@ create table user (
  UNIQUE (email)
 );
 
-insert into user values 
-(1, 'admin', 'admin@example.com', '', 'system admin', 'admin user',0, null, '', 1, NOW(), NOW()),
-(2, 'anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, null, '', 0, NOW(), NOW());
+insert into user (username, email, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values 
+('admin', 'admin@example.com', '', 'system admin', 'admin user',0, 1, NOW(), NOW()),
+('anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, 0, NOW(), NOW());
                                                                           
 create table project (
  project_id int NOT NULL AUTO_INCREMENT,
@@ -71,8 +71,8 @@ create table project (
  UNIQUE (name)
 );
 
-insert into project values 
-(null, 1, 'library', NOW(), NOW(), 0, 1);
+insert into project (owner_id, name, creation_time, update_time, public) values 
+(1, 'library', NOW(), NOW(), 1);
 
 create table project_member (
  project_id int NOT NULL,
@@ -86,7 +86,7 @@ create table project_member (
  FOREIGN KEY (user_id) REFERENCES user(user_id)
  );
 
-insert into project_member values
+insert into project_member (project_id, user_id, role, creation_time, update_time) values
 (1, 1, 1, NOW(), NOW());
 
 create table access_log (
