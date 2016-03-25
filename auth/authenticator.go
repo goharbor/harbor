@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/vmware/harbor/models"
 )

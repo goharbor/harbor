@@ -21,7 +21,7 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
@@ -83,7 +83,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	if len(result.Entries()) != 1 {
-		log.Infof("Found more than one entry.")
+		log.Warningf("Found more than one entry.")
 		return nil, nil
 	}
 	en := result.Entries()[0]
