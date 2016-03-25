@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/dao"
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"

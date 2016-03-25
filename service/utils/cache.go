@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/models"
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego/cache"
 )

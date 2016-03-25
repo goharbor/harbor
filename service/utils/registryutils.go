@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // BuildRegistryURL ...
@@ -35,7 +35,7 @@ func BuildRegistryURL(segments ...string) string {
 	url := registryURL + "/v2"
 	for _, s := range segments {
 		if s == "v2" {
-			log.Infof("unnecessary v2 in %v", segments)
+			log.Debugf("unnecessary v2 in %v", segments)
 			continue
 		}
 		url += "/" + s
@@ -60,7 +60,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
-		log.Info("url: " + url)
+		log.Debugf("url: " + url)
 		var service string
 		var scope string
 		strs := strings.Split(str, ",")
