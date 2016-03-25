@@ -78,7 +78,7 @@ func (b *BaseAPI) ValidateUser() int {
 		b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if u == nil {
-		log.Warningf("User was deleted already, user id: %d ", userID, " canceling request.")
+		log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	return userID
