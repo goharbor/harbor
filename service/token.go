@@ -38,7 +38,7 @@ type TokenHandler struct {
 func (a *TokenHandler) Get() {
 
 	request := a.Ctx.Request
-	log.Infof("request url: " + request.URL.String())
+	log.Infof("request url: %v", request.URL.String())
 	username, password, _ := request.BasicAuth()
 	authenticated := authenticate(username, password)
 	service := a.GetString("service")

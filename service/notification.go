@@ -43,7 +43,7 @@ func (n *NotificationHandler) Post() {
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
-		log.Error("error while decoding json: ", err)
+		log.Errorf("error while decoding json: %v", err)
 		return
 	}
 	var username, action, repo, project string
@@ -51,7 +51,7 @@ func (n *NotificationHandler) Post() {
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
 		if err != nil {
-			log.Error("Failed to match the media type against pattern, error: ", err)
+			log.Errorf("Failed to match the media type against pattern, error: %v", err)
 			matched = false
 		}
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
@@ -69,7 +69,7 @@ func (n *NotificationHandler) Post() {
 				go func() {
 					err2 := svc_utils.RefreshCatalogCache()
 					if err2 != nil {
-						log.Error("Error happens when refreshing cache:", err2)
+						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}
 				}()
 			}

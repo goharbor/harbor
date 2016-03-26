@@ -78,7 +78,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 						permission = "RW"
 					} else {
 						permission = ""
-						log.Infof("project %s does not exist, set empty permission for admin", projectName)
+						log.Infof("project %s does not exist, set empty permission for admin\n", projectName)
 					}
 				} else {
 					permission, err = dao.GetPermission(username, projectName)

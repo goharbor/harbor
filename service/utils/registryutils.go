@@ -60,7 +60,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		str := strings.Split(authenticate, " ")[1]
-		log.Debugf("url: " + url)
+		log.Debugf("url: %s", url)
 		var service string
 		var scope string
 		strs := strings.Split(str, ",")

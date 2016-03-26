@@ -34,7 +34,7 @@ func init() {
 	var err error
 	Cache, err = cache.NewCache("memory", `{"interval":720}`)
 	if err != nil {
-		log.Error("Failed to initialize cache, error:", err)
+		log.Errorf("Failed to initialize cache, error:%v", err)
 	}
 }
 
