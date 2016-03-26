@@ -28,7 +28,7 @@
 			<form class="form-inline">
 			    <label class="sr-only" for="txtProjectName">{{i18n .Lang "project_name"}}:</label>
 				<div class="input-group">	
-				    <div class="input-group-addon">{{i18n .Lang "project_name"}}:</div>    
+	 			        <div class="input-group-addon">{{i18n .Lang "project_name"}}:</div>    
 					<input type="text" class="form-control" id="txtSearchProject">
 					<span class="input-group-btn"> 
 						<button id="btnSearch" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
@@ -42,7 +42,7 @@
 							<tr>
 								<th width="35%">{{i18n .Lang "project_name"}}</th>
 								<th width="45%">{{i18n .Lang "creation_time"}}</th>
-                               <th width="20%">{{i18n .Lang "publicity"}}</th> 
+                                                                <th width="20%">{{i18n .Lang "publicity"}}</th> 
 							</tr>
 						</thead>
 						<tbody>				

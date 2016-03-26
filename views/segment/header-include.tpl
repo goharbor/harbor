@@ -39,3 +39,4 @@
 <script src="static/i18n/locale_messages.js"></script>
 <script src="static/resources/js/common.js"></script>
 <script src="static/resources/js/header-login.js"></script>
+<script src="static/resources/js/search.js"></script>

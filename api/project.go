@@ -67,7 +67,7 @@ func (p *ProjectAPI) Prepare() {
 
 // Delete
 func (p *ProjectAPI) Delete() {
-	var req projectReq
+	//	var req projectReq
 	//	var public int
 
 	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
@@ -77,13 +77,14 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	p.DecodeJSONReq(&req)
+	fmt.Sprintf("Proj API: Delete %d", projectID)
+	//	p.DecodeJSONReq(&req)
 	//	if req.Public {
 	//		public = 1
 	//	}
 	if !isProjectAdmin(p.userID, projectID) {
 		beego.Warning("Current user, id:", p.userID, ", does not have project admin role for project, id:", projectID)
-		p.RenderError(http.StatusForbidden, "")
+		p.RenderError(http.StatusForbidden, "Current user does not have project admin role")
 		return
 	}
 

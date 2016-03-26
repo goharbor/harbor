@@ -22,20 +22,27 @@ jQuery(function(){
 			}
 		}
 	});
-	
+
+	$("#spanCommonSearch").on("click", function(){
+		search($("#txtCommonSearch").val());
+	});
+
 	var queryParam = $("#queryParam").val();
 	$("#txtCommonSearch").val(queryParam);
 	
 	search(queryParam);
 
 	function search(keyword){
-		keyword = $.trim(keyword)
+		keyword = $.trim(keyword);
 		if(keyword.length > 0){
 			$.ajax({
 				url: "/api/search",
 				data: {"q": keyword},
 				type: "get",
 				dataType: "json",
+				"beforeSend": function(xhr) {
+	        			$(document).off("keydown");
+				},	
 				success: function(data, status, xhr){
 					if(xhr && xhr.status == 200){
 						$("#panelCommonSearchProjectsHeader").text(i18n.getMessage("projects") + " (" + data.project.length + ")");
@@ -45,7 +52,7 @@ jQuery(function(){
 						render($("#panelCommonSearchRepositoriesBody"), data.repository, "repository");
 					}
 				}
-			});
+			})
 		}
 	}	
 
@@ -53,7 +60,7 @@ jQuery(function(){
 		this.id = id;
 		this.name = name;
 		this.public = public;
-	}
+	};
 	
 	function render(element, data, discriminator){
 		$(element).children().remove();
@@ -72,7 +79,7 @@ jQuery(function(){
 				break;
 			} 		
 			if(project){
-				$(element).append('<div><a href="/registry/detail?project_id=' + project.id + (repoName != "" ? '&repo_name=' + repoName : "") + '">' + description + '</a></div>');
+				$(element).append('<div><a href="/registry/detail?project_id=' + project.id + (repoName != "" ? '&repo_name=' + repoName : "") + '">' + description + ' (' + (project.public == 1 ? 'public' : 'private') + ')</a></div>');
 			}			
 		});
 	}

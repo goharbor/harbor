@@ -27,37 +27,39 @@
 			<div class="form-group">
 				<div class="input-group">
 				    <ul class="nav navbar-nav">
-				    <li class="dropdown">
+				        <li class="dropdown">
 					  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 						   <span class="glyphicon glyphicon-globe"></span>
 						     {{i18n .Lang "language"}}						   
 						<span class="caret"></span></a>
-				        <ul class="dropdown-menu">
+				                <ul class="dropdown-menu">
 						  <li><a href="/language?lang=en-US">{{i18n .Lang "language_en-US"}}</a></li>						
 						  <li><a href="/language?lang=zh-CN">{{i18n .Lang "language_zh-CN"}}</a></li>
 						</ul>
 					</li>
-			   	  </ul>
+			   	    </ul>
 				</div>
 			
-			    <div class="input-group" >
-				  <span class="input-group-addon"><span class="input-group glyphicon glyphicon-search"></span></span>
-				  <input type="text" class="form-control" id="txtCommonSearch" size="50" placeholder="{{i18n .Lang "search_placeholder"}}">  	
+			        <div class="input-group" >
+				    <span class="input-group-btn">
+                                        <button id="spanCommonSearch" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+				    <input type="text" class="form-control" id="txtCommonSearch" size="50" placeholder="{{i18n .Lang "search_placeholder"}}">  	
 				</div>
 			</div>		
 			{{ if .Username }}
 			  <div class="input-group">
-			    <ul class="nav navbar-nav">
-			    <li class="dropdown">
+			        <ul class="nav navbar-nav">
+			            <li class="dropdown">
 				  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> {{.Username}}<span class="caret"></span></a>
-			        <ul class="dropdown-menu">
+			                <ul class="dropdown-menu">
 					    {{ if eq .AuthMode "db_auth" }}
 						<li><a id="aChangePassword" href="/changePassword" target="_blank"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;{{i18n .Lang "change_password"}}</a></li>
 						<li role="separator" class="divider"></li>
 						{{ end }}
 						<li><a id="aLogout" href="#"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;{{i18n .Lang "log_out"}}</a></li>
 					</ul>
-				</li>
+				    </li>
 			  	</ul>
 			  </div>
 			{{ else if eq .AuthMode "db_auth" }}
