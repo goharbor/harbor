@@ -17,12 +17,11 @@ package auth
 
 import (
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/models"
 )
 
 // Authenticator provides interface to authenticate user credentials.
@@ -37,7 +36,7 @@ var registry = make(map[string]Authenticator)
 // Register add different authenticators to registry map.
 func Register(name string, authenticator Authenticator) {
 	if _, dup := registry[name]; dup {
-		log.Printf("authenticator: %s has been registered", name)
+		log.Infof("authenticator: %s has been registered", name)
 		return
 	}
 	registry[name] = authenticator
@@ -50,7 +49,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 	if authMode == "" || m.Principal == "admin" {
 		authMode = "db_auth"
 	}
-	beego.Debug("Current AUTH_MODE is ", authMode)
+	log.Debug("Current AUTH_MODE is ", authMode)
 
 	authenticator, ok := registry[authMode]
 	if !ok {
