@@ -158,3 +158,29 @@ jQuery(function(){
 		$(self).modal('show');
 	}	
 });
+
+var keydownNS = keydownNS || {};
+keydownNS.searchDone = keydownNS.searchDone || false;
+
+keydownNS.bindEnterKey = function(){
+        $(document).on("keydown", function(e){
+               if(e.keyCode == 13){
+                       e.preventDefault();
+                       if($("#txtCommonSearch").is(":focus")){
+                               document.location = "/search?q=" + $("#txtCommonSearch").val();	
+		       }else if($("#ConfirmedPassword").is(":focus")) {
+			       $("#btnSubmit").trigger("click");
+		       }else if($("#EmailF").is(":focus")) {
+			       $("#btnSubmit").trigger("click");
+		       }
+	       }
+        });
+
+	$("#spanCommonSearch").on("click", function(){
+		document.location = "/search?q=" + $("#txtCommonSearch").val();
+	});
+};
+
+keydownNS.unbindEnterKey = function(){
+	$(document).off("keydown");
+};

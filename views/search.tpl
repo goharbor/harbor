@@ -29,3 +29,4 @@
 		 </div>
 	</div>
 </div>
+<script src="static/resources/js/search.js"></script>

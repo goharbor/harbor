@@ -33,6 +33,7 @@ jQuery(function(){
 	$("#OldPassword,#Password,#ConfirmedPassword").on("blur", validateCallback);
 	validateOptions.Items = ["#OldPassword", "#Password", "#ConfirmedPassword"];
 	
+	/*
 	function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
@@ -49,6 +50,8 @@ jQuery(function(){
 		$(document).off("keydown");
 	}
 	bindEnterKey();
+*/
+	keydownNS.bindEnterKey();
 	
 	var spinner = new Spinner({scale:1}).spin();
 
@@ -61,7 +64,7 @@ jQuery(function(){
 				"type": "post",
 				"data": {"old_password": oldPassword, "password" : password},
 				"beforeSend": function(e){
-				   unbindEnterKey();
+				   keydownNS.unbindEnterKey();
 				   $("h1").append(spinner.el);
 				   $("#btnSubmit").prop("disabled", true);	
 				},
@@ -83,7 +86,7 @@ jQuery(function(){
 							"title": i18n.getMessage("title_change_password"), 
 							"content": i18n.getMessage(jqXhr.responseText),
 							"callback": function(){ 
-								bindEnterKey();
+								keydownNS.bindEnterKey();
 								return;
 							}
 						});

@@ -38,43 +38,6 @@ type searchResult struct {
 	Repository []map[string]interface{} `json:"repository"`
 }
 
-// Search a user and the relevant projects
-/*
-func (sa *SearchAPI) GetUserProject() {
-	userID, ok := sa.GetSession("userId").(int)
-	if !ok {
-		userID = dao.NonExistUserID
-	}
-	keyword := sa.GetString("q")
-	queryUser := models.User{Username: keyword}
-	searchUser, err := GetUser(queryUser)
-	if err != nil {
-		beego.Error("Error occurred in GetUser: %v", err)
-	}
-	projects, err := dao.QueryRelevantProjects(searchUser.UserID)
-	if err != nil {
-		beego.Error("Failed to get projects of user id:", userID, ", error:", err)
-		sa.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
-	}
-	projectSorter := &utils.ProjectSorter{Projects: projects}
-	sort.Sort(projectSorter)
-	projectResult := []map[string]interface{}{}
-	for _, p := range projects {
-		match := true
-		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
-			match = false
-		}
-		if match {
-			entry := make(map[string]interface{})
-			entry["id"] = p.ProjectID
-			entry["name"] = p.Name
-			entry["public"] = p.Public
-			projectResult = append(projectResult, entry)
-		}
-	}
-}
-*/
-
 // Get ...
 func (sa *SearchAPI) Get() {
 	userID, ok := sa.GetSession("userId").(int)

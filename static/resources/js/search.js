@@ -14,23 +14,28 @@
 */
 jQuery(function(){
 	
-	$(document).on("keydown", function(e){
+//	$(document).on("keydown", function(e){
+	$("#txtCommonSearch").on("keydown", function(e){
 		if(e.keyCode == 13){
 			e.preventDefault();
 			if($("#txtCommonSearch").is(":focus")){
-				search($("#txtCommonSearch").val());
+				$("#spanCommonSearch").trigger("click");
+//				search($("#txtCommonSearch").val());
 			}
 		}
 	});
 
 	$("#spanCommonSearch").on("click", function(){
+		keydownNS.searchDone = true;
 		search($("#txtCommonSearch").val());
 	});
 
 	var queryParam = $("#queryParam").val();
 	$("#txtCommonSearch").val(queryParam);
 	
-	search(queryParam);
+	if(typeof queryParam !== "undefined"){
+		search(queryParam);
+	}
 
 	function search(keyword){
 		keyword = $.trim(keyword);
@@ -40,9 +45,6 @@ jQuery(function(){
 				data: {"q": keyword},
 				type: "get",
 				dataType: "json",
-				"beforeSend": function(xhr) {
-	        			$(document).off("keydown");
-				},	
 				success: function(data, status, xhr){
 					if(xhr && xhr.status == 200){
 						$("#panelCommonSearchProjectsHeader").text(i18n.getMessage("projects") + " (" + data.project.length + ")");
