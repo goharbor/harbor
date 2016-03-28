@@ -11,6 +11,7 @@ registry:
     - ./config/registry/:/etc/registry/
   ports:
     - 5001:5001
+    - 5000:5000
   command:
     /etc/registry/config.yml
   links:

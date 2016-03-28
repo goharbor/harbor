@@ -17,6 +17,7 @@ package service
 
 import (
 	"encoding/json"
+	"log"
 	"regexp"
 	"strings"
 
@@ -37,8 +38,8 @@ const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	//	log.Printf("Notification Handler triggered!\n")
-	//	log.Printf("request body in string: %s", string(n.Ctx.Input.CopyBody()))
+	log.Printf("Notification Handler triggered!\n")
+	log.Printf("request body in string: %s", string(n.Ctx.Input.CopyBody(1<<32)))
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
@@ -70,6 +71,11 @@ func (n *NotificationHandler) Post() {
 					if err2 != nil {
 						beego.Error("Error happens when refreshing cache:", err2)
 					}
+					// create repo if does not exists
+					if !dao.RepositoryExist() {
+						var repository models.Repository
+					}
+					// create tag if tag not exists
 				}()
 			}
 		}

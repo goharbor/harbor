@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-
 	"os"
 	"strings"
 	"time"
@@ -68,7 +67,6 @@ func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	addr, port, username, password := dbConfig()
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
-
 	ch := make(chan int, 1)
 	go func() {
 		var err error
@@ -103,7 +101,12 @@ func UpgradeDB() {
 		username, password, addr, port)
 	log.Printf("upgrading DB", dbStr)
 
-	errors, ok := migrate.UpSync(dbStr, "/go/src/github.com/vmware/harbor/sql")
+	sqlPath := os.Getenv("SQL_PATH")
+	fmt.Println(sqlPath)
+	if len(sqlPath) == 0 {
+		sqlPath = "/go/src/github.com/vmware/harbor/sql"
+	}
+	errors, ok := migrate.UpSync(dbStr, sqlPath)
 	if errors != nil && len(errors) > 0 {
 		for _, err := range errors {
 			log.Printf("db err", err)
