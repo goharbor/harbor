@@ -15,6 +15,7 @@
 
 package dao
 
+/*
 import (
 	"github.com/vmware/harbor/models"
 
@@ -36,6 +37,7 @@ func AddProjectRole(projectRole models.ProjectRole) (int64, error) {
 	id, err := r.LastInsertId()
 	return id, err
 }
+
 
 // AddUserProjectRole inserts role information to table project_role and user_project_role.
 func AddUserProjectRole(userID int, projectID int64, roleID int) error {
@@ -91,3 +93,6 @@ func DeleteUserProjectRoles(userID int, projectID int64) error {
 	_, err = p.Exec(userID, projectID)
 	return err
 }
+
+
+*/

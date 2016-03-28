@@ -16,37 +16,57 @@
 package dao
 
 import (
+	"fmt"
+
 	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego/orm"
 )
+
+type role int
+
+// Start from 2 to guarantee the compatibility with former code
+const (
+	ProjectAdmin role = 2
+	Developer         = 3
+	Guest             = 4
+)
+
+var roleList = make(map[role]*models.Role)
+
+// IntToRole is used to convert int to role.
+func IntToRole(i int) (r role, err error) {
+	switch i {
+	case 2:
+		r = ProjectAdmin
+	case 3:
+		r = Developer
+	case 4:
+		r = Guest
+	default:
+		err = fmt.Errorf("no role is correspondent with the input: %d", i)
+	}
+	return
+}
 
 // GetUserProjectRoles returns roles that the user has according to the project.
 func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role, error) {
 
 	o := orm.NewOrm()
 
-	sql := `select distinct r.role_id, r.role_code, r.name 
-		from role r 
-		left join project_role pr on r.role_id = pr.role_id
-		left join user_project_role upr on pr.pr_id = upr.pr_id
-		left join user u on u.user_id = upr.user_id
-		where u.deleted = 0 
-		  and u.user_id = ? `
+	sql := `select *
+		from role
+		where role_id = 
+			(
+				select role
+				from project_member
+				where project_id = ? and user_id = ?
+			)`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, userQuery.UserID)
 
-	if projectID > 0 {
-		sql += ` and pr.project_id = ? `
-		queryParam = append(queryParam, projectID)
-	}
-	if userQuery.RoleID > 0 {
-		sql += ` and r.role_id = ? `
-		queryParam = append(queryParam, userQuery.RoleID)
-	}
-
 	var roleList []models.Role
-	_, err := o.Raw(sql, queryParam).QueryRows(&roleList)
+	_, err := o.Raw(sql, projectID, userQuery.UserID).QueryRows(&roleList)
 
 	if err != nil {
 		return nil, err
@@ -56,11 +76,54 @@ func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role,
 
 // IsAdminRole returns whether the user  is admin.
 func IsAdminRole(userID int) (bool, error) {
-	//role_id == 1 means the user is system admin
-	userQuery := models.User{UserID: userID, RoleID: models.SYSADMIN}
-	adminRoleList, err := GetUserProjectRoles(userQuery, 0)
+
+	user, err := GetUser(models.User{UserID: userID})
 	if err != nil {
 		return false, err
 	}
-	return len(adminRoleList) > 0, nil
+
+	if user == nil {
+		return false, nil
+	}
+
+	return user.HasAdminRole == 1, nil
+}
+
+func getRole(r role) (*models.Role, error) {
+	if roleList[r] != nil {
+		return roleList[r], nil
+	}
+
+	o := orm.NewOrm()
+	var roles []*models.Role
+
+	sql := "select role_id, role_code, name, role_mask from role"
+
+	_, err := o.Raw(sql).QueryRows(&roles)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rr := range roles {
+		if rr.RoleCode == "MDRWS" {
+			roleList[ProjectAdmin] = rr
+			continue
+		}
+
+		if rr.RoleCode == "RWS" {
+			roleList[Developer] = rr
+			continue
+		}
+
+		if rr.RoleCode == "RS" {
+			roleList[Guest] = rr
+			continue
+		}
+	}
+
+	if roleList[r] == nil {
+		return nil, fmt.Errorf("unsupported role type: %v", r)
+	}
+
+	return roleList[r], nil
 }

@@ -15,23 +15,25 @@
 
 package dao
 
+/*
 import (
 	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego/orm"
 )
 
+
 // GetUserByProject gets all members of the project.
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
-	sql := `select 
+	sql := `select
 			u.user_id, u.username, r.name rolename, r.role_id
-		from user u left join user_project_role upr 
+		from user u left join user_project_role upr
 		    on u.user_id = upr.user_id
-		left join project_role pr 
+		left join project_role pr
 			on pr.pr_id = upr.pr_id
-		left join role r  
+		left join role r
 			on r.role_id = pr.role_id
 		where u.deleted = 0
 		  and pr.project_id = ? `
@@ -47,3 +49,4 @@ func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, er
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)
 	return u, err
 }
+*/

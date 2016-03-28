@@ -15,6 +15,7 @@
 
 package models
 
+/*
 const (
 	//SYSADMIN system administrator
 	SYSADMIN = 1
@@ -25,14 +26,17 @@ const (
 	//GUEST guest
 	GUEST = 4
 )
-
+*/
 // Role holds the details of a role.
 type Role struct {
-	RoleID   int    `json:"role_id" orm:"column(role_id)"`
-	RoleCode string `json:"role_code" orm:"column(role_code)"`
-	Name     string `json:"role_name" orm:"column(name)"`
+	RoleID   int    `orm:"column(role_id)" json:"role_id"`
+	RoleCode string `orm:"column(role_code)" json:"role_code"`
+	Name     string `orm:"column(name)" json:"role_name"`
+
+	RoleMask int `orm:"role_mask" json:"role_mask"`
 }
 
+/*
 // ProjectRole holds information about the relationship of project and role.
 type ProjectRole struct {
 	PrID      int   `orm:"column(pr_id)" json:"PrId"`
@@ -46,3 +50,4 @@ type UserProjectRole struct {
 	UserID int   `orm:"column(user_id)" json:"UserId"`
 	PrID   int64 `orm:"column(pr_id)" json:"PrId"`
 }
+*/

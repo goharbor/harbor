@@ -16,6 +16,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,6 +24,7 @@ import (
 	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
@@ -148,7 +150,13 @@ func (pma *ProjectMemberAPI) Post() {
 	}
 
 	for _, rid := range req.Roles {
-		err = dao.AddUserProjectRole(userID, pid, int(rid))
+		role, err := dao.IntToRole(rid)
+		if err != nil {
+			log.Error(err)
+			pma.RenderError(http.StatusBadRequest, fmt.Sprintf("Invalid role: %d", rid))
+		}
+
+		err = dao.AddProjectMember(pid, userID, role)
 		if err != nil {
 			beego.Error("Failed to update DB to add project user role, project id:", pid, ", user id:", userID, ", role id:", rid)
 			pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
@@ -182,7 +190,7 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 	//TODO: delete and insert should in one transaction
 	//delete user project role record for the given user
-	err = dao.DeleteUserProjectRoles(mid, pid)
+	err = dao.DeleteProjectMember(pid, mid)
 	if err != nil {
 		beego.Error("Failed to delete project roles for user, user id:", mid, ", project id: ", pid, ", error: ", err)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")
@@ -190,7 +198,13 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 	//insert roles in request
 	for _, rid := range req.Roles {
-		err = dao.AddUserProjectRole(mid, pid, int(rid))
+		role, err := dao.IntToRole(rid)
+		if err != nil {
+			log.Error(err)
+			pma.RenderError(http.StatusBadRequest, fmt.Sprintf("Invalid role: %d", rid))
+		}
+
+		err = dao.AddProjectMember(pid, mid, role)
 		if err != nil {
 			beego.Error("Failed to update DB to add project user role, project id:", pid, ", user id:", mid, ", role id:", rid)
 			pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
@@ -210,7 +224,7 @@ func (pma *ProjectMemberAPI) Delete() {
 		pma.RenderError(http.StatusForbidden, "")
 		return
 	}
-	err = dao.DeleteUserProjectRoles(mid, pid)
+	err = dao.DeleteProjectMember(pid, mid)
 	if err != nil {
 		beego.Error("Failed to delete project roles for user, user id:", mid, ", project id:", pid, ", error:", err)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")

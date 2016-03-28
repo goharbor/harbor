@@ -40,12 +40,13 @@ func AddProject(project models.Project) error {
 
 	o := orm.NewOrm()
 
-	p, err := o.Raw("insert into project (owner_id, name, creation_time, deleted, public) values (?, ?, now(), ?, ?)").Prepare()
+	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return err
 	}
 
-	r, err := p.Exec(project.OwnerID, project.Name, project.Deleted, project.Public)
+	now := time.Now()
+	r, err := p.Exec(project.OwnerID, project.Name, now, now, project.Deleted, project.Public)
 	if err != nil {
 		return err
 	}
@@ -55,27 +56,7 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	projectAdminRole := models.ProjectRole{ProjectID: projectID, RoleID: models.PROJECTADMIN}
-	_, err = AddProjectRole(projectAdminRole)
-	if err != nil {
-		return err
-	}
-
-	projectDeveloperRole := models.ProjectRole{ProjectID: projectID, RoleID: models.DEVELOPER}
-	_, err = AddProjectRole(projectDeveloperRole)
-	if err != nil {
-		return err
-	}
-
-	projectGuestRole := models.ProjectRole{ProjectID: projectID, RoleID: models.GUEST}
-	_, err = AddProjectRole(projectGuestRole)
-	if err != nil {
-		return err
-	}
-
-	//Add all project roles, after that when assigning a user to a project just update the upr table
-	err = AddUserProjectRole(project.OwnerID, projectID, models.PROJECTADMIN)
-	if err != nil {
+	if err = AddProjectMember(projectID, project.OwnerID, ProjectAdmin); err != nil {
 		return err
 	}
 
@@ -103,11 +84,9 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.public 
+		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public 
 	 from project p 
-		left join project_role pr on p.project_id = pr.project_id
-	   left join user_project_role upr on upr.pr_id = pr.pr_id
-	   left join user u on u.user_id = upr.user_id
+		left join project_member pm on p.project_id = pm.project_id
 	 where p.deleted = 0 `
 
 	queryParam := make([]interface{}, 1)
@@ -116,8 +95,7 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 		sql += ` and p.public = ?`
 		queryParam = append(queryParam, query.Public)
 	} else if isAdmin, _ := IsAdminRole(query.UserID); isAdmin == false {
-		sql += ` and (p.owner_id = ? or u.user_id = ?) `
-		queryParam = append(queryParam, query.UserID)
+		sql += ` and (pm.user_id = ?) `
 		queryParam = append(queryParam, query.UserID)
 	}
 
@@ -161,60 +139,65 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 }
 
 // GetProjectByID ...
-func GetProjectByID(projectID int64) (*models.Project, error) {
+func GetProjectByID(id int64) (*models.Project, error) {
 	o := orm.NewOrm()
 
-	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.public  
+	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time, p.public  
 		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, projectID)
+	queryParam = append(queryParam, id)
 
 	p := []models.Project{}
 	count, err := o.Raw(sql, queryParam).QueryRows(&p)
 
 	if err != nil {
 		return nil, err
-	} else if count == 0 {
-		return nil, nil
-	} else {
-		return &p[0], nil
 	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return &p[0], nil
 }
 
 // GetProjectByName ...
-func GetProjectByName(projectName string) (*models.Project, error) {
+func GetProjectByName(name string) (*models.Project, error) {
 	o := orm.NewOrm()
 	var p []models.Project
-	n, err := o.Raw(`select project_id, owner_id, name, deleted, public from project where name = ? and deleted = 0`, projectName).QueryRows(&p)
+	n, err := o.Raw(`select * from project where name = ? and deleted = 0`, name).QueryRows(&p)
 	if err != nil {
 		return nil, err
-	} else if n == 0 {
-		return nil, nil
-	} else {
-		return &p[0], nil
 	}
+
+	if n == 0 {
+		return nil, nil
+	}
+
+	return &p[0], nil
 }
 
 // GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
 	o := orm.NewOrm()
 
-	sql := "select r.role_code from role as r " +
-		"inner join project_role as pr on r.role_id = pr.role_id " +
-		"inner join user_project_role as ur on pr.pr_id = ur.pr_id " +
-		"inner join user as u on u.user_id = ur.user_id " +
-		"inner join project p on p.project_id = pr.project_id " +
-		"where u.username = ? and p.name = ? and u.deleted = 0 and p.deleted = 0"
+	sql := `select r.role_code from role as r
+		inner join project_member as pm on r.role_id = pm.role
+		inner join user as u on u.user_id = pm.user_id
+		inner join project p on p.project_id = pm.project_id
+		where u.username = ? and p.name = ? and u.deleted = 0 and p.deleted = 0`
 
 	var r []models.Role
 	n, err := o.Raw(sql, username, projectName).QueryRows(&r)
 	if err != nil {
 		return "", err
-	} else if n == 0 {
-		return "", nil
-	} else {
-		return r[0].RoleCode, nil
 	}
+
+	if n == 0 {
+		return "", nil
+	}
+
+	return r[0].RoleCode, nil
 }
 
 // ToggleProjectPublicity toggles the publicity of the project.
@@ -228,10 +211,11 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // QueryRelevantProjects returns all projects that the user is a member of.
 func QueryRelevantProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
-	sql := `SELECT distinct p.project_id, p.name, p.public FROM registry.project p 
-		left join project_role pr on p.project_id = pr.project_id 
-		left join user_project_role upr on upr.pr_id = pr.pr_id 
-		where upr.user_id = ? or p.public = 1 and p.deleted = 0`
+	sql := `select distinct p.project_id, p.name, p.public 
+		from project p 
+		left join project_member pm on p.project_id = pm.project_id 
+		left join user u on u.user_id = pm.user_id 
+		where u.user_id = ? or p.public = 1 and p.deleted = 0`
 	var res []models.Project
 	_, err := o.Raw(sql, userID).QueryRows(&res)
 	if err != nil {
