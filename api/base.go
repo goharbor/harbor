@@ -23,6 +23,8 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
+
+	"github.com/astaxie/beego"
 )
 
 // BaseAPI wraps common methods for controllers to host API
