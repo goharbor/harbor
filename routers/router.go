@@ -63,4 +63,10 @@ func init() {
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &service.TokenHandler{})
+
+	//API v3:
+	beego.Router("/api/v3/repositories", &api.RepositoryV3API{}, "get:GetRepositories")
+	// for both get/put to specific respository
+	beego.Router("/api/v3/repositories/:project_name/:repository_name", &api.RepositoryV3API{})
+	beego.Router("/api/v3/repositories/categories", &api.RepositoryV3API{}, "get:GetCategories")
 }
