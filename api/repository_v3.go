@@ -18,12 +18,9 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 
 	"github.com/astaxie/beego"
@@ -33,7 +30,7 @@ import (
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 // For repostiories, we won't check the session in this API due to search functionality, querying manifest will be contorlled by
 // the security of registry
-type RepositoryAPIV3 struct {
+type RepositoryV3API struct {
 	BaseAPI
 	userID   int
 	username string
@@ -106,25 +103,7 @@ func (ra *RepositoryV3API) Get() {
 	ra.ServeJSON()
 }
 
-type tag struct {
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
-}
-
-type histroyItem struct {
-	V1Compatibility string `json:"v1Compatibility"`
-}
-
-type manifest struct {
-	Name          string        `json:"name"`
-	Tag           string        `json:"tag"`
-	Architecture  string        `json:"architecture"`
-	SchemaVersion int           `json:"schemaVersion"`
-	History       []histroyItem `json:"history"`
-}
-
-// GetTags handles GET /api/repositories/tags
-func (ra *RepositoryAPI) GetTags() {
+func (ra *RepositoryV3API) GetTags() {
 
 	var tags []string
 
@@ -142,61 +121,22 @@ func (ra *RepositoryAPI) GetTags() {
 	ra.ServeJSON()
 }
 
-// GetManifests handles GET /api/repositories/manifests
-func (ra *RepositoryAPI) GetManifests() {
-	repoName := ra.GetString("repo_name")
-	tag := ra.GetString("tag")
-
-	item := models.RepoItem{}
-
-	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "manifests", tag), ra.username)
-	if err != nil {
-		beego.Error("Failed to get manifests for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
-	mani := manifest{}
-	err = json.Unmarshal(result, &mani)
-	if err != nil {
-		beego.Error("Failed to decode json from response for manifests, repo name:", repoName, ", tag:", tag, ", error:", err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
-	v1Compatibility := mani.History[0].V1Compatibility
-
-	err = json.Unmarshal([]byte(v1Compatibility), &item)
-	if err != nil {
-		beego.Error("Failed to decode V1 field for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
-	item.CreatedStr = item.Created.Format("2006-01-02 15:04:05")
-	item.DurationDays = strconv.Itoa(int(time.Since(item.Created).Hours()/24)) + " days"
-
-	ra.Data["json"] = item
-	ra.ServeJSON()
-}
-
 // GET /api/v3/repositories
-func (ra *RepositoryAPI) GetRepositories() {
+func (ra *RepositoryV3API) GetRepositories() {
 }
 
 // GET /api/v3/repositories/{project_name}/{respository_name}
-func (ra *RepositoryAPI) GetRepository() {
-}
-
-// GET /api/v3/repositories/{project_name}/{respository_name}tags
-func (ra *RepositoryAPI) GetRepository() {
+func (ra *RepositoryV3API) GetRepository() {
 }
 
 // PUT /api/v3/repositories/{project_name}/{respository_name}
 //
 // update respository category
-func (ra *RepositoryAPI) UpdateRepository() {
+func (ra *RepositoryV3API) UpdateRepository() {
 }
 
 // PUT /api/v3/repositories/categories
 //
 // return list of repository categories, category are stored in /path/to/project/root/CATEGORIES
-func (ra *RepositoryAPI) GetRespositoryCategories() {
+func (ra *RepositoryV3API) GetRespositoryCategories() {
 }
