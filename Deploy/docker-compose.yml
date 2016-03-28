@@ -33,9 +33,11 @@ mysql:
     syslog-tag: "mysql"
 ui:
   build: ../
+  dockerfile: Dockerfile.sry
   env_file:
     - ./config/ui/env
   volumes:
+    - ../sql:/sql
     - ./config/ui/app.conf:/etc/ui/app.conf
     - ./config/ui/private_key.pem:/etc/ui/private_key.pem
   links:

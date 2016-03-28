@@ -66,8 +66,10 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 		for _, s := range strs {
 			if strings.Contains(s, "service") {
 				service = s
+				fmt.Println(service, "service =============")
 			} else if strings.Contains(s, "scope") {
 				scope = s
+				fmt.Println(scope, "scope =================")
 			}
 		}
 		service = strings.Split(service, "\"")[1]

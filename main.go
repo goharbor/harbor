@@ -68,6 +68,7 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	dao.InitDB()
+	dao.UpgradeDB()
 	updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
 	beego.Run()
 }

@@ -16,6 +16,7 @@
 package dao
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -25,6 +26,8 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" //register mysql driver
+	_ "github.com/mattes/migrate/driver/mysql"
+	"github.com/mattes/migrate/migrate"
 )
 
 // NonExistUserID : if a user does not exist, the ID of the user will be 0.
@@ -58,26 +61,14 @@ func GenerateRandomString() (string, error) {
 		return "", err
 	}
 	return uuid, nil
-
 }
 
 //InitDB initializes the database
 func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	addr := os.Getenv("MYSQL_HOST")
-	if len(addr) == 0 {
-		addr = os.Getenv("MYSQL_PORT_3306_TCP_ADDR")
-	}
-
-	port := os.Getenv("MYSQL_PORT_3306_TCP_PORT")
-	username := os.Getenv("MYSQL_USR")
-
-	password := os.Getenv("MYSQL_ENV_MYSQL_ROOT_PASSWORD")
-	if len(password) == 0 {
-		password = os.Getenv("MYSQL_PWD")
-	}
-
+	addr, port, username, password := dbConfig()
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
+
 	ch := make(chan int, 1)
 	go func() {
 		var err error
@@ -102,4 +93,44 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func UpgradeDB() {
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+	addr, port, username, password := dbConfig()
+
+	dbStr := fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/registry",
+		username, password, addr, port)
+	log.Printf("upgrading DB", dbStr)
+
+	errors, ok := migrate.UpSync(dbStr, "/sql")
+	if errors != nil && len(errors) > 0 {
+		for _, err := range errors {
+			log.Printf("db err", err)
+		}
+		log.Printf("can't upgrade db", errors)
+		panic(-1)
+	}
+	if !ok {
+		log.Printf("can't upgrade db")
+		panic(-1)
+	}
+	log.Printf("DB upgraded")
+}
+
+func dbConfig() (string, string, string, string) {
+	addr := os.Getenv("MYSQL_HOST")
+	if len(addr) == 0 {
+		addr = os.Getenv("MYSQL_PORT_3306_TCP_ADDR")
+	}
+
+	port := os.Getenv("MYSQL_PORT_3306_TCP_PORT")
+	username := os.Getenv("MYSQL_USR")
+
+	password := os.Getenv("MYSQL_ENV_MYSQL_ROOT_PASSWORD")
+	if len(password) == 0 {
+		password = os.Getenv("MYSQL_PWD")
+	}
+
+	return addr, port, username, password
 }
