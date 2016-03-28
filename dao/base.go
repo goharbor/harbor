@@ -103,7 +103,7 @@ func UpgradeDB() {
 		username, password, addr, port)
 	log.Printf("upgrading DB", dbStr)
 
-	errors, ok := migrate.UpSync(dbStr, "/sql")
+	errors, ok := migrate.UpSync(dbStr, "/go/src/github.com/vmware/harbor/sql")
 	if errors != nil && len(errors) > 0 {
 		for _, err := range errors {
 			log.Printf("db err", err)
