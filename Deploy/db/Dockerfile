@@ -1,4 +1,4 @@
-FROM mysql:5.6
+FROM testregistry.dataman.io/mysql:5.6
 
 WORKDIR /tmp
 

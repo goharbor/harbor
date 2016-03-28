@@ -1,4 +1,4 @@
-FROM golang:1.5.1
+FROM testregistry.dataman.io/golang:1.5.1
 
 MAINTAINER jiangd@vmware.com
 
@@ -13,7 +13,7 @@ WORKDIR /go/src/github.com/vmware/harbor
 
 ENV GO15VENDOREXPERIMENT 1
 
-RUN go install  -v -a .
+RUN go install  -v -a
 
 ENV MYSQL_USR root \
     MYSQL_PWD root \
