@@ -40,6 +40,29 @@ type RepoItem struct {
 
 // Tag holds information about a tag.
 type Tag struct {
-	Version string `json:"version"`
-	ImageID string `json:"image_id"`
+	Id           int       `json:"id"`
+	Version      string    `json:"version"`
+	ImageID      string    `json:"imageId"`
+	ProjectID    int       `json:"projectId"`
+	RepositoryID int       `json:"respositoryId"`
+	UserID       string    `json:"userId"`
+	Name         string    `json:"name"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
+type Repository struct {
+	Id          int       `json:"id"`
+	Name        string    `json:"name"`
+	ProjectName string    `json:"projectName"`
+	ProjectID   int       `json:"projectId"`
+	UserId      int       `json:"userId"`
+	Category    int       `json:"category"`
+	IsPublic    bool      `json:"isPublic"`
+	latestTag   string    `json:"latestTag"`
+	description string    `json:"description"`
+	sryCompose  string    `json:"sryCompose"`
+	readme      string    `json:"readme"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
