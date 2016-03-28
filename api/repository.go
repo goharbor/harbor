@@ -25,8 +25,7 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -49,7 +48,7 @@ func (ra *RepositoryAPI) Prepare() {
 	}
 	username, ok := ra.GetSession("username").(string)
 	if !ok {
-		beego.Warning("failed to get username from session")
+		log.Warning("failed to get username from session")
 		ra.username = ""
 	} else {
 		ra.username = username
@@ -60,17 +59,17 @@ func (ra *RepositoryAPI) Prepare() {
 func (ra *RepositoryAPI) Get() {
 	projectID, err0 := ra.GetInt64("project_id")
 	if err0 != nil {
-		beego.Error("Failed to get project id, error:", err0)
+		log.Errorf("Failed to get project id, error: %v", err0)
 		ra.RenderError(http.StatusBadRequest, "Invalid project id")
 		return
 	}
 	p, err := dao.GetProjectByID(projectID)
 	if err != nil {
-		beego.Error("Error occurred in GetProjectById:", err)
+		log.Errorf("Error occurred in GetProjectById, error: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if p == nil {
-		beego.Warning("Project with Id:", projectID, ", does not exist")
+		log.Warningf("Project with Id: %d does not exist", projectID)
 		ra.RenderError(http.StatusNotFound, "")
 		return
 	}
@@ -80,7 +79,7 @@ func (ra *RepositoryAPI) Get() {
 	}
 	repoList, err := svc_utils.GetRepoFromCache()
 	if err != nil {
-		beego.Error("Failed to get repo from cache, error:", err)
+		log.Errorf("Failed to get repo from cache, error: %v", err)
 		ra.RenderError(http.StatusInternalServerError, "internal sever error")
 	}
 	projectName := p.Name
@@ -131,7 +130,7 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString("repo_name")
 	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), ra.username)
 	if err != nil {
-		beego.Error("Failed to get repo tags, repo name:", repoName, ", error: ", err)
+		log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repoName, err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
 	} else {
 		t := tag{}
@@ -151,14 +150,14 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "manifests", tag), ra.username)
 	if err != nil {
-		beego.Error("Failed to get manifests for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
+		log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repoName, tag, err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 	mani := manifest{}
 	err = json.Unmarshal(result, &mani)
 	if err != nil {
-		beego.Error("Failed to decode json from response for manifests, repo name:", repoName, ", tag:", tag, ", error:", err)
+		log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repoName, tag, err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
@@ -166,7 +165,7 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	err = json.Unmarshal([]byte(v1Compatibility), &item)
 	if err != nil {
-		beego.Error("Failed to decode V1 field for repo, repo name:", repoName, ", tag:", tag, ", error:", err)
+		log.Errorf("Failed to decode V1 field for repo, repo name: %s, tag: %s, error: %v", repoName, tag, err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}

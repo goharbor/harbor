@@ -17,16 +17,14 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 
 	"strconv"
 	"time"
-
-	"github.com/astaxie/beego"
 )
 
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
@@ -51,12 +49,12 @@ func (p *ProjectAPI) Prepare() {
 		var err error
 		p.projectID, err = strconv.ParseInt(idStr, 10, 64)
 		if err != nil {
-			log.Printf("Error parsing project id: %s, error: %v", idStr, err)
+			log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
 			p.CustomAbort(http.StatusBadRequest, "invalid project id")
 		}
 		exist, err := dao.ProjectExists(p.projectID)
 		if err != nil {
-			log.Printf("Error occurred in ProjectExists: %v", err)
+			log.Errorf("Error occurred in ProjectExists, error: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		if !exist {
@@ -75,14 +73,14 @@ func (p *ProjectAPI) Post() {
 	}
 	err := validateProjectReq(req)
 	if err != nil {
-		beego.Error("Invalid project request, error: ", err)
+		log.Errorf("Invalid project request, error: %v", err)
 		p.RenderError(http.StatusBadRequest, "Invalid request for creating project")
 		return
 	}
 	projectName := req.ProjectName
 	exist, err := dao.ProjectExists(projectName)
 	if err != nil {
-		beego.Error("Error happened checking project existence in db:", err, ", project name:", projectName)
+		log.Errorf("Error happened checking project existence in db, error: %v, project name: %s", err, projectName)
 	}
 	if exist {
 		p.RenderError(http.StatusConflict, "")
@@ -91,7 +89,7 @@ func (p *ProjectAPI) Post() {
 	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
 	err = dao.AddProject(project)
 	if err != nil {
-		beego.Error("Failed to add project, error: ", err)
+		log.Errorf("Failed to add project, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
 }
@@ -101,7 +99,7 @@ func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
 	result, err := dao.ProjectExists(projectName)
 	if err != nil {
-		beego.Error("Error while communicating with DB: ", err)
+		log.Errorf("Error while communicating with DB, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Error while communicating with DB")
 		return
 	}
@@ -123,7 +121,7 @@ func (p *ProjectAPI) Get() {
 
 	projectList, err := dao.QueryProject(queryProject)
 	if err != nil {
-		beego.Error("Error occurred in QueryProject:", err)
+		log.Errorf("Error occurred in QueryProject, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
@@ -142,7 +140,7 @@ func (p *ProjectAPI) Put() {
 
 	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
-		beego.Error("Error parsing project id:", projectID, ", error: ", err)
+		log.Errorf("Error parsing project id: %d, error: %v", projectID, err)
 		p.RenderError(http.StatusBadRequest, "invalid project id")
 		return
 	}
@@ -152,13 +150,13 @@ func (p *ProjectAPI) Put() {
 		public = 1
 	}
 	if !isProjectAdmin(p.userID, projectID) {
-		beego.Warning("Current user, id:", p.userID, ", does not have project admin role for project, id:", projectID)
+		log.Warningf("Current user, id: %d does not have project admin role for project, id: %d", p.userID, projectID)
 		p.RenderError(http.StatusForbidden, "")
 		return
 	}
 	err = dao.ToggleProjectPublicity(p.projectID, public)
 	if err != nil {
-		beego.Error("Error while updating project, project id:", projectID, ", error:", err)
+		log.Errorf("Error while updating project, project id: %d, error: %v", projectID, err)
 		p.RenderError(http.StatusInternalServerError, "Failed to update project")
 	}
 }
@@ -177,11 +175,11 @@ func (p *ProjectAPI) FilterAccessLog() {
 
 	query := models.AccessLog{ProjectID: p.projectID, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
 
-	log.Printf("Query AccessLog: begin: %v, end: %v, keywords: %s", query.BeginTime, query.EndTime, query.Keywords)
+	log.Infof("Query AccessLog: begin: %v, end: %v, keywords: %s", query.BeginTime, query.EndTime, query.Keywords)
 
 	accessLogList, err := dao.GetAccessLogs(query)
 	if err != nil {
-		log.Printf("Error occurred in GetAccessLogs: %v", err)
+		log.Errorf("Error occurred in GetAccessLogs, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	p.Data["json"] = accessLogList
@@ -192,7 +190,7 @@ func isProjectAdmin(userID int, pid int64) bool {
 	userQuery := models.User{UserID: userID, RoleID: models.PROJECTADMIN}
 	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
 	if err != nil {
-		beego.Error("Error occurred in GetUserProjectRoles:", err, ", returning false")
+		log.Errorf("Error occurred in GetUserProjectRoles, returning false, error: %v", err)
 		return false
 	}
 	return len(rolelist) > 0

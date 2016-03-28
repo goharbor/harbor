@@ -24,8 +24,7 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // SearchAPI handles requesst to /api/search
@@ -47,7 +46,7 @@ func (n *SearchAPI) Get() {
 	keyword := n.GetString("q")
 	projects, err := dao.QueryRelevantProjects(userID)
 	if err != nil {
-		beego.Error("Failed to get projects of user id:", userID, ", error:", err)
+		log.Errorf("Failed to get projects of user id: %d, error: %v", userID, err)
 		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
 	}
 	projectSorter := &utils.ProjectSorter{Projects: projects}
@@ -69,7 +68,7 @@ func (n *SearchAPI) Get() {
 
 	repositories, err2 := svc_utils.GetRepoFromCache()
 	if err2 != nil {
-		beego.Error("Failed to get repos from cache, error :", err2)
+		log.Errorf("Failed to get repos from cache, error: %v", err2)
 		n.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
 	}
 	sort.Strings(repositories)
