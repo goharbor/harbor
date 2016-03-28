@@ -138,5 +138,5 @@ func (ra *RepositoryV3API) UpdateRepository() {
 // PUT /api/v3/repositories/categories
 //
 // return list of repository categories, category are stored in /path/to/project/root/CATEGORIES
-func (ra *RepositoryV3API) GetRespositoryCategories() {
+func (ra *RepositoryV3API) GetCategories() {
 }

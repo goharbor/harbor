@@ -19,12 +19,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils"
 
 	"github.com/astaxie/beego"
+	redis "github.com/garyburd/redigo/redis"
 )
 
 // BaseAPI wraps common methods for controllers to host API
@@ -54,6 +57,7 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 // ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
 
+	// validate user from basic auth
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {
 		log.Printf("Requst with Basic Authentication header, username: %s", username)
@@ -66,6 +70,28 @@ func (b *BaseAPI) ValidateUser() int {
 			return user.UserID
 		}
 	}
+
+	// validate user from token
+	token := b.Ctx.Request.Header.Get("Authorization")
+
+	if len(token) == 0 {
+		token = b.GetString("authorization")
+	}
+
+	if len(token) > 0 {
+		conn := utils.OpenRedisPool()
+		defer conn.Close()
+		uid_, err := redis.String(conn.Do("HGET", "s:"+token, "user_id"))
+
+		if err != nil {
+			beego.Warning("No user id in session, canceling request")
+			b.CustomAbort(http.StatusUnauthorized, "")
+		}
+		uid, _ := strconv.Atoi(uid_)
+		return uid
+	}
+
+	// validate user from session
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID == nil {
 		beego.Warning("No user id in session, canceling request")

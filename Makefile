@@ -1,7 +1,7 @@
 .PHONY: clean build
 
 all: build
-	docker run -it --name=harbor_container harbor_image
+	docker run  --rm -it --name=harbor_container harbor_image
 
 build:
 	docker build --rm -t "harbor_image" -f Dockerfile.sry .

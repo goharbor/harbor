@@ -17,8 +17,10 @@ RUN go install  -v -a .
 
 ENV MYSQL_USR root \
     MYSQL_PWD root \
-    MYSQL_PORT_3306_TCP_ADDR localhost \
+    MYSQL_PORT_3306_TCP_ADDR 192.168.1.65 \
     MYSQL_PORT_3306_TCP_PORT 3306 \
+    REDIS_HOST 192.168.1.65 \
+    REDIS_PORT 6379 \
     REGISTRY_URL localhost:5000
 
 COPY views /go/bin/views
