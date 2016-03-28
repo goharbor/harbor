@@ -22,7 +22,7 @@ import (
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
 )
