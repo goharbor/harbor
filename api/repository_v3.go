@@ -181,11 +181,15 @@ func (ra *RepositoryAPI) GetManifests() {
 func (ra *RepositoryAPI) GetRepositories() {
 }
 
-// GET /api/v3/repositories/{respository_id}
+// GET /api/v3/repositories/{project_name}/{respository_name}
 func (ra *RepositoryAPI) GetRepository() {
 }
 
-// PUT /api/v3/repositories/{respository_id}
+// GET /api/v3/repositories/{project_name}/{respository_name}tags
+func (ra *RepositoryAPI) GetRepository() {
+}
+
+// PUT /api/v3/repositories/{project_name}/{respository_name}
 //
 // update respository category
 func (ra *RepositoryAPI) UpdateRepository() {
