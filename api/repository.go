@@ -26,8 +26,6 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put

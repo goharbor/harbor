@@ -25,8 +25,6 @@ import (
 
 	"strconv"
 	"time"
-
-	"github.com/astaxie/beego"
 )
 
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs

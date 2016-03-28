@@ -22,8 +22,6 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego"
 )
 
 // UserAPI handles request to /api/users/{}

@@ -25,8 +25,6 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego"
 )
 
 // SearchAPI handles requesst to /api/search

@@ -19,8 +19,6 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
