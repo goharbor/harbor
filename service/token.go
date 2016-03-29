@@ -49,6 +49,7 @@ func (a *TokenHandler) Get() {
 		a.CustomAbort(http.StatusUnauthorized, "")
 	}
 	access := svc_utils.GetResourceActions(scope)
+	log.Println(access)
 	for _, a := range access {
 		svc_utils.FilterAccess(username, authenticated, a)
 	}

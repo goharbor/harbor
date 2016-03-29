@@ -18,9 +18,111 @@ package dao
 import (
 	"github.com/vmware/harbor/models"
 
-	//"github.com/astaxie/beego/orm"
+	"fmt"
+	"strings"
+
+	"github.com/astaxie/beego/orm"
 )
 
-func AddTag(tag models.Tag) error {
+func AddOrUpdateTag(tag *models.Tag) (*models.Tag, error) {
+	exists, _ := TagExists(fmt.Sprintf("%s/%s:%s", tag.ProjectName, tag.RepositoryName, tag.Version))
+	if !exists {
+		err := AddTag(tag)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := UpdateTag(tag)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return tag, nil
+}
+
+func AddTag(tag *models.Tag) error {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("insert into tag(project_id, repository_id, user_id, name) values (?, ?, ?, ?)").Prepare()
+	if err != nil {
+		return err
+	}
+
+	r, err := p.Exec(tag.ProjectID, tag.RepositoryID, tag.UserID, tag.Version)
+	if err != nil {
+		return err
+	}
+
+	tagID, err := r.LastInsertId()
+	if err != nil {
+		return err
+	}
+	tag.Id = tagID
 	return nil
+}
+
+func UpdateTag(tag *models.Tag) error {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("UPDATE tag SET user_id =? updated_at=now() WHERE name=? AND repository_id=?").Prepare()
+	if err != nil {
+		return err
+	}
+
+	_, err = p.Exec(tag.UserID, tag.Version, tag.RepositoryID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//TagExists returns whether the project exists according to its name of ID.
+func TagExists(nameOrID interface{}) (bool, error) {
+	switch nameOrID.(type) {
+	case int:
+		repo, _ := GetTagByID(nameOrID.(int64))
+		if repo != nil {
+			return true, nil
+		}
+	case string:
+		repo, _ := GetTagByName(nameOrID.(string))
+		if repo != nil {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// GetTagByID ...
+func GetTagByID(tagId int64) (*models.Tag, error) {
+	o := orm.NewOrm()
+	var tags []models.Tag
+	count, err := o.Raw("SELECT * from tag where id=? ", tagId).QueryRows(&tags)
+	if err != nil {
+		return nil, err
+	} else if count == 0 {
+		return nil, nil
+	} else {
+		return &tags[0], nil
+	}
+}
+
+// GetTagByName ...
+func GetTagByName(str string) (*models.Tag, error) {
+	o := orm.NewOrm()
+	projectName := strings.Split(str, "/")[0]
+	repoTagName := strings.Split(str, "/")[1]
+	repositoryName := strings.Split(repoTagName, ":")[0]
+	tagName := strings.Split(repoTagName, ":")[1]
+	var tags []models.Tag
+	count, err := o.Raw("SELECT * from tag where project_name=? AND repository_name = ? AND name=? ", projectName, repositoryName, tagName).QueryRows(&tags)
+	if err != nil {
+		return nil, err
+	} else if count == 0 {
+		return nil, nil
+	} else {
+		return &tags[0], nil
+	}
 }

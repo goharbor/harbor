@@ -54,7 +54,9 @@ func (n *NotificationHandler) Post() {
 			beego.Error("Failed to match the media type against pattern, error: ", err)
 			matched = false
 		}
+		log.Println("in gorotine,", matched)
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
+			log.Println("in if statemtn")
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
@@ -67,20 +69,45 @@ func (n *NotificationHandler) Post() {
 			go dao.AccessLog(username, project, repo, action)
 			if action == "push" {
 				go func() {
+					log.Printf("in gorotine\n")
 					err2 := svc_utils.RefreshCatalogCache()
 					if err2 != nil {
 						beego.Error("Error happens when refreshing cache:", err2)
 					}
-					// create repo if does not exists
-					if !dao.RepositoryExist() {
-						var repository models.Repository
+					var repository models.Repository
+					repository.Name = strings.Split(e.Target.Repository, ",")[1]
+					repository.ProjectName = strings.Split(e.Target.Repository, ",")[0]
+					tags := getRepoTagsFromRegistry(e.Target.Repository)
+					if len(tags) > 0 {
+						log.Printf("in gorotine\n")
+						repository.LatestTag = tags[0]
+						repositoryDao, err := dao.AddOrUpdateRepository(&repository)
+						if err != nil {
+							var tag models.Tag
+							tag.Version = tags[0]
+							tag.RepositoryID = repositoryDao.Id
+							dao.AddOrUpdateTag(&tag)
+						}
 					}
-					// create tag if tag not exists
 				}()
 			}
 		}
 	}
+}
 
+func getRepoTagsFromRegistry(repoName string) []string {
+	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), "admin")
+	if err != nil {
+		return []string{}
+	}
+
+	type tag struct {
+		Name string   `json:"name"`
+		Tags []string `json:"tags"`
+	}
+	t := tag{}
+	json.Unmarshal(result, &t)
+	return t.Tags
 }
 
 // Render returns nil as it won't render any template.

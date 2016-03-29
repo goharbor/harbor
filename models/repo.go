@@ -40,24 +40,25 @@ type RepoItem struct {
 
 // Tag holds information about a tag.
 type Tag struct {
-	Id           int       `json:"id"`
-	Version      string    `json:"version"`
-	ImageID      string    `json:"imageId"`
-	ProjectID    int       `json:"projectId"`
-	RepositoryID int       `json:"respositoryId"`
-	UserID       string    `json:"userId"`
-	Name         string    `json:"name"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	Id             int64     `json:"id"`
+	Version        string    `json:"version"`
+	ImageID        string    `json:"imageId"`
+	ProjectID      int64     `json:"projectId"`
+	ProjectName    string    `json:"projectName"`
+	RepositoryName string    `json:"repositoryName"`
+	RepositoryID   int64     `json:"respositoryId"`
+	UserID         string    `json:"userId"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
 type Repository struct {
-	Id          int       `json:"id"`
+	Id          int64     `json:"id"`
 	Name        string    `json:"name"`
 	ProjectName string    `json:"projectName"`
-	ProjectID   int       `json:"projectId"`
-	UserId      int       `json:"userId"`
-	Category    int       `json:"category"`
+	ProjectID   int64     `json:"projectId"`
+	UserId      int64     `json:"userId"`
+	Category    int64     `json:"category"`
 	IsPublic    bool      `json:"isPublic"`
 	LatestTag   string    `json:"latestTag"`
 	Description string    `json:"description"`
