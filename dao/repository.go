@@ -31,7 +31,25 @@ func AddRepository(project models.Repository) error {
 }
 
 func QueryRepository(query models.Repository) ([]models.Repository, error) {
-	return nil, nil
+	o := orm.NewOrm()
+
+	sql := `select name, description, project_name, icon, latest_tag ,updatedAt from repository `
+
+	queryParam := make([]interface{}, 1)
+	if query.Name != "" {
+		sql += " where name like ? "
+		queryParam = append(queryParam, query.Name)
+	}
+
+	sql += " order by updatedAt desc"
+
+	var r []models.Repository
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 //RepositoryExists returns whether the project exists according to its name of ID.
@@ -45,6 +63,21 @@ func GetRepositoryByID(projectID int64) (*models.Repository, error) {
 }
 
 // GetRepositoryByName ...
-func GetRepositoryByName(projectName string) (*models.Repository, error) {
-	return nil, nil
+func GetRepositoryByName(repositoryName string) (models.Repository, error) {
+	o := orm.NewOrm()
+
+	sql := `select name, description, project_name, icon, latest_tag ,updatedAt from repository `
+
+	queryParam := make([]interface{}, 1)
+	if repositoryName == "" {
+		sql += " where name = ? "
+		queryParam = append(queryParam, repositoryName)
+	}
+
+	sql += " order by updatedAt desc"
+
+	var r models.Repository
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+
+	return r, err
 }
