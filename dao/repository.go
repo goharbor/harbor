@@ -77,6 +77,28 @@ func UpdateRepository(repository *models.Repository) error {
 	return nil
 }
 
+func QueryRepository(query models.Repository) ([]models.Repository, error) {
+	o := orm.NewOrm()
+
+	sql := `select name, description, project_name, icon, latest_tag ,updatedAt from repository `
+
+	queryParam := make([]interface{}, 1)
+	if query.Name != "" {
+		sql += " where name like ? "
+		queryParam = append(queryParam, query.Name)
+	}
+
+	sql += " order by updatedAt desc"
+
+	var r []models.Repository
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
 //RepositoryExists returns whether the project exists according to its name of ID.
 func RepositoryExists(nameOrID interface{}) (bool, error) {
 	switch nameOrID.(type) {

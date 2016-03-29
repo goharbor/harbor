@@ -123,10 +123,26 @@ func (ra *RepositoryV3API) GetTags() {
 
 // GET /api/v3/repositories
 func (ra *RepositoryV3API) GetRepositories() {
+	queryRepository := model.Repository{}
+	repositories, err := dao.GetRepository(queryReposetory)
+	if err != nil {
+		beego.Error("Failed to get repositories from DB")
+		beego.RenderError(http.StatusInternalServerError, "Failed to get repositories")
+	}
+	ra.Data["json"] = repositories
+	ra.ServeJSON()
 }
 
 // GET /api/v3/repositories/{project_name}/{respository_name}
 func (ra *RepositoryV3API) GetRepository() {
+	repository_name := ra.GetString("respository_name", "")
+	repositroy, err := dao.GetRepositoryByName(repositoryName)
+	if err != nil {
+		beego.Error("Failed to get repository from DB")
+		beego.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+	ra.Data["json"] = Repository
+	ra.ServeJSON()
 }
 
 // PUT /api/v3/repositories/{project_name}/{respository_name}
