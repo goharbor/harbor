@@ -56,7 +56,7 @@ func AddProject(project models.Project) error {
 		return err
 	}
 
-	if err = AddProjectMember(projectID, project.OwnerID, ProjectAdmin); err != nil {
+	if err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN); err != nil {
 		return err
 	}
 

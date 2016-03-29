@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego"
 )
@@ -69,7 +68,7 @@ func (idc *ItemDetailController) Get() {
 		idc.Data["Username"] = idc.GetSession("username")
 		idc.Data["UserId"] = userID
 
-		roleList, err := dao.GetUserProjectRoles(models.User{UserID: userID}, projectID)
+		roleList, err := dao.GetUserProjectRoles(userID, projectID)
 		if err != nil {
 			beego.Error("Error occurred in GetUserProjectRoles:", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -86,9 +85,7 @@ func (idc *ItemDetailController) Get() {
 			return
 		}
 
-		if isAdmin {
-			idc.Data["RoleId"] = models.SYSADMIN
-		} else if len(roleList) > 0 {
+		if len(roleList) > 0 {
 			idc.Data["RoleId"] = roleList[0].RoleID
 		}
 	}

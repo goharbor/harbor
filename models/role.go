@@ -15,18 +15,15 @@
 
 package models
 
-/*
 const (
-	//SYSADMIN system administrator
-	SYSADMIN = 1
 	//PROJECTADMIN project administrator
-	PROJECTADMIN = 2
+	PROJECTADMIN = 1
 	//DEVELOPER developer
-	DEVELOPER = 3
+	DEVELOPER = 2
 	//GUEST guest
-	GUEST = 4
+	GUEST = 3
 )
-*/
+
 // Role holds the details of a role.
 type Role struct {
 	RoleID   int    `orm:"column(role_id)" json:"role_id"`

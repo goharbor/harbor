@@ -539,10 +539,9 @@ func TestQueryProject(t *testing.T) {
 }
 
 func TestGetUserProjectRoles(t *testing.T) {
-	user := *currentUser
-	r, err := GetUserProjectRoles(user, currentProject.ProjectID)
+	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectID)
+		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
 
 	//Get the size of current user project role.
@@ -579,12 +578,12 @@ func TestQueryRelevantProjects(t *testing.T) {
 }
 
 func TestAddProjectMember(t *testing.T) {
-	err := AddProjectMember(currentProject.ProjectID, 1, Developer)
+	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
 	if err != nil {
 		t.Errorf("Error occurred in AddProjectMember: %v", err)
 	}
 
-	roles, err := GetUserProjectRoles(models.User{UserID: 1}, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -608,7 +607,7 @@ func TestDeleteProjectMember(t *testing.T) {
 		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
 	}
 
-	roles, err := GetUserProjectRoles(models.User{UserID: 1}, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}

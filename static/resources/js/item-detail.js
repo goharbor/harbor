@@ -332,7 +332,6 @@ jQuery(function(){
 						getUserRoleCallback(userId);				
 					});
 					$("#tblUser .glyphicon-trash").on("click", function(){
-						var roleId = $(this).attr("roleid");
 						var userId = $(this).attr("userid");
 						new AjaxUtil({
 						  url: "/api/projects/" + $("#projectId").val() + "/members/" + userId,

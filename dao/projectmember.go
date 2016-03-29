@@ -21,17 +21,12 @@ import (
 )
 
 // AddProjectMember inserts a record to table project_member
-func AddProjectMember(projectID int64, userID int, r role) error {
+func AddProjectMember(projectID int64, userID int, role int) error {
 	o := orm.NewOrm()
 
 	sql := "insert into project_member (project_id, user_id , role) values (?, ?, ?)"
 
-	rr, err := getRole(r)
-	if err != nil {
-		return err
-	}
-
-	if _, err = o.Raw(sql, projectID, userID, rr.RoleID).Exec(); err != nil {
+	if _, err := o.Raw(sql, projectID, userID, role).Exec(); err != nil {
 		return err
 	}
 
@@ -39,17 +34,12 @@ func AddProjectMember(projectID int64, userID int, r role) error {
 }
 
 // UpdateProjectMember updates the record in table project_member
-func UpdateProjectMember(projectID int64, userID int, r role) error {
+func UpdateProjectMember(projectID int64, userID int, role int) error {
 	o := orm.NewOrm()
 
 	sql := "update project_member set role = ? where project_id = ? and user_id = ?"
 
-	rr, err := getRole(r)
-	if err != nil {
-		return err
-	}
-
-	if _, err := o.Raw(sql, rr.RoleID, projectID, userID).Exec(); err != nil {
+	if _, err := o.Raw(sql, role, projectID, userID).Exec(); err != nil {
 		return err
 	}
 

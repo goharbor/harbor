@@ -16,41 +16,12 @@
 package dao
 
 import (
-	"fmt"
-
-	"github.com/vmware/harbor/models"
-
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/models"
 )
-
-type role int
-
-// Start from 2 to guarantee the compatibility with former code
-const (
-	ProjectAdmin role = 2
-	Developer         = 3
-	Guest             = 4
-)
-
-var roleList = make(map[role]*models.Role)
-
-// IntToRole is used to convert int to role.
-func IntToRole(i int) (r role, err error) {
-	switch i {
-	case 2:
-		r = ProjectAdmin
-	case 3:
-		r = Developer
-	case 4:
-		r = Guest
-	default:
-		err = fmt.Errorf("no role is correspondent with the input: %d", i)
-	}
-	return
-}
 
 // GetUserProjectRoles returns roles that the user has according to the project.
-func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role, error) {
+func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
 
 	o := orm.NewOrm()
 
@@ -62,11 +33,9 @@ func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role,
 				from project_member
 				where project_id = ? and user_id = ?
 			)`
-	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, userQuery.UserID)
 
 	var roleList []models.Role
-	_, err := o.Raw(sql, projectID, userQuery.UserID).QueryRows(&roleList)
+	_, err := o.Raw(sql, projectID, userID).QueryRows(&roleList)
 
 	if err != nil {
 		return nil, err
@@ -87,43 +56,4 @@ func IsAdminRole(userID int) (bool, error) {
 	}
 
 	return user.HasAdminRole == 1, nil
-}
-
-func getRole(r role) (*models.Role, error) {
-	if roleList[r] != nil {
-		return roleList[r], nil
-	}
-
-	o := orm.NewOrm()
-	var roles []*models.Role
-
-	sql := "select role_id, role_code, name, role_mask from role"
-
-	_, err := o.Raw(sql).QueryRows(&roles)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, rr := range roles {
-		if rr.RoleCode == "MDRWS" {
-			roleList[ProjectAdmin] = rr
-			continue
-		}
-
-		if rr.RoleCode == "RWS" {
-			roleList[Developer] = rr
-			continue
-		}
-
-		if rr.RoleCode == "RS" {
-			roleList[Guest] = rr
-			continue
-		}
-	}
-
-	if roleList[r] == nil {
-		return nil, fmt.Errorf("unsupported role type: %v", r)
-	}
-
-	return roleList[r], nil
 }
