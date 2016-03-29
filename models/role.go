@@ -32,19 +32,3 @@ type Role struct {
 
 	RoleMask int `orm:"role_mask" json:"role_mask"`
 }
-
-/*
-// ProjectRole holds information about the relationship of project and role.
-type ProjectRole struct {
-	PrID      int   `orm:"column(pr_id)" json:"PrId"`
-	ProjectID int64 `orm:"column(project_id)" json:"ProjectId"`
-	RoleID    int   `orm:"column(role_id)" json:"RoleId"`
-}
-
-// UserProjectRole holds information about relationship of user, project and role.
-type UserProjectRole struct {
-	UprID  int   `orm:"column(upr_id)" json:"UprId"`
-	UserID int   `orm:"column(user_id)" json:"UserId"`
-	PrID   int64 `orm:"column(pr_id)" json:"PrId"`
-}
-*/
