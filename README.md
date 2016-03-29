@@ -62,8 +62,10 @@ We welcome contributions from the community.  If you wish to contribute code, we
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
 
+### Partners
+![DataMan](docs/img/dataman.png)
+
 ### Users
 ![MadaiLiCai](docs/img/UserMaDai.jpg)   ![Slamtec](docs/img/slamteclogo.png)
 
-### Partners
-![DataMan](docs/img/dataman.png)
+<a href="http://www.slamtec.com" border="0"><img src="docs/img/slamteclogo.png"></a>
