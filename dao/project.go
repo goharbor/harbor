@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/utils/log"
 )
 
 //TODO:transaction, return err
@@ -70,7 +70,7 @@ func AddProject(project models.Project) error {
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
 	if err != nil {
-		beego.Error("Error occurred in GetProjectByName:", err)
+		log.Errorf("Error occurred in GetProjectByName: %v", err)
 		return false
 	}
 	if project == nil {

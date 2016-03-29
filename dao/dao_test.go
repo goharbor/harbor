@@ -16,7 +16,6 @@
 package dao
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -127,7 +126,7 @@ func TestMain(m *testing.M) {
 	}
 	dbPassword := os.Getenv("DB_PWD")
 
-	fmt.Printf("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	os.Setenv("MYSQL_PORT_3306_TCP_ADDR", dbHost)
 	os.Setenv("MYSQL_PORT_3306_TCP_PORT", dbPort)
