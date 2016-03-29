@@ -1,0 +1,120 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "4b6ea7319e214d98c938f12692336f7ca9348d6b",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/distribution/context",
+			"repository": "https://github.com/docker/distribution",
+			"revision": "f4b6fc8d681c42137b7d2bb544b087462bc34d47",
+			"branch": "master",
+			"path": "/context",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/distribution/registry/auth",
+			"repository": "https://github.com/docker/distribution",
+			"revision": "f4b6fc8d681c42137b7d2bb544b087462bc34d47",
+			"branch": "master",
+			"path": "/registry/auth",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/distribution/registry/auth/token",
+			"repository": "https://github.com/docker/distribution",
+			"revision": "f4b6fc8d681c42137b7d2bb544b087462bc34d47",
+			"branch": "master",
+			"path": "/registry/auth/token",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/distribution/uuid",
+			"repository": "https://github.com/docker/distribution",
+			"revision": "f4b6fc8d681c42137b7d2bb544b087462bc34d47",
+			"branch": "master",
+			"path": "/uuid",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/libtrust",
+			"repository": "https://github.com/docker/libtrust",
+			"revision": "c8d2b36d60a84f3fa7d5e5e355be64f0fbe0b481",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-sql-driver/mysql",
+			"repository": "https://github.com/go-sql-driver/mysql",
+			"revision": "66312f7fe2678aa0f5ec770f96702f4c4ec5aa8e",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/gorilla/context",
+			"repository": "https://github.com/gorilla/context",
+			"revision": "1ea25387ff6f684839d82767c1733ff4d4d15d0a",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/gorilla/mux",
+			"repository": "https://github.com/gorilla/mux",
+			"revision": "0eeaf8392f5b04950925b8a69fe70f110fa7cbfc",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/driver",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/driver",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/driver/mysql",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/driver/mysql",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/file",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/file",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/migrate",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/migrate",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/migrate/direction",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/migrate/direction",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattes/migrate/pipe",
+			"repository": "https://github.com/mattes/migrate",
+			"revision": "ce1b59bb819416ca67422929b1cb48bb342720b6",
+			"branch": "master",
+			"path": "/pipe",
+			"notests": true
+		}
+	]
+}

@@ -5,7 +5,7 @@ log:
   ports:
     - 1514:514
 registry:
-  image: library/registry:2.3.0
+  image: testregistry.dataman.io/registry:2.3.0
   volumes:
     - /data/registry:/storage
     - ./config/registry/:/etc/registry/
@@ -50,7 +50,7 @@ ui:
     syslog-address: "tcp://127.0.0.1:1514"
     syslog-tag: "ui"
 proxy:
-  image: library/nginx:1.9
+  image: testregistry.dataman.io/nginx:1.9
   volumes:
     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
   links:

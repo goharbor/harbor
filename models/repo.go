@@ -58,7 +58,7 @@ type Repository struct {
 	ProjectName string    `json:"projectName"`
 	ProjectID   int64     `json:"projectId"`
 	UserId      int64     `json:"userId"`
-	Category    int64     `json:"category"`
+	Category    string    `json:"category"`
 	IsPublic    bool      `json:"isPublic"`
 	LatestTag   string    `json:"latestTag"`
 	Description string    `json:"description"`

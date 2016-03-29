@@ -24,6 +24,8 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 
 	"github.com/astaxie/beego"
+	"io/ioutil"
+	"log"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -149,10 +151,50 @@ func (ra *RepositoryV3API) GetRepository() {
 //
 // update respository category
 func (ra *RepositoryV3API) UpdateRepository() {
+	projectName := ra.Ctx.Input.Param(":project_name")
+	//respositoryName := ra.Ctx.Input.Param(":respository_name")
+	if projectName == "" {
+		beego.Error("Project name is blank")
+		ra.CustomAbort(http.StatusBadRequest, "Project name is blank")
+	}
+	var repo models.Repository
+	err := json.Unmarshal(ra.Ctx.Input.RequestBody, &repo)
+	if err != nil {
+		beego.Error("Failed to request body conver to json err: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to request body conver to json")
+	}
+	repository, err := dao.GetRepositoryByName(projectName)
+	if err != nil {
+		beego.Error("Failed to get repository, project name: ", projectName, ", error: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+	repository.Category = repo.Category
+	repository.Description = repo.Description
+	/*err = dao.UpdateRepository(repository)
+	if err != nil {
+		beego.Error("Failed to update repository error: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to update repository")
+	}
+	jstr, _ := json.Marshal(repository)
+	ra.Data["json"] = jstr
+	ra.ServerJSON()*/
 }
 
 // PUT /api/v3/repositories/categories
 //
 // return list of repository categories, category are stored in /path/to/project/root/CATEGORIES
 func (ra *RepositoryV3API) GetCategories() {
+	b, err := ioutil.ReadFile("CATEGORIES")
+	if err != nil {
+		beego.Error("Ftailed to get CATEGORIES errors: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repo CATEGORIES")
+	}
+	var categorys []string
+	for _, v := range strings.Split(string(b), "\n") {
+		if len(v) > 0 {
+			categorys = append(categorys, v)
+		}
+	}
+	ra.Data["json"] = categorys
+	ra.ServeJSON()
 }
