@@ -63,9 +63,7 @@ We welcome contributions from the community.  If you wish to contribute code, we
 Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Partners
-![DataMan](docs/img/dataman.png)
+<a href="https://www.shurenyun.com/" border="0"><img alt="DataMan" src="docs/img/dataman.png"></a>
 
 ### Users
-![MadaiLiCai](docs/img/UserMaDai.jpg)   ![Slamtec](docs/img/slamteclogo.png)
-
-<a href="http://www.slamtec.com" border="0"><img src="docs/img/slamteclogo.png"></a>
+<a href="https://www.madailicai.com/" border="0"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>  <a href="http://www.slamtec.com" border="0"><img alt="SlamTec" src="docs/img/slamteclogo.png"></a>
