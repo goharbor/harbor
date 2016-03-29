@@ -46,6 +46,8 @@ func BuildRegistryURL(segments ...string) string {
 // RegistryAPIGet triggers GET request to the URL which is the endpoint of registry and returns the response body.
 // It will attach a valid jwt token to the request if registry requires.
 func RegistryAPIGet(url, username string) ([]byte, error) {
+
+	log.Debugf("Registry API url: %s", url)
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -59,8 +61,8 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 		return result, nil
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
+		log.Debugf("authenticate header: %s", authenticate)
 		str := strings.Split(authenticate, " ")[1]
-		log.Debugf("url: %s", url)
 		var service string
 		var scope string
 		strs := strings.Split(str, ",")
@@ -71,8 +73,12 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 				scope = s
 			}
 		}
-		service = strings.Split(service, "\"")[1]
-		scope = strings.Split(scope, "\"")[1]
+		if arr := strings.Split(service, "\""); len(arr) > 1 {
+			service = arr[1]
+		}
+		if arr := strings.Split(scope, "\""); len(arr) > 1 {
+			scope = arr[1]
+		}
 		token, err := GenTokenForUI(username, service, scope)
 		if err != nil {
 			return nil, err
