@@ -57,12 +57,12 @@ type Repository struct {
 	ProjectName string    `json:"projectName"`
 	ProjectID   int       `json:"projectId"`
 	UserId      int       `json:"userId"`
-	Category    int       `json:"category"`
+	Category    string    `json:"category"`
 	IsPublic    bool      `json:"isPublic"`
-	latestTag   string    `json:"latestTag"`
-	description string    `json:"description"`
-	sryCompose  string    `json:"sryCompose"`
-	readme      string    `json:"readme"`
+	LatestTag   string    `json:"latestTag"`
+	Description string    `json:"description"`
+	SryCompose  string    `json:"sryCompose"`
+	Readme      string    `json:"readme"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
