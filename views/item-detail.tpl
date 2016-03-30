@@ -197,15 +197,15 @@
 							<label for="txtRole" class="control-label">{{i18n .Lang "role"}}:</label>
 							<ul class="list-group" id="lstRole">
 								<li class="list-group-item">
-									<input type="radio" name="chooseRole" id="chkRole2" value="2">
+									<input type="radio" name="chooseRole" id="chkRole2" value="1">
 									<label for="chkRole2" class="control-label">Project Admin</label>
 								</li>
 								<li class="list-group-item">
-									<input type="radio" name="chooseRole" id="chkRole3" value="3">
+									<input type="radio" name="chooseRole" id="chkRole3" value="2">
 									<label for="chkRole3" class="control-label">Developer</label>
 								</li>
 								<li class="list-group-item">
-									<input type="radio" name="chooseRole" id="chkRole4" value="4">
+									<input type="radio" name="chooseRole" id="chkRole4" value="3">
 									<label for="chkRole4" class="control-label">Guest</label>
 								</li>
 							</ul>

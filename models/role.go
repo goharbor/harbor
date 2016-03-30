@@ -16,33 +16,19 @@
 package models
 
 const (
-	//SYSADMIN system administrator
-	SYSADMIN = 1
 	//PROJECTADMIN project administrator
-	PROJECTADMIN = 2
+	PROJECTADMIN = 1
 	//DEVELOPER developer
-	DEVELOPER = 3
+	DEVELOPER = 2
 	//GUEST guest
-	GUEST = 4
+	GUEST = 3
 )
 
 // Role holds the details of a role.
 type Role struct {
-	RoleID   int    `json:"role_id" orm:"column(role_id)"`
-	RoleCode string `json:"role_code" orm:"column(role_code)"`
-	Name     string `json:"role_name" orm:"column(name)"`
-}
+	RoleID   int    `orm:"column(role_id)" json:"role_id"`
+	RoleCode string `orm:"column(role_code)" json:"role_code"`
+	Name     string `orm:"column(name)" json:"role_name"`
 
-// ProjectRole holds information about the relationship of project and role.
-type ProjectRole struct {
-	PrID      int   `orm:"column(pr_id)" json:"PrId"`
-	ProjectID int64 `orm:"column(project_id)" json:"ProjectId"`
-	RoleID    int   `orm:"column(role_id)" json:"RoleId"`
-}
-
-// UserProjectRole holds information about relationship of user, project and role.
-type UserProjectRole struct {
-	UprID  int   `orm:"column(upr_id)" json:"UprId"`
-	UserID int   `orm:"column(user_id)" json:"UserId"`
-	PrID   int64 `orm:"column(pr_id)" json:"PrId"`
+	RoleMask int `orm:"role_mask" json:"role_mask"`
 }

@@ -18,6 +18,7 @@ package dao
 import (
 	"errors"
 	"regexp"
+	"time"
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
@@ -34,7 +35,8 @@ func Register(user models.User) (int64, error) {
 	}
 
 	o := orm.NewOrm()
-	p, err := o.Raw("insert into user (username, password, realname, email, comment, salt) values (?, ?, ?, ?, ?, ?)").Prepare()
+
+	p, err := o.Raw("insert into user (username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
 	}
@@ -45,7 +47,8 @@ func Register(user models.User) (int64, error) {
 		return 0, err
 	}
 
-	r, err := p.Exec(user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email, user.Comment, salt)
+	now := time.Now()
+	r, err := p.Exec(user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email, user.Comment, salt, user.HasAdminRole, now, now)
 
 	if err != nil {
 		return 0, err

@@ -32,4 +32,6 @@ type Project struct {
 	Public          int `orm:"column(public)"`
 	//This field does not have correspondent column in DB, this is just for UI to disable button
 	Togglable bool
+
+	UpdateTime time.Time `orm:"update_time" json:"update_time"`
 }

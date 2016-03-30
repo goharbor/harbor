@@ -187,13 +187,21 @@ func (p *ProjectAPI) FilterAccessLog() {
 }
 
 func isProjectAdmin(userID int, pid int64) bool {
-	userQuery := models.User{UserID: userID, RoleID: models.PROJECTADMIN}
-	rolelist, err := dao.GetUserProjectRoles(userQuery, pid)
+	rolelist, err := dao.GetUserProjectRoles(userID, pid)
 	if err != nil {
 		log.Errorf("Error occurred in GetUserProjectRoles, returning false, error: %v", err)
 		return false
 	}
-	return len(rolelist) > 0
+
+	hasProjectAdminRole := false
+	for _, role := range rolelist {
+		if role.RoleID == models.PROJECTADMIN {
+			hasProjectAdminRole = true
+			break
+		}
+	}
+
+	return hasProjectAdminRole
 }
 
 func validateProjectReq(req projectReq) error {
