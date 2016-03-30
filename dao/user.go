@@ -69,7 +69,7 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 	o := orm.NewOrm()
 
 	var users []models.User
-	n, err := o.Raw(`select * from user where (username = ? or email = ?)`,
+	n, err := o.Raw(`select * from user where (username = ? or email = ?) and deleted = 0`,
 		auth.Principal, auth.Principal).QueryRows(&users)
 	if err != nil {
 		return nil, err
