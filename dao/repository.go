@@ -36,10 +36,12 @@ func AddOrUpdateRepository(repository *models.Repository) (*models.Repository, e
 		(*repository).ProjectID = project.ProjectID
 	}
 	if repoFound != nil {
+		log.Println("begin to update repository")
 		repository.Id = repoFound.Id
 		repoUpdated, err := UpdateRepository(repository)
 		return repoUpdated, err
 	} else {
+		log.Println("begin to add repository")
 		repoAdded, err := AddRepository(repository)
 		return repoAdded, err
 	}
@@ -109,6 +111,7 @@ func RepositoryExists(nameOrID interface{}) (*models.Repository, error) {
 			return repo, nil
 		}
 	case string:
+		log.Println("nameOrnumber: ", nameOrID.(string))
 		repo, _ := GetRepositoryByName(nameOrID.(string))
 		if repo != nil {
 			return repo, nil
@@ -141,10 +144,9 @@ func GetRepositoryByName(repoName string) (*models.Repository, error) {
 	log.Println("project_name: ", projectName)
 	log.Println("repository_name: ", repositoryName)
 	var repositories []models.Repository
-	count, err := o.Raw("SELECT * from repository where project_name=? AND name=? ",
-		projectName, repositoryName).QueryRows(&repositories)
+	sql := `select * from repository where project_name=?  and name = ?`
+	count, err := o.Raw(sql, projectName, repositoryName).QueryRows(&repositories)
 	log.Println("count: ", count)
-	log.Println("repository: ", repositories[0])
 	if err != nil {
 		return nil, err
 	} else if count == 0 {

@@ -38,8 +38,8 @@ const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d`
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	log.Printf("Notification Handler triggered!\n")
-	log.Printf("request body in string: %s", string(n.Ctx.Input.CopyBody(1<<32)))
+	//log.Printf("Notification Handler triggered!\n")
+	//log.Printf("request body in string: %s", string(n.Ctx.Input.CopyBody(1<<32)))
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
@@ -56,7 +56,6 @@ func (n *NotificationHandler) Post() {
 		}
 		log.Println("in gorotine,", matched)
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
-			log.Println("in if statemtn")
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
@@ -68,39 +67,42 @@ func (n *NotificationHandler) Post() {
 			}
 			go dao.AccessLog(username, project, repo, action)
 			if action == "push" {
-				go func() {
-					log.Printf("in gorotine\n")
-					err2 := svc_utils.RefreshCatalogCache()
-					if err2 != nil {
-						beego.Error("Error happens when refreshing cache:", err2)
-					}
-					var repository models.Repository
-					repository.Name = strings.Split(e.Target.Repository, "/")[1]
-					repository.ProjectName = strings.Split(e.Target.Repository, "/")[0]
-					repository.UserName = e.Actor.Name
-					tags := getRepoTagsFromRegistry(e.Target.Repository)
-					if len(tags) > 0 {
-						repository.LatestTag = tags[0]
-						repositoryDao, err := dao.AddOrUpdateRepository(&repository)
-						if err != nil {
-							beego.Error("add or update repo error: ", err)
-							return
-						}
-						var tag models.Tag
-						tag.Version = tags[0]
-						tag.RepositoryID = repositoryDao.Id
-						dao.AddOrUpdateTag(&tag)
-					}
-				}()
+				go persistPushEvent(e)
 			}
 		}
+	}
+}
+
+// persist push infomation
+func persistPushEvent(e models.Event) {
+	log.Printf("in gorotine\n")
+	err2 := svc_utils.RefreshCatalogCache()
+	if err2 != nil {
+		beego.Error("Error happens when refreshing cache:", err2)
+	}
+	var repository models.Repository
+	repository.Name = strings.Split(e.Target.Repository, "/")[1]
+	repository.ProjectName = strings.Split(e.Target.Repository, "/")[0]
+	repository.UserName = e.Actor.Name
+	tags := getRepoTagsFromRegistry(e.Target.Repository)
+	if len(tags) > 0 {
+		repository.LatestTag = tags[len(tags)-1]
+		repositoryDao, err := dao.AddOrUpdateRepository(&repository)
+		if err != nil {
+			beego.Error("add or update repo error: ", err)
+			return
+		}
+		var tag models.Tag
+		tag.Version = tags[len(tags)-1]
+		tag.ProjectID = repositoryDao.ProjectID
+		tag.RepositoryID = repositoryDao.Id
+		dao.AddOrUpdateTag(&tag)
 	}
 }
 
 func getRepoTagsFromRegistry(repoName string) []string {
 	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), "admin")
 	if err != nil {
-
 		return []string{}
 	}
 

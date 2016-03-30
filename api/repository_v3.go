@@ -91,11 +91,10 @@ func (ra *RepositoryV3API) GetRepositories() {
 func (ra *RepositoryV3API) GetTags() {
 
 	var tags []string
-
-	repoName := ra.GetString("repo_name")
-	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), ra.username)
+	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(ra.project_name,
+		ra.repository_name, "tags", "list"), ra.username)
 	if err != nil {
-		beego.Error("Failed to get repo tags, repo name:", repoName, ", error: ", err)
+		beego.Error("Failed to get repo tags, repo name:", ra.repository_name, ", error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
 	} else {
 		t := tag{}
