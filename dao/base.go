@@ -16,8 +16,9 @@
 package dao
 
 import (
-	"log"
 	"net"
+
+	"github.com/vmware/harbor/utils/log"
 
 	"os"
 	"strings"
@@ -88,7 +89,7 @@ func InitDB() {
 				c.Close()
 				ch <- 1
 			} else {
-				log.Printf("failed to connect to db, retry after 2 seconds...")
+				log.Info("failed to connect to db, retry after 2 seconds...")
 				time.Sleep(2 * time.Second)
 			}
 		}

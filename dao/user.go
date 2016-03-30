@@ -22,8 +22,8 @@ import (
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // GetUser ...
@@ -31,12 +31,8 @@ func GetUser(query models.User) (*models.User, error) {
 
 	o := orm.NewOrm()
 
-	sql := `select user_id, username, email, realname, reset_uuid, salt,
-			ifnull((select pr.role_id  
-			  from project_role pr 
-			     left join user_project_role upr on upr.pr_id = pr.pr_id
-			  where pr.role_id = 1
-			     and upr.user_id = u.user_id),0) as has_admin_role
+	sql := `select user_id, username, email, realname, comment, reset_uuid, salt,
+		sysadmin_flag, creation_time, update_time
 		from user u
 		where deleted = 0 `
 	queryParam := make([]interface{}, 1)
@@ -60,51 +56,54 @@ func GetUser(query models.User) (*models.User, error) {
 
 	if err != nil {
 		return nil, err
-	} else if n == 0 {
-		return nil, nil
-	} else {
-		return &u[0], nil
 	}
+	if n == 0 {
+		return nil, nil
+	}
+
+	return &u[0], nil
 }
 
 // LoginByDb is used for user to login with database auth mode.
 func LoginByDb(auth models.AuthModel) (*models.User, error) {
-
-	query := models.User{Username: auth.Principal, Email: auth.Principal}
-
 	o := orm.NewOrm()
-	var u []models.User
-	n, err := o.Raw(`select username from user where (username = ? or email = ?)`, query.Username, query.Email).QueryRows(&u)
+
+	var users []models.User
+	n, err := o.Raw(`select * from user where (username = ? or email = ?) and deleted = 0`,
+		auth.Principal, auth.Principal).QueryRows(&users)
 	if err != nil {
 		return nil, err
-	} else if n == 0 {
-		beego.Warning("User does not exist. Principal:", auth.Principal)
+	}
+	if n == 0 {
 		return nil, nil
-	} else {
-		u[0].Password = auth.Password
-		return CheckUserPassword(u[0])
 	}
 
+	user := users[0]
+
+	if user.Password != utils.Encrypt(auth.Password, user.Salt) {
+		return nil, nil
+	}
+
+	user.Password = "" //do not return the password
+
+	return &user, nil
 }
 
 // ListUsers lists all users according to different conditions.
 func ListUsers(query models.User) ([]models.User, error) {
 	o := orm.NewOrm()
 	u := []models.User{}
-	sql := `select  u.user_id, u.username, u.email, ifnull((select pr.role_id  
-			  from project_role pr 
-			     left join user_project_role upr on upr.pr_id = pr.pr_id
-			  where pr.role_id = 1
-			     and upr.user_id = u.user_id),0) as has_admin_role
-		 from user u
-		    where u.deleted = 0 and u.user_id != 1 `
+	sql := `select  user_id, username, email, realname, comment, reset_uuid, salt,
+		sysadmin_flag, creation_time, update_time
+		from user u
+		where u.deleted = 0 and u.user_id != 1 `
 
 	queryParam := make([]interface{}, 1)
 	if query.Username != "" {
-		sql += ` and u.username like ? `
+		sql += ` and username like ? `
 		queryParam = append(queryParam, query.Username)
 	}
-	sql += ` order by u.user_id desc `
+	sql += ` order by user_id desc `
 
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)
 	return u, err
@@ -112,59 +111,50 @@ func ListUsers(query models.User) ([]models.User, error) {
 
 // ToggleUserAdminRole gives a user admim role.
 func ToggleUserAdminRole(u models.User) error {
-
-	projectRole := models.ProjectRole{PrID: 1} //admin project role
-
 	o := orm.NewOrm()
 
-	var pr []models.ProjectRole
+	sql := `update user set sysadmin_flag =not sysadmin_flag where user_id = ?`
 
-	n, err := o.Raw(`select user_id from user_project_role where user_id = ? and pr_id = ? `, u.UserID, projectRole.PrID).QueryRows(&pr)
+	r, err := o.Raw(sql, u.UserID).Exec()
 	if err != nil {
 		return err
 	}
 
-	var sql string
-	if n == 0 {
-		sql = `insert into user_project_role (user_id, pr_id) values (?, ?)`
-	} else {
-		sql = `delete from user_project_role where user_id = ? and pr_id = ?`
-	}
-
-	p, err := o.Raw(sql).Prepare()
-	if err != nil {
+	if _, err := r.RowsAffected(); err != nil {
 		return err
 	}
-	defer p.Close()
-	_, err = p.Exec(u.UserID, projectRole.PrID)
 
-	return err
+	return nil
 }
 
 // ChangeUserPassword ...
-func ChangeUserPassword(u models.User, oldPassword ...string) error {
+func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
+	if len(oldPassword) > 1 {
+		return errors.New("Wrong numbers of params.")
+	}
+
 	o := orm.NewOrm()
-	var err error
+
 	var r sql.Result
 	if len(oldPassword) == 0 {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
-		_, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID).Exec()
-	} else if len(oldPassword) == 1 {
-		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
-		if err != nil {
-			return err
-		}
-		count, err := r.RowsAffected()
-		if err != nil {
-			return err
-		}
-		if count == 0 {
-			return errors.New("No record be changed, change password failed.")
-		}
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID).Exec()
 	} else {
-		return errors.New("Wrong numbers of params.")
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
 	}
-	return err
+
+	if err != nil {
+		return err
+	}
+	c, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return errors.New("No record has been modified, change password failed.")
+	}
+
+	return nil
 }
 
 // ResetUserPassword ...
@@ -181,7 +171,7 @@ func ResetUserPassword(u models.User) error {
 	if count == 0 {
 		return errors.New("No record be changed, reset password failed.")
 	}
-	return err
+	return nil
 }
 
 // UpdateUserResetUUID ...
@@ -224,12 +214,14 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 
 	if err != nil {
 		return nil, err
-	} else if n == 0 {
-		beego.Warning("User principal does not match password. Current:", currentUser)
-		return nil, nil
-	} else {
-		return &user[0], nil
 	}
+
+	if n == 0 {
+		log.Warning("User principal does not match password. Current:", currentUser)
+		return nil, nil
+	}
+
+	return &user[0], nil
 }
 
 // DeleteUser ...

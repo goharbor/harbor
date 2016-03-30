@@ -21,11 +21,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
@@ -71,19 +71,19 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 				if username == "admin" {
 					exist, err := dao.ProjectExists(projectName)
 					if err != nil {
-						log.Printf("Error occurred in CheckExistProject: %v", err)
+						log.Errorf("Error occurred in CheckExistProject: %v", err)
 						return
 					}
 					if exist {
 						permission = "RW"
 					} else {
 						permission = ""
-						log.Printf("project %s does not exist, set empty permission for admin", projectName)
+						log.Infof("project %s does not exist, set empty permission for admin\n", projectName)
 					}
 				} else {
 					permission, err = dao.GetPermission(username, projectName)
 					if err != nil {
-						log.Printf("Error occurred in GetPermission: %v", err)
+						log.Errorf("Error occurred in GetPermission: %v", err)
 						return
 					}
 				}
@@ -96,7 +96,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 			}
 		}
 	}
-	log.Printf("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
+	log.Infof("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
 }
 
 // GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
