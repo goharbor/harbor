@@ -21,8 +21,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -43,17 +42,17 @@ func (ua *UserAPI) Prepare() {
 		var err error
 		ua.userID, err = strconv.Atoi(id)
 		if err != nil {
-			beego.Error("Invalid user id, error:", err)
+			log.Errorf("Invalid user id, error: %v", err)
 			ua.CustomAbort(http.StatusBadRequest, "Invalid user Id")
 		}
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
-			beego.Error("Error occurred in GetUser:", err)
+			log.Errorf("Error occurred in GetUser, error: %v", err)
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		if u == nil {
-			beego.Error("User with Id:", ua.userID, "does not exist")
+			log.Errorf("User with Id: %d does not exist", ua.userID)
 			ua.CustomAbort(http.StatusNotFound, "")
 		}
 	}
@@ -63,13 +62,13 @@ func (ua *UserAPI) Prepare() {
 func (ua *UserAPI) Get() {
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
-		beego.Error("Error occurred in IsAdminRole:", err)
+		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
 	if ua.userID == 0 { //list users
 		if !exist {
-			beego.Error("Current user, id:", ua.currentUserID, ", does not have admin role, can not list users")
+			log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
 			ua.RenderError(http.StatusForbidden, "User does not have admin role")
 			return
 		}
@@ -80,7 +79,7 @@ func (ua *UserAPI) Get() {
 		}
 		userList, err := dao.ListUsers(userQuery)
 		if err != nil {
-			beego.Error("Failed to get data from database, error:", err)
+			log.Errorf("Failed to get data from database, error: %v", err)
 			ua.RenderError(http.StatusInternalServerError, "Failed to query from database")
 			return
 		}
@@ -90,12 +89,12 @@ func (ua *UserAPI) Get() {
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
-			beego.Error("Error occurred in GetUser:", err)
+			log.Errorf("Error occurred in GetUser, error: %v", err)
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		ua.Data["json"] = u
 	} else {
-		beego.Error("Current user, id:", ua.currentUserID, "does not have admin role, can not view other user's detail")
+		log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
@@ -106,11 +105,11 @@ func (ua *UserAPI) Get() {
 func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
-		beego.Error("Error occurred in IsAdminRole:", err)
+		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if !exist {
-		beego.Warning("current user, id:", ua.currentUserID, ", does not have admin role, can not update other user's role")
+		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
@@ -122,17 +121,17 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 func (ua *UserAPI) Delete() {
 	exist, err := dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
-		beego.Error("Error occurred in IsAdminRole:", err)
+		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if !exist {
-		beego.Warning("current user, id:", ua.currentUserID, ", does not have admin role, can not remove user")
+		log.Warningf("current user, id: %d does not have admin role, can not remove user", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {
-		beego.Error("Failed to delete data from database, error:", err)
+		log.Errorf("Failed to delete data from database, error: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Failed to delete User")
 		return
 	}
