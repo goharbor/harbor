@@ -26,11 +26,9 @@ func AddProjectMember(projectID int64, userID int, role int) error {
 
 	sql := "insert into project_member (project_id, user_id , role) values (?, ?, ?)"
 
-	if _, err := o.Raw(sql, projectID, userID, role).Exec(); err != nil {
-		return err
-	}
+	_, err := o.Raw(sql, projectID, userID, role).Exec()
 
-	return nil
+	return err
 }
 
 // UpdateProjectMember updates the record in table project_member
@@ -39,11 +37,9 @@ func UpdateProjectMember(projectID int64, userID int, role int) error {
 
 	sql := "update project_member set role = ? where project_id = ? and user_id = ?"
 
-	if _, err := o.Raw(sql, role, projectID, userID).Exec(); err != nil {
-		return err
-	}
+	_, err := o.Raw(sql, role, projectID, userID).Exec()
 
-	return nil
+	return err
 }
 
 // DeleteProjectMember delete the record from table project_member

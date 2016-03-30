@@ -16,6 +16,8 @@
 package dao
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 )
@@ -43,10 +45,20 @@ func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
 	return roleList, nil
 }
 
-// IsAdminRole returns whether the user  is admin.
-func IsAdminRole(userID int) (bool, error) {
+// IsAdminRole returns whether the user is admin.
+func IsAdminRole(userIDOrUsername interface{}) (bool, error) {
+	u := models.User{}
 
-	user, err := GetUser(models.User{UserID: userID})
+	switch v := userIDOrUsername.(type) {
+	case int:
+		u.UserID = v
+	case string:
+		u.Username = v
+	default:
+		return false, fmt.Errorf("invalid parameter, only int and string are supported: %v", userIDOrUsername)
+	}
+
+	user, err := GetUser(u)
 	if err != nil {
 		return false, err
 	}

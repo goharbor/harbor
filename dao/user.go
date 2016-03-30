@@ -84,6 +84,8 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 		return nil, nil
 	}
 
+	user.Password = "" //do not return the password
+
 	return &user, nil
 }
 
@@ -111,22 +113,9 @@ func ListUsers(query models.User) ([]models.User, error) {
 func ToggleUserAdminRole(u models.User) error {
 	o := orm.NewOrm()
 
-	var user models.User
-	err := o.Raw(`select sysadmin_flag from user where user_id = ?`, u.UserID).QueryRow(&user)
-	if err != nil {
-		return err
-	}
+	sql := `update user set sysadmin_flag =not sysadmin_flag where user_id = ?`
 
-	var sysAdminFlag int
-	if user.HasAdminRole == 0 {
-		sysAdminFlag = 1
-	} else {
-		sysAdminFlag = 0
-	}
-
-	sql := `update user set sysadmin_flag = ? where user_id = ?`
-
-	r, err := o.Raw(sql, sysAdminFlag, u.UserID).Exec()
+	r, err := o.Raw(sql, u.UserID).Exec()
 	if err != nil {
 		return err
 	}
@@ -140,45 +129,32 @@ func ToggleUserAdminRole(u models.User) error {
 
 // ChangeUserPassword ...
 func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
+	if len(oldPassword) > 1 {
+		return errors.New("Wrong numbers of params.")
+	}
+
 	o := orm.NewOrm()
 
 	var r sql.Result
 	if len(oldPassword) == 0 {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
 		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID).Exec()
-		if err != nil {
-			return err
-		}
-
-		c, err := r.RowsAffected()
-		if err != nil {
-			return err
-		}
-
-		if c == 0 {
-			return errors.New("No record has been modified, change password failed.")
-		}
-
-		return nil
-	}
-
-	if len(oldPassword) == 1 {
+	} else {
 		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
-		if err != nil {
-			return err
-		}
-		c, err := r.RowsAffected()
-		if err != nil {
-			return err
-		}
-		if c == 0 {
-			return errors.New("No record has been modified, change password failed.")
-		}
-
-		return nil
 	}
 
-	return errors.New("Wrong numbers of params.")
+	if err != nil {
+		return err
+	}
+	c, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return errors.New("No record has been modified, change password failed.")
+	}
+
+	return nil
 }
 
 // ResetUserPassword ...
