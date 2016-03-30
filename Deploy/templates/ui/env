@@ -8,4 +8,4 @@ HARBOR_URL=$ui_url
 AUTH_MODE=$auth_mode
 LDAP_URL=$ldap_url
 LDAP_BASE_DN=$ldap_basedn
-lOG_LEVEL=debug
+LOG_LEVEL=debug
