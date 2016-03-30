@@ -22,8 +22,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // RegisterController handles request to /register
@@ -53,7 +52,7 @@ func (rc *CommonController) SignUp() {
 
 	_, err := dao.Register(user)
 	if err != nil {
-		beego.Error("Error occurred in Register:", err)
+		log.Errorf("Error occurred in Register: %v", err)
 		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
@@ -73,7 +72,7 @@ func (rc *CommonController) UserExists() {
 
 	exist, err := dao.UserExists(user, target)
 	if err != nil {
-		beego.Error("Error occurred in UserExists:", err)
+		log.Errorf("Error occurred in UserExists: %v", err)
 		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	rc.Data["json"] = exist
