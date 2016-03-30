@@ -130,7 +130,7 @@ func (pma *ProjectMemberAPI) Post() {
 		}
 	}
 	if !hasProjectAdminRole {
-		log.Warningf("Current user, id: %d does not have project admin role for project, id:", pma.currentUserUD, pid)
+		log.Warningf("Current user, id: %d does not have project admin role for project, id:", pma.currentUserID, pid)
 		pma.RenderError(http.StatusForbidden, "")
 		return
 	}
