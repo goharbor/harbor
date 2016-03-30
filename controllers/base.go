@@ -22,7 +22,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
-	"github.com/vmware/harbor/models"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
@@ -48,6 +47,7 @@ type langType struct {
 
 const (
 	defaultLang = "en-US"
+	adminUserID = 1
 )
 
 var supportLanguages map[string]langType
@@ -110,7 +110,7 @@ func (b *BaseController) Prepare() {
 
 	switch selfRegistration {
 	case "on":
-		if sessionUserID != nil && sessionUserID.(int) != models.SYSADMIN {
+		if sessionUserID != nil && sessionUserID.(int) != adminUserID {
 			enableAddUserByAdmin = false
 		} else {
 			enableAddUserByAdmin = true

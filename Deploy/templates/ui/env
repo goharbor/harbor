@@ -9,3 +9,4 @@ AUTH_MODE=$auth_mode
 LDAP_URL=$ldap_url
 LDAP_BASE_DN=$ldap_basedn
 SELF_REGISTRATION=$self_registration
+LOG_LEVEL=debug

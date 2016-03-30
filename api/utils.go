@@ -30,7 +30,7 @@ func checkProjectPermission(userID int, projectID int64) bool {
 	if exist {
 		return true
 	}
-	roleList, err := dao.GetUserProjectRoles(models.User{UserID: userID}, projectID)
+	roleList, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {
 		log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 		return false

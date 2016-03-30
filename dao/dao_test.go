@@ -16,11 +16,11 @@
 package dao
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/vmware/harbor/models"
 
@@ -41,44 +41,61 @@ func execUpdate(o orm.Ormer, sql string, params interface{}) error {
 }
 
 func clearUp(username string) {
+	var err error
+
 	o := orm.NewOrm()
 	o.Begin()
-	err := execUpdate(o, `delete upr from user_project_role upr
-	  left join project_role pr on upr.pr_id = pr.pr_id
-	  left join project p on pr.project_id = p.project_id
-	  left join user u on u.user_id = p.owner_id
-	 where u.username = ?`, username)
+
+	err = execUpdate(o, `delete pm 
+		from project_member pm 
+		join user u 
+		on pm.user_id = u.user_id 
+		where u.username = ?`, username)
 	if err != nil {
 		o.Rollback()
-		log.Println(err)
+		log.Error(err)
 	}
-	err = execUpdate(o, `delete pr from project_role pr
-	  left join project p on pr.project_id = p.project_id
-	  left join user u on u.user_id = p.owner_id
-	 where u.username = ?`, username)
+
+	err = execUpdate(o, `delete pm 
+		from project_member pm
+		join project p 
+		on pm.project_id = p.project_id 
+		where p.name = ?`, projectName)
 	if err != nil {
 		o.Rollback()
-		log.Println(err)
+		log.Error(err)
 	}
-	err = execUpdate(o, `delete a from access_log a
-	  left join user u on a.user_id = u.user_id
-	 where u.username = ?`, username)
+
+	err = execUpdate(o, `delete al 
+		from access_log al
+		join user u 
+		on al.user_id = u.user_id 
+		where u.username = ?`, username)
 	if err != nil {
 		o.Rollback()
-		log.Println(err)
+		log.Error(err)
 	}
-	err = execUpdate(o, `delete p from project p
-	  left join user u on p.owner_id = u.user_id
-	 where u.username = ?`, username)
+
+	err = execUpdate(o, `delete al 
+		from access_log al
+		join project p 
+		on al.project_id = p.project_id 
+		where p.name = ?`, projectName)
 	if err != nil {
 		o.Rollback()
-		log.Println(err)
+		log.Error(err)
 	}
-	err = execUpdate(o, `delete u from user u
-	 where u.username = ?`, username)
+
+	err = execUpdate(o, `delete from project where name = ?`, projectName)
 	if err != nil {
 		o.Rollback()
-		log.Println(err)
+		log.Error(err)
+	}
+
+	err = execUpdate(o, `delete from user where username = ?`, username)
+	if err != nil {
+		o.Rollback()
+		log.Error(err)
 	}
 	o.Commit()
 }
@@ -109,7 +126,7 @@ func TestMain(m *testing.M) {
 	}
 	dbPassword := os.Getenv("DB_PWD")
 
-	fmt.Printf("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	os.Setenv("MYSQL_PORT_3306_TCP_ADDR", dbHost)
 	os.Setenv("MYSQL_PORT_3306_TCP_PORT", dbPort)
@@ -379,32 +396,6 @@ func TestGetProject(t *testing.T) {
 	}
 }
 
-func getProjectRole(projectID int64) []models.Role {
-	o := orm.NewOrm()
-	var r []models.Role
-	_, err := o.Raw(`select r.role_id, r.name
-		from project_role pr
-		 left join role r on pr.role_id = r.role_id
-		where project_id = ?`, projectID).QueryRows(&r)
-	if err != nil {
-		log.Printf("Error occurred in querying project_role: %v", err)
-	}
-	return r
-}
-
-func TestCheckProjectRoles(t *testing.T) {
-	r := getProjectRole(currentProject.ProjectID)
-	if len(r) != 3 {
-		t.Errorf("The length of project roles is not 3")
-	}
-	if r[1].RoleID != 3 {
-		t.Errorf("The role id does not match, expected: 3, acutal: %d", r[1].RoleID)
-	}
-	if r[1].Name != "developer" {
-		t.Errorf("The name of role id: 3 should be developer, actual:%s", r[1].Name)
-	}
-}
-
 func TestGetAccessLog(t *testing.T) {
 	queryAccessLog := models.AccessLog{
 		UserID:    currentUser.UserID,
@@ -546,25 +537,10 @@ func TestQueryProject(t *testing.T) {
 	}
 }
 
-func getUserProjectRole(projectID int64, userID int) []models.Role {
-	o := orm.NewOrm()
-	var r []models.Role
-	_, err := o.Raw(`select r.role_id, r.name
-		from user_project_role upr
-		 left join project_role pr on upr.pr_id = pr.pr_id
-		 left join role r on r.role_id = pr.role_id
-		where pr.project_id = ? and upr.user_id = ?`, projectID, userID).QueryRows(&r)
-	if err != nil {
-		log.Fatalf("Error occurred in querying user_project_role: %v", err)
-	}
-	return r
-}
-
 func TestGetUserProjectRoles(t *testing.T) {
-	user := *currentUser
-	r, err := GetUserProjectRoles(user, currentProject.ProjectID)
+	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectID)
+		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
 
 	//Get the size of current user project role.
@@ -574,16 +550,6 @@ func TestGetUserProjectRoles(t *testing.T) {
 
 	if r[0].Name != "projectAdmin" {
 		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
-	}
-	user.RoleID = 1
-
-	r, err = GetUserProjectRoles(user, currentProject.ProjectID)
-	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, user: %+v, project Id: %d", err, user, currentProject.ProjectID)
-	}
-	//Get the size of current user project role.
-	if len(r) != 0 {
-		t.Errorf("The user, id: %d, should not have role id: 1 in project id: %d, actual role list: %v", currentUser.UserID, currentProject.ProjectID, r)
 	}
 }
 
@@ -610,34 +576,43 @@ func TestQueryRelevantProjects(t *testing.T) {
 	}
 }
 
-func TestAssignUserProjectRole(t *testing.T) {
-	err := AddUserProjectRole(currentUser.UserID, currentProject.ProjectID, developer)
+func TestAddProjectMember(t *testing.T) {
+	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
 	if err != nil {
-		t.Errorf("Error occurred in AddUserProjectRole: %v", err)
+		t.Errorf("Error occurred in AddProjectMember: %v", err)
 	}
 
-	r := getUserProjectRole(currentProject.ProjectID, currentUser.UserID)
-
-	//Get the size of current user project role info.
-	if len(r) != 2 {
-		t.Errorf("Expected length of role list is 2, actual: %d", len(r))
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	if err != nil {
+		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
 
-	if r[1].RoleID != 3 {
-		t.Errorf("Expected role id of the second role in list is 3, actual: %d", r[1].RoleID)
+	flag := false
+	for _, role := range roles {
+		if role.Name == "developer" {
+			flag = true
+			break
+		}
+	}
+
+	if !flag {
+		t.Errorf("the user which ID is 1 does not have developer privileges")
 	}
 }
 
-func TestDeleteUserProjectRole(t *testing.T) {
-	err := DeleteUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
+func TestDeleteProjectMember(t *testing.T) {
+	err := DeleteProjectMember(currentProject.ProjectID, 1)
 	if err != nil {
-		t.Errorf("Error occurred in DeleteUserProjectRoles: %v", err)
+		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
 	}
 
-	r := getUserProjectRole(currentProject.ProjectID, currentUser.UserID)
-	//Get the size of current user project role.
-	if len(r) != 0 {
-		t.Errorf("Expected role list length is 0, actual: %d, role list: %+v", len(r), r)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	if err != nil {
+		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+	}
+
+	if len(roles) != 0 {
+		t.Errorf("delete record failed from table project_member")
 	}
 }
 

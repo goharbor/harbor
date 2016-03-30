@@ -40,7 +40,7 @@ func (rc *RegisterController) Get() {
 
 	if enableAddUserByAdmin {
 		sessionUserID := rc.GetSession("userId")
-		if sessionUserID == nil || sessionUserID.(int) != models.SYSADMIN {
+		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
 			log.Error("Self registration can only be used by admin user.\n")
 			rc.Redirect("/signIn", http.StatusFound)
 		}
@@ -60,7 +60,7 @@ func (rc *CommonController) SignUp() {
 
 	if enableAddUserByAdmin {
 		sessionUserID := rc.GetSession("userId")
-		if sessionUserID == nil || sessionUserID.(int) != models.SYSADMIN {
+		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
 			log.Error("Self registration can only be used by admin user.\n")
 			rc.Redirect("/signIn", http.StatusFound)
 		}
