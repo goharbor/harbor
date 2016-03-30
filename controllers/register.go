@@ -38,7 +38,7 @@ func (rc *RegisterController) Get() {
 
 	pageTitleKey := "page_title_registration"
 
-	if enableAddUserByAdmin {
+	if selfRegistration {
 		sessionUserID := rc.GetSession("userId")
 		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
 			log.Error("Self registration can only be used by admin user.\n")
@@ -58,11 +58,11 @@ func (rc *RegisterController) Get() {
 // SignUp insert data into DB based on data in form.
 func (rc *CommonController) SignUp() {
 
-	if enableAddUserByAdmin {
+	if selfRegistration {
 		sessionUserID := rc.GetSession("userId")
 		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
 			log.Error("Self registration can only be used by admin user.\n")
-			rc.Redirect("/signIn", http.StatusFound)
+			rc.Redirect("/signIn", http.StatusForbidden)
 		}
 	}
 

@@ -51,7 +51,7 @@ const (
 )
 
 var supportLanguages map[string]langType
-var enableAddUserByAdmin bool
+var selfRegistration bool
 
 // Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
@@ -100,26 +100,24 @@ func (b *BaseController) Prepare() {
 		b.Data["Username"] = b.GetSession("username")
 		b.Data["UserId"] = sessionUserID.(int)
 	}
+
 	authMode := os.Getenv("AUTH_MODE")
 	if authMode == "" {
 		authMode = "db_auth"
 	}
 	b.Data["AuthMode"] = authMode
 
-	var selfRegistration = strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+	strSelfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
 
-	switch selfRegistration {
-	case "on":
-		if sessionUserID != nil && sessionUserID.(int) != adminUserID {
-			enableAddUserByAdmin = false
-		} else {
-			enableAddUserByAdmin = true
-		}
-	case "":
-		enableAddUserByAdmin = false
+	if strSelfRegistration == "on" {
+		selfRegistration = true
 	}
 
-	b.Data["EnableAddUserByAdmin"] = enableAddUserByAdmin
+	if sessionUserID != nil && sessionUserID.(int) != adminUserID {
+		selfRegistration = false
+	}
+
+	b.Data["EnableAddUserByAdmin"] = selfRegistration
 
 }
 
