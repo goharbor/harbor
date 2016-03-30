@@ -16,37 +16,28 @@
 package dao
 
 import (
-	"github.com/vmware/harbor/models"
+	"fmt"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/models"
 )
 
 // GetUserProjectRoles returns roles that the user has according to the project.
-func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role, error) {
+func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
 
 	o := orm.NewOrm()
 
-	sql := `select distinct r.role_id, r.role_code, r.name 
-		from role r 
-		left join project_role pr on r.role_id = pr.role_id
-		left join user_project_role upr on pr.pr_id = upr.pr_id
-		left join user u on u.user_id = upr.user_id
-		where u.deleted = 0 
-		  and u.user_id = ? `
-	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, userQuery.UserID)
-
-	if projectID > 0 {
-		sql += ` and pr.project_id = ? `
-		queryParam = append(queryParam, projectID)
-	}
-	if userQuery.RoleID > 0 {
-		sql += ` and r.role_id = ? `
-		queryParam = append(queryParam, userQuery.RoleID)
-	}
+	sql := `select *
+		from role
+		where role_id = 
+			(
+				select role
+				from project_member
+				where project_id = ? and user_id = ?
+			)`
 
 	var roleList []models.Role
-	_, err := o.Raw(sql, queryParam).QueryRows(&roleList)
+	_, err := o.Raw(sql, projectID, userID).QueryRows(&roleList)
 
 	if err != nil {
 		return nil, err
@@ -54,13 +45,27 @@ func GetUserProjectRoles(userQuery models.User, projectID int64) ([]models.Role,
 	return roleList, nil
 }
 
-// IsAdminRole returns whether the user  is admin.
-func IsAdminRole(userID int) (bool, error) {
-	//role_id == 1 means the user is system admin
-	userQuery := models.User{UserID: userID, RoleID: models.SYSADMIN}
-	adminRoleList, err := GetUserProjectRoles(userQuery, 0)
+// IsAdminRole returns whether the user is admin.
+func IsAdminRole(userIDOrUsername interface{}) (bool, error) {
+	u := models.User{}
+
+	switch v := userIDOrUsername.(type) {
+	case int:
+		u.UserID = v
+	case string:
+		u.Username = v
+	default:
+		return false, fmt.Errorf("invalid parameter, only int and string are supported: %v", userIDOrUsername)
+	}
+
+	user, err := GetUser(u)
 	if err != nil {
 		return false, err
 	}
-	return len(adminRoleList) > 0, nil
+
+	if user == nil {
+		return false, nil
+	}
+
+	return user.HasAdminRole == 1, nil
 }

@@ -15,6 +15,10 @@
 
 package models
 
+import (
+	"time"
+)
+
 // User holds the details of a user.
 type User struct {
 	UserID       int    `orm:"column(user_id)" json:"UserId"`
@@ -27,7 +31,10 @@ type User struct {
 	Rolename     string
 	RoleID       int `json:"RoleId"`
 	RoleList     []Role
-	HasAdminRole int
+	HasAdminRole int    `orm:"column(sysadmin_flag)"`
 	ResetUUID    string `orm:"column(reset_uuid)" json:"ResetUuid"`
 	Salt         string `orm:"column(salt)"`
+
+	CreationTime time.Time `orm:"creation_time" json:"creation_time"`
+	UpdateTime   time.Time `orm:"update_time" json:"update_time"`
 }

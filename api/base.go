@@ -17,12 +17,12 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
 )
@@ -46,7 +46,7 @@ func (b *BaseAPI) RenderError(code int, text string) {
 func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
-		beego.Error("Error while decoding the json request:", err)
+		log.Errorf("Error while decoding the json request, error: %v", err)
 		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
 	}
 }
@@ -56,10 +56,10 @@ func (b *BaseAPI) ValidateUser() int {
 
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {
-		log.Printf("Requst with Basic Authentication header, username: %s", username)
+		log.Infof("Requst with Basic Authentication header, username: %s", username)
 		user, err := auth.Login(models.AuthModel{username, password})
 		if err != nil {
-			log.Printf("Error while trying to login, username: %s, error: %v", username, err)
+			log.Errorf("Error while trying to login, username: %s, error: %v", username, err)
 			user = nil
 		}
 		if user != nil {
@@ -68,17 +68,17 @@ func (b *BaseAPI) ValidateUser() int {
 	}
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID == nil {
-		beego.Warning("No user id in session, canceling request")
+		log.Warning("No user id in session, canceling request")
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	userID := sessionUserID.(int)
 	u, err := dao.GetUser(models.User{UserID: userID})
 	if err != nil {
-		beego.Error("Error occurred in GetUser:", err)
+		log.Errorf("Error occurred in GetUser, error: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if u == nil {
-		beego.Warning("User was deleted already, user id: ", userID, " canceling request.")
+		log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
 		b.CustomAbort(http.StatusUnauthorized, "")
 	}
 	return userID
