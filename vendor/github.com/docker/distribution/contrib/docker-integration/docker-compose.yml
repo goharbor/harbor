@@ -1,0 +1,27 @@
+nginx:
+  build: "nginx"
+  ports:
+    - "5000:5000"
+    - "5001:5001"
+    - "5002:5002"
+    - "5011:5011"
+    - "5440:5440"
+    - "5441:5441"
+    - "5442:5442"
+    - "5443:5443"
+    - "5444:5444"
+    - "5445:5445"
+    - "5446:5446"
+    - "5447:5447"
+    - "5448:5448"
+  links:
+    - registryv1:registryv1
+    - registryv2:registryv2
+registryv1:
+  image: registry:0.9.1
+  ports:
+    - "5000"
+registryv2:
+  build: "../../"
+  ports:
+    - "5000"
