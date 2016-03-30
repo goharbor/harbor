@@ -22,6 +22,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
+	"github.com/vmware/harbor/models"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
@@ -50,6 +51,7 @@ const (
 )
 
 var supportLanguages map[string]langType
+var enableAddUserByAdmin bool
 
 // Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
@@ -96,12 +98,29 @@ func (b *BaseController) Prepare() {
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID != nil {
 		b.Data["Username"] = b.GetSession("username")
+		b.Data["UserId"] = sessionUserID.(int)
 	}
 	authMode := os.Getenv("AUTH_MODE")
 	if authMode == "" {
 		authMode = "db_auth"
 	}
 	b.Data["AuthMode"] = authMode
+
+	var selfRegistration = strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+
+	switch selfRegistration {
+	case "on":
+		if sessionUserID != nil && sessionUserID.(int) != models.SYSADMIN {
+			enableAddUserByAdmin = false
+		} else {
+			enableAddUserByAdmin = true
+		}
+	case "":
+		enableAddUserByAdmin = false
+	}
+
+	b.Data["EnableAddUserByAdmin"] = enableAddUserByAdmin
+
 }
 
 // ForwardTo setup layout and template for content for a page.

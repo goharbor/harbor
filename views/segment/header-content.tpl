@@ -13,6 +13,7 @@
     limitations under the License.
 -->
 <input type="hidden" id="currentLanguage" value="{{.Lang}}">
+<input type="hidden" id="enableAddUserByAdmin" value="{{.EnableAddUserByAdmin}}">
 <nav class="navbar navbar-default" role="navigation" style="margin-bottom: 0;">
 	<div class="navbar-header">
 		<button aria-controls="navbar" aria-expanded="false" data-target="#navbar" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
@@ -55,6 +56,9 @@
 						<li><a id="aChangePassword" href="/changePassword" target="_blank"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;{{i18n .Lang "change_password"}}</a></li>
 						<li role="separator" class="divider"></li>
 						{{ end }}
+						{{ if eq .EnableAddUserByAdmin true }}
+						<li><a id="aSelfSignUp" href="/register" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
+						{{ end}}
 						<li><a id="aLogout" href="#"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;{{i18n .Lang "log_out"}}</a></li>
 					</ul>
 				</li>
@@ -63,7 +67,9 @@
 			{{ else if eq .AuthMode "db_auth" }}
 			  <div class="input-group">
 	  		    &nbsp;<button type="button" class="btn btn-default" id="btnSignIn">{{i18n .Lang "sign_in"}}</button>
+				{{ if eq .EnableAddUserByAdmin false }}
 				&nbsp;<button type="button" class="btn btn-success" id="btnSignUp">{{i18n .Lang "sign_up"}}</button>
+				{{ end }}
 			  </div>
 		    {{ else }}
 			  <div class="input-group">
