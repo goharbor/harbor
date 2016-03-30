@@ -17,15 +17,15 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/dao"
-	svc_utils "github.com/vmware/harbor/service/utils"
-
 	"github.com/astaxie/beego"
-	"io/ioutil"
-	"log"
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
+	svc_utils "github.com/vmware/harbor/service/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -34,8 +34,10 @@ import (
 // the security of registry
 type RepositoryV3API struct {
 	BaseAPI
-	userID   int
-	username string
+	userID          int
+	username        string
+	project_name    string
+	repository_name string
 }
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
@@ -53,55 +55,36 @@ func (ra *RepositoryV3API) Prepare() {
 	} else {
 		ra.username = username
 	}
+	project_name := ra.Ctx.Input.Param(":project_name")
+	if len(project_name) != 0 {
+		ra.project_name = project_name
+	}
+	repository_name := ra.Ctx.Input.Param(":repository_name")
+	if len(repository_name) != 0 {
+		ra.repository_name = repository_name
+	}
 }
 
-// Get ...
-func (ra *RepositoryV3API) Get() {
-	projectID, err0 := ra.GetInt64("project_id")
-	if err0 != nil {
-		beego.Error("Failed to get project id, error:", err0)
-		ra.RenderError(http.StatusBadRequest, "Invalid project id")
-		return
-	}
-	p, err := dao.GetProjectByID(projectID)
+// GET /api/v3/repositories/{project_name}/{respository_name}
+func (ra *RepositoryV3API) GetRepository() {
+	repositories, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
+		ra.project_name, ra.repository_name))
 	if err != nil {
-		beego.Error("Error occurred in GetProjectById:", err)
-		ra.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		beego.Error("Failed to get repository from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 	}
-	if p == nil {
-		beego.Warning("Project with Id:", projectID, ", does not exist")
-		ra.RenderError(http.StatusNotFound, "")
-		return
-	}
-	if p.Public == 0 && !checkProjectPermission(ra.userID, projectID) {
-		ra.RenderError(http.StatusForbidden, "")
-		return
-	}
-	repoList, err := svc_utils.GetRepoFromCache()
+	ra.Data["json"] = repositories
+	ra.ServeJSON()
+}
+
+// GET /api/v3/repositories
+func (ra *RepositoryV3API) GetRepositories() {
+	repositories, err := dao.RepositoriesUnderNamespace("library")
 	if err != nil {
-		beego.Error("Failed to get repo from cache, error:", err)
-		ra.RenderError(http.StatusInternalServerError, "internal sever error")
+		beego.Error("Failed to get repositories from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
-	projectName := p.Name
-	q := ra.GetString("q")
-	var resp []string
-	if len(q) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], q) && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp = append(resp, r)
-			}
-		}
-		ra.Data["json"] = resp
-	} else if len(projectName) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp = append(resp, r)
-			}
-		}
-		ra.Data["json"] = resp
-	} else {
-		ra.Data["json"] = repoList
-	}
+	ra.Data["json"] = repositories
 	ra.ServeJSON()
 }
 
@@ -123,32 +106,7 @@ func (ra *RepositoryV3API) GetTags() {
 	ra.ServeJSON()
 }
 
-// GET /api/v3/repositories
-func (ra *RepositoryV3API) GetRepositories() {
-	queryRepository := model.Repository{}
-	repositories, err := dao.GetRepository(queryReposetory)
-	if err != nil {
-		beego.Error("Failed to get repositories from DB")
-		beego.RenderError(http.StatusInternalServerError, "Failed to get repositories")
-	}
-	ra.Data["json"] = repositories
-	ra.ServeJSON()
-}
-
-// GET /api/v3/repositories/{project_name}/{respository_name}
-func (ra *RepositoryV3API) GetRepository() {
-	repository_name := ra.GetString("respository_name", "")
-	repositroy, err := dao.GetRepositoryByName(repositoryName)
-	if err != nil {
-		beego.Error("Failed to get repository from DB")
-		beego.RenderError(http.StatusInternalServerError, "Failed to get repository")
-	}
-	ra.Data["json"] = Repository
-	ra.ServeJSON()
-}
-
 // PUT /api/v3/repositories/{project_name}/{respository_name}
-//
 // update respository category
 func (ra *RepositoryV3API) UpdateRepository() {
 	projectName := ra.Ctx.Input.Param(":project_name")

@@ -19,79 +19,80 @@ import (
 	"github.com/vmware/harbor/models"
 
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
 )
 
 func AddOrUpdateRepository(repository *models.Repository) (*models.Repository, error) {
-	exists, _ := RepositoryExists(fmt.Sprintf("%s/%s", repository.ProjectName, repository.Name))
-	if !exists {
-		err := AddRepository(repository)
+	repoFound, _ := RepositoryExists(fmt.Sprintf("%s/%s", repository.ProjectName, repository.Name))
+	// find project id in case not exists
+	if (*repository).Id == 0 {
+		project, err := GetProjectByName(repository.ProjectName)
 		if err != nil {
 			return nil, err
 		}
+		(*repository).ProjectID = project.ProjectID
+	}
+	if repoFound != nil {
+		repository.Id = repoFound.Id
+		repoUpdated, err := UpdateRepository(repository)
+		return repoUpdated, err
 	} else {
-		err := UpdateRepository(repository)
-		if err != nil {
-			return nil, err
-		}
+		repoAdded, err := AddRepository(repository)
+		return repoAdded, err
 	}
 	return repository, nil
 }
 
-func AddRepository(repository *models.Repository) error {
+func AddRepository(repository *models.Repository) (*models.Repository, error) {
 	o := orm.NewOrm()
 
-	p, err := o.Raw("insert into repository(name, project_name, latest_tag) values (?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into repository(name, project_name, latest_tag, project_id, user_name, created_at, updated_at) values (?, ?, ?, ?, ?, now(), now())").Prepare()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	r, err := p.Exec(repository.Name, repository.ProjectName, repository.LatestTag)
+	r, err := p.Exec(repository.Name, repository.ProjectName, repository.LatestTag, repository.ProjectID, repository.UserName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	repositoryID, err := r.LastInsertId()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	repository.Id = repositoryID
-	return nil
+	return repository, nil
 }
 
-func UpdateRepository(repository *models.Repository) error {
+func UpdateRepository(repository *models.Repository) (*models.Repository, error) {
 	o := orm.NewOrm()
 
-	p, err := o.Raw("UPDATE repository SET latest_tag=? updated_at=now() WHERE name=? AND project_name=?").Prepare()
+	p, err := o.Raw("UPDATE repository SET latest_tag=?, updated_at=now() WHERE name=? AND project_name=?").Prepare()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = p.Exec(repository.LatestTag, repository.Name, repository.ProjectName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return repository, nil
 }
 
-func QueryRepository(query models.Repository) ([]models.Repository, error) {
-	o := orm.NewOrm()
-
-	sql := `select name, description, project_name, icon, latest_tag ,updatedAt from repository `
-
-	queryParam := make([]interface{}, 1)
-	if query.Name != "" {
-		sql += " where name like ? "
-		queryParam = append(queryParam, query.Name)
+func RepositoriesUnderNamespace(namespace string) ([]models.Repository, error) {
+	if len(namespace) == 0 {
+		namespace = "library"
 	}
 
-	sql += " order by updatedAt desc"
+	o := orm.NewOrm()
+	sql := `select name, description,project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at from  repository where project_name=?  order by updated_at desc`
 
 	var r []models.Repository
-	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+	_, err := o.Raw(sql, namespace).QueryRows(&r)
 
 	if err != nil {
 		return nil, err
@@ -100,21 +101,21 @@ func QueryRepository(query models.Repository) ([]models.Repository, error) {
 }
 
 //RepositoryExists returns whether the project exists according to its name of ID.
-func RepositoryExists(nameOrID interface{}) (bool, error) {
+func RepositoryExists(nameOrID interface{}) (*models.Repository, error) {
 	switch nameOrID.(type) {
 	case int:
 		repo, _ := GetRepositoryByID(nameOrID.(int64))
 		if repo != nil {
-			return true, nil
+			return repo, nil
 		}
 	case string:
 		repo, _ := GetRepositoryByName(nameOrID.(string))
 		if repo != nil {
-			return true, nil
+			return repo, nil
 		}
 	}
 
-	return false, nil
+	return nil, nil
 }
 
 // GetRepositoryByID ...
@@ -134,10 +135,16 @@ func GetRepositoryByID(repositoryId int64) (*models.Repository, error) {
 // GetRepositoryByName ...
 func GetRepositoryByName(repoName string) (*models.Repository, error) {
 	o := orm.NewOrm()
+	log.Println("repoName: ", repoName)
 	projectName := strings.Split(repoName, "/")[0]
 	repositoryName := strings.Split(repoName, "/")[1]
+	log.Println("project_name: ", projectName)
+	log.Println("repository_name: ", repositoryName)
 	var repositories []models.Repository
-	count, err := o.Raw("SELECT * from repository where project_name=? AND name=? ", projectName, repositoryName).QueryRows(&repositories)
+	count, err := o.Raw("SELECT * from repository where project_name=? AND name=? ",
+		projectName, repositoryName).QueryRows(&repositories)
+	log.Println("count: ", count)
+	log.Println("repository: ", repositories[0])
 	if err != nil {
 		return nil, err
 	} else if count == 0 {

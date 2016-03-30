@@ -47,7 +47,6 @@ type Tag struct {
 	ProjectName    string    `json:"projectName"`
 	RepositoryName string    `json:"repositoryName"`
 	RepositoryID   int64     `json:"respositoryId"`
-	UserID         string    `json:"userId"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
@@ -57,7 +56,7 @@ type Repository struct {
 	Name        string    `json:"name"`
 	ProjectName string    `json:"projectName"`
 	ProjectID   int64     `json:"projectId"`
-	UserId      int64     `json:"userId"`
+	UserName    string    `json:"userName"`
 	Category    string    `json:"category"`
 	IsPublic    bool      `json:"isPublic"`
 	LatestTag   string    `json:"latestTag"`

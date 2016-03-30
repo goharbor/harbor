@@ -33,7 +33,7 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
-const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
+const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d`
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -75,19 +75,21 @@ func (n *NotificationHandler) Post() {
 						beego.Error("Error happens when refreshing cache:", err2)
 					}
 					var repository models.Repository
-					repository.Name = strings.Split(e.Target.Repository, ",")[1]
-					repository.ProjectName = strings.Split(e.Target.Repository, ",")[0]
+					repository.Name = strings.Split(e.Target.Repository, "/")[1]
+					repository.ProjectName = strings.Split(e.Target.Repository, "/")[0]
+					repository.UserName = e.Actor.Name
 					tags := getRepoTagsFromRegistry(e.Target.Repository)
 					if len(tags) > 0 {
-						log.Printf("in gorotine\n")
 						repository.LatestTag = tags[0]
 						repositoryDao, err := dao.AddOrUpdateRepository(&repository)
 						if err != nil {
-							var tag models.Tag
-							tag.Version = tags[0]
-							tag.RepositoryID = repositoryDao.Id
-							dao.AddOrUpdateTag(&tag)
+							beego.Error("add or update repo error: ", err)
+							return
 						}
+						var tag models.Tag
+						tag.Version = tags[0]
+						tag.RepositoryID = repositoryDao.Id
+						dao.AddOrUpdateTag(&tag)
 					}
 				}()
 			}
@@ -98,6 +100,7 @@ func (n *NotificationHandler) Post() {
 func getRepoTagsFromRegistry(repoName string) []string {
 	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), "admin")
 	if err != nil {
+
 		return []string{}
 	}
 

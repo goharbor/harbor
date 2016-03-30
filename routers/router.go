@@ -67,7 +67,7 @@ func init() {
 	//API v3:
 	beego.Router("/api/v3/repositories", &api.RepositoryV3API{}, "get:GetRepositories")
 	// for both get/put to specific respository
-	beego.Router("/api/v3/repositories/:project_name/:repository_name", &api.RepositoryV3API{})
+	beego.Router("/api/v3/repositories/:project_name/:repository_name", &api.RepositoryV3API{}, "get:GetRepository")
 	beego.Router("/api/v3/repositories/:project_name/:repository_name", &api.RepositoryV3API{}, "put:UpdateRepository")
 	beego.Router("/api/v3/repositories/:project_name/:repository_name/tags", &api.RepositoryV3API{}, "get:GetTags")
 	beego.Router("/api/v3/repositories/categories", &api.RepositoryV3API{}, "get:GetCategories")

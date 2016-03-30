@@ -19,19 +19,25 @@ import (
 	"github.com/vmware/harbor/models"
 
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
 )
 
 func AddOrUpdateTag(tag *models.Tag) (*models.Tag, error) {
+	log.Println("inseting ")
 	exists, _ := TagExists(fmt.Sprintf("%s/%s:%s", tag.ProjectName, tag.RepositoryName, tag.Version))
 	if !exists {
+		log.Println("exist ")
 		err := AddTag(tag)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 	} else {
+		log.Println("existxxx not ")
+
 		err := UpdateTag(tag)
 		if err != nil {
 			return nil, err
@@ -43,12 +49,12 @@ func AddOrUpdateTag(tag *models.Tag) (*models.Tag, error) {
 func AddTag(tag *models.Tag) error {
 	o := orm.NewOrm()
 
-	p, err := o.Raw("insert into tag(project_id, repository_id, user_id, name) values (?, ?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into tag(project_id, repository_id, version, created_at, updated_at) values (?, ?, ?, now(), now())").Prepare()
 	if err != nil {
 		return err
 	}
 
-	r, err := p.Exec(tag.ProjectID, tag.RepositoryID, tag.UserID, tag.Version)
+	r, err := p.Exec(tag.ProjectID, tag.RepositoryID, tag.Version)
 	if err != nil {
 		return err
 	}
@@ -64,12 +70,12 @@ func AddTag(tag *models.Tag) error {
 func UpdateTag(tag *models.Tag) error {
 	o := orm.NewOrm()
 
-	p, err := o.Raw("UPDATE tag SET user_id =? updated_at=now() WHERE name=? AND repository_id=?").Prepare()
+	p, err := o.Raw("UPDATE tag SET updated_at=now() WHERE name=? AND repository_id=?").Prepare()
 	if err != nil {
 		return err
 	}
 
-	_, err = p.Exec(tag.UserID, tag.Version, tag.RepositoryID)
+	_, err = p.Exec(tag.Version, tag.RepositoryID)
 	if err != nil {
 		return err
 	}

@@ -67,6 +67,7 @@ func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	addr, port, username, password := dbConfig()
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
+	log.Println(dbStr)
 	ch := make(chan int, 1)
 	go func() {
 		var err error
