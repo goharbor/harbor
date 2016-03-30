@@ -18,14 +18,13 @@ package api
 import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
 	exist, err := dao.IsAdminRole(userID)
 	if err != nil {
-		beego.Error("Error occurred in IsAdminRole:", err)
+		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
 		return false
 	}
 	if exist {
@@ -33,7 +32,7 @@ func checkProjectPermission(userID int, projectID int64) bool {
 	}
 	roleList, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {
-		beego.Error("Error occurred in GetUserProjectRoles:", err)
+		log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 		return false
 	}
 	return len(roleList) > 0
@@ -42,7 +41,7 @@ func checkProjectPermission(userID int, projectID int64) bool {
 func checkUserExists(name string) int {
 	u, err := dao.GetUser(models.User{Username: name})
 	if err != nil {
-		beego.Error("Error occurred in GetUser:", err)
+		log.Errorf("Error occurred in GetUser, error: %v", err)
 		return 0
 	}
 	if u != nil {
