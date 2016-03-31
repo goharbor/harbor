@@ -55,7 +55,7 @@ jQuery(function(){
                                     if(isAdminLoginedUser == "true") {
                                       document.location = "/registry/project"; 
                                     }else{	
-									 document.location = "/signIn";       
+                                      document.location = "/signIn";       
                                     }
 								}
 							});

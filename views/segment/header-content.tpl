@@ -58,7 +58,7 @@
 						{{ end }}
 						{{ if eq .AuthMode "db_auth" }}
 						  {{ if eq .IsAdminLoginedUser true }}
-						    <li><a id="aSelfSignUp" href="/register" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
+						    <li><a id="aAddUser" href="/addUser" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
 					      {{ end }}
 						{{ end}}
 						<li><a id="aLogout" href="#"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;{{i18n .Lang "log_out"}}</a></li>
@@ -69,7 +69,7 @@
 			{{ else if eq .AuthMode "db_auth" }}
 			  <div class="input-group">
 	  		    &nbsp;<button type="button" class="btn btn-default" id="btnSignIn">{{i18n .Lang "sign_in"}}</button>
-				{{ if eq .EnableAddUserByAdmin false }}
+				{{ if eq .SelfRegistration true }}
 				&nbsp;<button type="button" class="btn btn-success" id="btnSignUp">{{i18n .Lang "sign_up"}}</button>
 				{{ end }}
 			  </div>

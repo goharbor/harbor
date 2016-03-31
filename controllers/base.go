@@ -40,6 +40,8 @@ func (c *CommonController) Render() error {
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
+	SelfRegistration   bool
+	IsAdminLoginedUser bool
 }
 
 type langType struct {
@@ -52,8 +54,6 @@ const (
 )
 
 var supportLanguages map[string]langType
-var enableAddUserByAdmin bool
-var isAdminLoginedUser bool
 
 // Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
@@ -111,21 +111,21 @@ func (b *BaseController) Prepare() {
 
 	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
 
-	if selfRegistration == "off" {
-		enableAddUserByAdmin = true
+	if selfRegistration == "on" {
+		b.SelfRegistration = true
 	}
 
 	if sessionUserID != nil {
 		var err error
-		isAdminLoginedUser, err = dao.IsAdminRole(sessionUserID)
+		b.IsAdminLoginedUser, err = dao.IsAdminRole(sessionUserID)
 		if err != nil {
 			log.Errorf("Error occurred in IsAdminRole:%v", err)
 			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 	}
 
-	b.Data["IsAdminLoginedUser"] = isAdminLoginedUser
-	b.Data["EnableAddUserByAdmin"] = enableAddUserByAdmin
+	b.Data["IsAdminLoginedUser"] = b.IsAdminLoginedUser
+	b.Data["SelfRegistration"] = b.SelfRegistration
 
 }
 

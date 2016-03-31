@@ -34,22 +34,36 @@ type RegisterController struct {
 // Get renders the Sign In page, it only works if the auth mode is set to db_auth
 func (rc *RegisterController) Get() {
 
-	if enableAddUserByAdmin && !isAdminLoginedUser {
-		log.Error("Self registration can only be used by admin user.\n")
+	if !rc.BaseController.SelfRegistration {
+		log.Error("Registration can only be used by admin user when self-registrion is off.\n")
 		rc.Redirect("/signIn", http.StatusFound)
-	}
-
-	pageTitleKey := "page_title_registration"
-
-	if isAdminLoginedUser {
-		pageTitleKey = "page_title_add_user"
 	}
 
 	authMode := os.Getenv("AUTH_MODE")
 	if authMode == "" || authMode == "db_auth" {
-		rc.ForwardTo(pageTitleKey, "register")
+		rc.ForwardTo("page_title_registration", "register")
 	} else {
 		rc.Redirect("/signIn", http.StatusFound)
+	}
+}
+
+// AddUserController handles request for adding user with an admin role user
+type AddUserController struct {
+	BaseController
+}
+
+// Get renders the Sign In page, it only works if the auth mode is set to db_auth
+func (ac *AddUserController) Get() {
+
+	if !ac.BaseController.IsAdminLoginedUser {
+		ac.Redirect("/signIn", http.StatusFound)
+	}
+
+	authMode := os.Getenv("AUTH_MODE")
+	if authMode == "" || authMode == "db_auth" {
+		ac.ForwardTo("page_title_add_user", "register")
+	} else {
+		ac.Redirect("/signIn", http.StatusFound)
 	}
 }
 
@@ -61,8 +75,8 @@ func (rc *CommonController) SignUp() {
 		rc.CustomAbort(http.StatusForbidden, "")
 	}
 
-	if enableAddUserByAdmin && !isAdminLoginedUser {
-		log.Error("Self registration can only be used by admin user.\n")
+	if !(rc.BaseController.SelfRegistration || rc.BaseController.IsAdminLoginedUser) {
+		log.Error("Registration can only be used by admin role user when self-registration is off.\n")
 		rc.CustomAbort(http.StatusForbidden, "")
 	}
 
