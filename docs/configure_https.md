@@ -4,7 +4,7 @@ Because Harbor does not ship with any certificates, it uses HTTP by default to s
 
 ##Get a certificate
 
-Assuming that your registry’s **hostname** is **reg.yourdomain.com**, and that its DNS record points to the host where you are running Harbor. You first should get a certificate from a CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
+Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that its DNS record points to the host where you are running Harbor. You first should get a certificate from a CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
 
 In a test or development environment, you may choose to use a self-signed certificate instead of the one from a CA. The below commands generate your own certificate:
 
@@ -22,7 +22,7 @@ In a test or development environment, you may choose to use a self-signed certif
 ```
 3) Generate the certificate of your registry host:
 
-You need to configure openssl first. On Ubuntu, the config file locates at /etc/ssl/openssl.cnf. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let’s create necessary directories and files:
+You need to configure openssl first. On Ubuntu, the config file locates at /etc/ssl/openssl.cnf. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
 ```
   mkdir demoCA
   cd demoCA
@@ -40,7 +40,7 @@ After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, cha
 ```
   cd Deploy/config/nginx
 ```
-Create a new directory “cert/” if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/.
+Create a new directory cert/, if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/.
 
 Rename the existing configuration file of Nginx:
 ```
@@ -56,22 +56,20 @@ Edit the file nginx.conf and replace two occurrences of **harbordomain.com** to 
     listen 443 ssl;
     server_name harbordomain.com;
 
-…
-
+    ...
+    
     server {
       listen 80;
       server_name harbordomain.com;
       rewrite ^/(.*) https://$server_name$1 permanent;
-
 ```
 Then look for the SSL section to make sure the files of your certificates match the names in the config file. Do not change the path of the files.
 ```
-…
-
+    ...
+    
     # SSL
     ssl_certificate /etc/nginx/cert/yourdomain.com.crt;
     ssl_certificate_key /etc/nginx/cert/yourdomain.com.key;
-  
 ```
 Save your changes in nginx.conf.
 
@@ -95,29 +93,29 @@ If Harbor is already running, stop and remove the existing instance. Your image 
 ```
 Finally, restart Harbor:
 ```
-  docker-compose up –d
+  docker-compose up -d
 ```
 After setting up HTTPS for Harbor, you can verify it by the follow steps:
 
 1. Open a browser and enter the address: https://reg.yourdomain.com . It should display the user interface of Harbor.
 
-2. On a machine with Docker daemon, make sure the option “--insecure-registry” does not present, run any docker command to verify the setup, e.g. 
+2. On a machine with Docker daemon, make sure the option "-insecure-registry" does not present, run any docker command to verify the setup, e.g. 
 ```
   docker login reg.yourdomain.com
 ```
 ##Troubleshooting
 1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:
-```
-  cat intermediate-certificate.pem >> yourdomain.com.crt 
-```
+    ```sh
+    cat intermediate-certificate.pem >> yourdomain.com.crt 
+    ```
 2. On some systems where docker daemon runs, you may need to trust the certificate at OS level.  
   On Ubuntu, this can be done by below commands:
-```
-  cp youdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
-  update-ca-certificates
-```  
+    ```sh
+    cp youdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
+    update-ca-certificates
+    ```  
   On Red Hat (CentOS etc), the commands are:
-```
-  cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
-  update-ca-trust
-
+    ```sh
+    cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
+    update-ca-trust
+    ```
