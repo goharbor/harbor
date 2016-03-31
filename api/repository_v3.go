@@ -127,14 +127,14 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	}
 	repository.Category = repo.Category
 	repository.Description = repo.Description
-	/*err = dao.UpdateRepository(repository)
+	repository, err = dao.UpdateRepository(repository)
 	if err != nil {
 		beego.Error("Failed to update repository error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to update repository")
 	}
 	jstr, _ := json.Marshal(repository)
 	ra.Data["json"] = jstr
-	ra.ServerJSON()*/
+	ra.ServerJSON()
 }
 
 // PUT /api/v3/repositories/categories
