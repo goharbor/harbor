@@ -104,7 +104,7 @@ After setting up HTTPS for Harbor, you can verify it by the follow steps:
   docker login reg.yourdomain.com
 ```
 ##Troubleshooting
-1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:
+1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:  
     ```sh
     cat intermediate-certificate.pem >> yourdomain.com.crt 
     ```
