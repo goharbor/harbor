@@ -58,10 +58,10 @@ Edit the file nginx.conf and replace two occurrences of **harbordomain.com** to 
 
     ...
     
-    server {
-      listen 80;
-      server_name harbordomain.com;
-      rewrite ^/(.*) https://$server_name$1 permanent;
+  server {
+    listen 80;
+    server_name harbordomain.com;
+    rewrite ^/(.*) https://$server_name$1 permanent;
 ```
 Then look for the SSL section to make sure the files of your certificates match the names in the config file. Do not change the path of the files.
 ```
@@ -109,12 +109,13 @@ After setting up HTTPS for Harbor, you can verify it by the follow steps:
     cat intermediate-certificate.pem >> yourdomain.com.crt 
     ```
 2. On some systems where docker daemon runs, you may need to trust the certificate at OS level.  
-  On Ubuntu, this can be done by below commands:
+   On Ubuntu, this can be done by below commands:  
     ```sh
     cp youdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
     update-ca-certificates
     ```  
-  On Red Hat (CentOS etc), the commands are:
+    
+   On Red Hat (CentOS etc), the commands are:  
     ```sh
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
     update-ca-trust
