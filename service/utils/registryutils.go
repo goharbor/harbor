@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
+	"regexp"
 
 	"github.com/vmware/harbor/utils/log"
 )
@@ -62,22 +62,13 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		log.Debugf("authenticate header: %s", authenticate)
-		str := strings.Split(authenticate, " ")[1]
 		var service string
 		var scope string
-		strs := strings.Split(str, ",")
-		for _, s := range strs {
-			if strings.Contains(s, "service") {
-				service = s
-			} else if strings.Contains(s, "scope") {
-				scope = s
-			}
-		}
-		if arr := strings.Split(service, "\""); len(arr) > 1 {
-			service = arr[1]
-		}
-		if arr := strings.Split(scope, "\""); len(arr) > 1 {
-			scope = arr[1]
+		re := regexp.MustCompile(`service=\"(.*?)\".*scope=\"(.*?)\"`)
+		res := re.FindStringSubmatch(authenticate)
+		if len(res) > 2 {
+			service = res[1]
+			scope = res[2]
 		}
 		token, err := GenTokenForUI(username, service, scope)
 		if err != nil {
