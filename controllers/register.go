@@ -34,15 +34,14 @@ type RegisterController struct {
 // Get renders the Sign In page, it only works if the auth mode is set to db_auth
 func (rc *RegisterController) Get() {
 
+	if enableAddUserByAdmin && !isAdminLoginedUser {
+		log.Error("Self registration can only be used by admin user.\n")
+		rc.Redirect("/signIn", http.StatusFound)
+	}
+
 	pageTitleKey := "page_title_registration"
 
-	if enableAddUserByAdmin {
-
-		if !isAdminLoginedUser {
-			log.Error("Self registration can only be used by admin user.\n")
-			rc.Redirect("/signIn", http.StatusFound)
-		}
-
+	if isAdminLoginedUser {
 		pageTitleKey = "page_title_add_user"
 	}
 
@@ -56,6 +55,11 @@ func (rc *RegisterController) Get() {
 
 // SignUp insert data into DB based on data in form.
 func (rc *CommonController) SignUp() {
+
+	authMode := os.Getenv("AUTH_MODE")
+	if !(authMode == "" || authMode == "db_auth") {
+		rc.CustomAbort(http.StatusForbidden, "")
+	}
 
 	if enableAddUserByAdmin && !isAdminLoginedUser {
 		log.Error("Self registration can only be used by admin user.\n")

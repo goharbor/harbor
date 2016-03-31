@@ -56,8 +56,10 @@
 						<li><a id="aChangePassword" href="/changePassword" target="_blank"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;{{i18n .Lang "change_password"}}</a></li>
 						<li role="separator" class="divider"></li>
 						{{ end }}
-						{{ if eq .IsAdminLoginedUser true }}
-						<li><a id="aSelfSignUp" href="/register" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
+						{{ if eq .AuthMode "db_auth" }}
+						  {{ if eq .IsAdminLoginedUser true }}
+						    <li><a id="aSelfSignUp" href="/register" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
+					      {{ end }}
 						{{ end}}
 						<li><a id="aLogout" href="#"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;{{i18n .Lang "log_out"}}</a></li>
 					</ul>
