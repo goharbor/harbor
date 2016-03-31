@@ -20,8 +20,7 @@ import (
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // IndexController handles request to /
@@ -52,7 +51,7 @@ func (c *CommonController) Login() {
 
 	user, err := auth.Login(models.AuthModel{principal, password})
 	if err != nil {
-		beego.Error("Error occurred in UserLogin:", err)
+		log.Errorf("Error occurred in UserLogin: %v", err)
 		c.CustomAbort(http.StatusUnauthorized, "")
 	}
 

@@ -16,10 +16,10 @@
 package controllers
 
 import (
-	"log"
 	"os"
 	"strings"
 
+	"github.com/vmware/harbor/utils/log"
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
 )
@@ -124,10 +124,10 @@ func init() {
 	//conf/app.conf -> os.Getenv("config_path")
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
-		log.Printf("Config path: %s", configPath)
+		log.Infof("Config path: %s", configPath)
 		beego.AppConfigPath = configPath
 		if err := beego.ParseConfig(); err != nil {
-			beego.Warning("Failed to parse config file: ", configPath, "error: ", err)
+			log.Warningf("Failed to parse config file: %s, error: %v", configPath, err)
 		}
 	}
 
@@ -150,7 +150,7 @@ func init() {
 
 	for _, lang := range langs {
 		if err := i18n.SetMessage(lang, "static/i18n/"+"locale_"+lang+".ini"); err != nil {
-			beego.Error("Fail to set message file:" + err.Error())
+			log.Errorf("Fail to set message file: %s", err.Error())
 		}
 	}
 }
