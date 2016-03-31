@@ -16,12 +16,14 @@
 package controllers
 
 import (
-	"log"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
@@ -47,11 +49,11 @@ type langType struct {
 
 const (
 	defaultLang = "en-US"
-	adminUserID = 1
 )
 
 var supportLanguages map[string]langType
-var selfRegistration bool
+var enableAddUserByAdmin bool
+var isAdminLoginedUser bool
 
 // Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
@@ -107,17 +109,23 @@ func (b *BaseController) Prepare() {
 	}
 	b.Data["AuthMode"] = authMode
 
-	strSelfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
 
-	if strSelfRegistration == "on" {
-		selfRegistration = true
+	if selfRegistration == "off" {
+		enableAddUserByAdmin = true
 	}
 
-	if sessionUserID != nil && sessionUserID.(int) != adminUserID {
-		selfRegistration = false
+	if sessionUserID != nil {
+		var err error
+		isAdminLoginedUser, err = dao.IsAdminRole(sessionUserID)
+		if err != nil {
+			log.Errorf("Error occurred in IsAdminRole:%v", err)
+			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
 	}
 
-	b.Data["EnableAddUserByAdmin"] = selfRegistration
+	b.Data["IsAdminLoginedUser"] = isAdminLoginedUser
+	b.Data["EnableAddUserByAdmin"] = enableAddUserByAdmin
 
 }
 
@@ -141,10 +149,10 @@ func init() {
 	//conf/app.conf -> os.Getenv("config_path")
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
-		log.Printf("Config path: %s", configPath)
+		log.Infof("Config path: %s", configPath)
 		beego.AppConfigPath = configPath
 		if err := beego.ParseConfig(); err != nil {
-			beego.Warning("Failed to parse config file: ", configPath, "error: ", err)
+			log.Warningf("Failed to parse config file: %s, error: %v", configPath, err)
 		}
 	}
 
@@ -167,7 +175,7 @@ func init() {
 
 	for _, lang := range langs {
 		if err := i18n.SetMessage(lang, "static/i18n/"+"locale_"+lang+".ini"); err != nil {
-			beego.Error("Fail to set message file:" + err.Error())
+			log.Errorf("Fail to set message file: %s", err.Error())
 		}
 	}
 }

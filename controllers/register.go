@@ -24,8 +24,6 @@ import (
 	"github.com/vmware/harbor/models"
 
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego"
 )
 
 // RegisterController handles request to /register
@@ -38,12 +36,13 @@ func (rc *RegisterController) Get() {
 
 	pageTitleKey := "page_title_registration"
 
-	if selfRegistration {
-		sessionUserID := rc.GetSession("userId")
-		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
+	if enableAddUserByAdmin {
+
+		if !isAdminLoginedUser {
 			log.Error("Self registration can only be used by admin user.\n")
 			rc.Redirect("/signIn", http.StatusFound)
 		}
+
 		pageTitleKey = "page_title_add_user"
 	}
 
@@ -58,12 +57,9 @@ func (rc *RegisterController) Get() {
 // SignUp insert data into DB based on data in form.
 func (rc *CommonController) SignUp() {
 
-	if selfRegistration {
-		sessionUserID := rc.GetSession("userId")
-		if sessionUserID == nil || sessionUserID.(int) != adminUserID {
-			log.Error("Self registration can only be used by admin user.\n")
-			rc.Redirect("/signIn", http.StatusForbidden)
-		}
+	if enableAddUserByAdmin && !isAdminLoginedUser {
+		log.Error("Self registration can only be used by admin user.\n")
+		rc.CustomAbort(http.StatusForbidden, "")
 	}
 
 	username := strings.TrimSpace(rc.GetString("username"))
@@ -76,7 +72,7 @@ func (rc *CommonController) SignUp() {
 
 	_, err := dao.Register(user)
 	if err != nil {
-		beego.Error("Error occurred in Register:", err)
+		log.Errorf("Error occurred in Register: %v", err)
 		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
@@ -96,7 +92,7 @@ func (rc *CommonController) UserExists() {
 
 	exist, err := dao.UserExists(user, target)
 	if err != nil {
-		beego.Error("Error occurred in UserExists:", err)
+		log.Errorf("Error occurred in UserExists: %v", err)
 		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	rc.Data["json"] = exist

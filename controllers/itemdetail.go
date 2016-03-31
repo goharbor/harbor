@@ -21,8 +21,7 @@ import (
 	"os"
 
 	"github.com/vmware/harbor/dao"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // ItemDetailController handles requet to /registry/detail, which shows the detail of a project.
@@ -37,7 +36,7 @@ func (idc *ItemDetailController) Get() {
 	projectID, _ := idc.GetInt64("project_id")
 
 	if projectID <= 0 {
-		beego.Error("Invalid project id:", projectID)
+		log.Errorf("Invalid project id: %d", projectID)
 		idc.Redirect("/signIn", http.StatusFound)
 		return
 	}
@@ -45,7 +44,7 @@ func (idc *ItemDetailController) Get() {
 	project, err := dao.GetProjectByID(projectID)
 
 	if err != nil {
-		beego.Error("Error occurred in GetProjectById:", err)
+		log.Errorf("Error occurred in GetProjectById: %v", err)
 		idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
@@ -70,13 +69,13 @@ func (idc *ItemDetailController) Get() {
 
 		roleList, err := dao.GetUserProjectRoles(userID, projectID)
 		if err != nil {
-			beego.Error("Error occurred in GetUserProjectRoles:", err)
+			log.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 
 		isAdmin, err := dao.IsAdminRole(userID)
 		if err != nil {
-			beego.Error("Error occurred in IsAdminRole:", err)
+			log.Errorf("Error occurred in IsAdminRole: %v", err)
 			idc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 

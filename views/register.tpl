@@ -16,7 +16,7 @@
 	<div class="col-sm-4"></div>
 	<div class="col-sm-4">
 		<div class="page-header">
-				{{ if eq .EnableAddUserByAdmin true }}
+				{{ if eq .IsAdminLoginedUser true }}
 				<h1>{{i18n .Lang "add_user" }}</h1>
 				{{ else }}
 				<h1>{{i18n .Lang "registration"}}</h1>
@@ -67,7 +67,7 @@
 		  <div class="form-group has-feedback">
 		    <div class="text-center">
 		      <button type="button" class="btn btn-default" id="btnPageSignUp">
-				{{ if eq .EnableAddUserByAdmin true }}
+				{{ if eq .IsAdminLoginedUser true }}
 			        {{i18n .Lang "add_user" }}
 			    {{ else }} 
 					{{i18n .Lang "sign_up"}}
