@@ -60,6 +60,7 @@ for f in conf_files:
 render(os.path.join(templates_dir, "ui", "env"),
         ui_conf_env,
         hostname=hostname,
+        db_password=db_password,
         ui_url=ui_url,
         auth_mode=auth_mode,
         admin_pwd=harbor_admin_password,
