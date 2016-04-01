@@ -16,8 +16,10 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -31,8 +33,17 @@ type UserAPI struct {
 	userID        int
 }
 
+const userNameMaxLen int = 20
+const passwordMaxLen int = 20
+const realNameMaxLen int = 20
+const commentsMaxLen int = 20
+
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
+
+	if ua.Ctx.Input.IsPost() {
+		return
+	}
 
 	ua.currentUserID = ua.ValidateUser()
 	id := ua.Ctx.Input.Param(":id")
@@ -117,6 +128,44 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 	dao.ToggleUserAdminRole(userQuery)
 }
 
+// Post ...
+func (ua *UserAPI) Post() {
+	username := strings.TrimSpace(ua.GetString("username"))
+	password := strings.TrimSpace(ua.GetString("password"))
+	email := strings.TrimSpace(ua.GetString("email"))
+	realname := strings.TrimSpace(ua.GetString("realname"))
+	comment := strings.TrimSpace(ua.GetString("comment"))
+
+	err := validateUserReq(ua)
+	if err != nil {
+		log.Errorf("Invalid user request, error: %v", err)
+		ua.RenderError(http.StatusBadRequest, "Invalid request for creating user")
+		return
+	}
+
+	user := models.User{Username: username, Email: email, Realname: realname, Password: password, Comment: comment}
+	exist, err := dao.UserExists(user, "email")
+	if err != nil {
+		log.Errorf("Error occurred in UserExists:", err)
+	}
+	if exist {
+		ua.RenderError(http.StatusConflict, "")
+		return
+	}
+
+	userID, err := dao.Register(user)
+	if err != nil {
+		log.Errorf("Error occurred in Register:", err)
+		ua.RenderError(http.StatusInternalServerError, "Internal error.")
+		return
+	}
+	if userID == 0 {
+		log.Errorf("Error happened on registing new user in db.")
+		ua.RenderError(http.StatusInternalServerError, "Internal error.")
+	}
+
+}
+
 // Delete ...
 func (ua *UserAPI) Delete() {
 	exist, err := dao.IsAdminRole(ua.currentUserID)
@@ -135,4 +184,43 @@ func (ua *UserAPI) Delete() {
 		ua.RenderError(http.StatusInternalServerError, "Failed to delete User")
 		return
 	}
+}
+
+func validateUserReq(ua *UserAPI) error {
+	userName := ua.GetString("username")
+	if len(userName) == 0 {
+		return fmt.Errorf("User name can not be empty")
+	}
+	if len(userName) > userNameMaxLen {
+		return fmt.Errorf("User name is too long")
+	}
+
+	password := ua.GetString("password")
+	if len(password) == 0 {
+		return fmt.Errorf("Password can not be empty")
+	}
+	if len(password) >= passwordMaxLen {
+		return fmt.Errorf("Password can is too long")
+	}
+
+	realName := ua.GetString("realname")
+	if len(realName) == 0 {
+		return fmt.Errorf("Real name can not be empty")
+	}
+	if len(realName) >= realNameMaxLen {
+		return fmt.Errorf("Real name is too long")
+	}
+
+	email := ua.GetString("email")
+	if len(email) == 0 {
+		return fmt.Errorf("Email can not be empty")
+	}
+
+	comments := ua.GetString("comment")
+	if len(comments) != 0 {
+		if len(comments) >= commentsMaxLen {
+			return fmt.Errorf("Comments is too long")
+		}
+	}
+	return nil
 }
