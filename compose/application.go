@@ -2,6 +2,7 @@ package compose
 
 type Application struct {
 	IsPrimary   bool    // application depends on other applications
+	MeetCritia  bool    // application running now meet critia specified by compose file
 	Name        string  `json: "name" yaml: "name"`
 	Image       string  `json: "image" yaml: "image"`
 	Cmd         string  `json: "cmd" yaml: "cmd"`
