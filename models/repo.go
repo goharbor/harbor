@@ -43,10 +43,10 @@ type Tag struct {
 	Id             int64     `json:"id"`
 	Version        string    `json:"version"`
 	ImageID        string    `json:"imageId"`
-	ProjectID      int64     `json:"projectId"`
+	ProjectID      int64     `orm:"column(project_id)" json:"projectId"`
 	ProjectName    string    `json:"projectName"`
 	RepositoryName string    `json:"repositoryName"`
-	RepositoryID   int64     `json:"respositoryId"`
+	RepositoryID   int64     `orm:"column(repository_id)"json:"respositoryId"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
@@ -55,14 +55,35 @@ type Repository struct {
 	Id          int64     `json:"id"`
 	Name        string    `json:"name"`
 	ProjectName string    `json:"projectName"`
-	ProjectID   int64     `json:"projectId"`
+	ProjectID   int64     `orm:"column(project_id)" json:"projectId"`
 	UserName    string    `json:"userName"`
 	Category    string    `json:"category"`
 	IsPublic    bool      `json:"isPublic"`
 	LatestTag   string    `json:"latestTag"`
 	Description string    `json:"description"`
+	MarkDown    string    `json:"markdown"`
 	SryCompose  string    `json:"sryCompose"`
 	Readme      string    `json:"readme"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+type RepositoriesResponse struct {
+	Code int64        `json:"code"`
+	Data []Repository `json:"data"`
+}
+
+type RepositoryResponse struct {
+	Code int64       `json:"code"`
+	Data *Repository `json:"data"`
+}
+
+type TagsResponse struct {
+	Code int64 `json:"code"`
+	Data []Tag `json:"data"`
+}
+
+type CategoriesResponse struct {
+	Code int64    `json:"code"`
+	Data []string `json:"data"`
 }

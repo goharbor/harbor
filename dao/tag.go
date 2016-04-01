@@ -108,6 +108,23 @@ func GetTagByID(tagId int64) (*models.Tag, error) {
 	}
 }
 
+// getTags
+func TagsUnderNamespaceAndRepo(namespaceAndRepo string) ([]models.Tag, error) {
+	repository, err := GetRepositoryByName(namespaceAndRepo)
+	if err != nil {
+		return nil, err
+	}
+	o := orm.NewOrm()
+	sql := `select * from tag where project_id=? and repository_id = ? order by id desc`
+
+	var r []models.Tag
+	_, err = o.Raw(sql, repository.ProjectID, repository.Id).QueryRows(&r)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
 // GetTagByVersion...
 func GetTagByVersion(projectID int64, repositoryID int64, version string) (*models.Tag, error) {
 	o := orm.NewOrm()

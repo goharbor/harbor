@@ -16,22 +16,28 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 // For repostiories, we won't check the session in this API due to search functionality, querying manifest will be contorlled by
 // the security of registry
+const (
+	SryunUserNamePri = "sryci"
+	RepoInfoDir      = "templates"
+)
+
 type RepositoryV3API struct {
 	BaseAPI
 	userID          int
@@ -48,13 +54,23 @@ func (ra *RepositoryV3API) Prepare() {
 	} else {
 		ra.userID = userID
 	}
+
 	username, ok := ra.GetSession("username").(string)
 	if !ok {
 		beego.Warning("failed to get username from session")
 		ra.username = ""
 	} else {
 		ra.username = username
+		fmt.Println("username: ", ra.username)
 	}
+
+	// userId  from token
+	if ra.userID == dao.NonExistUserID {
+		ra.userID = ra.ValidateUser()
+		ra.username = fmt.Sprintf("%s%d", SryunUserNamePri, ra.userID)
+		fmt.Println("username: ", ra.username)
+	}
+
 	project_name := ra.Ctx.Input.Param(":project_name")
 	if len(project_name) != 0 {
 		ra.project_name = project_name
@@ -67,11 +83,35 @@ func (ra *RepositoryV3API) Prepare() {
 
 // GET /api/v3/repositories/{project_name}/{respository_name}
 func (ra *RepositoryV3API) GetRepository() {
-	repositories, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
+	if ra.project_name == "" || ra.repository_name == "" {
+		beego.Error("required project_name and repository_name")
+		ra.RenderError(http.StatusInternalServerError, "required project_name and repository_name")
+	}
+	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
 	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
+	log.Println("markdown: ", markDown)
+	repository.MarkDown = markDown
+
+	repositoryResponse := models.RepositoryResponse{
+		Code: 0,
+		Data: repository,
+	}
+
+	ra.Data["json"] = repositoryResponse
+	ra.ServeJSON()
+}
+
+// GET /api/v3/repositories/mine
+func (ra *RepositoryV3API) GetMineRepositories() {
+	repositories, err := dao.RepositoriesUnderNamespace(ra.username)
+	if err != nil {
+		beego.Error("Failed to get repositories from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
@@ -84,35 +124,34 @@ func (ra *RepositoryV3API) GetRepositories() {
 		beego.Error("Failed to get repositories from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
-	ra.Data["json"] = repositories
+	repositoriesResponse := models.RepositoriesResponse{
+		Code: 0,
+		Data: repositories,
+	}
+	ra.Data["json"] = repositoriesResponse
 	ra.ServeJSON()
 }
-
 func (ra *RepositoryV3API) GetTags() {
-
-	var tags []string
-	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(ra.project_name,
-		ra.repository_name, "tags", "list"), ra.username)
+	tags, err := dao.TagsUnderNamespaceAndRepo(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
 	if err != nil {
 		beego.Error("Failed to get repo tags, repo name:", ra.repository_name, ", error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
-	} else {
-		t := tag{}
-		json.Unmarshal(result, &t)
-		tags = t.Tags
 	}
-	ra.Data["json"] = tags
+	tagsResponse := models.TagsResponse{
+		Code: 0,
+		Data: tags,
+	}
+	ra.Data["json"] = tagsResponse
 	ra.ServeJSON()
 }
 
 // PUT /api/v3/repositories/{project_name}/{respository_name}
 // update respository category
 func (ra *RepositoryV3API) UpdateRepository() {
-	projectName := ra.Ctx.Input.Param(":project_name")
-	respositoryName := ra.Ctx.Input.Param(":respository_name")
-	if projectName == "" {
-		beego.Error("Project name is blank")
-		ra.CustomAbort(http.StatusBadRequest, "Project name is blank")
+
+	if ra.project_name == "" || ra.repository_name == "" {
+		beego.Error("Project name or repository name is blank")
+		ra.RenderError(http.StatusBadRequest, "Project name or repositoryName is black")
 	}
 	var repo models.Repository
 	err := json.Unmarshal(ra.Ctx.Input.RequestBody, &repo)
@@ -124,9 +163,9 @@ func (ra *RepositoryV3API) UpdateRepository() {
 		beego.Error("Failed to request can't be empty")
 		ra.RenderError(http.StatusInternalServerError, "Failed to request cat't be empty")
 	}
-	repository, _ := RepositoryExists(fmt.Sprintf("%s/%s", repository.ProjectName, repository.Name))
+	repository, _ := dao.RepositoryExists(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
 	if repository != nil {
-		beego.Error("Failed to get repository, project name: ", projectName, ", error: ", err)
+		beego.Error("Failed to get repository, project name: ", ra.project_name, ", error: ", err)
 		ra.RenderError(http.StatusNotFound, "Failed to get repository")
 	}
 	repository.Category = repo.Category
@@ -139,7 +178,7 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	}
 	jstr, _ := json.Marshal(repository)
 	ra.Data["json"] = jstr
-	ra.ServerJSON()
+	ra.ServeJSON()
 }
 
 // PUT /api/v3/repositories/categories
@@ -151,12 +190,27 @@ func (ra *RepositoryV3API) GetCategories() {
 		beego.Error("Ftailed to get CATEGORIES errors: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo CATEGORIES")
 	}
-	var categorys []string
+	var categories []string
 	for _, v := range strings.Split(string(b), "\n") {
 		if len(v) > 0 {
-			categorys = append(categorys, v)
+			categories = append(categories, v)
 		}
 	}
-	ra.Data["json"] = categorys
+	categoriesResponse := models.CategoriesResponse{
+		Code: 0,
+		Data: categories,
+	}
+	ra.Data["json"] = categoriesResponse
 	ra.ServeJSON()
+}
+
+func GetMarkDown(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, repository_name, "md"))
+	log.Println(fmt.Sprintf("%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "md"))
+	if err != nil {
+		return "", err
+	}
+	b64 := base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+	repoMarkdown := b64.EncodeToString(b)
+	return repoMarkdown, nil
 }
