@@ -16,12 +16,13 @@ type CatalogConfig struct {
 }
 
 type Question struct {
-	Variable    string `json: "variable" yaml: "variable"`
-	Description string `json: "description" yaml: "description"`
-	Label       string `json: "label" yaml: "label"`
-	Type        string `json: "type" yaml: "type"`
-	Required    bool   `json: "required" yaml: "required"`
-	Default     string `json: "default" yaml: "default"`
+	Variable    string   `json: "variable" yaml: "variable"`
+	Description string   `json: "description" yaml: "description"`
+	Label       string   `json: "label" yaml: "label"`
+	Type        string   `json: "type" yaml: "type"`
+	Required    bool     `json: "required" yaml: "required"`
+	Default     string   `json: "default" yaml: "default"`
+	Options     []string `json: "options" yaml: "options"`
 }
 
 type Questions []Question

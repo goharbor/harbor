@@ -26,6 +26,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/compose"
+	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 )
@@ -127,7 +128,7 @@ func (ra *RepositoryV3API) PostApps() {
 		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal anwsers")
 	}
 	// create app from sry_compose and anwser entered
-	err = compose.EntryPoint(sry_compose, anwser, compose.CommandCreate)
+	err = compose.EntryPoint(sry_compose, anwser, command.CommandCreate)
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {

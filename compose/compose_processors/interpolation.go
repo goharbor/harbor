@@ -1,5 +1,5 @@
 package compose_processors
 
-func Interpolation(context *compose.Context) *compose.Context {
-	return context
+func Interpolation(compose *compose.SryCompose) *compose.SryCompose {
+	return compose
 }

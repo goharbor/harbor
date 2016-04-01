@@ -1,5 +1,5 @@
 package compose_processors
 
-func UnitStandarization(context *compose.Context) *compose.Context {
-	return context
+func UnitStandarization(compose *compose.SryCompose) *compose.SryCompose {
+	return compose
 }

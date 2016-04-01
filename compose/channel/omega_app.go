@@ -1,4 +1,4 @@
-package output
+package channel
 
 import (
 	"net/http"

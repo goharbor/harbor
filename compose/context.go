@@ -1,18 +1,24 @@
 package compose
 
+import (
+	"github.com/vmware/harbor/compose/channel"
+	"github.com/vmware/harbor/compose/command"
+	"github.com/vmware/harbor/compose/compose"
+)
+
 type Context struct {
-	OutputChannel *interface{}
-	InputChannel  *interface{}
-	Compose       *SryCompose
-	Command       Command
+	OutputChannel interface{}
+	InputChannel  interface{}
+	Compose       *compose.SryCompose
+	Command       command.Command
 }
 
 // main entrance here, should be main when standalone mode
 // should be **func main** in cli mode
-func EntryPoint(yaml string, anwsers map[string]string, command Command) error {
+func EntryPoint(yaml string, anwsers map[string]string, command command.Command) error {
 	// default output/input channel now is OmegaAppOutput
 	ctx := &Context{
-		Compose: FromYaml(yaml),
+		Compose: compose.FromYaml(yaml),
 		Command: command,
 	}
 
@@ -28,5 +34,5 @@ func (ctx *Context) SetInput(output *interface{}) {
 }
 
 func (ctx *Context) ApplyChange() error {
-	return ctx.Command(ctx)
+	return ctx.Command(ctx.OutputChannel.(*channel.ChannelOutput), ctx.Compose)
 }
