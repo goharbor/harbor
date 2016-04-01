@@ -37,7 +37,7 @@ jQuery(function(){
 			var realname = $.trim($("#Realname").val());
 			var comment  = $.trim($("#Comment").val());
 			$.ajax({
-				url : '/signUp',
+				url : "/api/users",
 				data:{username: username, password: password, realname: realname, comment: comment, email: email},
 				type: "POST",
 				beforeSend: function(e){
