@@ -57,7 +57,7 @@ To simplify the installation process, a pre-built installation package of Harbor
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
 ### Contribution
-We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
+We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
 
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
