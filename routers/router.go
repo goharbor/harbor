@@ -16,11 +16,10 @@
 package routers
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/controllers"
 	"github.com/vmware/harbor/service"
-
-	"github.com/astaxie/beego"
 )
 
 func init() {
@@ -71,4 +70,5 @@ func init() {
 	beego.Router("/api/v3/repositories/:project_name/:repository_name", &api.RepositoryV3API{}, "put:UpdateRepository")
 	beego.Router("/api/v3/repositories/:project_name/:repository_name/tags", &api.RepositoryV3API{}, "get:GetTags")
 	beego.Router("/api/v3/repositories/categories", &api.RepositoryV3API{}, "get:GetCategories")
+	//	beego.Router("/api/v3/repositories/:project_name/:repository_name/info", &api.RepositoryV3API{}, "get:GetInfo")
 }

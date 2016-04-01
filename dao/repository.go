@@ -86,16 +86,15 @@ func UpdateRepository(repository *models.Repository) (*models.Repository, error)
 }
 
 func RepositoriesUnderNamespace(namespace string) ([]models.Repository, error) {
-	if len(namespace) == 0 {
+	if namespace == "admin" {
 		namespace = "library"
 	}
-
+	fmt.Println("namespace====: ", namespace)
 	o := orm.NewOrm()
-	sql := `select name, description,project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at from  repository where project_name=?  order by updated_at desc`
+	sql := `select name, description,project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at from  repository where is_public = 0 and project_name=?  order by updated_at desc`
 
 	var r []models.Repository
 	_, err := o.Raw(sql, namespace).QueryRows(&r)
-
 	if err != nil {
 		return nil, err
 	}

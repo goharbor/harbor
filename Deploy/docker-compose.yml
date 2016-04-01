@@ -32,29 +32,12 @@ mysql:
   log_opt:
     syslog-address: "tcp://127.0.0.1:1514"
     syslog-tag: "mysql"
-ui:
-  build: ../
-  dockerfile: Dockerfile.sry
-  env_file:
-    - ./config/ui/env
-  volumes:
-    - ../sql:/sql
-    - ./config/ui/app.conf:/etc/ui/app.conf
-    - ./config/ui/private_key.pem:/etc/ui/private_key.pem
-  links:
-    - registry
-    - mysql
-    - log
-  log_driver: "syslog"
-  log_opt:
-    syslog-address: "tcp://127.0.0.1:1514"
     syslog-tag: "ui"
 proxy:
   image: testregistry.dataman.io/nginx:1.9
   volumes:
     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
   links:
-    - ui
     - registry
     - log
   ports:
