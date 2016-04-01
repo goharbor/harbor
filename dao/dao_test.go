@@ -128,8 +128,8 @@ func TestMain(m *testing.M) {
 
 	log.Infof("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
-	os.Setenv("MYSQL_PORT_3306_TCP_ADDR", dbHost)
-	os.Setenv("MYSQL_PORT_3306_TCP_PORT", dbPort)
+	os.Setenv("MYSQL_HOST", dbHost)
+	os.Setenv("MYSQL_PORT", dbPort)
 	os.Setenv("MYSQL_USR", dbUser)
 	os.Setenv("MYSQL_PWD", dbPassword)
 	os.Setenv("AUTH_MODE", "db_auth")
