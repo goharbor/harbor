@@ -148,11 +148,10 @@ func (ra *RepositoryV3API) GetTags() {
 // PUT /api/v3/repositories/{project_name}/{respository_name}
 // update respository category
 func (ra *RepositoryV3API) UpdateRepository() {
-	projectName := ra.Ctx.Input.Param(":project_name")
-	respositoryName := ra.Ctx.Input.Param(":respository_name")
-	if projectName == "" {
-		beego.Error("Project name is blank")
-		ra.CustomAbort(http.StatusBadRequest, "Project name is blank")
+
+	if ra.project_name == "" || ra.repository_name == "" {
+		beego.Error("Project name or repository name is blank")
+		ra.RenderError(http.StatusBadRequest, "Project name or repositoryName is black")
 	}
 	var repo models.Repository
 	err := json.Unmarshal(ra.Ctx.Input.RequestBody, &repo)
@@ -164,9 +163,9 @@ func (ra *RepositoryV3API) UpdateRepository() {
 		beego.Error("Failed to request can't be empty")
 		ra.RenderError(http.StatusInternalServerError, "Failed to request cat't be empty")
 	}
-	repository, _ := RepositoryExists(fmt.Sprintf("%s/%s", repository.ProjectName, repository.Name))
+	repository, _ := dao.RepositoryExists(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
 	if repository != nil {
-		beego.Error("Failed to get repository, project name: ", projectName, ", error: ", err)
+		beego.Error("Failed to get repository, project name: ", ra.project_name, ", error: ", err)
 		ra.RenderError(http.StatusNotFound, "Failed to get repository")
 	}
 	repository.Category = repo.Category
@@ -179,7 +178,7 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	}
 	jstr, _ := json.Marshal(repository)
 	ra.Data["json"] = jstr
-	ra.ServerJSON()
+	ra.ServeJSON()
 }
 
 // PUT /api/v3/repositories/categories
