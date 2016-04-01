@@ -263,5 +263,12 @@ func line(calldepth int) string {
 		line = 0
 	}
 
+	for i := len(file) - 1; i > 0; i-- {
+		if file[i] == '/' {
+			file = file[i+1:]
+			break
+		}
+	}
+
 	return fmt.Sprintf("%s:%d", file, line)
 }
