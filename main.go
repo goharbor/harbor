@@ -65,7 +65,6 @@ func updateInitPassword(userID int, password string) error {
 }
 
 func main() {
-
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	dao.InitDB()
 	dao.UpgradeDB()

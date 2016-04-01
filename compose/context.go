@@ -7,13 +7,13 @@ type Context struct {
 }
 
 // main entrance here, should be main when standalone mode
-func EntryPoint(yaml string, command string) {
+func EntryPoint(yaml string, anwsers map[string]string, command Command) error {
 	ctx := &Context{
 		Compose: compose.FromYaml(yaml),
-		Command: compose.CommpandFromString(command),
+		Command: command,
 	}
 
-	ctx.Run()
+	return ctx.Run()
 }
 
 func (ctx *Context) SetOutput(output *interface{}) {
@@ -22,4 +22,5 @@ func (ctx *Context) SetOutput(output *interface{}) {
 
 func (ctx *Context) Run() error {
 	ctx.Command(ctx)
+	return nil
 }

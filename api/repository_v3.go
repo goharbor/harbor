@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/compose"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 )
@@ -100,6 +101,37 @@ func (ra *RepositoryV3API) GetRepository() {
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
+	}
+
+	ra.Data["json"] = repositoryResponse
+	ra.ServeJSON()
+}
+
+// POST /api/v3/repositories/{project_name}/{respository_name}
+func (ra *RepositoryV3API) PostApps() {
+	if ra.project_name == "" || ra.repository_name == "" {
+		beego.Error("required project_name and repository_name")
+		ra.RenderError(http.StatusInternalServerError, "required project_name and repository_name")
+	}
+	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
+		ra.project_name, ra.repository_name))
+	if err != nil {
+		beego.Error("Failed to get repository from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
+	var anwser map[string]string
+	_ := json.Unmarshal(ra.Ctx.Input.RequestBody, &anwser)
+	// create app from sry_compose and anwser entered
+	err = compose.EntryPoint(sry_compose, anwser, compose.CommandCreate)
+
+	repositoryResponse := models.RepositoryResponse{
+		Code: 0,
+	}
+	if err != nil {
+		repositoryResponse := models.RepositoryResponse{
+			Code: 1,
+		}
 	}
 
 	ra.Data["json"] = repositoryResponse
@@ -213,4 +245,12 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 	b64 := base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 	repoMarkdown := b64.EncodeToString(b)
 	return repoMarkdown, nil
+}
+
+func GetSryCompose(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "sry_compose", "yml"))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
