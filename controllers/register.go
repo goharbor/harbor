@@ -17,7 +17,6 @@ package controllers
 
 import (
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/vmware/harbor/dao"
@@ -34,13 +33,12 @@ type RegisterController struct {
 // Get renders the Sign In page, it only works if the auth mode is set to db_auth
 func (rc *RegisterController) Get() {
 
-	if !rc.BaseController.SelfRegistration {
-		log.Error("Registration can only be used by admin user when self-registrion is off.\n")
+	if !rc.SelfRegistration {
+		log.Error("Registration is disabled when self-registration is off.\n")
 		rc.Redirect("/signIn", http.StatusFound)
 	}
 
-	authMode := os.Getenv("AUTH_MODE")
-	if authMode == "" || authMode == "db_auth" {
+	if rc.AuthMode == "db_auth" {
 		rc.ForwardTo("page_title_registration", "register")
 	} else {
 		rc.Redirect("/signIn", http.StatusFound)
@@ -55,12 +53,12 @@ type AddUserController struct {
 // Get renders the Sign In page, it only works if the auth mode is set to db_auth
 func (ac *AddUserController) Get() {
 
-	if !ac.BaseController.IsAdminLoginedUser {
+	if !ac.IsAdmin {
+		log.Error("Add user can only be used by admin role user.\n")
 		ac.Redirect("/signIn", http.StatusFound)
 	}
 
-	authMode := os.Getenv("AUTH_MODE")
-	if authMode == "" || authMode == "db_auth" {
+	if ac.AuthMode == "db_auth" {
 		ac.ForwardTo("page_title_add_user", "register")
 	} else {
 		ac.Redirect("/signIn", http.StatusFound)
@@ -68,37 +66,36 @@ func (ac *AddUserController) Get() {
 }
 
 // SignUp insert data into DB based on data in form.
-func (rc *CommonController) SignUp() {
+func (cc *CommonController) SignUp() {
 
-	authMode := os.Getenv("AUTH_MODE")
-	if !(authMode == "" || authMode == "db_auth") {
-		rc.CustomAbort(http.StatusForbidden, "")
+	if !(cc.AuthMode == "db_auth") {
+		cc.CustomAbort(http.StatusForbidden, "")
 	}
 
-	if !(rc.BaseController.SelfRegistration || rc.BaseController.IsAdminLoginedUser) {
+	if !(cc.SelfRegistration || cc.IsAdmin) {
 		log.Error("Registration can only be used by admin role user when self-registration is off.\n")
-		rc.CustomAbort(http.StatusForbidden, "")
+		cc.CustomAbort(http.StatusForbidden, "")
 	}
 
-	username := strings.TrimSpace(rc.GetString("username"))
-	email := strings.TrimSpace(rc.GetString("email"))
-	realname := strings.TrimSpace(rc.GetString("realname"))
-	password := strings.TrimSpace(rc.GetString("password"))
-	comment := strings.TrimSpace(rc.GetString("comment"))
+	username := strings.TrimSpace(cc.GetString("username"))
+	email := strings.TrimSpace(cc.GetString("email"))
+	realname := strings.TrimSpace(cc.GetString("realname"))
+	password := strings.TrimSpace(cc.GetString("password"))
+	comment := strings.TrimSpace(cc.GetString("comment"))
 
 	user := models.User{Username: username, Email: email, Realname: realname, Password: password, Comment: comment}
 
 	_, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
-		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
 
 // UserExists checks if user exists when user input value in sign in form.
-func (rc *CommonController) UserExists() {
-	target := rc.GetString("target")
-	value := rc.GetString("value")
+func (cc *CommonController) UserExists() {
+	target := cc.GetString("target")
+	value := cc.GetString("value")
 
 	user := models.User{}
 	switch target {
@@ -111,8 +108,8 @@ func (rc *CommonController) UserExists() {
 	exist, err := dao.UserExists(user, target)
 	if err != nil {
 		log.Errorf("Error occurred in UserExists: %v", err)
-		rc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	rc.Data["json"] = exist
-	rc.ServeJSON()
+	cc.Data["json"] = exist
+	cc.ServeJSON()
 }

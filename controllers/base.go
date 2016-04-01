@@ -40,8 +40,9 @@ func (c *CommonController) Render() error {
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
-	SelfRegistration   bool
-	IsAdminLoginedUser bool
+	SelfRegistration bool
+	IsAdmin          bool
+	AuthMode         string
 }
 
 type langType struct {
@@ -97,17 +98,12 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	sessionUserID := b.GetSession("userId")
-	if sessionUserID != nil {
-		b.Data["Username"] = b.GetSession("username")
-		b.Data["UserId"] = sessionUserID.(int)
-	}
-
-	authMode := os.Getenv("AUTH_MODE")
+	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
 	if authMode == "" {
 		authMode = "db_auth"
 	}
-	b.Data["AuthMode"] = authMode
+	b.AuthMode = authMode
+	b.Data["AuthMode"] = b.AuthMode
 
 	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
 
@@ -115,16 +111,20 @@ func (b *BaseController) Prepare() {
 		b.SelfRegistration = true
 	}
 
+	sessionUserID := b.GetSession("userId")
 	if sessionUserID != nil {
+		b.Data["Username"] = b.GetSession("username")
+		b.Data["UserId"] = sessionUserID.(int)
+
 		var err error
-		b.IsAdminLoginedUser, err = dao.IsAdminRole(sessionUserID)
+		b.IsAdmin, err = dao.IsAdminRole(sessionUserID.(int))
 		if err != nil {
 			log.Errorf("Error occurred in IsAdminRole:%v", err)
 			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 	}
 
-	b.Data["IsAdminLoginedUser"] = b.IsAdminLoginedUser
+	b.Data["IsAdmin"] = b.IsAdmin
 	b.Data["SelfRegistration"] = b.SelfRegistration
 
 }

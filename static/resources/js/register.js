@@ -36,7 +36,7 @@ jQuery(function(){
             var confirmedPassword = $.trim($("#ConfirmedPassword").val());
             var realname = $.trim($("#Realname").val());
             var comment  = $.trim($("#Comment").val());
-            var isAdminLoginedUser = $("#isAdminLoginedUser").val();
+            var isAdmin = $("#isAdmin").val();
             
 			$.ajax({
 				url : '/signUp',
@@ -49,10 +49,10 @@ jQuery(function(){
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
 							.dialogModal({
-								"title":  isAdminLoginedUser == "true" ? i18n.getMessage("title_add_user") : i18n.getMessage("title_sign_up"), 
-								"content": isAdminLoginedUser == "true" ? i18n.getMessage("added_user_successfully") : i18n.getMessage("registered_successfully"),
+								"title":  isAdmin == "true" ? i18n.getMessage("title_add_user") : i18n.getMessage("title_sign_up"), 
+								"content": isAdmin == "true" ? i18n.getMessage("added_user_successfully") : i18n.getMessage("registered_successfully"),
 								"callback": function(){
-                                    if(isAdminLoginedUser == "true") {
+                                    if(isAdmin == "true") {
                                       document.location = "/registry/project"; 
                                     }else{	
                                       document.location = "/signIn";       
