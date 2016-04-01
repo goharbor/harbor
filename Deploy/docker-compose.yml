@@ -39,17 +39,11 @@ services:
     build: ../
     env_file:
       - ./config/ui/env
-    networks:
-      default:
-        aliases:
-          - ui
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
     depends_on:
       - log
-    links:
-      - mysql
     logging:
       driver: "syslog"
       options:  
