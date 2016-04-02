@@ -1,5 +1,7 @@
 MYSQL_HOST=mysql
+MYSQL_PORT=3306
 MYSQL_USR=root
+MYSQL_PWD=$db_password
 REGISTRY_URL=http://registry:5000
 CONFIG_PATH=/etc/ui/app.conf
 HARBOR_REG_URL=$hostname
