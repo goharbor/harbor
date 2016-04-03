@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  labels:
+    name: registry
+spec:
+  type: LoadBalancer
+  ports:
+    - name: internal
+      port: 5000
+    - name: external
+      port: 5001
+  selector:
+    name: registry

@@ -1,0 +1,11 @@
+MYSQL_HOST=mysql
+MYSQL_USR=root
+REGISTRY_URL=http://registry:5000
+CONFIG_PATH=/etc/ui/app.conf
+HARBOR_REG_URL=localhost
+HARBOR_ADMIN_PASSWORD=Harbor12345
+HARBOR_URL=http://localhost
+AUTH_MODE=db_auth
+LDAP_URL=ldaps://ldap.mydomain.com
+LDAP_BASE_DN=uid=%s,ou=people,dc=mydomain,dc=com
+LOG_LEVEL=debug
