@@ -63,14 +63,15 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 		authenticate := response.Header.Get("WWW-Authenticate")
 		log.Debugf("authenticate header: %s", authenticate)
 		var service string
-		var scope string
+		var scopes []string
+		//Disregard the case for hanlding multiple scopes for http call initiated from UI, as there's refactor planned.
 		re := regexp.MustCompile(`service=\"(.*?)\".*scope=\"(.*?)\"`)
 		res := re.FindStringSubmatch(authenticate)
 		if len(res) > 2 {
 			service = res[1]
-			scope = res[2]
+			scopes = append(scopes, res[2])
 		}
-		token, err := GenTokenForUI(username, service, scope)
+		token, err := GenTokenForUI(username, service, scopes)
 		if err != nil {
 			return nil, err
 		}

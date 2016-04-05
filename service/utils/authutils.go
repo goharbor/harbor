@@ -38,17 +38,19 @@ const (
 )
 
 // GetResourceActions ...
-func GetResourceActions(scope string) []*token.ResourceActions {
+func GetResourceActions(scopes []string) []*token.ResourceActions {
 	var res []*token.ResourceActions
-	if scope == "" {
-		return res
+	for _, s := range scopes {
+		if s == "" {
+			continue
+		}
+		items := strings.Split(s, ":")
+		res = append(res, &token.ResourceActions{
+			Type:    items[0],
+			Name:    items[1],
+			Actions: strings.Split(items[2], ","),
+		})
 	}
-	items := strings.Split(scope, ":")
-	res = append(res, &token.ResourceActions{
-		Type:    items[0],
-		Name:    items[1],
-		Actions: strings.Split(items[2], ","),
-	})
 	return res
 }
 
@@ -66,9 +68,12 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 		if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
 			projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
 			var permission string
-			var err error
 			if authenticated {
-				if username == "admin" {
+				isAdmin, err := dao.IsAdminRole(username)
+				if err != nil {
+					log.Errorf("Error occurred in IsAdminRole: %v")
+				}
+				if isAdmin {
 					exist, err := dao.ProjectExists(projectName)
 					if err != nil {
 						log.Errorf("Error occurred in CheckExistProject: %v", err)
@@ -100,8 +105,8 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 }
 
 // GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func GenTokenForUI(username, service, scope string) (string, error) {
-	access := GetResourceActions(scope)
+func GenTokenForUI(username string, service string, scopes []string) (string, error) {
+	access := GetResourceActions(scopes)
 	for _, a := range access {
 		FilterAccess(username, true, a)
 	}
