@@ -122,10 +122,19 @@ func (ra *RepositoryV3API) PostApps() {
 	}
 	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
 	var anwser map[string]string
-	err = json.Unmarshal(ra.Ctx.Input.RequestBody, &anwser)
+	log.Println("xxxxxxxx")
+	body := ra.Ctx.Request.Body
+	jsonRaw, err := ioutil.ReadAll(body)
+	if err != nil || repository != nil {
+		beego.Error("Failed to get repository from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+
+	err = json.Unmarshal(jsonRaw, &anwser)
 	if err != nil {
 		beego.Error("failed to unmarshal anwsers")
 		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal anwsers")
+		return
 	}
 	// create app from sry_compose and anwser entered
 	err = compose.EntryPoint(sry_compose, anwser, command.CommandCreate)
@@ -133,6 +142,7 @@ func (ra *RepositoryV3API) PostApps() {
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {
 		repositoryResponse = models.RepositoryResponse{Code: 1}
+		return
 	}
 
 	ra.Data["json"] = repositoryResponse

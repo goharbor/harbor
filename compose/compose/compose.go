@@ -1,18 +1,22 @@
 package compose
 
+import (
+	"gopkg.in/yaml.v2"
+)
+
 type SryCompose struct {
-	CatalogConfig      CatalogConfig `json: ".catalog" yaml: ".catalog"`
-	ApplicationsConfig []Application
-	Graph              ApplicationGraph
+	CatalogConfig *CatalogConfig
+	Applications  []*Application
+	Graph         *ApplicationGraph
 }
 
 type CatalogConfig struct {
-	Name              string `json: "name" yaml: "name"`
-	Version           string `json: "version" yaml: "version"`
-	Description       string `json: "description" yaml: "description"`
-	Uuid              string `json: "uuid" yaml: "uuid"`
-	MinimumSryVersion string `json: "minimum_sry_version" yaml: "minimum_sry_version"`
-	Questions         Questions
+	Uuid              string    `json: "uuid" yaml: "uuid"`
+	Name              string    `json: "name" yaml: "name"`
+	Version           string    `json: "version" yaml: "version"`
+	Description       string    `json: "description" yaml: "description"`
+	MinimumSryVersion string    `json: "minimum_sry_version" yaml: "minimum_sry_version"`
+	Questions         Questions `json: "questions" yaml: "questions"`
 }
 
 type Question struct {
@@ -32,9 +36,40 @@ type Answer struct {
 	Value string
 }
 
-func FromYaml(yamlString string) *SryCompose {
+func (sc *SryCompose) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var params struct {
+		CC CatalogConfig `json: "sry_catalog" yaml: "sry_catalog"`
+	}
+
+	if err := unmarshal(&params); err != nil {
+		return err
+	}
+
+	sc.CatalogConfig = params.CC
+
+	var apps map[string]*Application
+	if err := unmarshal(&apps); err != nil {
+		if _, ok := err.(*yaml.TypeError); !ok {
+			return err
+		}
+	}
+
+	//for k, v := range apps {
+	//v.Name = k
+	//sc.Applications = append(sc.Applications, v)
+	//}
+
+	return nil
+}
+
+func FromYaml(yamlString string) (*SryCompose, error) {
 	compose := &SryCompose{}
-	return compose
+	err := yaml.Unmarshal([]byte(yamlString), compose)
+	if err != nil {
+		return nil, err
+	}
+
+	return compose, nil
 }
 
 func FromJson(jsonString string) *SryCompose {

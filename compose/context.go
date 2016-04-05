@@ -1,9 +1,9 @@
 package compose
 
 import (
-	"github.com/vmware/harbor/compose/channel"
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/compose/compose"
+	"log"
 )
 
 type Context struct {
@@ -17,9 +17,20 @@ type Context struct {
 // should be **func main** in cli mode
 func EntryPoint(yaml string, anwsers map[string]string, command command.Command) error {
 	// default output/input channel now is OmegaAppOutput
+	compose, err := compose.FromYaml(yaml)
+	if err != nil {
+		return err
+	}
+
 	ctx := &Context{
-		Compose: compose.FromYaml(yaml),
+		Compose: compose,
 		Command: command,
+	}
+
+	log.Println(anwsers)
+	log.Println(ctx.Compose)
+	for _, v := range ctx.Compose.Applications {
+		log.Println(v.ToString())
 	}
 
 	return ctx.ApplyChange()
@@ -34,5 +45,7 @@ func (ctx *Context) SetInput(output *interface{}) {
 }
 
 func (ctx *Context) ApplyChange() error {
-	return ctx.Command(ctx.OutputChannel.(*channel.ChannelOutput), ctx.Compose)
+	log.Println("putsxxxxxxxx ApplyChange")
+	return nil
+	//return ctx.Command(ctx.OutputChannel.(*channel.ChannelOutput), ctx.Compose)
 }
