@@ -150,7 +150,7 @@ func (ua *UserAPI) Post() {
 	user := models.User{Username: req.UserName, Email: req.Email, Realname: req.Realname, Password: req.Password, Comment: req.Comment}
 	exist, err := dao.UserExists(user, "email")
 	if err != nil {
-		log.Errorf("Error occurred in UserExists:", err)
+		log.Errorf("Error occurred in UserExists: %v", err)
 	}
 	if exist {
 		ua.RenderError(http.StatusConflict, "")
@@ -159,7 +159,7 @@ func (ua *UserAPI) Post() {
 
 	userID, err := dao.Register(user)
 	if err != nil {
-		log.Errorf("Error occurred in Register:", err)
+		log.Errorf("Error occurred in Register: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Internal error.")
 		return
 	}
