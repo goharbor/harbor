@@ -27,7 +27,7 @@ notifications:
   endpoints:
       - name: harbor
         disabled: false
-        url: $ui_url/service/notifications
+        url: http://ui/service/notifications
         timeout: 500
         threshold: 5
         backoff: 1000
