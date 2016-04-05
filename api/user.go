@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	//	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
