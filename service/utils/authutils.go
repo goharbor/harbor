@@ -71,7 +71,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 			if authenticated {
 				isAdmin, err := dao.IsAdminRole(username)
 				if err != nil {
-					log.Errorf("Error occurred in IsAdminRole: %v")
+					log.Errorf("Error occurred in IsAdminRole: %v", err)
 				}
 				if isAdmin {
 					exist, err := dao.ProjectExists(projectName)
