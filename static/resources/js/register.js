@@ -56,7 +56,7 @@ jQuery(function(){
 							});
 					}
 				},
-				error:function(xhr, status, error){
+				error:function(jqxhr, status, error){
 					$("#dlgModal")
 							.dialogModal({
 								"title": i18n.getMessage("title_sign_up"), 
