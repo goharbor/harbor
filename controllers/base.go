@@ -16,12 +16,14 @@
 package controllers
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
-	"github.com/vmware/harbor/utils/log"
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /login /logout ...
@@ -38,6 +40,9 @@ func (c *CommonController) Render() error {
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
+	SelfRegistration bool
+	IsAdmin          bool
+	AuthMode         string
 }
 
 type langType struct {
@@ -93,15 +98,35 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	sessionUserID := b.GetSession("userId")
-	if sessionUserID != nil {
-		b.Data["Username"] = b.GetSession("username")
-	}
-	authMode := os.Getenv("AUTH_MODE")
+	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
 	if authMode == "" {
 		authMode = "db_auth"
 	}
-	b.Data["AuthMode"] = authMode
+	b.AuthMode = authMode
+	b.Data["AuthMode"] = b.AuthMode
+
+	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+
+	if selfRegistration == "on" {
+		b.SelfRegistration = true
+	}
+
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID != nil {
+		b.Data["Username"] = b.GetSession("username")
+		b.Data["UserId"] = sessionUserID.(int)
+
+		var err error
+		b.IsAdmin, err = dao.IsAdminRole(sessionUserID.(int))
+		if err != nil {
+			log.Errorf("Error occurred in IsAdminRole:%v", err)
+			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+	}
+
+	b.Data["IsAdmin"] = b.IsAdmin
+	b.Data["SelfRegistration"] = b.SelfRegistration
+
 }
 
 // ForwardTo setup layout and template for content for a page.
