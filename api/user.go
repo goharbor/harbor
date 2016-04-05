@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
+	//	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -31,6 +31,14 @@ type UserAPI struct {
 	BaseAPI
 	currentUserID int
 	userID        int
+}
+
+type userReq struct {
+	UserName string `json:"username"`
+	Password string `json:"password"`
+	Realname string `json:"realname"`
+	Email    string `json:"email"`
+	Comment  string `json:"comment"`
 }
 
 const userNameMaxLen int = 20
@@ -130,20 +138,17 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 
 // Post ...
 func (ua *UserAPI) Post() {
-	username := strings.TrimSpace(ua.GetString("username"))
-	password := strings.TrimSpace(ua.GetString("password"))
-	email := strings.TrimSpace(ua.GetString("email"))
-	realname := strings.TrimSpace(ua.GetString("realname"))
-	comment := strings.TrimSpace(ua.GetString("comment"))
+	var req userReq
+	ua.DecodeJSONReq(&req)
 
-	err := validateUserReq(ua)
+	err := validateUserReq(req)
 	if err != nil {
 		log.Errorf("Invalid user request, error: %v", err)
 		ua.RenderError(http.StatusBadRequest, "Invalid request for creating user")
 		return
 	}
 
-	user := models.User{Username: username, Email: email, Realname: realname, Password: password, Comment: comment}
+	user := models.User{Username: req.UserName, Email: req.Email, Realname: req.Realname, Password: req.Password, Comment: req.Comment}
 	exist, err := dao.UserExists(user, "email")
 	if err != nil {
 		log.Errorf("Error occurred in UserExists:", err)
@@ -186,8 +191,8 @@ func (ua *UserAPI) Delete() {
 	}
 }
 
-func validateUserReq(ua *UserAPI) error {
-	userName := ua.GetString("username")
+func validateUserReq(req userReq) error {
+	userName := req.UserName
 	if len(userName) == 0 {
 		return fmt.Errorf("User name can not be empty")
 	}
@@ -195,7 +200,7 @@ func validateUserReq(ua *UserAPI) error {
 		return fmt.Errorf("User name is too long")
 	}
 
-	password := ua.GetString("password")
+	password := req.Password
 	if len(password) == 0 {
 		return fmt.Errorf("Password can not be empty")
 	}
@@ -203,7 +208,7 @@ func validateUserReq(ua *UserAPI) error {
 		return fmt.Errorf("Password can is too long")
 	}
 
-	realName := ua.GetString("realname")
+	realName := req.Realname
 	if len(realName) == 0 {
 		return fmt.Errorf("Real name can not be empty")
 	}
@@ -211,16 +216,10 @@ func validateUserReq(ua *UserAPI) error {
 		return fmt.Errorf("Real name is too long")
 	}
 
-	email := ua.GetString("email")
+	email := req.Email
 	if len(email) == 0 {
 		return fmt.Errorf("Email can not be empty")
 	}
 
-	comments := ua.GetString("comment")
-	if len(comments) != 0 {
-		if len(comments) >= commentsMaxLen {
-			return fmt.Errorf("Comments is too long")
-		}
-	}
 	return nil
 }

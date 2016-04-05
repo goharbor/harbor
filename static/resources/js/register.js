@@ -38,8 +38,9 @@ jQuery(function(){
 			var comment  = $.trim($("#Comment").val());
 			$.ajax({
 				url : "/api/users",
-				data:{username: username, password: password, realname: realname, comment: comment, email: email},
+				data: JSON.stringify({username: username, password: password, realname: realname, comment: comment, email: email}),
 				type: "POST",
+				contentType: "application/json; charset=UTF-8",
 				beforeSend: function(e){
 					$("#btnPageSignUp").prop("disabled", true);
 				},
@@ -55,7 +56,7 @@ jQuery(function(){
 							});
 					}
 				},
-				error:function(jqxhr, status, error){
+				error:function(xhr, status, error){
 					$("#dlgModal")
 							.dialogModal({
 								"title": i18n.getMessage("title_sign_up"), 
