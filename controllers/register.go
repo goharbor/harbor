@@ -34,7 +34,7 @@ type RegisterController struct {
 func (rc *RegisterController) Get() {
 
 	if !rc.SelfRegistration {
-		log.Error("Registration is disabled when self-registration is off.\n")
+		log.Warning("Registration is disabled when self-registration is off.")
 		rc.Redirect("/signIn", http.StatusFound)
 	}
 
@@ -54,7 +54,7 @@ type AddUserController struct {
 func (ac *AddUserController) Get() {
 
 	if !ac.IsAdmin {
-		log.Error("Add user can only be used by admin role user.\n")
+		log.Warning("Add user can only be used by admin role user.")
 		ac.Redirect("/signIn", http.StatusFound)
 	}
 
@@ -73,7 +73,7 @@ func (cc *CommonController) SignUp() {
 	}
 
 	if !(cc.SelfRegistration || cc.IsAdmin) {
-		log.Error("Registration can only be used by admin role user when self-registration is off.\n")
+		log.Warning("Registration can only be used by admin role user when self-registration is off.")
 		cc.CustomAbort(http.StatusForbidden, "")
 	}
 
