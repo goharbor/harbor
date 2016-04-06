@@ -16,7 +16,11 @@
 	<div class="col-sm-4"></div>
 	<div class="col-sm-4">
 		<div class="page-header">
+				{{ if eq .IsAdmin true }}
+				<h1>{{i18n .Lang "add_user" }}</h1>
+				{{ else }}
 				<h1>{{i18n .Lang "registration"}}</h1>
+				{{ end }}
 		</div>
 		<form class="form">
 		  <div class="alert alert-danger" role="alert" id="divErrMsg"></div>
@@ -62,7 +66,13 @@
 		  </div>
 		  <div class="form-group has-feedback">
 		    <div class="text-center">
-		      <button type="button" class="btn btn-default" id="btnPageSignUp">{{i18n .Lang "sign_up"}}</button>
+		      <button type="button" class="btn btn-default" id="btnPageSignUp">
+				{{ if eq .IsAdmin true }}
+			        {{i18n .Lang "add_user" }}
+			    {{ else }} 
+					{{i18n .Lang "sign_up"}}
+				{{ end }}
+			  </button>
 		    </div>
 		  </div>
 		</form>

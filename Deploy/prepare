@@ -25,6 +25,7 @@ auth_mode = cp.get("configuration", "auth_mode")
 ldap_url = cp.get("configuration", "ldap_url")
 ldap_basedn = cp.get("configuration", "ldap_basedn")
 db_password = cp.get("configuration", "db_password")
+self_registration = cp.get("configuration", "self_registration")
 ########
 
 base_dir = os.path.dirname(__file__) 
@@ -60,11 +61,13 @@ for f in conf_files:
 render(os.path.join(templates_dir, "ui", "env"),
         ui_conf_env,
         hostname=hostname,
+        db_password=db_password,
         ui_url=ui_url,
         auth_mode=auth_mode,
         admin_pwd=harbor_admin_password,
         ldap_url=ldap_url,
-        ldap_basedn=ldap_basedn)
+        ldap_basedn=ldap_basedn,
+	self_registration=self_registration)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,

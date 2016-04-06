@@ -7,9 +7,9 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - name: bbb
+    - name: http
       port: 80
-    - name: aaa
+    - name: https
       port: 443
   selector:
     name: proxy
