@@ -1,16 +1,17 @@
 package compose
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 )
 
 type SryCompose struct {
-	CatalogConfig *CatalogConfig
-	Applications  []*Application
-	Graph         *ApplicationGraph
+	Catalog      Catalog
+	Applications []Application
+	Graph        ApplicationGraph
 }
 
-type CatalogConfig struct {
+type Catalog struct {
 	Uuid              string    `json: "uuid" yaml: "uuid"`
 	Name              string    `json: "name" yaml: "name"`
 	Version           string    `json: "version" yaml: "version"`
@@ -37,29 +38,44 @@ type Answer struct {
 }
 
 func (sc *SryCompose) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// catalog
 	var params struct {
-		CC CatalogConfig `json: "sry_catalog" yaml: "sry_catalog"`
+		Catalog Catalog `yaml: "catalog"`
 	}
-
 	if err := unmarshal(&params); err != nil {
 		return err
 	}
+	sc.Catalog = params.Catalog
 
-	sc.CatalogConfig = params.CC
-
-	var apps map[string]*Application
+	// applications
+	var apps map[string]Application
 	if err := unmarshal(&apps); err != nil {
 		if _, ok := err.(*yaml.TypeError); !ok {
 			return err
 		}
 	}
-
-	//for k, v := range apps {
-	//v.Name = k
-	//sc.Applications = append(sc.Applications, v)
-	//}
+	for k, v := range apps {
+		if k == "catalog" { // bypass yaml key catalog
+			continue
+		}
+		v.Name = k
+		v.Defaultlize()
+		sc.Applications = append(sc.Applications, v)
+	}
 
 	return nil
+}
+
+func (c *Catalog) ToString() string {
+	catalog := ""
+	catalog += fmt.Sprintf("\n")
+	catalog += fmt.Sprintf("Name: %-30s\n", c.Name)
+	catalog += fmt.Sprintf("Uuid: %-30s\n", c.Uuid)
+	catalog += fmt.Sprintf("Version: %-30s\n", c.Version)
+	catalog += fmt.Sprintf("Description: %-30s\n", c.Description)
+	catalog += fmt.Sprintf("MinimumSryVersion: %-30s\n", c.MinimumSryVersion)
+
+	return catalog
 }
 
 func FromYaml(yamlString string) (*SryCompose, error) {

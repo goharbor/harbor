@@ -27,10 +27,11 @@ func EntryPoint(yaml string, anwsers map[string]string, command command.Command)
 		Command: command,
 	}
 
-	log.Println(anwsers)
-	log.Println(ctx.Compose)
+	log.Println(compose.Catalog.ToString())
+	log.Println()
 	for _, v := range ctx.Compose.Applications {
 		log.Println(v.ToString())
+		log.Println()
 	}
 
 	return ctx.ApplyChange()

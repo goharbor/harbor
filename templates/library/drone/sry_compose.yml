@@ -1,5 +1,4 @@
-begin: true
-sry_catalog:
+catalog:
   name: "DataDog"
   version: "11.0.570-rancher1"
   description: "Real-time performance tracking and visualization of your container-based application deployment"
@@ -41,3 +40,37 @@ sry_catalog:
         that 'metric.name' will become 'namespace.metric.name'.
       required: false
       type: "string"
+datadog-init:
+  image: janeczku/datadog-rancher-init:latest
+  net: none
+  cpu: 0.2
+  mem: 2
+  command: /bin/true
+  volumes:
+    - /opt/rancher
+  labels:
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.pull_image: always
+datadog-agent:
+  image: datadog/docker-dd-agent:11.0.570
+  entrypoint: /opt/rancher/entrypoint.sh
+  command:
+    - supervisord
+    - -n
+    - -c
+    - /etc/dd-agent/supervisor.conf
+  restart: always
+  environment:
+    API_KEY: ${api_key}
+    DOGSTATSD_ONLY: "${statsd_standalone}"
+    STATSD_METRIC_NAMESPACE: ${statsd_namespace}
+    HOST_LABELS: ${host_labels}
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /proc/:/host/proc/:ro
+    - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+  volumes_from:
+    - datadog-init
+  labels:
+    io.rancher.scheduler.global: "${global_service}"
+    io.rancher.sidekicks: 'datadog-init'
