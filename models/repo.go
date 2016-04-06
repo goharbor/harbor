@@ -58,7 +58,7 @@ type Repository struct {
 	ProjectID   int64     `orm:"column(project_id)" json:"projectId"`
 	UserName    string    `json:"userName"`
 	Category    string    `json:"category"`
-	IsPublic    bool      `json:"isPublic"`
+	IsPublic    int64     `json:"isPublic"`
 	LatestTag   string    `json:"latestTag"`
 	Description string    `json:"description"`
 	MarkDown    string    `json:"markdown"`

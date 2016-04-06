@@ -69,6 +69,20 @@ func AddRepository(repository *models.Repository) (*models.Repository, error) {
 	return repository, nil
 }
 
+func UpdateRepoInfo(repository *models.Repository) (*models.Repository, error) {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("UPDATE repository SET description =?, is_public=? , category = ? WHERE name=? AND project_name=?").Prepare()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.Exec(repository.Description, repository.IsPublic, repository.Category, repository.Name, repository.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+	return repository, nil
+}
 func UpdateRepository(repository *models.Repository) (*models.Repository, error) {
 	o := orm.NewOrm()
 

@@ -17,7 +17,6 @@ package api
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -36,6 +35,8 @@ import (
 const (
 	SryunUserNamePri = "sryci"
 	RepoInfoDir      = "templates"
+	ComposeJsonFile  = "sry_compose.json"
+	ComposeYamlFile  = "sry_compose.yml"
 )
 
 type RepositoryV3API struct {
@@ -94,9 +95,11 @@ func (ra *RepositoryV3API) GetRepository() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 	}
 	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
+	sry_compose, _ := GetCompose(ra.project_name, ra.repository_name)
 	log.Println("markdown: ", markDown)
+	log.Println("compose: ", sry_compose)
 	repository.MarkDown = markDown
-
+	repository.SryCompose = sry_compose
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
@@ -154,30 +157,32 @@ func (ra *RepositoryV3API) UpdateRepository() {
 		ra.RenderError(http.StatusBadRequest, "Project name or repositoryName is black")
 	}
 	var repo models.Repository
-	err := json.Unmarshal(ra.Ctx.Input.RequestBody, &repo)
-	if err != nil {
-		beego.Error("Failed to request body conver to json err: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to request body conver to json")
-	}
-	if repo.Category == "" {
-		beego.Error("Failed to request can't be empty")
-		ra.RenderError(http.StatusInternalServerError, "Failed to request cat't be empty")
-	}
+	fmt.Println(string(ra.Ctx.Input.CopyBody(1 << 32)))
+	ra.DecodeJSONReq(&repo)
+	//if repo.Category == "" {
+	//	beego.Error("Failed to request can't be empty")
+	//	ra.RenderError(http.StatusInternalServerError, "Failed to request cat't be empty")
+	//}
 	repository, _ := dao.RepositoryExists(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
-	if repository != nil {
-		beego.Error("Failed to get repository, project name: ", ra.project_name, ", error: ", err)
+	if repository == nil {
+		beego.Error("Failed to get repository, project name: ", ra.project_name)
 		ra.RenderError(http.StatusNotFound, "Failed to get repository")
 	}
-	repository.Category = repo.Category
-	repository.Description = repo.Description
-	repository.IsPublic = repo.IsPublic
-	repository, err = dao.UpdateRepository(repository)
+	if repo.Category != "" {
+		repository.Category = repo.Category
+	}
+	if repo.Description != "" {
+		repository.Description = repo.Description
+	}
+	if repo.IsPublic != 0 {
+		repository.IsPublic = repo.IsPublic
+	}
+	repository, err := dao.UpdateRepoInfo(repository)
 	if err != nil {
 		beego.Error("Failed to update repository error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to update repository")
 	}
-	jstr, _ := json.Marshal(repository)
-	ra.Data["json"] = jstr
+	ra.Data["json"] = repository
 	ra.ServeJSON()
 }
 
@@ -210,7 +215,20 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b64 := base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+	b64 := GetBaseEncoding()
 	repoMarkdown := b64.EncodeToString(b)
 	return repoMarkdown, nil
+}
+
+func GetCompose(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
+	fmt.Println(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func GetBaseEncoding() *base64.Encoding {
+	return base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 }
