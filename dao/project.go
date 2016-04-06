@@ -66,6 +66,34 @@ func AddProject(project models.Project) error {
 	return err
 }
 
+// DeleteProject
+func DeleteProject(projectID int64) error {
+
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		log.Errorf("Error happened checking project %d existence in db: %v", projectID, err)
+		return err
+	}
+	if project == nil {
+		log.Errorf("Project does not exist in db, project ID: %d", projectID)
+		return nil
+	}
+
+	err = DeleteProjectMember(project.ProjectID, project.OwnerID)
+	if err != nil {
+		return err
+	}
+
+	o := orm.NewOrm()
+	sql := `update project set deleted = 1 where project_id = ?`
+	p, err := o.Raw(sql).Prepare()
+	if err != nil {
+		return err
+	}
+	_, err = p.Exec(project.ProjectID)
+	return err
+}
+
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)

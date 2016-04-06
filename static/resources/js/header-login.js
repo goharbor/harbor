@@ -15,6 +15,7 @@
 jQuery(function(){
     $("#btnSignUp").css({"visibility": "visible"});
 	
+    /*
 	$(document).on("keydown", function(e){
 		if(e.keyCode == 13){
 			e.preventDefault();
@@ -23,10 +24,13 @@ jQuery(function(){
 			}
 		}
 	});
+    */
+        keydownNS.bindEnterKey();
+
 	$("#btnSignIn").on("click", function(){
 		document.location = "/signIn";
 	});
-    $("#btnSignUp").on("click", function(){
+    	$("#btnSignUp").on("click", function(){
 		document.location = "/register";
 	});	
 });

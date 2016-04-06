@@ -14,22 +14,31 @@
 */
 jQuery(function(){
 	
-	$(document).on("keydown", function(e){
+//	$(document).on("keydown", function(e){
+	$("#txtCommonSearch").on("keydown", function(e){
 		if(e.keyCode == 13){
 			e.preventDefault();
 			if($("#txtCommonSearch").is(":focus")){
-				search($("#txtCommonSearch").val());
+				$("#spanCommonSearch").trigger("click");
+//				search($("#txtCommonSearch").val());
 			}
 		}
 	});
-	
+
+	$("#spanCommonSearch").on("click", function(){
+		keydownNS.searchDone = true;
+		search($("#txtCommonSearch").val());
+	});
+
 	var queryParam = $("#queryParam").val();
 	$("#txtCommonSearch").val(queryParam);
 	
-	search(queryParam);
+	if(typeof queryParam !== "undefined"){
+		search(queryParam);
+	}
 
 	function search(keyword){
-		keyword = $.trim(keyword)
+		keyword = $.trim(keyword);
 		if(keyword.length > 0){
 			$.ajax({
 				url: "/api/search",
@@ -45,7 +54,7 @@ jQuery(function(){
 						render($("#panelCommonSearchRepositoriesBody"), data.repository, "repository");
 					}
 				}
-			});
+			})
 		}
 	}	
 
@@ -53,7 +62,7 @@ jQuery(function(){
 		this.id = id;
 		this.name = name;
 		this.public = public;
-	}
+	};
 	
 	function render(element, data, discriminator){
 		$(element).children().remove();
@@ -72,7 +81,7 @@ jQuery(function(){
 				break;
 			} 		
 			if(project){
-				$(element).append('<div><a href="/registry/detail?project_id=' + project.id + (repoName != "" ? '&repo_name=' + repoName : "") + '">' + description + '</a></div>');
+				$(element).append('<div><a href="/registry/detail?project_id=' + project.id + (repoName != "" ? '&repo_name=' + repoName : "") + '">' + description + ' (' + (project.public == 1 ? 'public' : 'private') + ')</a></div>');
 			}			
 		});
 	}

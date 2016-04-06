@@ -17,6 +17,8 @@ jQuery(function(){
 	
 	$("#Password,#ConfirmedPassword").on("blur", validateCallback);
 	validateOptions.Items = ["#Password", "#ConfirmedPassword"];
+
+	/*
     function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
@@ -29,7 +31,8 @@ jQuery(function(){
 		$(document).off("keydown");
 	}
 	bindEnterKey();
-	
+	*/
+	keydownNS.bindEnterKey();
 	
 	var spinner = new Spinner({scale:1}).spin();
 	
@@ -42,7 +45,7 @@ jQuery(function(){
 				"type": "post",
 				"data": {"reset_uuid": resetUuid, "password": password},
 				"beforeSend": function(e){
-				   unbindEnterKey();
+				   keydownNS.unbindEnterKey();
 				   $("h1").append(spinner.el);
 				   $("#btnSubmit").prop("disabled", true);	
 				},
@@ -70,7 +73,7 @@ jQuery(function(){
 								"title": i18n.getMessage("title_reset_password"), 
 								"content": i18n.getMessage(jqXhr.responseText),
 							    "callback": function(){ 
-									bindEnterKey();
+									keydownNS.bindEnterKey();
 									return;
 								}
 							});

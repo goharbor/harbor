@@ -38,16 +38,16 @@ type searchResult struct {
 }
 
 // Get ...
-func (n *SearchAPI) Get() {
-	userID, ok := n.GetSession("userId").(int)
+func (sa *SearchAPI) Get() {
+	userID, ok := sa.GetSession("userId").(int)
 	if !ok {
 		userID = dao.NonExistUserID
 	}
-	keyword := n.GetString("q")
+	keyword := sa.GetString("q")
 	projects, err := dao.QueryRelevantProjects(userID)
 	if err != nil {
 		log.Errorf("Failed to get projects of user id: %d, error: %v", userID, err)
-		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
+		sa.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
 	}
 	projectSorter := &utils.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
@@ -69,13 +69,13 @@ func (n *SearchAPI) Get() {
 	repositories, err2 := svc_utils.GetRepoFromCache()
 	if err2 != nil {
 		log.Errorf("Failed to get repos from cache, error: %v", err2)
-		n.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
+		sa.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
 	result := &searchResult{Project: projectResult, Repository: repositoryResult}
-	n.Data["json"] = result
-	n.ServeJSON()
+	sa.Data["json"] = result
+	sa.ServeJSON()
 }
 
 func filterRepositories(repositories []string, projects []models.Project, keyword string) []map[string]interface{} {

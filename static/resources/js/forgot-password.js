@@ -17,6 +17,7 @@ jQuery(function(){
 	$("#divErrMsg").css({"display": "none"});
 	
 	validateOptions.Items = ["#EmailF"];
+/*
 	function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
@@ -33,6 +34,8 @@ jQuery(function(){
 		$(document).off("keydown");
 	}
     bindEnterKey();
+    */
+	keydownNS.bindEnterKey();
 	var spinner = new Spinner({scale:1}).spin();
 
 	$("#btnSubmit").on("click", function(){
@@ -44,7 +47,7 @@ jQuery(function(){
 				"type": "get",
 				"data": {"username": username, "email": email},
 				"beforeSend": function(e){
-				   unbindEnterKey();
+				   keydownNS.unbindEnterKey();
 				   $("h1").append(spinner.el);
 				   $("#btnSubmit").prop("disabled", true);	
 				},
@@ -72,7 +75,7 @@ jQuery(function(){
 								"title": i18n.getMessage("title_forgot_password"), 
 								"content": i18n.getMessage(jqXhr.responseText), 
 								"callback": function(){
-									bindEnterKey();
+									keydownNS.bindEnterKey();
 									return;
 								}
 							});	

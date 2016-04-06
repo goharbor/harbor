@@ -63,6 +63,40 @@ func (p *ProjectAPI) Prepare() {
 	}
 }
 
+// Delete
+func (p *ProjectAPI) Delete() {
+	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing project id: %d, error: %v", projectID, err)
+		p.RenderError(http.StatusBadRequest, "invalid project id")
+		return
+	}
+
+	if !isProjectAdmin(p.userID, projectID) {
+		log.Warningf("Current user, id: %d does not have project admin role for project, id: %d", p.userID, projectID)
+		p.RenderError(http.StatusForbidden, "Current user does not have project admin role")
+		return
+	}
+
+	project, err := dao.GetProjectByID(projectID)
+	if err != nil {
+		log.Errorf("Error happened checking project existence in db: %v, project ID: %d", err, projectID)
+		return
+	}
+	if project == nil {
+		log.Errorf("Project does not exist in db, project ID: %d", projectID)
+		p.RenderError(http.StatusConflict, "")
+		return
+	}
+
+	err = dao.DeleteProject(projectID)
+	if err != nil {
+		log.Errorf("Failed to delete project, error: %v", err)
+		p.RenderError(http.StatusInternalServerError, "Failed to delete project")
+		return
+	}
+}
+
 // Post ...
 func (p *ProjectAPI) Post() {
 	var req projectReq

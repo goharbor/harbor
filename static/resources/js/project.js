@@ -65,17 +65,22 @@ jQuery(function(){
 		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_off")+ '</button></td>';
 		                  } else if (e.Public == 0) {
 		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
-		                      row += '</tr>';
 		                  }
+				  if(e.Togglable){
+	   			      row += '<td style="padding-left: 30px; vertical-align: middle;"><a href="#" style="visibility: hidden;" class="tdDeleteProject" projectid="' + e.ProjectId + '"><span class="glyphicon glyphicon-trash"></span></a></td>';
+				  } else{
+				      row += '<td style="padding-left: 30px; vertical-align: middle;"></td>';
+				  }
+				  row += '</tr>';
 		                  $("#tblProject tbody").append(row);
 		              });
 		          }
 			}).exec())
 			.done(function() {
-                $("#tblProject tbody tr :button").on("click", function(){
-                    var projectId = $(this).attr("projectid");
-                    var self = this;
-					 new AjaxUtil({
+                               $("#tblProject tbody tr :button").on("click", function(){
+                                  var projectId = $(this).attr("projectid");
+                                  var self = this;
+				  new AjaxUtil({
 					   url: "/api/projects/" + projectId, 
 					   data: {"public": ($(self).hasClass("btn-success") ? false : true)},
 					   type: "put",
@@ -89,8 +94,29 @@ jQuery(function(){
 							}
 						}
 					 }).exec();
-                });
-            });
+                                });
+
+				$("#tblProject tbody tr").on("mouseover", function(){
+					$(".tdDeleteProject", this).css({"visibility":"visible"});
+				}).on("mouseout", function(){
+					$(".tdDeleteProject", this).css({"visibility":"hidden"});
+				});
+
+				$("#tblProject tbody tr .tdDeleteProject").on("click", function(){
+					var projectId = $(this).attr("projectid");
+		                        var self = this;
+                		        new AjaxUtil({
+	                       		  url: "/api/projects/" + projectId,
+				          type: "delete",
+					  complete: function(jqXhr, status){
+						if(jqXhr && jqXhr.status == 200){
+							$("#btnSearch").trigger("click");
+						}
+					  },
+	  				  error: function(jqXhr){}
+				        }).exec();
+				});
+                        });
 		}	
 		listProject(null, 0);
 		var currentPublic = 0;
@@ -139,6 +165,7 @@ jQuery(function(){
 			});
 		});
 		
+
 		$("#btnSearch").on("click", function(){
 			var projectName = $("#txtSearchProject").val();
 			if($.trim(projectName).length == 0){
@@ -222,7 +249,7 @@ jQuery(function(){
 				});
 			});
 		}
-	    listUserAdminRole(null);
+	        listUserAdminRole(null);
 		$("#btnSearchUsername").on("click", function(){
 			var username = $("#txtSearchUsername").val();
 			if($.trim(username).length == 0){
