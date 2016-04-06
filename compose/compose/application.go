@@ -3,6 +3,7 @@ package compose
 import (
 	"fmt"
 	"github.com/vmware/harbor/utils"
+	"strings"
 )
 
 const (
@@ -12,21 +13,21 @@ const (
 )
 
 type Application struct {
-	IsPrimary   bool          // application depends on other applications
-	MeetCritia  bool          // application running now meet critia specified by compose file
-	Name        string        `json: "name" yaml: "name"`
-	Image       string        `json: "image" yaml: "image"`
-	Cmd         string        `json: "cmd" yaml: "cmd"`
-	EntryPoint  string        `json: "entrypoint" yaml: "entrypoint"`
-	Cpu         float32       `json: "cpu" yaml: "cpu"`
-	Mem         float32       `json: "mem" yaml: "mem"`
-	Environment []Environment `json: "environment" yaml: "environment"`
-	Labels      []*Label      `json: "labels" yaml: "labels"`
-	Volume      []*Volume     `json: "volumes" yaml: "volumes"`
-	Expose      []int         `json: "expose" yaml: "expose"`
-	Port        []*Port       `json: "ports" yaml: "ports"`
-	Net         string        `json: "net" yaml: "net"`
-	Restart     string        `json: "restart" yaml: "restart"`
+	IsPrimary   bool        // application depends on other applications
+	MeetCritia  bool        // application running now meet critia specified by compose file
+	Name        string      `json: "name" yaml: "name"`
+	Image       string      `json: "image" yaml: "image"`
+	Command     interface{} `json: "command" yaml: "command"`
+	EntryPoint  string      `json: "entrypoint" yaml: "entrypoint"`
+	Cpu         float32     `json: "cpu" yaml: "cpu"`
+	Mem         float32     `json: "mem" yaml: "mem"`
+	Environment Environment `json: "environment" yaml: "environment"`
+	Labels      Labels      `json: "labels" yaml: "labels"`
+	Volumes     []Volume    `json: "volumes" yaml: "volumes"`
+	Expose      []int       `json: "expose" yaml: "expose"`
+	Port        []Port      `json: "ports" yaml: "ports"`
+	Net         string      `json: "net" yaml: "net"`
+	Restart     string      `json: "restart" yaml: "restart"`
 
 	Dependencies []*Application
 }
@@ -50,7 +51,18 @@ func (app *Application) ToString() string {
 	appBasic = "\n"
 	appBasic += fmt.Sprintf("Name: %-30s\n", app.Name)
 	appBasic += fmt.Sprintf("Image: %-30s\n", app.Image)
-	appBasic += fmt.Sprintf("Cmd: %-30s\n", app.Cmd)
+	fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxx")
+	fmt.Println(app.Command)
+	switch app.Command.(type) {
+	case string:
+		appBasic += fmt.Sprintf("Command: %-30s\n", app.Command.(string))
+	default:
+		cmds := []string{}
+		for _, v := range app.Command.([]interface{}) {
+			cmds = append(cmds, v.(string))
+		}
+		appBasic += fmt.Sprintf("Command: %-30s\n", strings.Join(cmds, " "))
+	}
 	appBasic += fmt.Sprintf("EntryPoint: %-30s\n", app.EntryPoint)
 	appBasic += fmt.Sprintf("Cpu: %-30f\n", app.Cpu)
 	appBasic += fmt.Sprintf("Mem: %-30f\n", app.Mem)
@@ -58,17 +70,13 @@ func (app *Application) ToString() string {
 	appBasic += fmt.Sprintf("Restart: %-30s\n", app.Restart)
 
 	appBasic += "ENVS: \n\n"
-	for _, v := range app.Environment {
-		appBasic += fmt.Sprintf("%s\n", v.ToString())
-	}
+	appBasic += app.Environment.ToString()
 
 	appBasic += "Labels: \n\n"
-	for _, v := range app.Labels {
-		appBasic += fmt.Sprintf("%s\n", v.ToString())
-	}
+	appBasic += app.Labels.ToString()
 
 	appBasic += "Volumes: \n\n"
-	for _, v := range app.Volume {
+	for _, v := range app.Volumes {
 		appBasic += fmt.Sprintf("%s\n", v.ToString())
 	}
 

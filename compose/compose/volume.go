@@ -19,7 +19,7 @@ func (v *Volume) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 	}
-	splited := strings.Split(pair, ":")[0]
+	splited := strings.Split(pair, ":")
 	if len(splited) == 1 {
 		v.Container = string(splited[0])
 		v.Host = string(splited[0])
@@ -37,5 +37,5 @@ func (v *Volume) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (v *Volume) ToString() string {
-	return fmt.Sprintf("Host %s\nContainer %s\n Permission %s\n", v.Host, v.Container, v.Permission)
+	return fmt.Sprintf(" Host: %-30s\n Container: %-30s\n Permission: %s\n", v.Host, v.Container, v.Permission)
 }
