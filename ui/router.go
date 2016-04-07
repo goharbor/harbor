@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package routers
+package main
 
 import (
 	"github.com/vmware/harbor/api"
@@ -23,11 +23,11 @@ import (
 	"github.com/astaxie/beego"
 )
 
-func init() {
+func initRouters() {
 
-	beego.SetStaticPath("registry/static/i18n", "static/i18n")
-	beego.SetStaticPath("registry/static/resources", "static/resources")
-	beego.SetStaticPath("registry/static/vendors", "static/vendors")
+	beego.SetStaticPath("registry/static/i18n", "/static/i18n")
+	beego.SetStaticPath("registry/static/resources", "/static/resources")
+	beego.SetStaticPath("registry/static/vendors", "/static/vendors")
 
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/logout", &controllers.CommonController{}, "get:Logout")
