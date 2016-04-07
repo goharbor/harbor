@@ -20,7 +20,7 @@ you can call it prvtkey.pem or other names you like.
     openssl req -new -x509 -key prvtkey.pem -out cacert.pem -days 1095
 ```    
    
-    prvtkey.pem is what you generated in the first step, if you change the name, you should change it in the command. Also you can name cacert.pem what you like.
+prvtkey.pem is what you generated in the first step, if you change the name, you should change it in the command. Also you can name cacert.pem what you like.
 
 3.Clone harbor to your local position. Then open Deploy, and edit the harbor.cfg, make necessary configuration changes such as hostname, admin password and mail server. Refer to Installation Guide for more info. then execute ./prepare . Here, harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
 
