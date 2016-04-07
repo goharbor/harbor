@@ -9,7 +9,7 @@ import (
 
 var (
 	INTERPOLATION_PATTERN_0 = regexp.MustCompile(`\$\{[\w|_|-]+\}`)
-	INTERPOLATION_PATTERN_1 = regexp.MustCompile(`\$[\w|_|-]+`)
+	INTERPOLATION_PATTERN_1 = regexp.MustCompile(`\$[\w|_]+`)
 )
 
 func init() {

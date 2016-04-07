@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	DEFAULT_CPU = 0.2
-	DEFAULT_MEM = 2
-	DEFAULT_NET = "bridge"
+	DEFAULT_CPU       = 0.2
+	DEFAULT_MEM       = 2
+	DEFAULT_INSTANCES = 2
+	DEFAULT_NET       = "bridge"
 )
 
 type Application struct {
@@ -21,6 +22,7 @@ type Application struct {
 	EntryPoint  string      `json: "entrypoint" yaml: "entrypoint"`
 	Cpu         float32     `json: "cpu" yaml: "cpu"`
 	Mem         float32     `json: "mem" yaml: "mem"`
+	Instances   int32       `json: "instances" yaml: "instances"`
 	Environment Environment `json: "environment" yaml: "environment"`
 	Labels      Labels      `json: "labels" yaml: "labels"`
 	Volumes     []*Volume   `json: "volumes" yaml: "volumes"`
@@ -28,6 +30,7 @@ type Application struct {
 	Port        []*Port     `json: "ports" yaml: "ports"`
 	Net         string      `json: "net" yaml: "net"`
 	Restart     string      `json: "restart" yaml: "restart"`
+	LogPaths    []string    `json: "log_paths" yaml: "log_paths"`
 
 	Dependencies []*Application
 }
@@ -44,6 +47,10 @@ func (self *Application) Defaultlize() {
 	if self.Net == "" {
 		self.Net = DEFAULT_NET
 	}
+
+	if self.Instances == 0 {
+		self.Instances = DEFAULT_INSTANCES
+	}
 }
 
 func (app *Application) ToString() string {
@@ -51,8 +58,6 @@ func (app *Application) ToString() string {
 	appBasic = "\n"
 	appBasic += fmt.Sprintf("Name: %-30s\n", app.Name)
 	appBasic += fmt.Sprintf("Image: %-30s\n", app.Image)
-	fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxx")
-	fmt.Println(app.Command)
 	switch app.Command.(type) {
 	case string:
 		appBasic += fmt.Sprintf("Command: %-30s\n", app.Command.(string))
@@ -66,6 +71,7 @@ func (app *Application) ToString() string {
 	appBasic += fmt.Sprintf("EntryPoint: %-30s\n", app.EntryPoint)
 	appBasic += fmt.Sprintf("Cpu: %-30f\n", app.Cpu)
 	appBasic += fmt.Sprintf("Mem: %-30f\n", app.Mem)
+	appBasic += fmt.Sprintf("Instances: %-30d\n", app.Instances)
 	appBasic += fmt.Sprintf("Net: %-30s\n", app.Net)
 	appBasic += fmt.Sprintf("Restart: %-30s\n", app.Restart)
 
