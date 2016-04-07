@@ -5,7 +5,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Environment []Env
+type Environment []*Env
 type Env struct {
 	Key   string
 	Value string
@@ -19,7 +19,7 @@ func (envs *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error 
 		}
 	}
 	for k, v := range pair {
-		*envs = append(*envs, Env{Key: k, Value: v})
+		*envs = append(*envs, &Env{Key: k, Value: v})
 	}
 	return nil
 }

@@ -5,3 +5,5 @@ import (
 )
 
 type ComposeProcessor func(compose *compose.SryCompose) *compose.SryCompose
+
+var Processors []ComposeProcessor

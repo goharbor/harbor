@@ -3,6 +3,7 @@ package compose
 import (
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/compose/compose"
+	"github.com/vmware/harbor/compose/compose_processors"
 	"log"
 )
 
@@ -21,19 +22,20 @@ func EntryPoint(yaml string, anwsers map[string]string, command command.Command)
 	if err != nil {
 		return err
 	}
+	compose.Answers = anwsers
 
 	ctx := &Context{
 		Compose: compose,
 		Command: command,
 	}
 
-	log.Println(compose.Catalog.ToString())
-	log.Println()
-	for _, v := range ctx.Compose.Applications {
-		log.Println(v.ToString())
-		log.Println()
+	for _, v := range compose_processors.Processors {
+		compose = v(compose)
 	}
 
+	for _, v := range ctx.Compose.Applications {
+		log.Println(v.ToString())
+	}
 	return ctx.ApplyChange()
 }
 

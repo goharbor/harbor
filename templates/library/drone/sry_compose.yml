@@ -41,7 +41,7 @@ catalog:
       required: false
       type: "string"
 datadog-init:
-  image: janeczku/datadog-rancher-init:latest
+  image: janeczku/datadog-rancher-${api_key}init:latest
   net: none
   cpu: 0.2
   mem: 2

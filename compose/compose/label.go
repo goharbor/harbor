@@ -5,7 +5,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Labels []Label
+type Labels []*Label
 type Label struct {
 	Key   string
 	Value string
@@ -19,10 +19,9 @@ func (labels *Labels) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	}
 	for k, v := range pair {
-		*labels = append(*labels, Label{Key: k, Value: v})
+		*labels = append(*labels, &Label{Key: k, Value: v})
 	}
 
-	fmt.Println(labels)
 	return nil
 }
 

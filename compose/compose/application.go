@@ -23,9 +23,9 @@ type Application struct {
 	Mem         float32     `json: "mem" yaml: "mem"`
 	Environment Environment `json: "environment" yaml: "environment"`
 	Labels      Labels      `json: "labels" yaml: "labels"`
-	Volumes     []Volume    `json: "volumes" yaml: "volumes"`
+	Volumes     []*Volume   `json: "volumes" yaml: "volumes"`
 	Expose      []int       `json: "expose" yaml: "expose"`
-	Port        []Port      `json: "ports" yaml: "ports"`
+	Port        []*Port     `json: "ports" yaml: "ports"`
 	Net         string      `json: "net" yaml: "net"`
 	Restart     string      `json: "restart" yaml: "restart"`
 

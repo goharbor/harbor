@@ -6,8 +6,10 @@ import (
 )
 
 type SryCompose struct {
-	Catalog      Catalog
-	Applications []Application
+	Catalog *Catalog
+	Answers map[string]string
+
+	Applications []*Application
 	Graph        ApplicationGraph
 }
 
@@ -40,7 +42,7 @@ type Answer struct {
 func (sc *SryCompose) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// catalog
 	var params struct {
-		Catalog Catalog `yaml: "catalog"`
+		Catalog *Catalog `yaml: "catalog"`
 	}
 	if err := unmarshal(&params); err != nil {
 		return err
@@ -48,7 +50,7 @@ func (sc *SryCompose) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	sc.Catalog = params.Catalog
 
 	// applications
-	var apps map[string]Application
+	var apps map[string]*Application
 	if err := unmarshal(&apps); err != nil {
 		if _, ok := err.(*yaml.TypeError); !ok {
 			return err
