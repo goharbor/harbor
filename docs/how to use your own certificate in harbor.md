@@ -3,17 +3,18 @@
 1.If you already have a certificate, go to step 3.
 
 2.If not, you can generate a self-signed certificate using openSSL with following commands
-    
-    1)Generate a private key:
+  
+**1)Generate a private key:**
+
 
 ```sh
     openssl genrsa -out prvtkey.pem 2048    
 ```
-   
-    you can call it prvtkey.pem or other names you like.
+
+you can call it prvtkey.pem or other names you like.
     
    
-    2)Generate a certificate:
+**2)Generate a certificate:**
 
 ```sh
     openssl req -new -x509 -key prvtkey.pem -out cacert.pem -days 1095
@@ -25,19 +26,19 @@
 
 4.Following are what you should do:
  
-    a.edit docker-compose.yml, find private_key.pem replace it with your own private key as following:
+**1)edit docker-compose.yml, find private_key.pem replace it with your own private key as following:**
 
 
 ![edit docker-compose.yml](img/edit_docker-compose-yml.png)
 
 
-    b.cd config/ui, you will see private_key.pem.
+**2)cd config/ui, you will see private_key.pem.**
     
-    c.replace private_key.pem with your private key.
+**3)replace private_key.pem with your private key.**
     
-    d.cd ../registry, you will see root.crt. Replace it with your certificate.
+**4)cd ../registry, you will see root.crt. Replace it with your certificate.**
  
-    e.at the same directory, you will see config.yml. We need to modify it, open it and find root.crt, then change it to your certificate.
+**5)at the same directory, you will see config.yml. We need to modify it, open it and find root.crt, then change it to your certificate.**
 
 5.After these, go back to harbor directory, execute:
 
