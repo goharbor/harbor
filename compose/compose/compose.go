@@ -10,7 +10,7 @@ type SryCompose struct {
 	Answers map[string]string
 
 	Applications []*Application
-	Graph        ApplicationGraph
+	Graph        *ApplicationGraph
 }
 
 type Catalog struct {

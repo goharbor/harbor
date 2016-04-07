@@ -1,6 +1,8 @@
 package compose
 
 import (
+	"errors"
+	"github.com/vmware/harbor/compose/channel"
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/compose/compose"
 	"github.com/vmware/harbor/compose/compose_processors"
@@ -16,7 +18,7 @@ type Context struct {
 
 // main entrance here, should be main when standalone mode
 // should be **func main** in cli mode
-func EntryPoint(yaml string, anwsers map[string]string, command command.Command) error {
+func EntryPoint(yaml string, anwsers map[string]string, command command.Command, config channel.ChannelHttpConfig) error {
 	// default output/input channel now is OmegaAppOutput
 	compose, err := compose.FromYaml(yaml)
 	if err != nil {
@@ -25,8 +27,9 @@ func EntryPoint(yaml string, anwsers map[string]string, command command.Command)
 	compose.Answers = anwsers
 
 	ctx := &Context{
-		Compose: compose,
-		Command: command,
+		Compose:       compose,
+		Command:       command,
+		OutputChannel: channel.NewOmegaOutput(config),
 	}
 
 	for _, v := range compose_processors.Processors {
@@ -36,6 +39,8 @@ func EntryPoint(yaml string, anwsers map[string]string, command command.Command)
 	for _, v := range ctx.Compose.Applications {
 		log.Println(v.ToString())
 	}
+
+	log.Println(len(ctx.Compose.Graph.PrimaryApplications))
 	return ctx.ApplyChange()
 }
 
@@ -48,7 +53,9 @@ func (ctx *Context) SetInput(output *interface{}) {
 }
 
 func (ctx *Context) ApplyChange() error {
-	log.Println("putsxxxxxxxx ApplyChange")
-	return nil
-	//return ctx.Command(ctx.OutputChannel.(*channel.ChannelOutput), ctx.Compose)
+	_, ok := ctx.OutputChannel.(channel.ChannelOutput)
+	if ok {
+		return ctx.OutputChannel.(channel.ChannelOutput).Run(ctx.Compose, ctx.Command)
+	}
+	return errors.New("failed output channel type assertion")
 }

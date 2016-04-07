@@ -22,10 +22,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/compose"
+	"github.com/vmware/harbor/compose/channel"
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -122,7 +124,6 @@ func (ra *RepositoryV3API) PostApps() {
 	}
 	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
 	var anwser map[string]string
-	log.Println("xxxxxxxx")
 	body := ra.Ctx.Request.Body
 	jsonRaw, err := ioutil.ReadAll(body)
 	if err != nil || repository != nil {
@@ -137,7 +138,12 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 	// create app from sry_compose and anwser entered
-	err = compose.EntryPoint(sry_compose, anwser, command.CommandCreate)
+	config := channel.ChannelHttpConfig{
+		Type:      "token",
+		Token:     ra.Ctx.Request.Header.Get("Authorization"),
+		AppApiUrl: os.Getenv("APP_API_URL"),
+	}
+	err = compose.EntryPoint(sry_compose, anwser, command.CREATE_APP, config)
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {
