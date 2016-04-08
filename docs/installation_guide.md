@@ -71,7 +71,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo
 For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md) .
 
 #### Configuring Harbor with HTTPS Access
-Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. This makes it relatively simple to configure, especially for a development or testing environment. However, it is highly recommended that security be enabled for any production environment. Refer to [Configure Harbor with HTTPS Access](configure_https.md) if you want to enable HTTPS access to Harbor.
+Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. This makes it relatively simple to configure, especially for a development or testing environment. However, it is highly recommended that security be enabled for any production environment. Refer to [Configuring Harbor with HTTPS Access](configure_https.md) if you want to enable HTTPS access to Harbor.
 
 ## Installing Harbor via a pre-built installation package 
 
@@ -81,7 +81,7 @@ $ tar -xzvf harbor-0.1.1.tgz
 $ cd harbor
 ```
 
-Then configure Harbor by following instructions in Section [Configure Harbor](#configuring-harbor). Next, run **prepare** script to generate config files and use docker compose to build Harbor's container images and eventually spin it up.
+Then configure Harbor by following instructions in Section [Configuring Harbor](#configuring-harbor). Next, run **prepare** script to generate config files and use docker compose to build Harbor's container images and eventually spin it up.
 
 
 ```
