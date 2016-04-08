@@ -42,13 +42,14 @@ func (a *TokenHandler) Get() {
 	username, password, _ := request.BasicAuth()
 	authenticated := authenticate(username, password)
 	service := a.GetString("service")
-	scope := a.GetString("scope")
+	scopes := a.GetStrings("scope")
+	log.Debugf("scopes: %+v", scopes)
 
-	if len(scope) == 0 && !authenticated {
+	if len(scopes) == 0 && !authenticated {
 		log.Info("login request with invalid credentials")
 		a.CustomAbort(http.StatusUnauthorized, "")
 	}
-	access := svc_utils.GetResourceActions(scope)
+	access := svc_utils.GetResourceActions(scopes)
 	for _, a := range access {
 		svc_utils.FilterAccess(username, authenticated, a)
 	}

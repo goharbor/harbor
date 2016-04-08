@@ -263,12 +263,12 @@ func line(calldepth int) string {
 		line = 0
 	}
 
-	for i := len(file) - 1; i > 0; i-- {
-		if file[i] == '/' {
+	for i := len(file) - 2; i > 0; i-- {
+		if file[i] == os.PathSeparator {
 			file = file[i+1:]
 			break
 		}
 	}
 
-	return fmt.Sprintf("%s:%d", file, line)
+	return fmt.Sprintf("[%s:%d]:", file, line)
 }

@@ -30,12 +30,14 @@ jQuery(function(){
 	
 	$("#btnPageSignUp").on("click", function(){
 		validateOptions.Validate(function() {
-			var username = $.trim($("#Username").val());
-			var email	 = $.trim($("#Email").val());
-			var password = $.trim($("#Password").val());
-			var confirmedPassword = $.trim($("#ConfirmedPassword").val());
-			var realname = $.trim($("#Realname").val());
-			var comment  = $.trim($("#Comment").val());
+            var username = $.trim($("#Username").val());
+            var email	 = $.trim($("#Email").val());
+            var password = $.trim($("#Password").val());
+            var confirmedPassword = $.trim($("#ConfirmedPassword").val());
+            var realname = $.trim($("#Realname").val());
+            var comment  = $.trim($("#Comment").val());
+            var isAdmin = $("#isAdmin").val();
+            
 			$.ajax({
 				url : "/api/users",
 				data: JSON.stringify({username: username, password: password, realname: realname, comment: comment, email: email}),
@@ -48,10 +50,14 @@ jQuery(function(){
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
 							.dialogModal({
-								"title": i18n.getMessage("title_sign_up"), 
-								"content": i18n.getMessage("registered_successfully"),
-								"callback": function(){ 								
-									document.location = "/signIn";
+								"title":  isAdmin == "true" ? i18n.getMessage("title_add_user") : i18n.getMessage("title_sign_up"), 
+								"content": isAdmin == "true" ? i18n.getMessage("added_user_successfully") : i18n.getMessage("registered_successfully"),
+								"callback": function(){
+                                    if(isAdmin == "true") {
+                                      document.location = "/registry/project"; 
+                                    }else{	
+                                      document.location = "/signIn";       
+                                    }
 								}
 							});
 					}

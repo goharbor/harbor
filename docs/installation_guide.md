@@ -5,7 +5,7 @@ Harbor can be installed from the source code by using "docker-compose up" comman
 Harbor is deployed as several Docker containers. Hence, it can be deployed on any Linux distribution that supports Docker. 
 Before deploying Harbor, the target machine requires Python, Docker, Docker Compose to be installed.  
 * Python should be version 2.7 or higher.  Some Linux distributions (Gentoo, Arch) may not have a Python interpreter installed by default. On those systems, you need to install Python manually.  
-* The Docker engine should be version 1.8 or higher.  For the details to install Docker engine, please refer to: https://docs.docker.com/engine/installation/
+* The Docker engine should be version 1.10 or higher.  For the details to install Docker engine, please refer to: https://docs.docker.com/engine/installation/
 * The Docker Compose needs to be version 1.6.0 or higher.  For the details to install Docker compose, please refer to: https://docs.docker.com/compose/install/
 
 ### Configuration of Harbor 

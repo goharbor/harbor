@@ -177,6 +177,10 @@ var global_messages = {
 	 "en-US": "Sign Up",
 	 "zh-CN": "注册"
   },
+  "title_add_user": {
+     "en-US": "Add User",
+     "zh-CN": "新增用户"  
+  },
   "registered_successfully": {
 	 "en-US": "Signed up successfully.",
 	 "zh-CN": "注册成功。"
@@ -184,6 +188,14 @@ var global_messages = {
   "registered_failed" : {
 	 "en-US": "Failed to sign up.",
 	 "zh-CN": "注册失败。"
+  },
+  "added_user_successfully": {
+     "en-US": "Added user successfully.",
+     "zh-CN": "新增用户成功。"  
+  },
+  "added_user_failed": {
+     "en-US": "Added user failed.",
+     "zh-CN": "新增用户失败。"  
   },
   "projects" :  {
 	 "en-US": "Projects",
