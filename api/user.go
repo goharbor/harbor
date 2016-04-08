@@ -17,7 +17,9 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -27,15 +29,32 @@ import (
 // UserAPI handles request to /api/users/{}
 type UserAPI struct {
 	BaseAPI
-	currentUserID int
-	userID        int
+	currentUserID    int
+	userID           int
+	SelfRegistration bool
+	IsAdmin          bool
+	AuthMode         string
 }
 
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 
+	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
+	if authMode == "" {
+		authMode = "db_auth"
+	}
+	ua.AuthMode = authMode
+
+	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+	if selfRegistration == "on" {
+		ua.SelfRegistration = true
+	}
+
 	if ua.Ctx.Input.IsPost() {
-		return
+		sessionUserID := ua.GetSession("userId")
+		if sessionUserID == nil {
+			return
+		}
 	}
 
 	ua.currentUserID = ua.ValidateUser()
@@ -60,18 +79,19 @@ func (ua *UserAPI) Prepare() {
 			ua.CustomAbort(http.StatusNotFound, "")
 		}
 	}
+
+	var err error
+	ua.IsAdmin, err = dao.IsAdminRole(ua.currentUserID)
+	if err != nil {
+		log.Errorf("Error occurred in IsAdminRole:%v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
 }
 
 // Get ...
 func (ua *UserAPI) Get() {
-	exist, err := dao.IsAdminRole(ua.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
 	if ua.userID == 0 { //list users
-		if !exist {
+		if !ua.IsAdmin {
 			log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
 			ua.RenderError(http.StatusForbidden, "User does not have admin role")
 			return
@@ -89,7 +109,7 @@ func (ua *UserAPI) Get() {
 		}
 		ua.Data["json"] = userList
 
-	} else if ua.userID == ua.currentUserID || exist {
+	} else if ua.userID == ua.currentUserID || ua.IsAdmin {
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
@@ -107,12 +127,7 @@ func (ua *UserAPI) Get() {
 
 // Put ...
 func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
-	exist, err := dao.IsAdminRole(ua.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if !exist {
+	if !ua.IsAdmin {
 		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
@@ -123,6 +138,16 @@ func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
 
 // Post ...
 func (ua *UserAPI) Post() {
+
+	if !(ua.AuthMode == "db_auth") {
+		ua.CustomAbort(http.StatusForbidden, "")
+	}
+
+	if !(ua.SelfRegistration || ua.IsAdmin) {
+		log.Warning("Registration can only be used by admin role user when self-registration is off.")
+		ua.CustomAbort(http.StatusForbidden, "")
+	}
+
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
 
@@ -136,16 +161,12 @@ func (ua *UserAPI) Post() {
 
 // Delete ...
 func (ua *UserAPI) Delete() {
-	exist, err := dao.IsAdminRole(ua.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if !exist {
+	if !ua.IsAdmin {
 		log.Warningf("current user, id: %d does not have admin role, can not remove user", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
+	var err error
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {
 		log.Errorf("Failed to delete data from database, error: %v", err)

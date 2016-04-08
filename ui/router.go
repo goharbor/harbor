@@ -32,7 +32,6 @@ func initRouters() {
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/logout", &controllers.CommonController{}, "get:Logout")
 	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
-	//	beego.Router("/signUp", &controllers.CommonController{}, "post:SignUp")
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
