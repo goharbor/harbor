@@ -1,0 +1,76 @@
+catalog:
+  name: "DataDog"
+  version: "11.0.570-rancher1"
+  description: "Real-time performance tracking and visualization of your container-based application deployment"
+  minimum_sry_version: v0.46.0
+  questions:
+    - variable: "api_key"
+      label: "DataDog Api Key"
+      description: "Your DataDog API key"
+      required: true
+      type: "string"
+    - variable: "host_labels"
+      label: "Host Labels to DataDog Tags"
+      description: |
+        Comma delimited list of host labels to use as DataDog 'key:value' tags.
+        Example: 'instance-flavor,aws-region'
+      required: false
+      type: "string"
+    - variable: "global_service"
+      label: "Deploy as Global Service"
+      description: |
+        Enable this option to run an instance of the DataDog Agent on every host.
+        If you merely want a StatsD aggregator to which other services can send
+        metrics, then you probably want to disable this and instead enable the Standalone mode.
+      required: true
+      type: "boolean"
+      default: true
+    - variable: "statsd_standalone"
+      label: "Deploy Standalone DogStatsD"
+      description: |
+        Enable this option to run only DogStatsD without the full Agent.
+        You can then send StatsD metrics to port 8125/udp of the service.
+      required: true
+      type: "boolean"
+      default: false
+    - variable: "statsd_namespace"
+      label: "StatsD Metric Namespace"
+      description: |
+        You may optionally set a namespace for all StatsD metrics aggregated by this service so
+        that 'metric.name' will become 'namespace.metric.name'.
+      required: false
+      type: "string"
+datadog-init:
+  image: janeczku/datadog-rancher-${api_key}init:latest
+  net: none
+  cpu: 0.2
+  mem: 2
+  command: /bin/true
+  volumes:
+    - /opt/rancher
+  labels:
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.pull_image: always
+datadog-agent:
+  image: datadog/docker-dd-agent:11.0.570
+  entrypoint: /opt/rancher/entrypoint.sh
+  command:
+    - supervisord
+    - -n
+    - -c
+    - /etc/dd-agent/supervisor.conf
+  restart: always
+  environment:
+    API_KEY: ${api_key}
+    DOGSTATSD_ONLY: "${statsd_standalone}"
+    STATSD_METRIC_NAMESPACE: ${statsd_namespace}
+    HOST_LABELS: ${host_labels}
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /proc/:/host/proc/:ro
+    - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+  volumes_from:
+    - datadog-init
+  labels:
+    io.rancher.scheduler.global: "${global_service}"
+    io.rancher.sidekicks: 'datadog-init'

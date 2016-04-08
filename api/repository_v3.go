@@ -17,13 +17,18 @@ package api
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/compose"
+	"github.com/vmware/harbor/compose/channel"
+	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 )
@@ -90,7 +95,7 @@ func (ra *RepositoryV3API) GetRepository() {
 	}
 	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
-	if err != nil {
+	if err != nil || (repository != nil) {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 	}
@@ -103,6 +108,52 @@ func (ra *RepositoryV3API) GetRepository() {
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
+	}
+
+	ra.Data["json"] = repositoryResponse
+	ra.ServeJSON()
+}
+
+// POST /api/v3/repositories/{project_name}/{respository_name}
+func (ra *RepositoryV3API) PostApps() {
+	if ra.project_name == "" || ra.repository_name == "" {
+		beego.Error("required project_name and repository_name")
+		ra.RenderError(http.StatusInternalServerError, "required project_name and repository_name")
+	}
+	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
+		ra.project_name, ra.repository_name))
+	if err != nil || repository != nil {
+		beego.Error("Failed to get repository from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
+	var answer map[string]string
+	body := ra.Ctx.Request.Body
+	jsonRaw, err := ioutil.ReadAll(body)
+	if err != nil || repository != nil {
+		beego.Error("Failed to get repository from DB: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+	}
+
+	err = json.Unmarshal(jsonRaw, &answer)
+	if err != nil {
+		beego.Error("failed to unmarshal answers")
+		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal answers")
+		return
+	}
+	// create app from sry_compose and anwser entered
+	config := channel.ChannelHttpConfig{
+		Type: "token",
+		//Token:     ra.Ctx.Request.Header.Get("Authorization"),
+		Token:     "nnnnnnbbbbbb2",
+		AppApiUrl: os.Getenv("APP_API_URL"),
+	}
+	err = compose.EntryPoint(sry_compose, answer, command.CREATE_APP, config)
+
+	repositoryResponse := models.RepositoryResponse{Code: 0}
+	if err != nil {
+		repositoryResponse = models.RepositoryResponse{Code: 1}
+		return
 	}
 
 	ra.Data["json"] = repositoryResponse
@@ -223,6 +274,14 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 func GetCompose(project_name string, repository_name string) (string, error) {
 	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
 	fmt.Println(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+
+}
+func GetSryCompose(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "sry_compose", "yml"))
 	if err != nil {
 		return "", err
 	}
