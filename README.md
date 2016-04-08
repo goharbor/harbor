@@ -17,7 +17,7 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management softwares becomes easy.
 
 ### Getting Started
-Harbor is self-contained and can be easily deployed via docker-compose. The below is a quick-start guide. Refer to the [Installation and Configuration Guide](docs/installation_guide.md) for detail information.  
+Harbor is self-contained and can be easily deployed via docker-compose. The below are quick-start steps. Refer to the [Installation and Configuration Guide](docs/installation_guide.md) for detail information.  
 
 **System requirements:**  
 Harbor only works with docker 1.10+ and docker-compose 1.6.0+ .
@@ -28,7 +28,7 @@ The host must be connected to the Internet.
     ```sh
     $ git clone https://github.com/vmware/harbor
     ```
-2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
+2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
 
 
 3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
