@@ -18,6 +18,7 @@ package dao
 import (
 	"github.com/vmware/harbor/models"
 
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -149,7 +150,7 @@ func GetRepositoryByName(repoName string) (*models.Repository, error) {
 	if err != nil {
 		return nil, err
 	} else if count == 0 {
-		return nil, nil
+		return nil, errors.New("repo not found")
 	} else {
 		return &repositories[0], nil
 	}

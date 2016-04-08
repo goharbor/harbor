@@ -93,13 +93,21 @@ func (ra *RepositoryV3API) GetRepository() {
 	}
 	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
-	if err != nil || (repository != nil) {
+	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+		return
 	}
+
 	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
 	log.Println("markdown: ", markDown)
+	log.Println(repository)
 	repository.MarkDown = markDown
+
+	yaml, _ := GetSryCompose(ra.project_name, ra.repository_name)
+	compose, _ := compose.ComposeParse(yaml)
+	json, _ := json.Marshal(compose.Catalog.Questions)
+	repository.SryCompose = string(json)
 
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
@@ -121,6 +129,7 @@ func (ra *RepositoryV3API) PostApps() {
 	if err != nil || repository != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+		return
 	}
 	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
 	var answer map[string]string
@@ -129,6 +138,7 @@ func (ra *RepositoryV3API) PostApps() {
 	if err != nil || repository != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+		return
 	}
 
 	err = json.Unmarshal(jsonRaw, &answer)
@@ -162,6 +172,7 @@ func (ra *RepositoryV3API) GetMineRepositories() {
 	if err != nil {
 		beego.Error("Failed to get repositories from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
+		return
 	}
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
@@ -173,6 +184,7 @@ func (ra *RepositoryV3API) GetRepositories() {
 	if err != nil {
 		beego.Error("Failed to get repositories from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
+		return
 	}
 	repositoriesResponse := models.RepositoriesResponse{
 		Code: 0,
@@ -202,21 +214,25 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	if ra.project_name == "" || ra.repository_name == "" {
 		beego.Error("Project name or repository name is blank")
 		ra.RenderError(http.StatusBadRequest, "Project name or repositoryName is black")
+		return
 	}
 	var repo models.Repository
 	err := json.Unmarshal(ra.Ctx.Input.RequestBody, &repo)
 	if err != nil {
 		beego.Error("Failed to request body conver to json err: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to request body conver to json")
+		return
 	}
 	if repo.Category == "" {
 		beego.Error("Failed to request can't be empty")
 		ra.RenderError(http.StatusInternalServerError, "Failed to request cat't be empty")
+		return
 	}
 	repository, _ := dao.RepositoryExists(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
 	if repository != nil {
 		beego.Error("Failed to get repository, project name: ", ra.project_name, ", error: ", err)
 		ra.RenderError(http.StatusNotFound, "Failed to get repository")
+		return
 	}
 	repository.Category = repo.Category
 	repository.Description = repo.Description
@@ -225,6 +241,7 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	if err != nil {
 		beego.Error("Failed to update repository error: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to update repository")
+		return
 	}
 	jstr, _ := json.Marshal(repository)
 	ra.Data["json"] = jstr
@@ -239,6 +256,7 @@ func (ra *RepositoryV3API) GetCategories() {
 	if err != nil {
 		beego.Error("Ftailed to get CATEGORIES errors: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repo CATEGORIES")
+		return
 	}
 	var categories []string
 	for _, v := range strings.Split(string(b), "\n") {
