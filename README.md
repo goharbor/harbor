@@ -16,11 +16,11 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **Internationalization**: Localized for English and Chinese languages. More languages can be added.
 * **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management softwares becomes easy.
 
-### Try it
-Harbor is self-contained and can be easily deployed via docker-compose.  
+### Getting Started
+Harbor is self-contained and can be easily deployed via docker-compose. The below are quick-start steps. Refer to the [Installation and Configuration Guide](docs/installation_guide.md) for detail information.  
 
 **System requirements:**  
-Harbor only works with docker 1.8+ and docker-compose 1.6.0+ .
+Harbor only works with docker 1.10+ and docker-compose 1.6.0+ .
 The host must be connected to the Internet.
 
 1. Get the source code:
@@ -28,7 +28,7 @@ The host must be connected to the Internet.
     ```sh
     $ git clone https://github.com/vmware/harbor
     ```
-2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation Guide](docs/installation_guide.md) for more info.  
+2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
 
 
 3. Install Harbor by the following commands. It may take a while for the docker-compose process to finish.
@@ -43,16 +43,17 @@ The host must be connected to the Internet.
     
     $ docker-compose up
     ```
-If everything works fine, you can open a browser to visit the admin portal at http://your_registry_host . The default administrator username and password are admin/Harbor12345 .
 
-After creating a project in the admin portal, you can login and use docker commands to push images.  The default port of Harbor registry server is 80:
+If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
+
+Create a new project, e.g. myproject, in the admin portal. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
 ```sh
-$ docker login your_registry_host
-$ docker push your_registry_host/myrepo/myapp
+$ docker login reg.yourdomain.com
+$ docker push reg.yourdomain.com/myproject/myrepo
 ```
 
 **NOTE:**  
-To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation Guide](docs/installation_guide.md) .
+To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
 
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
