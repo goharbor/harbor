@@ -14,23 +14,24 @@ const (
 )
 
 type Application struct {
+	ClusterId   int32
 	IsPrimary   bool        // application depends on other applications
 	MeetCritia  bool        // application running now meet critia specified by compose file
-	Name        string      `json: "name" yaml: "name"`
-	Image       string      `json: "image" yaml: "image"`
-	Command     interface{} `json: "command" yaml: "command"`
-	EntryPoint  string      `json: "entrypoint" yaml: "entrypoint"`
-	Cpu         float32     `json: "cpu" yaml: "cpu"`
-	Mem         float32     `json: "mem" yaml: "mem"`
-	Instances   int32       `json: "instances" yaml: "instances"`
-	Environment Environment `json: "environment" yaml: "environment"`
-	Labels      Labels      `json: "labels" yaml: "labels"`
-	Volumes     []*Volume   `json: "volumes" yaml: "volumes"`
-	Expose      []int       `json: "expose" yaml: "expose"`
-	Port        []*Port     `json: "ports" yaml: "ports"`
-	Net         string      `json: "net" yaml: "net"`
-	Restart     string      `json: "restart" yaml: "restart"`
-	LogPaths    []string    `json: "log_paths" yaml: "log_paths"`
+	Name        string      `json:"name" yaml:"name"`
+	Image       string      `json:"image" yaml:"image"`
+	Command     interface{} `json:"command" yaml:"command"`
+	EntryPoint  string      `json:"entrypoint" yaml:"entrypoint"`
+	Cpu         float32     `json:"cpu" yaml:"cpu"`
+	Mem         float32     `json:"mem" yaml:"mem"`
+	Instances   int32       `json:"instances" yaml:"instances"`
+	Environment Environment `json:"environment" yaml:"environment"`
+	Labels      Labels      `json:"labels" yaml:"labels"`
+	Volumes     []*Volume   `json:"volumes" yaml:"volumes"`
+	Expose      []int       `json:"expose" yaml:"expose"`
+	Port        []*Port     `json:"ports" yaml:"ports"`
+	Net         string      `json:"net" yaml:"net"`
+	Restart     string      `json:"restart" yaml:"restart"`
+	LogPaths    []string    `json:"log_paths" yaml:"log_paths"`
 
 	Dependencies []*Application
 }
@@ -56,6 +57,7 @@ func (self *Application) Defaultlize() {
 func (app *Application) ToString() string {
 	appBasic := ""
 	appBasic = "\n"
+	appBasic += fmt.Sprintf("ClusterId: %-30d\n", app.ClusterId)
 	appBasic += fmt.Sprintf("Name: %-30s\n", app.Name)
 	appBasic += fmt.Sprintf("Image: %-30s\n", app.Image)
 	switch app.Command.(type) {
@@ -87,4 +89,19 @@ func (app *Application) ToString() string {
 	}
 
 	return appBasic
+}
+
+func (app *Application) FormatedCommand() string {
+	cmd := ""
+	switch app.Command.(type) {
+	case string:
+		cmd = app.Command.(string)
+	default:
+		cmds := []string{}
+		for _, v := range app.Command.([]interface{}) {
+			cmds = append(cmds, v.(string))
+		}
+		cmd = strings.Join(cmds, " ")
+	}
+	return cmd
 }

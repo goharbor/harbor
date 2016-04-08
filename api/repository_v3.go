@@ -123,7 +123,7 @@ func (ra *RepositoryV3API) PostApps() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 	}
 	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
-	var anwser map[string]string
+	var answer map[string]string
 	body := ra.Ctx.Request.Body
 	jsonRaw, err := ioutil.ReadAll(body)
 	if err != nil || repository != nil {
@@ -131,19 +131,20 @@ func (ra *RepositoryV3API) PostApps() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 	}
 
-	err = json.Unmarshal(jsonRaw, &anwser)
+	err = json.Unmarshal(jsonRaw, &answer)
 	if err != nil {
-		beego.Error("failed to unmarshal anwsers")
-		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal anwsers")
+		beego.Error("failed to unmarshal answers")
+		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal answers")
 		return
 	}
 	// create app from sry_compose and anwser entered
 	config := channel.ChannelHttpConfig{
-		Type:      "token",
-		Token:     ra.Ctx.Request.Header.Get("Authorization"),
+		Type: "token",
+		//Token:     ra.Ctx.Request.Header.Get("Authorization"),
+		Token:     "nnnnnnbbbbbb2",
 		AppApiUrl: os.Getenv("APP_API_URL"),
 	}
-	err = compose.EntryPoint(sry_compose, anwser, command.CREATE_APP, config)
+	err = compose.EntryPoint(sry_compose, answer, command.CREATE_APP, config)
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {

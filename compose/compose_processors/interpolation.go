@@ -2,7 +2,6 @@ package compose_processors
 
 import (
 	"github.com/vmware/harbor/compose/compose"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -35,10 +34,6 @@ func Interpolation(compose *compose.SryCompose) *compose.SryCompose {
 		for _, label := range app.Labels {
 			_interpolation(&label.Value, compose.Answers)
 		}
-	}
-
-	for _, app := range compose.Applications {
-		log.Println(app.Image)
 	}
 
 	return compose
