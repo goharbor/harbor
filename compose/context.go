@@ -53,6 +53,14 @@ func EntryPoint(yaml string, answers map[string]string, command command.Command,
 	return ctx.ApplyChange()
 }
 
+func ComposeParse(yaml string) (*compose.SryCompose, error) {
+	compose, err := compose.FromYaml(yaml)
+	if err != nil {
+		return nil, err
+	}
+	return compose, nil
+}
+
 func (ctx *Context) SetOutput(output *channel.ChannelOutput) {
 	ctx.OutputChannel = output
 }
