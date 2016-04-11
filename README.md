@@ -38,3 +38,5 @@ We welcome contributions from the community.  If you wish to contribute code, we
 
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
+
+### sry-release
