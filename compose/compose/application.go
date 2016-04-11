@@ -14,25 +14,27 @@ const (
 )
 
 type Application struct {
-	ClusterId   int32
-	IsPrimary   bool        // application depends on other applications
-	MeetCritia  bool        // application running now meet critia specified by compose file
-	Name        string      `json:"name" yaml:"name"`
-	Image       string      `json:"image" yaml:"image"`
-	Command     interface{} `json:"command" yaml:"command"`
-	EntryPoint  string      `json:"entrypoint" yaml:"entrypoint"`
-	Cpu         float32     `json:"cpu" yaml:"cpu"`
-	Mem         float32     `json:"mem" yaml:"mem"`
-	Instances   int32       `json:"instances" yaml:"instances"`
-	Environment Environment `json:"environment" yaml:"environment"`
-	Labels      Labels      `json:"labels" yaml:"labels"`
-	Volumes     []*Volume   `json:"volumes" yaml:"volumes"`
-	Expose      []int       `json:"expose" yaml:"expose"`
-	Ports       []*Port     `json:"ports" yaml:"ports"`
-	Net         string      `json:"net" yaml:"net"`
-	NetworkMode string      `json:"network_mode" yaml:"network_mode"`
-	Restart     string      `json:"restart" yaml:"restart"`
-	LogPaths    []string    `json:"log_paths" yaml:"log_paths"`
+	ClusterId    int32
+	AppName      string
+	ImageVersion string
+	IsPrimary    bool        // application depends on other applications
+	MeetCritia   bool        // application running now meet critia specified by compose file
+	Name         string      `json:"name" yaml:"name"`
+	Image        string      `json:"image" yaml:"image"`
+	Command      interface{} `json:"command" yaml:"command"`
+	EntryPoint   string      `json:"entrypoint" yaml:"entrypoint"`
+	Cpu          float32     `json:"cpu" yaml:"cpu"`
+	Mem          float32     `json:"mem" yaml:"mem"`
+	Instances    int32       `json:"instances" yaml:"instances"`
+	Environment  Environment `json:"environment" yaml:"environment"`
+	Labels       Labels      `json:"labels" yaml:"labels"`
+	Volumes      []*Volume   `json:"volumes" yaml:"volumes"`
+	Expose       []int       `json:"expose" yaml:"expose"`
+	Ports        []*Port     `json:"ports" yaml:"ports"`
+	Net          string      `json:"net" yaml:"net"`
+	NetworkMode  string      `json:"network_mode" yaml:"network_mode"`
+	Restart      string      `json:"restart" yaml:"restart"`
+	LogPaths     []string    `json:"log_paths" yaml:"log_paths"`
 
 	Dependencies []*Application
 }

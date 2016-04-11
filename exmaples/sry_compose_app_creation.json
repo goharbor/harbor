@@ -1,0 +1,10 @@
+{
+  "app": {
+    "appName": "foobar",
+    "imageVersion": "v0.1"
+  },
+  "answers": {
+    "api_key": "testing-api-key",
+    "host_labels": "foobar"
+  }
+}

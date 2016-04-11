@@ -141,6 +141,7 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 
+	// check if repo exists
 	_, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
 	if err != nil {
@@ -149,8 +150,15 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 
+	// get sry compose file
 	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
-	var answer map[string]string
+
+	// parse request body
+	var requestBody struct {
+		App     map[string]string `json:"app"`
+		Answers map[string]string `json:"answers"`
+	}
+
 	body := ra.Ctx.Request.Body
 	jsonRaw, err := ioutil.ReadAll(body)
 	if err != nil {
@@ -159,19 +167,26 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 
-	err = json.Unmarshal(jsonRaw, &answer)
+	err = json.Unmarshal(jsonRaw, &requestBody)
 	if err != nil {
 		beego.Error("failed to unmarshal answers")
 		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal answers")
 		return
 	}
+
 	// create app from sry_compose and anwser entered
 	config := channel.ChannelHttpConfig{
 		Type:      "token",
 		Token:     ra.Ctx.Request.Header.Get("Authorization"),
 		AppApiUrl: os.Getenv("APP_API_URL"),
 	}
-	err = compose.EntryPoint(sry_compose, answer, command.CREATE_APP, config)
+
+	// merge app into answers
+	for k, v := range requestBody.App {
+		requestBody.Answers[k] = v
+	}
+
+	err = compose.EntryPoint(sry_compose, requestBody.Answers, command.CREATE_APP, config)
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {

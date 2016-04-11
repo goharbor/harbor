@@ -160,6 +160,16 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			Constraints:  []string{},
 		}
 
+		// for omega app, AppName(user entered from ui) have higher priority comparing to app.Name
+		if len(app.AppName) > 0 {
+			request.Name = app.AppName
+		}
+
+		// for omega app, ImageVersion (user entered from ui) have higher priority comparing to version guessed
+		if len(app.ImageVersion) > 0 {
+			request.ImageVersion = app.ImageVersion
+		}
+
 		for _, v := range app.Environment {
 			env := &OAEnvironment{
 				Key:   v.Key,
