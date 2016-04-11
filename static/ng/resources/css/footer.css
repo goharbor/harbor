@@ -1,0 +1,18 @@
+.footer{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  clear: both;
+  background-color: #A8A8A8;
+  height: 35px;
+}
+.footer p {
+  margin-top: 8px;
+  color: #FFFFFF;
+  margin-left: auto;
+  margin-right: auto;
+  width: 385px;
+}

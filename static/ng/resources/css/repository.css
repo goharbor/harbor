@@ -1,0 +1,84 @@
+
+.panel {
+  margin-bottom: 0;
+}
+
+.pane-container {
+  overflow-y: auto;
+}
+
+.pane-container .list-group-item {
+  border: none;
+}
+
+.item-line {
+  margin: 0 0 10px 0;
+}
+
+.switch-pane {
+  padding: 10px 15px 0 15px;
+  margin: 0 10px 10px 10px;
+  height: 3em;
+  background-color: rgb(231,244,254);
+}
+
+.switch-pane-projects {
+  float: left;
+}
+
+.switch-pane-tabs {
+  width: 25%;
+  float: right;
+  list-style-type: none;
+}
+
+.switch-pane-tabs a, .switch-pane-tabs span {
+  display: inline-block;
+  text-decoration: none;
+  float: left;
+}
+
+.switch-pane-tabs li .active { 
+  border-bottom: 2px solid rgb(0, 84, 190);
+}
+
+.switch-pane-drop-down {
+  display: block;
+  position: absolute;
+  margin: -10px 0 0 10px;
+  z-index: 1000;
+}
+
+.search-projects {
+  padding: 15px 10px 10px;
+}
+
+.project-list {
+  height: 440px;
+}
+
+.project-selected {
+  margin-left: -1.2em;
+}
+
+.list-group-item {
+  text-align: left;
+  margin-left: 20%;
+}
+
+.panel-group {
+  margin-top: 10px;
+}
+
+.repository-table {
+  width: 100%;
+}
+
+.repository-table th, .repository-table td {
+  padding: 10px;
+  text-align: left;
+}
+
+.each-tab-pane {
+  padding: 0 10px;
+}

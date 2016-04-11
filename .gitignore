@@ -4,3 +4,4 @@ Deploy/config/ui/env
 Deploy/config/ui/app.conf
 Deploy/config/db/env
 Deploy/harbor.cfg
+.DS_Store
