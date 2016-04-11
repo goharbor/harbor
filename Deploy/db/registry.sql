@@ -101,3 +101,12 @@ create table access_log (
  FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
+
+create table properties (
+ k varchar(64) NOT NULL,
+ v varchar(128) NOT NULL,
+ primary key (k)
+ );
+
+insert into properties (k, v) values 
+('schema_version', '0.1.1');
