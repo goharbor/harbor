@@ -1,6 +1,6 @@
 #Customize harbor auth with your key and certificate
 
-By default, harbor use default private key and certificate in authentication.  The auth procedure is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). Also, you can customize your configuration with your own key and certificate.
+By default, harbor use default private key and certificate in authentication.  The auth procedure is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). Also, you can customize your configuration with your own key and certificate with the following steps:
 
 1.If you already have a certificate, go to step 3.
 
