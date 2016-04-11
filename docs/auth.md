@@ -1,4 +1,6 @@
-#How to use your own certificate in harbor?
+#Customize harbor auth with your key and certificate
+
+By default, harbor use default private key and certificate in authentication.  The auth procedure is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). Also, you can customize your configuration with your own key and certificate.
 
 1.If you already have a certificate, go to step 3.
 
@@ -22,7 +24,7 @@ you can call it prvtkey.pem or other names you like.
    
 prvtkey.pem is what you generated in the first step, if you change the name, you should change it in the command. Also you can name cacert.pem what you like.
 
-3.Clone harbor to your local position. Then open Deploy, and edit the harbor.cfg, make necessary configuration changes such as hostname, admin password and mail server. Refer to Installation Guide for more info. then execute ./prepare . Here, harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
+3.Refer to [Installation Guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md) to install harbor. After you execute ./prepare, harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
 
 4.Following are what you should do:
  
@@ -31,6 +33,7 @@ prvtkey.pem is what you generated in the first step, if you change the name, you
 
 ![edit docker-compose.yml](img/edit_docker-compose-yml.png)
 
+![edit docker-compose.yml](img/after_edit_docker-compose-yml.png)
 
 **2)cd config/ui, you will see private_key.pem.**
     
