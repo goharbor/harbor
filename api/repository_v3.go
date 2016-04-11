@@ -155,8 +155,8 @@ func (ra *RepositoryV3API) PostApps() {
 
 	// parse request body
 	var requestBody struct {
-		App     map[string]string `json:"app"`
-		Answers map[string]string `json:"answers"`
+		App     map[string]interface{} `json:"app"`
+		Answers map[string]string      `json:"answers"`
 	}
 
 	body := ra.Ctx.Request.Body
@@ -170,7 +170,7 @@ func (ra *RepositoryV3API) PostApps() {
 	err = json.Unmarshal(jsonRaw, &requestBody)
 	if err != nil {
 		beego.Error("failed to unmarshal answers")
-		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal answers")
+		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal body")
 		return
 	}
 
@@ -183,7 +183,12 @@ func (ra *RepositoryV3API) PostApps() {
 
 	// merge app into answers
 	for k, v := range requestBody.App {
-		requestBody.Answers[k] = v
+		switch v.(type) {
+		case string:
+			requestBody.Answers[k] = v.(string)
+		case float64:
+			requestBody.Answers[k] = fmt.Sprintf("%d", int32(v.(float64)))
+		}
 	}
 
 	err = compose.EntryPoint(sry_compose, requestBody.Answers, command.CREATE_APP, config)

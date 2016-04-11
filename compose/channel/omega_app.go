@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -120,8 +121,13 @@ type OmegaAppOutput struct {
 }
 
 func NewOmegaOutput(auth ChannelHttpConfig) *OmegaAppOutput {
+	httpClient := &http.Client{}
+	if strings.HasPrefix(auth.AppApiUrl, "https") {
+		httpClient = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+	}
+
 	client := &OmegaClient{
-		HttpClient:    &http.Client{},
+		HttpClient:    httpClient,
 		ChannelConfig: auth,
 	}
 	return &OmegaAppOutput{Client: client}
