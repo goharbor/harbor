@@ -1,6 +1,6 @@
 catalog:
   name: "DataDog"
-  version: "11.0.570-rancher1"
+  version: "11.0.570-sry1"
   description: "Real-time performance tracking and visualization of your container-based application deployment"
   minimum_sry_version: v0.46.0
   questions:
@@ -41,19 +41,19 @@ catalog:
       required: false
       type: "string"
 datadog-init:
-  image: janeczku/datadog-rancher-${api_key}init:latest
+  image: janeczku/datadog-sry-${api_key}init:latest
   net: none
   cpu: 0.2
   mem: 2
   command: /bin/true
   volumes:
-    - /opt/rancher
+    - /opt/sry
   labels:
-    io.rancher.container.start_once: 'true'
-    io.rancher.container.pull_image: always
+    io.sry.container.start_once: 'true'
+    io.sry.container.pull_image: always
 datadog-agent:
   image: datadog/docker-dd-agent:11.0.570
-  entrypoint: /opt/rancher/entrypoint.sh
+  entrypoint: /opt/sry/entrypoint.sh
   command:
     - supervisord
     - -n
@@ -72,5 +72,5 @@ datadog-agent:
   volumes_from:
     - datadog-init
   labels:
-    io.rancher.scheduler.global: "${global_service}"
-    io.rancher.sidekicks: 'datadog-init'
+    io.sry.scheduler.global: "${global_service}"
+    io.sry.sidekicks: 'datadog-init'

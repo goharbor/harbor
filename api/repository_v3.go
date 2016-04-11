@@ -92,18 +92,38 @@ func (ra *RepositoryV3API) GetRepository() {
 
 	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
-	if err != nil || (repository != nil) {
+	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 		return
 	}
 
 	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
-	sry_compose, _ := GetCompose(ra.project_name, ra.repository_name)
+	sry_compose_yaml, err := GetSryCompose(ra.project_name, ra.repository_name)
+	if err != nil {
+		beego.Error("Failed to sry compose yaml file: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get compose file")
+		return
+	}
+
+	sry_compose, err := compose.ComposeParse(sry_compose_yaml)
+	if err != nil {
+		beego.Error("Sry Compose parse error", err)
+		ra.RenderError(http.StatusInternalServerError, "sry compose parse error")
+		return
+	}
+
+	questionsJson, err := json.Marshal(sry_compose.Catalog.Questions)
+	if err != nil {
+		beego.Error("json marshal error", err)
+		ra.RenderError(http.StatusInternalServerError, "json marshal error")
+		return
+	}
+
 	log.Println("markdown: ", markDown)
-	log.Println("compose: ", sry_compose)
+	log.Println("compose: ", string(questionsJson))
 	repository.MarkDown = markDown
-	repository.SryCompose = sry_compose
+	repository.SryCompose = string(questionsJson)
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
@@ -186,7 +206,7 @@ func (ra *RepositoryV3API) GetRepositories() {
 		Code: 0,
 		Data: repositories,
 	}
-	a.Data["json"] = repositoriesResponse
+	ra.Data["json"] = repositoriesResponse
 	ra.ServeJSON()
 }
 
@@ -282,15 +302,6 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 	b64 := GetBaseEncoding()
 	repoMarkdown := b64.EncodeToString(b)
 	return repoMarkdown, nil
-}
-
-func GetCompose(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
-	fmt.Println(fmt.Sprintf("%s/%s/%s/%s", RepoInfoDir, project_name, repository_name, ComposeJsonFile))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
 }
 
 func GetSryCompose(project_name string, repository_name string) (string, error) {
