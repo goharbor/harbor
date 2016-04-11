@@ -8,19 +8,23 @@ RUN apt-get update \
 
 COPY . /go/src/github.com/vmware/harbor
 #golang.org is blocked in China
-COPY ./vendor/golang.org /go/src/golang.org 
+COPY ./vendor/golang.org /go/src/golang.org
 WORKDIR /go/src/github.com/vmware/harbor
 
 ENV GO15VENDOREXPERIMENT 1
 RUN go get -d github.com/docker/distribution \
     && go get -d github.com/docker/libtrust \
     && go get -d github.com/go-sql-driver/mysql \
-    && go install -v -a 
+    && go install -v -a
 
 ENV MYSQL_USR root \
     MYSQL_PWD root \
     MYSQL_PORT_3306_TCP_ADDR localhost \
     MYSQL_PORT_3306_TCP_PORT 3306 \
+    REDIS_HOST localhost \
+    REDIS_PORT 6379 \
+    SQL_PATH $(pwd)/sql \
+    APP_API_URI http://localhost:6080 \
     REGISTRY_URL localhost:5000
 
 COPY views /go/bin/views

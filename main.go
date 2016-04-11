@@ -17,6 +17,7 @@ package main
 
 import (
 	"fmt"
+
 	"log"
 
 	_ "github.com/vmware/harbor/auth/db"

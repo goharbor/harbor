@@ -84,6 +84,7 @@ func UpdateRepoInfo(repository *models.Repository) (*models.Repository, error) {
 	}
 	return repository, nil
 }
+
 func UpdateRepository(repository *models.Repository) (*models.Repository, error) {
 	o := orm.NewOrm()
 
@@ -104,7 +105,7 @@ func RepositoriesUnderNamespace(namespace string) ([]models.Repository, error) {
 	if namespace == "admin" {
 		namespace = "library"
 	}
-	fmt.Println("namespace====: ", namespace)
+
 	o := orm.NewOrm()
 	sql := `select name, description,project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at from  repository where is_public = 0 and project_name=?  order by updated_at desc`
 
@@ -137,8 +138,10 @@ func RepositoryExists(nameOrID interface{}) (*models.Repository, error) {
 
 // GetRepositoryByID ...
 func GetRepositoryByID(repositoryId int64) (*models.Repository, error) {
+	log.Println("GetRepositoryByID repoId: ", repositoryId)
 	o := orm.NewOrm()
 	var repositories []models.Repository
+
 	count, err := o.Raw("SELECT * from repository where id=? ", repositoryId).QueryRows(&repositories)
 	if err != nil {
 		return nil, err
@@ -151,16 +154,14 @@ func GetRepositoryByID(repositoryId int64) (*models.Repository, error) {
 
 // GetRepositoryByName ...
 func GetRepositoryByName(repoName string) (*models.Repository, error) {
+	log.Println("GetRepositoryByName repoName: ", repoName)
 	o := orm.NewOrm()
-	log.Println("repoName: ", repoName)
 	projectName := strings.Split(repoName, "/")[0]
 	repositoryName := strings.Split(repoName, "/")[1]
-	log.Println("project_name: ", projectName)
-	log.Println("repository_name: ", repositoryName)
 	var repositories []models.Repository
+
 	sql := `select * from repository where project_name=?  and name = ?`
 	count, err := o.Raw(sql, projectName, repositoryName).QueryRows(&repositories)
-	log.Println("count: ", count)
 	if err != nil {
 		return nil, err
 	} else if count == 0 {

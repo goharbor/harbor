@@ -54,7 +54,6 @@ func (n *NotificationHandler) Post() {
 			beego.Error("Failed to match the media type against pattern, error: ", err)
 			matched = false
 		}
-		log.Println("in gorotine,", matched)
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
 			username = e.Actor.Name
 			action = e.Action
@@ -86,14 +85,14 @@ func persistPushEvent(e models.Event) {
 	repository.UserName = e.Actor.Name
 	tags := getRepoTagsFromRegistry(e.Target.Repository)
 	if len(tags) > 0 {
-		repository.LatestTag = tags[len(tags)-1]
+		repository.LatestTag = tags[0]
 		repositoryDao, err := dao.AddOrUpdateRepository(&repository)
 		if err != nil {
 			beego.Error("add or update repo error: ", err)
 			return
 		}
 		var tag models.Tag
-		tag.Version = tags[len(tags)-1]
+		tag.Version = tags[0]
 		tag.ProjectID = repositoryDao.ProjectID
 		tag.RepositoryID = repositoryDao.Id
 		dao.AddOrUpdateTag(&tag)
