@@ -141,9 +141,9 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 
-	repository, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
+	_, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
 		ra.project_name, ra.repository_name))
-	if err != nil || repository != nil {
+	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 		return
@@ -153,7 +153,7 @@ func (ra *RepositoryV3API) PostApps() {
 	var answer map[string]string
 	body := ra.Ctx.Request.Body
 	jsonRaw, err := ioutil.ReadAll(body)
-	if err != nil || repository != nil {
+	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
 		return

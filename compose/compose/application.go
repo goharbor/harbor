@@ -28,8 +28,9 @@ type Application struct {
 	Labels      Labels      `json:"labels" yaml:"labels"`
 	Volumes     []*Volume   `json:"volumes" yaml:"volumes"`
 	Expose      []int       `json:"expose" yaml:"expose"`
-	Port        []*Port     `json:"ports" yaml:"ports"`
+	Ports       []*Port     `json:"ports" yaml:"ports"`
 	Net         string      `json:"net" yaml:"net"`
+	NetworkMode string      `json:"network_mode" yaml:"network_mode"`
 	Restart     string      `json:"restart" yaml:"restart"`
 	LogPaths    []string    `json:"log_paths" yaml:"log_paths"`
 
@@ -88,6 +89,10 @@ func (app *Application) ToString() string {
 		appBasic += fmt.Sprintf("%s\n", v.ToString())
 	}
 
+	appBasic += "Ports: \n\n"
+	for _, v := range app.Ports {
+		appBasic += fmt.Sprintf("%s\n", v.ToString())
+	}
 	return appBasic
 }
 

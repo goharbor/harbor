@@ -72,8 +72,8 @@ type OAPortMappings struct {
 	Protocol int    `json:"protocol"`
 	IsUri    int    `json:"isUri"`
 	Type     int    `json:"type"`
-	mapPort  int    `json:"mapPort"`
-	uri      string `json:"uri"`
+	MapPort  int    `json:"mapPort"`
+	Uri      string `json:"uri"`
 }
 type OALabel struct {
 	Key   string `json:"key"`
@@ -94,7 +94,7 @@ type AppCreationRequest struct {
 	Labels       []*OALabel        `json:"labels"`
 	Volumes      []*OAVolume       `json:"volumes"`
 	PortMappings []*OAPortMappings `json:"portMappings"`
-	Constrints   []string          // todo
+	Constraints  []string          // todo
 	LogPaths     []string          `json:"logPaths"`
 }
 
@@ -154,10 +154,10 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			Mem:          app.Mem,
 			Cmd:          app.FormatedCommand(),
 			ForceImage:   true,
-			LogPaths:     []string{},
+			LogPaths:     app.LogPaths,
 			PortMappings: []*OAPortMappings{},
 			Envs:         []*OAEnvironment{},
-			Constrints:   []string{},
+			Constraints:  []string{},
 		}
 
 		for _, v := range app.Environment {
@@ -185,10 +185,22 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			request.Labels = append(request.Labels, label)
 		}
 
+		for _, v := range app.Ports {
+			portMap := &OAPortMappings{
+				AppPort:  v.ContainerPort,
+				Protocol: _sry_protocol(v.Protocol),
+				IsUri:    2,
+				Type:     1,
+				MapPort:  v.HostPort,
+				Uri:      "",
+			}
+			request.PortMappings = append(request.PortMappings, portMap)
+		}
+
 		requestJson, _ := json.Marshal(request)
 		resp, err := output.post(fmt.Sprintf(OMEGA_APP_CREATE_API, app.ClusterId), string(requestJson))
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Println(err.Error())
 			return err
 		}
 		defer resp.Body.Close()
@@ -241,7 +253,7 @@ func (output *OmegaAppOutput) post(path string, json string) (*http.Response, er
 
 	req, err := http.NewRequest("POST", output.expandPath(path, url.Values{}), strings.NewReader(json))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -278,5 +290,13 @@ func (output *OmegaAppOutput) _auth(req *http.Request) {
 		req.Header.Set(AUTH_HEADER, output.Client.ChannelConfig.Token)
 	} else if output.Client.ChannelConfig.Type == "http_basic" {
 		req.SetBasicAuth(output.Client.ChannelConfig.Principle, output.Client.ChannelConfig.Password)
+	}
+}
+
+func _sry_protocol(protocol string) int {
+	if protocol == "http" {
+		return 2
+	} else {
+		return 1
 	}
 }

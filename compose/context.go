@@ -33,14 +33,11 @@ func EntryPoint(yaml string, answers map[string]string, command command.Command,
 	}
 	compose.Answers = lowerCaseAnswers
 
-	log.Println(compose.Applications[0].Environment)
-
 	ctx := &Context{
 		Compose:       compose,
 		Command:       command,
 		OutputChannel: channel.NewOmegaOutput(config),
 	}
-	log.Println(compose.Applications[0].Environment)
 
 	for _, v := range compose_processors.Processors {
 		compose = v(compose)

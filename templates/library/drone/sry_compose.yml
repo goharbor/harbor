@@ -74,3 +74,11 @@ datadog-agent:
   labels:
     io.sry.scheduler.global: "${global_service}"
     io.sry.sidekicks: 'datadog-init'
+  log_paths:
+    - /var/log/nginx.log
+  ports:
+    - "8080"
+    - "8081:8082"
+    - "localhost:8083:8084"
+    - "8085:8086/tcp"
+    - "localhost:8087:8088/http"
