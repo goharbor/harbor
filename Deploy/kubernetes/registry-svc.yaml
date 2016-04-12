@@ -5,13 +5,10 @@ metadata:
   labels:
     name: registry
 spec:
-  type: LoadBalancer
   ports:
     - name: internal
       port: 5000
     - name: external
       port: 5001
-    - name: aa
-      port: 53
   selector:
     name: registry

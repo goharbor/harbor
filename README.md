@@ -53,12 +53,32 @@ The host must be connected to the Internet.
   ```
 
 4. Deploy harbor on kubernetes.
-  To start harbor on kubernetes, you just need to run:
-  ```
-  kubectl create -f Deploy/kubernetes
-  ```
-
-  All images needed to start harbor on kubernetes are already pushed to dockerhub, but if you want to build your own images, you can run the following commends:
+  For now, it's a little tricky to start harbor on kubernetes because
+     1. registry uses https, so we need cert or workaround to avoid errors like this:
+        
+        ```
+        Error response from daemon: invalid registry endpoint https://{HOST}/v0/: unable to ping registry endpoint https://{HOST}/v0/
+        v2 ping attempt failed with error: Get https://{HOST}/v2/: EOF
+        v1 ping attempt failed with error: Get https://{HOST}/v1/_ping: EOF. If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add `--insecure-registry {HOST}` to the daemon's arguments. In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag; simply place the CA certificate at /etc/docker/certs.d/{HOST}/ca.crt
+        ```
+        
+        There is a workaround if you don't have a cert. The workaround is to add the host into the list of insecure registry by editting the ```/etc/default/docker``` file:
+        ```
+        sudo vi /etc/default/docker
+        ```
+        add the line at the end of file:
+        ```
+        DOCKER_OPTS="$DOCKER_OPTS --insecure-registry={HOST}"
+        ```
+        and restart docker service
+        ```
+        sudo service docker restart
+        ```
+     2. The registry config file need to know the IP (or DNS name) of the registry, but on kubernetes, you won't know the IP before the service is created. There are several workarounds to solve this problem for now:
+        - Use DNS name and link th DNS name with the IP after the service is created.
+        - Rebuild the registry image with the service IP after the service is created and use ```kubectl rolling-update``` to update to the new image.
+        
+  To start harbor on kubernetes, you first need to change the host name at the registry config file and build the images by running:
   ```
   cd Deploy
   docker-compose build
@@ -66,15 +86,23 @@ The host must be connected to the Internet.
   docker build -f kubernetes/dockerfiles/registry-dockerfile -t {your_account}/registry .
   docker build -f kubernetes/dockerfiles/ui-dockerfile -t {your_account}/deploy_ui .
   docker tag deploy_mysql {your_account}/deploy_mysql
+  docker push {your_account}/proxy
+  docker push {your_account}/registry
+  docker push {your_account}/deploy_ui
+  docker push {your_account}/deploy_mysql
   ```
-
-  where "your_account" is your own registry. If you choose to use your own images, you'll need to push these images to your registry and 
-  update the "image" field in the *-rc.yaml files at before running the ```kubectl create```:
+  
+  where "your_account" is your own registry. Then you need to update the "image" field in the ```*-rc.yaml``` files at:
   ```
   Deploy/kubernetes/mysql-rc.yaml
   Deploy/kubernetes/proxy-rc.yaml
   Deploy/kubernetes/registry-rc.yaml
   Deploy/kubernetes/ui-rc.yaml
+  ```
+
+  Finally you can start the jobs by running:
+  ```
+  kubectl create -f Deploy/kubernetes
   ```
 
 **NOTE:**  
