@@ -1,42 +1,27 @@
 # Harbor
 
-[![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
+Project Harbor is modified version of Vmware Harbor project, with
+features added to facility Shurenyun internal usage.
 
-![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
+# Features Added
 
-Project Harbor is an enterprise-class registry server. It extends the open source Docker Registry server by adding more functionalities usually required by an enterprise. Harbor is designed to be deployed in a private environment of an organization. A private registry is important for organizations who care much about security. In addition, a private registry improves productivity by eliminating the need to download images from public network. This is very helpful to container users who do not have a good network to the Internet. In particular, Harbor accelerates the progress of Chinese developers, because they no longer need to pull images from the Internet.
+  * Repository and tag info collected when docker push/pull
+  * API support repository and tag info retriving and updating
+  * Shurenyun Compose support - which support auto App generations
+  * mysql auto updating support now
 
-### Features
-* **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have differernt permission for images under a namespace.
-* **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namepaces.
-* **AD/LDAP support**: Harbor integrates with existing AD/LDAP of enterprise for user authentication and management.
-* **Audting**: All the operations to the repositories are tracked and can be used for auditing purpose.
-* **Internationalization**: Localized for English and Chinese languages. More languages can be added.
-* **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management software becomes easy.
+# Deploy(After Modification)
 
-### Try it
-Harbor is self contained and can be easily deployed via docker-compose.  
-**pre-requisite:** Harbor only works on linux OS, with docker 1.8+ and docker-compose 1.6.0+ 
-```sh
-$ git clone https://github.com/vmware/harbor
-......
-$ cd Deploy
-#make update to the parameters in ./harbor.cfg
-$ ./prepare
-Generated configuration file: ./config/ui/env
-Generated configuration file: ./config/ui/app.conf
-Generated configuration file: ./config/registry/config.yml
-Generated configuration file: ./config/db/env
-$ docker-compose up
-```
-*An installation package is provided, such that you don't need to clone the whole repo.  For details on how to use the installation package and parameters in harbor.cfg, please refer to:* [Installation Guide](docs/installation_guide.md)  
+  * new environments variable added
 
-*For information on how to use Harbor, please see* [User Guide](docs/user_guide.md)
+    1, REDIS_HOST
+    2, REDIS_PORT
+    3, APP_API_URL(foward nginx url, https://forward.dataman-inc.net)
+    4, SQL_PATH (dir name contains sql files, /go/bin/sql
 
-### Contribution
-We welcome contributions from the community.  If you wish to contribute code, we require that you first sign our [Contributor License Agreement](https://vmware.github.io/photon/assets/files/vmware_cla.pdf) and return a copy to osscontributions@vmware.com before we can merge your contribution.
+  * COPY /path/to/sql/dir into docker container, accessible by SQL_PATH
 
-### License
-Harbor is available under the [Apache 2 license](LICENSE).
+  * Nginx forward change, add harbor as upstream, forward
+  /api/v3/repositories to harbor.
 
-### sry-release
+
