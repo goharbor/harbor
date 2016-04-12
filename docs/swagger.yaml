@@ -215,6 +215,39 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
+    post:
+      summary: Add project role member accompany with relevant project and user.
+      description: |
+        This endpoint is for user to add project role member accompany with relevant project and user.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: roles
+          in: body
+          description: Role members for adding to relevant project.
+          schema:
+            $ref: '#/definitions/RoleParam'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Role members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        409:
+          description: User has already added as a project role member.
+        500:
+          description: Unexpected internal errors.
   /projects/{project_id}/members/{user_id}:
     get:
       summary: Return role members accompany with relevant project and user.
@@ -321,40 +354,6 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.   
-  /projects/{project_id}/members/:
-    post:
-      summary: Add project role member accompany with relevant project and user.
-      description: |
-        This endpoint is for user to add project role member accompany with relevant project and user.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Relevant project ID.
-        - name: roles
-          in: body
-          description: Role members for adding to relevant project.
-          schema: 
-            $ref: '#/definitions/RoleParam'
-      tags:
-        - Products
-      responses:
-        200:
-          description: Role members added to relevant project successfully.
-        400:
-          description: Illegal format of provided ID value.
-        401:
-          description: User need to log in first.
-        403:
-          description: User in session does not have permission to the project.
-        404:
-          description: Project ID or username does not exist.
-        409:
-          description: User has already added as a project role member.
-        500:
-          description: Unexpected internal errors.
   /users:
     get:
       summary: Get registered users of Harbor.
