@@ -80,6 +80,7 @@ func (ra *RepositoryV3API) Prepare() {
 	if len(repository_name) != 0 {
 		ra.repository_name = repository_name
 	}
+
 }
 
 // GET /api/v3/repositories/{project_name}/{respository_name}
@@ -271,9 +272,7 @@ func (ra *RepositoryV3API) UpdateRepository() {
 		repository.Description = repo.Description
 	}
 
-	if repo.IsPublic != 0 {
-		repository.IsPublic = repo.IsPublic
-	}
+	repository.IsPublic = repo.IsPublic
 
 	repository, err := dao.UpdateRepoInfo(repository)
 	if err != nil {
