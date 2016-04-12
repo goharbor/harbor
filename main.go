@@ -17,16 +17,14 @@ package main
 
 import (
 	"fmt"
-
 	"log"
+	"os"
 
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	_ "github.com/vmware/harbor/routers"
-
-	"os"
 
 	"github.com/astaxie/beego"
 )
