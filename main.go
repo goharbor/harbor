@@ -20,13 +20,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/astaxie/beego"
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	_ "github.com/vmware/harbor/routers"
-
-	"github.com/astaxie/beego"
 )
 
 const (
