@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: index.caicloud.io/caicloud/harbor_registry:2.3.0
+        image: caicloud/harbor_registry:2.3.0
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

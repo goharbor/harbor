@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: index.caicloud.io/caicloud/harbor_deploy_mysql:latest
+        image: caicloud/harbor_deploy_mysql:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3306

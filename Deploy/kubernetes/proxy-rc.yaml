@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: proxy
-        image: index.caicloud.io/caicloud/harbor_proxy:latest
+        image: caicloud/harbor_proxy:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80

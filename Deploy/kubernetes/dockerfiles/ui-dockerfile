@@ -1,0 +1,7 @@
+FROM deploy_ui
+
+ADD ./kubernetes/dockerfiles/config/ui/app.conf /etc/ui/app.conf
+ADD ./kubernetes/dockerfiles/config/ui/private_key.pem /etc/ui/private_key.pem
+
+
+
