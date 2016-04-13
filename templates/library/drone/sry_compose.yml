@@ -42,7 +42,7 @@ catalog:
       type: "string"
 datadog-init:
   image: janeczku/datadog-sry-${api_key}init:latest
-  net: none
+  net: bridge
   cpu: 0.2
   mem: 2
   command: /bin/true
