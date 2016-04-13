@@ -31,8 +31,8 @@ type Application struct {
 	Volumes      []*Volume   `json:"volumes" yaml:"volumes"`
 	Expose       []int       `json:"expose" yaml:"expose"`
 	Ports        []*Port     `json:"ports" yaml:"ports"`
-	Net          string      `json:"net" yaml:"net"`
-	NetworkMode  string      `json:"network_mode" yaml:"network_mode"`
+	Net          string      `json:"net" yaml:"net"`                   // bridge, host
+	NetworkMode  string      `json:"network_mode" yaml:"network_mode"` //compose version2 for net, same as net
 	Restart      string      `json:"restart" yaml:"restart"`
 	LogPaths     []string    `json:"log_paths" yaml:"log_paths"`
 
@@ -55,6 +55,8 @@ func (self *Application) Defaultlize() {
 	if self.Instances == 0 {
 		self.Instances = DEFAULT_INSTANCES
 	}
+
+	self.LogPaths = []string{}
 }
 
 func (app *Application) ToString() string {

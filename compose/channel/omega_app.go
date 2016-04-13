@@ -96,7 +96,7 @@ type AppCreationRequest struct {
 	Volumes      []*OAVolume       `json:"volumes"`
 	PortMappings []*OAPortMappings `json:"portMappings"`
 	Constraints  []string          // todo
-	//LogPaths     []string          `json:"logPaths"`
+	LogPaths     []string          `json:"logPaths"`
 }
 
 type AppCreationResponse struct {
@@ -160,7 +160,7 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			Mem:          app.Mem,
 			Cmd:          app.FormatedCommand(),
 			ForceImage:   true,
-			//LogPaths:     app.LogPaths,
+			LogPaths:     app.LogPaths,
 			PortMappings: []*OAPortMappings{},
 			Envs:         []*OAEnvironment{},
 			Constraints:  []string{},
