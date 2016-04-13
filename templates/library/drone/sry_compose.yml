@@ -41,24 +41,22 @@ catalog:
       required: false
       type: "string"
 datadog-init:
-  image: janeczku/datadog-sry-${api_key}init:latest
+  image: testregistry.dataman.io/registry:2.3.0
   net: BRIDGE
   cpu: 0.2
   mem: 2
-  command: /bin/true
+  command: echo "shurenyun awesome"
   volumes:
     - /opt/sry
   labels:
     io.sry.container.start_once: 'true'
     io.sry.container.pull_image: always
 datadog-agent:
-  image: datadog/docker-dd-agent:11.0.570
+  image:  testregistry.dataman.io/registry:2.3.0
   entrypoint: /opt/sry/entrypoint.sh
   command:
-    - supervisord
-    - -n
-    - -c
-    - /etc/dd-agent/supervisor.conf
+    - /bin/true
+    - echo "shurenyuan awesome"
   restart: always
   environment:
     API_KEY: ${api_key}
