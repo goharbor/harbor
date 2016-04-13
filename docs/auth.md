@@ -30,7 +30,7 @@ you can call it prvtkey.pem or other names you like.
     
 **2)replace private_key.pem with your private_key.pem**
     
-**4)cd ../registry, you will see root.crt. Replace it with your certificate root.crt**
+**3)cd ../registry, you will see root.crt. Replace it with your certificate root.crt**
  
 
 5.After these, go back to the Deploy directory, you can start Harbor using following command:
