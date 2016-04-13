@@ -20,45 +20,6 @@ const (
 	OMEGA_APP_STATUS_API = "/api/v3/clusters/%d/apps/%d/status"
 )
 
-//{
-//"name": "app name",
-//"instances": 2,
-//"volumes": [
-//{
-//"hostPath": "/var/host/path",
-//"containerPath": "/var/container/path"
-//}
-//],
-//"portMappings": [
-//{
-//"appPort": 80,
-//"protocol": 1,
-//"isUri": 1,
-//"type": 1,
-//"mapPort": 8080,
-//"uri": "shurenyun.com"
-//}
-//],
-//"cpus": 4,
-//"mem": 512,
-//"cmd": "echo \"shurenyun awesome!\"",
-//"envs": [
-//{
-//"key": "Foo",
-//"value": "bar"
-//}
-//],
-//"imageName": "registry.shurenyun.com/library:2048",
-//"imageVersion": "v0.1",
-//"forceImage": true,
-//"network": "BRIDGE",
-//"constraints": [
-//[
-//"string"
-//]
-//]
-//}
-
 type OAEnvironment struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -97,6 +58,7 @@ type AppCreationRequest struct {
 	PortMappings []*OAPortMappings `json:"portMappings"`
 	Constraints  []string          // todo
 	LogPaths     []string          `json:"logPaths"`
+	Parameters   []string          `json:"parameters"`
 }
 
 type AppCreationResponse struct {
@@ -161,6 +123,7 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			Cmd:          app.FormatedCommand(),
 			ForceImage:   true,
 			LogPaths:     app.LogPaths,
+			Parameters:   []string{},
 			PortMappings: []*OAPortMappings{},
 			Envs:         []*OAEnvironment{},
 			Constraints:  []string{},
