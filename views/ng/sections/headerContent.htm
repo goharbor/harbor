@@ -22,7 +22,7 @@
 			  </ul>
 	 	  </li>
         </ul>
-		<!--ul class="nav navbar-nav navbar-left">
+		  <!--ul class="nav navbar-nav navbar-left">
 		  <li class="dropdown">
 		  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 		      <span class="glyphicon glyphicon-user"></span>
@@ -33,13 +33,9 @@
 			  </ul>
 	 	  </li>
     </ul-->
-	    <ul class="nav navbar-nav navbar-right">
-		  <li>
-		    <ul class="nav-custom">
-		      <li><a href="#">Dashboard</a></li>
-		      <li class="active"><a href="#">My Projects</a></li>
-		      <li><a href="#">Admin Options</a></li>
-			</ul>
+	  <ul class="nav navbar-nav navbar-right">
+		  <li ng-controller="NavigationController as vm">
+		    <navigation-tab tabs="vm.tabs"></navigation-tab>
 		  </li>
 	      <li>
 	        <form class="navbar-form pull-right" role="search">
