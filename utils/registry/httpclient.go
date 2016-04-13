@@ -24,10 +24,24 @@ import (
 
 // NewHTTPClientAuthHandlersEmbeded return a http.Client which will authorize the request
 // and send it again when encounters a 401 error
-func NewHTTPClientAuthHandlersEmbeded(credential *auth.Credential) *http.Client {
+func NewClientStandardAuthHandlersEmbeded(credential *auth.Credential) *http.Client {
 	handlers := []auth.Handler{}
 
-	tokenHandler := auth.NewTokenHandler(credential)
+	tokenHandler := auth.NewStandardTokenHandler(credential)
+
+	handlers = append(handlers, tokenHandler)
+
+	transport := NewAuthTransport(http.DefaultTransport, handlers)
+
+	return &http.Client{
+		Transport: transport,
+	}
+}
+
+func NewClientSessionAuthHandlersEmbeded(sessionID string) *http.Client {
+	handlers := []auth.Handler{}
+
+	tokenHandler := auth.NewSessionTokenHandler(sessionID)
 
 	handlers = append(handlers, tokenHandler)
 
@@ -73,8 +87,8 @@ func (a *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		scheme := challenge.Scheme
 
 		for _, handler := range a.handlers {
-			if scheme != handler.Scheme() {
-				log.Debugf("scheme not match: %s %s, skip", scheme, handler.Scheme())
+			if scheme != handler.Schema() {
+				log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
 				continue
 			}
 

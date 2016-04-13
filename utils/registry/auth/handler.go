@@ -23,13 +23,17 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
 // Handler authorizes the request when encounters a 401 error
 type Handler interface {
-	// Scheme : basic, bearer
-	Scheme() string
+	// Schema : basic, bearer
+	Schema() string
 	//AuthorizeRequest adds basic auth or token auth to the header of request
 	AuthorizeRequest(req *http.Request, params map[string]string) error
 }
@@ -40,7 +44,7 @@ type Credential struct {
 	Username string
 	// Password ...
 	Password string
-	//SecretKey ...
+	// SecretKey ...
 	SecretKey string
 }
 
@@ -48,15 +52,15 @@ type token struct {
 	Token string `json:"token"`
 }
 
-type tokenHandler struct {
+type standardTokenHandler struct {
 	client     *http.Client
 	credential *Credential
 }
 
 // NewTokenHandler ...
 // TODO deal with https
-func NewTokenHandler(credential *Credential) Handler {
-	return &tokenHandler{
+func NewStandardTokenHandler(credential *Credential) Handler {
+	return &standardTokenHandler{
 		client: &http.Client{
 			Transport: http.DefaultTransport,
 		},
@@ -65,19 +69,18 @@ func NewTokenHandler(credential *Credential) Handler {
 }
 
 // Scheme : see interface AuthHandler
-func (t *tokenHandler) Scheme() string {
+func (t *standardTokenHandler) Schema() string {
 	return "bearer"
 }
 
 // AuthorizeRequest : see interface AuthHandler
-func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
+func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
 	realm, ok := params["realm"]
 	if !ok {
 		return errors.New("no realm")
 	}
 
 	service := params["service"]
-
 	scope := params["scope"]
 
 	u, err := url.Parse(realm)
@@ -125,7 +128,73 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 
 	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", tk.Token))
 
-	log.Debugf("request token successfully | %s %s", req.Method, req.URL)
+	log.Debugf("standardTokenHandler generated token successfully | %s %s", req.Method, req.URL)
+
+	return nil
+}
+
+type sessionTokenHandler struct {
+	sessionID string
+}
+
+func NewSessionTokenHandler(sessionID string) Handler {
+	return &sessionTokenHandler{
+		sessionID: sessionID,
+	}
+}
+
+func (s *sessionTokenHandler) Schema() string {
+	return "bearer"
+}
+
+func (s *sessionTokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
+	session, err := beego.GlobalSessions.GetSessionStore(s.sessionID)
+	if err != nil {
+		return err
+	}
+
+	username, ok := session.Get("username").(string)
+	if !ok {
+		return errors.New("username in session can not be converted to string")
+	}
+
+	if len(username) == 0 {
+		userID, ok := session.Get("userId").(int)
+		if !ok {
+			return errors.New("userId in session can not be converted to int")
+		}
+
+		u := models.User{
+			UserID: userID,
+		}
+		user, err := dao.GetUser(u)
+		if err != nil {
+			return err
+		}
+
+		if user == nil {
+			return fmt.Errorf("user with id %d does not exist", userID)
+		}
+
+		username = user.Username
+	}
+
+	service := params["service"]
+
+	scopes := []string{}
+	scope := params["scope"]
+	if len(scope) != 0 {
+		scopes = strings.Split(scope, " ")
+	}
+
+	token, err := utils.GenTokenForUI(username, service, scopes)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token))
+
+	log.Debugf("sessionTokenHandler generated token successfully | %s %s", req.Method, req.URL)
 
 	return nil
 }
