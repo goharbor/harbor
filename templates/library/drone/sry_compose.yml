@@ -41,7 +41,7 @@ catalog:
       required: false
       type: "string"
 datadog-init:
-  image: testregistry.dataman.io/registry:2.3.0
+  image: demoregistry.dataman-inc.com:5000/library/drone
   net: BRIDGE
   cpu: 0.2
   mem: 2
@@ -52,7 +52,7 @@ datadog-init:
     io.sry.container.start_once: 'true'
     io.sry.container.pull_image: always
 datadog-agent:
-  image:  testregistry.dataman.io/registry:2.3.0
+  image:  demoregistry.dataman-inc.com:5000/library/drone
   entrypoint: /opt/sry/entrypoint.sh
   command:
     - /bin/true
