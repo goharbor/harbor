@@ -10,7 +10,7 @@ const (
 	DEFAULT_CPU       = 0.2
 	DEFAULT_MEM       = 2
 	DEFAULT_INSTANCES = 2
-	DEFAULT_NET       = "bridge"
+	DEFAULT_NET       = "BRIDGE"
 )
 
 type Application struct {
