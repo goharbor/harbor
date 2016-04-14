@@ -15,6 +15,9 @@ import (
 )
 
 const AUTH_HEADER = "Authorization"
+
+const FORCE_IMAGE_PULL = false
+
 const (
 	OMEGA_APP_CREATE_API = "/api/v3/clusters/%d/apps"
 	OMEGA_APP_STATUS_API = "/api/v3/clusters/%d/apps/%d/status"
@@ -121,7 +124,7 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 			Cpus:         app.Cpu,
 			Mem:          app.Mem,
 			Cmd:          app.FormatedCommand(),
-			ForceImage:   true,
+			ForceImage:   FORCE_IMAGE_PULL,
 			LogPaths:     app.LogPaths,
 			Parameters:   []string{},
 			PortMappings: []*OAPortMappings{},
