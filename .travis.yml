@@ -1,5 +1,3 @@
-sudo: required
-
 language: go
 
 go: 
