@@ -1,12 +1,12 @@
 #Customize Harbor auth with your key and certificate
 
-By default, Harbor use default private key and certificate in authentication. The auth procedure is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). If you try to connect the registry without authorization, the registry will return `401 Unauthorized`. Then you should make a request to the authorization service for a token. The token is encrypted by the private key. After that, you make a new request with the token to the registry, registry will decrypted the token with the public key in the root.crt. The registry will check the token and authorize the client the access to push/pull images.
+Harbor requires Docker client to access the Harbor registry with a token. The procedure to generate a token is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). Firstly, you should make a request to the token service for a token. The token is signed by the private key. After that, you make a new request with the token to the Harbor registry, Harbor registry will verify the token with the public key in the rootcert bundle. Then Harbor registry will authorize the Docker client to push/pull images.
 
-Also, you can customize your configuration with your own key and certificate with the following steps:
+By default, Harbor uses default private key and certificate in authentication. Also, you can customize your configuration with your own key and certificate with the following steps:
 
 1.If you already have a certificate, go to step 3.
 
-2.If not, you can generate a root certificate using openSSL with following commands
+2.If not, you can generate a root certificate using openSSL with following commands:
   
 **1)Generate a private key:**
 
@@ -15,7 +15,7 @@ Also, you can customize your configuration with your own key and certificate wit
     openssl genrsa -out private_key.pem 4096    
 ```
    
-**2)Generate a certificate:**
+**2)Generate a certificate:** 
 
 ```sh
     openssl req -new -x509 -key private_key.pem -out root.crt -days 3650
