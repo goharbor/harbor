@@ -1,7 +1,8 @@
 (function() {
-
+  
   'use strict';
   
   angular
-    .module('harbor.index');
+    .module('harbor.details', []);
+  
 })();

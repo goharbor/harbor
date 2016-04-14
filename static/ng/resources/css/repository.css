@@ -32,7 +32,7 @@
   list-style-type: none;
 }
 
-.switch-pane-tabs a, .switch-pane-tabs span {
+.switch-pane-tabs a,.switch-pane-tabs span {
   display: inline-block;
   text-decoration: none;
   float: left;

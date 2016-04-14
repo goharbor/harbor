@@ -3,6 +3,8 @@
   angular
     .module('harbor.app', [
       'harbor.services.user',
+      'harbor.session',
       'harbor.header',
-      'harbor.index']);
+      'harbor.details'
+    ]);
 })();
