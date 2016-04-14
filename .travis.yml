@@ -7,6 +7,7 @@ go_import_path: github.com/vmware/harbor
 
 service: 
   - mysql
+  - docker
 
 env: GO15VENDOREXPERIMENT=1 DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 
@@ -26,3 +27,5 @@ script:
   - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
+  - docker version
+  - docker-compose version
