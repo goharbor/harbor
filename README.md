@@ -68,3 +68,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Users
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
+
+### Supporting Technologies
+Harbor is powered by <a href="https://www.beego.me/" border="0" target="_blank"><img alt="beego" src="docs/img/beegoLogo.png"></a>, an open source framework to build and develop applications in the Go way.

@@ -1,8 +1,8 @@
-#Configure Harbor with HTTPS Access 
+#Configuring Harbor with HTTPS Access 
 
 Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. This makes it relatively simple to configure. However, it is highly recommended that security be enabled for any production environment. Harbor has an Nginx instance as a reverse proxy for all services, you can configure Nginx to enable https.
 
-##Get a certificate
+##Getting a certificate
 
 Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that its DNS record points to the host where you are running Harbor. You first should get a certificate from a CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
 
@@ -22,7 +22,7 @@ In a test or development environment, you may choose to use a self-signed certif
 ```
 3) Generate the certificate of your registry host:
 
-You need to configure openssl first. On Ubuntu, the config file locates at /etc/ssl/openssl.cnf. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
+You need to configure openssl first. On Ubuntu, the config file locates at **/etc/ssl/openssl.cnf**. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
 ```
   mkdir demoCA
   cd demoCA
@@ -41,6 +41,10 @@ After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, cha
   cd Deploy/config/nginx
 ```
 Create a new directory cert/, if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/.
+```
+  cp yourdomain.com.crt cert/
+  cp yourdomain.com.key cert/ 
+```
 
 Rename the existing configuration file of Nginx:
 ```

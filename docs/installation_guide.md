@@ -28,7 +28,7 @@ Before installing Harbor, you should configure the parameters in the file **harb
 At minimum, you need to change the **hostname** attribute in **harbor.cfg**. The description of each attribute is as follows:  
 
 **hostname**: The hostname for a user to access the user interface and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, for example 192.168.1.10 or reg.yourdomain.com . Do NOT use localhost or 127.0.0.1 for the hostname because the registry service needs to be accessed by external clients.  
-**ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http.  
+**ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http. To set up https protocol, refer to [Configuring Harbor with HTTPS](configure_https.md).  
 **Email settings**: the following 5 attributes are used to send an email to reset a user's password,  they are not mandatory unless the password reset function is needed in Harbor.  
 * email_server = smtp.mydomain.com 
 * email_server_port = 25
@@ -40,8 +40,9 @@ At minimum, you need to change the **hostname** attribute in **harbor.cfg**. The
 **auth_mode**: The authentication mode of Harbor. By default it is *db_auth*, i.e. the credentials are stored in a database. Please set it to *ldap_auth* if you want to verify user's credentials against an LDAP server.  
 **ldap_url**: The URL for LDAP endpoint, for example ldaps://ldap.mydomain.com. It is only used when **auth_mode** is set to *ldap_auth*.    
 **ldap_basedn**: The basedn template for verifying the user's credentials against LDAP, for example uid=%s,ou=people,dc=mydomain,dc=com.  It is only used when **auth_mode** is set to *ldap_auth*.  
-**db_password**: The password of root user of mySQL database.  
+**db_password**: The password of root user of mySQL database. Change this password for any production use.  
 **self_registration**: The flag to turn on or off the user self-registration function. If this flag is turned off, only an admin user can create new users in Harbor. The default value is on. 
+NOTE: When **auth_mode** is *ldap_auth*, the self-registration feature is always disabled, therefore, this flag is ignored.  
 
 #### Building and starting Harbor
 After configuring harbor.cfg, build and start Harbor by the following commands. Because it requires downloading necessary files from the Internet, it may take a while for the docker-compose process to finish.  
@@ -61,7 +62,7 @@ After configuring harbor.cfg, build and start Harbor by the following commands. 
 
 If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
 
-Create a new project, e.g. myproject, in the admin portal. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
+Log in to the admin portal and create a new project, e.g. myproject. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
@@ -121,8 +122,10 @@ $ cd ../
 $ tar -cvzf harbor_offline-0.1.1.tgz harbor
 ```
 
-The file **harbor_offline-0.1.1.tgz** contains the images saved by previously steps and the files required to start Harbor.
-You can use tools such as scp to transfer the file **harbor_offline-0.1.1.tgz** to the target machine that does not have Internet connection. On the target machine, you can execute the following commands to start Harbor. Again, before running the **prepare** script, be sure to update **harbor.cfg** to reflect the right configuration of the target machine. (Refer to Section [Configure Harbor](#configuring-harbor) .)
+The file **harbor_offline-0.1.1.tgz** contains the images saved by previous steps and the other files required to start Harbor.
+You can use tools such as scp to transfer the file **harbor_offline-0.1.1.tgz** to the target machine that does not have Internet connection. 
+On the target machine, you can execute the following commands to start Harbor. Again, before running the **prepare** script, 
+be sure to update **harbor.cfg** to reflect the right configuration of the target machine. (Refer to Section [Configuring Harbor](#configuring-harbor) .)
 ```
 $ tar -xzvf harbor_offline-0.1.1.tgz  
 $ cd harbor  
