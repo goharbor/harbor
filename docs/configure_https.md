@@ -86,6 +86,16 @@ Generate configuration files for Harbor:
 ```
 ./prepare
 ```
+
+Update docker-compose.yml file to add https (443) port, for the proxy service :
+```
+  proxy:
+    (...)
+    ports:
+      - 80:80
+      - 443:443
+```
+
 If Harbor is already running, stop and remove the existing instance. Your image data remain in the file system
 ```
   docker-compose stop
