@@ -28,7 +28,7 @@ Before installing Harbor, you should configure the parameters in the file **harb
 At minimum, you need to change the **hostname** attribute in **harbor.cfg**. The description of each attribute is as follows:  
 
 **hostname**: The hostname for a user to access the user interface and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, for example 192.168.1.10 or reg.yourdomain.com . Do NOT use localhost or 127.0.0.1 for the hostname because the registry service needs to be accessed by external clients.  
-**ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http. To set up https protocol, refer to [Configuring Harbor with HTTPS](configure_https.md).  
+**ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
 **Email settings**: the following 5 attributes are used to send an email to reset a user's password,  they are not mandatory unless the password reset function is needed in Harbor.  
 * email_server = smtp.mydomain.com 
 * email_server_port = 25
@@ -97,7 +97,7 @@ $ sudo docker-compose up -d
 ......
 ```
 
-### Deploying Harbor to a target machine that does not have Internet access
+### Deploying Harbor to a host which does not have Internet access
 When you run *docker-compose up* to start Harbor, it will pull base images from Docker Hub and build new images for the containers. This process requires accessing the Internet. If you want to deploy Harbor to a host that is not connected to the Internet, you need to prepare Harbor on a machine that has access to the Internet. After that, you export the images as tgz files and transfer them to the target machine. Then load the tgz file into Docker's local image repo.
 
 #### Building and saving images for offline installation

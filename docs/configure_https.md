@@ -40,7 +40,7 @@ After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, cha
 ```
   cd Deploy/config/nginx
 ```
-Create a new directory cert/, if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/.
+Create a new directory cert/, if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/, e.g. :
 ```
   cp yourdomain.com.crt cert/
   cp yourdomain.com.key cert/ 
