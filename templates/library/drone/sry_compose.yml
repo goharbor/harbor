@@ -24,7 +24,7 @@ catalog:
       label: "这一个下拉框"
       description: "这是一个下拉框"
       required: true
-      type: "select"
+      type: "enum"
       options:
         - "foo"
         - "bar"
