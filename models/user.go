@@ -22,11 +22,11 @@ import (
 // User holds the details of a user.
 type User struct {
 	UserID       int    `orm:"column(user_id)" json:"UserId"`
-	Username     string `orm:"column(username)"`
-	Email        string `orm:"column(email)"`
-	Password     string `orm:"column(password)"`
-	Realname     string `orm:"column(realname)"`
-	Comment      string `orm:"column(comment)"`
+	Username     string `orm:"column(username)" json:"username"`
+	Email        string `orm:"column(email)" json:"email"`
+	Password     string `orm:"column(password)" json:"password"`
+	Realname     string `orm:"column(realname)" json:"realname"`
+	Comment      string `orm:"column(comment)" json:"comment"`
 	Deleted      int    `orm:"column(deleted)"`
 	Rolename     string
 	RoleID       int `json:"RoleId"`
