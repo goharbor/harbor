@@ -19,7 +19,7 @@ var global_messages = {
   },
   "username_has_been_taken" : {
      "en-US": "Username has been taken.",
-	 "zh-CN": "用户名已被占用。"
+     "zh-CN": "用户名已被占用。"
   },
   "username_is_too_long" : {
 	 "en-US": "Username is too long. (maximum 20 characters)",
@@ -135,7 +135,7 @@ var global_messages = {
   },
   "title_forgot_password" : {
      "en-US": "Forgot Password",
-	 "zh-CN": "忘记密码"
+     "zh-CN": "忘记密码"
   },
   "email_has_been_sent" : {
 	 "en-US": "Email for resetting password has been sent.",
@@ -207,11 +207,11 @@ var global_messages = {
   },
   "no_repo_exists"  :{
      "en-US": "No repositories found, please use 'docker push' to upload images.",
-	 "zh-CN": "未发现镜像，请用‘docker push’命令上传镜像。"
+     "zh-CN": "未发现镜像，请用‘docker push’命令上传镜像。"
   },
   "tag" : {
      "en-US": "Tag",
-	 "zh-CN": "标签"
+     "zh-CN": "标签"
   },
   "pull_command": {
 	 "en-US": "Pull Command",
@@ -257,12 +257,12 @@ var global_messages = {
 	 "en-US": "Operation Failed",
 	 "zh-CN": "操作失败"
   },
-  "button_on" : {
-     "en-US": "On",
-	 "zh-CN": "打开"	
+  "public_on" : {
+     "en-US": "Yes",
+     "zh-CN": "是"	
   },
-  "button_off" : {
-     "en-US": "Off",
-	 "zh-CN": "关闭"	
+  "public_off" : {
+     "en-US": "No",
+     "zh-CN": "否"	
   }
 };
