@@ -38,15 +38,25 @@ jQuery(function(){
             var comment  = $.trim($("#Comment").val());
             var isAdmin = $("#isAdmin").val();
             
-			$.ajax({
+			new AjaxUtil({
 				url : "/api/users",
-				data: JSON.stringify({username: username, password: password, realname: realname, comment: comment, email: email}),
+				data: {"username": username, "password": password, "realname": realname, "comment": comment, "email": email},
 				type: "POST",
-				contentType: "application/json; charset=UTF-8",
 				beforeSend: function(e){
 					$("#btnPageSignUp").prop("disabled", true);
 				},
-				success: function(data, status, xhr){
+				error:function(jqxhr, status, error){
+					$("#dlgModal")
+							.dialogModal({
+								"title": i18n.getMessage("title_sign_up"), 
+								"content": i18n.getMessage("internal_error"),
+								"callback": function(){ 								
+									return;
+								}
+							});
+				},
+				complete: function(xhr, status){
+					$("#btnPageSignUp").prop("disabled", false);
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
 							.dialogModal({
@@ -61,21 +71,8 @@ jQuery(function(){
 								}
 							});
 					}
-				},
-				error:function(jqxhr, status, error){
-					$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_sign_up"), 
-								"content": i18n.getMessage("internal_error"),
-								"callback": function(){ 								
-									return;
-								}
-							});
-				},
-				complete: function(){
-					$("#btnPageSignUp").prop("disabled", false);
 				}
-			});
+			}).exec();
 		});
 	});
 });
