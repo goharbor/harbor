@@ -26,7 +26,7 @@ import (
 
 	token_util "github.com/vmware/harbor/service/token"
 	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_errors "github.com/vmware/harbor/utils/registry/errors"
 )
 
 // Handler authorizes the request when encounters a 401 error
@@ -119,7 +119,7 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return error.Error{
+		return registry_errors.Error{
 			StatusCode: resp.StatusCode,
 			Message:    string(b),
 		}

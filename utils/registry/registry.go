@@ -23,6 +23,7 @@ import (
 	"net/url"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/utils/registry/errors"
 )
 
 // Registry holds information of a registry entiry
@@ -86,7 +87,7 @@ func (r *Registry) ListTag(name string) ([]string, error) {
 		return tags, nil
 	}
 
-	return tags, Error{
+	return tags, errors.Error{
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}
@@ -126,7 +127,7 @@ func (r *Registry) ManifestExist(name, reference string) (digest string, exist b
 		return
 	}
 
-	err = Error{
+	err = errors.Error{
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}
@@ -162,7 +163,7 @@ func (r *Registry) PullManifest(name, reference string) (digest, mediaType strin
 		return
 	}
 
-	err = Error{
+	err = errors.Error{
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}
@@ -193,7 +194,7 @@ func (r *Registry) DeleteManifest(name, digest string) error {
 		return err
 	}
 
-	return Error{
+	return errors.Error{
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}
@@ -207,7 +208,7 @@ func (r *Registry) DeleteTag(name, tag string) error {
 	}
 
 	if !exist {
-		return Error{
+		return errors.Error{
 			StatusCode: http.StatusNotFound,
 		}
 	}
@@ -238,7 +239,7 @@ func (r *Registry) DeleteBlob(name, digest string) error {
 		return err
 	}
 
-	return Error{
+	return errors.Error{
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}

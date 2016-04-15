@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
+	"github.com/vmware/harbor/utils/registry/errors"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -163,7 +164,7 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := ra.registry.ListTag(repoName)
 		if err != nil {
-			e, ok := registry.ParseError(err)
+			e, ok := errors.ParseError(err)
 			if ok {
 				log.Info(e)
 				ra.CustomAbort(e.StatusCode, e.Message)
@@ -181,7 +182,7 @@ func (ra *RepositoryAPI) Delete() {
 
 	for _, t := range tags {
 		if err := ra.registry.DeleteTag(repoName, t); err != nil {
-			e, ok := registry.ParseError(err)
+			e, ok := errors.ParseError(err)
 			if ok {
 				ra.CustomAbort(e.StatusCode, e.Message)
 			} else {
