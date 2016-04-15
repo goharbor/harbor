@@ -58,6 +58,10 @@ func IsAdminRole(userIDOrUsername interface{}) (bool, error) {
 		return false, fmt.Errorf("invalid parameter, only int and string are supported: %v", userIDOrUsername)
 	}
 
+	if len(u.Username) == 0 {
+		return false, nil
+	}
+
 	user, err := GetUser(u)
 	if err != nil {
 		return false, err
