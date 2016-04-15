@@ -22,6 +22,15 @@ import (
 	"github.com/vmware/harbor/utils/registry/auth"
 )
 
+// NewClient returns a http.Client according to the handlers provided
+func NewClient(handlers []auth.Handler) *http.Client {
+	transport := NewAuthTransport(http.DefaultTransport, handlers)
+
+	return &http.Client{
+		Transport: transport,
+	}
+}
+
 // NewClientStandardAuthHandlerEmbeded return a http.Client which will authorize the request
 // according to the credential provided and send it again when encounters a 401 error
 func NewClientStandardAuthHandlerEmbeded(credential *auth.Credential) *http.Client {
@@ -31,11 +40,7 @@ func NewClientStandardAuthHandlerEmbeded(credential *auth.Credential) *http.Clie
 
 	handlers = append(handlers, tokenHandler)
 
-	transport := NewAuthTransport(http.DefaultTransport, handlers)
-
-	return &http.Client{
-		Transport: transport,
-	}
+	return NewClient(handlers)
 }
 
 // NewClientUsernameAuthHandlerEmbeded return a http.Client which will authorize the request
@@ -47,11 +52,7 @@ func NewClientUsernameAuthHandlerEmbeded(username string) *http.Client {
 
 	handlers = append(handlers, tokenHandler)
 
-	transport := NewAuthTransport(http.DefaultTransport, handlers)
-
-	return &http.Client{
-		Transport: transport,
-	}
+	return NewClient(handlers)
 }
 
 type authTransport struct {
