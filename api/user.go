@@ -29,14 +29,11 @@ import (
 // UserAPI handles request to /api/users/{}
 type UserAPI struct {
 	BaseAPI
-	currentUserID       int
-	userID              int
-	SelfRegistration    bool
-	IsAdmin             bool
-	AuthMode            string
-	IsBasicAuth         bool
-	UserNameInBasicAuth string
-	PasswordInBasicAuth string
+	currentUserID    int
+	userID           int
+	SelfRegistration bool
+	IsAdmin          bool
+	AuthMode         string
 }
 
 // Prepare validates the URL and parms
@@ -54,10 +51,9 @@ func (ua *UserAPI) Prepare() {
 	}
 
 	if ua.Ctx.Input.IsPost() {
-		ua.UserNameInBasicAuth, ua.PasswordInBasicAuth, ua.IsBasicAuth = ua.Ctx.Request.BasicAuth()
-
 		sessionUserID := ua.GetSession("userId")
-		if sessionUserID == nil {
+		_, _, ok := ua.Ctx.Request.BasicAuth()
+		if sessionUserID == nil && !ok {
 			return
 		}
 	}
@@ -91,6 +87,7 @@ func (ua *UserAPI) Prepare() {
 		log.Errorf("Error occurred in IsAdminRole:%v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
+
 }
 
 // Get ...
@@ -155,11 +152,6 @@ func (ua *UserAPI) Post() {
 
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
-
-	if ua.IsBasicAuth {
-		user.Username = ua.UserNameInBasicAuth
-		user.Password = ua.PasswordInBasicAuth
-	}
 
 	_, err := dao.Register(user)
 	if err != nil {
