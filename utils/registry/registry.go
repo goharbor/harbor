@@ -16,6 +16,7 @@
 package registry
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -51,6 +52,47 @@ func New(endpoint string, client *http.Client) (*Registry, error) {
 	}, nil
 }
 
+// ListTag ...
+func (r *Registry) ListTag(name string) ([]string, error) {
+	tags := []string{}
+	req, err := http.NewRequest("GET", r.ub.buildTagListURL(name), nil)
+	if err != nil {
+		return tags, err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return tags, err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return tags, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		tagsResp := struct {
+			Tags []string `json:"tags"`
+		}{}
+
+		if err := json.Unmarshal(b, &tagsResp); err != nil {
+			return tags, err
+		}
+
+		tags = tagsResp.Tags
+
+		return tags, nil
+	}
+
+	return tags, Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+
+}
+
 // ManifestExist ...
 func (r *Registry) ManifestExist(name, reference string) (digest string, exist bool, err error) {
 	req, err := http.NewRequest("HEAD", r.ub.buildManifestURL(name, reference), nil)
@@ -58,7 +100,8 @@ func (r *Registry) ManifestExist(name, reference string) (digest string, exist b
 		return
 	}
 
-	// Schema 2 manifest
+	// request Schema 2 manifest, if the registry does not support it,
+	// Schema 1 manifest will be returned
 	req.Header.Set(http.CanonicalHeaderKey("Accept"), schema2.MediaTypeManifest)
 
 	resp, err := r.client.Do(req)
@@ -78,12 +121,15 @@ func (r *Registry) ManifestExist(name, reference string) (digest string, exist b
 
 	defer resp.Body.Close()
 
-	message, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
 
-	err = fmt.Errorf("%s %s : %s %s", req.Method, req.URL, resp.Status, string(message))
+	err = Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
 	return
 }
 
@@ -104,20 +150,23 @@ func (r *Registry) PullManifest(name, reference string) (digest, mediaType strin
 	}
 
 	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
-		mediaType = resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-		payload, err = ioutil.ReadAll(resp.Body)
-		return
-	}
-
-	message, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
 
-	err = fmt.Errorf("%s %s : %s %s", req.Method, req.URL, resp.Status, string(message))
+	if resp.StatusCode == http.StatusOK {
+		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+		mediaType = resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
+		payload = b
+		return
+	}
+
+	err = Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+
 	return
 }
 
@@ -139,19 +188,28 @@ func (r *Registry) DeleteManifest(name, digest string) error {
 
 	defer resp.Body.Close()
 
-	message, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	return fmt.Errorf("%s %s : %s %s", req.Method, req.URL, resp.Status, string(message))
+	return Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
 }
 
 // DeleteTag ...
 func (r *Registry) DeleteTag(name, tag string) error {
-	digest, _, err := r.ManifestExist(name, tag)
+	digest, exist, err := r.ManifestExist(name, tag)
 	if err != nil {
 		return err
+	}
+
+	if !exist {
+		return Error{
+			StatusCode: http.StatusNotFound,
+		}
 	}
 
 	return r.DeleteManifest(name, digest)
@@ -175,12 +233,19 @@ func (r *Registry) DeleteBlob(name, digest string) error {
 
 	defer resp.Body.Close()
 
-	message, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	return fmt.Errorf("%s %s : %s %s", req.Method, req.URL, resp.Status, string(message))
+	return Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+}
+
+func (u *uRLBuilder) buildTagListURL(name string) string {
+	return fmt.Sprintf("%s/v2/%s/tags/list", u.root.String(), name)
 }
 
 func (u *uRLBuilder) buildManifestURL(name, reference string) string {

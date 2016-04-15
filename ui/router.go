@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/controllers"
 	"github.com/vmware/harbor/service"
+	"github.com/vmware/harbor/service/token"
 
 	"github.com/astaxie/beego"
 )
@@ -63,5 +64,5 @@ func initRouters() {
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
-	beego.Router("/service/token", &service.TokenHandler{})
+	beego.Router("/service/token", &token.Handler{})
 }

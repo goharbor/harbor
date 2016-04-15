@@ -23,10 +23,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/service/utils"
+	token_util "github.com/vmware/harbor/service/token"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -57,7 +54,9 @@ type standardTokenHandler struct {
 	credential *Credential
 }
 
-// NewTokenHandler ...
+// NewStandardTokenHandler returns a standard token handler. The handler will request a token
+// from token server whose URL is specified in the "WWW-authentication" header and add it to
+// the origin request
 // TODO deal with https
 func NewStandardTokenHandler(credential *Credential) Handler {
 	return &standardTokenHandler{
@@ -68,12 +67,12 @@ func NewStandardTokenHandler(credential *Credential) Handler {
 	}
 }
 
-// Scheme : see interface AuthHandler
+// Schema implements the corresponding method in interface AuthHandler
 func (t *standardTokenHandler) Schema() string {
 	return "bearer"
 }
 
-// AuthorizeRequest : see interface AuthHandler
+// AuthorizeRequest implements the corresponding method in interface AuthHandler
 func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
 	realm, ok := params["realm"]
 	if !ok {
@@ -103,9 +102,7 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 	}
 
 	// TODO support secretKey
-	if len(t.credential.Username) != 0 {
-		r.SetBasicAuth(t.credential.Username, t.credential.Password)
-	}
+	r.SetBasicAuth(t.credential.Username, t.credential.Password)
 
 	resp, err := t.client.Do(r)
 	if err != nil {
@@ -133,52 +130,25 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 	return nil
 }
 
-type sessionTokenHandler struct {
-	sessionID string
+type usernameTokenHandler struct {
+	username string
 }
 
-func NewSessionTokenHandler(sessionID string) Handler {
-	return &sessionTokenHandler{
-		sessionID: sessionID,
+// NewUsernameTokenHandler returns a handler which will generate
+// a token according the user's privileges
+func NewUsernameTokenHandler(username string) Handler {
+	return &usernameTokenHandler{
+		username: username,
 	}
 }
 
-func (s *sessionTokenHandler) Schema() string {
+// Schema implements the corresponding method in interface AuthHandler
+func (u *usernameTokenHandler) Schema() string {
 	return "bearer"
 }
 
-func (s *sessionTokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
-	session, err := beego.GlobalSessions.GetSessionStore(s.sessionID)
-	if err != nil {
-		return err
-	}
-
-	username, ok := session.Get("username").(string)
-	if !ok {
-		return errors.New("username in session can not be converted to string")
-	}
-
-	if len(username) == 0 {
-		userID, ok := session.Get("userId").(int)
-		if !ok {
-			return errors.New("userId in session can not be converted to int")
-		}
-
-		u := models.User{
-			UserID: userID,
-		}
-		user, err := dao.GetUser(u)
-		if err != nil {
-			return err
-		}
-
-		if user == nil {
-			return fmt.Errorf("user with id %d does not exist", userID)
-		}
-
-		username = user.Username
-	}
-
+// AuthorizeRequest implements the corresponding method in interface AuthHandler
+func (u *usernameTokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
 	service := params["service"]
 
 	scopes := []string{}
@@ -187,14 +157,14 @@ func (s *sessionTokenHandler) AuthorizeRequest(req *http.Request, params map[str
 		scopes = strings.Split(scope, " ")
 	}
 
-	token, err := utils.GenTokenForUI(username, service, scopes)
+	token, err := token_util.GenTokenForUI(u.username, service, scopes)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token))
 
-	log.Debugf("sessionTokenHandler generated token successfully | %s %s", req.Method, req.URL)
+	log.Debugf("usernameTokenHandler generated token successfully | %s %s", req.Method, req.URL)
 
 	return nil
 }

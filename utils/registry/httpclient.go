@@ -22,9 +22,9 @@ import (
 	"github.com/vmware/harbor/utils/registry/auth"
 )
 
-// NewHTTPClientAuthHandlersEmbeded return a http.Client which will authorize the request
-// and send it again when encounters a 401 error
-func NewClientStandardAuthHandlersEmbeded(credential *auth.Credential) *http.Client {
+// NewClientStandardAuthHandlerEmbeded return a http.Client which will authorize the request
+// according to the credential provided and send it again when encounters a 401 error
+func NewClientStandardAuthHandlerEmbeded(credential *auth.Credential) *http.Client {
 	handlers := []auth.Handler{}
 
 	tokenHandler := auth.NewStandardTokenHandler(credential)
@@ -38,10 +38,12 @@ func NewClientStandardAuthHandlersEmbeded(credential *auth.Credential) *http.Cli
 	}
 }
 
-func NewClientSessionAuthHandlersEmbeded(sessionID string) *http.Client {
+// NewClientUsernameAuthHandlerEmbeded return a http.Client which will authorize the request
+// according to the user's privileges and send it again when encounters a 401 error
+func NewClientUsernameAuthHandlerEmbeded(username string) *http.Client {
 	handlers := []auth.Handler{}
 
-	tokenHandler := auth.NewSessionTokenHandler(sessionID)
+	tokenHandler := auth.NewUsernameTokenHandler(username)
 
 	handlers = append(handlers, tokenHandler)
 

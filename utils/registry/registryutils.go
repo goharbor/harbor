@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package utils
+package registry
 
 import (
 	"errors"
@@ -23,6 +23,7 @@ import (
 	"os"
 	"regexp"
 
+	token_util "github.com/vmware/harbor/service/token"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -43,9 +44,9 @@ func BuildRegistryURL(segments ...string) string {
 	return url
 }
 
-// RegistryAPIGet triggers GET request to the URL which is the endpoint of registry and returns the response body.
+// APIGet triggers GET request to the URL which is the endpoint of registry and returns the response body.
 // It will attach a valid jwt token to the request if registry requires.
-func RegistryAPIGet(url, username string) ([]byte, error) {
+func APIGet(url, username string) ([]byte, error) {
 
 	log.Debugf("Registry API url: %s", url)
 	response, err := http.Get(url)
@@ -71,7 +72,7 @@ func RegistryAPIGet(url, username string) ([]byte, error) {
 			service = res[1]
 			scopes = append(scopes, res[2])
 		}
-		token, err := GenTokenForUI(username, service, scopes)
+		token, err := token_util.GenTokenForUI(username, service, scopes)
 		if err != nil {
 			return nil, err
 		}

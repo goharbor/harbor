@@ -49,7 +49,10 @@ func (c *CommonController) Login() {
 	principal := c.GetString("principal")
 	password := c.GetString("password")
 
-	user, err := auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{
+		Principal: principal,
+		Password:  password,
+	})
 	if err != nil {
 		log.Errorf("Error occurred in UserLogin: %v", err)
 		c.CustomAbort(http.StatusUnauthorized, "")

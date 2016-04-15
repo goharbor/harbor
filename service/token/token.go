@@ -13,53 +13,53 @@
    limitations under the License.
 */
 
-package service
+package token
 
 import (
 	"net/http"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	//svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/registry/auth/token"
 )
 
-// TokenHandler handles request on /service/token, which is the auth provider for registry.
-type TokenHandler struct {
+// Handler handles request on /service/token, which is the auth provider for registry.
+type Handler struct {
 	beego.Controller
 }
 
 // Get handles GET request, it checks the http header for user credentials
 // and parse service and scope based on docker registry v2 standard,
 // checkes the permission agains local DB and generates jwt token.
-func (a *TokenHandler) Get() {
+func (h *Handler) Get() {
 
-	request := a.Ctx.Request
+	request := h.Ctx.Request
 	log.Infof("request url: %v", request.URL.String())
 	username, password, _ := request.BasicAuth()
 	authenticated := authenticate(username, password)
-	service := a.GetString("service")
-	scopes := a.GetStrings("scope")
+	service := h.GetString("service")
+	scopes := h.GetStrings("scope")
 	log.Debugf("scopes: %+v", scopes)
 
 	if len(scopes) == 0 && !authenticated {
 		log.Info("login request with invalid credentials")
-		a.CustomAbort(http.StatusUnauthorized, "")
+		h.CustomAbort(http.StatusUnauthorized, "")
 	}
-	access := svc_utils.GetResourceActions(scopes)
+	access := GetResourceActions(scopes)
 	for _, a := range access {
-		svc_utils.FilterAccess(username, authenticated, a)
+		FilterAccess(username, authenticated, a)
 	}
-	a.serveToken(username, service, access)
+	h.serveToken(username, service, access)
 }
 
-func (a *TokenHandler) serveToken(username, service string, access []*token.ResourceActions) {
-	writer := a.Ctx.ResponseWriter
+func (h *Handler) serveToken(username, service string, access []*token.ResourceActions) {
+	writer := h.Ctx.ResponseWriter
 	//create token
-	rawToken, err := svc_utils.MakeToken(username, service, access)
+	rawToken, err := MakeToken(username, service, access)
 	if err != nil {
 		log.Errorf("Failed to make token, error: %v", err)
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -67,12 +67,15 @@ func (a *TokenHandler) serveToken(username, service string, access []*token.Reso
 	}
 	tk := make(map[string]string)
 	tk["token"] = rawToken
-	a.Data["json"] = tk
-	a.ServeJSON()
+	h.Data["json"] = tk
+	h.ServeJSON()
 }
 
 func authenticate(principal, password string) bool {
-	user, err := auth.Login(models.AuthModel{principal, password})
+	user, err := auth.Login(models.AuthModel{
+		Principal: principal,
+		Password:  password,
+	})
 	if err != nil {
 		log.Errorf("Error occurred in UserLogin: %v", err)
 		return false

@@ -17,16 +17,20 @@ package utils
 
 import (
 	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
 
 	"github.com/astaxie/beego/cache"
 )
 
 // Cache is the global cache in system.
 var Cache cache.Cache
+
+var registryClient *registry.Registry
 
 const catalogKey string = "catalog"
 
@@ -36,11 +40,19 @@ func init() {
 	if err != nil {
 		log.Errorf("Failed to initialize cache, error:%v", err)
 	}
+
+	endpoint := os.Getenv("REGISTRY_URL")
+	client := registry.NewClientUsernameAuthHandlerEmbeded("admin")
+	registryClient, err = registry.New(endpoint, client)
+	if err != nil {
+		log.Fatalf("error occurred while initializing authentication handler used by cache: %v", err)
+	}
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
-	result, err := RegistryAPIGet(BuildRegistryURL("_catalog"), "")
+	log.Debug("refreshing catalog cache...")
+	result, err := registry.APIGet(registry.BuildRegistryURL("_catalog"), "")
 	if err != nil {
 		return err
 	}
@@ -49,7 +61,23 @@ func RefreshCatalogCache() error {
 	if err != nil {
 		return err
 	}
-	Cache.Put(catalogKey, repoResp.Repositories, 600*time.Second)
+
+	repos := []string{}
+
+	for _, repo := range repoResp.Repositories {
+		tags, err := registryClient.ListTag(repo)
+		if err != nil {
+			log.Errorf("error occurred while list tag for %s: %v", repo, err)
+			return err
+		}
+
+		if len(tags) != 0 {
+			repos = append(repos, repo)
+			log.Debugf("add %s to catalog cache", repo)
+		}
+	}
+
+	Cache.Put(catalogKey, repos, 600*time.Second)
 	return nil
 }
 
