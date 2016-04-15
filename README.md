@@ -7,7 +7,7 @@ features added to facility Shurenyun internal usage.
 
   * Repository and tag info collected when docker push/pull
   * API support repository and tag info retriving and updating
-  * Shurenyun Compose support - which support auto App generations
+  * Shurenyun Compose support - which support auto app generation
   * mysql auto updating support now
 
 # Deploy(After Modification)

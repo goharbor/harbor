@@ -5,41 +5,30 @@ catalog:
   minimum_sry_version: v0.46.0
   questions:
     - variable: "api_key"
-      label: "DataDog Api Key"
-      description: "Your DataDog API key"
+      label: "这是一个字符串"
+      description: "这是一个字符串,必填"
       required: true
       type: "string"
     - variable: "host_labels"
-      label: "Host Labels to DataDog Tags"
-      description: |
-        Comma delimited list of host labels to use as DataDog 'key:value' tags.
-        Example: 'instance-flavor,aws-region'
+      label: "这是一个字符串"
+      description: "这是一个字符串选填"
       required: false
       type: "string"
     - variable: "global_service"
-      label: "Deploy as Global Service"
-      description: |
-        Enable this option to run an instance of the DataDog Agent on every host.
-        If you merely want a StatsD aggregator to which other services can send
-        metrics, then you probably want to disable this and instead enable the Standalone mode.
+      label: "这一个radio"
+      description: "这是一个radio，可选项为true或者false"
       required: true
       type: "boolean"
       default: true
-    - variable: "statsd_standalone"
-      label: "Deploy Standalone DogStatsD"
-      description: |
-        Enable this option to run only DogStatsD without the full Agent.
-        You can then send StatsD metrics to port 8125/udp of the service.
+    - variable: "select_value"
+      label: "这一个下拉框"
+      description: "这是一个下拉框"
       required: true
-      type: "boolean"
-      default: false
-    - variable: "statsd_namespace"
-      label: "StatsD Metric Namespace"
-      description: |
-        You may optionally set a namespace for all StatsD metrics aggregated by this service so
-        that 'metric.name' will become 'namespace.metric.name'.
-      required: false
-      type: "string"
+      type: "select"
+      options:
+        - "foo"
+        - "bar"
+      default: "foo"
 datadog-init:
   image: demoregistry.dataman-inc.com/library/drone
   net: BRIDGE
