@@ -46,7 +46,7 @@ The host must be connected to the Internet.
 
 If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
 
-Create a new project, e.g. myproject, in the admin portal. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
+Log in to the admin portal and create a new project, e.g. myproject. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
@@ -68,3 +68,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Users
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
+
+### Supporting Technologies
+<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>, an open source framework to build and develop applications in the Go way.
