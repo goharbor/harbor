@@ -16,11 +16,9 @@
 package utils
 
 import (
-	"encoding/json"
 	"os"
 	"time"
 
-	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
 
@@ -52,19 +50,14 @@ func init() {
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
-	result, err := registry.APIGet(registry.BuildRegistryURL("_catalog"), "")
-	if err != nil {
-		return err
-	}
-	repoResp := models.Repo{}
-	err = json.Unmarshal(result, &repoResp)
+	rs, err := registryClient.Catalog()
 	if err != nil {
 		return err
 	}
 
 	repos := []string{}
 
-	for _, repo := range repoResp.Repositories {
+	for _, repo := range rs {
 		tags, err := registryClient.ListTag(repo)
 		if err != nil {
 			log.Errorf("error occurred while list tag for %s: %v", repo, err)

@@ -225,15 +225,19 @@ func (ra *RepositoryAPI) GetTags() {
 	var tags []string
 
 	repoName := ra.GetString("repo_name")
-	result, err := registry.APIGet(registry.BuildRegistryURL(repoName, "tags", "list"), ra.username)
+
+	tags, err := ra.registry.ListTag(repoName)
 	if err != nil {
-		log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repoName, err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
-	} else {
-		t := tag{}
-		json.Unmarshal(result, &t)
-		tags = t.Tags
+		e, ok := errors.ParseError(err)
+		if ok {
+			log.Info(e)
+			ra.CustomAbort(e.StatusCode, e.Message)
+		} else {
+			log.Error(err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
 	}
+
 	ra.Data["json"] = tags
 	ra.ServeJSON()
 }
@@ -245,14 +249,20 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	item := models.RepoItem{}
 
-	result, err := registry.APIGet(registry.BuildRegistryURL(repoName, "manifests", tag), ra.username)
+	_, _, payload, err := ra.registry.PullManifest(repoName, tag, registry.ManifestVersion1)
 	if err != nil {
-		log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repoName, tag, err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
+		e, ok := errors.ParseError(err)
+		if ok {
+			log.Info(e)
+			ra.CustomAbort(e.StatusCode, e.Message)
+		} else {
+			log.Error(err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
 	}
+
 	mani := manifest{}
-	err = json.Unmarshal(result, &mani)
+	err = json.Unmarshal(payload, &mani)
 	if err != nil {
 		log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repoName, tag, err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")

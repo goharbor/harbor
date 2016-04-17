@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/docker/distribution/manifest"
+	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
@@ -37,6 +39,19 @@ type uRLBuilder struct {
 	root *url.URL
 }
 
+var (
+	// ManifestVersion1 : schema 1
+	ManifestVersion1 = manifest.Versioned{
+		SchemaVersion: 1,
+		MediaType:     schema1.MediaTypeManifest,
+	}
+	// ManifestVersion2 : schema 2
+	ManifestVersion2 = manifest.Versioned{
+		SchemaVersion: 2,
+		MediaType:     schema2.MediaTypeManifest,
+	}
+)
+
 // New returns an instance of Registry
 func New(endpoint string, client *http.Client) (*Registry, error) {
 	u, err := url.Parse(endpoint)
@@ -51,6 +66,46 @@ func New(endpoint string, client *http.Client) (*Registry, error) {
 			root: u,
 		},
 	}, nil
+}
+
+// Catalog ...
+func (r *Registry) Catalog() ([]string, error) {
+	repos := []string{}
+	req, err := http.NewRequest("GET", r.ub.buildCatalogURL(), nil)
+	if err != nil {
+		return repos, err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return repos, err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return repos, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		catalogResp := struct {
+			Repositories []string `json:"repositories"`
+		}{}
+
+		if err := json.Unmarshal(b, &catalogResp); err != nil {
+			return repos, err
+		}
+
+		repos = catalogResp.Repositories
+
+		return repos, nil
+	}
+
+	return repos, errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
 }
 
 // ListTag ...
@@ -135,15 +190,14 @@ func (r *Registry) ManifestExist(name, reference string) (digest string, exist b
 }
 
 // PullManifest ...
-func (r *Registry) PullManifest(name, reference string) (digest, mediaType string, payload []byte, err error) {
+func (r *Registry) PullManifest(name, reference string, version manifest.Versioned) (digest, mediaType string, payload []byte, err error) {
 	req, err := http.NewRequest("GET", r.ub.buildManifestURL(name, reference), nil)
 	if err != nil {
 		return
 	}
 
-	// request Schema 2 manifest, if the registry does not support it,
-	// Schema 1 manifest will be returned
-	req.Header.Set(http.CanonicalHeaderKey("Accept"), schema2.MediaTypeManifest)
+	// if the registry does not support schema 2, schema 1 manifest will be returned
+	req.Header.Set(http.CanonicalHeaderKey("Accept"), version.MediaType)
 
 	resp, err := r.client.Do(req)
 	if err != nil {
@@ -243,6 +297,10 @@ func (r *Registry) DeleteBlob(name, digest string) error {
 		StatusCode: resp.StatusCode,
 		Message:    string(b),
 	}
+}
+
+func (u *uRLBuilder) buildCatalogURL() string {
+	return fmt.Sprintf("%s/v2/_catalog", u.root.String())
 }
 
 func (u *uRLBuilder) buildTagListURL(name string) string {
