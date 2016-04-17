@@ -44,71 +44,21 @@ The host must be connected to the Internet.
     $ docker-compose up
     ```
 
-  If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
+If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
 
-  Create a new project, e.g. myproject, in the admin portal. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
-  ```sh
-  $ docker login reg.yourdomain.com
-  $ docker push reg.yourdomain.com/myproject/myrepo
-  ```
-
-4. Deploy harbor on kubernetes.
-  For now, it's a little tricky to start harbor on kubernetes because
-     1. registry uses https, so we need cert or workaround to avoid errors like this:
-        
-        ```
-        Error response from daemon: invalid registry endpoint https://{HOST}/v0/: unable to ping registry endpoint https://{HOST}/v0/
-        v2 ping attempt failed with error: Get https://{HOST}/v2/: EOF
-        v1 ping attempt failed with error: Get https://{HOST}/v1/_ping: EOF. If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add `--insecure-registry {HOST}` to the daemon's arguments. In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag; simply place the CA certificate at /etc/docker/certs.d/{HOST}/ca.crt
-        ```
-        
-        There is a workaround if you don't have a cert. The workaround is to add the host into the list of insecure registry by editting the ```/etc/default/docker``` file:
-        ```
-        sudo vi /etc/default/docker
-        ```
-        add the line at the end of file:
-        ```
-        DOCKER_OPTS="$DOCKER_OPTS --insecure-registry={HOST}"
-        ```
-        and restart docker service
-        ```
-        sudo service docker restart
-        ```
-     2. The registry config file need to know the IP (or DNS name) of the registry, but on kubernetes, you won't know the IP before the service is created. There are several workarounds to solve this problem for now:
-        - Use DNS name and link th DNS name with the IP after the service is created.
-        - Rebuild the registry image with the service IP after the service is created and use ```kubectl rolling-update``` to update to the new image.
-        
-  To start harbor on kubernetes, you first need to change the host name at the registry config file and build the images by running:
-  ```
-  cd Deploy
-  docker-compose build
-  docker build -f kubernetes/dockerfiles/proxy-dockerfile -t {your_account}/proxy .
-  docker build -f kubernetes/dockerfiles/registry-dockerfile -t {your_account}/registry .
-  docker build -f kubernetes/dockerfiles/ui-dockerfile -t {your_account}/deploy_ui .
-  docker tag deploy_mysql {your_account}/deploy_mysql
-  docker push {your_account}/proxy
-  docker push {your_account}/registry
-  docker push {your_account}/deploy_ui
-  docker push {your_account}/deploy_mysql
-  ```
-  
-  where "your_account" is your own registry. Then you need to update the "image" field in the ```*-rc.yaml``` files at:
-  ```
-  Deploy/kubernetes/mysql-rc.yaml
-  Deploy/kubernetes/proxy-rc.yaml
-  Deploy/kubernetes/registry-rc.yaml
-  Deploy/kubernetes/ui-rc.yaml
-  ```
-
-  Finally you can start the jobs by running:
-  ```
-  kubectl create -f Deploy/kubernetes
-  ```
+Log in to the admin portal and create a new project, e.g. myproject. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
+```sh
+$ docker login reg.yourdomain.com
+$ docker push reg.yourdomain.com/myproject/myrepo
+```
 
 **NOTE:**  
 To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
 
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
+
+### Deploy harbor on Kubernetes
+Detailed instruction about deploying harbor on Kubernetes is described [here](https://github.com/vmware/harbor/blob/master/kubernetes_deployment.md).
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
@@ -121,3 +71,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Users
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
+
+### Supporting Technologies
+<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>, an open source framework to build and develop applications in the Go way.
