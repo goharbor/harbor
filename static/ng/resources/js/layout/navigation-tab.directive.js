@@ -5,19 +5,37 @@
   angular
     .module('harbor.app')
     .directive('navigationTab', navigationTab);
+  
+  NavigationTabController.$inject = ['$window'];
     
+  function NavigationTabController($window) {
+    var vm = this;
+    vm.location = $window.location.pathname;
+    vm.closePane = closePane;
+    function closePane() {
+      vm.visible = false;
+    }
+  }
+  
   function navigationTab() {
     var directive = {
       restrict: 'E',
       templateUrl: getTemplateUrl,
       link: link,
-      controller: controller
+      scope: {
+        templateUrl: "@",
+        visible: "="
+      },
+      replace: true,
+      controller: NavigationTabController,
+      controllerAs: 'vm',
+      bindToController: true
     }
     
     return directive;
     
     function getTemplateUrl(element, attrs) {
-      return '/static/ng/resources/js/components/'+ attrs.templateUrl;
+      return '/static/ng/resources/js/layout/'+ attrs.templateUrl;
     }
     
     function link(scope, element, attrs, ctrl) {
@@ -34,17 +52,11 @@
       
       function click(event) {
         element.find('a').removeClass('active');
-        $(event.target).addClass('active');
+        $(event.target).not('span').addClass('active');
       }
      
     }
-    
-    controller.$inject = ['$window'];
-    
-    function controller($window) {
-      var vm = this;
-      vm.location = $window.location.pathname;
-    }
+   
   }
   
 })();

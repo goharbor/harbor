@@ -61,6 +61,10 @@
   margin-left: -1.2em;
 }
 
+.list-group {
+  box-shadow: none;
+}
+
 .list-group-item {
   text-align: left;
   margin-left: 20%;

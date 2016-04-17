@@ -6,7 +6,7 @@
     .module('harbor.services.log')
     .factory('ListLogService', ListLogService);
   
-  CurrentUserService.$inject = ['$http', '$log'];
+  ListLogService.$inject = ['$http', '$log'];
   
   function ListLogService($http, $log) {
     
