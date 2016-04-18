@@ -2,6 +2,7 @@
   'use strict';
   angular
     .module('harbor.app', [
+      'ngRoute',
       'harbor.services.user',
       'harbor.services.repository',
       'harbor.session',
