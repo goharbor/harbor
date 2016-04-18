@@ -29,6 +29,12 @@ import (
 	registry_errors "github.com/vmware/harbor/utils/registry/errors"
 )
 
+const (
+	// credential type
+	basicAuth string = "basic_auth"
+	secretKey string = "secret_key"
+)
+
 // Handler authorizes the request when encounters a 401 error
 type Handler interface {
 	// Schema : basic, bearer
@@ -38,13 +44,35 @@ type Handler interface {
 }
 
 // Credential ...
-type Credential struct {
-	// Username ...
-	Username string
-	// Password ...
-	Password string
-	// SecretKey ...
-	SecretKey string
+type Credential interface {
+	// Type returns the type of the credential: basic_auth, secret_key
+	Type() string
+	// Parameters returns a map, which contains parameters needed
+	Parameters() map[string]string
+}
+
+type basicAuthCredential struct {
+	username string
+	password string
+}
+
+// NewBasicAuthCredential ...
+func NewBasicAuthCredential(username, password string) Credential {
+	return &basicAuthCredential{
+		username: username,
+		password: password,
+	}
+}
+
+func (b *basicAuthCredential) Type() string {
+	return basicAuth
+}
+
+func (b *basicAuthCredential) Parameters() map[string]string {
+	params := make(map[string]string)
+	params["username"] = b.username
+	params["password"] = b.password
+	return params
 }
 
 type token struct {
@@ -53,14 +81,14 @@ type token struct {
 
 type standardTokenHandler struct {
 	client     *http.Client
-	credential *Credential
+	credential Credential
 }
 
 // NewStandardTokenHandler returns a standard token handler. The handler will request a token
 // from token server whose URL is specified in the "WWW-authentication" header and add it to
 // the origin request
 // TODO deal with https
-func NewStandardTokenHandler(credential *Credential) Handler {
+func NewStandardTokenHandler(credential Credential) Handler {
 	return &standardTokenHandler{
 		client: &http.Client{
 			Transport: http.DefaultTransport,
@@ -103,8 +131,10 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 		return err
 	}
 
-	// TODO support secretKey
-	r.SetBasicAuth(t.credential.Username, t.credential.Password)
+	if t.credential.Type() == basicAuth {
+		params := t.credential.Parameters()
+		r.SetBasicAuth(params["username"], params["password"])
+	}
 
 	resp, err := t.client.Do(r)
 	if err != nil {

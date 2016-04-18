@@ -63,12 +63,9 @@ func (ra *RepositoryAPI) Prepare() {
 
 	//no session, initialize a standard auth handler
 	if ra.userID == dao.NonExistUserID && len(ra.username) == 0 {
-		credential := &auth.Credential{}
-		username, password, ok := ra.Ctx.Request.BasicAuth()
-		if ok {
-			credential.Username = username
-			credential.Password = password
-		}
+		username, password, _ := ra.Ctx.Request.BasicAuth()
+
+		credential := auth.NewBasicAuthCredential(username, password)
 		client = registry.NewClientStandardAuthHandlerEmbeded(credential)
 		log.Debug("initializing standard auth handler")
 
