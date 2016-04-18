@@ -3,14 +3,14 @@
 from __future__ import print_function, unicode_literals # We require Python 2.6 or later
 from string import Template
 import os
-import six
+import sys
 from io import open
 
-if six.PY2:
+if sys.version_info[:3][0] == 2:
     import ConfigParser as ConfigParser
     import StringIO as StringIO
 
-if six.PY3:
+if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
 
