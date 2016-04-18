@@ -29,7 +29,6 @@ type RepoItem struct {
 	ID            string    `json:"Id"`
 	Parent        string    `json:"Parent"`
 	Created       time.Time `json:"Created"`
-	CreatedStr    string    `json:"CreatedStr"`
 	DurationDays  string    `json:"Duration Days"`
 	Author        string    `json:"Author"`
 	Architecture  string    `json:"Architecture"`

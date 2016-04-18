@@ -169,7 +169,6 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
-	item.CreatedStr = item.Created.Format("2006-01-02 15:04:05")
 	item.DurationDays = strconv.Itoa(int(time.Since(item.Created).Hours()/24)) + " days"
 
 	ra.Data["json"] = item
