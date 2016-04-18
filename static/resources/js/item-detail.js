@@ -245,7 +245,7 @@ jQuery(function(){
 				
 					var userId = userList[i].UserId;
 					var roleId = userList[i].RoleId;
-					var username = userList[i].Username;
+					var username = userList[i].username;
 					var roleNameList = [];
 				
 					for(var j = i; j < userList.length; i++, j++){
@@ -331,7 +331,6 @@ jQuery(function(){
 						getUserRoleCallback(userId);				
 					});
 					$("#tblUser .glyphicon-trash").on("click", function(){
-						var roleId = $(this).attr("roleid");
 						var userId = $(this).attr("userid");
 						new AjaxUtil({
 						  url: "/api/projects/" + $("#projectId").val() + "/members/" + userId,
