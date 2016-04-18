@@ -124,15 +124,16 @@ jQuery(function(){
 						  url: "/api/repositories/manifests?repo_name=" + repoName + "&tag=" + imageId,
 						  type: "get",
 						  success: function(data, status, xhr){
-  							  if(data){	
-                      for(var i in data){
-                         	if(data[i] == ""){
-                      	      data[i] = "N/A";
-                         }
-                      }								
-                      data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");								
-                      $("#dlgModal").dialogModal({"title": i18n.getMessage("image_details"), "content": data});		
-  							  }
+							  if(data){	
+							     for(var i in data){
+									if(data[i] == ""){
+										data[i] = "N/A";
+									}
+								 }								
+								 data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");
+							 
+							     $("#dlgModal").dialogModal({"title": i18n.getMessage("image_details"), "content": data});		
+							  }
 						  }
 						}).exec();
 					});
@@ -330,6 +331,7 @@ jQuery(function(){
 						getUserRoleCallback(userId);				
 					});
 					$("#tblUser .glyphicon-trash").on("click", function(){
+						var roleId = $(this).attr("roleid");
 						var userId = $(this).attr("userid");
 						new AjaxUtil({
 						  url: "/api/projects/" + $("#projectId").val() + "/members/" + userId,
