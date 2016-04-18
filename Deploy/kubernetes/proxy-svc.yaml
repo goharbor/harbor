@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+  labels:
+    name: proxy
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+    - name: https
+      port: 443
+  selector:
+    name: proxy

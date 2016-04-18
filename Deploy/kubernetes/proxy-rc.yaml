@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: proxy
+  labels:
+    name: proxy
+spec:
+  replicas: 1
+  selector:
+    name: proxy
+  template:
+    metadata:
+      labels:
+        name: proxy
+    spec:
+      containers:
+      - name: proxy
+        image: caicloud/harbor_proxy:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 443

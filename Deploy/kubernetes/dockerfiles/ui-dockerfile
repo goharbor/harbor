@@ -1,0 +1,4 @@
+FROM deploy_ui
+
+ADD ./config/ui/app.conf /etc/ui/app.conf
+ADD ./config/ui/private_key.pem /etc/ui/private_key.pem

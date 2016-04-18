@@ -1,0 +1,33 @@
+version: 0.1
+log:
+  level: debug
+  fields:
+    service: registry
+storage:
+    cache:
+        layerinfo: inmemory
+    filesystem:
+        rootdirectory: /storage
+    maintenance:
+        uploadpurging:
+            enabled: false
+http:
+    addr: :5000
+    secret: placeholder
+    debug:
+        addr: localhost:5001
+auth:
+  token:
+    issuer: registry-token-issuer
+    realm: http://harbor.caicloud.io/service/token
+    rootcertbundle: /etc/registry/root.crt
+    service: token-service
+
+notifications:
+  endpoints:
+      - name: harbor
+        disabled: false
+        url: http://harbor.caicloud.io/service/notifications
+        timeout: 500
+        threshold: 5
+        backoff: 1000
