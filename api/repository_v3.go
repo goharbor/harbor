@@ -188,7 +188,9 @@ func (ra *RepositoryV3API) PostApps() {
 		case string:
 			requestBody.Answers[k] = v.(string)
 		case float64:
-			requestBody.Answers[k] = fmt.Sprintf("%d", int32(v.(float64)))
+			requestBody.Answers[k] = fmt.Sprintf("%f", v.(float64))
+		case int32:
+			requestBody.Answers[k] = fmt.Sprintf("%d", v)
 		}
 	}
 

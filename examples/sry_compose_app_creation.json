@@ -2,7 +2,10 @@
   "app": {
     "appName": "foobar",
     "imageVersion": "v0.1",
-    "clusterId": 1
+    "clusterId": 1,
+    "cpu": 0.3,
+    "mem": 1012,
+    "instances": 3
   },
   "answers": {
     "api_key": "testing-api-key",
