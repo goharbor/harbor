@@ -45,10 +45,8 @@ type Handler interface {
 
 // Credential ...
 type Credential interface {
-	// Type returns the type of the credential: basic_auth, secret_key
-	Type() string
-	// Parameters returns a map, which contains parameters needed
-	Parameters() map[string]string
+	// AddAuthorization adds authorization information to request
+	AddAuthorization(req *http.Request)
 }
 
 type basicAuthCredential struct {
@@ -64,15 +62,8 @@ func NewBasicAuthCredential(username, password string) Credential {
 	}
 }
 
-func (b *basicAuthCredential) Type() string {
-	return basicAuth
-}
-
-func (b *basicAuthCredential) Parameters() map[string]string {
-	params := make(map[string]string)
-	params["username"] = b.username
-	params["password"] = b.password
-	return params
+func (b *basicAuthCredential) AddAuthorization(req *http.Request) {
+	req.SetBasicAuth(b.username, b.password)
 }
 
 type token struct {
@@ -131,10 +122,7 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 		return err
 	}
 
-	if t.credential.Type() == basicAuth {
-		params := t.credential.Parameters()
-		r.SetBasicAuth(params["username"], params["password"])
-	}
+	t.credential.AddAuthorization(r)
 
 	resp, err := t.client.Do(r)
 	if err != nil {
