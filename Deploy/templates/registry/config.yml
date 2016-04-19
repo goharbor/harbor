@@ -11,6 +11,8 @@ storage:
     maintenance:
         uploadpurging:
             enabled: false
+    delete:
+        enabled: true
 http:
     addr: :5000
     secret: placeholder

@@ -18,6 +18,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,9 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry/auth"
+	"github.com/vmware/harbor/utils/registry/errors"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -36,6 +40,7 @@ type RepositoryAPI struct {
 	BaseAPI
 	userID   int
 	username string
+	registry *registry.Registry
 }
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
@@ -53,6 +58,43 @@ func (ra *RepositoryAPI) Prepare() {
 	} else {
 		ra.username = username
 	}
+
+	var client *http.Client
+
+	//no session, initialize a standard auth handler
+	if ra.userID == dao.NonExistUserID && len(ra.username) == 0 {
+		username, password, _ := ra.Ctx.Request.BasicAuth()
+
+		credential := auth.NewBasicAuthCredential(username, password)
+		client = registry.NewClientStandardAuthHandlerEmbeded(credential)
+		log.Debug("initializing standard auth handler")
+
+	} else {
+		// session works, initialize a username auth handler
+		username := ra.username
+		if len(username) == 0 {
+			user, err := dao.GetUser(models.User{
+				UserID: ra.userID,
+			})
+			if err != nil {
+				log.Errorf("error occurred whiling geting user for initializing a username auth handler: %v", err)
+				return
+			}
+
+			username = user.Username
+		}
+
+		client = registry.NewClientUsernameAuthHandlerEmbeded(username)
+		log.Debug("initializing username auth handler: %s", username)
+	}
+
+	endpoint := os.Getenv("REGISTRY_URL")
+	r, err := registry.New(endpoint, client)
+	if err != nil {
+		log.Fatalf("error occurred while initializing auth handler for repository API: %v", err)
+	}
+
+	ra.registry = r
 }
 
 // Get ...
@@ -77,11 +119,13 @@ func (ra *RepositoryAPI) Get() {
 		ra.RenderError(http.StatusForbidden, "")
 		return
 	}
+
 	repoList, err := svc_utils.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		ra.RenderError(http.StatusInternalServerError, "internal sever error")
 	}
+
 	projectName := p.Name
 	q := ra.GetString("q")
 	var resp []string
@@ -103,6 +147,56 @@ func (ra *RepositoryAPI) Get() {
 		ra.Data["json"] = repoList
 	}
 	ra.ServeJSON()
+}
+
+// Delete ...
+func (ra *RepositoryAPI) Delete() {
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+
+	tags := []string{}
+	tag := ra.GetString("tag")
+	if len(tag) == 0 {
+		tagList, err := ra.registry.ListTag(repoName)
+		if err != nil {
+			e, ok := errors.ParseError(err)
+			if ok {
+				log.Info(e)
+				ra.CustomAbort(e.StatusCode, e.Message)
+			} else {
+				log.Error(err)
+				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			}
+
+		}
+		tags = append(tags, tagList...)
+
+	} else {
+		tags = append(tags, tag)
+	}
+
+	for _, t := range tags {
+		if err := ra.registry.DeleteTag(repoName, t); err != nil {
+			e, ok := errors.ParseError(err)
+			if ok {
+				ra.CustomAbort(e.StatusCode, e.Message)
+			} else {
+				log.Error(err)
+				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			}
+		}
+		log.Infof("delete tag: %s %s", repoName, t)
+	}
+
+	go func() {
+		log.Debug("refreshing catalog cache")
+		if err := svc_utils.RefreshCatalogCache(); err != nil {
+			log.Errorf("error occurred while refresh catalog cache: %v", err)
+		}
+	}()
+
 }
 
 type tag struct {
@@ -128,15 +222,19 @@ func (ra *RepositoryAPI) GetTags() {
 	var tags []string
 
 	repoName := ra.GetString("repo_name")
-	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "tags", "list"), ra.username)
+
+	tags, err := ra.registry.ListTag(repoName)
 	if err != nil {
-		log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repoName, err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get repo tags")
-	} else {
-		t := tag{}
-		json.Unmarshal(result, &t)
-		tags = t.Tags
+		e, ok := errors.ParseError(err)
+		if ok {
+			log.Info(e)
+			ra.CustomAbort(e.StatusCode, e.Message)
+		} else {
+			log.Error(err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
 	}
+
 	ra.Data["json"] = tags
 	ra.ServeJSON()
 }
@@ -148,14 +246,20 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	item := models.RepoItem{}
 
-	result, err := svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repoName, "manifests", tag), ra.username)
+	_, _, payload, err := ra.registry.PullManifest(repoName, tag, registry.ManifestVersion1)
 	if err != nil {
-		log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repoName, tag, err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
+		e, ok := errors.ParseError(err)
+		if ok {
+			log.Info(e)
+			ra.CustomAbort(e.StatusCode, e.Message)
+		} else {
+			log.Error(err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
 	}
+
 	mani := manifest{}
-	err = json.Unmarshal(result, &mani)
+	err = json.Unmarshal(payload, &mani)
 	if err != nil {
 		log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repoName, tag, err)
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
