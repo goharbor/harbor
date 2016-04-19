@@ -17,7 +17,6 @@ package controllers
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -62,33 +61,6 @@ func (ac *AddUserController) Get() {
 		ac.ForwardTo("page_title_add_user", "register")
 	} else {
 		ac.Redirect("/signIn", http.StatusFound)
-	}
-}
-
-// SignUp insert data into DB based on data in form.
-func (cc *CommonController) SignUp() {
-
-	if !(cc.AuthMode == "db_auth") {
-		cc.CustomAbort(http.StatusForbidden, "")
-	}
-
-	if !(cc.SelfRegistration || cc.IsAdmin) {
-		log.Warning("Registration can only be used by admin role user when self-registration is off.")
-		cc.CustomAbort(http.StatusForbidden, "")
-	}
-
-	username := strings.TrimSpace(cc.GetString("username"))
-	email := strings.TrimSpace(cc.GetString("email"))
-	realname := strings.TrimSpace(cc.GetString("realname"))
-	password := strings.TrimSpace(cc.GetString("password"))
-	comment := strings.TrimSpace(cc.GetString("comment"))
-
-	user := models.User{Username: username, Email: email, Realname: realname, Password: password, Comment: comment}
-
-	_, err := dao.Register(user)
-	if err != nil {
-		log.Errorf("Error occurred in Register: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
 
