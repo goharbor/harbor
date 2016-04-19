@@ -1,18 +1,18 @@
-<div class="container-fluid container-fluid-custom">
+<div class="container-fluid container-fluid-custom" ng-controller="DetailsController as vm">
   <div class="container container-custom">
     <div class="row extend-height">
   	  <div class="col-xs-12 col-md-12 extend-height">
   	    <div class="section"> 
   		    <h4 class="page-header">My Projects<span class="gutter">|</span><a href="#" class="title-color">Public Projects</a></h4>
   		    <div class="switch-pane">
-            <switch-pane-projects open="vm.open" project-name="myproject"></switch-pane-projects>
-            <span>
-              <navigation-details visible="vm.open"></navigation-details>
+            <switch-pane-projects is-open="vm.open" selected-project="vm.selectedProject"></switch-pane-projects>
+            <span> 
+              <navigation-details is-open="vm.open"></navigation-details>
             </span>
   		    </div>
-          <retrieve-projects visible="vm.open"></retrieve-projects>
+          <retrieve-projects is-open="vm.open" projects="vm.projects" selected-project="vm.selectedProject"></retrieve-projects>
           <!-- Tab panes -->
-  		    <div class="tab-content">
+  		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
            <ng-view></ng-view>
           </div>
         </div>

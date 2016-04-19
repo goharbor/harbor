@@ -6,19 +6,26 @@
     .module('harbor.details')
     .directive('switchPaneProjects', switchPaneProjects);
 
-  function SwitchPaneProjectsController() {
+  SwitchPaneProjectsController.$inject = ['$scope'];
+
+  function SwitchPaneProjectsController($scope) {
     var vm = this;
-    vm.projectName = "myrepo1";
-    vm.open = false;    
+    $scope.$on('isOpen', function(e, d){
+      vm.isOpen = d;
+      console.log('vm.isOpen:' + vm.isOpen);
+    });
+    $scope.$watch('vm.selectedProject', function(current, origin) {
+      vm.projectName = current.name;  
+    });
+    
     vm.switchPane = switchPane;
     
     function switchPane() {
-      if(vm.open) {
-        vm.open = false;
+      if(vm.isOpen) {
+        vm.isOpen = false;
       }else{
-        vm.open = true;
+        vm.isOpen = true;
       }
- console.log(vm.open);
     }
   }
   
@@ -28,8 +35,8 @@
       templateUrl: '/static/ng/resources/js/components/details/switch-pane-projects.directive.html',
       replace: true,
       scope: {
-        'projectName': '@',
-        'open': '='
+        'selectedProject': '=',
+        'isOpen': '='
       },
       controller: SwitchPaneProjectsController,
       controllerAs: 'vm',

@@ -8,7 +8,7 @@
   ListRepositoryController.$inject = ['ListRepositoryService'];
   
   function ListRepositoryController(ListRepositoryService) {
-  
+    
   }
   
   function listRepository() {
@@ -17,7 +17,7 @@
       templateUrl: '/static/ng/resources/js/components/repository/list-repository.directive.html',
       replace: true,
       scope: {
-        info: '='
+        'info': '='
       },
       controller: ListRepositoryController,
       controllerAs: 'vm',

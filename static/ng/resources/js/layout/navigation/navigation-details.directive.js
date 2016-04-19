@@ -18,7 +18,7 @@
     }
      
     function clickTab() { 
-      vm.visible = false;  
+      vm.isOpen = false;  
       vm.url = $location.url();   
     }
  
@@ -30,7 +30,7 @@
       templateUrl: '/static/ng/resources/js/layout/navigation/navigation-details.directive.html',
       link: link,
       scope: {
-        visible: "="
+        'isOpen': "="
       },
       replace: true,
       controller: NavigationDetailsController,

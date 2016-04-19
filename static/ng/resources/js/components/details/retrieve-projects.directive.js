@@ -4,32 +4,20 @@
   
   angular
     .module('harbor.details')
-    .constant('mockupProjects', mockupProjects)
     .directive('retrieveProjects', retrieveProjects);
-  
-  function mockupProjects() {
-    var data = [
-      { "id": 1, "name" : "myrepo"},
-      { "id": 2, "name" : "myproject"},
-      { "id": 3, "name" : "harbor_project"},
-      { "id": 4, "name" : "legacy"} 
-    ];
-    return data;
-  }
-  
-  RetrieveProjectsController.$inject = ['mockupProjects'];
  
-  function RetrieveProjectsController(mockupProjects) {
+  function RetrieveProjectsController() {
     var vm = this;
-    vm.projects = mockupProjects();
+   
     vm.selectItem = selectItem;
     vm.filterProjects = filterProjects;
     
     function selectItem(item) {
        vm.selectedId = item.id;
+       vm.selectedProject = item;
     }
     
-    var totalProjects = mockupProjects();
+    var totalProjects = vm.projects;
     
     function filterProjects(input) {
      
@@ -56,7 +44,9 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/details/retrieve-projects.directive.html',
       scope: {
-        'visible': '='
+        'projects': '=',
+        'isOpen': '=',
+        'selectedProject': '='
       },
       replace: true,
       controller: RetrieveProjectsController,
