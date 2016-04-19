@@ -1,98 +1,133 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals # We require Python 2.6 or later
-from string import Template
-import os
-import sys
-from io import open
+#!/bin/bash
+# Requires: openssl
 
-if sys.version_info[:3][0] == 2:
-    import ConfigParser as ConfigParser
-    import StringIO as StringIO
+source ./harbor.cfg
 
-if sys.version_info[:3][0] == 3:
-    import configparser as ConfigParser
-    import io as StringIO
+config_path="./config"
+ui_path="./config/ui"
+db_path="./config/db"
+tpl_path="./templates"
 
-#Read configurations
-conf = StringIO.StringIO()
-conf.write("[configuration]\n")
-conf.write(open("harbor.cfg").read())
-conf.seek(0, os.SEEK_SET)
-rcp = ConfigParser.RawConfigParser()
-rcp.readfp(conf)
+mkdir -p $tpl_path
+mkdir -p $ui_path $db_path
 
-hostname = rcp.get("configuration", "hostname")
-ui_url = rcp.get("configuration", "ui_url_protocol") + "://" + hostname
-email_server = rcp.get("configuration", "email_server")
-email_server_port = rcp.get("configuration", "email_server_port")
-email_username = rcp.get("configuration", "email_username")
-email_password = rcp.get("configuration", "email_password")
-email_from = rcp.get("configuration", "email_from")
-harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
-auth_mode = rcp.get("configuration", "auth_mode")
-ldap_url = rcp.get("configuration", "ldap_url")
-ldap_basedn = rcp.get("configuration", "ldap_basedn")
-db_password = rcp.get("configuration", "db_password")
-self_registration = rcp.get("configuration", "self_registration")
-########
+declare -a arr=("$ui_path/env" "$ui_path/app.conf" "$config_path/registry/config.yml" "$db_path/env")
 
-base_dir = os.path.dirname(__file__)
-config_dir = os.path.join(base_dir, "config")
-templates_dir = os.path.join(base_dir, "templates")
+for i in "${arr[@]}"; do
+    if [ -e $i ]; then
+        echo "Clearing the configuration file: "$i
+        rm $i
+    fi
+done
 
+echo "appname = registry
+runmode = dev
 
-ui_config_dir = os.path.join(config_dir,"ui")
-if not os.path.exists(ui_config_dir):
-    os.makedirs(os.path.join(config_dir, "ui"))
+[lang]
+types = en-US|zh-CN
+names = en-US|zh-CN
 
-db_config_dir = os.path.join(config_dir, "db")
-if not os.path.exists(db_config_dir):
-    os.makedirs(os.path.join(config_dir, "db"))
+[dev]
+httpport = 80
 
-def render(src, dest, **kw):
-    t = Template(open(src, 'r').read())
-    with open(dest, 'w') as f:
-        f.write(t.substitute(**kw))
-    print("Generated configuration file: %s" % dest)
+[mail]
+host = $email_server
+port = $email_server_port
+username = $email_username
+password = $email_password
+from = $email_from" > $ui_path/app.conf
+echo "Generated configuration file: "$ui_path/app.conf
 
-ui_conf_env = os.path.join(config_dir, "ui", "env")
-ui_conf = os.path.join(config_dir, "ui", "app.conf")
-registry_conf = os.path.join(config_dir, "registry", "config.yml")
-db_conf_env = os.path.join(config_dir, "db", "env")
+echo "MYSQL_HOST=mysql
+MYSQL_PORT=3306
+MYSQL_USR=root
+MYSQL_PWD=$db_password
+REGISTRY_URL=http://registry:5000
+CONFIG_PATH=/etc/ui/app.conf
+HARBOR_REG_URL=$hostname
+HARBOR_ADMIN_PASSWORD=$harbor_admin_password
+HARBOR_URL=$hostname
+AUTH_MODE=$auth_mode
+LDAP_URL=$ldap_url
+LDAP_BASE_DN=$ldap_basedn
+SELF_REGISTRATION=$self_registration
+LOG_LEVEL=debug" > $ui_path/env
+echo "Generated configuration file: "$ui_path/env
 
-conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env ]
-for f in conf_files:
-    if os.path.exists(f):
-        print("Clearing the configuration file: %s" % f)
-        os.remove(f)
+echo "MYSQL_ROOT_PASSWORD=$db_password" > $config_path/db/env
+echo "Generated configuration file: "$config_path/db/env
 
-render(os.path.join(templates_dir, "ui", "env"),
-        ui_conf_env,
-        hostname=hostname,
-        db_password=db_password,
-        ui_url=ui_url,
-        auth_mode=auth_mode,
-        admin_pwd=harbor_admin_password,
-        ldap_url=ldap_url,
-        ldap_basedn=ldap_basedn,
-	self_registration=self_registration)
+echo "version: 0.1
+log:
+  level: debug
+  fields:
+    service: registry
+storage:
+    cache:
+        layerinfo: inmemory
+    filesystem:
+        rootdirectory: /storage
+    maintenance:
+        uploadpurging:
+            enabled: false
+    delete:
+        enabled: true
+http:
+    addr: :5000
+    secret: placeholder
+    debug:
+        addr: localhost:5001
+auth:
+  token:
+    issuer: registry-token-issuer
+    realm: $ui_url/service/token
+    rootcertbundle: /etc/registry/root.crt
+    service: token-service
 
-render(os.path.join(templates_dir, "ui", "app.conf"),
-        ui_conf,
-        email_server=email_server,
-        email_server_port=email_server_port,
-        email_user_name=email_username,
-        email_user_password=email_password,
-        email_from=email_from,
-        ui_url=ui_url)
+notifications:
+  endpoints:
+      - name: harbor
+        disabled: false
+        url: http://ui/service/notifications
+        timeout: 500
+        threshold: 5
+        backoff: 1000" > $config_path/registry/config.yml
+echo "Generated configuration file: "$config_path/registry/config.yml
 
-render(os.path.join(templates_dir, "registry", "config.yml"),
-        registry_conf,
-        ui_url=ui_url)
+is_fail=0
 
-render(os.path.join(templates_dir, "db", "env"),
-        db_conf_env,
-        db_password=db_password)
+if [ $customize_token == "on" ];then
 
-print("The configuration files are ready, please use docker-compose to start the service.")
+    if [ -e $ui_path/private_key.pem ]; then
+        echo "clearing the origin private_key.pem in "$ui_pth
+        rm $ui_path/private_key.pem
+    fi
+    openssl genrsa -out $ui_path/private_key.pem 4096
+    if [ -e $ui_path/private_key.pem ]; then
+        echo "private_key.gem has been generated in "$ui_path
+    else echo "generate private_key.gem fail."
+        is_fail=1
+    fi
+
+    if [ -e $config_path/registry/root.crt ]; then
+        echo "clearing the origin root.crt in "$config_path"/registry"
+        rm $config_path/registry/root.crt
+    fi
+
+    openssl req -new -x509 -key $ui_path/private_key.pem -out $config_path/registry/root.crt -days 3650 \
+        -subj "/C=$crt_countryname/ST=$crt_state/L=$crt_name/O=$crt_organizationname/OU=$crt_organizationalunitname"
+    if [ -e $config_path/registry/root.crt ]; then
+        echo "root.crt has been generated in "$config_path"/registry"
+    else echo "generate root.crt fail."
+        is_fail=1
+    fi
+elif [ $customize_token != "off" ]; then
+    echo "wrong args found in customize_token: "$customize_token
+    is_fail=1
+fi
+
+if [ $is_fail -eq 0 ];then
+    echo "The configuration files are ready, please use docker-compose to start the service."
+else
+    echo "some problem occurs."
+fi
