@@ -18,7 +18,7 @@
       }else{
         vm.open = true;
       }
- 
+ console.log(vm.open);
     }
   }
   

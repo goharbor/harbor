@@ -1,8 +1,8 @@
 (function() {
-
+  
   'use strict';
   
   angular
-    .module('harbor.header');
+    .module('harbor.layout.log', []);
   
 })();

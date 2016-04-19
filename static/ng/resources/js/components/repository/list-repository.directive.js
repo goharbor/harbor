@@ -3,7 +3,7 @@
   
   angular
     .module('harbor.repository')
-    .directive('listRepository', listRepository);
+    .directive('listRepository', listRepository);   
     
   ListRepositoryController.$inject = ['ListRepositoryService'];
   
@@ -16,6 +16,9 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/repository/list-repository.directive.html',
       replace: true,
+      scope: {
+        info: '='
+      },
       controller: ListRepositoryController,
       controllerAs: 'vm',
       bindToController: true

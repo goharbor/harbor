@@ -6,14 +6,14 @@
   		    <h4 class="page-header">My Projects<span class="gutter">|</span><a href="#" class="title-color">Public Projects</a></h4>
   		    <div class="switch-pane">
             <switch-pane-projects open="vm.open" project-name="myproject"></switch-pane-projects>
-            <navigation-tab template-url="navigation-details.directive.html" visible="vm.open"></navigation-tab>
+            <span>
+              <navigation-details visible="vm.open"></navigation-details>
+            </span>
   		    </div>
           <retrieve-projects visible="vm.open"></retrieve-projects>
           <!-- Tab panes -->
   		    <div class="tab-content">
-            <list-repository></list-repository>
-            <list-user></list-user>
-            <list-log></list-log>     
+           <ng-view></ng-view>
           </div>
         </div>
       </div>
