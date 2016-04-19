@@ -21,6 +21,9 @@ features added to facility Shurenyun internal usage.
 
   * COPY /path/to/sql/dir into docker container, accessible by SQL_PATH
 
+  * COPY /code/root/CATEGORIES into docner container, same dir as harbor
+    binary
+
   * Nginx forward change, add harbor as upstream, forward
   /api/v3/repositories to harbor.
 
