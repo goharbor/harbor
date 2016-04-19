@@ -82,7 +82,7 @@ func InitDB() {
 				c.Close()
 				ch <- 1
 			} else {
-				log.Info("failed to connect to db, retry after 2 seconds...")
+				log.Errorf("failed to connect to db, retry after 2 seconds :%v", err)
 				time.Sleep(2 * time.Second)
 			}
 		}
