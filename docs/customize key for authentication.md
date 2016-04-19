@@ -10,17 +10,35 @@ By default, Harbor uses default private key and certificate in authentication. A
   
 **1)Generate a private key:**
 
-
 ```sh
     openssl genrsa -out private_key.pem 4096    
 ```
    
-**2)Generate a certificate:** 
+**2)Generate a certificate:** You are about to be asked to enter information that will be incorporated into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank. Following are what you're asked to enter.
+
+Country Name (2 letter code) [AU]:
+
+State or Province Name (full name) [Some-State]:
+
+Locality Name (eg, city) []:
+
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:
+
+Organizational Unit Name (eg, section) []:
+
+Common Name (eg,  server FQDN or YOUR name) []:
+
+Email Address []:
 
 ```sh
     openssl req -new -x509 -key private_key.pem -out root.crt -days 3650
 ```    
-   
+After you execute these two commands, you will see private_key.pem and root.crt in the **current directory**, just type "ls", you'll see them.
+
 3.Refer to [Installation Guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md) to install Harbor, After you execute ./prepare, Harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
 
 4.Following are what you should do:
