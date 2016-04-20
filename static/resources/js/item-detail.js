@@ -130,9 +130,8 @@ jQuery(function(){
 										data[i] = "N/A";
 									}
 								 }								
-								 data.Created = data.CreatedStr;
-							     delete data.CreatedStr;
-								
+								 data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");
+							 
 							     $("#dlgModal").dialogModal({"title": i18n.getMessage("image_details"), "content": data});		
 							  }
 						  }
@@ -246,7 +245,7 @@ jQuery(function(){
 				
 					var userId = userList[i].UserId;
 					var roleId = userList[i].RoleId;
-					var username = userList[i].Username;
+					var username = userList[i].username;
 					var roleNameList = [];
 				
 					for(var j = i; j < userList.length; i++, j++){

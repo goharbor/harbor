@@ -1,0 +1,6 @@
+FROM library/registry:2.3.0
+
+ADD ./config/registry/ /etc/registry/
+ADD ./kubernetes/dockerfiles/registry-config.yml /etc/registry/config.yml 
+
+CMD ["/etc/registry/config.yml"]

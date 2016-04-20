@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/controllers"
 	"github.com/vmware/harbor/service"
+	"github.com/vmware/harbor/service/token"
 
 	"github.com/astaxie/beego"
 )
@@ -32,7 +33,6 @@ func initRouters() {
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/logout", &controllers.CommonController{}, "get:Logout")
 	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
-	beego.Router("/signUp", &controllers.CommonController{}, "post:SignUp")
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
@@ -56,6 +56,7 @@ func initRouters() {
 	beego.Router("/api/projects/:pid/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
 	beego.Router("/api/projects/:id/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/users", &api.UserAPI{})
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
@@ -63,5 +64,5 @@ func initRouters() {
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
-	beego.Router("/service/token", &service.TokenHandler{})
+	beego.Router("/service/token", &token.Handler{})
 }

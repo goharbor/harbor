@@ -109,7 +109,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 	return u, err
 }
 
-// ToggleUserAdminRole gives a user admim role.
+// ToggleUserAdminRole gives a user admin role.
 func ToggleUserAdminRole(u models.User) error {
 	o := orm.NewOrm()
 

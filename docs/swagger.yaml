@@ -473,6 +473,36 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
+    delete:
+      summary: Delete a repository or a tag in a repository.
+      description: |
+        This endpoint let user delete repositories and tags with repo name and tag.
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          format: string
+          required: true
+          description: The name of repository which will be deleted.
+        - name: tag
+          in: query
+          type: string
+          format: string
+          required: false
+          description: Tag of a repository.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete repository or tag successfully.
+        400:
+          description: Invalid repo_name.
+        401:
+          description: Unauthorized.
+        404:
+          description: Repository or tag not found.
+        403:
+          description: Forbidden.		
   /repositories/tags:
     get:
       summary: Get tags of a relevant repository.
