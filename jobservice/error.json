@@ -1,0 +1,10 @@
+{
+"job_type": "notexist",
+"options": {
+             "whatever": "whatever"
+            },
+"parms": {
+           "test": "test"
+          },
+"cron_str": ""
+}
