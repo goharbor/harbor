@@ -36,4 +36,4 @@ drone:
     - /var/run/docker.sock:/var/run/docker.sock
     - /var/lib/drone:/var/lib/drone
   ports:
-    - "8080"
+    - "8081:8080"

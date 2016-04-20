@@ -36,5 +36,5 @@ drone:
     - /var/run/docker.sock:/var/run/docker.sock
     - /var/lib/drone:/var/lib/drone
   ports:
-    - "3306:3306"
+    - "3307:3306"
 
