@@ -2,6 +2,7 @@ package compose_processors
 
 import (
 	"github.com/vmware/harbor/compose/compose"
+	"github.com/vmware/harbor/utils"
 	"strconv"
 )
 
@@ -18,7 +19,9 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 
 	for _, app := range sry_compose.Applications {
 		clusterId_, _ := strconv.Atoi(clusterId)
-		app.ClusterId = int32(clusterId_)
+		if int32(clusterId_) != 0 {
+			app.ClusterId = int32(clusterId_)
+		}
 	}
 
 	// appname
@@ -38,40 +41,42 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	}
 
 	for _, app := range sry_compose.Applications {
-		app.ImageVersion = imageVersion
+		if len(imageVersion) != 0 {
+			app.ImageVersion = imageVersion
+		}
 	}
 
 	// cpu
 	cpu, ok := sry_compose.Answers["cpus"]
-	if !ok {
-		cpu, ok = sry_compose.Answers["cpus"]
-	}
-
-	for _, app := range sry_compose.Applications {
-		cpu_, _ := strconv.ParseFloat(cpu, 32)
-		app.Cpu = float32(cpu_)
+	if ok {
+		for _, app := range sry_compose.Applications {
+			cpu_, _ := strconv.ParseFloat(cpu, 32)
+			if !utils.FloatEquals(0, float32(cpu_)) {
+				app.Cpu = float32(cpu_)
+			}
+		}
 	}
 
 	// mem
 	mem, ok := sry_compose.Answers["mem"]
-	if !ok {
-		mem, ok = sry_compose.Answers["mem"]
-	}
-
-	for _, app := range sry_compose.Applications {
-		mem_, _ := strconv.ParseFloat(mem, 32)
-		app.Mem = float32(mem_)
+	if ok {
+		for _, app := range sry_compose.Applications {
+			mem_, _ := strconv.ParseFloat(mem, 32)
+			if !utils.FloatEquals(0, float32(mem_)) {
+				app.Mem = float32(mem_)
+			}
+		}
 	}
 
 	// instances
 	instances, ok := sry_compose.Answers["instances"]
-	if !ok {
-		instances, ok = sry_compose.Answers["instances"]
-	}
-
-	for _, app := range sry_compose.Applications {
-		instances_, _ := strconv.ParseFloat(instances, 32)
-		app.Instances = int32(instances_)
+	if ok {
+		for _, app := range sry_compose.Applications {
+			instances_, _ := strconv.ParseFloat(instances, 32)
+			if int32(instances_) != 0 {
+				app.Instances = int32(instances_)
+			}
+		}
 	}
 
 	return sry_compose
