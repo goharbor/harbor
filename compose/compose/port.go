@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"log"
-	"strconv"
 	"strings"
 )
 
 type Port struct {
 	HostAddr      string
-	HostPort      int
+	HostPort      string
 	ContainerAdd  string
-	ContainerPort int
+	ContainerPort string
 	Protocol      string
 }
 
@@ -32,26 +31,20 @@ func (p *Port) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	splited := strings.Split(portsConfig, ":")
 	if len(splited) == 1 {
-		hostPort, _ := strconv.Atoi(splited[0])
-		containerPort, _ := strconv.Atoi(splited[0])
-		p.HostPort = hostPort
-		p.ContainerPort = containerPort
+		p.HostPort = splited[0]
+		p.ContainerPort = splited[0]
 	} else if len(splited) == 2 {
-		hostPort, _ := strconv.Atoi(splited[0])
-		containerPort, _ := strconv.Atoi(splited[1])
-		p.HostPort = hostPort
-		p.ContainerPort = containerPort
+		p.HostPort = splited[0]
+		p.ContainerPort = splited[1]
 	} else if len(splited) == 3 {
 		p.HostAddr = splited[0]
-		hostPort, _ := strconv.Atoi(splited[1])
-		containerPort, _ := strconv.Atoi(splited[2])
-		p.HostPort = hostPort
-		p.ContainerPort = containerPort
+		p.HostPort = splited[1]
+		p.ContainerPort = splited[2]
 	}
 	return nil
 }
 
 func (p *Port) ToString() string {
-	return fmt.Sprintf(" HostAddr: %-30s\n HostPort: %-30d\n ContainerAddr: %s\n ContainerPort: %d\n Protocol: %s\n",
+	return fmt.Sprintf(" HostAddr: %-30s\n HostPort: %-30s\n ContainerAddr: %s\n ContainerPort: %s\n Protocol: %s\n",
 		p.HostAddr, p.HostPort, p.ContainerAdd, p.ContainerPort, p.Protocol)
 }

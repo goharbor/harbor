@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/vmware/harbor/compose/command"
@@ -169,12 +170,14 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		}
 
 		for _, v := range app.Ports {
+			appPort, _ := strconv.Atoi(v.ContainerPort)
+			mapPort, _ := strconv.Atoi(v.HostPort)
 			portMap := &OAPortMappings{
-				AppPort:  v.ContainerPort,
+				AppPort:  appPort,
 				Protocol: _sry_protocol(v.Protocol),
 				IsUri:    2,
 				Type:     1,
-				MapPort:  v.HostPort,
+				MapPort:  mapPort,
 				Uri:      "",
 			}
 			request.PortMappings = append(request.PortMappings, portMap)
