@@ -102,6 +102,31 @@ create table access_log (
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 
+create table job (
+ job_id int NOT NULL AUTO_INCREMENT,
+ job_type varchar(64) NOT NULL,
+ status varchar(64) NOT NULL,
+ options text,
+ parms   text,
+ enabled tinyint(1) NOT NULL DEFAULT 1,
+ cron_str varchar(256),
+ triggered_by varchar(64),
+ creation_time timestamp,
+ update_time timestamp,
+ PRIMARY KEY (job_id)
+);
+
+create table job_log (
+ log_id int NOT NULL AUTO_INCREMENT,
+ job_id int NOT NULL,
+ level varchar(64) NOT NULL,
+ message text,
+ creation_time timestamp,
+ update_time timestamp,
+ PRIMARY KEY (log_id),
+ FOREIGN KEY (job_id) REFERENCES job (job_id) 
+ );
+ 
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
