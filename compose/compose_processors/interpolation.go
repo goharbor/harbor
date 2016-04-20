@@ -34,6 +34,13 @@ func Interpolation(compose *compose.SryCompose) *compose.SryCompose {
 		for _, label := range app.Labels {
 			_interpolation(&label.Value, compose.Answers)
 		}
+
+		for _, port := range app.Ports {
+			_interpolation(&port.HostAddr, compose.Answers)
+			_interpolation(&port.HostPort, compose.Answers)
+			_interpolation(&port.ContainerAddr, compose.Answers)
+			_interpolation(&port.ContainerPort, compose.Answers)
+		}
 	}
 
 	return compose

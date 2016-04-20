@@ -10,7 +10,7 @@ import (
 type Port struct {
 	HostAddr      string
 	HostPort      string
-	ContainerAdd  string
+	ContainerAddr string
 	ContainerPort string
 	Protocol      string
 }
@@ -46,5 +46,5 @@ func (p *Port) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func (p *Port) ToString() string {
 	return fmt.Sprintf(" HostAddr: %-30s\n HostPort: %-30s\n ContainerAddr: %s\n ContainerPort: %s\n Protocol: %s\n",
-		p.HostAddr, p.HostPort, p.ContainerAdd, p.ContainerPort, p.Protocol)
+		p.HostAddr, p.HostPort, p.ContainerAddr, p.ContainerPort, p.Protocol)
 }
