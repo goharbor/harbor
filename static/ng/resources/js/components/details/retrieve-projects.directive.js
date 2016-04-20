@@ -11,6 +11,7 @@
    
     vm.selectItem = selectItem;
     vm.filterProjects = filterProjects;
+    vm.selectedId = vm.selectedProject.id;
     
     function selectItem(item) {
        vm.selectedId = item.id;

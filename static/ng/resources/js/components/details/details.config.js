@@ -24,7 +24,7 @@
         controllerAs: 'vm'
       })
       .otherwise({
-        redirectTo: '/repositories'
+        redirectTo: '/'
       });
   }
   
