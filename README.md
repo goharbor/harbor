@@ -46,7 +46,7 @@ The host must be connected to the Internet.
 
 If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
 
-Create a new project, e.g. myproject, in the admin portal. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
+Log in to the admin portal and create a new project, e.g. myproject. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
@@ -56,6 +56,9 @@ $ docker push reg.yourdomain.com/myproject/myrepo
 To simplify the installation process, a pre-built installation package of Harbor is provided so that you don't need to clone the source code. By using this package, you can even install Harbor onto a host that is not connected to the Internet. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
 
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
+
+### Deploy harbor on Kubernetes
+Detailed instruction about deploying harbor on Kubernetes is described [here](https://github.com/vmware/harbor/blob/master/kubernetes_deployment.md).
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
@@ -68,3 +71,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Users
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
+
+### Supporting Technologies
+<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>, an open source framework to build and develop applications in the Go way.

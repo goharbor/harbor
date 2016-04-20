@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui
+  labels:
+    name: ui
+spec:
+  ports:
+    - port: 80
+  selector:
+    name: ui
