@@ -247,6 +247,7 @@ func (output *OmegaAppOutput) post(path string, json string) (*http.Response, er
 	}
 
 	if resp.StatusCode != 200 {
+		log.Println("error", err)
 		return resp, errors.New("POST:" + path + "  GOT:" + resp.Status)
 	}
 
