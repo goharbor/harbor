@@ -18,7 +18,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	}
 
 	for _, app := range sry_compose.Applications {
-		clusterId_, _ := strconv.Atoi(clusterId)
+		clusterId_, _ := strconv.ParseFloat(clusterId, 32)
 		if int32(clusterId_) != 0 {
 			app.ClusterId = int32(clusterId_)
 		}
