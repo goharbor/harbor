@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -192,7 +193,10 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		defer resp.Body.Close()
 
 		var appCreationResponse AppCreationResponse
-		err = json.NewDecoder(resp.Body).Decode(&appCreationResponse)
+		bytes, _ := ioutil.ReadAll(resp.Body)
+		log.Println(string(bytes))
+		err = json.Unmarshal(bytes, &appCreationResponse)
+
 		if err != nil {
 			log.Println(err.Error())
 			return err
