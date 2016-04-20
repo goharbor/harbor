@@ -196,6 +196,8 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		if appCreationResponse.Code != 0 {
 			return errors.New("")
 		}
+		log.Println("SUCCESS")
+		log.Println(appCreationResponse)
 	}
 	return nil
 }
