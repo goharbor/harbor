@@ -1,15 +1,15 @@
 #!/bin/bash
 
 USERNAME=admin
-PASSWORD=Harbor12345
+PASSWORD=Dataman1234
 #HARBOR_URL=http://forward.dataman-inc.com/
-HARBOR_URL=localhost:8080
+HARBOR_URL=devregistry.dataman-inc.com:5005
 
 PROJECT_NAME=library
-REPO_NAME=drone
+REPO_NAME=nginx
 
-DESCRIPTION=持续集成工具
-CATEGORY=操作系统
+DESCRIPTION=最流行的web服务器
+CATEGORY=中间件
 ISPUBLIC=1
 
 

@@ -12,6 +12,7 @@ import (
 
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/compose/compose"
+	. "github.com/vmware/harbor/compose/util"
 )
 
 const AUTH_HEADER = "Authorization"
@@ -109,17 +110,17 @@ func (output *OmegaAppOutput) Run(sry_compose *compose.SryCompose, cmd command.C
 func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd command.Command) error {
 	for _, app := range sry_compose.Applications {
 		log.Println("creating application ", app.Name)
-		imageName := strings.Split(app.Image, ":")[0]
-		imageVersion := "latest"
-		if strings.Contains(app.Image, ":") {
-			imageVersion = strings.Split(app.Image, ":")[1]
+
+		imageStruct, err := ParseImage(app.Image)
+		if err != nil {
+			return err
 		}
 
 		request := &AppCreationRequest{
 			Name:         app.Name,
 			Instances:    app.Instances,
-			ImageName:    imageName,
-			ImageVersion: imageVersion,
+			ImageName:    imageStruct.ImageName(),
+			ImageVersion: imageStruct.Version,
 			Network:      app.Net,
 			Cpus:         app.Cpu,
 			Mem:          app.Mem,

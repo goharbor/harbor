@@ -46,9 +46,9 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	}
 
 	// cpu
-	cpu, ok := sry_compose.Answers["cpu"]
+	cpu, ok := sry_compose.Answers["cpus"]
 	if !ok {
-		cpu, ok = sry_compose.Answers["cpu"]
+		cpu, ok = sry_compose.Answers["cpus"]
 	}
 
 	for _, app := range sry_compose.Applications {
