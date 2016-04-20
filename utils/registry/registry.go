@@ -28,7 +28,7 @@ import (
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
-// Registry holds information of a registry entiry
+// Registry holds information of a registry entity
 type Registry struct {
 	Endpoint *url.URL
 	client   *http.Client
