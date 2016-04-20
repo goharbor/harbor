@@ -57,7 +57,7 @@ if not os.path.exists(db_config_dir):
     os.makedirs(os.path.join(config_dir, "db"))
 
 def render(src, dest, **kw):
-    t = Template(open(src, 'r').read().strip('echo').strip().strip('"'))
+    t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
     print("Generated configuration file: %s" % dest)
