@@ -191,9 +191,12 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		var appCreationResponse AppCreationResponse
 		err = json.NewDecoder(resp.Body).Decode(&appCreationResponse)
 		if err != nil {
+			log.Println(err.Error())
 			return err
 		}
 		if appCreationResponse.Code != 0 {
+			log.Println("response Code Error")
+			log.Println(appCreationResponse)
 			return errors.New("")
 		}
 		log.Println("SUCCESS")
