@@ -163,8 +163,6 @@ func (ra *RepositoryV3API) PostApps() {
 	body := ra.Ctx.Request.Body
 	jsonRaw, err := ioutil.ReadAll(body)
 
-	log.Println(string("xxxxxxxxxxxxxxx"))
-	log.Println(string(jsonRaw))
 	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
@@ -201,7 +199,7 @@ func (ra *RepositoryV3API) PostApps() {
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {
-		repositoryResponse = models.RepositoryResponse{Code: 1}
+		repositoryResponse = models.RepositoryResponse{Code: 1, Message: err.Error()}
 		return
 	}
 

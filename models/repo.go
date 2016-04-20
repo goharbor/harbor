@@ -74,8 +74,9 @@ type RepositoriesResponse struct {
 }
 
 type RepositoryResponse struct {
-	Code int64       `json:"code"`
-	Data *Repository `json:"data"`
+	Code    int64       `json:"code"`
+	Data    *Repository `json:"data"`
+	Message string      `json:"message"`
 }
 
 type TagsResponse struct {
