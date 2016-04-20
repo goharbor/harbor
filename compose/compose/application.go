@@ -57,6 +57,10 @@ func (self *Application) Defaultlize() {
 	}
 
 	self.LogPaths = []string{}
+
+	if self.Command == nil {
+		self.Command = interface{}("")
+	}
 }
 
 func (app *Application) ToString() string {
