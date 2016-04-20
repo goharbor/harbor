@@ -2,6 +2,7 @@ package compose_processors
 
 import (
 	"github.com/vmware/harbor/compose/compose"
+	"log"
 	"strconv"
 )
 
@@ -17,8 +18,11 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	}
 
 	for _, app := range sry_compose.Applications {
-		clusterId_, _ := strconv.Atoi(clusterId)
+		clusterId_, _ := strconv.ParseFloat(clusterId, 32)
+		log.Println(clusterId)
 		app.ClusterId = int32(clusterId_)
+		log.Println("cluster id")
+		log.Println(app.ClusterId)
 	}
 
 	// appname
