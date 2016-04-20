@@ -10,10 +10,11 @@
 
   function SwitchPaneProjectsController($scope) {
     var vm = this;
-    $scope.$on('isOpen', function(e, d){
-      vm.isOpen = d;
-      console.log('vm.isOpen:' + vm.isOpen);
+    
+    $scope.$on('isOpen', function(e, val){
+      vm.isOpen = val;
     });
+    
     $scope.$watch('vm.selectedProject', function(current, origin) {
       vm.projectName = current.name;  
     });
