@@ -1,4 +1,4 @@
-echo "version: 0.1
+version: 0.1
 log:
   level: debug
   fields:
@@ -32,4 +32,4 @@ notifications:
         url: http://ui/service/notifications
         timeout: 500
         threshold: 5
-        backoff: 1000"
+        backoff: 1000

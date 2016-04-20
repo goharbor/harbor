@@ -22,25 +22,25 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
-hostname = rcp.get("configuration", "hostname").strip('"')
-ui_url = rcp.get("configuration", "ui_url_protocol").strip('"') + "://" + hostname
-email_server = rcp.get("configuration", "email_server").strip('"')
-email_server_port = rcp.get("configuration", "email_server_port").strip('"')
-email_username = rcp.get("configuration", "email_username").strip('"')
-email_password = rcp.get("configuration", "email_password").strip('"')
-email_from = rcp.get("configuration", "email_from").strip('"')
-harbor_admin_password = rcp.get("configuration", "harbor_admin_password").strip('"')
-auth_mode = rcp.get("configuration", "auth_mode").strip('"')
-ldap_url = rcp.get("configuration", "ldap_url").strip('"')
-ldap_basedn = rcp.get("configuration", "ldap_basedn").strip('"')
-db_password = rcp.get("configuration", "db_password").strip('"')
-self_registration = rcp.get("configuration", "self_registration").strip('"')
-customize_token = rcp.get("configuration", "customize_token").strip('"')
-crt_countryname = rcp.get("configuration", "crt_countryname").strip('"')
-crt_state = rcp.get("configuration", "crt_state").strip('"')
-crt_name = rcp.get("configuration", "crt_name").strip('"')
-crt_organizationname = rcp.get("configuration", "crt_organizationname").strip('"')
-crt_organizationalunitname = rcp.get("configuration", "crt_organizationalunitname").strip('"')
+hostname = rcp.get("configuration", "hostname")
+ui_url = rcp.get("configuration", "ui_url_protocol") + "://" + hostname
+email_server = rcp.get("configuration", "email_server")
+email_server_port = rcp.get("configuration", "email_server_port")
+email_username = rcp.get("configuration", "email_username")
+email_password = rcp.get("configuration", "email_password")
+email_from = rcp.get("configuration", "email_from")
+harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
+auth_mode = rcp.get("configuration", "auth_mode")
+ldap_url = rcp.get("configuration", "ldap_url")
+ldap_basedn = rcp.get("configuration", "ldap_basedn")
+db_password = rcp.get("configuration", "db_password")
+self_registration = rcp.get("configuration", "self_registration")
+customize_crt = rcp.get("configuration", "customize_crt")
+crt_countryname = rcp.get("configuration", "crt_countryname")
+crt_state = rcp.get("configuration", "crt_state")
+crt_name = rcp.get("configuration", "crt_name")
+crt_organizationname = rcp.get("configuration", "crt_organizationname")
+crt_organizationalunitname = rcp.get("configuration", "crt_organizationalunitname")
 ########
 
 base_dir = os.path.dirname(__file__)
@@ -103,31 +103,40 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-if customize_token == 'on':
-    is_fail = 0
-    private_key_gem = os.path.join(config_dir, "ui", "private_key.pem")
-    root_crt = os.path.join(config_dir, "registry", "root.crt")
-    token_conf_files = [ private_key_gem, root_crt ]
-    rmdir(token_conf_files)
+if customize_crt == 'on':
     import subprocess
-    shell_status = subprocess.call(["openssl", "genrsa", "-out", private_key_gem, "4096"])
-    if shell_status == 0:
-        print("private_key.gem has been generated in %s/ui" % config_dir)
+    is_fail = False
+    FNULL = open(os.devnull, 'w')
+    shell_status = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
+    if shell_status == 1:
+        print("cannot find openssl installed in this computer.")
+        is_fail = True
     else:
-        print("gennerate private_key.gem fail.")
-        is_fail = 1
-    subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}"\
-        .format(crt_countryname, crt_state, crt_name, crt_organizationname, crt_organizationalunitname)
-    shell_status = subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
-        private_key_gem, "-out", root_crt, "-days", "3650", "-subj", subj])
-    if shell_status == 0:
-        print("root.crt has been generated in %s/registry" % config_dir)
-    else:
-        print("gennerate root.crt fail.")
-        is_fail = 1
+        private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
+        root_crt = os.path.join(config_dir, "registry", "root.crt")
+        crt_conf_files = [ private_key_pem, root_crt ]
+        rmdir(crt_conf_files)
+        shell_status = subprocess.call(["openssl", "genrsa", "-out", private_key_pem, "4096"],\
+            stdout=FNULL, stderr=subprocess.STDOUT)
+        if shell_status == 0:
+            print("private_key.pem has been generated in %s/ui" % config_dir)
+        else:
+            print("gennerate private_key.pem fail.")
+            is_fail = True
+        subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}"\
+            .format(crt_countryname, crt_state, crt_name, crt_organizationname, crt_organizationalunitname)
+        shell_status = subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
+            private_key_pem, "-out", root_crt, "-days", "3650", "-subj", subj], \
+            stdout=FNULL, stderr=subprocess.STDOUT)
+        if shell_status == 0:
+            print("root.crt has been generated in %s/registry" % config_dir)
+        else:
+            print("gennerate root.crt fail.")
+            is_fail = True
+    FNULL.close()
 try:
-    if is_fail == 1:
-        print("some problem occurs.")
+    if is_fail is True:
+        print("some problems occur.")
         sys.exit(1)
 except Exception as e:
     pass

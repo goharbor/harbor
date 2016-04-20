@@ -1,1 +1,1 @@
-echo "MYSQL_ROOT_PASSWORD=$db_password"
+MYSQL_ROOT_PASSWORD=$db_password
