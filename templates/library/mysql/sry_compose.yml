@@ -9,31 +9,11 @@ catalog:
       description: "绑定的主机端口"
       required: true
       type: "string"
-    - variable: "api_key"
-      label: "这是一个字符串"
-      description: "这是一个字符串,必填"
+    - variable: "mysql_root_password"
+      label: "默认密码"
+      description: "默认密码"
       required: true
       type: "string"
-    - variable: "host_labels"
-      label: "这是一个字符串"
-      description: "这是一个字符串选填"
-      required: false
-      type: "string"
-    - variable: "global_service"
-      label: "这一个radio"
-      description: "这是一个radio，可选项为true或者false"
-      required: true
-      type: "boolean"
-      default: true
-    - variable: "select_value"
-      label: "这一个下拉框"
-      description: "这是一个下拉框"
-      required: true
-      type: "enum"
-      options:
-        - "foo"
-        - "bar"
-      default: "foo"
 mysql:
   image:  devregistry.dataman-inc.com:5000/library/mysql
   restart: always
@@ -42,4 +22,7 @@ mysql:
     - /var/lib/drone:/var/lib/drone
   ports:
     - "${host_port}:3306"
+
+  environment:
+    - MYSQL_ROOT_PASSWORD:${mysql_root_password}
 
