@@ -24,5 +24,4 @@ mysql:
     - "${host_port}:3306"
 
   environment:
-    MYSQL_ROOT_PASSWORD:${mysql_root_password}
-
+    MYSQL_ROOT_PASSWORD: ${mysql_root_password}
