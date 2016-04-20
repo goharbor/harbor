@@ -1,6 +1,6 @@
 catalog:
-  name: "DataDog"
-  version: "11.0.570-sry1"
+  name: "drone"
+  version: "v0.1"
   description: "Real-time performance tracking and visualization of your container-based application deployment"
   minimum_sry_version: v0.46.0
   questions:
@@ -29,43 +29,11 @@ catalog:
         - "foo"
         - "bar"
       default: "foo"
-datadog-init:
-  image: demoregistry.dataman-inc.com/library/drone
-  net: BRIDGE
-  cpu: 0.2
-  mem: 2
-  command: echo "shurenyun awesome"
-  volumes:
-    - /opt/sry
-  labels:
-    io.sry.container.start_once: 'true'
-    io.sry.container.pull_image: always
-datadog-agent:
-  image:  demoregistry.dataman-inc.com/library/drone
-  entrypoint: /opt/sry/entrypoint.sh
-  command:
-    - /bin/true
-    - echo "shurenyuan awesome"
+drone:
+  image:  devregistry.dataman-inc.com:5000/library/drone
   restart: always
-  environment:
-    API_KEY: ${api_key}
-    DOGSTATSD_ONLY: "${statsd_standalone}"
-    STATSD_METRIC_NAMESPACE: ${statsd_namespace}
-    HOST_LABELS: ${host_labels}
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - /proc/:/host/proc/:ro
-    - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-  volumes_from:
-    - datadog-init
-  labels:
-    io.sry.scheduler.global: "${global_service}"
-    io.sry.sidekicks: 'datadog-init'
-  log_paths:
-    - /var/log/nginx.log
+    - /var/lib/drone:/var/lib/drone
   ports:
     - "8080"
-    - "8081:8082"
-    - "localhost:8083:8084"
-    - "8085:8086/tcp"
-    - "localhost:8087:8088/http"

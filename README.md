@@ -52,3 +52,23 @@ features added to facility Shurenyun internal usage.
 
   * readme的写法可参考templates/example目录下写法， 或者参考rancher
     app_catalog功能。
+
+# sry_compose 文件支持的compose参数包括
+
+	Name         string      `json:"name" yaml:"name"`
+	Image        string      `json:"image" yaml:"image"`
+	Command      interface{} `json:"command" yaml:"command"`
+	EntryPoint   string      `json:"entrypoint" yaml:"entrypoint"`
+	Cpu          float32     `json:"cpu" yaml:"cpu"`
+	Mem          float32     `json:"mem" yaml:"mem"`
+	Instances    int32       `json:"instances" yaml:"instances"`
+	Environment  Environment `json:"environment" yaml:"environment"`
+	Labels       Labels      `json:"labels" yaml:"labels"`
+	Volumes      []*Volume   `json:"volumes" yaml:"volumes"`
+	Expose       []int       `json:"expose" yaml:"expose"`
+	Ports        []*Port     `json:"ports" yaml:"ports"`
+	Net          string      `json:"net" yaml:"net"`                   // bridge, host
+	NetworkMode  string      `json:"network_mode" yaml:"network_mode"` //compose version2 for net, same as net
+	Restart      string      `json:"restart" yaml:"restart"`
+	LogPaths     []string    `json:"log_paths" yaml:"log_paths"`
+
