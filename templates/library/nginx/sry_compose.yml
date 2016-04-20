@@ -4,9 +4,9 @@ catalog:
   description: ""
   minimum_sry_version: v0.46.0
   questions:
-    - variable: "api_key"
-      label: "这是一个字符串"
-      description: "这是一个字符串,必填"
+    - variable: "host_port"
+      label: "主机端口"
+      description: "nginx绑定的主机端口"
       required: true
       type: "string"
     - variable: "host_labels"
@@ -29,12 +29,12 @@ catalog:
         - "foo"
         - "bar"
       default: "foo"
-drone:
+nginx:
   image:  devregistry.dataman-inc.com:5000/library/nginx
   restart: always
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /var/lib/drone:/var/lib/drone
   ports:
-    - "81:80"
+    - "${host_port}:80"
 
