@@ -3,7 +3,7 @@
   'use strict';
   
   angular
-    .module('harbor.projectmember')
+    .module('harbor.project.member')
     .controller('DeleteProjectMemberController', DeleteProjectMemberController);
     
   DeleteProjectMemberController.$inject = ['DeleteProjectMemberService'];

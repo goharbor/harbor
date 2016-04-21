@@ -3,7 +3,7 @@
   'use strict';
   
   angular
-    .module('harbor.projectmember')
+    .module('harbor.project.member')
     .constant('roles', roles)
     .directive('editProjectMember', editProjectMember);
   
@@ -22,14 +22,13 @@
     vm.roles = roles();
     vm.editMode = false;
     vm.update = update;
-        
-    function update(e) {
+    
+    function update(e) {            
       if(vm.editMode) {
-        vm.editMode = false;
+        vm.editMode = false;        
       }else {
         vm.editMode = true;
-      }
-      vm.roleId = e.roleId;
+      } 
     }
     
   }
@@ -37,16 +36,21 @@
   function editProjectMember() {
     var directive = {
       'restrict': 'A',
-      'templateUrl': '/static/ng/resources/js/components/projectmember/edit-projectmember.directive.html',
+      'templateUrl': '/static/ng/resources/js/components/project-member/edit-project-member.directive.html',
       'scope': {
         'userId': '=',
         'roleId': '='
       },
+      'link': link,
       'controller': EditProjectMemberController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs) {
+
+    }
   }
 
 })();

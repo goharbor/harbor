@@ -14,7 +14,7 @@
     
     vm.currentRole = getRoleById(vm.roleId);
     vm.selectRole = selectRole;
-    
+        
     function selectRole(role) {
       vm.roleId = role.id;
       vm.currentRole = getRoleById(vm.roleId);
@@ -39,13 +39,18 @@
         'roles': '=',
         'editMode': '=',
         'userId': '=',
-        'roleId': '=',
+        'roleId': '='
       },
+      'link' : link,
       'controller' : SwitchRolesController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+     
+    }
   } 
   
 })();

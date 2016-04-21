@@ -9,7 +9,7 @@
   ListUserController.$inject = ['ListUserService'];
     
   function ListUserController(ListUserService) {
-    
+   
   }
   
   function listUser() {

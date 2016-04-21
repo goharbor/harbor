@@ -14,8 +14,8 @@
         controllerAs: 'vm'
        })
       .when('/users', {
-        templateUrl: '/static/ng/resources/js/layout/user/user.controller.html',
-        controller: 'UserController',
+        templateUrl: '/static/ng/resources/js/layout/project-member/project-member.controller.html',
+        controller: 'ProjectMemberController',
         controllerAs: 'vm'
       })
       .when('/logs', {

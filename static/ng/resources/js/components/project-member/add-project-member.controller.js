@@ -3,7 +3,7 @@
   'use strict';
   
   angular
-    .module('harbor.projectmember')
+    .module('harbor.project.member')
     .controller('AddProjectMemberController', AddProjectMemberController);
     
   AddProjectMemberController.$inject = ['AddProjectMemberService'];

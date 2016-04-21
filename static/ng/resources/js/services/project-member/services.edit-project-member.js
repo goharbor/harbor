@@ -3,7 +3,7 @@
   'use strict';
   
   angular
-    .module('harbor.services.projectmember')
+    .module('harbor.services.project.member')
     .factory('EditProjectMemberService', EditProjectMemberService);
     
   EditProjectMemberService.$inject = ['$http', '$log'];

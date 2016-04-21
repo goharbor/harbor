@@ -3,6 +3,7 @@
   'use strict';
   
   angular
-    .module('harbor.services.projectmember', []);
+    .module('harbor.layout.project.member', []);
+  
   
 })();

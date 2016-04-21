@@ -1,0 +1,26 @@
+<div class="tab-pane" id="users">
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+      <button class="btn btn-success" type="button" ng-click="vm.addMember()"><span class="glyphicon glyphicon-plus"></span>Add Member</button>
+    </div>
+    <div class="pane"> 	           
+      <add-member ng-show="vm.isOpen"></add-member>
+      <div class="sub-pane">
+        <table class="table table-pane" >
+    			 <thead>
+    			   <th width="30%">Username</th><th width="40%">Role</th><th width="30%">Operation</th>
+    			 </thead>
+    			 <tbody>
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member user-id="pr.id" role-id="pr.roleId"></tr> 
+          </tbody>
+    		</table>
+      </div>
+    </div>
+  </div>              
+</div>
