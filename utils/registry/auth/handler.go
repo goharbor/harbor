@@ -143,10 +143,9 @@ func (t *standardTokenHandler) AuthorizeRequest(req *http.Request, params map[st
 		}
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-
 	tk := &token{}
-	if err = decoder.Decode(tk); err != nil {
+
+	if err = json.Unmarshal(b, tk); err != nil {
 		return err
 	}
 

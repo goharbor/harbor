@@ -16,15 +16,16 @@
 package registry
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 
-	"github.com/docker/distribution/manifest"
-	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
@@ -38,19 +39,6 @@ type Registry struct {
 type uRLBuilder struct {
 	root *url.URL
 }
-
-var (
-	// ManifestVersion1 : schema 1
-	ManifestVersion1 = manifest.Versioned{
-		SchemaVersion: 1,
-		MediaType:     schema1.MediaTypeManifest,
-	}
-	// ManifestVersion2 : schema 2
-	ManifestVersion2 = manifest.Versioned{
-		SchemaVersion: 2,
-		MediaType:     schema2.MediaTypeManifest,
-	}
-)
 
 // New returns an instance of Registry
 func New(endpoint string, client *http.Client) (*Registry, error) {
@@ -190,14 +178,15 @@ func (r *Registry) ManifestExist(name, reference string) (digest string, exist b
 }
 
 // PullManifest ...
-func (r *Registry) PullManifest(name, reference string, version manifest.Versioned) (digest, mediaType string, payload []byte, err error) {
+func (r *Registry) PullManifest(name, reference string, acceptMediaTypes []string) (digest, mediaType string, payload []byte, err error) {
 	req, err := http.NewRequest("GET", r.ub.buildManifestURL(name, reference), nil)
 	if err != nil {
 		return
 	}
 
-	// if the registry does not support schema 2, schema 1 manifest will be returned
-	req.Header.Set(http.CanonicalHeaderKey("Accept"), version.MediaType)
+	for _, mediaType := range acceptMediaTypes {
+		req.Header.Set(http.CanonicalHeaderKey("Accept"), mediaType)
+	}
 
 	resp, err := r.client.Do(req)
 	if err != nil {
@@ -214,6 +203,40 @@ func (r *Registry) PullManifest(name, reference string, version manifest.Version
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 		mediaType = resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
 		payload = b
+		return
+	}
+
+	err = errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+
+	return
+}
+
+// PushManifest ...
+func (r *Registry) PushManifest(name, reference, mediaType string, payload []byte) (digest string, err error) {
+	req, err := http.NewRequest("PUT", r.ub.buildManifestURL(name, reference),
+		bytes.NewReader(payload))
+	if err != nil {
+		return
+	}
+	req.Header.Set(http.CanonicalHeaderKey("Content-Type"), mediaType)
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode == http.StatusCreated {
+		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+		return
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return
 	}
 
@@ -270,6 +293,153 @@ func (r *Registry) DeleteTag(name, tag string) error {
 	return r.DeleteManifest(name, digest)
 }
 
+// BlobExist ...
+func (r *Registry) BlobExist(name, digest string) (bool, error) {
+	req, err := http.NewRequest("HEAD", r.ub.buildBlobURL(name, digest), nil)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return false, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	return false, errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+}
+
+// PullBlob ...
+func (r *Registry) PullBlob(name, digest string) (size int64, data []byte, err error) {
+	req, err := http.NewRequest("GET", r.ub.buildBlobURL(name, digest), nil)
+	if err != nil {
+		return
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		contengLength := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+		size, err = strconv.ParseInt(contengLength, 10, 64)
+		if err != nil {
+			return
+		}
+		data = b
+		return
+	}
+
+	err = errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+
+	return
+}
+
+func (r *Registry) initiateBlobUpload(name string) (location, uploadUUID string, err error) {
+	req, err := http.NewRequest("POST", r.ub.buildInitiateBlobUploadURL(name), nil)
+	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode == http.StatusAccepted {
+		location = resp.Header.Get(http.CanonicalHeaderKey("Location"))
+		uploadUUID = resp.Header.Get(http.CanonicalHeaderKey("Docker-Upload-UUID"))
+		return
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	err = errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+
+	return
+}
+
+func (r *Registry) monolithicBlobUpload(location, digest string, size int64, data []byte) error {
+	req, err := http.NewRequest("PUT", r.ub.buildMonolithicBlobUploadURL(location, digest), bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusCreated {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return errors.Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(b),
+	}
+}
+
+// PushBlob ...
+func (r *Registry) PushBlob(name, digest string, size int64, data []byte) error {
+	exist, err := r.BlobExist(name, digest)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		log.Infof("blob already exists, skip pushing: %s %s", name, digest)
+		return nil
+	}
+
+	location, _, err := r.initiateBlobUpload(name)
+	if err != nil {
+		return err
+	}
+
+	return r.monolithicBlobUpload(location, digest, size, data)
+}
+
 // DeleteBlob ...
 func (r *Registry) DeleteBlob(name, digest string) error {
 	req, err := http.NewRequest("DELETE", r.ub.buildBlobURL(name, digest), nil)
@@ -313,4 +483,12 @@ func (u *uRLBuilder) buildManifestURL(name, reference string) string {
 
 func (u *uRLBuilder) buildBlobURL(name, reference string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/%s", u.root.String(), name, reference)
+}
+
+func (u *uRLBuilder) buildInitiateBlobUploadURL(name string) string {
+	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", u.root.String(), name)
+}
+
+func (u *uRLBuilder) buildMonolithicBlobUploadURL(location, digest string) string {
+	return fmt.Sprintf("%s&digest=%s", location, digest)
 }
