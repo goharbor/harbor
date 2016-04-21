@@ -1,0 +1,11 @@
+<td>user1</td>
+<td><switch-roles roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-id="vm.roleId"></switch-roles></td>
+<td>
+  <a href="javascript:;" ng-click="vm.update({roleId: vm.roleId})">
+    <ng-switch on="vm.editMode">
+      <span ng-switch-default class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;
+      <span ng-switch-when="true" class="glyphicon glyphicon-ok"></span>
+    </ng-switch>
+  </a>
+  <a href="#"><span class="glyphicon glyphicon-trash"></span></a>
+</td>

@@ -1,0 +1,6 @@
+<ng-switch on="vm.editMode">
+  <span ng-switch-default>//vm.currentRole.name//</span>
+  <select ng-switch-when="true" >
+    <option value="//role.id//" ng-click="vm.selectRole(role)" ng-repeat="role in vm.roles">//role.name//</option>
+  </select>
+</ng-switch>
