@@ -31,6 +31,7 @@ import (
 type ProjectAPI struct {
 	BaseAPI
 	userID    int
+	username  string
 	projectID int64
 }
 
@@ -183,6 +184,8 @@ func (p *ProjectAPI) FilterAccessLog() {
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	p.Data["json"] = accessLogList
+
+	log.Errorf("--- accessLog first record: %v ---", accessLogList[0])
 	p.ServeJSON()
 }
 

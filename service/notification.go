@@ -18,6 +18,7 @@ package service
 import (
 	"encoding/json"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/vmware/harbor/dao"
@@ -33,6 +34,11 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
+type taglist struct {
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
+}
+
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
@@ -46,7 +52,7 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project string
+	var username, action, repo, project, repo_tag, tag_url string
 	var matched bool
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
@@ -58,13 +64,67 @@ func (n *NotificationHandler) Post() {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
+			tag_url = e.Target.URL
+			result, err1 := svc_utils.RegistryAPIGet(tag_url, username)
+
+			if err1 != nil {
+				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tag_url, err1)
+				return
+			}
+
+			maniDig := models.ManifestDigest{}
+			err = json.Unmarshal(result, &maniDig)
+			if err != nil {
+				log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag_url, err)
+				return
+			}
+
+			var digestLayers []string
+			var tagLayers []string
+			for _, diglayer := range maniDig.Layers {
+				digestLayers = append(digestLayers, diglayer.Digest)
+			}
+
+			result, err = svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repo, "tags", "list"), username)
+			if err != nil {
+				log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repo, err)
+			} else {
+				t := taglist{}
+				json.Unmarshal(result, &t)
+				for _, tag := range t.Tags {
+					result, err = svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repo, "manifests", tag), username)
+					if err != nil {
+						log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repo, err)
+						continue
+					}
+					taginfo := models.Manifest{}
+					err = json.Unmarshal(result, &taginfo)
+					if err != nil {
+						log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag, err)
+						continue
+					}
+					for _, fslayer := range taginfo.FsLayers {
+						tagLayers = append(tagLayers, fslayer.BlobSum)
+					}
+
+					sort.Strings(digestLayers)
+					sort.Strings(tagLayers)
+					eq := compStringArray(digestLayers, tagLayers)
+					if eq {
+						repo_tag = tag
+						break
+					}
+				}
+			}
+
 			if strings.Contains(repo, "/") {
 				project = repo[0:strings.LastIndex(repo, "/")]
 			}
 			if username == "" {
 				username = "anonymous"
 			}
-			go dao.AccessLog(username, project, repo, action)
+			log.Debugf("repo tag is : %v ", repo_tag)
+			go dao.AccessLog(username, project, repo, repo_tag, action)
 			if action == "push" {
 				go func() {
 					err2 := svc_utils.RefreshCatalogCache()
@@ -81,4 +141,22 @@ func (n *NotificationHandler) Post() {
 // Render returns nil as it won't render any template.
 func (n *NotificationHandler) Render() error {
 	return nil
+}
+
+func compStringArray(a, b []string) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
