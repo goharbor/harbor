@@ -1,5 +1,5 @@
 {
-  "app": {
+  "marathon_config": {
     "appName": "foobar",
     "imageVersion": "v0.1",
     "clusterId": 1,

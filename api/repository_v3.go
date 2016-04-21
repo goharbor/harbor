@@ -100,21 +100,21 @@ func (ra *RepositoryV3API) GetRepository() {
 	}
 
 	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
-	sry_compose_yaml, err := GetSryCompose(ra.project_name, ra.repository_name)
+	catalogContent, err := GetCatalog(ra.project_name, ra.repository_name)
 	if err != nil {
-		beego.Error("Failed to sry compose yaml file: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get compose file")
+		beego.Error("Failed to catalog file: ", err)
+		ra.RenderError(http.StatusInternalServerError, "Failed to get catalog file")
 		return
 	}
 
-	sry_compose, err := compose.ComposeParse(sry_compose_yaml)
+	sry_compose, err := compose.ParseQuestions(catalogContent)
 	if err != nil {
 		beego.Error("Sry Compose parse error", err)
 		ra.RenderError(http.StatusInternalServerError, "sry compose parse error")
 		return
 	}
 
-	questionsJson, err := json.Marshal(sry_compose.Catalog.Questions)
+	questionsJson, err := json.Marshal(sry_compose.Questions)
 	if err != nil {
 		beego.Error("json marshal error", err)
 		ra.RenderError(http.StatusInternalServerError, "json marshal error")
@@ -151,8 +151,29 @@ func (ra *RepositoryV3API) PostApps() {
 		return
 	}
 
-	// get sry compose file
-	sry_compose, _ := GetSryCompose(ra.project_name, ra.repository_name)
+	// get catalog file
+	catalogContent, err := GetCatalog(ra.project_name, ra.repository_name)
+	if err != nil {
+		beego.Error("Failed to get catalog file: ")
+		ra.RenderError(http.StatusInternalServerError, "Failed to get catalog")
+		return
+	}
+
+	// get docker compose file
+	dockerComposeContent, err := GetDockerCompose(ra.project_name, ra.repository_name)
+	if err != nil {
+		beego.Error("Failed to get docker compose file: ")
+		ra.RenderError(http.StatusInternalServerError, "Failed to get docker compose file")
+		return
+	}
+
+	// get marathon config file
+	marathonConfigContent, err := GetMarathonConfig(ra.project_name, ra.repository_name)
+	if err != nil {
+		beego.Error("Failed to get marathon config file: ")
+		ra.RenderError(http.StatusInternalServerError, "Failed to get marathon config")
+		return
+	}
 
 	// parse request body
 	var requestBody struct {
@@ -195,7 +216,8 @@ func (ra *RepositoryV3API) PostApps() {
 		}
 	}
 
-	err = compose.EntryPoint(sry_compose, requestBody.Answers, command.CREATE_APP, config)
+	err = compose.EntryPoint(catalogContent, dockerComposeContent, marathonConfigContent,
+		requestBody.Answers, command.CREATE_APP, config)
 
 	repositoryResponse := models.RepositoryResponse{Code: 0}
 	if err != nil {
@@ -326,8 +348,24 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 	return repoMarkdown, nil
 }
 
-func GetSryCompose(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "sry_compose", "yml"))
+func GetDockerCompose(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "docker_compose", "yml"))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func GetCatalog(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "catalog", "yml"))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func GetMarathonConfig(project_name string, repository_name string) (string, error) {
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "marathon_config", "yml"))
 	if err != nil {
 		return "", err
 	}

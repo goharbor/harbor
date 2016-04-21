@@ -9,6 +9,8 @@ import (
 	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/compose/compose"
 	"github.com/vmware/harbor/compose/compose_processors"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Context struct {
@@ -20,9 +22,14 @@ type Context struct {
 
 // main entrance here, should be main when standalone mode
 // should be **func main** in cli mode
-func EntryPoint(yaml string, answers map[string]string, command command.Command, config channel.ChannelHttpConfig) error {
+func EntryPoint(catalog string,
+	docker_compose string,
+	marathon_config string,
+	answers map[string]string,
+	command command.Command,
+	config channel.ChannelHttpConfig) error {
 	// default output/input channel now is OmegaAppOutput
-	compose, err := compose.FromYaml(yaml)
+	compose, err := compose.FromYaml(catalog, docker_compose, marathon_config)
 	if err != nil {
 		return err
 	}
@@ -50,12 +57,14 @@ func EntryPoint(yaml string, answers map[string]string, command command.Command,
 	return ctx.ApplyChange()
 }
 
-func ComposeParse(yaml string) (*compose.SryCompose, error) {
-	compose, err := compose.FromYaml(yaml)
+func ParseQuestions(catalogContent string) (*compose.Catalog, error) {
+	catalog := new(compose.Catalog)
+	err := yaml.Unmarshal([]byte(catalogContent), catalog)
 	if err != nil {
 		return nil, err
 	}
-	return compose, nil
+
+	return catalog, nil
 }
 
 func (ctx *Context) SetOutput(output *channel.ChannelOutput) {

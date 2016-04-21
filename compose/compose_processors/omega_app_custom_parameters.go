@@ -20,7 +20,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	for _, app := range sry_compose.Applications {
 		clusterId_, _ := strconv.ParseFloat(clusterId, 32)
 		if int32(clusterId_) != 0 {
-			app.ClusterId = int32(clusterId_)
+			app.MarathonConfig.ClusterId = int32(clusterId_)
 		}
 	}
 
@@ -31,7 +31,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 	}
 
 	for _, app := range sry_compose.Applications {
-		app.AppName = appName
+		app.MarathonConfig.AppName = appName
 	}
 
 	// image version
@@ -42,7 +42,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 
 	for _, app := range sry_compose.Applications {
 		if len(imageVersion) != 0 {
-			app.ImageVersion = imageVersion
+			app.MarathonConfig.ImageVersion = imageVersion
 		}
 	}
 
@@ -52,7 +52,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 		for _, app := range sry_compose.Applications {
 			cpu_, _ := strconv.ParseFloat(cpu, 32)
 			if !utils.FloatEquals(0, float32(cpu_)) {
-				app.Cpu = float32(cpu_)
+				app.MarathonConfig.Cpu = float32(cpu_)
 			}
 		}
 	}
@@ -63,7 +63,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 		for _, app := range sry_compose.Applications {
 			mem_, _ := strconv.ParseFloat(mem, 32)
 			if !utils.FloatEquals(0, float32(mem_)) {
-				app.Mem = float32(mem_)
+				app.MarathonConfig.Mem = float32(mem_)
 			}
 		}
 	}
@@ -74,7 +74,7 @@ func OmegaAppCustomParameters(sry_compose *compose.SryCompose) *compose.SryCompo
 		for _, app := range sry_compose.Applications {
 			instances_, _ := strconv.ParseFloat(instances, 32)
 			if int32(instances_) != 0 {
-				app.Instances = int32(instances_)
+				app.MarathonConfig.Instances = int32(instances_)
 			}
 		}
 	}

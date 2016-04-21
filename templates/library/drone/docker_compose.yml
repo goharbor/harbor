@@ -1,0 +1,29 @@
+drone:
+  image:  devregistry.dataman-inc.com:5000/library/drone
+  restart: always
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/drone:/var/lib/drone
+  ports:
+    - "8081:8080"
+  links:
+    - mysql
+    - redis:storage
+
+mysql:
+  image:  devregistry.dataman-inc.com:5000/library/drone
+  restart: always
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/drone:/var/lib/drone
+  ports:
+    - "3306:3306"
+
+redis:
+  image:  devregistry.dataman-inc.com:5000/library/drone
+  restart: always
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/drone:/var/lib/drone
+  ports:
+    - "6379:6379"

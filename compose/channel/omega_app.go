@@ -120,15 +120,15 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 
 		request := &AppCreationRequest{
 			Name:         app.Name,
-			Instances:    app.Instances,
+			Instances:    app.MarathonConfig.Instances,
 			ImageName:    imageStruct.ImageName(),
 			ImageVersion: imageStruct.Version,
 			Network:      app.Net,
-			Cpus:         app.Cpu,
-			Mem:          app.Mem,
+			Cpus:         app.MarathonConfig.Cpu,
+			Mem:          app.MarathonConfig.Mem,
 			Cmd:          app.FormatedCommand(),
 			ForceImage:   FORCE_IMAGE_PULL,
-			LogPaths:     app.LogPaths,
+			LogPaths:     app.MarathonConfig.LogPaths,
 			Parameters:   []string{},
 			PortMappings: []*OAPortMappings{},
 			Envs:         []*OAEnvironment{},
@@ -136,13 +136,13 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		}
 
 		// for omega app, AppName(user entered from ui) have higher priority comparing to app.Name
-		if len(app.AppName) > 0 {
-			request.Name = app.AppName
+		if len(app.MarathonConfig.AppName) > 0 {
+			request.Name = app.MarathonConfig.AppName
 		}
 
 		// for omega app, ImageVersion (user entered from ui) have higher priority comparing to version guessed
-		if len(app.ImageVersion) > 0 {
-			request.ImageVersion = app.ImageVersion
+		if len(app.MarathonConfig.ImageVersion) > 0 {
+			request.ImageVersion = app.MarathonConfig.ImageVersion
 		}
 
 		for _, v := range app.Environment {
@@ -185,7 +185,7 @@ func (output *OmegaAppOutput) Create(sry_compose *compose.SryCompose, cmd comman
 		}
 
 		requestJson, _ := json.Marshal(request)
-		resp, err := output.post(fmt.Sprintf(OMEGA_APP_CREATE_API, app.ClusterId), string(requestJson))
+		resp, err := output.post(fmt.Sprintf(OMEGA_APP_CREATE_API, app.MarathonConfig.ClusterId), string(requestJson))
 		if err != nil {
 			log.Println(err.Error())
 			return err

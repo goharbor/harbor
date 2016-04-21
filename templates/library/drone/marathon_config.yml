@@ -1,0 +1,34 @@
+drone:
+  clusterId: 1
+  appName: "drone"
+  imageVersion: "latest"
+  cpu: 0.3
+  mem: 1024
+  instances: 2
+  log_paths:
+    - /var/log/drone.log
+
+mysql:
+  clusterId: 1
+  appName: "mysql"
+  imageVersion: "latest"
+  cpu: 0.3
+  mem: 1024
+  instances: 2
+  log_paths:
+    - /var/log/mysql.log
+
+
+mysql:
+  clusterId: 1
+  appName: "redis"
+  imageVersion: "latest"
+  cpu: 0.3
+  mem: 1024
+  instances: 2
+  log_paths:
+    - /var/log/redis.log
+
+
+
+
