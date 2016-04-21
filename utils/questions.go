@@ -1,7 +1,8 @@
-package compose
+package utils
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 )
 
 type Catalog struct {
@@ -25,11 +26,6 @@ type Question struct {
 
 type Questions []Question
 
-type Answer struct {
-	Key   string
-	Value string
-}
-
 func (c *Catalog) ToString() string {
 	catalog := ""
 	catalog += fmt.Sprintf("\n")
@@ -40,4 +36,14 @@ func (c *Catalog) ToString() string {
 	catalog += fmt.Sprintf("MinimumSryVersion: %-30s\n", c.MinimumSryVersion)
 
 	return catalog
+}
+
+func ParseQuestions(catalogContent string) (*Catalog, error) {
+	catalog := new(Catalog)
+	err := yaml.Unmarshal([]byte(catalogContent), catalog)
+	if err != nil {
+		return nil, err
+	}
+
+	return catalog, nil
 }

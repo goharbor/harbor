@@ -26,19 +26,24 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/compose"
-	"github.com/vmware/harbor/compose/channel"
-	"github.com/vmware/harbor/compose/command"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils"
 )
 
 const (
 	SryunUserNamePri = "sryci"
-	RepoInfoDir      = "templates"
 	ComposeJsonFile  = "sry_compose.json"
 	ComposeYamlFile  = "sry_compose.yml"
 )
+
+var RepoInfoDir = "templates"
+
+func init() {
+	if len(os.Getenv("TEMPLATE_PATH")) > 0 {
+		RepoInfoDir = os.Getenv("TEMPLATE_PATH")
+	}
+}
 
 type RepositoryV3API struct {
 	BaseAPI
@@ -107,14 +112,14 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	sry_compose, err := compose.ParseQuestions(catalogContent)
+	catalog, err := utils.ParseQuestions(catalogContent)
 	if err != nil {
 		beego.Error("Sry Compose parse error", err)
 		ra.RenderError(http.StatusInternalServerError, "sry compose parse error")
 		return
 	}
 
-	questionsJson, err := json.Marshal(sry_compose.Questions)
+	questionsJson, err := json.Marshal(catalog.Questions)
 	if err != nil {
 		beego.Error("json marshal error", err)
 		ra.RenderError(http.StatusInternalServerError, "json marshal error")
@@ -128,101 +133,6 @@ func (ra *RepositoryV3API) GetRepository() {
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
-	}
-
-	ra.Data["json"] = repositoryResponse
-	ra.ServeJSON()
-}
-
-// POST /api/v3/repositories/{project_name}/{respository_name}
-func (ra *RepositoryV3API) PostApps() {
-	if ra.project_name == "" || ra.repository_name == "" {
-		beego.Error("required project_name and repository_name")
-		ra.RenderError(http.StatusInternalServerError, "required project_name and repository_name")
-		return
-	}
-
-	// check if repo exists
-	_, err := dao.GetRepositoryByName(fmt.Sprintf("%s/%s",
-		ra.project_name, ra.repository_name))
-	if err != nil {
-		beego.Error("Failed to get repository from DB: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
-		return
-	}
-
-	// get catalog file
-	catalogContent, err := GetCatalog(ra.project_name, ra.repository_name)
-	if err != nil {
-		beego.Error("Failed to get catalog file: ")
-		ra.RenderError(http.StatusInternalServerError, "Failed to get catalog")
-		return
-	}
-
-	// get docker compose file
-	dockerComposeContent, err := GetDockerCompose(ra.project_name, ra.repository_name)
-	if err != nil {
-		beego.Error("Failed to get docker compose file: ")
-		ra.RenderError(http.StatusInternalServerError, "Failed to get docker compose file")
-		return
-	}
-
-	// get marathon config file
-	marathonConfigContent, err := GetMarathonConfig(ra.project_name, ra.repository_name)
-	if err != nil {
-		beego.Error("Failed to get marathon config file: ")
-		ra.RenderError(http.StatusInternalServerError, "Failed to get marathon config")
-		return
-	}
-
-	// parse request body
-	var requestBody struct {
-		App     map[string]interface{} `json:"app"`
-		Answers map[string]string      `json:"answers"`
-	}
-
-	body := ra.Ctx.Request.Body
-	jsonRaw, err := ioutil.ReadAll(body)
-
-	if err != nil {
-		beego.Error("Failed to get repository from DB: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
-		return
-	}
-
-	err = json.Unmarshal(jsonRaw, &requestBody)
-	if err != nil {
-		beego.Error("failed to unmarshal answers")
-		ra.RenderError(http.StatusInternalServerError, "failed to unmarshal body")
-		return
-	}
-
-	// create app from sry_compose and anwser entered
-	config := channel.ChannelHttpConfig{
-		Type:      "token",
-		Token:     ra.Ctx.Request.Header.Get("Authorization"),
-		AppApiUrl: os.Getenv("APP_API_URL"),
-	}
-
-	// merge app into answers
-	for k, v := range requestBody.App {
-		switch v.(type) {
-		case string:
-			requestBody.Answers[k] = v.(string)
-		case float64:
-			requestBody.Answers[k] = fmt.Sprintf("%f", v.(float64))
-		case int32:
-			requestBody.Answers[k] = fmt.Sprintf("%d", v)
-		}
-	}
-
-	err = compose.EntryPoint(catalogContent, dockerComposeContent, marathonConfigContent,
-		requestBody.Answers, command.CREATE_APP, config)
-
-	repositoryResponse := models.RepositoryResponse{Code: 0}
-	if err != nil {
-		repositoryResponse = models.RepositoryResponse{Code: 1, Message: err.Error()}
-		return
 	}
 
 	ra.Data["json"] = repositoryResponse
@@ -348,24 +258,8 @@ func GetMarkDown(project_name string, repository_name string) (string, error) {
 	return repoMarkdown, nil
 }
 
-func GetDockerCompose(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "docker_compose", "yml"))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
 func GetCatalog(project_name string, repository_name string) (string, error) {
 	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "catalog", "yml"))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func GetMarathonConfig(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "marathon_config", "yml"))
 	if err != nil {
 		return "", err
 	}
