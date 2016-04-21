@@ -29,6 +29,7 @@ email_server_port = rcp.get("configuration", "email_server_port")
 email_username = rcp.get("configuration", "email_username")
 email_password = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
+email_ssl = rcp.get("configuration", "email_ssl")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
 auth_mode = rcp.get("configuration", "auth_mode")
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -85,6 +86,7 @@ render(os.path.join(templates_dir, "ui", "app.conf"),
         email_user_name=email_username,
         email_user_password=email_password,
         email_from=email_from,
+        email_ssl=email_ssl,
         ui_url=ui_url)
 
 render(os.path.join(templates_dir, "registry", "config.yml"),
