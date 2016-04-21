@@ -58,7 +58,7 @@ To simplify the installation process, a pre-built installation package of Harbor
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
 ### Deploy harbor on Kubernetes
-Detailed instruction about deploying harbor on Kubernetes is described [here](https://github.com/vmware/harbor/blob/master/kubernetes_deployment.md).
+Detailed instruction about deploying harbor on Kubernetes is described [here](docs/kubernetes_deployment.md).
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
