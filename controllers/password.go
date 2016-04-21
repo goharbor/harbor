@@ -46,47 +46,6 @@ func (cpc *ChangePasswordController) Get() {
 	cpc.ForwardTo("page_title_change_password", "change-password")
 }
 
-// UpdatePassword handles UI request to update user's password, it only works when the auth mode is db_auth.
-func (cc *CommonController) UpdatePassword() {
-
-	sessionUserID := cc.GetSession("userId")
-
-	if sessionUserID == nil {
-		log.Warning("User does not login.")
-		cc.CustomAbort(http.StatusUnauthorized, "please_login_first")
-	}
-
-	oldPassword := cc.GetString("old_password")
-	if oldPassword == "" {
-		log.Error("Old password is blank")
-		cc.CustomAbort(http.StatusBadRequest, "Old password is blank")
-	}
-
-	queryUser := models.User{UserID: sessionUserID.(int), Password: oldPassword}
-	user, err := dao.CheckUserPassword(queryUser)
-	if err != nil {
-		log.Errorf("Error occurred in CheckUserPassword: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
-	if user == nil {
-		log.Warning("Password input is not correct")
-		cc.CustomAbort(http.StatusForbidden, "old_password_is_not_correct")
-	}
-
-	password := cc.GetString("password")
-	if password != "" {
-		updateUser := models.User{UserID: sessionUserID.(int), Password: password, Salt: user.Salt}
-		err = dao.ChangeUserPassword(updateUser, oldPassword)
-		if err != nil {
-			log.Errorf("Error occurred in ChangeUserPassword: %v", err)
-			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
-	} else {
-		cc.CustomAbort(http.StatusBadRequest, "please_input_new_password")
-	}
-}
-
 // ForgotPasswordController handles request to /forgotPassword
 type ForgotPasswordController struct {
 	BaseController
