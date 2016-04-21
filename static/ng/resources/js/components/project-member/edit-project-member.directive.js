@@ -38,6 +38,7 @@
       'restrict': 'A',
       'templateUrl': '/static/ng/resources/js/components/project-member/edit-project-member.directive.html',
       'scope': {
+        'username': '=',
         'userId': '=',
         'roleId': '='
       },

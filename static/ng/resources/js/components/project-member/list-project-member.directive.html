@@ -17,7 +17,7 @@
     			   <th width="30%">Username</th><th width="40%">Role</th><th width="30%">Operation</th>
     			 </thead>
     			 <tbody>
-            <tr ng-repeat="pr in vm.projectMembers" edit-project-member user-id="pr.id" role-id="pr.roleId"></tr> 
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" user-id="pr.id" role-id="pr.roleId"></tr> 
           </tbody>
     		</table>
       </div>
