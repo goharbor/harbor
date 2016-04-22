@@ -7,17 +7,16 @@
     .directive('switchRoles', switchRoles);
   
   
-  SwitchRolesController.$inject = [];
+  SwitchRolesController.$inject = ['$scope'];
   
-  function SwitchRolesController() {
+  function SwitchRolesController($scope) {
     var vm = this;
     
-    vm.currentRole = getRoleById(vm.roleId);
+    vm.currentRole = getRoleById(vm.roleId);            
     vm.selectRole = selectRole;
-        
+    
     function selectRole(role) {
-      vm.roleId = role.id;
-      vm.currentRole = getRoleById(vm.roleId);
+      vm.currentRole = getRoleById(role.id);  
     }
     
     function getRoleById(roleId) {

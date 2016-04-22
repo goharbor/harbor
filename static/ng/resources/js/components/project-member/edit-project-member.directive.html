@@ -1,7 +1,7 @@
 <td style="padding: 15px;">//vm.username//</td>
 <td><switch-roles roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-id="vm.roleId"></switch-roles></td>
 <td>
-  <a href="javascript:;" ng-click="vm.update({roleId: vm.roleId})">
+  <a href="javascript:void(0);" ng-click="vm.update({roleId: vm.roleId})">
       <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok"></span>
     </ng-switch>
   </a>

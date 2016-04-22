@@ -15,22 +15,22 @@
     ];
   }
     
-  EditProjectMemberController.$inject = ['roles', 'EditProjectMemberService'];
+  EditProjectMemberController.$inject = ['roles', 'EditProjectMemberService', '$scope'];
   
-  function EditProjectMemberController(roles, EditProjectMemberService) {
+  function EditProjectMemberController(roles, EditProjectMemberService, $scope) {
     var vm = this;
     vm.roles = roles();
     vm.editMode = false;
     vm.update = update;
     
+    
     function update(e) {            
       if(vm.editMode) {
-        vm.editMode = false;        
+        vm.editMode = false;
       }else {
         vm.editMode = true;
       } 
     }
-    
   }
   
   function editProjectMember() {
