@@ -57,7 +57,10 @@ func (b *BaseAPI) ValidateUser() int {
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {
 		log.Infof("Requst with Basic Authentication header, username: %s", username)
-		user, err := auth.Login(models.AuthModel{username, password})
+		user, err := auth.Login(models.AuthModel{
+			Principal: username,
+			Password:  password,
+		})
 		if err != nil {
 			log.Errorf("Error while trying to login, username: %s, error: %v", username, err)
 			user = nil

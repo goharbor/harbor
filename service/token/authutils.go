@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package utils
+package token
 
 import (
 	"crypto"
@@ -80,7 +80,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 						return
 					}
 					if exist {
-						permission = "RW"
+						permission = "RWM"
 					} else {
 						permission = ""
 						log.Infof("project %s does not exist, set empty permission for admin\n", projectName)
@@ -95,6 +95,9 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 			}
 			if strings.Contains(permission, "W") {
 				a.Actions = append(a.Actions, "push")
+			}
+			if strings.Contains(permission, "M") {
+				a.Actions = append(a.Actions, "*")
 			}
 			if strings.Contains(permission, "R") || dao.IsProjectPublic(projectName) {
 				a.Actions = append(a.Actions, "pull")

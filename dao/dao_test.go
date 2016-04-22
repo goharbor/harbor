@@ -206,7 +206,10 @@ func TestLoginByUserName(t *testing.T) {
 		Password: "Abc12345",
 	}
 
-	loginUser, err := LoginByDb(models.AuthModel{userQuery.Username, userQuery.Password})
+	loginUser, err := LoginByDb(models.AuthModel{
+		Principal: userQuery.Username,
+		Password:  userQuery.Password,
+	})
 	if err != nil {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
@@ -226,7 +229,10 @@ func TestLoginByEmail(t *testing.T) {
 		Password: "Abc12345",
 	}
 
-	loginUser, err := LoginByDb(models.AuthModel{userQuery.Email, userQuery.Password})
+	loginUser, err := LoginByDb(models.AuthModel{
+		Principal: userQuery.Email,
+		Password:  userQuery.Password,
+	})
 	if err != nil {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}

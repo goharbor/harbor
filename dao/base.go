@@ -77,12 +77,12 @@ func InitDB() {
 		var err error
 		var c net.Conn
 		for {
-			c, err = net.Dial("tcp", addr+":"+port)
+			c, err = net.DialTimeout("tcp", addr+":"+port, 20*time.Second)
 			if err == nil {
 				c.Close()
 				ch <- 1
 			} else {
-				log.Info("failed to connect to db, retry after 2 seconds...")
+				log.Errorf("failed to connect to db, retry after 2 seconds :%v", err)
 				time.Sleep(2 * time.Second)
 			}
 		}
