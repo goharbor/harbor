@@ -124,11 +124,4 @@ After setting up HTTPS for Harbor, you can verify it by the follow steps:
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
     update-ca-trust
     ```
-
-3. If setting up harbor behind an nginx proxy or elastic load balancing, harbor nginx will reset the values of x-fowarded-XXX headers from first layer nginx or elastic load balancing, and the requests will not be routed properly.  
-In this situation remove the following lines in "location /", "location /v2/" and "location /service/" sections.  
-    ```
-    proxy_set_header X-Real-IP $remote_addr;  
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  
-    proxy_set_header X-Forwarded-Proto $scheme;  
-    ```
+    
