@@ -204,4 +204,10 @@ $ rm -r /data/registry
 [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) describes the usage information for the docker-compose subcommands.
 
 ### Persistent data and log files
-By default, the data of database and image files in the registry are persisted in the directory **/data/** of the target machine. When Harbor's containers are removed and recreated, the data  remain unchanged. Harbor leverages rsyslog to collect the logs of each container, by default the log files are stored in the directory **/var/log/harbor/** on Harbor's host.
+By default, the data of database and image files in the registry are persisted in the directory **/data/** of the target machine. When Harbor's containers are removed and recreated, the data  remain unchanged. Harbor leverages rsyslog to collect the logs of each container, by default the log files are stored in the directory **/var/log/harbor/** on Harbor's host.  
+
+##Troubleshooting
+1.When setting up Harbor behind another nginx proxy or elastic load balancing, remove the below line if the proxy already has similar settings. Be sure to remove the line under these 3 sections: "location /", "location /v2/" and "location /service/".
+```
+proxy_set_header X-Forwarded-Proto $scheme;
+```

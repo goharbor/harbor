@@ -124,3 +124,4 @@ After setting up HTTPS for Harbor, you can verify it by the follow steps:
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
     update-ca-trust
     ```
+    
