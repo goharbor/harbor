@@ -207,4 +207,6 @@ By default, the data of database and image files in the registry are persisted i
 
 ##Troubleshooting
 1.When setting up Harbor behind another nginx proxy or elastic load balancing, remove the below line if the proxy already has similar settings. Be sure to remove the line under these 3 sections: "location /", "location /v2/" and "location /service/".
+```
 proxy_set_header X-Forwarded-Proto $scheme;
+```
