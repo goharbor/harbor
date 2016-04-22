@@ -4,32 +4,30 @@
   
   angular
     .module('harbor.project.member')
-    .constant('roles', roles)
     .directive('editProjectMember', editProjectMember);
+      
+  EditProjectMemberController.$inject = ['roles', 'EditProjectMemberService', 'DeleteProjectMemberService'];
   
-  function roles() {
-    return [
-      {'id': '1', 'name': 'Project Admin'},
-      {'id': '2', 'name': 'Developer'},
-      {'id': '3', 'name': 'Guest'}
-    ];
-  }
-    
-  EditProjectMemberController.$inject = ['roles', 'EditProjectMemberService', '$scope'];
-  
-  function EditProjectMemberController(roles, EditProjectMemberService, $scope) {
+  function EditProjectMemberController(roles, EditProjectMemberService) {
     var vm = this;
     vm.roles = roles();
     vm.editMode = false;
-    vm.update = update;
+    vm.updateProjectMember = updateProjectMember;
+    vm.deleteProjectMember = deleteProjectMember;
     
-    
-    function update(e) {            
+    function updateProjectMember(e) {            
       if(vm.editMode) {
         vm.editMode = false;
+               
+        console.log('project_id:' + e.projectId + ', user_id:' + e.userId + ', role_id:' + e.roleId);
+        
       }else {
-        vm.editMode = true;
+        vm.editMode = true;      
       } 
+    }
+    
+    function deleteProjectMember(e) {
+      console.log('project_id:' + e.projectId + ', user_id:' + e.userId);
     }
   }
   
@@ -40,18 +38,14 @@
       'scope': {
         'username': '=',
         'userId': '=',
-        'roleId': '='
+        'roleId': '=',
+        'projectId': '='
       },
-      'link': link,
       'controller': EditProjectMemberController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
-    
-    function link(scope, element, attrs) {
-
-    }
   }
 
 })();

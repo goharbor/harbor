@@ -6,23 +6,31 @@
         <span class="input-group-btn">
           <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-search"></span></button>
         </span>
+        <span class="input-group-btn">
+          <button class="btn btn-link" type="button" ng-click="vm.advancedSearch()">Advanced Search</button>
+        </span>
       </div>
     </div>
-    <table class="table table-pane">
-	    <thead>
-		    <th>Username</th><th>Repository Name</th><th>Operation</th><th>Timestamp</th>
-		  </thead>
-		  <tbody>
-		    <tr>
-	    	  <td>Haox</td><td>myrepo/Ubuntu</td><td>Create</td><td>2016-03-22 12:35:00</td>
-    		</tr>
-		    <tr>
-				  <td>Haox</td><td>myrepo/MySQL</td><td>Push</td><td>2016-03-22 12:35:00</td>
-				</tr>
-				<tr>
-				  <td>Daniel</td><td>myproject/Golang</td><td>Create</td><td>2016-03-12 12:35:00</td>
-				</tr>
-		  </tbody>
-		</table>
+    <div class="pane">
+      <advanced-search ng-show="vm.isOpen" is-open="vm.isOpen"></advanced-search>
+      <div class="sub-pane">
+        <table class="table table-pane">
+      	    <thead>
+      		    <th>Username</th><th>Repository Name</th><th>Operation</th><th>Timestamp</th>
+      		  </thead>
+      		  <tbody>
+      		    <tr>
+      	    	  <td>Haox</td><td>myrepo/Ubuntu</td><td>Create</td><td>2016-03-22 12:35:00</td>
+          		</tr>
+      		    <tr>
+      				  <td>Haox</td><td>myrepo/MySQL</td><td>Push</td><td>2016-03-22 12:35:00</td>
+      				</tr>
+      				<tr>
+      				  <td>Daniel</td><td>myproject/Golang</td><td>Create</td><td>2016-03-12 12:35:00</td>
+      				</tr>
+      		  </tbody>
+    		  </table>
+      </div>
+    </div>
   </div>
 </div>

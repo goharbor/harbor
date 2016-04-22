@@ -1,9 +1,9 @@
 <td style="padding: 15px;">//vm.username//</td>
-<td><switch-roles roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-id="vm.roleId"></switch-roles></td>
+<td><switch-role roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-id="vm.roleId"></switch-role></td>
 <td>
-  <a href="javascript:void(0);" ng-click="vm.update({roleId: vm.roleId})">
+  <a href="javascript:void(0);" ng-click="vm.updateProjectMember({projectId: vm.projectId, userId: vm.userId, roleId: vm.roleId})">
       <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok"></span>
     </ng-switch>
   </a>
-  <a href="#"><span class="glyphicon glyphicon-trash"></span></a>
+  <a href="javascript:void(0);" ng-click="vm.deleteProjectMember({projectId: vm.projectId, userId: vm.userId})"><span class="glyphicon glyphicon-trash"></span></a>
 </td>

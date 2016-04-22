@@ -9,9 +9,9 @@
     
   function mockupProjectMembers() {
     var projectMembers = [
-      {'id': '1', 'username': 'user1', 'roleId': '1'},
-      {'id': '2', 'username': 'user2', 'roleId': '3'},
-      {'id': '3', 'username': 'user3', 'roleId': '2'}
+      {'id': '1', 'username': 'user1', 'roleId': '1', 'project_id': '5'},
+      {'id': '2', 'username': 'user2', 'roleId': '3', 'project_id': '5'},
+      {'id': '3', 'username': 'user3', 'roleId': '2', 'project_id': '5'}
     ];
     return projectMembers;
   }
@@ -22,9 +22,16 @@
     var vm = this;
     
     vm.isOpen = false;
-    vm.addMember = addMember;
+    vm.username = "";
     
-    function addMember() {
+    vm.search = search; 
+    vm.addProjectMember = addProjectMember;
+    
+    function search(e) {
+      console.log("search for:" + e.username);
+    }
+    
+    function addProjectMember() {
       if(vm.isOpen) {
         vm.isOpen = false;
       }else{

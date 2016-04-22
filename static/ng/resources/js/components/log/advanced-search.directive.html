@@ -1,0 +1,40 @@
+<div class="well panel-group">
+  <div class="row">
+    <div class="col-xs-10 col-md-10">
+      <form class="form">
+        <div class="form-group">
+          <label for="">Operation:</label>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" ng-model="vm.opAll" ng-checked="vm.opCreate && vm.opPull && vm.opPush && vm.opDelete && vm.opOthers" ng-click="vm.checkOperation({checked: 'all'})">&nbsp;All&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opCreate" ng-model="vm.opCreate" ng-click="vm.checkOperation({checked: 'create'})">&nbsp;Create&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opPull" ng-model="vm.opPull" ng-click="vm.checkOperation({checked: 'pull'})">&nbsp;Pull&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opPush" ng-model="vm.opPush" ng-click="vm.checkOperation({checked: 'push'})">&nbsp;Push&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opDelete" ng-model="vm.opDelete" ng-click="vm.checkOperation({checked: 'delete'})">&nbsp;Delete&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opOthers" ng-model="vm.opOthers" ng-click="vm.checkOperation({checked: 'others'})">&nbsp;Others&nbsp;&nbsp;
+          <input type="text" ng-model="vm.others" size="10">
+        </div>
+    
+        <div class="form-group">
+          <label for="">Duration:</label>
+        </div>
+        <div class="form-group">
+          From:
+	        <input type="text" id="fromdatepicker" readonly="readonly">
+	        <span class="glyphicon glyphicon-calendar"></span>
+          &nbsp;&nbsp;
+          To:
+	        <input type="text" id="todatepicker" readonly="readonly">
+	        <span class="glyphicon glyphicon-calendar"></span>
+        </div>								
+      </form>
+    </div>
+    <div class="col-xs-2 col-md-2"> 
+      <form>                        
+        <div class="form-group" style="margin-top: 40%;">               
+          <button type="button" class="btn btn-primary" ng-click="vm.search()">Search</button>     
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
