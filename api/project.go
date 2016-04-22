@@ -18,6 +18,8 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -32,6 +34,7 @@ type ProjectAPI struct {
 	BaseAPI
 	userID    int
 	projectID int64
+	HarborURL string
 }
 
 type projectReq struct {
@@ -43,6 +46,8 @@ const projectNameMaxLen int = 30
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
+	p.HarborURL = strings.ToLower(os.Getenv("HARBOR_URL"))
+
 	p.userID = p.ValidateUser()
 	idStr := p.Ctx.Input.Param(":id")
 	if len(idStr) > 0 {
@@ -87,11 +92,14 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
-	err = dao.AddProject(project)
+	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
+
+	projectLocation := p.HarborURL + "/api/projects/" + strconv.FormatInt(projectID, 10)
+	p.Redirect(http.StatusCreated, projectLocation)
 }
 
 // Head ...

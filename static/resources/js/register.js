@@ -57,7 +57,7 @@ jQuery(function(){
 				},
 				complete: function(xhr, status){
 					$("#btnPageSignUp").prop("disabled", false);
-					if(xhr && xhr.status == 200){
+					if(xhr && xhr.status == 201){
 						$("#dlgModal")
 							.dialogModal({
 								"title":  isAdmin == "true" ? i18n.getMessage("title_add_user") : i18n.getMessage("title_sign_up"), 

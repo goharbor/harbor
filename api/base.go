@@ -86,3 +86,9 @@ func (b *BaseAPI) ValidateUser() int {
 	}
 	return userID
 }
+
+// Redirect does redirection to localurl with http header status code.
+// It sends http response header directly.
+func (b *BaseAPI) Redirect(statusCode int, location string) {
+	b.Ctx.Redirect(statusCode, location)
+}

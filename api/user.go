@@ -34,6 +34,7 @@ type UserAPI struct {
 	SelfRegistration bool
 	IsAdmin          bool
 	AuthMode         string
+	HarborURL        string
 }
 
 type passwordReq struct {
@@ -54,6 +55,7 @@ func (ua *UserAPI) Prepare() {
 	if selfRegistration == "on" {
 		ua.SelfRegistration = true
 	}
+	ua.HarborURL = strings.ToLower(os.Getenv("HARBOR_URL"))
 
 	if ua.Ctx.Input.IsPost() {
 		sessionUserID := ua.GetSession("userId")
@@ -158,13 +160,15 @@ func (ua *UserAPI) Post() {
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
 
-	_, err := dao.Register(user)
+	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Internal error.")
 		return
 	}
 
+	userLocation := ua.HarborURL + "/api/users/" + strconv.FormatInt(userID, 10)
+	ua.Redirect(http.StatusCreated, userLocation)
 }
 
 // Delete ...
