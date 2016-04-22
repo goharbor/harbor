@@ -56,16 +56,18 @@ jQuery(function(){
 		validateOptions.Validate(function(){
 			var oldPassword = $("#OldPassword").val();
 			var password = $("#Password").val();
-			$.ajax({
-				"url": "/updatePassword",
-				"type": "post",
-				"data": {"old_password": oldPassword, "password" : password},
-				"beforeSend": function(e){
+			new AjaxUtil({
+				url: "/api/users/current/password",
+				type: "put",
+				data: {"old_password": oldPassword, "new_password" : password},
+				beforeSend: function(e){
 				   unbindEnterKey();
 				   $("h1").append(spinner.el);
 				   $("#btnSubmit").prop("disabled", true);	
 				},
-				"success": function(data, status, xhr){
+				complete: function(xhr, status){
+					spinner.stop();
+					$("#btnSubmit").prop("disabled", false);	
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
 							.dialogModal({
@@ -77,22 +79,20 @@ jQuery(function(){
 							});
 					}
 				},
-				"error": function(jqXhr, status, error){
-					$("#dlgModal")
-						.dialogModal({
-							"title": i18n.getMessage("title_change_password"), 
-							"content": i18n.getMessage(jqXhr.responseText),
-							"callback": function(){ 
-								bindEnterKey();
-								return;
-							}
-						});
-				},
-				"complete": function(){
-					spinner.stop();
-					$("#btnSubmit").prop("disabled", false);	
+				error: function(jqXhr, status, error){
+					if(jqXhr && jqXhr.responseText.length){
+						$("#dlgModal")
+							.dialogModal({
+								"title": i18n.getMessage("title_change_password"), 
+								"content": i18n.getMessage(jqXhr.responseText), 
+								"callback": function(){ 
+									bindEnterKey();
+									return;
+								}
+							});
+					}
 				}
-			});
+			}).exec();
 		});
 	});
 });
