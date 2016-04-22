@@ -40,7 +40,6 @@ type Target struct {
 	Digest     string
 	Repository string
 	URL        string `json:"Url"`
-	Tag        string
 }
 
 // Actor holds information about actor.

@@ -17,6 +17,8 @@ package service
 
 import (
 	"encoding/json"
+	"net/http"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -25,6 +27,8 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry/errors"
 
 	"github.com/astaxie/beego"
 )
@@ -32,11 +36,7 @@ import (
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
 	beego.Controller
-}
-
-type taglist struct {
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+	registry *registry.Registry
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
@@ -52,8 +52,9 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project, repo_tag, tag_url string
+	var username, action, repo, project, repo_tag, tag_url, digest string
 	var matched bool
+	var client *http.Client
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
 		if err != nil {
@@ -65,15 +66,27 @@ func (n *NotificationHandler) Post() {
 			action = e.Action
 			repo = e.Target.Repository
 			tag_url = e.Target.URL
-			result, err1 := svc_utils.RegistryAPIGet(tag_url, username)
+			digest = e.Target.Digest
 
+			client = registry.NewClientUsernameAuthHandlerEmbeded(username)
+			log.Debug("initializing username auth handler: %s", username)
+			endpoint := os.Getenv("REGISTRY_URL")
+			r, err1 := registry.New(endpoint, client)
 			if err1 != nil {
-				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tag_url, err1)
+				log.Fatalf("error occurred while initializing auth handler for repository API: %v", err1)
+
+			}
+			n.registry = r
+
+			_, _, payload, err2 := n.registry.PullManifest(repo, digest, registry.ManifestVersion1)
+
+			if err2 != nil {
+				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tag_url, err2)
 				return
 			}
 
 			maniDig := models.ManifestDigest{}
-			err = json.Unmarshal(result, &maniDig)
+			err = json.Unmarshal(payload, &maniDig)
 			if err != nil {
 				log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag_url, err)
 				return
@@ -85,36 +98,48 @@ func (n *NotificationHandler) Post() {
 				digestLayers = append(digestLayers, diglayer.Digest)
 			}
 
-			result, err = svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repo, "tags", "list"), username)
+			tags, err := n.registry.ListTag(repo)
 			if err != nil {
-				log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repo, err)
-			} else {
-				t := taglist{}
-				json.Unmarshal(result, &t)
-				for _, tag := range t.Tags {
-					result, err = svc_utils.RegistryAPIGet(svc_utils.BuildRegistryURL(repo, "manifests", tag), username)
-					if err != nil {
-						log.Errorf("Failed to get repo tags, repo name: %s, error: %v", repo, err)
-						continue
-					}
-					taginfo := models.Manifest{}
-					err = json.Unmarshal(result, &taginfo)
-					if err != nil {
-						log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag, err)
-						continue
-					}
-					for _, fslayer := range taginfo.FsLayers {
-						tagLayers = append(tagLayers, fslayer.BlobSum)
-					}
-
-					sort.Strings(digestLayers)
-					sort.Strings(tagLayers)
-					eq := compStringArray(digestLayers, tagLayers)
-					if eq {
-						repo_tag = tag
-						break
-					}
+				e, ok := errors.ParseError(err)
+				if ok {
+					log.Info(e)
+				} else {
+					log.Error(err)
 				}
+				return
+			}
+
+			log.Infof("tags : %v ", tags)
+
+			for _, tag := range tags {
+				_, _, payload, err := n.registry.PullManifest(repo, tag, registry.ManifestVersion1)
+				if err != nil {
+					e, ok := errors.ParseError(err)
+					if ok {
+						log.Info(e)
+					} else {
+						log.Error(err)
+					}
+					continue
+				}
+				taginfo := models.Manifest{}
+				err = json.Unmarshal(payload, &taginfo)
+				if err != nil {
+					log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag, err)
+					continue
+				}
+				for _, fslayer := range taginfo.FsLayers {
+					tagLayers = append(tagLayers, fslayer.BlobSum)
+				}
+
+				sort.Strings(digestLayers)
+				sort.Strings(tagLayers)
+				eq := compStringArray(digestLayers, tagLayers)
+				if eq {
+					repo_tag = tag
+					break
+				}
+
 			}
 
 			if strings.Contains(repo, "/") {
