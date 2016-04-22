@@ -52,7 +52,7 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project, repo_tag, tag_url, digest string
+	var username, action, repo, project, repoTag, tagURL, digest string
 	var matched bool
 	var client *http.Client
 	for _, e := range notification.Events {
@@ -65,7 +65,7 @@ func (n *NotificationHandler) Post() {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
-			tag_url = e.Target.URL
+			tagURL = e.Target.URL
 			digest = e.Target.Digest
 
 			client = registry.NewClientUsernameAuthHandlerEmbeded(username)
@@ -81,14 +81,14 @@ func (n *NotificationHandler) Post() {
 			_, _, payload, err2 := n.registry.PullManifest(repo, digest, registry.ManifestVersion1)
 
 			if err2 != nil {
-				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tag_url, err2)
+				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tagURL, err2)
 				return
 			}
 
 			maniDig := models.ManifestDigest{}
 			err = json.Unmarshal(payload, &maniDig)
 			if err != nil {
-				log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag_url, err)
+				log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tagURL, err)
 				return
 			}
 
@@ -136,7 +136,7 @@ func (n *NotificationHandler) Post() {
 				sort.Strings(tagLayers)
 				eq := compStringArray(digestLayers, tagLayers)
 				if eq {
-					repo_tag = tag
+					repoTag = tag
 					break
 				}
 
@@ -148,8 +148,8 @@ func (n *NotificationHandler) Post() {
 			if username == "" {
 				username = "anonymous"
 			}
-			log.Debugf("repo tag is : %v ", repo_tag)
-			go dao.AccessLog(username, project, repo, repo_tag, action)
+			log.Debugf("repo tag is : %v ", repoTag)
+			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {
 					err2 := svc_utils.RefreshCatalogCache()

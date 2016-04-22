@@ -96,7 +96,7 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 	return accessLogList, nil
 }
 
-// AccessLog, invoked in service/notification.go
+// AccessLog ...
 func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	o := orm.NewOrm()
 	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +

@@ -43,6 +43,7 @@ type Tag struct {
 	ImageID string `json:"image_id"`
 }
 
+// Manifest ...
 type Manifest struct {
 	SchemaVersion int           `json:"schemaVersion"`
 	Name          string        `json:"name"`
@@ -60,6 +61,7 @@ type blobSumItem struct {
 	BlobSum string `json:"blobSum"`
 }
 
+// ManifestDigest ...
 type ManifestDigest struct {
 	MediaType     string      `json:"mediaType"`
 	SchemaVersion int         `json:"schemaVersion"`
