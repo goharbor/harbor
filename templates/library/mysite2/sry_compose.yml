@@ -1,0 +1,15 @@
+catalog:
+  name: "mysite2"
+  version: "v0.1"
+  description: ""
+  questions:
+    - variable: "port"
+      label: "映射端口"
+      description: ""
+      required: true
+      type: "string"
+mysite2:
+  image:  devregistry.dataman-inc.com:5000/library/mysite2:v1.0
+  restart: always
+  ports:
+    - "${port}:80"
