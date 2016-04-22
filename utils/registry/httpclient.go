@@ -16,6 +16,7 @@
 package registry
 
 import (
+	//"io/ioutil"
 	"net/http"
 
 	"github.com/vmware/harbor/utils/log"
@@ -70,47 +71,100 @@ func NewAuthTransport(transport http.RoundTripper, handlers []auth.Handler) http
 
 // RoundTrip ...
 func (a *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	originResp, originErr := a.transport.RoundTrip(req)
+	// TODO remove duplicate codes
+	if req.Body == nil {
+		originResp, originErr := a.transport.RoundTrip(req)
 
-	if originErr != nil {
-		return originResp, originErr
-	}
-
-	log.Debugf("%d | %s %s", originResp.StatusCode, req.Method, req.URL)
-
-	if originResp.StatusCode != http.StatusUnauthorized {
-		return originResp, nil
-	}
-
-	challenges := auth.ParseChallengeFromResponse(originResp)
-
-	reqChanged := false
-	for _, challenge := range challenges {
-
-		scheme := challenge.Scheme
-
-		for _, handler := range a.handlers {
-			if scheme != handler.Schema() {
-				log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
-				continue
-			}
-
-			if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
-				return nil, err
-			}
-			reqChanged = true
+		if originErr != nil {
+			return originResp, originErr
 		}
+
+		log.Debugf("%d | %s %s", originResp.StatusCode, req.Method, req.URL)
+
+		if originResp.StatusCode != http.StatusUnauthorized {
+			return originResp, nil
+		}
+
+		challenges := auth.ParseChallengeFromResponse(originResp)
+
+		reqChanged := false
+		for _, challenge := range challenges {
+
+			scheme := challenge.Scheme
+
+			for _, handler := range a.handlers {
+				if scheme != handler.Schema() {
+					log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
+					continue
+				}
+
+				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
+					return nil, err
+				}
+				reqChanged = true
+			}
+		}
+
+		if !reqChanged {
+			log.Warning("no handler match scheme")
+			return originResp, nil
+		}
+
+		resp, err := a.transport.RoundTrip(req)
+		if err == nil {
+			log.Debugf("%d | %s %s", resp.StatusCode, req.Method, req.URL)
+		}
+
+		return resp, err
+	} else {
+		originReqBody := req.Body
+
+		originReqContentLength := req.ContentLength
+		req.Body = nil
+		req.ContentLength = 0
+
+		originResp, originErr := a.transport.RoundTrip(req)
+		if originErr == nil {
+			log.Debugf("%d | %s %s", originResp.StatusCode, req.Method, req.URL)
+		} else {
+			log.Error(originErr)
+		}
+
+		if originErr == nil && originResp.StatusCode == http.StatusUnauthorized {
+			challenges := auth.ParseChallengeFromResponse(originResp)
+
+			reqChanged := false
+			for _, challenge := range challenges {
+
+				scheme := challenge.Scheme
+
+				for _, handler := range a.handlers {
+					if scheme != handler.Schema() {
+						log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
+						continue
+					}
+
+					if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
+						return nil, err
+					}
+					reqChanged = true
+				}
+			}
+
+			if !reqChanged {
+				log.Warning("no handler match scheme")
+			}
+		}
+
+		req.ContentLength = originReqContentLength
+		req.Body = originReqBody
+
+		resp, err := a.transport.RoundTrip(req)
+		if err == nil {
+			log.Debugf("%d | %s %s", resp.StatusCode, req.Method, req.URL)
+		}
+
+		return resp, err
 	}
 
-	if !reqChanged {
-		log.Warning("no handler match scheme")
-		return originResp, nil
-	}
-
-	resp, err := a.transport.RoundTrip(req)
-	if err == nil {
-		log.Debugf("%d | %s %s", resp.StatusCode, req.Method, req.URL)
-	}
-
-	return resp, err
 }
