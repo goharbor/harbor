@@ -34,7 +34,6 @@ type UserAPI struct {
 	SelfRegistration bool
 	IsAdmin          bool
 	AuthMode         string
-	HarborURL        string
 }
 
 type passwordReq struct {
@@ -55,7 +54,6 @@ func (ua *UserAPI) Prepare() {
 	if selfRegistration == "on" {
 		ua.SelfRegistration = true
 	}
-	ua.HarborURL = strings.ToLower(os.Getenv("HARBOR_URL"))
 
 	if ua.Ctx.Input.IsPost() {
 		sessionUserID := ua.GetSession("userId")
@@ -167,8 +165,7 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
-	userLocation := ua.HarborURL + "/api/users/" + strconv.FormatInt(userID, 10)
-	ua.Redirect(http.StatusCreated, userLocation)
+	ua.Redirect(http.StatusCreated, strconv.FormatInt(userID, 10))
 }
 
 // Delete ...
