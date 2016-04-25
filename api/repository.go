@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema1"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
@@ -246,7 +247,8 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	item := models.RepoItem{}
 
-	_, _, payload, err := ra.registry.PullManifest(repoName, tag, registry.ManifestVersion1)
+	mediaTypes := []string{schema1.MediaTypeManifest}
+	_, _, payload, err := ra.registry.PullManifest(repoName, tag, mediaTypes)
 	if err != nil {
 		e, ok := errors.ParseError(err)
 		if ok {

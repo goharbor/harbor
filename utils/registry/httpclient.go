@@ -116,55 +116,54 @@ func (a *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 
 		return resp, err
-	} else {
-		originReqBody := req.Body
-
-		originReqContentLength := req.ContentLength
-		req.Body = nil
-		req.ContentLength = 0
-
-		originResp, originErr := a.transport.RoundTrip(req)
-		if originErr == nil {
-			log.Debugf("%d | %s %s", originResp.StatusCode, req.Method, req.URL)
-		} else {
-			log.Error(originErr)
-		}
-
-		if originErr == nil && originResp.StatusCode == http.StatusUnauthorized {
-			challenges := auth.ParseChallengeFromResponse(originResp)
-
-			reqChanged := false
-			for _, challenge := range challenges {
-
-				scheme := challenge.Scheme
-
-				for _, handler := range a.handlers {
-					if scheme != handler.Schema() {
-						log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
-						continue
-					}
-
-					if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
-						return nil, err
-					}
-					reqChanged = true
-				}
-			}
-
-			if !reqChanged {
-				log.Warning("no handler match scheme")
-			}
-		}
-
-		req.ContentLength = originReqContentLength
-		req.Body = originReqBody
-
-		resp, err := a.transport.RoundTrip(req)
-		if err == nil {
-			log.Debugf("%d | %s %s", resp.StatusCode, req.Method, req.URL)
-		}
-
-		return resp, err
 	}
 
+	originReqBody := req.Body
+
+	originReqContentLength := req.ContentLength
+	req.Body = nil
+	req.ContentLength = 0
+
+	originResp, originErr := a.transport.RoundTrip(req)
+	if originErr == nil {
+		log.Debugf("%d | %s %s", originResp.StatusCode, req.Method, req.URL)
+	} else {
+		log.Error(originErr)
+	}
+
+	if originErr == nil && originResp.StatusCode == http.StatusUnauthorized {
+		challenges := auth.ParseChallengeFromResponse(originResp)
+
+		reqChanged := false
+		for _, challenge := range challenges {
+
+			scheme := challenge.Scheme
+
+			for _, handler := range a.handlers {
+				if scheme != handler.Schema() {
+					log.Debugf("scheme not match: %s %s, skip", scheme, handler.Schema())
+					continue
+				}
+
+				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
+					return nil, err
+				}
+				reqChanged = true
+			}
+		}
+
+		if !reqChanged {
+			log.Warning("no handler match scheme")
+		}
+	}
+
+	req.ContentLength = originReqContentLength
+	req.Body = originReqBody
+
+	resp, err := a.transport.RoundTrip(req)
+	if err == nil {
+		log.Debugf("%d | %s %s", resp.StatusCode, req.Method, req.URL)
+	}
+
+	return resp, err
 }
