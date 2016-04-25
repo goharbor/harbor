@@ -17,7 +17,7 @@ package dao
 
 import (
 	"errors"
-	"regexp"
+	//	"regexp"
 	"time"
 
 	"github.com/vmware/harbor/models"
@@ -74,15 +74,7 @@ func validate(user models.User) error {
 		return errors.New("Username already exists.")
 	}
 
-	if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
-		return errors.New("Email with illegal format.")
-	}
-
-	if isIllegalLength(user.Email, 0, -1) {
-		return errors.New("Email cannot empty.")
-	}
-
-	if exist, _ := UserExists(models.User{Email: user.Email}, "email"); exist {
+	if exist, _ := UserExists(models.User{Email: user.Email}, "email"); len(user.Email) > 0 && exist {
 		return errors.New("Email already exists.")
 	}
 
