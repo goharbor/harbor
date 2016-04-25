@@ -1,0 +1,5 @@
+If you are reporting a problem, please make sure the following information are provided:
+1)Version of docker engine and docker-compose
+2)Config files of harbor, you can get them by packaging "Deploy/config" directory
+3)Log files, you can get them by package the /var/log/harbor/ 
+

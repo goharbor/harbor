@@ -77,7 +77,7 @@ func InitDB() {
 		var err error
 		var c net.Conn
 		for {
-			c, err = net.Dial("tcp", addr+":"+port)
+			c, err = net.DialTimeout("tcp", addr+":"+port, 20*time.Second)
 			if err == nil {
 				c.Close()
 				ch <- 1

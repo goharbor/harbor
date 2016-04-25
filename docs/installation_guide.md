@@ -29,12 +29,13 @@ At minimum, you need to change the **hostname** attribute in **harbor.cfg**. The
 
 **hostname**: The hostname for a user to access the user interface and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, for example 192.168.1.10 or reg.yourdomain.com . Do NOT use localhost or 127.0.0.1 for the hostname because the registry service needs to be accessed by external clients.  
 **ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
-**Email settings**: the following 5 attributes are used to send an email to reset a user's password,  they are not mandatory unless the password reset function is needed in Harbor.  
+**Email settings**: the following 6 attributes are used to send an email to reset a user's password,  they are not mandatory unless the password reset function is needed in Harbor. By default SSL connection is not enabled, if your smtp server(such as exmail.qq.com) requires SSL connection and doesn't support STARTTLS, then you should enable it by set **email_ssl = true**.
 * email_server = smtp.mydomain.com 
 * email_server_port = 25
 * email_username = sample_admin@mydomain.com
 * email_password = abc
 * email_from = admin <sample_admin@mydomain.com>  
+* email_ssl = false
 
 **harbor_admin_password**: The password for the administrator of Harbor, by default the password is Harbor12345, the user name is admin.  
 **auth_mode**: The authentication mode of Harbor. By default it is *db_auth*, i.e. the credentials are stored in a database. Please set it to *ldap_auth* if you want to verify user's credentials against an LDAP server.  
@@ -203,4 +204,10 @@ $ rm -r /data/registry
 [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) describes the usage information for the docker-compose subcommands.
 
 ### Persistent data and log files
-By default, the data of database and image files in the registry are persisted in the directory **/data/** of the target machine. When Harbor's containers are removed and recreated, the data  remain unchanged. Harbor leverages rsyslog to collect the logs of each container, by default the log files are stored in the directory **/var/log/harbor/** on Harbor's host.
+By default, the data of database and image files in the registry are persisted in the directory **/data/** of the target machine. When Harbor's containers are removed and recreated, the data  remain unchanged. Harbor leverages rsyslog to collect the logs of each container, by default the log files are stored in the directory **/var/log/harbor/** on Harbor's host.  
+
+##Troubleshooting
+1.When setting up Harbor behind another nginx proxy or elastic load balancing, remove the below line if the proxy already has similar settings. Be sure to remove the line under these 3 sections: "location /", "location /v2/" and "location /service/".
+```
+proxy_set_header X-Forwarded-Proto $scheme;
+```
