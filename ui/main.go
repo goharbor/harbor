@@ -66,10 +66,13 @@ func updateInitPassword(userID int, password string) error {
 func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	beego.AddTemplateExt("htm")
+	beego.AddTemplateExt("tpl")
 	dao.InitDB()
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
 		log.Error(err)
 	}
 	initRouters()
+	initNgRouters()
 	beego.Run()
 }
