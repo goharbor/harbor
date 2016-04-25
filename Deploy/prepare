@@ -36,11 +36,13 @@ ldap_basedn = rcp.get("configuration", "ldap_basedn")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
 customize_crt = rcp.get("configuration", "customize_crt")
-crt_countryname = rcp.get("configuration", "crt_countryname")
+crt_country = rcp.get("configuration", "crt_country")
 crt_state = rcp.get("configuration", "crt_state")
-crt_name = rcp.get("configuration", "crt_name")
-crt_organizationname = rcp.get("configuration", "crt_organizationname")
-crt_organizationalunitname = rcp.get("configuration", "crt_organizationalunitname")
+crt_location = rcp.get("configuration", "crt_location")
+crt_organization = rcp.get("configuration", "crt_organization")
+crt_organizationalunit = rcp.get("configuration", "crt_organizationalunit")
+crt_commonname = rcp.get("configuration", "crt_commonname")
+crt_email = rcp.get("configuration", "crt_email")
 ########
 
 base_dir = os.path.dirname(__file__)
@@ -103,41 +105,58 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
+def validate_crt_subj(dirty_subj):
+    subj_list = [item for item in dirty_subj.strip().split("/") \
+        if len(item.split("=")) == 2 and len(item.split("=")[1]) > 0]
+    return "/" + "/".join(subj_list)
+
+FNULL = open(os.devnull, 'w')
+
+from functools import wraps
+def stat_decorator(func):
+    #@wraps(func)
+    def check_wrapper(*args, **kwargs):
+        stat = func(*args, **kwargs)
+        message = "Generated configuration file: %s" % kwargs['path'] \
+                if stat == 0 else "Fail to generate %s" % kwargs['path']
+        print(message)
+        if stat != 0:
+            sys.exit(1)
+    return check_wrapper
+
+@stat_decorator
+def check_private_key_stat(*args, **kwargs):
+    return subprocess.call(["openssl", "genrsa", "-out", kwargs['path'], "4096"],\
+        stdout=FNULL, stderr=subprocess.STDOUT)
+
+@stat_decorator
+def check_certificate_stat(*args, **kwargs):
+    dirty_subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}/CN={5}/emailAddress={6}"\
+        .format(crt_country, crt_state, crt_location, crt_organization,\
+        crt_organizationalunit, crt_commonname, crt_email)
+    subj = validate_crt_subj(dirty_subj)
+    return subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
+        private_key_pem, "-out", root_crt, "-days", "3650", "-subj", subj], \
+        stdout=FNULL, stderr=subprocess.STDOUT)
+
+def openssl_is_installed(stat):
+    if stat == 0:
+        return True
+    else:
+        print("Cannot find openssl installed in this computer\nUse default SSL certificate file")
+        return False
+
 if customize_crt == 'on':
     import subprocess
-    is_fail = False
-    FNULL = open(os.devnull, 'w')
-    shell_status = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
-    if shell_status == 1:
-        print("cannot find openssl installed in this computer.")
-        is_fail = True
-    else:
+    shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
+    if openssl_is_installed(shell_stat):
         private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
         root_crt = os.path.join(config_dir, "registry", "root.crt")
         crt_conf_files = [ private_key_pem, root_crt ]
         rmdir(crt_conf_files)
-        shell_status = subprocess.call(["openssl", "genrsa", "-out", private_key_pem, "4096"],\
-            stdout=FNULL, stderr=subprocess.STDOUT)
-        if shell_status == 0:
-            print("private_key.pem has been generated in %s/ui" % config_dir)
-        else:
-            print("gennerate private_key.pem fail.")
-            is_fail = True
-        subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}"\
-            .format(crt_countryname, crt_state, crt_name, crt_organizationname, crt_organizationalunitname)
-        shell_status = subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
-            private_key_pem, "-out", root_crt, "-days", "3650", "-subj", subj], \
-            stdout=FNULL, stderr=subprocess.STDOUT)
-        if shell_status == 0:
-            print("root.crt has been generated in %s/registry" % config_dir)
-        else:
-            print("gennerate root.crt fail.")
-            is_fail = True
-    FNULL.close()
-try:
-    if is_fail is True:
-        print("some problems occur.")
-        sys.exit(1)
-except Exception as e:
-    pass
+
+        check_private_key_stat(path=private_key_pem)
+        check_certificate_stat(path=root_crt)
+
+FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
