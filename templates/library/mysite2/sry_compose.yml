@@ -1,7 +1,7 @@
 catalog:
   name: "mysite2"
   version: "v0.1"
-  description: ""
+  description: "test mysite2"
   questions:
     - variable: "port"
       label: "映射端口"
