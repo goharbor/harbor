@@ -24,7 +24,6 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry"
 
 	"github.com/astaxie/beego"
 )
@@ -32,7 +31,6 @@ import (
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
 	beego.Controller
-	registry *registry.Registry
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
@@ -86,22 +84,4 @@ func (n *NotificationHandler) Post() {
 // Render returns nil as it won't render any template.
 func (n *NotificationHandler) Render() error {
 	return nil
-}
-
-func compStringArray(a, b []string) bool {
-	if a == nil && b == nil {
-		return true
-	}
-	if a == nil || b == nil {
-		return false
-	}
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
 }
