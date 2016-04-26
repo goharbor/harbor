@@ -36,6 +36,11 @@ type UserAPI struct {
 	AuthMode         string
 }
 
+type passwordReq struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 
@@ -175,5 +180,48 @@ func (ua *UserAPI) Delete() {
 		log.Errorf("Failed to delete data from database, error: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Failed to delete User")
 		return
+	}
+}
+
+// ChangePassword handles PUT to /api/users/{}/password
+func (ua *UserAPI) ChangePassword() {
+
+	if !(ua.AuthMode == "db_auth") {
+		ua.CustomAbort(http.StatusForbidden, "")
+	}
+
+	if !ua.IsAdmin {
+		if ua.userID != ua.currentUserID {
+			log.Error("Guests can only change their own account.")
+			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
+		}
+	}
+
+	var req passwordReq
+	ua.DecodeJSONReq(&req)
+	if req.OldPassword == "" {
+		log.Error("Old password is blank")
+		ua.CustomAbort(http.StatusBadRequest, "Old password is blank")
+	}
+
+	queryUser := models.User{UserID: ua.userID, Password: req.OldPassword}
+	user, err := dao.CheckUserPassword(queryUser)
+	if err != nil {
+		log.Errorf("Error occurred in CheckUserPassword: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if user == nil {
+		log.Warning("Password input is not correct")
+		ua.CustomAbort(http.StatusForbidden, "old_password_is_not_correct")
+	}
+
+	if req.NewPassword == "" {
+		ua.CustomAbort(http.StatusBadRequest, "please_input_new_password")
+	}
+	updateUser := models.User{UserID: ua.userID, Password: req.NewPassword, Salt: user.Salt}
+	err = dao.ChangeUserPassword(updateUser, req.OldPassword)
+	if err != nil {
+		log.Errorf("Error occurred in ChangeUserPassword: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
