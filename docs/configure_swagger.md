@@ -22,6 +22,10 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 ```sh
   vi prepare-swagger.sh
 ```
+* Change the SCHEME to the protocol scheme of your Harbor server.
+```sh
+  SCHEME=<HARBOR_SERVER_SCHEME>
+```
 * Change the SERVER_IP to the IP address of your Harbor server.
 ```sh
   SERVER_ID=<HARBOR_SERVER_DOMAIN>

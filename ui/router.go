@@ -36,7 +36,6 @@ func initRouters() {
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
-	beego.Router("/updatePassword", &controllers.CommonController{}, "post:UpdatePassword")
 
 	beego.Router("/", &controllers.IndexController{})
 	beego.Router("/signIn", &controllers.SignInController{})
@@ -58,6 +57,7 @@ func initRouters() {
 	beego.Router("/api/projects/:id/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/users", &api.UserAPI{})
 	beego.Router("/api/users/?:id", &api.UserAPI{})
+	beego.Router("/api/users/:id/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
