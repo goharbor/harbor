@@ -1,0 +1,68 @@
+version: '2'
+services:
+  log:
+    image: daocloud.io/harbor/deploy_log:latest
+    volumes:
+      - /var/log/harbor/:/var/log/docker/
+    ports:
+      - 1514:514
+  registry:
+    image: daocloud.io/library/registry:2.3.0
+    volumes:
+      - /data/registry:/storage
+      - ./config/registry/:/etc/registry/
+    ports:
+      - 5001:5001
+    command:
+      /etc/registry/config.yml
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "registry"
+  mysql:
+    image: daocloud.io/harbor/deploy_mysql:latest
+    volumes:
+      - /data/database:/var/lib/mysql
+    env_file:
+      - ./config/db/env
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "mysql"
+  ui:
+    image: daocloud.io/harbor/deploy_ui:latest
+    env_file:
+      - ./config/ui/env
+    volumes:
+      - ./config/ui/app.conf:/etc/ui/app.conf
+      - ./config/ui/private_key.pem:/etc/ui/private_key.pem
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "ui"
+  proxy:
+    image: daocloud.io/library/nginx:1.9
+    volumes:
+      - ./config/nginx:/etc/nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - mysql
+      - registry
+      - ui
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "proxy"
