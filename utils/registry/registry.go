@@ -25,6 +25,7 @@ import (
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
@@ -197,6 +198,8 @@ func (r *Registry) PullManifest(name, reference string, version manifest.Version
 	}
 
 	// if the registry does not support schema 2, schema 1 manifest will be returned
+	log.Debugf("--- Pull request headers: %v ---", req.Header)
+	log.Debugf("--- Pull request Accept header: %v ---", http.CanonicalHeaderKey("Accept"))
 	req.Header.Set(http.CanonicalHeaderKey("Accept"), version.MediaType)
 
 	resp, err := r.client.Do(req)

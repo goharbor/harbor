@@ -60,16 +60,3 @@ type histroyItem struct {
 type blobSumItem struct {
 	BlobSum string `json:"blobSum"`
 }
-
-// ManifestDigest ...
-type ManifestDigest struct {
-	MediaType     string      `json:"mediaType"`
-	SchemaVersion int         `json:"schemaVersion"`
-	Layers        []layerItem `json:"layers"`
-}
-
-type layerItem struct {
-	MediaType string `json:"mediaType"`
-	Size      int    `json:"size"`
-	Digest    string `json:"digest"`
-}

@@ -52,7 +52,7 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project, repoTag, tagURL, digest string
+	var username, action, repo, project, repoTag string
 	var matched bool
 	var client *http.Client
 	for _, e := range notification.Events {
@@ -65,82 +65,8 @@ func (n *NotificationHandler) Post() {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
-			tagURL = e.Target.URL
-			digest = e.Target.Digest
-
-			client = registry.NewClientUsernameAuthHandlerEmbeded(username)
-			log.Debug("initializing username auth handler: %s", username)
-			endpoint := os.Getenv("REGISTRY_URL")
-			r, err1 := registry.New(endpoint, client)
-			if err1 != nil {
-				log.Fatalf("error occurred while initializing auth handler for repository API: %v", err1)
-
-			}
-			n.registry = r
-
-			_, _, payload, err2 := n.registry.PullManifest(repo, digest, registry.ManifestVersion1)
-
-			if err2 != nil {
-				log.Errorf("Failed to get manifests for repo, repo name: %s, tag: %s, error: %v", repo, tagURL, err2)
-				return
-			}
-
-			maniDig := models.ManifestDigest{}
-			err = json.Unmarshal(payload, &maniDig)
-			if err != nil {
-				log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tagURL, err)
-				return
-			}
-
-			var digestLayers []string
-			var tagLayers []string
-			for _, diglayer := range maniDig.Layers {
-				digestLayers = append(digestLayers, diglayer.Digest)
-			}
-
-			tags, err := n.registry.ListTag(repo)
-			if err != nil {
-				e, ok := errors.ParseError(err)
-				if ok {
-					log.Info(e)
-				} else {
-					log.Error(err)
-				}
-				return
-			}
-
-			log.Infof("tags : %v ", tags)
-
-			for _, tag := range tags {
-				_, _, payload, err := n.registry.PullManifest(repo, tag, registry.ManifestVersion1)
-				if err != nil {
-					e, ok := errors.ParseError(err)
-					if ok {
-						log.Info(e)
-					} else {
-						log.Error(err)
-					}
-					continue
-				}
-				taginfo := models.Manifest{}
-				err = json.Unmarshal(payload, &taginfo)
-				if err != nil {
-					log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repo, tag, err)
-					continue
-				}
-				for _, fslayer := range taginfo.FsLayers {
-					tagLayers = append(tagLayers, fslayer.BlobSum)
-				}
-
-				sort.Strings(digestLayers)
-				sort.Strings(tagLayers)
-				eq := compStringArray(digestLayers, tagLayers)
-				if eq {
-					repoTag = tag
-					break
-				}
-
-			}
+			repoTag = e.Target.Tag
+			log.Debugf("repo tag is : %v ", repoTag)
 
 			if strings.Contains(repo, "/") {
 				project = repo[0:strings.LastIndex(repo, "/")]
@@ -148,7 +74,6 @@ func (n *NotificationHandler) Post() {
 			if username == "" {
 				username = "anonymous"
 			}
-			log.Debugf("repo tag is : %v ", repoTag)
 			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {
