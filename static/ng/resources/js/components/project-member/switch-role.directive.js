@@ -6,17 +6,17 @@
     .module('harbor.project.member')
     .directive('switchRole', switchRole);
   
-  SwitchRoleController.$inject = ['getRoleById'];
+  SwitchRoleController.$inject = ['getRole', '$scope'];
   
-  function SwitchRoleController(getRoleById) {
+  function SwitchRoleController(getRole, $scope) {
     var vm = this;
     
-    vm.currentRole = getRoleById(vm.roleId);            
+    vm.currentRole = getRole({'key': 'roleName', 'value': vm.roleName});            
     vm.selectRole = selectRole;
     
     function selectRole(role) {
-      vm.currentRole = getRoleById(role.id);  
-      vm.roleId = role.id;
+      vm.currentRole = getRole({'key': 'roleName', 'value': role.roleName});  
+      $scope.$emit('changedRoleId', vm.currentRole.id);
     }
     
   }
@@ -29,7 +29,7 @@
         'roles': '=',
         'editMode': '=',
         'userId': '=',
-        'roleId': '='
+        'roleName': '='
       },
       'controller' : SwitchRoleController,
       'controllerAs': 'vm',

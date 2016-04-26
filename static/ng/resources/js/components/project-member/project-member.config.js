@@ -5,27 +5,28 @@
   angular
     .module('harbor.project.member')
     .constant('roles', roles)
-    .factory('getRoleById', getRoleById);
+    .factory('getRole', getRole);
     
   function roles() {
     return [
-      {'id': '1', 'name': 'Project Admin'},
-      {'id': '2', 'name': 'Developer'},
-      {'id': '3', 'name': 'Guest'}
+      {'id': '1', 'name': 'Project Admin', 'roleName': 'projectAdmin'},
+      {'id': '2', 'name': 'Developer', 'roleName': 'developer'},
+      {'id': '3', 'name': 'Guest', 'roleName': 'guest'}
     ];
   }
   
-  getRoleById.$inject = ['roles'];
+  getRole.$inject = ['roles'];
   
-  function getRoleById(roles) {
+  function getRole(roles) {
     var r = roles();
-    return getRole;     
-    function getRole(roleId) {
+    return get;     
+    function get(query) {
      
       for(var i = 0; i < r.length; i++) {
         var role = r[i];
-        if(role.id == roleId) {
-          return role;
+        if(query.key == 'roleName' && role.roleName == query.value
+          || query.key == 'roleId' && role.id == query.value) {
+           return role;
         }
       }
     }

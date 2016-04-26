@@ -3,6 +3,8 @@
   'use strict';
   
   angular
-    .module('harbor.details', []);
+    .module('harbor.details', [
+    'harbor.services.project'
+    ]);
   
 })();

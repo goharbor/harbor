@@ -8,12 +8,19 @@
    
   ListProjectMemberService.$inject = ['$http', '$log'];
  
-  function ListProjectMemberService() {
+  function ListProjectMemberService($http, $log) {
     
     return ListProjectMember;
     
-    function ListProjectMember () {
-      
+    function ListProjectMember(projectId, queryParams) {
+      console.log('project_member project_id:' + projectId);
+      var username = queryParams.username;
+      return $http
+        .get('/api/projects/' + projectId + '/members', {
+          params: {
+            'username': username
+          }
+        });
     }
   }
   

@@ -1,0 +1,20 @@
+<div id="collapse//vm.associateId//" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading//vm.associateId//">
+  <div class="panel-body">
+    <table class="repository-table">
+      <thead>
+        <th width="20%"><span class="glyphicon glyphicon-tags"></span> Tag</th>
+        <th width="30%">Image Details</th>
+        <th width="40%">Pull Command</th>
+        <th width="10%"></th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="tag in vm.tags">
+          <td>//tag//</td>
+          <td><a href="#"><span class="glyphicon glyphicon-info-sign"></span></a></td>
+          <td>docker pull //vm.repoName//://tag//</td>
+          <td><a href="#">Copy</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

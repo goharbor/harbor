@@ -4,27 +4,27 @@
   
   angular
     .module('harbor.details')
-    .constant('mockupProjects', mockupProjects)
     .controller('DetailsController', DetailsController);
   
-  function mockupProjects() {
-    var data = [
-      { "id": 1, "name" : "myrepo"},
-      { "id": 2, "name" : "myproject"},
-      { "id": 3, "name" : "harbor_project"},
-      { "id": 4, "name" : "legacy"} 
-    ];
-    return data;
-  }  
+  DetailsController.$inject = ['ListProjectService', '$scope'];
   
-  DetailsController.$inject = ['mockupProjects', '$scope'];
-  
-  function DetailsController(mockupProjects, $scope) {
+  function DetailsController(ListProjectService, $scope) {
     var vm = this;
     vm.isOpen = false;
-    vm.projects = mockupProjects();
-    vm.selectedProject = vm.projects[0];
     vm.closeRetrievePane = closeRetrievePane;
+    
+    ListProjectService({'isPublic' : 0, 'projectName' : ''})
+      .then(getProjectComplete)
+      .catch(getProjectFailed);
+      
+    function getProjectComplete(response) {
+      vm.projects = response.data;
+      vm.selectedProject = vm.projects[0];
+    }
+    
+    function getProjectFailed(response) {
+      
+    }
     
     function closeRetrievePane() {
       $scope.$broadcast('isOpen', false);

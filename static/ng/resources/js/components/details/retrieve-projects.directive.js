@@ -5,38 +5,28 @@
   angular
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
- 
-  function RetrieveProjectsController() {
-    var vm = this;
+  
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$routeParams'];
    
+  function RetrieveProjectsController($scope, nameFilter, $routeParams) {
+    var vm = this;
+     
     vm.selectItem = selectItem;
-    vm.filterProjects = filterProjects;
-    vm.selectedId = vm.selectedProject.id;
+    vm.filterInput = "";
+    
+    $scope.$watch('vm.selectedProject', function(current, origin) {
+      if(current) {        
+        var projectId = current.ProjectId || $routeParams.project_id;
+        vm.selectedId = projectId;      
+      }
+    });
+
     
     function selectItem(item) {
-       vm.selectedId = item.id;
+       vm.selectedId = item.ProjectId;
        vm.selectedProject = item;
-    }
-    
-    var totalProjects = vm.projects;
-    
-    function filterProjects(input) {
-     
-      if(input == "") {
-        vm.projects = totalProjects;
-      }else{
-        var filteredResults = [];
-        for(var i = 0; i < totalProjects.length; i++) {
-          var item = totalProjects[i];
-          if(item.name.indexOf(input) >= 0) {
-            filteredResults.push(item);
-            continue;
-          }
-        }
-        vm.projects = filteredResults;
-      }
-    }
-    
+       vm.isOpen = false;
+    }       
    
   }
   
@@ -56,8 +46,6 @@
     }
     
     return directive;
-    
-    
   }
   
 })();

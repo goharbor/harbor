@@ -12,8 +12,11 @@
     
     return EditProjectMember;
     
-    function EditProjectMember(projectMember) {
-      
+    function EditProjectMember(projectId, userId, roleId) {
+      return $http
+        .put('/api/projects/' + projectId + '/members/' + userId, {
+            'roles' : [ Number(roleId) ]
+        });
     }
     
   }

@@ -12,8 +12,9 @@
     
     return DeleteProjectMember;
     
-    function DeleteProjectMember(projectMember) {
-      
+    function DeleteProjectMember(projectId, userId) {
+      return $http
+        .delete('/api/projects/' + projectId + '/members/' + userId);
     }
     
   }

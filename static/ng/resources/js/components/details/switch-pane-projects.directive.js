@@ -6,9 +6,9 @@
     .module('harbor.details')
     .directive('switchPaneProjects', switchPaneProjects);
 
-  SwitchPaneProjectsController.$inject = ['$scope'];
+  SwitchPaneProjectsController.$inject = ['$scope', '$routeParams'];
 
-  function SwitchPaneProjectsController($scope) {
+  function SwitchPaneProjectsController($scope, $routeParams) {
     var vm = this;
     
     $scope.$on('isOpen', function(e, val){
@@ -16,7 +16,9 @@
     });
     
     $scope.$watch('vm.selectedProject', function(current, origin) {
-      vm.projectName = current.name;  
+      if(current){
+        vm.projectName = current.Name;  
+      }
     });
     
     vm.switchPane = switchPane;

@@ -6,10 +6,16 @@
     .module('harbor.project.member')
     .directive('editProjectMember', editProjectMember);
       
-  EditProjectMemberController.$inject = ['roles', 'EditProjectMemberService', 'DeleteProjectMemberService'];
+  EditProjectMemberController.$inject = ['$scope', 'roles', 'getRole','EditProjectMemberService', 'DeleteProjectMemberService'];
   
-  function EditProjectMemberController(roles, EditProjectMemberService) {
+  function EditProjectMemberController($scope, roles, getRole, EditProjectMemberService, DeleteProjectMemberService) {
     var vm = this;
+    
+    
+    $scope.$on('changedRoleId', function(e, val) {
+      vm.roleId = val;
+    });
+    
     vm.roles = roles();
     vm.editMode = false;
     vm.updateProjectMember = updateProjectMember;
@@ -18,8 +24,10 @@
     function updateProjectMember(e) {            
       if(vm.editMode) {
         vm.editMode = false;
-               
-        console.log('project_id:' + e.projectId + ', user_id:' + e.userId + ', role_id:' + e.roleId);
+      
+        EditProjectMemberService(e.projectId, e.userId, e.roleId)
+          .success(editProjectMemberComplete)
+          .error(editProjectMemberFailed);
         
       }else {
         vm.editMode = true;      
@@ -27,8 +35,21 @@
     }
     
     function deleteProjectMember(e) {
-      console.log('project_id:' + e.projectId + ', user_id:' + e.userId);
+      
+      DeleteProjectMemberService(e.projectId, e.userId)
+        .success(editProjectMemberComplete)
+        .error(editProjectMemberFailed);
+      
     }
+    
+    function editProjectMemberComplete(data, status, headers) {
+      console.log('editProjectMemberComplete: ' + status);
+    }
+    
+    function editProjectMemberFailed(e) {
+      console.log('editProjectMemberFailed:' + e);
+    }
+    
   }
   
   function editProjectMember() {
@@ -38,7 +59,7 @@
       'scope': {
         'username': '=',
         'userId': '=',
-        'roleId': '=',
+        'roleName': '=',
         'projectId': '='
       },
       'controller': EditProjectMemberController,

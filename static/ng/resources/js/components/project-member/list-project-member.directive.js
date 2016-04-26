@@ -4,21 +4,11 @@
   
   angular
     .module('harbor.project.member')
-    .constant('mockupProjectMembers', mockupProjectMembers)
     .directive('listProjectMember', listProjectMember);
     
-  function mockupProjectMembers() {
-    var projectMembers = [
-      {'id': '1', 'username': 'user1', 'roleId': '1', 'project_id': '5'},
-      {'id': '2', 'username': 'user2', 'roleId': '3', 'project_id': '5'},
-      {'id': '3', 'username': 'user3', 'roleId': '2', 'project_id': '5'}
-    ];
-    return projectMembers;
-  }
-  
-  ListProjectMemberController.$inject = ['mockupProjectMembers', 'ListProjectMemberService'];
+  ListProjectMemberController.$inject = ['ListProjectMemberService', '$routeParams'];
     
-  function ListProjectMemberController(mockupProjectMembers, ListProjectMemberService) {
+  function ListProjectMemberController(ListProjectMemberService, $routeParams) {
     var vm = this;
     
     vm.isOpen = false;
@@ -27,8 +17,12 @@
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
     
+    vm.projectId = $routeParams.project_id || 2;
+    
+    retrieve(vm.username);
+    
     function search(e) {
-      console.log("search for:" + e.username);
+      retrieve(e.username);
     }
     
     function addProjectMember() {
@@ -39,7 +33,19 @@
       }
     }
     
-    vm.projectMembers = mockupProjectMembers();
+    function retrieve(username) {    
+      ListProjectMemberService(vm.projectId, {'username': username})
+        .then(getProjectMemberComplete)
+        .catch(getProjectMemberFailed);        
+    }
+    
+    function getProjectMemberComplete(response) {
+      vm.projectMembers = response.data;  
+    } 
+           
+    function getProjectMemberFailed(response) {
+      
+    }
     
   }
   

@@ -8,7 +8,6 @@
   
   function RepositoryController() {
     var vm = this;
-    vm.info = "repository";
   }
   
 })();
