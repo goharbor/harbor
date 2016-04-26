@@ -58,13 +58,13 @@ jQuery(function(){
 		                  '<td style="vertical-align: middle;"><a href="/registry/detail?project_id=' + e.ProjectId + '">' + e.Name + '</a></td>' +
 		                  '<td style="vertical-align: middle;">' + moment(new Date(e.CreationTime)).format("YYYY-MM-DD HH:mm:ss") + '</td>';
 		                  if(e.Public == 1 && e.Togglable){
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_on")+ '</button></td>'
+		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '">' + i18n.getMessage("public_on")+ '</button></td>'
 		                  } else if (e.Public == 1) {
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_on")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("public_on")+ '</button></td>';
 		                  } else if (e.Public == 0 && e.Togglable) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_off")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '">' + i18n.getMessage("public_off")+ '</button></td>';
 		                  } else if (e.Public == 0) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("public_off")+ '</button></td>';
 		                      row += '</tr>';
 		                  }
 		                  $("#tblProject tbody").append(row);
@@ -82,10 +82,10 @@ jQuery(function(){
 					   complete: function(jqXhr, status) {
 							if($(self).hasClass("btn-success")){
 								$(self).removeClass("btn-success").addClass("btn-danger");
-								$(self).html(i18n.getMessage("button_off"));
+								$(self).html(i18n.getMessage("public_off"));
 							}else{
 								$(self).removeClass("btn-danger").addClass("btn-success");
-								$(self).html(i18n.getMessage("button_on"));
+								$(self).html(i18n.getMessage("public_on"));
 							}
 						}
 					 }).exec();
@@ -164,9 +164,9 @@ jQuery(function(){
 								'<td style="vertical-align: middle;">' + e.Username + '</td>' +
 								'<td style="vertical-align: middle;">' + e.Email + '</td>';
 							if(e.HasAdminRole == 1){
-								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.UserId + '">' + i18n.getMessage("button_on") + '</button></td>';
+								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.UserId + '">' + i18n.getMessage("public_on") + '</button></td>';
 							} else {
-								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-danger" userid="' + e.UserId + '">' + i18n.getMessage("button_off") + '</button></td>';
+								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-danger" userid="' + e.UserId + '">' + i18n.getMessage("public_off") + '</button></td>';
 							}
 							row += '<td style="padding-left: 30px; vertical-align: middle;"><a href="#" style="visibility: hidden;" class="tdDeleteUser" userid="' + e.UserId + '" username="' + e.Username + '"><span class="glyphicon glyphicon-trash"></span></a></td>';
 							row += '</tr>';
@@ -185,10 +185,10 @@ jQuery(function(){
 							if(jqXhr && jqXhr.status == 200){
 								if($(self).hasClass("btn-success")){
 									$(self).removeClass("btn-success").addClass("btn-danger");
-									$(self).html(i18n.getMessage("button_off"));
+									$(self).html(i18n.getMessage("public_off"));
 								}else{
 									$(self).removeClass("btn-danger").addClass("btn-success");
-									$(self).html(i18n.getMessage("button_on"));
+									$(self).html(i18n.getMessage("public_on"));
 								}
 							}		
 						}
