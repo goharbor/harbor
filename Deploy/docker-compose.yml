@@ -7,14 +7,14 @@ services:
     ports:
       - 1514:514
   registry:
-    image: library/registry:2.3.0
+    image: library/registry:2.4.0
     volumes:
       - /data/registry:/storage
       - ./config/registry/:/etc/registry/
     ports:
       - 5001:5001
     command:
-      /etc/registry/config.yml
+      ["serve", "/etc/registry/config.yml"]
     depends_on:
       - log
     logging:
