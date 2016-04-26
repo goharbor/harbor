@@ -17,10 +17,7 @@ package service
 
 import (
 	"encoding/json"
-	"net/http"
-	"os"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/vmware/harbor/dao"
@@ -28,7 +25,6 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
-	"github.com/vmware/harbor/utils/registry/errors"
 
 	"github.com/astaxie/beego"
 )
@@ -54,7 +50,6 @@ func (n *NotificationHandler) Post() {
 	}
 	var username, action, repo, project, repoTag string
 	var matched bool
-	var client *http.Client
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
 		if err != nil {
