@@ -276,6 +276,12 @@ func (ra *RepositoryV3API) UpdateRepository() {
 	}
 
 	repository.IsPublic = repo.IsPublic
+	if repo.SryCompose != "" {
+		repository.SryCompose = repo.SryCompose
+	}
+	if repo.Readme != "" {
+		repository.Readme = repo.Readme
+	}
 
 	repository, err := dao.UpdateRepoInfo(repository)
 	if err != nil {

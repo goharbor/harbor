@@ -11,7 +11,8 @@ REPO_NAME=nginx
 DESCRIPTION=最流行的web服务器
 CATEGORY=中间件
 ISPUBLIC=1
-
+README=/root/estest.json
+SRYCOMPOSE=/root/estest.json
 
 # 更新分类
 update_repo_category()
@@ -40,7 +41,29 @@ update_repo_is_public()
   curl -u $USERNAME:$PASSWORD -X PUT -k -H "Content-Type: application/json"  $HARBOR_URL/api/v3/repositories/$PROJECT_NAME/$1 -d " { \"isPublic\": $2 } "
 }
 
+update_repo_readme()
+{
+  echo ""
+  echo " ====  UPDATING $1's readme to $2 ===="
+  echo ""
+  readme=`cat $2`
+  newstr=`echo $readme | gawk '{ gsub(/"/,"\\\\\"") } 1'`
+  curl -u $USERNAME:$PASSWORD -X PUT -k -H "Content-Type: application/json"  $HARBOR_URL/api/v3/repositories/$PROJECT_NAME/$1 -d " { \"readme\": \"$newstr\" } "
+}
+
+update_repo_compose()
+{
+  echo ""
+  echo " ====  UPDATING $1's readme to $2 ===="
+  echo ""
+  readme=`cat $2`
+  newstr=`echo $readme | gawk '{ gsub(/"/,"\\\\\"") } 1'`
+  curl -u $USERNAME:$PASSWORD -X PUT -k -H "Content-Type: application/json"  $HARBOR_URL/api/v3/repositories/$PROJECT_NAME/$1 -d " { \"sryCompose\": \"$newstr\" } "
+}
+
 update_repo_category $REPO_NAME $CATEGORY
 update_repo_description $REPO_NAME $DESCRIPTION
 update_repo_is_public $REPO_NAME $ISPUBLIC
+update_repo_readme $REPO_NAME $README
+update_repo_compose $REPO_NAME $SRYCOMPOSE
 
