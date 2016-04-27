@@ -29,41 +29,41 @@ import (
 //TODO:transaction, return err
 
 // AddProject adds a project to the database along with project roles information and access log records.
-func AddProject(project models.Project) error {
+func AddProject(project models.Project) (int64, error) {
 
 	if isIllegalLength(project.Name, 4, 30) {
-		return errors.New("project name is illegal in length. (greater than 4 or less than 30)")
+		return 0, errors.New("project name is illegal in length. (greater than 4 or less than 30)")
 	}
 	if isContainIllegalChar(project.Name, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
-		return errors.New("project name contains illegal characters")
+		return 0, errors.New("project name contains illegal characters")
 	}
 
 	o := orm.NewOrm()
 
 	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	now := time.Now()
 	r, err := p.Exec(project.OwnerID, project.Name, now, now, project.Deleted, project.Public)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	projectID, err := r.LastInsertId()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN); err != nil {
-		return err
+		return projectID, err
 	}
 
 	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", RepoTag: "N/A", GUID: "N/A", Operation: "create", OpTime: time.Now()}
 	err = AddAccessLog(accessLog)
 
-	return err
+	return projectID, err
 }
 
 // IsProjectPublic ...
