@@ -87,11 +87,13 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
-	err = dao.AddProject(project)
+	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
+
+	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
 // Head ...
