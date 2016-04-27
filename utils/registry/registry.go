@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
