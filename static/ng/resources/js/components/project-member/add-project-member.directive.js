@@ -10,17 +10,30 @@
  
   function AddProjectMemberController(roles, AddProjectMemberService) {
     var vm = this;
+    vm.username = "";
     vm.roles = roles();
     vm.optRole = 1;
     vm.save = save;
     vm.cancel = cancel;
     
     function save() {
-      console.log(vm.optRole);
+      
+      AddProjectMemberService(2, vm.optRole, vm.username)
+        .success(addProjectMemberComplete)
+        .error(addProjectMemberFailed);
+      vm.isOpen = false;
     }    
    
     function cancel() {
       vm.isOpen = false;  
+    }
+    
+    function addProjectMemberComplete(data, status, header) {
+      console.log('addProjectMemberComplete: status:' + status + ', data:' + data);
+    }
+    
+    function addProjectMemberFailed(data, status, headers) {
+      console.log('addProjectMemberFailed: status:' + status + ', data:' + data);
     }
     
   }

@@ -13,7 +13,20 @@
     return LogResult;
     
     function LogResult(queryParams) {      
-      $log.info(queryParams);
+      var projectId = queryParams.projectId;
+      var username = queryParams.username;
+      var beginTimestamp = queryParams.beginTimestamp;
+      var endTimestamp = queryParams.endTimestamp;
+      var keywords = queryParams.keywords;
+      
+      return $http
+        .post('/api/projects/' + projectId + '/logs/filter', {
+          'beginTimestamp' : beginTimestamp,
+          'endTimestamp'   : endTimestamp,
+          'keywords' : keywords,
+          'project_id': projectId,
+          'username' : username
+        });
     }
   }
 })();

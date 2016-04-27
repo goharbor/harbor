@@ -12,8 +12,12 @@
     
     return AddProjectMember;
     
-    function AddProjectMember(projectMember) {
-      
+    function AddProjectMember(projectId, roles, username) {
+      return $http
+        .post('/api/projects/' + projectId + '/members/', {
+          'roles': [ Number(roles) ],
+          'user_name': username
+        });
     }
     
   }

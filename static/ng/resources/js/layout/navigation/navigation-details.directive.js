@@ -30,7 +30,8 @@
       templateUrl: '/static/ng/resources/js/layout/navigation/navigation-details.directive.html',
       link: link,
       scope: {
-        'isOpen': "="
+        'isOpen': '=',
+        'selectedProject': '='
       },
       replace: true,
       controller: NavigationDetailsController,

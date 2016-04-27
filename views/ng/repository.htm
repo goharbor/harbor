@@ -5,16 +5,15 @@
   	    <div class="section"> 
   		    <h4 class="page-header">My Projects<span class="gutter">|</span><a href="#" class="title-color">Public Projects</a></h4>
   		    <div class="switch-pane">
-            <switch-pane-projects is-open="vm.open" selected-project="vm.selectedProject"></switch-pane-projects>
-            <span> 
-              <navigation-details is-open="vm.open"></navigation-details>
-            </span>
+          <switch-pane-projects is-open="vm.open" selected-project="vm.selectedProject"></switch-pane-projects>
+          <span> 
+            <navigation-details is-open="vm.open" selected-project="vm.selectedProject"></navigation-details>
+          </span>
   		    </div>
-          <retrieve-projects is-open="vm.open" projects="vm.projects" selected-project="vm.selectedProject"></retrieve-projects>
-          <!-- Tab panes -->
+        <retrieve-projects is-open="vm.open" projects="vm.projects" selected-project="vm.selectedProject"></retrieve-projects>
+        <!-- Tab panes -->
   		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
-           <ng-view></ng-view>
-          </div>
+          <ng-view></ng-view>
         </div>
       </div>
     </div>

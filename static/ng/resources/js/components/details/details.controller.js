@@ -13,6 +13,10 @@
     vm.isOpen = false;
     vm.closeRetrievePane = closeRetrievePane;
     
+    $scope.$on('selectedProjectId', function(e, val) {
+      $scope.$broadcast('currentProjectId',val);
+    });
+    
     ListProjectService({'isPublic' : 0, 'projectName' : ''})
       .then(getProjectComplete)
       .catch(getProjectFailed);

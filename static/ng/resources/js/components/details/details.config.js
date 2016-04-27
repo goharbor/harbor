@@ -26,7 +26,7 @@
       })
       .otherwise({
         redirectTo: '/'
-      });
+      }); 
   }
   
   function nameFilter() {

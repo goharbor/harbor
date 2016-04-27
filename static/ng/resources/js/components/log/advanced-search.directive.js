@@ -12,7 +12,6 @@
     var vm = this;
     
     vm.checkOperation = checkOperation;
-    vm.search = search;
     
     vm.opAll = true;
     vm.opCreate = true;
@@ -51,15 +50,6 @@
       if(vm.opOthers) {
          vm.op.push(vm.others);
       }
-      
-    }
-      
-    function search() { 
-      if(vm.opAll) {
-        vm.op = [];
-        vm.op.push('all');
-      }
-      console.log(vm.op.join(","));
     }
   }
   
@@ -68,7 +58,10 @@
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/log/advanced-search.directive.html',
       'scope': {
-        'isOpen': '='
+        'isOpen': '=',
+        'op': '=',
+        'others': '=',
+        'search': '&'
       },
       'controller': AdvancedSearchController,
       'controllerAs': 'vm',

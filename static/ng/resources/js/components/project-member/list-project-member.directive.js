@@ -6,23 +6,25 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['ListProjectMemberService', '$routeParams'];
+  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', '$routeParams'];
     
-  function ListProjectMemberController(ListProjectMemberService, $routeParams) {
+  function ListProjectMemberController($scope, ListProjectMemberService, $routeParams) {
     var vm = this;
+   
+    vm.projectId = $routeParams.project_id;
     
     vm.isOpen = false;
     vm.username = "";
-    
+            
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
     
-    vm.projectId = $routeParams.project_id || 2;
-    
-    retrieve(vm.username);
+    retrieve(vm.projectId , vm.username);
+      
     
     function search(e) {
-      retrieve(e.username);
+      console.log('project_id:' + e.projectId);
+      retrieve(e.projectId, e.username);
     }
     
     function addProjectMember() {
@@ -33,8 +35,8 @@
       }
     }
     
-    function retrieve(username) {    
-      ListProjectMemberService(vm.projectId, {'username': username})
+    function retrieve(projectId, username) {    
+      ListProjectMemberService(projectId, {'username': username})
         .then(getProjectMemberComplete)
         .catch(getProjectMemberFailed);        
     }
