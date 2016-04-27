@@ -1,3 +1,5 @@
 use registry;
 
-alter table repository drop column srycompose,drop column readme;
+
+alter table repository add srycompose text;
+alter table repository add readme text;
