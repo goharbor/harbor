@@ -107,7 +107,7 @@ func RepositoriesUnderNamespace(namespace string) ([]models.Repository, error) {
 	}
 
 	o := orm.NewOrm()
-	sql := `SELECT id, name, description, project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at, readme, compose FROM repository WHERE is_public = 1 and project_name=?  ORDER BY updated_at DESC`
+	sql := `SELECT id, name, description, project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at, readme, srycompose FROM repository WHERE is_public = 1 and project_name=?  ORDER BY updated_at DESC`
 
 	var r []models.Repository
 	_, err := o.Raw(sql, namespace).QueryRows(&r)
