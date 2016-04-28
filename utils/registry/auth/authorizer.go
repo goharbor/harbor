@@ -23,8 +23,8 @@ import (
 
 // Handler authorizes requests according to the schema
 type Handler interface {
-	// Schema : basic, bearer
-	Schema() string
+	// Scheme : basic, bearer
+	Scheme() string
 	//AuthorizeRequest adds basic auth or token auth to the header of request
 	AuthorizeRequest(req *http.Request, params map[string]string) error
 }
@@ -47,7 +47,7 @@ func NewRequestAuthorizer(handlers []Handler, challenges []au.Challenge) *Reques
 func (r *RequestAuthorizer) ModifyRequest(req *http.Request) error {
 	for _, handler := range r.handlers {
 		for _, challenge := range r.challenges {
-			if handler.Schema() == challenge.Scheme {
+			if handler.Scheme() == challenge.Scheme {
 				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
 					return err
 				}

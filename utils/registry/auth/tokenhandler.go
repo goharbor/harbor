@@ -39,78 +39,57 @@ func (s *scope) string() string {
 	return fmt.Sprintf("%s:%s:%s", s.Type, s.Name, strings.Join(s.Actions, ","))
 }
 
-type token struct {
-	token     string
-	expiresIn time.Time
-}
-
-type tokenGenerator func(realm, service string, scopes []string) (*token, error)
+type tokenGenerator func(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error)
 
 type tokenHandler struct {
-	scope *scope
-	cache map[string]*token
-	tg    tokenGenerator
+	scope     *scope
+	tg        tokenGenerator
+	cache     string     // cached token
+	expiresIn int        // The duration in seconds since the token was issued that it will remain valid
+	issuedAt  *time.Time // The RFC3339-serialized UTC standard time at which a given token was issued
 }
 
-// Schema returns the schema that the handler can handle
-func (t *tokenHandler) Schema() string {
+// Scheme returns the scheme that the handler can handle
+func (t *tokenHandler) Scheme() string {
 	return "bearer"
 }
 
 // AuthorizeRequest will add authorization header which contains a token before the request is sent
 func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
-	var token string
 	var scopes []*scope
 
 	// TODO handle additional scope: xxx.xxx.xxx?from=repo
 
 	scopes = append(scopes, t.scope)
-	key := cacheKey(scopes)
 
-	value, ok := t.cache[key]
-	var expired bool
+	expired := true
 
-	if ok {
-		expired = value.expiresIn.Before(time.Now())
+	if t.expiresIn != 0 && t.issuedAt != nil {
+		expired = t.issuedAt.Add(time.Duration(t.expiresIn) * time.Second).Before(time.Now().UTC())
 	}
 
-	if ok && !expired {
-		token = value.token
-		log.Debugf("get token from cache: %s", key)
-	} else {
-		if ok && expired {
-			delete(t.cache, key)
-			log.Debugf("token is expired, remove from cache: %s", key)
-		}
-
+	if expired {
 		scopeStrs := []string{}
 		for _, scope := range scopes {
 			scopeStrs = append(scopeStrs, scope.string())
 		}
-		tk, err := t.tg(params["realm"], params["service"], scopeStrs)
+		token, expiresIn, issuedAt, err := t.tg(params["realm"], params["service"], scopeStrs)
 		if err != nil {
 			return err
 		}
-		token = tk.token
-		t.cache[key] = tk
-		log.Debugf("add token to cache: %s", key)
+		t.cache = token
+		t.expiresIn = expiresIn
+		t.issuedAt = issuedAt
 	}
 
-	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token))
+	if !expired {
+		log.Debug("get token from cache")
+	}
+
+	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", t.cache))
 	log.Debugf("add token to request: %s %s", req.Method, req.URL.String())
 
 	return nil
-}
-
-// cacheKey returns a string which can identify the scope array and can be used as the key in cache map
-func cacheKey(scopes []*scope) string {
-	key := ""
-	for _, scope := range scopes {
-		key = key + scope.string() + "|"
-	}
-	key = strings.TrimRight(key, "|")
-
-	return key
 }
 
 type standardTokenHandler struct {
@@ -135,16 +114,15 @@ func NewStandardTokenHandler(credential Credential, scopeType, scopeName string,
 		Name:    scopeName,
 		Actions: scopeActions,
 	}
-	handler.cache = make(map[string]*token, 1)
 	handler.tg = handler.generateToken
 
 	return handler
 }
 
-func (s *standardTokenHandler) generateToken(realm, service string, scopes []string) (*token, error) {
+func (s *standardTokenHandler) generateToken(realm, service string, scopes []string) (string, int, *time.Time, error) {
 	u, err := url.Parse(realm)
 	if err != nil {
-		return nil, err
+		return "", 0, nil, err
 	}
 	q := u.Query()
 	q.Add("service", service)
@@ -154,44 +132,39 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 	u.RawQuery = q.Encode()
 	r, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return nil, err
+		return "", 0, nil, err
 	}
 
 	s.credential.AddAuthorization(r)
 
 	resp, err := s.client.Do(r)
 	if err != nil {
-		return nil, err
+		return "", 0, nil, err
 	}
 
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return "", 0, nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, registry_errors.Error{
+		return "", 0, nil, registry_errors.Error{
 			StatusCode: resp.StatusCode,
 			Message:    string(b),
 		}
 	}
 
+	// TODO
 	tk := struct {
 		Token string `json:"token"`
 	}{}
 	if err = json.Unmarshal(b, &tk); err != nil {
-		return nil, err
-	}
-
-	t := &token{
-		token: tk.Token,
-		// TODO handle the expires time
-		expiresIn: time.Now().Add(5 * time.Minute),
+		return "", 0, nil, err
 	}
 
 	log.Debug("get token from token server")
 
-	return t, nil
+	return tk.Token, 0, nil, nil
 }
 
 type usernameTokenHandler struct {
@@ -211,26 +184,15 @@ func NewUsernameTokenHandler(username string, scopeType, scopeName string, scope
 		Name:    scopeName,
 		Actions: scopeActions,
 	}
-	handler.cache = make(map[string]*token, 1)
 
 	handler.tg = handler.generateToken
 
 	return handler
 }
 
-func (u *usernameTokenHandler) generateToken(realm, service string, scopes []string) (*token, error) {
-	tk, err := token_util.GenTokenForUI(u.username, service, scopes)
-	if err != nil {
-		return nil, err
-	}
-
-	t := &token{
-		token: tk,
-		// TODO handle the expires time
-		expiresIn: time.Now().Add(5 * time.Minute),
-	}
-
+func (u *usernameTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	// TODO
+	token, err = token_util.GenTokenForUI(u.username, service, scopes)
 	log.Debug("get token by calling GenTokenForUI directly")
-
-	return t, nil
+	return
 }
