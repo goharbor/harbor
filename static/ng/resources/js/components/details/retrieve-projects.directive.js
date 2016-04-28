@@ -10,22 +10,20 @@
    
   function RetrieveProjectsController($scope, nameFilter) {
     var vm = this;
-     
-    vm.selectItem = selectItem;
-    vm.filterInput = "";
-    
+   
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
-        var projectId = current.ProjectId;
-        vm.selectedId = projectId;     
+        vm.selectedId = current.ProjectId;    
       }
     });
+    
+    vm.filterInput = "";
+    vm.selectItem = selectItem;
     
     function selectItem(item) {
       vm.selectedId = item.ProjectId;
       vm.selectedProject = item;
       vm.isOpen = false;
-      $scope.$emit('selectedProjectId', vm.selectedId);
     }       
     
   }
@@ -39,6 +37,7 @@
         'isOpen': '=',
         'selectedProject': '='
       },
+      link: link,
       replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
@@ -46,6 +45,10 @@
     }
     
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      
+    }
   }
   
 })();

@@ -6,22 +6,24 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', '$routeParams'];
+  ListProjectMemberController.$inject = ['$scope', '$q', 'ListProjectMemberService'];
     
-  function ListProjectMemberController($scope, ListProjectMemberService, $routeParams) {
+  function ListProjectMemberController($scope, $q, ListProjectMemberService) {
     var vm = this;
    
-    vm.projectId = $routeParams.project_id;
-    
     vm.isOpen = false;
     vm.username = "";
             
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
+    vm.retrieve = retrieve;
     
-    retrieve(vm.projectId , vm.username);
-      
-    
+    $scope.$watch('vm.projectId', function(current, origin) {
+      if(current) {
+         vm.retrieve(current , vm.username);
+      }
+    });
+              
     function search(e) {
       console.log('project_id:' + e.projectId);
       retrieve(e.projectId, e.username);
@@ -56,12 +58,20 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/project-member/list-project-member.directive.html',
       replace: true,
+      scope: {
+        'projectId': '='
+      },
+      link: link,
       controller: ListProjectMemberController,
       controllerAs: 'vm',
       bindToController: true
     }
-    
+   
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+     
+    }
   }
   
 })();

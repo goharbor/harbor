@@ -4,15 +4,15 @@
       <div class="input-group">
         <input type="text" class="form-control" placeholder="" ng-model="vm.username" size="30">
         <span class="input-group-btn">
-          <button class="btn btn-primary" type="button" ng-click="vm.search({username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
+          <button class="btn btn-primary" type="button" ng-click="vm.search({op: vm.op, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-link" type="button" ng-click="vm.advancedSearch()">Advanced Search</button>
+          <button class="btn btn-link" type="button" ng-click="vm.showAdvancedSearch()">Advanced Search</button>
         </span>
       </div>
     </div>
     <div class="pane">
-      <advanced-search ng-show="vm.isOpen" is-open="vm.isOpen" op="vm.op" others="vm.others" search='vm.aSearch({op: vm.op, others: vm.others})'></advanced-search>
+      <advanced-search ng-show="vm.isOpen" is-open="vm.isOpen" op="vm.op" others="vm.others" search='vm.search({op: vm.op, username: vm.username})' from-date="vm.fromDate" to-date="vm.toDate"></advanced-search>
       <div class="sub-pane">
         <table class="table table-pane">
       	    <thead>
@@ -20,7 +20,7 @@
       		  </thead>
       		  <tbody>
       		    <tr ng-repeat="log in vm.logs">
-        	    	  <td>//log.Username//</td><td>//log.RepoName//</td><td>//log.Operation//</td><td>//log.OpTime//</td>
+        	    	  <td>//log.Username//</td><td>//log.RepoName//</td><td>//log.Operation//</td><td>//log.OpTime | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
           		</tr>
       		  </tbody>
     		  </table>

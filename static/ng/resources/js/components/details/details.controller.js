@@ -5,7 +5,7 @@
   angular
     .module('harbor.details')
     .controller('DetailsController', DetailsController);
-  
+    
   DetailsController.$inject = ['ListProjectService', '$scope'];
   
   function DetailsController(ListProjectService, $scope) {
@@ -14,8 +14,8 @@
     vm.closeRetrievePane = closeRetrievePane;
     
     $scope.$on('selectedProjectId', function(e, val) {
-      $scope.$broadcast('currentProjectId',val);
-    });
+      $scope.$broadcast('currentProjectId', val);
+    });    
     
     ListProjectService({'isPublic' : 0, 'projectName' : ''})
       .then(getProjectComplete)

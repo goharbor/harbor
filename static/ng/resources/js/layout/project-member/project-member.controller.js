@@ -11,9 +11,9 @@
   function ProjectMemberController($scope) {
      var vm = this;
      $scope.$on('currentProjectId', function(e, val) {
-      console.log('received currentProjecjtId: ' + val + ' in ProjectMemberController');
-      vm.projectId = val;
-    });
+       console.log('received currentProjectId: ' + val + ' in ProjectMemberController');
+       vm.projectId = val;
+     });
   }
   
 })();

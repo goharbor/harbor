@@ -39,7 +39,7 @@
       DeleteProjectMemberService(e.projectId, e.userId)
         .success(editProjectMemberComplete)
         .error(editProjectMemberFailed);
-      
+      vm.reload();
     }
     
     function editProjectMemberComplete(data, status, headers) {
@@ -60,7 +60,8 @@
         'username': '=',
         'userId': '=',
         'roleName': '=',
-        'projectId': '='
+        'projectId': '=',
+        'reload': '&'
       },
       'controller': EditProjectMemberController,
       'controllerAs': 'vm',

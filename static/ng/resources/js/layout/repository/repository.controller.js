@@ -10,12 +10,12 @@
   
   function RepositoryController($scope) {
     var vm = this;
-
-    $scope.$on('currentProjectId', function(e, val) {
-      console.log('received currentProjecjtId: ' + val + ' in RepositoryController');
-      vm.projectId = val;
-    });
     
+    $scope.$on('currentProjectId', function(e, val){
+      console.log('received currentProjecjtId: ' + val + ' in RepositoryController');  
+      vm.projectId = val;
+    }); 
+   
   }
   
 })();

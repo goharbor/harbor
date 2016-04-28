@@ -86,3 +86,13 @@
 .each-tab-pane {
   padding: 0 10px;
 }
+
+.inline-block {
+  display: inline-block;
+}
+
+.datetime-picker-title {
+  float: left; 
+  line-height: 2.5em;
+  margin: 0 0.5em 0 0;
+}

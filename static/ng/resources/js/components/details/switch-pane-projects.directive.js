@@ -15,11 +15,11 @@
       vm.isOpen = val;
     });
         
-    $scope.$watch('vm.selectedProject', function(current, origin) {
-      if(current){
-        vm.projectName = current.Name;   
-      }
-    });
+//    $scope.$watch('vm.selectedProject', function(current, origin) {
+//      if(current){
+//        vm.projectName = current.Name;   
+//      }
+//    });
       
     vm.switchPane = switchPane;
     
@@ -30,6 +30,7 @@
         vm.isOpen = true;
       }
     }
+    
   }
   
   function switchPaneProjects() {
@@ -41,12 +42,22 @@
         'selectedProject': '=',
         'isOpen': '='
       },
+      link: link,
       controller: SwitchPaneProjectsController,
       controllerAs: 'vm',
       bindToController: true
     }
     
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      scope.$watch('vm.selectedProject', function(current, origin) {
+        if(current){
+          scope.$emit('selectedProjectId', current.ProjectId);
+          ctrl.projectName = current.Name;
+        }
+      });
+    }
   
   }
   

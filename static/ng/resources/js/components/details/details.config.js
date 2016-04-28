@@ -5,7 +5,8 @@
   angular
     .module('harbor.details')
     .config(routeConfig)
-    .filter('name', nameFilter);
+    .filter('name', nameFilter)
+    .filter('dateL', localizeDate);
     
   function routeConfig($routeProvider) {
     $routeProvider
@@ -50,5 +51,13 @@
       return input;
     }
   }
+  
+  function localizeDate() {
+    return filter;
+    
+    function filter(input, pattern) {
+      return moment(new Date(input || '')).format(pattern);
+    }
+  }  
   
 })();

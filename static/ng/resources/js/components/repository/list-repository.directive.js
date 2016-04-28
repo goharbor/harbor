@@ -5,22 +5,31 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'ListTagService', 'nameFilter', '$routeParams'];
+  ListRepositoryController.$inject = ['$scope', '$q', 'ListRepositoryService', 'ListTagService', 'nameFilter'];
   
-  function ListRepositoryController($scope, ListRepositoryService, ListTagService, nameFilter, $routeParams) {
+  function ListRepositoryController($scope, $q, ListRepositoryService, ListTagService, nameFilter) {
     var vm = this;
     
-    vm.projectId = $routeParams.project_id;
     vm.filterInput = "";
     vm.expand = expand;
         
-    ListRepositoryService({'projectId': vm.projectId, 'q': ''})
-      .then(getRepositoryComplete)
-      .catch(getRepositoryFailed);
-  
+    vm.retrieve = retrieve;
     
-    function getRepositoryComplete(response) {
-      vm.repositories = response.data;
+    $scope.$watch('vm.projectId', function(current, origin) {
+      if(current) {
+         vm.retrieve(current, vm.filterInput);
+      }
+    });
+       
+    function retrieve(projectId, filterInput) {
+      ListRepositoryService({'projectId': projectId, 'q': filterInput})
+        .success(getRepositoryComplete)
+        .error(getRepositoryFailed);
+    }
+   
+    function getRepositoryComplete(data, status) {
+      console.log(data);
+      vm.repositories = data;
     }
     
     function getRepositoryFailed(repsonse) {
@@ -48,12 +57,21 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/repository/list-repository.directive.html',
       replace: true,
+      scope: {
+        'projectId': '='
+      },
+      link: 'link',
       controller: ListRepositoryController,
       controllerAs: 'vm',
       bindToController: true
     }
     
     return directive;
+   
+    function link(scope, element, attrs, ctrl) {
+      
+    }
+    
   }
   
 })();

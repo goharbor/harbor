@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
-      <div class="panel panel-default" ng-repeat="repo in vm.repositories | name: vm.filterInput : ''">
+      <div class="panel panel-default" ng-repeat="repo in vm.repositories">
         <div class="panel-heading" role="tab" id="heading//$index + 1//" >
           <h4 class="panel-title">
             <a role="button" data-toggle="collapse" data-parent="#accordion" href="ng/repository#/repositories#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index + 1//" ng-click="vm.expand({repoName: repo})">

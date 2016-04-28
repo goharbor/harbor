@@ -19,7 +19,8 @@
      
     function clickTab() { 
       vm.isOpen = false;  
-      vm.url = $location.url();   
+      vm.url = $location.url();
+      $scope.$emit('selectedProjectId', vm.selectedProject.ProjectId);
     }
  
   }
@@ -31,7 +32,7 @@
       link: link,
       scope: {
         'isOpen': '=',
-        'selectedProject': '='
+        'selectedProject': "="
       },
       replace: true,
       controller: NavigationDetailsController,
@@ -53,9 +54,14 @@
             
       element.on('click', click);
       
+      
+      
+      
       function click(event) {
         element.find('a').removeClass('active');
         $(event.target).not('span').addClass('active');
+        
+        ctrl.clickTab();
       }
      
     }

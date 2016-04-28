@@ -10,14 +10,14 @@
       <button class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>Add Member</button>
     </div>
     <div class="pane"> 	           
-      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen"></add-project-member>
+      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
       <div class="sub-pane">
         <table class="table table-pane" >
     			 <thead>
     			   <th width="30%">Username</th><th width="40%">Role</th><th width="30%">Operation</th>
     			 </thead>
     			 <tbody>
-            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.UserId" role-name="pr.Rolename"></tr> 
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.UserId" role-name="pr.Rolename" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
           </tbody>
     		</table>
       </div>

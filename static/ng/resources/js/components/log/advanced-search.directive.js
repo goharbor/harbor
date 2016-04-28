@@ -10,7 +10,7 @@
   
   function AdvancedSearchController($scope, ListLogService) {
     var vm = this;
-    
+   
     vm.checkOperation = checkOperation;
     
     vm.opAll = true;
@@ -19,7 +19,8 @@
     vm.opPush = true;
     vm.opDelete = true;
     vm.opOthers = true;
-   
+    vm.others = "";
+         
     vm.op = [];
     vm.op.push('all');
     function checkOperation(e) {        
@@ -47,10 +48,25 @@
       if(vm.opDelete) {
          vm.op.push('delete');
       }
-      if(vm.opOthers) {
+      if(vm.opOthers && vm.others != "") {
          vm.op.push(vm.others);
+      }      
+    }   
+    
+    vm.pickUp = pickUp;
+    
+    function pickUp(e) {
+      switch(e.key){
+      case 'fromDate':
+        vm.fromDate = e.value;  
+        break;
+      case 'toDate':
+        vm.toDate = e.value;
+        break;
       }
+      $scope.$apply();
     }
+    
   }
   
   function advancedSearch() {
@@ -61,13 +77,31 @@
         'isOpen': '=',
         'op': '=',
         'others': '=',
+        'fromDate': '=',
+        'toDate': '=',
         'search': '&'
       },
+      'link': link,
       'controller': AdvancedSearchController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      element.find('.datetimepicker').datetimepicker({
+				locale: 'en-US',
+				ignoreReadonly: true,
+				format: 'L',
+				showClear: true
+		  });      
+      element.find('#fromDatePicker').on('blur', function(){
+        ctrl.pickUp({'key': 'fromDate', 'value': $(this).val()});
+      });
+      element.find('#toDatePicker').on('blur', function(){
+        ctrl.pickUp({'key': 'toDate', 'value': $(this).val()});
+      });
+    }
   }
   
 })();

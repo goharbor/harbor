@@ -6,58 +6,49 @@
     .module('harbor.log')
     .directive('listLog', listLog);
     
-  ListLogController.$inject  = ['ListLogService', '$routeParams'];
+  ListLogController.$inject  = ['$scope','ListLogService'];
   
-  function ListLogController(ListLogService, $routeParams) {
+  function ListLogController($scope, ListLogService) {
     var vm = this;
     vm.isOpen = false;
-    vm.projectId = $routeParams.project_id;
-    
+       
     vm.beginTimestamp = 0;
     vm.endTimestamp = 0;
     vm.keywords = "";
     vm.username = "";
-    
+        
     vm.op = [];
-    vm.others = "";
-    
-           
+   
     vm.search = search;
-    vm.aSearch= aSearch;
-    
-    vm.advancedSearch = advancedSearch;
+    vm.showAdvancedSearch = showAdvancedSearch;
   
-    
-    var queryParams = {
-      'beginTimestamp' : vm.beginTimestamp,
-      'endTimestamp'   : vm.endTimestamp,
-      'keywords' : vm.keywords,
-      'projectId': vm.projectId,
-      'username' : vm.username
-    };
-
-    retrieve(queryParams);
-
+    $scope.$watch('vm.projectId', function(current, origin) {
+      if(current) {   
+        vm.queryParams = {
+          'beginTimestamp' : vm.beginTimestamp,
+          'endTimestamp'   : vm.endTimestamp,
+          'keywords' : vm.keywords,
+          'projectId': current,
+          'username' : vm.username
+        };
+        retrieve(vm.queryParams);
+      }
+    });
     function search(e) {
-      queryParams.username = e.username;
-      retrieve(queryParams);
-    }
-    
-    function aSearch(e) {
-      if(e.op == 'all') {
-        queryParams.keywords = '';
+      if(e.op[0] == 'all') {
+        vm.queryParams.keywords = '';
       }else {
-        queryParams.keywords = e.op.join('/') ;
+        vm.queryParams.keywords = e.op.join('/') ;
       }
-      if(e.others != "") {
-        queryParams.keywords += '/' + e.others;
-      }
-      queryParams.username = vm.username;
+      vm.queryParams.username = e.username;
       
-      retrieve(queryParams);
+      vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);
+      vm.queryParams.endTimestamp = toUTCSeconds(vm.toDate, 23, 59, 59);
+     
+      retrieve(vm.queryParams);
     }
     
-    function advancedSearch() {
+    function showAdvancedSearch() {
       if(vm.isOpen){
         vm.isOpen = false;
       }else{
@@ -70,14 +61,32 @@
         .then(listLogComplete)
         .catch(listLogFailed);
     }
-    
-    
+
     function listLogComplete(response) {
       vm.logs = response.data;
     }
     function listLogFailed(e){
       console.log('listLogFailed:' + e);
     }
+    
+    	function toUTCSeconds(date, hour, min, sec) {
+      if(date == "") {
+        return 0;
+      }
+      
+			var t = new Date(date);
+			t.setHours(hour);
+			t.setMinutes(min);
+			t.setSeconds(sec);
+			var utcTime = new Date(t.getUTCFullYear(),
+				t.getUTCMonth(), 
+				t.getUTCDate(),
+				t.getUTCHours(),
+				t.getUTCMinutes(),
+		    	t.getUTCSeconds());
+			return utcTime.getTime() / 1000;
+		}
+    
   }
   
   function listLog() {
@@ -85,6 +94,9 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/log/list-log.directive.html',
       replace: true,
+      scope: {
+        'projectId': '='
+      },
       controller: ListLogController,
       controllerAs: 'vm',
       bindToController: true

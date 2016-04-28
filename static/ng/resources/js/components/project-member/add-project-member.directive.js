@@ -22,6 +22,9 @@
         .success(addProjectMemberComplete)
         .error(addProjectMemberFailed);
       vm.isOpen = false;
+      vm.username = "";
+      vm.optRole = 1;
+      vm.reload();
     }    
    
     function cancel() {
@@ -43,7 +46,8 @@
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/project-member/add-project-member.directive.html',
       'scope': {
-        'isOpen': '='
+        'isOpen': '=',
+        'reload': '&'
       },
       'controller': AddProjectMemberController,
       'controllerAs': 'vm',

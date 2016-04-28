@@ -18,15 +18,28 @@
         <div class="form-group">
           <label for="">Duration:</label>
         </div>
-        <div class="form-group">
-          From:
-	        <input type="text" id="fromdatepicker" readonly="readonly">
-	        <span class="glyphicon glyphicon-calendar"></span>
-          &nbsp;&nbsp;
-          To:
-	        <input type="text" id="todatepicker" readonly="readonly">
-	        <span class="glyphicon glyphicon-calendar"></span>
+        
+        <div class="form-group inline-block col-md-5">
+          <span class="datetime-picker-title">From:</span>
+	          <!--date-picker picked-date="vm.fromDate"></date-picker-->
+          <div class="input-group datetimepicker">
+            <input id="fromDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.fromDate" ng-change="vm.pickUp({key:'fromDate', value: vm.fromDate})">
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+        </div>
+      
+        <div class="form-group  inline-block col-md-5">
+          <span class="datetime-picker-title">To:</span>
+  	        <div class="input-group datetimepicker">
+            <input id="toDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.toDate" ng-change="vm.pickUp({key:'toDate', value: vm.toDate})">
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
         </div>								
+        
       </form>
     </div>
     <div class="col-xs-2 col-md-2"> 
