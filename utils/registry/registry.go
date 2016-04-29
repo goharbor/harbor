@@ -73,6 +73,8 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 		client:   client,
 	}
 
+	log.Debugf("initialized a registry client with username: %s %s", endpoint, username)
+
 	return registry, nil
 }
 

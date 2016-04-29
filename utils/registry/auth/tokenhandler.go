@@ -59,8 +59,20 @@ func (t *tokenHandler) Scheme() string {
 // AuthorizeRequest will add authorization header which contains a token before the request is sent
 func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
 	var scopes []*scope
+	var token string
 
-	// TODO handle additional scope: xxx.xxx.xxx?from=repo
+	hasFrom := false
+	from := req.URL.Query().Get("from")
+	if len(from) != 0 {
+		s := &scope{
+			Type:    "repository",
+			Name:    from,
+			Actions: []string{"pull"},
+		}
+		scopes = append(scopes, s)
+		// do not cache the token if "from" appears
+		hasFrom = true
+	}
 
 	scopes = append(scopes, t.scope)
 
@@ -70,7 +82,7 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 		expired = t.issuedAt.Add(time.Duration(t.expiresIn) * time.Second).Before(time.Now().UTC())
 	}
 
-	if expired {
+	if expired || hasFrom {
 		scopeStrs := []string{}
 		for _, scope := range scopes {
 			scopeStrs = append(scopeStrs, scope.string())
@@ -79,16 +91,19 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 		if err != nil {
 			return err
 		}
-		t.cache = token
-		t.expiresIn = expiresIn
-		t.issuedAt = issuedAt
-	}
 
-	if !expired {
+		if !hasFrom {
+			t.cache = token
+			t.expiresIn = expiresIn
+			t.issuedAt = issuedAt
+			log.Debug("add token to cache")
+		}
+	} else {
+		token = t.cache
 		log.Debug("get token from cache")
 	}
 
-	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", t.cache))
+	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token))
 	log.Debugf("add token to request: %s %s", req.Method, req.URL.String())
 
 	return nil
@@ -214,7 +229,6 @@ func NewUsernameTokenHandler(username string, scopeType, scopeName string, scope
 }
 
 func (u *usernameTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	// TODO
 	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
 	log.Debug("get token by calling GenTokenForUI directly")
 	return

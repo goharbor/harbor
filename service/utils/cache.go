@@ -75,14 +75,14 @@ func RefreshCatalogCache() error {
 			rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
 			if err != nil {
 				log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
-				return err
+				continue
 			}
 			repositoryClients[repo] = rc
 		}
 		tags, err := rc.ListTag()
 		if err != nil {
 			log.Errorf("error occurred while list tag for %s: %v", repo, err)
-			return err
+			continue
 		}
 
 		if len(tags) != 0 {
