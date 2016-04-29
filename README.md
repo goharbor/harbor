@@ -13,7 +13,7 @@ Project Harbor is an enterprise-class registry server. It extends the open sourc
 * **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namespaces.
 * **AD/LDAP support**: Harbor integrates with existing AD/LDAP of the enterprise for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked and can be used for auditing purpose.
-* **Internationalization**: Localized for English and Chinese languages. More languages can be added.
+* **Internationalization**: Localized for English, Chinese and German languages. More languages can be added.
 * **RESTful API**: RESTful APIs are provided for most administrative operations of Harbor. The integration with other management softwares becomes easy.
 
 ### Getting Started
@@ -57,8 +57,8 @@ To simplify the installation process, a pre-built installation package of Harbor
 
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
-### Deploy harbor on Kubernetes
-Detailed instruction about deploying harbor on Kubernetes is described [here](https://github.com/vmware/harbor/blob/master/kubernetes_deployment.md).
+### Deploy Harbor on Kubernetes
+Detailed instruction about deploying Harbor on Kubernetes is described [here](docs/kubernetes_deployment.md).
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).

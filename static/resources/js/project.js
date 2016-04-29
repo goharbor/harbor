@@ -161,8 +161,8 @@ jQuery(function(){
 						$("#tblUser tbody tr").remove();
 						$.each(data || [], function(i, e){
 							var row = '<tr>' +
-								'<td style="vertical-align: middle;">' + e.Username + '</td>' +
-								'<td style="vertical-align: middle;">' + e.Email + '</td>';
+								'<td style="vertical-align: middle;">' + e.username + '</td>' +
+								'<td style="vertical-align: middle;">' + e.email + '</td>';
 							if(e.HasAdminRole == 1){
 								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.UserId + '">' + i18n.getMessage("button_on") + '</button></td>';
 							} else {
