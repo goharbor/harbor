@@ -87,10 +87,11 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 		for _, scope := range scopes {
 			scopeStrs = append(scopeStrs, scope.string())
 		}
-		token, expiresIn, issuedAt, err := t.tg(params["realm"], params["service"], scopeStrs)
+		to, expiresIn, issuedAt, err := t.tg(params["realm"], params["service"], scopeStrs)
 		if err != nil {
 			return err
 		}
+		token = to
 
 		if !hasFrom {
 			t.cache = token
