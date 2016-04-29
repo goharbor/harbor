@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,6 +42,7 @@ func (s *scope) string() string {
 
 type tokenGenerator func(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error)
 
+// Implements interface Handler
 type tokenHandler struct {
 	scope     *scope
 	tg        tokenGenerator
@@ -92,6 +94,7 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 	return nil
 }
 
+// Implements interface Handler
 type standardTokenHandler struct {
 	tokenHandler
 	client     *http.Client
@@ -119,10 +122,10 @@ func NewStandardTokenHandler(credential Credential, scopeType, scopeName string,
 	return handler
 }
 
-func (s *standardTokenHandler) generateToken(realm, service string, scopes []string) (string, int, *time.Time, error) {
+func (s *standardTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	u, err := url.Parse(realm)
 	if err != nil {
-		return "", 0, nil, err
+		return
 	}
 	q := u.Query()
 	q.Add("service", service)
@@ -132,41 +135,61 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 	u.RawQuery = q.Encode()
 	r, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return "", 0, nil, err
+		return
 	}
 
 	s.credential.AddAuthorization(r)
 
 	resp, err := s.client.Do(r)
 	if err != nil {
-		return "", 0, nil, err
+		return
 	}
 
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", 0, nil, err
+		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", 0, nil, registry_errors.Error{
+		err = registry_errors.Error{
 			StatusCode: resp.StatusCode,
 			Message:    string(b),
 		}
+		return
 	}
 
-	// TODO
 	tk := struct {
-		Token string `json:"token"`
+		Token     string `json:"token"`
+		ExpiresIn string `json:"expires_in"`
+		IssuedAt  string `json:"issued_at"`
 	}{}
 	if err = json.Unmarshal(b, &tk); err != nil {
-		return "", 0, nil, err
+		return
+	}
+
+	token = tk.Token
+
+	expiresIn, err = strconv.Atoi(tk.ExpiresIn)
+	if err != nil {
+		expiresIn = 0
+		log.Errorf("error occurred while converting expires_in: %v", err)
+		err = nil
+	} else {
+		t, err := time.Parse(time.RFC3339, tk.IssuedAt)
+		if err != nil {
+			log.Errorf("error occurred while parsing issued_at: %v", err)
+			err = nil
+		} else {
+			issuedAt = &t
+		}
 	}
 
 	log.Debug("get token from token server")
 
-	return tk.Token, 0, nil, nil
+	return
 }
 
+// Implements interface Handler
 type usernameTokenHandler struct {
 	tokenHandler
 	username string
@@ -192,7 +215,7 @@ func NewUsernameTokenHandler(username string, scopeType, scopeName string, scope
 
 func (u *usernameTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	// TODO
-	token, err = token_util.GenTokenForUI(u.username, service, scopes)
+	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
 	log.Debug("get token by calling GenTokenForUI directly")
 	return
 }

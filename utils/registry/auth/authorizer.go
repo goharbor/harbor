@@ -29,7 +29,8 @@ type Handler interface {
 	AuthorizeRequest(req *http.Request, params map[string]string) error
 }
 
-// RequestAuthorizer holds a handler list, which will authorize request
+// RequestAuthorizer holds a handler list, which will authorize request.
+// Implements interface RequestModifier
 type RequestAuthorizer struct {
 	handlers   []Handler
 	challenges []au.Challenge

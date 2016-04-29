@@ -108,7 +108,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 }
 
 // GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func GenTokenForUI(username string, service string, scopes []string) (string, error) {
+func GenTokenForUI(username string, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	access := GetResourceActions(scopes)
 	for _, a := range access {
 		FilterAccess(username, true, a)
@@ -117,22 +117,22 @@ func GenTokenForUI(username string, service string, scopes []string) (string, er
 }
 
 // MakeToken makes a valid jwt token based on parms.
-func MakeToken(username, service string, access []*token.ResourceActions) (string, error) {
+func MakeToken(username, service string, access []*token.ResourceActions) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {
-		return "", err
+		return "", 0, nil, err
 	}
-	tk, err := makeTokenCore(issuer, username, service, expiration, access, pk)
+	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
 	if err != nil {
-		return "", err
+		return "", 0, nil, err
 	}
 	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
-	return rs, nil
+	return rs, expiresIn, issuedAt, nil
 }
 
 //make token core
 func makeTokenCore(issuer, subject, audience string, expiration int,
-	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (*token.Token, error) {
+	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {
 
 	joseHeader := &token.Header{
 		Type:       "JWT",
@@ -142,10 +142,12 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 
 	jwtID, err := randString(16)
 	if err != nil {
-		return nil, fmt.Errorf("Error to generate jwt id: %s", err)
+		return nil, 0, nil, fmt.Errorf("Error to generate jwt id: %s", err)
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
+	issuedAt = &now
+	expiresIn = expiration * 60
 
 	claimSet := &token.ClaimSet{
 		Issuer:     issuer,
@@ -161,10 +163,10 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 	var joseHeaderBytes, claimSetBytes []byte
 
 	if joseHeaderBytes, err = json.Marshal(joseHeader); err != nil {
-		return nil, fmt.Errorf("unable to marshal jose header: %s", err)
+		return nil, 0, nil, fmt.Errorf("unable to marshal jose header: %s", err)
 	}
 	if claimSetBytes, err = json.Marshal(claimSet); err != nil {
-		return nil, fmt.Errorf("unable to marshal claim set: %s", err)
+		return nil, 0, nil, fmt.Errorf("unable to marshal claim set: %s", err)
 	}
 
 	encodedJoseHeader := base64UrlEncode(joseHeaderBytes)
@@ -173,12 +175,13 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 
 	var signatureBytes []byte
 	if signatureBytes, _, err = signingKey.Sign(strings.NewReader(payload), crypto.SHA256); err != nil {
-		return nil, fmt.Errorf("unable to sign jwt payload: %s", err)
+		return nil, 0, nil, fmt.Errorf("unable to sign jwt payload: %s", err)
 	}
 
 	signature := base64UrlEncode(signatureBytes)
 	tokenString := fmt.Sprintf("%s.%s", payload, signature)
-	return token.NewToken(tokenString)
+	t, err = token.NewToken(tokenString)
+	return
 }
 
 func randString(length int) (string, error) {
