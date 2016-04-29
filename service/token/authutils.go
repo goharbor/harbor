@@ -39,6 +39,7 @@ const (
 
 // GetResourceActions ...
 func GetResourceActions(scopes []string) []*token.ResourceActions {
+	log.Debugf("scopes: %+v", scopes)
 	var res []*token.ResourceActions
 	for _, s := range scopes {
 		if s == "" {
@@ -59,6 +60,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 func FilterAccess(username string, authenticated bool, a *token.ResourceActions) {
 
 	if a.Type == "registry" && a.Name == "catalog" {
+		log.Infof("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
 		return
 	}
 

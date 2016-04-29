@@ -44,7 +44,6 @@ func (h *Handler) Get() {
 	authenticated := authenticate(username, password)
 	service := h.GetString("service")
 	scopes := h.GetStrings("scope")
-	log.Debugf("scopes: %+v", scopes)
 
 	if len(scopes) == 0 && !authenticated {
 		log.Info("login request with invalid credentials")
