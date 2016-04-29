@@ -94,6 +94,7 @@ create table access_log (
  user_id int NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (40), 
+ repo_tag varchar (20),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
  op_time timestamp,

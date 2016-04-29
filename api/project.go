@@ -185,6 +185,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	p.Data["json"] = accessLogList
+
 	p.ServeJSON()
 }
 

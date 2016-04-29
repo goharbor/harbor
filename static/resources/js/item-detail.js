@@ -286,6 +286,7 @@ jQuery(function(){
 						'<tr>' + 
 						'<td>' + e.Username + '</td>' + 
 						'<td>' + e.RepoName + '</td>' +
+						'<td>' + e.RepoTag + '</td>' +
 						'<td>' + e.Operation + '</td>' +
 						'<td>' + moment(new Date(e.OpTime)).format("YYYY-MM-DD HH:mm:ss") + '</td>' +
 						'</tr>');
