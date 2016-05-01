@@ -1,4 +1,4 @@
-<div class="container-fluid container-fluid-custom">
+<div class="container-fluid container-fluid-custom" ng-controller="ProjectController">
   <div class="container container-custom">
     <div class="row extend-height">
       <div class="col-xs-12 col-md-12 extend-height">
@@ -7,72 +7,23 @@
           <div class="search-pane">
     		      <div class="form-inline">
     		        <div class="input-group">
-    		          <input type="text" class="form-control" placeholder="" size="30">
+    		          <input type="text" class="form-control" placeholder="" ng-model="inputProjectName" size="30">
     		          <span class="input-group-btn">
-    		            <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-search"></span></button>
+    		            <button class="btn btn-primary" type="button" ng-click="searchProject()"><span class="glyphicon glyphicon-search"></span></button>
     		          </span>
     		        </div>
-    		        <button class="btn btn-success" type="button"><span class="glyphicon glyphicon-plus"></span>New Project</button>
+    		        <button class="btn btn-success" type="button" ng-click="showAddProject()"><span class="glyphicon glyphicon-plus"></span>New Project</button>
     		      </div>    
           </div>
           <div class="pane project-pane">  
-            <div class="well panel-group">
-              <div class="row">
-                <div class="col-xs-10 col-md-10">
-                  <form>  
-                    <div class="form-group">               
-                      <input type="text" class="form-control" id="addUsername" placeholder="Project Name">
-                    </div>
-                  </form>
-                  <form class="form-inline">
-                    <div class="form-group">
-                      <input type="checkbox" name="roleId" value="1">&nbsp;Public Project                      
-                    </div>
-                  </form>
-                </div>
-                <div class="col-xs-2 col-md-2"> 
-                  <form>                        
-                    <div class="form-group" style="margin-top: 20%;">               
-                      <button type="button" class="btn btn-default" id="btnCancel">Cancel</button>
-                      <button type="button" class="btn btn-primary" id="btnSave">Save</button>     
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
+            <add-project ng-show="isOpen" is-open="isOpen"></add-project>
             <div class="sub-pane">
-      		      <table class="table">
-          			  <thead>
-          			    <th>Project Name</th><th>Repositories</th><th>Role</th><th>Creation Time</th><th>Publicity</th>
-          			  </thead>
-          			  <tbody>
-          			    <tr>
-          				    <td><a href="#">myrepo</a></td><td>3</td><td>Project Admin</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-success" type="button">On</button></td>
-            				</tr>
-            			  <tr>
-            				  <td><a href="#">target1</a></td><td>5</td><td>Guest</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-success" type="button" disabled="disabled">On</button></td>
-            				</tr>
-            				<tr>
-            				  <td><a href="#">myproject</a></td><td>1</td><td>Project Admin</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-danger" type="button">Off</button></td>
-            				</tr>
-            				<tr>
-            				  <td><a href="#">test</a></td><td>3</td><td>Developer</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-danger" type="button">Off</button></td>
-            				</tr>
-            				<tr>
-            				  <td><a href="#">demo</a></td><td>3</td><td>Guest</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-danger" type="button">Off</button></td>
-            				</tr>
-            				<tr>
-            				  <td><a href="#">distribution</a></td><td>3</td><td>Project Admin</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-success" type="button">On</button></td>
-            				</tr>
-            				<tr>
-            				  <td><a href="#">undefined</a></td><td>3</td><td>Project Admin</td><td>2016-03-22 12:35:00</td><td><button class="btn btn-success" type="button">On</button></td>
-            				</tr>
-          			  </tbody>
-          			</table>
+      		      <list-project project-name="inputProjectName"></list-project>
             </div>
             <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">7 items</div></div>  
           </div>
   	      </div>
       </div>
     </div>
+  </div>
 </div>

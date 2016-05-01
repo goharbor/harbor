@@ -5,22 +5,20 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', '$q', 'ListRepositoryService', 'ListTagService', 'nameFilter'];
+  ListRepositoryController.$inject = ['$scope', '$q', 'ListRepositoryService', 'ListTagService', 'nameFilter', '$routeParams'];
   
-  function ListRepositoryController($scope, $q, ListRepositoryService, ListTagService, nameFilter) {
+  function ListRepositoryController($scope, $q, ListRepositoryService, ListTagService, nameFilter, $routeParams) {
     var vm = this;
-    
+        
     vm.filterInput = "";
     vm.expand = expand;
         
     vm.retrieve = retrieve;
-    
-    $scope.$watch('vm.projectId', function(current, origin) {
-      if(current) {
-         vm.retrieve(current, vm.filterInput);
-      }
-    });
-       
+   
+    vm.projectId = $routeParams.project_id;
+ 
+    vm.retrieve(vm.projectId, vm.filterInput);
+      
     function retrieve(projectId, filterInput) {
       ListRepositoryService({'projectId': projectId, 'q': filterInput})
         .success(getRepositoryComplete)
@@ -57,9 +55,6 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/repository/list-repository.directive.html',
       replace: true,
-      scope: {
-        'projectId': '='
-      },
       link: 'link',
       controller: ListRepositoryController,
       controllerAs: 'vm',
@@ -69,7 +64,7 @@
     return directive;
    
     function link(scope, element, attrs, ctrl) {
-      
+
     }
     
   }

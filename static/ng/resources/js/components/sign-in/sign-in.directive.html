@@ -1,0 +1,27 @@
+<form class="form-horizontal">
+  <div class="form-group"> 
+    <div class="col-sm-offset-1 col-sm-10">
+      <input type="text" class="form-control" placeholder="Username/Email" ng-model="vm.principal">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <input type="password" class="form-control" placeholder="Password" ng-model="vm.password">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <div class="pull-right">
+        <button class="btn btn-default" ng-click="vm.doSignIn()">Sign In</button>
+        <button class="btn btn-success" ng-click="vm.doSignUp()">Sign Up</button>   
+      </div>
+    </div>	
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="pull-right">
+        <a href="#">Forgot Password</a>
+      </div>
+    </div>
+   </div>
+</form>

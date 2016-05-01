@@ -1,9 +1,10 @@
 (function() {
+  
   'use strict';
   
   angular
-    .module('harbor.project', [
-      'harbor.services.project',
+    .module('harbor.sign.in', [
       'harbor.services.user'
     ]);
+  
 })();

@@ -24,9 +24,6 @@
         templateUrl: '/static/ng/resources/js/layout/log/log.controller.html',
         controller: 'LogController',
         controllerAs: 'vm'
-      })
-      .otherwise({
-        redirectTo: '/'
       }); 
   }
   

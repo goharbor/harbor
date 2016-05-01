@@ -9,7 +9,7 @@
   ListTagController.$inject = ['ListTagService'];
   
   function ListTagController(ListTagService) {
-   
+    
   }
   
   function listTag() {

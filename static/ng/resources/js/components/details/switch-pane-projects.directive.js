@@ -15,11 +15,12 @@
       vm.isOpen = val;
     });
         
-//    $scope.$watch('vm.selectedProject', function(current, origin) {
-//      if(current){
-//        vm.projectName = current.Name;   
-//      }
-//    });
+    $scope.$watch('vm.selectedProject', function(current, origin) {
+      if(current){
+        vm.projectName = current.Name;
+        vm.selectedProject = current;
+      }
+    });
       
     vm.switchPane = switchPane;
     
@@ -51,12 +52,7 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-      scope.$watch('vm.selectedProject', function(current, origin) {
-        if(current){
-          scope.$emit('selectedProjectId', current.ProjectId);
-          ctrl.projectName = current.Name;
-        }
-      });
+     
     }
   
   }

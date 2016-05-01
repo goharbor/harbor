@@ -11,8 +11,12 @@
     
     return AddProject;
     
-    function AddProject(project) {
-       
+    function AddProject(projectName, isPublic) {
+        return $http
+          .post('/api/projects', {
+            'project_name': projectName,
+            'public': isPublic
+          });
     }
   }
   

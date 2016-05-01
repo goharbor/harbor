@@ -13,10 +13,10 @@
    
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
-        vm.selectedId = current.ProjectId;    
+        vm.selectedId = current.ProjectId;
       }
     });
-    
+  
     vm.filterInput = "";
     vm.selectItem = selectItem;
     

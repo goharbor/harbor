@@ -1,4 +1,4 @@
-<div class="container-fluid container-fluid-custom">
+<div class="container-fluid container-fluid-custom" ng-controller="IndexController as vm">
   <div class="container">
     <div class="row">
       <div class="col-md-4">
@@ -7,33 +7,7 @@
 		        <div class="col-sm-offset-1 col-sm-10">
 		          <span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;<h4 class="title-color display-inline-block">Login now</h4>
 			      </div>
-		        <form class="form-horizontal">
-    		        <div class="form-group"> 
-                  <div class="col-sm-offset-1 col-sm-10">
-                    <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="col-sm-offset-1 col-sm-10">
-                    <input type="password" class="form-control" id="inputPassword3" placeholder="Password">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="col-sm-offset-1 col-sm-10">
-    				        <div class="pull-right">
-    			            <button class="btn btn-default">Sign In</button>
-    			            <button class="btn btn-success">Sign Up</button>   
-    				        </div>
-                  </div>	
-                </div>
-                <div class="form-group">
-                  <div class="col-sm-offset-1 col-sm-10">
-     			          <div class="pull-right">
-                      <a href="#">Forgot Password</a>
-                    </div>
-                  </div>
-    			       </div>
-             </form>
+		        <sign-in></sign-in>
            </div>						
          </div>
       </div>
@@ -93,33 +67,7 @@
       <div class="col-md-8">
     	    <div class="down-section">
       		  <h4 class="page-header title-color underlined">Repositories</h4>
-      		  <div class="down-table-pane">
-      		    <table class="table">
-        			  <thead>
-        			    <th>Project/Repository Name</th><th>Creation Time</th><th>Author</th>
-        			  </thead>
-        			  <tbody>
-        			    <tr>
-        				    <td>myrepo/Ubuntu</td><td>2016-03-22 12:35:00</td><td>Haox</td>
-        				  </tr>
-        			    <tr>
-        				    <td>myrepo/MySQL</td><td>2016-03-22 12:35:00</td><td>Haox</td>
-        				  </tr>
-        			    <tr>
-        				    <td>harbor/Nginx</td><td>2016-03-21 11:25:30</td><td>Wenkai Yin</td>
-        				  </tr>
-        				  <tr>
-        				    <td>harbor/Registry</td><td>2016-03-21 11:25:30</td><td>Wenkai Yin</td>
-        				  </tr>
-        				  <tr>
-        				    <td>myproject/Alpine</td><td>2016-03-23 09:40:20</td><td>Daniel</td>
-        				  </tr>
-        				  <tr>
-        				    <td>myproject/Golang</td><td>2016-03-23 09:40:20</td><td>Daniel</td>
-        				  </tr>
-        			  </tbody>
-        			</table>
-      		  </div>
+      		  <search filter-by="repository"></search>
     	    </div>
     	  </div>
     </div>

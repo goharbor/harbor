@@ -9,11 +9,7 @@
   ProjectMemberController.$inject = ['$scope'];    
     
   function ProjectMemberController($scope) {
-     var vm = this;
-     $scope.$on('currentProjectId', function(e, val) {
-       console.log('received currentProjectId: ' + val + ' in ProjectMemberController');
-       vm.projectId = val;
-     });
+    
   }
   
 })();

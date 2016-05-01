@@ -17,15 +17,18 @@
       
       var isPublic = queryParams.isPublic;      
       var projectName = queryParams.projectName;
-      
-      return $http
-        .get('/api/projects',{
-          params: {
-            'is_public': isPublic,
-            'project_name': projectName
-          }
-        });
-      
+      return $http({
+          method: 'GET',
+          url: '/api/projects',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          transformRequest: function(obj) {
+              var str = [];
+              for(var p in obj)
+              str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+              return str.join("&");
+          },
+          data: {'is_public': isPublic, 'project_name': projectName}
+        });      
     }
   }
 })();

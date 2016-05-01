@@ -12,8 +12,19 @@
     
     return Search;
     
-    function Search(queryParams) {
-      
+    function Search(keywords) {
+      return $http({
+          method: 'GET',
+          url: '/api/search',
+       
+          transformRequest: function(obj) {
+              var str = [];
+              for(var p in obj)
+              str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+              return str.join("&");
+          },
+          data: {'q': keywords}
+      });
     }
     
   }

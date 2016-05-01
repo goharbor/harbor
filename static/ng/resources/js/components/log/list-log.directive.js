@@ -6,9 +6,9 @@
     .module('harbor.log')
     .directive('listLog', listLog);
     
-  ListLogController.$inject  = ['$scope','ListLogService'];
+  ListLogController.$inject  = ['$scope','ListLogService', '$routeParams'];
   
-  function ListLogController($scope, ListLogService) {
+  function ListLogController($scope, ListLogService, $routeParams) {
     var vm = this;
     vm.isOpen = false;
        
@@ -22,18 +22,16 @@
     vm.search = search;
     vm.showAdvancedSearch = showAdvancedSearch;
   
-    $scope.$watch('vm.projectId', function(current, origin) {
-      if(current) {   
-        vm.queryParams = {
-          'beginTimestamp' : vm.beginTimestamp,
-          'endTimestamp'   : vm.endTimestamp,
-          'keywords' : vm.keywords,
-          'projectId': current,
-          'username' : vm.username
-        };
-        retrieve(vm.queryParams);
-      }
-    });
+    vm.projectId = $routeParams.project_id;
+    vm.queryParams = {
+      'beginTimestamp' : vm.beginTimestamp,
+      'endTimestamp'   : vm.endTimestamp,
+      'keywords' : vm.keywords,
+      'projectId': vm.projectId,
+      'username' : vm.username
+    };
+    retrieve(vm.queryParams);
+     
     function search(e) {
       if(e.op[0] == 'all') {
         vm.queryParams.keywords = '';
@@ -94,9 +92,6 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/log/list-log.directive.html',
       replace: true,
-      scope: {
-        'projectId': '='
-      },
       controller: ListLogController,
       controllerAs: 'vm',
       bindToController: true

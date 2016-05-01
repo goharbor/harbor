@@ -6,21 +6,24 @@
     .module('harbor.layout.navigation')
     .directive('navigationDetails', navigationDetails);
   
-  NavigationDetailsController.$inject = ['$location', '$scope'];
+  NavigationDetailsController.$inject = ['$window', '$location', '$scope'];
   
-  function NavigationDetailsController($location, $scope) {
+  function NavigationDetailsController($window, $location, $scope) {
     var vm = this;    
-    vm.clickTab = clickTab;    
-    vm.url = $location.url();
     
-    if(vm.url == "/") {
-      $location.url('/repositories');
-    }
+    $scope.$watch('vm.selectedProject', function(current, origin) {
+      if(current) {
+        vm.projectId = current.ProjectId;
+      }
+    });
+    
+    vm.url = $location.url();
+    vm.clickTab = clickTab;
      
-    function clickTab() { 
+    function clickTab() {       
+      console.log("triggered clickTab of Controller.");
       vm.isOpen = false;  
-      vm.url = $location.url();
-      $scope.$emit('selectedProjectId', vm.selectedProject.ProjectId);
+      $scope.$apply();
     }
  
   }
@@ -32,7 +35,7 @@
       link: link,
       scope: {
         'isOpen': '=',
-        'selectedProject': "="
+        'selectedProject': '='
       },
       replace: true,
       controller: NavigationDetailsController,
@@ -45,7 +48,7 @@
     function link(scope, element, attrs, ctrl) {
       
       var visited = ctrl.url;
-     
+    
       if(visited == "/") {
         element.find('a:first').addClass('active');
       }else{
@@ -54,13 +57,9 @@
             
       element.on('click', click);
       
-      
-      
-      
       function click(event) {
         element.find('a').removeClass('active');
         $(event.target).not('span').addClass('active');
-        
         ctrl.clickTab();
       }
      
