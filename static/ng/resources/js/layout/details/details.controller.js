@@ -12,8 +12,11 @@
     var vm = this;
     vm.isOpen = false;
     vm.closeRetrievePane = closeRetrievePane;   
+    vm.projectName = '';
+    vm.isPublic = 0;
     
-    ListProjectService({'isPublic' : 0, 'projectName' : ''})
+    
+    ListProjectService(vm.projectName, vm.isPublic)
       .then(getProjectComplete)
       .catch(getProjectFailed);
       

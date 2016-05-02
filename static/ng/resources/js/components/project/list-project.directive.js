@@ -15,11 +15,13 @@
     vm.reload = reload;
     
     vm.getCurrentUser = getCurrentUser;
+    vm.resultCount = 0;
+    vm.publicity = 0;
     
     function reload() {
       $.when(vm.getCurrentUser())
         .done(function(e) {
-          vm.retrieve(vm.projectName);
+          vm.retrieve();
         });
     }
     
@@ -27,18 +29,21 @@
     
     $scope.$on('needToReload', function(e, val) {
       if(val) {
-        vm.reload(vm.projectName);
+        vm.reload();
       }
     });
     
-    function retrieve(projectName) {
-      ListProjectService({'is_public': 0, 'project_name': projectName})
+    function retrieve() {
+      ListProjectService(vm.projectName, vm.publicity)
         .success(listProjectSuccess)
         .error(listProjectFailed);
     }
     
     function listProjectSuccess(data, status) {
       vm.projects = data;
+      if(data) {
+        vm.resultCount = vm.projects.length;  
+      }
     }
     function listProjectFailed(e) {
       console.log('Failed in listProject:' + e);
@@ -65,7 +70,9 @@
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/project/list-project.directive.html',
       'scope': {
-        'projectName': '='
+        'projectName': '=',
+        'publicity': '=',
+        'resultCount': '='
       },
       'controller': ListProjectController,
       'controllerAs': 'vm',
