@@ -158,13 +158,14 @@ func (ua *UserAPI) Post() {
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
 
-	_, err := dao.Register(user)
+	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Internal error.")
 		return
 	}
 
+	ua.Redirect(http.StatusCreated, strconv.FormatInt(userID, 10))
 }
 
 // Delete ...

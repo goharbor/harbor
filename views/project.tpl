@@ -42,7 +42,7 @@
 							<tr>
 								<th width="35%">{{i18n .Lang "project_name"}}</th>
 								<th width="45%">{{i18n .Lang "creation_time"}}</th>
-                               <th width="20%">{{i18n .Lang "publicity"}}</th> 
+				                                <th width="20%">{{i18n .Lang "publicity"}}</th> 
 							</tr>
 						</thead>
 						<tbody>				
@@ -65,9 +65,9 @@
 						<table id="tblUser" class="table table-hover">
 							<thead>
 								<tr>
-									<th>{{i18n .Lang "username"}}</th>
-									<th>{{i18n .Lang "email"}}</th>
-									<th>{{i18n .Lang "system_admin"}}</th>
+									<th width="35%">{{i18n .Lang "username"}}</th>
+									<th width="45%">{{i18n .Lang "email"}}</th>
+									<th width="20%">{{i18n .Lang "system_admin"}}</th>
 									<th></th>
 								</tr>
 							</thead>

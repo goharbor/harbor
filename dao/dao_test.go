@@ -372,7 +372,7 @@ func TestAddProject(t *testing.T) {
 		OwnerName:    currentUser.Username,
 	}
 
-	err := AddProject(project)
+	_, err := AddProject(project)
 	if err != nil {
 		t.Errorf("Error occurred in AddProject: %v", err)
 	}
