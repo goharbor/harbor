@@ -498,14 +498,12 @@ paths:
           format: int32
           required: true
           description: Registered user ID.
-      parameters:
         - name: old_password
           in: body
           type: string
           format: string
           required: true
           description: The user's existing password.		
-      parameters:
         - name: new_password
           in: body
           type: string
