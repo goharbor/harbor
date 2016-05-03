@@ -393,15 +393,13 @@ paths:
           type: string
           format: string
           required: true
-          description: The username of the new created user. Maximum of 20 
-						characters. 
+          description: The username of the new created user. Maximum of 20 characters. 
         - name: password
           in: body
           type: string
           format: string
           required: true
-          description: The password of the new created user. Maximum of 20 
-						characters.  
+          description: The password of the new created user. Maximum of 20 characters.  
         - name: email
           in: body
           type: string
@@ -413,15 +411,13 @@ paths:
           type: string
           format: string
           required: true
-          description: Full name associated with the new created user. 
-						Maximum of 20 characters.  
+          description: Full name associated with the new created user. Maximum of 20 characters.  
         - name: comment
           in: body
           type: string
           format: string
           required: false
-          description: Comments associated with the new created user. 
-						Maximum of 30 characters.
+          description: Comments associated with the new created user. Maximum of 30 characters.
       tags:
         - Products
       responses:
@@ -522,8 +518,7 @@ paths:
         200:
           description: Updated password successfully.
         400:
-          description: Invalid user ID; Old password is blank; New password 
-						is blank.
+          description: Invalid user ID; Old password is blank; New password is blank.
         401:
           description: Old password is not correct.
         403:
