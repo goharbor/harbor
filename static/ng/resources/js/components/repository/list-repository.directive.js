@@ -5,33 +5,30 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', '$q', 'ListRepositoryService', 'ListTagService', 'nameFilter', '$routeParams'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'ListTagService', 'nameFilter', '$routeParams'];
   
-  function ListRepositoryController($scope, $q, ListRepositoryService, ListTagService, nameFilter, $routeParams) {
+  function ListRepositoryController($scope, ListRepositoryService, ListTagService, nameFilter, $routeParams) {
     var vm = this;
         
     vm.filterInput = "";
-    vm.expand = expand;
-        
     vm.retrieve = retrieve;
-   
+    vm.expand = expand;
     vm.projectId = $routeParams.project_id;
  
-    vm.retrieve(vm.projectId, vm.filterInput);
-      
-    function retrieve(projectId, filterInput) {
-      ListRepositoryService({'projectId': projectId, 'q': filterInput})
+    vm.retrieve();
+    
+    function retrieve(){
+      ListRepositoryService(vm.projectId, vm.filterInput)
         .success(getRepositoryComplete)
         .error(getRepositoryFailed);
     }
    
     function getRepositoryComplete(data, status) {
-      console.log(data);
       vm.repositories = data;
     }
     
     function getRepositoryFailed(repsonse) {
-      
+      console.log('failed to list repositories:' + response);      
     }
         
     function expand(e) {

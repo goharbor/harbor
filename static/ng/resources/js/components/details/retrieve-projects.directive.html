@@ -7,7 +7,7 @@
             <input type="text" class="form-control search-icon" placeholder="" ng-model="vm.filterInput" size="30">
           </div>
         </div>			
-        <h5 class="page-header">My Projects: <span class="badge">//vm.projects.length//</span></h5>
+        <h5 class="page-header">My Projects: <span class="badge">//vm.resultCount//</span></h5>
         <div class="project-list pane-container">
           <ul class="list-group">
             <li class="list-group-item" ng-repeat="item in vm.projects | name: vm.filterInput: 'Name'" ng-click="vm.selectItem(item)">

@@ -96,3 +96,10 @@
   line-height: 2.5em;
   margin: 0 0.5em 0 0;
 }
+
+.input-group .form-control {
+  z-index: 1;
+}
+.well {
+  padding: 12px;
+}

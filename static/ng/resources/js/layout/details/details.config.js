@@ -32,7 +32,7 @@
     return filter;
 
     function filter(input, filterInput, key) {
-      input = input || '';
+      input = input || [];
       var filteredResults = [];
  
       if (filterInput != '') {
@@ -41,7 +41,7 @@
           if((key == "" && item.indexOf(filterInput) >= 0) || (key != "" && item[key].indexOf(filterInput) >= 0)) {
             filteredResults.push(item);
             continue;
-          }
+          }   
         }
         input = filteredResults;
       }

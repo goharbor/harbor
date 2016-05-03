@@ -8,6 +8,7 @@
   clear: both;
   background-color: #A8A8A8;
   height: 35px;
+  z-index: 2;
 }
 .footer p {
   margin-top: 8px;

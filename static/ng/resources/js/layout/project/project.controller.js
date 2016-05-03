@@ -6,21 +6,60 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', 'CurrentUserService']; 
 
-  function ProjectController($scope) {
+  function ProjectController($scope, ListProjectService, CurrentUserService) {
     var vm = this;
-    vm.showAddProject = showAddProject;
-    vm.isOpen = false;
-    vm.searchProject = searchProject;
-    vm.inputProjectName = "";
-    vm.inputPublicity = 0;
     
+    vm.isOpen = false;
+    vm.projectName = '';
+    vm.publicity = 0;
+    
+    vm.retrieve = retrieve;
+    vm.getCurrentUser = getCurrentUser;
+    vm.showAddProject = showAddProject;
+    vm.searchProject = searchProject;    
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;
     
+    vm.retrieve();
+    
+    function retrieve() { 
+      $.when(
+        CurrentUserService()
+          .success(getCurrentUserSuccess)
+          .error(getCurrentUserFailed))
+      .then(function(){
+        ListProjectService(vm.projectName, vm.publicity)
+          .success(listProjectSuccess)
+          .error(listProjectFailed);
+      });
+    }
+    
+    function listProjectSuccess(data, status) {
+      vm.projects = data;
+    }
+    
+    function listProjectFailed(e) {
+      console.log('Failed to list Project:' + e);
+    }
+    
+    function getCurrentUser() {
+      CurrentUserService()
+        .success(getCurrentUserSuccess)
+        .error(getCurrentUserFailed);
+    }
+    
+    function getCurrentUserSuccess(data, status) {
+      vm.currentUser = data;
+    }
+    
+    function getCurrentUserFailed(e) {
+      console.log('Failed in getCurrentUser:' + e);
+    }
+    
     $scope.$on('addedSuccess', function(e, val) {
-      $scope.$broadcast('needToReload', true);
+      vm.retrieve();
     });
     
     function showAddProject() {
@@ -32,11 +71,11 @@
     }
     
     function searchProject() {
-      $scope.$broadcast('needToReload', true);
+      vm.retrieve();
     }
     
     function showAddButton() {
-      if(vm.inputPublicity == 0) {
+      if(vm.publicity == 0) {
         return true;
       }else{
         return false;
@@ -44,9 +83,9 @@
     }
     
     function togglePublicity(e) {
-      vm.inputPublicity = e.publicity;
-      $scope.$broadcast('needToReload', true);
-      console.log('vm.inputPublicity:' + vm.inputPublicity);
+      vm.publicity = e.publicity;
+      vm.retrieve();
+      console.log('vm.publicity:' + vm.publicity);
     }
     
   }

@@ -9,14 +9,11 @@
   
   function ListRepositoryService($http, $log) {
     
-    return RepositoryResult;
+    return ListRepository;
     
-    function RepositoryResult(queryParams) {      
-      $log.info(queryParams);
-      
-      var projectId = queryParams.projectId;
-      var q = queryParams.q;
-     
+    function ListRepository(projectId, q) {      
+      $log.info('list repositories:' + projectId + ', q:' + q);
+  
       return $http
         .get('/api/repositories', {
           'params':{

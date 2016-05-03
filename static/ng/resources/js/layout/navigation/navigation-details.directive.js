@@ -47,14 +47,9 @@
     
     function link(scope, element, attrs, ctrl) {
       
-      var visited = ctrl.url;
-    
-      if(visited == "/") {
-        element.find('a:first').addClass('active');
-      }else{
-        element.find('a[href$="' + visited + '"]').addClass('active');
-      }
-            
+      var visited = ctrl.url.substring(1, ctrl.url.indexOf('?') - 1);
+     
+      element.find('a[tag^="' + visited + '"]').addClass('active');
       element.on('click', click);
       
       function click(event) {
