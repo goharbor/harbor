@@ -159,10 +159,11 @@
 						<table id="tblAccessLog" class="table table-hover" >
 							<thead>
 								<tr>
-									<th width="20%">{{i18n .Lang "username"}}</th>
-									<th width="40%">{{i18n .Lang "repo_name"}}</th>
-									<th width="20%">{{i18n .Lang "operation"}}</th>
-									<th width="20%">{{i18n .Lang "timestamp"}}</th>
+									<th width="15%">{{i18n .Lang "username"}}</th>
+									<th width="30%">{{i18n .Lang "repo_name"}}</th>
+									<th width="15%">{{i18n .Lang "repo_tag"}}</th>
+									<th width="15%">{{i18n .Lang "operation"}}</th>
+									<th width="15%">{{i18n .Lang "timestamp"}}</th>
 								</tr>
 							</thead>
 							<tbody>

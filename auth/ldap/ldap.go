@@ -76,31 +76,25 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	scope := openldap.LDAP_SCOPE_SUBTREE // LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE
 	filter := "objectClass=*"
-	attributes := []string{"cn", "mail", "uid"}
+	attributes := []string{"mail"}
 
 	result, err := ldap.SearchAll(baseDn, scope, filter, attributes)
 	if err != nil {
 		return nil, err
 	}
-	if len(result.Entries()) != 1 {
-		log.Warningf("Found more than one entry.")
-		return nil, nil
-	}
-	en := result.Entries()[0]
 	u := models.User{}
-	for _, attr := range en.Attributes() {
-		val := attr.Values()[0]
-		switch attr.Name() {
-		case "uid":
-			u.Username = val
-		case "mail":
-			u.Email = val
-		case "cn":
-			u.Realname = val
+	if len(result.Entries()) == 1 {
+		en := result.Entries()[0]
+		for _, attr := range en.Attributes() {
+			val := attr.Values()[0]
+			if attr.Name() == "mail" {
+				u.Email = val
+			}
 		}
 	}
 
-	log.Debug("username:", u.Username, ",email:", u.Email, ",realname:", u.Realname)
+	u.Username = m.Principal
+	log.Debug("username:", u.Username, ",email:", u.Email)
 
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
@@ -114,6 +108,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 		u.UserID = currentUser.UserID
 	} else {
+		u.Realname = m.Principal
 		u.Password = "12345678AbC"
 		u.Comment = "registered from LDAP."
 		userID, err := dao.Register(u)
