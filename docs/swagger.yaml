@@ -474,7 +474,7 @@ paths:
           description: Registered user ID.
         - name: password
           in: body
-          description: Password for updating.
+          description: Password to be updated.
           required: true
           schema:
             $ref: '#/definitions/Password'          
