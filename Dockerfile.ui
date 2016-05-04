@@ -1,4 +1,4 @@
-FROM golang:1.5.1
+FROM golang:1.6.2
 
 MAINTAINER jiangd@vmware.com
 
@@ -11,7 +11,6 @@ COPY . /go/src/github.com/vmware/harbor
 COPY ./vendor/golang.org /go/src/golang.org 
 WORKDIR /go/src/github.com/vmware/harbor/ui
 
-ENV GO15VENDOREXPERIMENT 1
 RUN go get -d github.com/docker/distribution \
     && go get -d github.com/docker/libtrust \
     && go get -d github.com/go-sql-driver/mysql \
