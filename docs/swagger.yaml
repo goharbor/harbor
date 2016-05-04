@@ -388,36 +388,12 @@ paths:
       description: |
         This endpoint is to create a user if the user does not already exist.
       parameters:
-        - name: username
+        - name: user
           in: body
-          type: string
-          format: string
+          description: New created user.
           required: true
-          description: The username of the new created user. Maximum of 20 characters. 
-        - name: password
-          in: body
-          type: string
-          format: string
-          required: true
-          description: The password of the new created user. Maximum of 20 characters.  
-        - name: email
-          in: body
-          type: string
-          format: string
-          required: true
-          description: Publicly visible email address of the new created user. 
-        - name: realname
-          in: body
-          type: string
-          format: string
-          required: true
-          description: Full name associated with the new created user. Maximum of 20 characters.  
-        - name: comment
-          in: body
-          type: string
-          format: string
-          required: false
-          description: Comments associated with the new created user. Maximum of 30 characters.
+          schema:
+            $ref: '#/definitions/User'
       tags:
         - Products
       responses:
@@ -488,9 +464,7 @@ paths:
     put:
       summary: Change the password on a user that already exists.
       description: |
-        This endpoint is for user to update password. Users with the admin 
-		role can change any user's password. Guest users can change only 
-		their own password.
+        This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
       parameters:
         - name: user_id
           in: path
@@ -498,18 +472,12 @@ paths:
           format: int32
           required: true
           description: Registered user ID.
-        - name: old_password
+        - name: password
           in: body
-          type: string
-          format: string
+          description: New updated password.
           required: true
-          description: The user's existing password.		
-        - name: new_password
-          in: body
-          type: string
-          format: string
-          required: true
-          description: New password for marking as to be updated.			
+          schema:
+            $ref: '#/definitions/Password'          
       tags:
         - Products
       responses:
@@ -522,7 +490,7 @@ paths:
         403:
           description: Guests can only change their own account.
         500:
-          description: Unexpected internal errors.		
+          description: Unexpected internal errors.	
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
@@ -725,6 +693,15 @@ definitions:
       deleted:
         type: integer
         format: int32
+  Password:
+    type: object
+    properties:
+      old_password:
+        type: string
+        description: The user's existing password.
+      new_password:
+        type: string
+        description: New password for marking as to be updated.	
   AccessLog:
     type: object
     properties:
