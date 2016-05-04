@@ -81,11 +81,11 @@ features added to facility Shurenyun internal usage.
 	Net          string      `json:"net" yaml:"net"`                   // bridge, host
 	NetworkMode  string      `json:"network_mode" yaml:"network_mode"` //compose version2 for net, same as net
 	Restart      string      `json:"restart" yaml:"restart"`
-	LogPaths     []string    `json:"log_paths" yaml:"log_paths"`
 
 # marathon_config 包含参数包括
 
 	Cpu          float32     `json:"cpu" yaml:"cpu"`
 	Mem          float32     `json:"mem" yaml:"mem"`
 	Instances    int32       `json:"instances" yaml:"instances"`
+	LogPaths     []string    `json:"log_paths" yaml:"log_paths"`
 

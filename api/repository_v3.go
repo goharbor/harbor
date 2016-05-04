@@ -107,8 +107,11 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	log.Println("compose: ", string(questionsJson))
-	repository.DockerCompose = string(questionsJson)
+	log.Println("Questions: ", string(questionsJson))
+	repository.Questions = string(questionsJson)
+
+	repository.Readme = base64.StdEncoding.EncodeToString([]byte(repository.Readme))
+
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,

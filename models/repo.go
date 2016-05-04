@@ -65,6 +65,7 @@ type Repository struct {
 	DockerCompose  string    `json:"dockerCompose"`
 	MarathonConfig string    `json:"marathonConfig"`
 	Catalog        string    `json:"catalog"`
+	Questions      string    `json:"questions"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
