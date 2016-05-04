@@ -73,12 +73,12 @@ func AddRepository(repository *models.Repository) (*models.Repository, error) {
 func UpdateRepoInfo(repository *models.Repository) (*models.Repository, error) {
 	o := orm.NewOrm()
 
-	p, err := o.Raw("UPDATE repository SET description =?, is_public=? , category = ? WHERE name=? AND project_name=?").Prepare()
+	p, err := o.Raw("UPDATE repository SET description =?, is_public=? , category = ? , docker_compose = ? , readme = ?, catalog = ?, marathon_config = ? WHERE name=? AND project_name=?").Prepare()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = p.Exec(repository.Description, repository.IsPublic, repository.Category, repository.Name, repository.ProjectName)
+	_, err = p.Exec(repository.Description, repository.IsPublic, repository.Category, repository.DockerCompose, repository.Readme, repository.Catalog, repository.MarathonConfig, repository.Name, repository.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func RepositoriesUnderNamespace(namespace string) ([]models.Repository, error) {
 	}
 
 	o := orm.NewOrm()
-	sql := `SELECT id, name, description, project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at FROM repository WHERE is_public = 1 and project_name=?  ORDER BY updated_at DESC`
+	sql := `SELECT id, name, description, project_id,  project_name, category, is_public, user_name, latest_tag, created_at, updated_at, readme, docker_compose, catalog, marathon_config FROM repository WHERE is_public = 1 and project_name=?  ORDER BY updated_at DESC`
 
 	var r []models.Repository
 	_, err := o.Raw(sql, namespace).QueryRows(&r)

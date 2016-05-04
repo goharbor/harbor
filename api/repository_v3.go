@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -33,17 +32,7 @@ import (
 
 const (
 	SryunUserNamePri = "sryci"
-	ComposeJsonFile  = "sry_compose.json"
-	ComposeYamlFile  = "sry_compose.yml"
 )
-
-var RepoInfoDir = "templates"
-
-func init() {
-	if len(os.Getenv("TEMPLATE_PATH")) > 0 {
-		RepoInfoDir = os.Getenv("TEMPLATE_PATH")
-	}
-}
 
 type RepositoryV3API struct {
 	BaseAPI
@@ -104,15 +93,7 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	markDown, _ := GetMarkDown(ra.project_name, ra.repository_name)
-	catalogContent, err := GetCatalog(ra.project_name, ra.repository_name)
-	if err != nil {
-		beego.Error("Failed to catalog file: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get catalog file")
-		return
-	}
-
-	catalog, err := utils.ParseQuestions(catalogContent)
+	catalog, err := utils.ParseQuestions(repository.Catalog)
 	if err != nil {
 		beego.Error("Sry Compose parse error", err)
 		ra.RenderError(http.StatusInternalServerError, "sry compose parse error")
@@ -126,10 +107,8 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	log.Println("markdown: ", markDown)
 	log.Println("compose: ", string(questionsJson))
-	repository.MarkDown = markDown
-	repository.SryCompose = string(questionsJson)
+	repository.DockerCompose = string(questionsJson)
 	repositoryResponse := models.RepositoryResponse{
 		Code: 0,
 		Data: repository,
@@ -192,6 +171,7 @@ func (ra *RepositoryV3API) UpdateRepository() {
 
 	var repo models.Repository
 	ra.DecodeJSONReq(&repo)
+
 	repository, _ := dao.RepositoryExists(fmt.Sprintf("%s/%s", ra.project_name, ra.repository_name))
 	if repository == nil {
 		beego.Error("Failed to get repository, project name: ", ra.project_name)
@@ -205,6 +185,26 @@ func (ra *RepositoryV3API) UpdateRepository() {
 
 	if repo.Description != "" {
 		repository.Description = repo.Description
+	}
+
+	if repo.DockerCompose != "" {
+		bytes, _ := base64.StdEncoding.DecodeString(repo.DockerCompose)
+		repository.DockerCompose = string(bytes)
+	}
+
+	if repo.Readme != "" {
+		bytes, _ := base64.StdEncoding.DecodeString(repo.Readme)
+		repository.Readme = string(bytes)
+	}
+
+	if repo.Catalog != "" {
+		bytes, _ := base64.StdEncoding.DecodeString(repo.Catalog)
+		repository.Catalog = string(bytes)
+	}
+
+	if repo.MarathonConfig != "" {
+		bytes, _ := base64.StdEncoding.DecodeString(repo.MarathonConfig)
+		repository.MarathonConfig = string(bytes)
 	}
 
 	repository.IsPublic = repo.IsPublic
@@ -244,28 +244,4 @@ func (ra *RepositoryV3API) GetCategories() {
 	}
 	ra.Data["json"] = categoriesResponse
 	ra.ServeJSON()
-}
-
-func GetMarkDown(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, repository_name, "md"))
-	log.Println(fmt.Sprintf("%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "md"))
-	if err != nil {
-		return "", err
-	}
-
-	b64 := GetBaseEncoding()
-	repoMarkdown := b64.EncodeToString(b)
-	return repoMarkdown, nil
-}
-
-func GetCatalog(project_name string, repository_name string) (string, error) {
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/%s.%s", RepoInfoDir, project_name, repository_name, "catalog", "yml"))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func GetBaseEncoding() *base64.Encoding {
-	return base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 }

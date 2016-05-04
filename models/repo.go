@@ -52,20 +52,21 @@ type Tag struct {
 }
 
 type Repository struct {
-	Id          int64     `json:"id"`
-	Name        string    `json:"name"`
-	ProjectName string    `json:"projectName"`
-	ProjectID   int64     `orm:"column(project_id)" json:"projectId"`
-	UserName    string    `json:"userName"`
-	Category    string    `json:"category"`
-	IsPublic    int64     `json:"isPublic"`
-	LatestTag   string    `json:"latestTag"`
-	Description string    `json:"description"`
-	MarkDown    string    `json:"markdown"`
-	SryCompose  string    `json:"sryCompose"`
-	Readme      string    `json:"readme"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	Id             int64     `json:"id"`
+	Name           string    `json:"name"`
+	ProjectName    string    `json:"projectName"`
+	ProjectID      int64     `orm:"column(project_id)" json:"projectId"`
+	UserName       string    `json:"userName"`
+	Category       string    `json:"category"`
+	IsPublic       int64     `json:"isPublic"`
+	LatestTag      string    `json:"latestTag"`
+	Description    string    `json:"description"`
+	Readme         string    `json:"readme"`
+	DockerCompose  string    `json:"dockerCompose"`
+	MarathonConfig string    `json:"marathonConfig"`
+	Catalog        string    `json:"catalog"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
 type RepositoriesResponse struct {

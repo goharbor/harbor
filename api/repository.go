@@ -49,7 +49,7 @@ func (ra *RepositoryAPI) Prepare() {
 	}
 	username, ok := ra.GetSession("username").(string)
 	if !ok {
-		beego.Warning("failed to get username from session")
+		beego.Info("failed to get username from session")
 		ra.username = ""
 	} else {
 		ra.username = username
