@@ -11,12 +11,16 @@
   function SwitchRoleController(getRole, $scope) {
     var vm = this;
     
-    vm.currentRole = getRole({'key': 'roleName', 'value': vm.roleName});            
+    $scope.$watch('vm.roleName', function(current,origin) {
+      if(current) {
+        vm.currentRole = getRole({'key': 'roleName', 'value': current});            
+      }
+    });
     vm.selectRole = selectRole;
     
     function selectRole(role) {
       vm.currentRole = getRole({'key': 'roleName', 'value': role.roleName});  
-      $scope.$emit('changedRoleId', vm.currentRole.id);
+      vm.roleName = role.roleName;
     }
     
   }

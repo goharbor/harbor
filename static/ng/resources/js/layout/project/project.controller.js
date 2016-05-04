@@ -14,9 +14,8 @@
     vm.isOpen = false;
     vm.projectName = '';
     vm.publicity = 0;
-    
+     
     vm.retrieve = retrieve;
-    vm.getCurrentUser = getCurrentUser;
     vm.showAddProject = showAddProject;
     vm.searchProject = searchProject;    
     vm.showAddButton = showAddButton;
@@ -43,13 +42,7 @@
     function listProjectFailed(e) {
       console.log('Failed to list Project:' + e);
     }
-    
-    function getCurrentUser() {
-      CurrentUserService()
-        .success(getCurrentUserSuccess)
-        .error(getCurrentUserFailed);
-    }
-    
+      
     function getCurrentUserSuccess(data, status) {
       vm.currentUser = data;
     }

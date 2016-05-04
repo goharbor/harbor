@@ -47,7 +47,10 @@
     
     function link(scope, element, attrs, ctrl) {
       
-      var visited = ctrl.url.substring(1, ctrl.url.indexOf('?') - 1);
+      var visited = ctrl.url.substring(1);
+      if(visited.indexOf('?') >= 0) {
+        visited = ctrl.url.substring(1, ctrl.url.indexOf('?') - 1);
+      }
      
       element.find('a[tag^="' + visited + '"]').addClass('active');
       element.on('click', click);

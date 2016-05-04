@@ -4,6 +4,8 @@
   
   angular
     .module('harbor.project.member', [
-      'harbor.services.project.member']);
+      'harbor.services.project.member',
+      'harbor.services.user'
+    ]);
 
 })();

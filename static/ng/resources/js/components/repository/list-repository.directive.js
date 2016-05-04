@@ -12,9 +12,8 @@
         
     vm.filterInput = "";
     vm.retrieve = retrieve;
-    vm.expand = expand;
     vm.projectId = $routeParams.project_id;
- 
+    
     vm.retrieve();
     
     function retrieve(){
@@ -30,21 +29,8 @@
     function getRepositoryFailed(repsonse) {
       console.log('failed to list repositories:' + response);      
     }
-        
-    function expand(e) {
-      vm.tags = [];
-      ListTagService(e.repoName)
-        .then(getTagComplete)
-        .catch(getTagFailed);
-       
-      function getTagComplete(response) {
-        vm.tags = response.data;
-      }
-      
-      function getTagFailed(response) {
-        
-      }
-    }
+   
+    
   }
   
   function listRepository() {

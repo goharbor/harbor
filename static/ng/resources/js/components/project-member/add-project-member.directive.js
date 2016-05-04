@@ -17,7 +17,6 @@
     vm.cancel = cancel;
     
     function save() {
-      
       AddProjectMemberService(2, vm.optRole, vm.username)
         .success(addProjectMemberComplete)
         .error(addProjectMemberFailed);
@@ -29,6 +28,8 @@
    
     function cancel() {
       vm.isOpen = false;  
+      vm.username = "";
+      vm.optRole = 1;
     }
     
     function addProjectMemberComplete(data, status, header) {

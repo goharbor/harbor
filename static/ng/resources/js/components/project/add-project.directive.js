@@ -26,11 +26,12 @@
       AddProjectService(vm.projectName, vm.isPublic)
         .success(addProjectSuccess)
         .error(addProjectFailed);
-      
     }
     
     function addProjectSuccess(data, status) {
       vm.isOpen = false;
+      vm.projectName = "";
+      vm.isPublic = false;
       $scope.$emit('addedSuccess', true);
     }
     
@@ -40,6 +41,8 @@
     
     function cancel(){
       vm.isOpen = false;
+      vm.projectName = "";
+      vm.isPublic = false;
     }
   }
   

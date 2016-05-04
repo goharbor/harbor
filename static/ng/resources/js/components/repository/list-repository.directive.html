@@ -8,16 +8,16 @@
         </span>
       </div>
     </div>
-    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
       <div class="panel panel-default" ng-repeat="repo in vm.repositories">
-        <div class="panel-heading" role="tab" id="heading//$index + 1//" >
+        <div class="panel-heading" role="tab" id="heading//$index + 1//">
           <h4 class="panel-title">
-            <a role="button" data-toggle="collapse" data-parent="#accordion" href="ng/repository#/repositories#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index + 1//" ng-click="vm.expand({repoName: repo})">
+            <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">
               <span class="glyphicon glyphicon-book"></span> //repo//
             </a>
           </h4>
         </div>
-        <list-tag associate-id="$index + 1" repo-name="repo" tags="vm.tags"></list-tag>
+        <list-tag associate-id="$index + 1" repo-name="repo"></list-tag>
       </div>
     </div>
   </div>
