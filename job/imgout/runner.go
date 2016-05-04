@@ -2,7 +2,7 @@ package imgout
 
 import (
 	"encoding/json"
-	"github.com/vmware/harbor/dao"
+	//"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
 	"github.com/vmware/harbor/models"
 	"time"
@@ -24,11 +24,11 @@ type ImgPuller struct {
 	logger job.Logger
 }
 
-func (ip ImgPuller) Enter() error {
-	ip.logger.Infof("I'm pretending to pull img:%s, then sleep 10s", ip.img)
-	time.Sleep(10 * time.Second)
+func (ip ImgPuller) Enter() (string, error) {
+	ip.logger.Infof("I'm pretending to pull img:%s, then sleep 30s", ip.img)
+	time.Sleep(30 * time.Second)
 	ip.logger.Infof("wake up from sleep....")
-	return nil
+	return "push-img", nil
 }
 
 type ImgPusher struct {
@@ -37,11 +37,11 @@ type ImgPusher struct {
 	logger    job.Logger
 }
 
-func (ip ImgPusher) Enter() error {
-	ip.logger.Infof("I'm pretending to push img to:%s, then sleep 10s", ip.targetURL)
-	time.Sleep(10 * time.Second)
+func (ip ImgPusher) Enter() (string, error) {
+	ip.logger.Infof("I'm pretending to push img to:%s, then sleep 30s", ip.targetURL)
+	time.Sleep(30 * time.Second)
 	ip.logger.Infof("wake up from sleep....")
-	return nil
+	return job.JobContinue, nil
 }
 
 func init() {
@@ -53,15 +53,7 @@ func (r Runner) Run(je models.JobEntry) error {
 	if err != nil {
 		return err
 	}
-	path := []string{dao.JobRunning, "pull-img", "push-img", dao.JobFinished}
-	for _, state := range path {
-		err := r.EnterState(state)
-		if err != nil {
-			r.Logger.Errorf("Error durint transition to state: %s, error: %v", state, err)
-			r.EnterState(dao.JobError)
-			break
-		}
-	}
+	r.Start(job.JobRunning)
 	return nil
 }
 
@@ -73,10 +65,10 @@ func (r *Runner) init(je models.JobEntry) error {
 		return err
 	}
 	r.Logger = job.Logger{je.ID}
-	r.AddTransition(dao.JobRunning, "pull-img", ImgPuller{DummyHandler: job.DummyHandler{JobID: r.JobID}, img: r.parm.Image, logger: r.Logger})
+	r.AddTransition(job.JobRunning, "pull-img", ImgPuller{DummyHandler: job.DummyHandler{JobID: r.JobID}, img: r.parm.Image, logger: r.Logger})
 	//only handle on target for now
 	url := r.parm.Targets[0].URL
 	r.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: job.DummyHandler{JobID: r.JobID}, targetURL: url, logger: r.Logger})
-	r.AddTransition("push-img", dao.JobFinished, job.StatusUpdater{job.DummyHandler{JobID: r.JobID}, dao.JobFinished})
+	r.AddTransition("push-img", job.JobFinished, job.StatusUpdater{job.DummyHandler{JobID: r.JobID}, job.JobFinished})
 	return nil
 }

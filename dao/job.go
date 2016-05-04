@@ -3,15 +3,7 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/utils/log"
-)
-
-const (
-	JobPending  string = "pending"
-	JobRunning  string = "running"
-	JobError    string = "error"
-	JobStopped  string = "stopped"
-	JobFinished string = "finished"
+	//	"github.com/vmware/harbor/utils/log"
 )
 
 func AddJob(entry models.JobEntry) (int64, error) {
@@ -32,7 +24,7 @@ func AddJob(entry models.JobEntry) (int64, error) {
 
 func AddJobLog(id int64, level string, message string) error {
 	sql := `insert into job_log (job_id, level, message, creation_time, update_time) values (?, ?, ?, NOW(), NOW())`
-	log.Debugf("trying to add a log for job:%d", id)
+	//log.Debugf("trying to add a log for job:%d", id)
 	o := orm.NewOrm()
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
