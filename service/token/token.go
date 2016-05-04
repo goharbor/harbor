@@ -17,6 +17,7 @@ package token
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
@@ -43,7 +44,6 @@ func (h *Handler) Get() {
 	authenticated := authenticate(username, password)
 	service := h.GetString("service")
 	scopes := h.GetStrings("scope")
-	log.Debugf("scopes: %+v", scopes)
 
 	if len(scopes) == 0 && !authenticated {
 		log.Info("login request with invalid credentials")
@@ -59,14 +59,16 @@ func (h *Handler) Get() {
 func (h *Handler) serveToken(username, service string, access []*token.ResourceActions) {
 	writer := h.Ctx.ResponseWriter
 	//create token
-	rawToken, err := MakeToken(username, service, access)
+	rawToken, expiresIn, issuedAt, err := MakeToken(username, service, access)
 	if err != nil {
 		log.Errorf("Failed to make token, error: %v", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	tk := make(map[string]string)
+	tk := make(map[string]interface{})
 	tk["token"] = rawToken
+	tk["expires_in"] = expiresIn
+	tk["issued_at"] = issuedAt.Format(time.RFC3339)
 	h.Data["json"] = tk
 	h.ServeJSON()
 }

@@ -25,10 +25,14 @@ import (
 	"github.com/astaxie/beego/cache"
 )
 
-// Cache is the global cache in system.
-var Cache cache.Cache
-
-var registryClient *registry.Registry
+var (
+	// Cache is the global cache in system.
+	Cache             cache.Cache
+	endpoint          string
+	username          string
+	registryClient    *registry.Registry
+	repositoryClients map[string]*registry.Repository
+)
 
 const catalogKey string = "catalog"
 
@@ -39,17 +43,25 @@ func init() {
 		log.Errorf("Failed to initialize cache, error:%v", err)
 	}
 
-	endpoint := os.Getenv("REGISTRY_URL")
-	client := registry.NewClientUsernameAuthHandlerEmbeded("admin")
-	registryClient, err = registry.New(endpoint, client)
-	if err != nil {
-		log.Fatalf("error occurred while initializing authentication handler used by cache: %v", err)
-	}
+	endpoint = os.Getenv("REGISTRY_URL")
+	username = "admin"
+	repositoryClients = make(map[string]*registry.Repository, 10)
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
+
+	if registryClient == nil {
+		var err error
+		registryClient, err = registry.NewRegistryWithUsername(endpoint, username)
+		if err != nil {
+			log.Errorf("error occurred while initializing registry client used by cache: %v", err)
+			return err
+		}
+	}
+
+	var err error
 	rs, err := registryClient.Catalog()
 	if err != nil {
 		return err
@@ -58,10 +70,19 @@ func RefreshCatalogCache() error {
 	repos := []string{}
 
 	for _, repo := range rs {
-		tags, err := registryClient.ListTag(repo)
+		rc, ok := repositoryClients[repo]
+		if !ok {
+			rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
+			if err != nil {
+				log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
+				continue
+			}
+			repositoryClients[repo] = rc
+		}
+		tags, err := rc.ListTag()
 		if err != nil {
 			log.Errorf("error occurred while list tag for %s: %v", repo, err)
-			return err
+			continue
 		}
 
 		if len(tags) != 0 {
