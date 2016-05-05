@@ -25,6 +25,7 @@ type Credential interface {
 	AddAuthorization(req *http.Request)
 }
 
+// Implements interface Credential
 type basicAuthCredential struct {
 	username string
 	password string

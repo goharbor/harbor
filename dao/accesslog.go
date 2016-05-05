@@ -62,6 +62,14 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 		sql += ` and u.username like ? `
 		queryParam = append(queryParam, accessLog.Username)
 	}
+	if accessLog.RepoName != "" {
+		sql += ` and a.repo_name = ? `
+		queryParam = append(queryParam, accessLog.RepoName)
+	}
+	if accessLog.RepoTag != "" {
+		sql += ` and a.repo_tag = ? `
+		queryParam = append(queryParam, accessLog.RepoTag)
+	}
 	if accessLog.Keywords != "" {
 		sql += ` and a.operation in ( `
 		keywordList := strings.Split(accessLog.Keywords, "/")

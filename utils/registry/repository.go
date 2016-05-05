@@ -71,26 +71,12 @@ func NewRepositoryWithCredential(name, endpoint string, credential auth.Credenti
 		return nil, err
 	}
 
-	resp, err := http.Get(buildPingURL(endpoint))
-	if err != nil {
-		return nil, err
-	}
-
-	var handlers []auth.Handler
-	handler := auth.NewStandardTokenHandler(credential, "repository", name, "pull", "push")
-	handlers = append(handlers, handler)
-
-	challenges := auth.ParseChallengeFromResponse(resp)
-	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
-
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	client, err := newClient(endpoint, "", credential, "repository", name, "pull", "push")
 
 	repository := &Repository{
 		Name:     name,
 		Endpoint: u,
-		client: &http.Client{
-			Transport: transport,
-		},
+		client:   client,
 	}
 
 	log.Debugf("initialized a repository client with credential: %s %s", endpoint, name)
@@ -109,29 +95,15 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 		return nil, err
 	}
 
-	resp, err := http.Get(buildPingURL(endpoint))
-	if err != nil {
-		return nil, err
-	}
-
-	var handlers []auth.Handler
-	handler := auth.NewUsernameTokenHandler(username, "repository", name, "pull", "push")
-	handlers = append(handlers, handler)
-
-	challenges := auth.ParseChallengeFromResponse(resp)
-	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
-
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	client, err := newClient(endpoint, username, nil, "repository", name, "pull", "push")
 
 	repository := &Repository{
 		Name:     name,
 		Endpoint: u,
-		client: &http.Client{
-			Transport: transport,
-		},
+		client:   client,
 	}
 
-	log.Debugf("initialized a repository client with username: %s %s", endpoint, name)
+	log.Debugf("initialized a repository client with username: %s %s", endpoint, name, username)
 
 	return repository, nil
 }

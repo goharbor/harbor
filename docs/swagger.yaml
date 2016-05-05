@@ -109,7 +109,7 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        201:
           description: Project created successfully.
         400:
           description: Unsatisfied with constraints of the project creation.
@@ -383,6 +383,28 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors.
+    post:
+      summary: Creates a new user account.
+      description: |
+        This endpoint is to create a user if the user does not already exist.
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.
   /users/{user_id}:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
@@ -438,6 +460,37 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
+  /users/{user_id}/password:
+    put:
+      summary: Change the password on a user that already exists.
+      description: |
+        This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID.
+        - name: password
+          in: body
+          description: Password to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/Password'          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated password successfully.
+        400:
+          description: Invalid user ID; Old password is blank; New password is blank.
+        401:
+          description: Old password is not correct.
+        403:
+          description: Guests can only change their own account.
+        500:
+          description: Unexpected internal errors.	
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
@@ -640,6 +693,15 @@ definitions:
       deleted:
         type: integer
         format: int32
+  Password:
+    type: object
+    properties:
+      old_password:
+        type: string
+        description: The user's existing password.
+      new_password:
+        type: string
+        description: New password for marking as to be updated.	
   AccessLog:
     type: object
     properties:

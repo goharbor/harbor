@@ -181,8 +181,9 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	repoName := ra.GetString("repo_name")
-	tags, err := ra.registry.ListTag(repoName)
+	tags := []string{}
+
+	ts, err := rc.ListTag()
 	if err != nil {
 		e, ok := errors.ParseError(err)
 		if ok {

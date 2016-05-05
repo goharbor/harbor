@@ -63,26 +63,17 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 		return nil, err
 	}
 
-	resp, err := http.Get(buildPingURL(endpoint))
+	client, err := newClient(endpoint, username, nil, "registry", "catalog", "*")
 	if err != nil {
 		return nil, err
 	}
 
-	var handlers []auth.Handler
-	handler := auth.NewUsernameTokenHandler(username, "registry", "catalog", "*")
-	handlers = append(handlers, handler)
-
-	challenges := auth.ParseChallengeFromResponse(resp)
-	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
-
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
-
 	registry := &Registry{
 		Endpoint: u,
-		client: &http.Client{
-			Transport: transport,
-		},
+		client:   client,
 	}
+
+	log.Debugf("initialized a registry client with username: %s %s", endpoint, username)
 
 	return registry, nil
 }
@@ -130,4 +121,32 @@ func (r *Registry) Catalog() ([]string, error) {
 
 func buildCatalogURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/_catalog", endpoint)
+}
+
+func newClient(endpoint, username string, credential auth.Credential,
+	scopeType, scopeName string, scopeActions ...string) (*http.Client, error) {
+
+	endpoint = strings.TrimRight(endpoint, "/")
+	resp, err := http.Get(buildPingURL(endpoint))
+	if err != nil {
+		return nil, err
+	}
+
+	var handlers []auth.Handler
+	var handler auth.Handler
+	if credential != nil {
+		handler = auth.NewStandardTokenHandler(credential, scopeType, scopeName, scopeActions...)
+	} else {
+		handler = auth.NewUsernameTokenHandler(username, scopeType, scopeName, scopeActions...)
+	}
+
+	handlers = append(handlers, handler)
+
+	challenges := auth.ParseChallengeFromResponse(resp)
+	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
+
+	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	return &http.Client{
+		Transport: transport,
+	}, nil
 }
