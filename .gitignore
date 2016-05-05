@@ -4,4 +4,6 @@ Deploy/config/ui/env
 Deploy/config/ui/app.conf
 Deploy/config/db/env
 Deploy/harbor.cfg
+Deploy/config/registry/root.crt
+Deploy/config/ui/private_key.pem
 ui/ui
