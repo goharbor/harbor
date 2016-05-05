@@ -7,5 +7,5 @@
   <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.cancelUpdate()" title="Cancel">
     <span ng-if="vm.editMode" class="glyphicon glyphicon-repeat"></span>
   </a>
-  <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.deleteProjectMember({projectId: vm.projectId, userId: vm.userId})" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+  <a ng-show="vm.userId != vm.currentUserId && !vm.editMode" href="javascript:void(0);" ng-click="vm.deleteProjectMember({projectId: vm.projectId, userId: vm.userId})" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
 </td>

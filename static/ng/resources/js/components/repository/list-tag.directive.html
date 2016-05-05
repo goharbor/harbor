@@ -5,14 +5,16 @@
         <th width="20%"><span class="glyphicon glyphicon-tags"></span> Tag</th>
         <th width="30%">Image Details</th>
         <th width="40%">Pull Command</th>
-        <th width="10%"></th>
+        <th width="10%">Operation</th>
       </thead>
       <tbody>
         <tr ng-repeat="tag in vm.tags">
           <td>//tag//</td>
-          <td><a href="#"><span class="glyphicon glyphicon-info-sign"></span></a></td>
-          <td>docker pull //vm.repoName//://tag//</td>
-          <td><a href="#">Copy</a></td>
+          <td><popup-details repo-name="//vm.repoName//" tag="//tag//"></popup-details></td>
+          <td>
+            <pull-command repo-name="//vm.repoName//" tag="//tag//"></pull-command>   
+          </td>
+          <td><a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a></td>
         </tr>
       </tbody>
     </table>

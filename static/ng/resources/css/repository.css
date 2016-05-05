@@ -100,6 +100,11 @@
 .input-group .form-control {
   z-index: 1;
 }
+
 .well {
   padding: 12px;
+}
+
+.popover{
+  max-width: 500px;
 }
