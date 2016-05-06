@@ -645,11 +645,7 @@ func TestQueryRelevantProjects(t *testing.T) {
 }
 
 func TestAddProjectMember(t *testing.T) {
-	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
-	if err != nil {
-		t.Errorf("Error occurred in AddProjectMember: %v", err)
-	}
-
+	// admin has been set to be project admin for every project by calling AddProjectMember()
 	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
