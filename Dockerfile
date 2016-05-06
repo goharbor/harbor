@@ -24,7 +24,6 @@ ENV MYSQL_USR root \
     REDIS_HOST localhost \
     REDIS_PORT 6379 \
     SQL_PATH $(pwd)/sql \
-    APP_API_URI http://localhost:6080 \
     REGISTRY_URL localhost:5000
 
 COPY views /go/bin/views
