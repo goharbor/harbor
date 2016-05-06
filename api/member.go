@@ -90,6 +90,18 @@ func (pma *ProjectMemberAPI) Get() {
 			pma.RenderError(http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
+
+		// do not return admin user if current user is not admin
+		if pma.currentUserID != 1 {
+			i := 0
+			for _, user := range userList {
+				if user.UserID == 1 {
+					userList = append(userList[:i], userList[i+1:]...)
+					break
+				}
+				i++
+			}
+		}
 		pma.Data["json"] = userList
 	} else { //return detail of a  member
 		roleList, err := dao.GetUserProjectRoles(pma.memberID, pid)
@@ -167,6 +179,9 @@ func (pma *ProjectMemberAPI) Post() {
 
 // Put ...
 func (pma *ProjectMemberAPI) Put() {
+
+	pma.check()
+
 	pid := pma.project.ProjectID
 	mid := pma.memberID
 
@@ -217,6 +232,9 @@ func (pma *ProjectMemberAPI) Put() {
 
 // Delete ...
 func (pma *ProjectMemberAPI) Delete() {
+
+	pma.check()
+
 	pid := pma.project.ProjectID
 	mid := pma.memberID
 
@@ -239,5 +257,22 @@ func (pma *ProjectMemberAPI) Delete() {
 		log.Errorf("Failed to delete project roles for user, user id: %d, project id: %d, error: %v", mid, pid, err)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")
 		return
+	}
+}
+
+// when a project is created, system admin will be given a project admin role to this project,
+// check() guarnntees that ordinary user can not change the role of admin to this project.
+func (pma *ProjectMemberAPI) check() {
+	u := models.User{
+		UserID: pma.memberID,
+	}
+	user, err := dao.GetUser(u)
+	if err != nil {
+		log.Errorf("failed to get user %d : %v", pma.memberID, err)
+		pma.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+	if user.Username == "admin" {
+		log.Infof("user %d is trying to modify roles of admin %d to project %d, the operation is forbidden", pma.currentUserID, pma.memberID, pma.project.ProjectID)
+		pma.CustomAbort(http.StatusForbidden, "")
 	}
 }
