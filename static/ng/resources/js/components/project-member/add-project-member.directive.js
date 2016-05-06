@@ -20,7 +20,6 @@
       AddProjectMemberService(2, vm.optRole, vm.username)
         .success(addProjectMemberComplete)
         .error(addProjectMemberFailed);
-      vm.isOpen = false;
       vm.username = "";
       vm.optRole = 1;
       vm.reload();

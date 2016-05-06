@@ -4,6 +4,7 @@
     .module('harbor.app', [
       'ngRoute',
       'harbor.layout.navigation',
+      'harbor.layout.sign.up',
       'harbor.layout.index',
       'harbor.layout.project',
       'harbor.layout.repository',

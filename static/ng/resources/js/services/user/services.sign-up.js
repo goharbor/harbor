@@ -13,7 +13,14 @@
     return SignUp;
     
     function SignUp(user) {      
-      $log.info(user);
+      return $http
+        .post('/api/user', {
+          'username': user.username,
+          'email': user.email,
+          'password': user.password,
+          'realname': user.realname,
+          'comment': user.comment
+        });
     }
   }
 })();

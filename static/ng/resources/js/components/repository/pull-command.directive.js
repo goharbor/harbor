@@ -34,7 +34,6 @@
       clip.on("ready", function() {
         console.log("Flash movie loaded and ready.");
         this.on("aftercopy", function(event) {
-          
           console.log("Copied text to clipboard: " + event.data["text/plain"]);
           element.find('span').tooltip('show');
           setTimeout(function(){
@@ -46,6 +45,7 @@
       clip.on("error", function(event) {
         console.log('error[name="' + event.name + '"]: ' + event.message);
         ZeroClipboard.destroy();
+        element.find('span').tooltip('destroy');
       });
   
     }

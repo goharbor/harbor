@@ -12,4 +12,5 @@ func initNgRouters() {
 	beego.Router("/ng/dashboard", &ng.DashboardController{})
 	beego.Router("/ng/project", &ng.ProjectController{})
 	beego.Router("/ng/repository", &ng.RepositoryController{})
+	beego.Router("/ng/signup", &ng.SignUpController{})
 }

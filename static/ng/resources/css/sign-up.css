@@ -1,0 +1,35 @@
+.main-title {
+  margin-top: 50px;
+  margin-left: 180px;
+}
+
+.main-content {
+  width: 60%; 
+  margin-top: 40px;
+}
+
+.form-horizontal .control-label {
+  text-align: left;
+}
+
+.row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.form-horizontal .form-group {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+.small-size-fonts {
+  font-size: 10pt;
+}
+
+.asterisk {
+  display: inline-block;
+  margin-left: -25px;
+  padding-top: 8px;
+  color: red;
+  font-size: 14pt;
+}

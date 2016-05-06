@@ -20,9 +20,9 @@ func (bc *BaseController) Forward(title, templateName string) {
 	bc.TplName = filepath.Join(prefixNg, templateName)
 	bc.Data["Title"] = title
 	bc.LayoutSections = make(map[string]string)
-	bc.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "headerInclude.htm")
-	bc.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footerInclude.htm")
-	bc.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "headerContent.htm")
-	bc.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footerContent.htm")
+	bc.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
+	bc.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
+	bc.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "header-content.htm")
+	bc.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footer-content.htm")
 
 }
