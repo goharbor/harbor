@@ -653,7 +653,7 @@ func TestAddProjectMember(t *testing.T) {
 
 	flag := false
 	for _, role := range roles {
-		if role.Name == "developer" {
+		if role.Name == "projectAdmin" {
 			flag = true
 			break
 		}
