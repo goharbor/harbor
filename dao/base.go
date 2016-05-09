@@ -129,6 +129,11 @@ func dbConfig() (string, string, string, string) {
 	}
 
 	port := os.Getenv("MYSQL_PORT_3306_TCP_PORT")
+
+	if len(port) == 0 {
+		port = os.Getenv("MYSQL_PORT")
+	}
+
 	username := os.Getenv("MYSQL_USR")
 
 	password := os.Getenv("MYSQL_ENV_MYSQL_ROOT_PASSWORD")
