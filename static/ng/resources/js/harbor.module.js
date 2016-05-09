@@ -4,6 +4,7 @@
     .module('harbor.app', [
       'ngRoute',
       'ngMessages',
+      'harbor.layout.header',
       'harbor.layout.navigation',
       'harbor.layout.sign.up',
       'harbor.layout.account.setting',
@@ -18,7 +19,7 @@
       'harbor.services.repository',
       'harbor.services.project.member',
       'harbor.session',
-      'harbor.header',
+      'harbor.optional.menu',
       'harbor.sign.in',
       'harbor.search',
       'harbor.project',

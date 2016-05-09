@@ -1,4 +1,4 @@
-<nav class="navbar navbar-default navbar-custom">
+<nav class="navbar navbar-default navbar-custom" >
  <div class="container container-custom">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
@@ -8,42 +8,20 @@
       </button>
       <a class="navbar-brand" href="#"><img class="img-responsive" src="/static/ng/resources/img/Harbor_Logo_rec.png" alt="Harbor's Logo"/></a>
     </div>
-
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1">
-		<ul class="nav navbar-nav navbar-left">
-		  <li class="dropdown">
-		  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-		      <span class="glyphicon glyphicon-globe"></span>
-			  Language<span class="caret"></span></a>
-			  <ul class="dropdown-menu">
-			    <li><a href="#">English</a></li>						
-				<li><a href="#">中文</a></li>
-			  </ul>
-	 	  </li>
-        </ul>
-		  <!--ul class="nav navbar-nav navbar-left">
-		  <li class="dropdown">
-		  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-		      <span class="glyphicon glyphicon-user"></span>
-			  admin<span class="caret"></span></a>
-			  <ul class="dropdown-menu">
-			    <li><a href="#">Change Password</a></li>						
-				<li><a href="#">Log Out</a></li>
-			  </ul>
-	 	  </li>
-    </ul-->
-	  <ul class="nav navbar-nav navbar-right">
-		  <li>
-		    <navigation-header></navigation-header>
-		  </li>
+    <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1" ng-controller="HeaderController as vm">
+		  <optional-menu is-logged-in="vm.isLoggedIn" username="vm.currentUser.username"></optional-menu>
+	    <ul class="nav navbar-nav navbar-right">
+		    <li>
+		      <navigation-header></navigation-header>
+		    </li>
 	      <li>
 	        <form class="navbar-form pull-right" role="search">
 	          <div class="form-group">
 	            <input type="text" class="form-control search-icon" placeholder="projects or repositories" size="35">
 	          </div>           
 	        </form>
-		  </li>
+		    </li>
 	    </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->

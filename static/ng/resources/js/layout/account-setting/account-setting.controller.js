@@ -6,19 +6,21 @@
     .module('harbor.layout.account.setting')
     .controller('AccountSettingController', AccountSettingController);
   
-  AccountSettingController.$inject = ['CurrentUserService'];
+  AccountSettingController.$inject = ['CurrentUserService', 'ChangePasswordService', '$window'];
   
-  function AccountSettingController(CurrentUserService) {
+  function AccountSettingController(CurrentUserService, ChangePasswordService, $window) {
     var vm = this;
     vm.isOpen = false;
     vm.user = {};
     vm.toggleChangePassword = toggleChangePassword;
     
+    vm.changeProfile = changeProfile;
+    vm.changePassword= changePassword;
+    vm.cancel = cancel;
+    
     CurrentUserService()
       .success(getCurrentUserSuccess)
       .error(getCurrentUserFailed);
-  
-    vm.update = update;
 
     function toggleChangePassword() {
       if(vm.isOpen) {
@@ -38,10 +40,32 @@
       console.log('Failed get current user:' + data);
     }
     
-    function update(user) {
+    function changeProfile(user) {
       console.log(user);
     }
     
+    function changePassword(user) {
+      console.log(user);
+      ChangePasswordService(vm.user.UserId, user.oldPassword, user.password)
+        .success(changePasswordSuccess)
+        .error(changePasswordFailed);
+    }
+    
+    function changePasswordSuccess(data, status) {
+      console.log('Successful changed password:' + data);
+      $window.location.href = '/ng/project';
+    }
+    
+    function changePasswordFailed(data, status) {
+      console.log('Failed changed password:' + data);
+      if(data === 'old_password_is_not_correct') {
+        vm.oldPasswordIncorrect = true;
+      }
+    }
+    
+    function cancel() {
+      $window.location.href = '/ng/project';
+    }
     
   }
   

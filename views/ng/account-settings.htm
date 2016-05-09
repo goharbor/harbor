@@ -5,7 +5,7 @@
 		    <h1 class="col-md-12 col-md-offset-2 main-title title-color">Account Settings</h1>
         <div class="row">
           <div class="col-md-12 col-md-offset-2 main-content">
-            <form name="form" class="form-horizontal" ng-submit="form.$valid && vm.update(user)" >              
+            <form name="form" class="form-horizontal" ng-submit="form.$valid && vm.changeProile(user)" >              
               <div class="form-group">
                 <label for="username" class="col-sm-3 control-label">Username:</label>
                 <div class="col-sm-7">
@@ -55,10 +55,11 @@
                     <span ng-show="maxlength">Comments maximum length is 20.</span>
                   </div>
                 </div>
-              </div>
-              
+              </div>              
+            </form>
+            <form name="form" class="form-horizontal css-form" ng-submit="form.$valid && vm.changePassword(user)" novalidate>
               <div class="form-group">
-                <a href="#" ng-click="vm.toggleChangePassword()">Change Password</a>
+                <label for="toggleChangePassword" class="col-sm-3 control-label"><a id="toggleChangePassword" href="#" ng-click="vm.toggleChangePassword()">Change Password</a></label>
               </div>
               <div ng-show="vm.isOpen">
                 <hr/>
@@ -66,9 +67,6 @@
                   <label for="oldPassword" class="col-sm-3 control-label">Old Password:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="oldPassword" ng-model="user.oldPassword" ng-model-options="{ updateOn: 'blur' }" name="uOldPassword" required>
-                    <div ng-messages="form.$submitted && form.uOldPassword.$error">
-                      <span ng-message="required">Password is required.</span>
-                    </div>
                   </div>
                   <div class="col-sm-2">
                     <span class="asterisk">*</span>
@@ -78,10 +76,6 @@
                   <label for="password" class="col-sm-3 control-label">Password:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="password" ng-model="user.password" ng-model-options="{ updateOn: 'blur' }" name="uPassword" required password>
-                    <div ng-messages="form.$submitted && form.uPassword.$error">
-                      <span ng-message="required">Password is required.</span>
-                      <span ng-message="password">Password is not valid.</span>
-                    </div>
                     <p class="help-block small-size-fonts">At least 7 characters with 1 lowercase letter, 1 capital letter and 1 numeric character.</p>
                   </div>
                   <div class="col-sm-2">
@@ -92,9 +86,6 @@
                   <label for="confirmPassword" class="col-sm-3 control-label">Confirm Password:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="confirmPassword" ng-model="user.confirmPassword" ng-model-options="{ updateOn: 'blur' }" name="uConfirmPassword" compare-to="user.password">
-                    <div ng-messages="form.$submitted && form.uConfirmPassword.$error">
-                      <span ng-message="compareTo">Confirm password mismatch.</span>
-                    </div>
                   </div>
                   <div class="col-sm-2">
                     <span class="asterisk">*</span>
@@ -103,10 +94,25 @@
               </div>
               <div class="form-group">
                 <div class="col-md-offset-7 col-md-10">
-                  <input type="submit" class="btn btn-default" value="Cancel">
-                  <input type="submit" class="btn btn-primary" value="Save">                    
+                  <input type="submit" class="btn btn-default" ng-click="vm.cancel()" value="Cancel">
+                  <input type="submit" class="btn btn-primary" ng-disabled="form.$invalid" value="Save">                    
                 </div>
               </div>  
+              <div class="error-message">
+                <div ng-messages="form.$dirty && form.uOldPassword.$error">
+                  <span ng-message="required">Old password is required.</span>
+                </div>
+                <div ng-messages="form.$dirty && form.uPassword.$error">
+                  <span ng-message="required">New password is required.</span>
+                  <span ng-message="password">New password is invalid.</span>
+                </div>
+                <div class="error-message" ng-messages="form.$dirty && form.uConfirmPassword.$error">
+                  <span ng-message="compareTo">Confirm password mismatch.</span>
+                </div>
+                <div class="error-message" ng-show="form.$dirty && vm.oldPasswordIncorrect">
+                  <span>Old password is incorrect.</span>
+                </div>
+              </div>
             </form>
           </div>
         </div>            

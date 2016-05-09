@@ -12,8 +12,12 @@
     
     return ChangePassword;
     
-    function ChangePassword(user) {
-      
+    function ChangePassword(userId, oldPassword, newPassword) {
+      return $http
+        .put('/api/users/' + userId + '/password', {
+          'old_password': oldPassword,
+          'new_password': newPassword
+        });
     }
     
   }

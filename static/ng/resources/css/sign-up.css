@@ -33,3 +33,19 @@
   color: red;
   font-size: 14pt;
 }
+
+.css-form input .ng-valid .ng-submitted {
+  border-color: black;
+}
+
+.css-form input .ng-invalid .ng-submitted {
+  border-color: red;
+}
+
+.error-message {
+  font-size: 16pt;
+  color: red;
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
