@@ -18,6 +18,6 @@ COPY ./ ./
 
 COPY ./migration.cfg ./
 
-RUN ./install.sh
+RUN ./prepare.sh
 
 ENTRYPOINT ["./run.sh"] 

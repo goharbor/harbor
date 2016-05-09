@@ -116,7 +116,7 @@ FNULL = open(os.devnull, 'w')
 
 from functools import wraps
 def stat_decorator(func):
-    #@wraps(func)
+    @wraps(func)
     def check_wrapper(*args, **kwargs):
         stat = func(*args, **kwargs)
         message = "Generated configuration file: %s" % kwargs['path'] \
