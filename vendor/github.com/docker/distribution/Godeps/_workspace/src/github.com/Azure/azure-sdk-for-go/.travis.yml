@@ -1,0 +1,19 @@
+sudo: false
+
+language: go
+
+before_script:
+  - go get -u golang.org/x/tools/cmd/vet
+  - go get -u github.com/golang/lint/golint
+
+go: tip
+script:
+  - test -z "$(gofmt -s -l -w management | tee /dev/stderr)"
+  - test -z "$(gofmt -s -l -w storage | tee /dev/stderr)"
+  - go build -v ./...
+  - go test -v ./storage/... -check.v
+  - test -z "$(golint ./storage/... | tee /dev/stderr)"
+  - go vet ./storage/...
+  - go test -v ./management/...
+  - test -z "$(golint ./management/... |  grep -v 'should have comment' | grep -v 'stutters' | tee /dev/stderr)"
+  - go vet ./management/...

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package grpc.health;
+
+message HealthCheckRequest{
+}
+
+message HealthCheckResponse{
+}
+
+service HealthCheck{
+	rpc Check( HealthCheckRequest) returns ( HealthCheckResponse);
+}

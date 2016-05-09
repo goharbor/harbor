@@ -1,0 +1,13 @@
+sudo: false
+
+language: go
+
+go:
+  - 1.4
+  - tip
+
+install:
+  - go get -v google.golang.org/api/...
+
+script:
+  - go test -v google.golang.org/api/...
