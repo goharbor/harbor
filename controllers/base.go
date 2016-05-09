@@ -41,6 +41,7 @@ type BaseController struct {
 	beego.Controller
 	i18n.Locale
 	SelfRegistration bool
+	IsLdapAdminUser  bool	
 	IsAdmin          bool
 	AuthMode         string
 }
@@ -115,17 +116,24 @@ func (b *BaseController) Prepare() {
 	if sessionUserID != nil {
 		b.Data["Username"] = b.GetSession("username")
 		b.Data["UserId"] = sessionUserID.(int)
-
+		
+		if (sessionUserID == 1 && b.AuthMode == "ldap_auth") {
+			b.IsLdapAdminUser = true
+		}
+		
 		var err error
 		b.IsAdmin, err = dao.IsAdminRole(sessionUserID.(int))
 		if err != nil {
 			log.Errorf("Error occurred in IsAdminRole:%v", err)
 			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
+	}else {
+		b.IsLdapAdminUser = false
 	}
 
 	b.Data["IsAdmin"] = b.IsAdmin
 	b.Data["SelfRegistration"] = b.SelfRegistration
+	b.Data["IsLdapAdminUser"] = b.IsLdapAdminUser
 
 }
 
