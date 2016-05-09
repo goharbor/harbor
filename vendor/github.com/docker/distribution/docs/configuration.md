@@ -86,19 +86,20 @@ information about each option that appears later in this page.
         bucket: bucketname
         keyfile: /path/to/keyfile
         rootdirectory: /gcs/object/name/prefix
-        chunksize: 5242880
       s3:
         accesskey: awsaccesskey
         secretkey: awssecretkey
         region: us-west-1
-        regionendpoint: http://myobjects.local
         bucket: bucketname
         encrypt: true
-        keyid: mykeyid
         secure: true
         v4auth: true
         chunksize: 5242880
         rootdirectory: /s3/object/name/prefix
+      rados:
+        poolname: radospool
+        username: radosuser
+        chunksize: 4194304
       swift:
         username: username
         password: password
@@ -164,7 +165,7 @@ information about each option that appears later in this page.
             baseurl: https://my.cloudfronted.domain.com/
             privatekey: /path/to/pem
             keypairid: cloudfrontkeypairid
-            duration: 3000s
+            duration: 3000
     reporting:
       bugsnag:
         apikey: bugsnagapikey
@@ -179,7 +180,6 @@ information about each option that appears later in this page.
       prefix: /my/nested/registry/
       host: https://myregistryaddress.org:5000
       secret: asecretforlocaldevelopment
-      relativeurls: false
       tls:
         certificate: /path/to/x509/public
         key: /path/to/x509/private
@@ -358,14 +358,16 @@ Permitted values are `error`, `warn`, `info` and `debug`. The default is
         accesskey: awsaccesskey
         secretkey: awssecretkey
         region: us-west-1
-        regionendpoint: http://myobjects.local
         bucket: bucketname
         encrypt: true
-        keyid: mykeyid
         secure: true
         v4auth: true
         chunksize: 5242880
         rootdirectory: /s3/object/name/prefix
+      rados:
+        poolname: radospool
+        username: radosuser
+        chunksize: 4194304
       swift:
         username: username
         password: password
@@ -406,14 +408,50 @@ Permitted values are `error`, `warn`, `info` and `debug`. The default is
 The storage option is **required** and defines which storage backend is in use.
 You must configure one backend; if you configure more, the registry returns an error. You can choose any of these backend storage drivers:
 
-| Storage&nbsp;driver | Description
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `filesystem`        | Uses the local disk to store registry files. It is ideal for development and may be appropriate for some small-scale production applications. See the [driver's reference documentation](storage-drivers/filesystem.md). |
-| `azure`             | Uses Microsoft's Azure Blob Storage. See the [driver's reference documentation](storage-drivers/azure.md).                                                                                                               |
-| `gcs`               | Uses Google Cloud Storage. See the [driver's reference documentation](storage-drivers/gcs.md).                                                                                                                           |
-| `s3`                | Uses Amazon's Simple Storage Service (S3) and compatible Storage Services. See the [driver's reference documentation](storage-drivers/s3.md).                                                                            |
-| `swift`             | Uses Openstack Swift object storage. See the [driver's reference documentation](storage-drivers/swift.md).                                                                                                               |
-| `oss`               | Uses Aliyun OSS for object storage. See the [driver's reference documentation](storage-drivers/oss.md).                                                                                                                  |
+<table>
+  <tr>
+    <td><code>filesystem</code></td>
+    <td>Uses the local disk to store registry files. It is ideal for development and may be appropriate for some small-scale production applications.
+    See the <a href="storage-drivers/filesystem.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>azure</code></td>
+    <td>Uses Microsoft's Azure Blob Storage.
+    See the <a href="storage-drivers/azure.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>gcs</code></td>
+    <td>Uses Google Cloud Storage.
+    See the <a href="storage-drivers/gcs.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>rados</code></td>
+    <td>Uses Ceph Object Storage.
+    See the <a href="storage-drivers/rados.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>s3</code></td>
+    <td>Uses Amazon's Simple Storage Service (S3).
+    See the <a href="storage-drivers/s3.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>swift</code></td>
+    <td>Uses Openstack Swift object storage.
+    See the <a href="storage-drivers/swift.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>oss</code></td>
+    <td>Uses Aliyun OSS for object storage.
+    See the <a href="storage-drivers/oss.md">driver's reference documentation</a>.
+    </td>
+  </tr>
+</table>
 
 For purely tests purposes, you can use the [`inmemory` storage
 driver](storage-drivers/inmemory.md). If you would like to run a registry from
@@ -694,7 +732,7 @@ in the registry implementation.
             baseurl: https://my.cloudfronted.domain.com/
             privatekey: /path/to/pem
             keypairid: cloudfrontkeypairid
-            duration: 3000s
+            duration: 3000
 
 Each middleware entry has `name` and `options` entries. The `name` must
 correspond to the name under which the middleware registers itself. The
@@ -753,7 +791,7 @@ interpretation of the options.
       no
     </td>
     <td>
-      Specify a `duration` by providing an integer and a unit. Valid time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, `h`. For example, `3000s` is a valid duration; there should be no space between the integer and unit. If you do not specify a `duration` or specify an integer without a time unit, this defaults to 20 minutes.
+      Duration for which a signed URL should be valid.
     </td>
   </tr>
 </table>
@@ -873,7 +911,6 @@ configuration may contain both.
       prefix: /my/nested/registry/
       host: https://myregistryaddress.org:5000
       secret: asecretforlocaldevelopment
-      relativeurls: false
       tls:
         certificate: /path/to/x509/public
         key: /path/to/x509/private
@@ -959,19 +996,6 @@ generate a secret at launch.
 <p />
 <b>WARNING: If you are building a cluster of registries behind a load balancer, you MUST
 ensure the secret is the same for all registries.</b>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>relativeurls</code>
-    </td>
-    <td>
-      no
-    </td>
-    <td>
-       Specifies that the registry should return relative URLs in Location headers.
-       The client is responsible for resolving the correct URL.  This option is not
-       compatible with Docker 1.7 and earlier.
     </td>
   </tr>
 </table>

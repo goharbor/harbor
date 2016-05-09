@@ -20,12 +20,11 @@ of this API, known as _Docker Registry HTTP API V2_.
 
 While the V1 registry protocol is usable, there are several problems with the
 architecture that have led to this new version. The main driver of this
-specification is a set of changes to the docker the image format, covered in
-[docker/docker#8093](https://github.com/docker/docker/issues/8093).
-The new, self-contained image manifest simplifies image definition and improves
-security. This specification will build on that work, leveraging new properties
-of the manifest format to improve performance, reduce bandwidth usage and
-decrease the likelihood of backend corruption.
+specification these changes to the docker the image format, covered in
+[docker/docker#8093](https://github.com/docker/docker/issues/8093). The new, self-contained image manifest simplifies image
+definition and improves security. This specification will build on that work,
+leveraging new properties of the manifest format to improve performance,
+reduce bandwidth usage and decrease the likelihood of backend corruption.
 
 For relevant details and history leading up to this specification, please see
 the following issues:
@@ -281,8 +280,7 @@ error codes as `UNKNOWN`, allowing future error codes to be added without
 breaking API compatibility. For the purposes of the specification error codes
 will only be added and never removed.
 
-For a complete account of all error codes, please see the [_Errors_](#errors-2)
-section.
+For a complete account of all error codes, please see the _Detail_ section.
 
 ### API Version Check
 
@@ -361,9 +359,9 @@ comparing it with identifier `ID(C)`.
 
 #### Digest Header
 
-To provide verification of http content, any response may include a
-`Docker-Content-Digest` header. This will include the digest of the target
-entity returned in the response. For blobs, this is the entire blob content. For
+To provide verification of http content, any response may include a `Docker-
+Content-Digest` header. This will include the digest of the target entity
+returned in the response. For blobs, this is the entire blob content. For
 manifests, this is the manifest body without the signature content, also known
 as the JWS payload. Note that the commonly used canonicalization for digest
 calculation may be dependent on the mediatype of the content, such as with
@@ -380,8 +378,8 @@ server's digest. To maintain security, the client _must_ always verify the
 content against the _digest_ used to fetch the content.
 
 > __IMPORTANT:__ If a _digest_ is used to fetch content, the client should use
-> the same digest used to fetch the content to verify it. The header
-> `Docker-Content-Digest` should not be trusted over the "local" digest.
+> the same digest used to fetch the content to verify it. The header `Docker-
+> Content-Digest` should not be trusted over the "local" digest.
 
 ### Pulling An Image
 
@@ -419,14 +417,13 @@ reference may include a tag or digest.
 
 The client should include an Accept header indicating which manifest content
 types it supports. For more details on the manifest formats and their content
-types, see [manifest-v2-1.md](manifest-v2-1.md) and
-[manifest-v2-2.md](manifest-v2-2.md). In a successful response, the Content-Type
-header will indicate which manifest type is being returned.
+types, see manifest-v2-1.md and manifest-v2-2.md. In a successful response,
+the Content-Type header will indicate which manifest type is being returned.
 
 A `404 Not Found` response will be returned if the image is unknown to the
 registry. If the image exists and the response is successful, the image
-manifest will be returned, with the following format (see
-[docker/docker#8093](https://github.com/docker/docker/issues/8093) for details):
+manifest will be returned, with the following format (see docker/docker#8093
+for details):
 
     {
        "name": <name>,
@@ -560,7 +557,7 @@ called the "Upload URL" from the `Location` header. All responses to the
 upload url, whether sending data or getting status, will be in this format.
 Though the URI format (`/v2/<name>/blobs/uploads/<uuid>`) for the `Location`
 header is specified, clients should treat it as an opaque url and should never
-try to assemble it. While the `uuid` parameter may be an actual UUID, this
+try to assemble the it. While the `uuid` parameter may be an actual UUID, this
 proposal imposes no constraints on the format and clients should never impose
 any.
 
@@ -615,8 +612,8 @@ Content-Type: application/octet-stream
 ```
 
 The "digest" parameter must be included with the PUT request. Please see the
-[_Completed Upload_](#completed-upload) section for details on the parameters
-and expected responses.
+_Completed Upload_ section for details on the parameters and expected
+responses.
 
 Additionally, the upload can be completed with a single `POST` request to
 the uploads endpoint, including the "size" and "digest" parameters:
@@ -854,15 +851,14 @@ image manifest. An image can be pushed using the following request format:
        ...
     }
 
-The `name` and `reference` fields of the response body must match those
-specified in the URL. The `reference` field may be a "tag" or a "digest". The
-content type should match the type of the manifest being uploaded, as specified
-in [manifest-v2-1.md](manifest-v2-1.md) and [manifest-v2-2.md](manifest-v2-2.md).
+The `name` and `reference` fields of the response body must match those specified in
+the URL. The `reference` field may be a "tag" or a "digest". The content type
+should match the type of the manifest being uploaded, as specified in
+manifest-v2-1.md and manifest-v2-2.md.
 
 If there is a problem with pushing the manifest, a relevant 4xx response will
-be returned with a JSON error message. Please see the
-[_PUT Manifest_](#put-manifest) section for details on possible error codes that
-may be returned.
+be returned with a JSON error message. Please see the _PUT Manifest section
+for details on possible error codes that may be returned.
 
 If one or more layers are unknown to the registry, `BLOB_UNKNOWN` errors are
 returned. The `detail` field of the error response will have a `digest` field
@@ -925,8 +921,7 @@ explicitly requested. In this case the `Link` header will be returned along
 with the results, and subsequent results can be obtained by following the link
 as if pagination had been initially requested.
 
-For details of the `Link` header, please see the [_Pagination_](#pagination)
-section.
+For details of the `Link` header, please see the _Pagination_ section.
 
 #### Pagination
 
@@ -1008,9 +1003,9 @@ to _b_:
 Link: <<url>?n=2&last=b>; rel="next"
 ```
 
-The client can then issue the request with the above value from the `Link`
-header, receiving the values _c_ and _d_. Note that `n` may change on the second
-to last response or be fully omitted, depending on the server implementation.
+The client can then issue the request with above value from the `Link` header,
+receiving the values _c_ and _d_. Note that n may change on second to last
+response or be omitted fully, if the server may so choose.
 
 ### Listing Image Tags
 

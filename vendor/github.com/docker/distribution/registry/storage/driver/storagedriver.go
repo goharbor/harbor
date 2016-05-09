@@ -34,11 +34,7 @@ func (version Version) Minor() uint {
 const CurrentVersion Version = "0.1"
 
 // StorageDriver defines methods that a Storage Driver must implement for a
-// filesystem-like key/value object storage. Storage Drivers are automatically
-// registered via an internal registration mechanism, and generally created
-// via the StorageDriverFactory interface (https://godoc.org/github.com/docker/distribution/registry/storage/driver/factory).
-// Please see the aforementioned factory package for example code showing how to get an instance
-// of a StorageDriver
+// filesystem-like key/value object storage.
 type StorageDriver interface {
 	// Name returns the human-readable "name" of the driver, useful in error
 	// messages and logging. By convention, this will just be the registration
@@ -53,14 +49,15 @@ type StorageDriver interface {
 	// This should primarily be used for small objects.
 	PutContent(ctx context.Context, path string, content []byte) error
 
-	// Reader retrieves an io.ReadCloser for the content stored at "path"
+	// ReadStream retrieves an io.ReadCloser for the content stored at "path"
 	// with a given byte offset.
 	// May be used to resume reading a stream by providing a nonzero offset.
-	Reader(ctx context.Context, path string, offset int64) (io.ReadCloser, error)
+	ReadStream(ctx context.Context, path string, offset int64) (io.ReadCloser, error)
 
-	// Writer returns a FileWriter which will store the content written to it
-	// at the location designated by "path" after the call to Commit.
-	Writer(ctx context.Context, path string, append bool) (FileWriter, error)
+	// WriteStream stores the contents of the provided io.ReadCloser at a
+	// location designated by the given path.
+	// May be used to resume writing a stream by providing a nonzero offset.
+	WriteStream(ctx context.Context, path string, offset int64, reader io.Reader) (nn int64, err error)
 
 	// Stat retrieves the FileInfo for the given path, including the current
 	// size in bytes and the creation time.
@@ -84,25 +81,6 @@ type StorageDriver interface {
 	// May return an ErrUnsupportedMethod in certain StorageDriver
 	// implementations.
 	URLFor(ctx context.Context, path string, options map[string]interface{}) (string, error)
-}
-
-// FileWriter provides an abstraction for an opened writable file-like object in
-// the storage backend. The FileWriter must flush all content written to it on
-// the call to Close, but is only required to make its content readable on a
-// call to Commit.
-type FileWriter interface {
-	io.WriteCloser
-
-	// Size returns the number of bytes written to this FileWriter.
-	Size() int64
-
-	// Cancel removes any written content from this FileWriter.
-	Cancel() error
-
-	// Commit flushes all content written to this FileWriter and makes it
-	// available for future calls to StorageDriver.GetContent and
-	// StorageDriver.Reader.
-	Commit() error
 }
 
 // PathRegexp is the regular expression which each file path must match. A

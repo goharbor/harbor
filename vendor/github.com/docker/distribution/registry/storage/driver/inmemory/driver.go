@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -73,7 +74,7 @@ func (d *driver) GetContent(ctx context.Context, path string) ([]byte, error) {
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
-	rc, err := d.Reader(ctx, path, 0)
+	rc, err := d.ReadStream(ctx, path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -87,9 +88,7 @@ func (d *driver) PutContent(ctx context.Context, p string, contents []byte) erro
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
-	normalized := normalize(p)
-
-	f, err := d.root.mkfile(normalized)
+	f, err := d.root.mkfile(p)
 	if err != nil {
 		// TODO(stevvooe): Again, we need to clarify when this is not a
 		// directory in StorageDriver API.
@@ -102,9 +101,9 @@ func (d *driver) PutContent(ctx context.Context, p string, contents []byte) erro
 	return nil
 }
 
-// Reader retrieves an io.ReadCloser for the content stored at "path" with a
+// ReadStream retrieves an io.ReadCloser for the content stored at "path" with a
 // given byte offset.
-func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.ReadCloser, error) {
+func (d *driver) ReadStream(ctx context.Context, path string, offset int64) (io.ReadCloser, error) {
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
@@ -112,10 +111,10 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 		return nil, storagedriver.InvalidOffsetError{Path: path, Offset: offset}
 	}
 
-	normalized := normalize(path)
-	found := d.root.find(normalized)
+	path = normalize(path)
+	found := d.root.find(path)
 
-	if found.path() != normalized {
+	if found.path() != path {
 		return nil, storagedriver.PathNotFoundError{Path: path}
 	}
 
@@ -126,24 +125,46 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 	return ioutil.NopCloser(found.(*file).sectionReader(offset)), nil
 }
 
-// Writer returns a FileWriter which will store the content written to it
-// at the location designated by "path" after the call to Commit.
-func (d *driver) Writer(ctx context.Context, path string, append bool) (storagedriver.FileWriter, error) {
+// WriteStream stores the contents of the provided io.ReadCloser at a location
+// designated by the given path.
+func (d *driver) WriteStream(ctx context.Context, path string, offset int64, reader io.Reader) (nn int64, err error) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
+
+	if offset < 0 {
+		return 0, storagedriver.InvalidOffsetError{Path: path, Offset: offset}
+	}
 
 	normalized := normalize(path)
 
 	f, err := d.root.mkfile(normalized)
 	if err != nil {
-		return nil, fmt.Errorf("not a file")
+		return 0, fmt.Errorf("not a file")
 	}
 
-	if !append {
-		f.truncate()
+	// Unlock while we are reading from the source, in case we are reading
+	// from the same mfs instance. This can be fixed by a more granular
+	// locking model.
+	d.mutex.Unlock()
+	d.mutex.RLock() // Take the readlock to block other writers.
+	var buf bytes.Buffer
+
+	nn, err = buf.ReadFrom(reader)
+	if err != nil {
+		// TODO(stevvooe): This condition is odd and we may need to clarify:
+		// we've read nn bytes from reader but have written nothing to the
+		// backend. What is the correct return value? Really, the caller needs
+		// to know that the reader has been advanced and reattempting the
+		// operation is incorrect.
+		d.mutex.RUnlock()
+		d.mutex.Lock()
+		return nn, err
 	}
 
-	return d.newWriter(f), nil
+	d.mutex.RUnlock()
+	d.mutex.Lock()
+	f.WriteAt(buf.Bytes(), offset)
+	return nn, err
 }
 
 // Stat returns info about the provided path.
@@ -152,7 +173,7 @@ func (d *driver) Stat(ctx context.Context, path string) (storagedriver.FileInfo,
 	defer d.mutex.RUnlock()
 
 	normalized := normalize(path)
-	found := d.root.find(normalized)
+	found := d.root.find(path)
 
 	if found.path() != normalized {
 		return nil, storagedriver.PathNotFoundError{Path: path}
@@ -238,75 +259,4 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 // May return an UnsupportedMethodErr in certain StorageDriver implementations.
 func (d *driver) URLFor(ctx context.Context, path string, options map[string]interface{}) (string, error) {
 	return "", storagedriver.ErrUnsupportedMethod{}
-}
-
-type writer struct {
-	d         *driver
-	f         *file
-	closed    bool
-	committed bool
-	cancelled bool
-}
-
-func (d *driver) newWriter(f *file) storagedriver.FileWriter {
-	return &writer{
-		d: d,
-		f: f,
-	}
-}
-
-func (w *writer) Write(p []byte) (int, error) {
-	if w.closed {
-		return 0, fmt.Errorf("already closed")
-	} else if w.committed {
-		return 0, fmt.Errorf("already committed")
-	} else if w.cancelled {
-		return 0, fmt.Errorf("already cancelled")
-	}
-
-	w.d.mutex.Lock()
-	defer w.d.mutex.Unlock()
-
-	return w.f.WriteAt(p, int64(len(w.f.data)))
-}
-
-func (w *writer) Size() int64 {
-	w.d.mutex.RLock()
-	defer w.d.mutex.RUnlock()
-
-	return int64(len(w.f.data))
-}
-
-func (w *writer) Close() error {
-	if w.closed {
-		return fmt.Errorf("already closed")
-	}
-	w.closed = true
-	return nil
-}
-
-func (w *writer) Cancel() error {
-	if w.closed {
-		return fmt.Errorf("already closed")
-	} else if w.committed {
-		return fmt.Errorf("already committed")
-	}
-	w.cancelled = true
-
-	w.d.mutex.Lock()
-	defer w.d.mutex.Unlock()
-
-	return w.d.root.delete(w.f.path())
-}
-
-func (w *writer) Commit() error {
-	if w.closed {
-		return fmt.Errorf("already closed")
-	} else if w.committed {
-		return fmt.Errorf("already committed")
-	} else if w.cancelled {
-		return fmt.Errorf("already cancelled")
-	}
-	w.committed = true
-	return nil
 }

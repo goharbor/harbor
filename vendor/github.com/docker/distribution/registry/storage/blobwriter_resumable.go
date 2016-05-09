@@ -4,6 +4,8 @@ package storage
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path"
 	"strconv"
 
@@ -17,18 +19,24 @@ import (
 	_ "github.com/stevvooe/resumable/sha512"
 )
 
-// resumeDigest attempts to restore the state of the internal hash function
-// by loading the most recent saved hash state equal to the current size of the blob.
-func (bw *blobWriter) resumeDigest(ctx context.Context) error {
+// resumeDigestAt attempts to restore the state of the internal hash function
+// by loading the most recent saved hash state less than or equal to the given
+// offset. Any unhashed bytes remaining less than the given offset are hashed
+// from the content uploaded so far.
+func (bw *blobWriter) resumeDigestAt(ctx context.Context, offset int64) error {
 	if !bw.resumableDigestEnabled {
 		return errResumableDigestNotAvailable
+	}
+
+	if offset < 0 {
+		return fmt.Errorf("cannot resume hash at negative offset: %d", offset)
 	}
 
 	h, ok := bw.digester.Hash().(resumable.Hash)
 	if !ok {
 		return errResumableDigestNotAvailable
 	}
-	offset := bw.fileWriter.Size()
+
 	if offset == int64(h.Len()) {
 		// State of digester is already at the requested offset.
 		return nil
@@ -41,12 +49,24 @@ func (bw *blobWriter) resumeDigest(ctx context.Context) error {
 		return fmt.Errorf("unable to get stored hash states with offset %d: %s", offset, err)
 	}
 
-	// Find the highest stored hashState with offset equal to
+	// Find the highest stored hashState with offset less than or equal to
 	// the requested offset.
 	for _, hashState := range hashStates {
 		if hashState.offset == offset {
 			hashStateMatch = hashState
 			break // Found an exact offset match.
+		} else if hashState.offset < offset && hashState.offset > hashStateMatch.offset {
+			// This offset is closer to the requested offset.
+			hashStateMatch = hashState
+		} else if hashState.offset > offset {
+			// Remove any stored hash state with offsets higher than this one
+			// as writes to this resumed hasher will make those invalid. This
+			// is probably okay to skip for now since we don't expect anyone to
+			// use the API in this way. For that reason, we don't treat an
+			// an error here as a fatal error, but only log it.
+			if err := bw.driver.Delete(ctx, hashState.path); err != nil {
+				logrus.Errorf("unable to delete stale hash state %q: %s", hashState.path, err)
+			}
 		}
 	}
 
@@ -66,7 +86,20 @@ func (bw *blobWriter) resumeDigest(ctx context.Context) error {
 
 	// Mind the gap.
 	if gapLen := offset - int64(h.Len()); gapLen > 0 {
-		return errResumableDigestNotAvailable
+		// Need to read content from the upload to catch up to the desired offset.
+		fr, err := newFileReader(ctx, bw.driver, bw.path, bw.size)
+		if err != nil {
+			return err
+		}
+		defer fr.Close()
+
+		if _, err = fr.Seek(int64(h.Len()), os.SEEK_SET); err != nil {
+			return fmt.Errorf("unable to seek to layer reader offset %d: %s", h.Len(), err)
+		}
+
+		if _, err := io.CopyN(h, fr, gapLen); err != nil {
+			return err
+		}
 	}
 
 	return nil

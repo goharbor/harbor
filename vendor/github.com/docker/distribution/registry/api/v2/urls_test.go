@@ -92,31 +92,25 @@ func TestURLBuilder(t *testing.T) {
 		"https://localhost:5443",
 	}
 
-	doTest := func(relative bool) {
-		for _, root := range roots {
-			urlBuilder, err := NewURLBuilderFromString(root, relative)
+	for _, root := range roots {
+		urlBuilder, err := NewURLBuilderFromString(root)
+		if err != nil {
+			t.Fatalf("unexpected error creating urlbuilder: %v", err)
+		}
+
+		for _, testCase := range makeURLBuilderTestCases(urlBuilder) {
+			url, err := testCase.build()
 			if err != nil {
-				t.Fatalf("unexpected error creating urlbuilder: %v", err)
+				t.Fatalf("%s: error building url: %v", testCase.description, err)
 			}
 
-			for _, testCase := range makeURLBuilderTestCases(urlBuilder) {
-				url, err := testCase.build()
-				if err != nil {
-					t.Fatalf("%s: error building url: %v", testCase.description, err)
-				}
-				expectedURL := testCase.expectedPath
-				if !relative {
-					expectedURL = root + expectedURL
-				}
+			expectedURL := root + testCase.expectedPath
 
-				if url != expectedURL {
-					t.Fatalf("%s: %q != %q", testCase.description, url, expectedURL)
-				}
+			if url != expectedURL {
+				t.Fatalf("%s: %q != %q", testCase.description, url, expectedURL)
 			}
 		}
 	}
-	doTest(true)
-	doTest(false)
 }
 
 func TestURLBuilderWithPrefix(t *testing.T) {
@@ -127,31 +121,25 @@ func TestURLBuilderWithPrefix(t *testing.T) {
 		"https://localhost:5443/prefix/",
 	}
 
-	doTest := func(relative bool) {
-		for _, root := range roots {
-			urlBuilder, err := NewURLBuilderFromString(root, relative)
+	for _, root := range roots {
+		urlBuilder, err := NewURLBuilderFromString(root)
+		if err != nil {
+			t.Fatalf("unexpected error creating urlbuilder: %v", err)
+		}
+
+		for _, testCase := range makeURLBuilderTestCases(urlBuilder) {
+			url, err := testCase.build()
 			if err != nil {
-				t.Fatalf("unexpected error creating urlbuilder: %v", err)
+				t.Fatalf("%s: error building url: %v", testCase.description, err)
 			}
 
-			for _, testCase := range makeURLBuilderTestCases(urlBuilder) {
-				url, err := testCase.build()
-				if err != nil {
-					t.Fatalf("%s: error building url: %v", testCase.description, err)
-				}
+			expectedURL := root[0:len(root)-1] + testCase.expectedPath
 
-				expectedURL := testCase.expectedPath
-				if !relative {
-					expectedURL = root[0:len(root)-1] + expectedURL
-				}
-				if url != expectedURL {
-					t.Fatalf("%s: %q != %q", testCase.description, url, expectedURL)
-				}
+			if url != expectedURL {
+				t.Fatalf("%s: %q != %q", testCase.description, url, expectedURL)
 			}
 		}
 	}
-	doTest(true)
-	doTest(false)
 }
 
 type builderFromRequestTestCase struct {
@@ -209,48 +197,39 @@ func TestBuilderFromRequest(t *testing.T) {
 			},
 		},
 	}
-	doTest := func(relative bool) {
-		for _, tr := range testRequests {
-			var builder *URLBuilder
-			if tr.configHost.Scheme != "" && tr.configHost.Host != "" {
-				builder = NewURLBuilder(&tr.configHost, relative)
-			} else {
-				builder = NewURLBuilderFromRequest(tr.request, relative)
+
+	for _, tr := range testRequests {
+		var builder *URLBuilder
+		if tr.configHost.Scheme != "" && tr.configHost.Host != "" {
+			builder = NewURLBuilder(&tr.configHost)
+		} else {
+			builder = NewURLBuilderFromRequest(tr.request)
+		}
+
+		for _, testCase := range makeURLBuilderTestCases(builder) {
+			buildURL, err := testCase.build()
+			if err != nil {
+				t.Fatalf("%s: error building url: %v", testCase.description, err)
 			}
 
-			for _, testCase := range makeURLBuilderTestCases(builder) {
-				buildURL, err := testCase.build()
+			var expectedURL string
+			proto, ok := tr.request.Header["X-Forwarded-Proto"]
+			if !ok {
+				expectedURL = tr.base + testCase.expectedPath
+			} else {
+				urlBase, err := url.Parse(tr.base)
 				if err != nil {
-					t.Fatalf("%s: error building url: %v", testCase.description, err)
+					t.Fatal(err)
 				}
+				urlBase.Scheme = proto[0]
+				expectedURL = urlBase.String() + testCase.expectedPath
+			}
 
-				var expectedURL string
-				proto, ok := tr.request.Header["X-Forwarded-Proto"]
-				if !ok {
-					expectedURL = testCase.expectedPath
-					if !relative {
-						expectedURL = tr.base + expectedURL
-					}
-				} else {
-					urlBase, err := url.Parse(tr.base)
-					if err != nil {
-						t.Fatal(err)
-					}
-					urlBase.Scheme = proto[0]
-					expectedURL = testCase.expectedPath
-					if !relative {
-						expectedURL = urlBase.String() + expectedURL
-					}
-				}
-
-				if buildURL != expectedURL {
-					t.Fatalf("%s: %q != %q", testCase.description, buildURL, expectedURL)
-				}
+			if buildURL != expectedURL {
+				t.Fatalf("%s: %q != %q", testCase.description, buildURL, expectedURL)
 			}
 		}
 	}
-	doTest(true)
-	doTest(false)
 }
 
 func TestBuilderFromRequestWithPrefix(t *testing.T) {
@@ -291,13 +270,12 @@ func TestBuilderFromRequestWithPrefix(t *testing.T) {
 		},
 	}
 
-	var relative bool
 	for _, tr := range testRequests {
 		var builder *URLBuilder
 		if tr.configHost.Scheme != "" && tr.configHost.Host != "" {
-			builder = NewURLBuilder(&tr.configHost, false)
+			builder = NewURLBuilder(&tr.configHost)
 		} else {
-			builder = NewURLBuilderFromRequest(tr.request, false)
+			builder = NewURLBuilderFromRequest(tr.request)
 		}
 
 		for _, testCase := range makeURLBuilderTestCases(builder) {
@@ -305,25 +283,17 @@ func TestBuilderFromRequestWithPrefix(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%s: error building url: %v", testCase.description, err)
 			}
-
 			var expectedURL string
 			proto, ok := tr.request.Header["X-Forwarded-Proto"]
 			if !ok {
-				expectedURL = testCase.expectedPath
-				if !relative {
-					expectedURL = tr.base[0:len(tr.base)-1] + expectedURL
-				}
+				expectedURL = tr.base[0:len(tr.base)-1] + testCase.expectedPath
 			} else {
 				urlBase, err := url.Parse(tr.base)
 				if err != nil {
 					t.Fatal(err)
 				}
 				urlBase.Scheme = proto[0]
-				expectedURL = testCase.expectedPath
-				if !relative {
-					expectedURL = urlBase.String()[0:len(urlBase.String())-1] + expectedURL
-				}
-
+				expectedURL = urlBase.String()[0:len(urlBase.String())-1] + testCase.expectedPath
 			}
 
 			if buildURL != expectedURL {

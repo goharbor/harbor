@@ -1,7 +1,6 @@
 package filesystem
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -79,7 +78,7 @@ func (d *driver) Name() string {
 
 // GetContent retrieves the content stored at "path" as a []byte.
 func (d *driver) GetContent(ctx context.Context, path string) ([]byte, error) {
-	rc, err := d.Reader(ctx, path, 0)
+	rc, err := d.ReadStream(ctx, path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -95,22 +94,16 @@ func (d *driver) GetContent(ctx context.Context, path string) ([]byte, error) {
 
 // PutContent stores the []byte content at a location designated by "path".
 func (d *driver) PutContent(ctx context.Context, subPath string, contents []byte) error {
-	writer, err := d.Writer(ctx, subPath, false)
-	if err != nil {
+	if _, err := d.WriteStream(ctx, subPath, 0, bytes.NewReader(contents)); err != nil {
 		return err
 	}
-	defer writer.Close()
-	_, err = io.Copy(writer, bytes.NewReader(contents))
-	if err != nil {
-		writer.Cancel()
-		return err
-	}
-	return writer.Commit()
+
+	return os.Truncate(d.fullPath(subPath), int64(len(contents)))
 }
 
-// Reader retrieves an io.ReadCloser for the content stored at "path" with a
+// ReadStream retrieves an io.ReadCloser for the content stored at "path" with a
 // given byte offset.
-func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.ReadCloser, error) {
+func (d *driver) ReadStream(ctx context.Context, path string, offset int64) (io.ReadCloser, error) {
 	file, err := os.OpenFile(d.fullPath(path), os.O_RDONLY, 0644)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -132,36 +125,40 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 	return file, nil
 }
 
-func (d *driver) Writer(ctx context.Context, subPath string, append bool) (storagedriver.FileWriter, error) {
+// WriteStream stores the contents of the provided io.Reader at a location
+// designated by the given path.
+func (d *driver) WriteStream(ctx context.Context, subPath string, offset int64, reader io.Reader) (nn int64, err error) {
+	// TODO(stevvooe): This needs to be a requirement.
+	// if !path.IsAbs(subPath) {
+	// 	return fmt.Errorf("absolute path required: %q", subPath)
+	// }
+
 	fullPath := d.fullPath(subPath)
 	parentDir := path.Dir(fullPath)
 	if err := os.MkdirAll(parentDir, 0777); err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	fp, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, err
+		// TODO(stevvooe): A few missing conditions in storage driver:
+		//	1. What if the path is already a directory?
+		//  2. Should number 1 be exposed explicitly in storagedriver?
+		//	2. Can this path not exist, even if we create above?
+		return 0, err
+	}
+	defer fp.Close()
+
+	nn, err = fp.Seek(offset, os.SEEK_SET)
+	if err != nil {
+		return 0, err
 	}
 
-	var offset int64
-
-	if !append {
-		err := fp.Truncate(0)
-		if err != nil {
-			fp.Close()
-			return nil, err
-		}
-	} else {
-		n, err := fp.Seek(0, os.SEEK_END)
-		if err != nil {
-			fp.Close()
-			return nil, err
-		}
-		offset = int64(n)
+	if nn != offset {
+		return 0, fmt.Errorf("bad seek to %v, expected %v in fp=%v", offset, nn, fp)
 	}
 
-	return newFileWriter(fp, offset), nil
+	return io.Copy(fp, reader)
 }
 
 // Stat retrieves the FileInfo for the given path, including the current size
@@ -288,89 +285,4 @@ func (fi fileInfo) ModTime() time.Time {
 // IsDir returns true if the path is a directory.
 func (fi fileInfo) IsDir() bool {
 	return fi.FileInfo.IsDir()
-}
-
-type fileWriter struct {
-	file      *os.File
-	size      int64
-	bw        *bufio.Writer
-	closed    bool
-	committed bool
-	cancelled bool
-}
-
-func newFileWriter(file *os.File, size int64) *fileWriter {
-	return &fileWriter{
-		file: file,
-		size: size,
-		bw:   bufio.NewWriter(file),
-	}
-}
-
-func (fw *fileWriter) Write(p []byte) (int, error) {
-	if fw.closed {
-		return 0, fmt.Errorf("already closed")
-	} else if fw.committed {
-		return 0, fmt.Errorf("already committed")
-	} else if fw.cancelled {
-		return 0, fmt.Errorf("already cancelled")
-	}
-	n, err := fw.bw.Write(p)
-	fw.size += int64(n)
-	return n, err
-}
-
-func (fw *fileWriter) Size() int64 {
-	return fw.size
-}
-
-func (fw *fileWriter) Close() error {
-	if fw.closed {
-		return fmt.Errorf("already closed")
-	}
-
-	if err := fw.bw.Flush(); err != nil {
-		return err
-	}
-
-	if err := fw.file.Sync(); err != nil {
-		return err
-	}
-
-	if err := fw.file.Close(); err != nil {
-		return err
-	}
-	fw.closed = true
-	return nil
-}
-
-func (fw *fileWriter) Cancel() error {
-	if fw.closed {
-		return fmt.Errorf("already closed")
-	}
-
-	fw.cancelled = true
-	fw.file.Close()
-	return os.Remove(fw.file.Name())
-}
-
-func (fw *fileWriter) Commit() error {
-	if fw.closed {
-		return fmt.Errorf("already closed")
-	} else if fw.committed {
-		return fmt.Errorf("already committed")
-	} else if fw.cancelled {
-		return fmt.Errorf("already cancelled")
-	}
-
-	if err := fw.bw.Flush(); err != nil {
-		return err
-	}
-
-	if err := fw.file.Sync(); err != nil {
-		return err
-	}
-
-	fw.committed = true
-	return nil
 }

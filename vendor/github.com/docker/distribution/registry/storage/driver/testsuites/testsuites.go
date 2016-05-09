@@ -282,19 +282,11 @@ func (suite *DriverSuite) TestWriteReadLargeStreams(c *check.C) {
 	var fileSize int64 = 5 * 1024 * 1024 * 1024
 
 	contents := newRandReader(fileSize)
-
-	writer, err := suite.StorageDriver.Writer(suite.ctx, filename, false)
-	c.Assert(err, check.IsNil)
-	written, err := io.Copy(writer, io.TeeReader(contents, checksum))
+	written, err := suite.StorageDriver.WriteStream(suite.ctx, filename, 0, io.TeeReader(contents, checksum))
 	c.Assert(err, check.IsNil)
 	c.Assert(written, check.Equals, fileSize)
 
-	err = writer.Commit()
-	c.Assert(err, check.IsNil)
-	err = writer.Close()
-	c.Assert(err, check.IsNil)
-
-	reader, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+	reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -304,9 +296,9 @@ func (suite *DriverSuite) TestWriteReadLargeStreams(c *check.C) {
 	c.Assert(writtenChecksum.Sum(nil), check.DeepEquals, checksum.Sum(nil))
 }
 
-// TestReaderWithOffset tests that the appropriate data is streamed when
+// TestReadStreamWithOffset tests that the appropriate data is streamed when
 // reading with a given offset.
-func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
+func (suite *DriverSuite) TestReadStreamWithOffset(c *check.C) {
 	filename := randomPath(32)
 	defer suite.deletePath(c, firstPart(filename))
 
@@ -319,7 +311,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 	err := suite.StorageDriver.PutContent(suite.ctx, filename, append(append(contentsChunk1, contentsChunk2...), contentsChunk3...))
 	c.Assert(err, check.IsNil)
 
-	reader, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+	reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -328,7 +320,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 
 	c.Assert(readContents, check.DeepEquals, append(append(contentsChunk1, contentsChunk2...), contentsChunk3...))
 
-	reader, err = suite.StorageDriver.Reader(suite.ctx, filename, chunkSize)
+	reader, err = suite.StorageDriver.ReadStream(suite.ctx, filename, chunkSize)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -337,7 +329,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 
 	c.Assert(readContents, check.DeepEquals, append(contentsChunk2, contentsChunk3...))
 
-	reader, err = suite.StorageDriver.Reader(suite.ctx, filename, chunkSize*2)
+	reader, err = suite.StorageDriver.ReadStream(suite.ctx, filename, chunkSize*2)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -346,7 +338,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 	c.Assert(readContents, check.DeepEquals, contentsChunk3)
 
 	// Ensure we get invalid offest for negative offsets.
-	reader, err = suite.StorageDriver.Reader(suite.ctx, filename, -1)
+	reader, err = suite.StorageDriver.ReadStream(suite.ctx, filename, -1)
 	c.Assert(err, check.FitsTypeOf, storagedriver.InvalidOffsetError{})
 	c.Assert(err.(storagedriver.InvalidOffsetError).Offset, check.Equals, int64(-1))
 	c.Assert(err.(storagedriver.InvalidOffsetError).Path, check.Equals, filename)
@@ -355,7 +347,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 
 	// Read past the end of the content and make sure we get a reader that
 	// returns 0 bytes and io.EOF
-	reader, err = suite.StorageDriver.Reader(suite.ctx, filename, chunkSize*3)
+	reader, err = suite.StorageDriver.ReadStream(suite.ctx, filename, chunkSize*3)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -365,7 +357,7 @@ func (suite *DriverSuite) TestReaderWithOffset(c *check.C) {
 	c.Assert(n, check.Equals, 0)
 
 	// Check the N-1 boundary condition, ensuring we get 1 byte then io.EOF.
-	reader, err = suite.StorageDriver.Reader(suite.ctx, filename, chunkSize*3-1)
+	reader, err = suite.StorageDriver.ReadStream(suite.ctx, filename, chunkSize*3-1)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -403,51 +395,78 @@ func (suite *DriverSuite) testContinueStreamAppend(c *check.C, chunkSize int64) 
 	contentsChunk1 := randomContents(chunkSize)
 	contentsChunk2 := randomContents(chunkSize)
 	contentsChunk3 := randomContents(chunkSize)
+	contentsChunk4 := randomContents(chunkSize)
+	zeroChunk := make([]byte, int64(chunkSize))
 
 	fullContents := append(append(contentsChunk1, contentsChunk2...), contentsChunk3...)
 
-	writer, err := suite.StorageDriver.Writer(suite.ctx, filename, false)
-	c.Assert(err, check.IsNil)
-	nn, err := io.Copy(writer, bytes.NewReader(contentsChunk1))
+	nn, err := suite.StorageDriver.WriteStream(suite.ctx, filename, 0, bytes.NewReader(contentsChunk1))
 	c.Assert(err, check.IsNil)
 	c.Assert(nn, check.Equals, int64(len(contentsChunk1)))
 
-	err = writer.Close()
+	fi, err := suite.StorageDriver.Stat(suite.ctx, filename)
 	c.Assert(err, check.IsNil)
+	c.Assert(fi, check.NotNil)
+	c.Assert(fi.Size(), check.Equals, int64(len(contentsChunk1)))
 
-	curSize := writer.Size()
-	c.Assert(curSize, check.Equals, int64(len(contentsChunk1)))
-
-	writer, err = suite.StorageDriver.Writer(suite.ctx, filename, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(writer.Size(), check.Equals, curSize)
-
-	nn, err = io.Copy(writer, bytes.NewReader(contentsChunk2))
+	nn, err = suite.StorageDriver.WriteStream(suite.ctx, filename, fi.Size(), bytes.NewReader(contentsChunk2))
 	c.Assert(err, check.IsNil)
 	c.Assert(nn, check.Equals, int64(len(contentsChunk2)))
 
-	err = writer.Close()
+	fi, err = suite.StorageDriver.Stat(suite.ctx, filename)
 	c.Assert(err, check.IsNil)
+	c.Assert(fi, check.NotNil)
+	c.Assert(fi.Size(), check.Equals, 2*chunkSize)
 
-	curSize = writer.Size()
-	c.Assert(curSize, check.Equals, 2*chunkSize)
+	// Test re-writing the last chunk
+	nn, err = suite.StorageDriver.WriteStream(suite.ctx, filename, fi.Size()-chunkSize, bytes.NewReader(contentsChunk2))
+	c.Assert(err, check.IsNil)
+	c.Assert(nn, check.Equals, int64(len(contentsChunk2)))
 
-	writer, err = suite.StorageDriver.Writer(suite.ctx, filename, true)
+	fi, err = suite.StorageDriver.Stat(suite.ctx, filename)
 	c.Assert(err, check.IsNil)
-	c.Assert(writer.Size(), check.Equals, curSize)
+	c.Assert(fi, check.NotNil)
+	c.Assert(fi.Size(), check.Equals, 2*chunkSize)
 
-	nn, err = io.Copy(writer, bytes.NewReader(fullContents[curSize:]))
+	nn, err = suite.StorageDriver.WriteStream(suite.ctx, filename, fi.Size(), bytes.NewReader(fullContents[fi.Size():]))
 	c.Assert(err, check.IsNil)
-	c.Assert(nn, check.Equals, int64(len(fullContents[curSize:])))
-
-	err = writer.Commit()
-	c.Assert(err, check.IsNil)
-	err = writer.Close()
-	c.Assert(err, check.IsNil)
+	c.Assert(nn, check.Equals, int64(len(fullContents[fi.Size():])))
 
 	received, err := suite.StorageDriver.GetContent(suite.ctx, filename)
 	c.Assert(err, check.IsNil)
 	c.Assert(received, check.DeepEquals, fullContents)
+
+	// Writing past size of file extends file (no offset error). We would like
+	// to write chunk 4 one chunk length past chunk 3. It should be successful
+	// and the resulting file will be 5 chunks long, with a chunk of all
+	// zeros.
+
+	fullContents = append(fullContents, zeroChunk...)
+	fullContents = append(fullContents, contentsChunk4...)
+
+	nn, err = suite.StorageDriver.WriteStream(suite.ctx, filename, int64(len(fullContents))-chunkSize, bytes.NewReader(contentsChunk4))
+	c.Assert(err, check.IsNil)
+	c.Assert(nn, check.Equals, chunkSize)
+
+	fi, err = suite.StorageDriver.Stat(suite.ctx, filename)
+	c.Assert(err, check.IsNil)
+	c.Assert(fi, check.NotNil)
+	c.Assert(fi.Size(), check.Equals, int64(len(fullContents)))
+
+	received, err = suite.StorageDriver.GetContent(suite.ctx, filename)
+	c.Assert(err, check.IsNil)
+	c.Assert(len(received), check.Equals, len(fullContents))
+	c.Assert(received[chunkSize*3:chunkSize*4], check.DeepEquals, zeroChunk)
+	c.Assert(received[chunkSize*4:chunkSize*5], check.DeepEquals, contentsChunk4)
+	c.Assert(received, check.DeepEquals, fullContents)
+
+	// Ensure that negative offsets return correct error.
+	nn, err = suite.StorageDriver.WriteStream(suite.ctx, filename, -1, bytes.NewReader(zeroChunk))
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, storagedriver.InvalidOffsetError{})
+	c.Assert(err.(storagedriver.InvalidOffsetError).Path, check.Equals, filename)
+	c.Assert(err.(storagedriver.InvalidOffsetError).Offset, check.Equals, int64(-1))
+	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
 }
 
 // TestReadNonexistentStream tests that reading a stream for a nonexistent path
@@ -455,12 +474,12 @@ func (suite *DriverSuite) testContinueStreamAppend(c *check.C, chunkSize int64) 
 func (suite *DriverSuite) TestReadNonexistentStream(c *check.C) {
 	filename := randomPath(32)
 
-	_, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+	_, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, storagedriver.PathNotFoundError{})
 	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
 
-	_, err = suite.StorageDriver.Reader(suite.ctx, filename, 64)
+	_, err = suite.StorageDriver.ReadStream(suite.ctx, filename, 64)
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, storagedriver.PathNotFoundError{})
 	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
@@ -781,7 +800,7 @@ func (suite *DriverSuite) TestStatCall(c *check.C) {
 
 // TestPutContentMultipleTimes checks that if storage driver can overwrite the content
 // in the subsequent puts. Validates that PutContent does not have to work
-// with an offset like Writer does and overwrites the file entirely
+// with an offset like WriteStream does and overwrites the file entirely
 // rather than writing the data to the [0,len(data)) of the file.
 func (suite *DriverSuite) TestPutContentMultipleTimes(c *check.C) {
 	filename := randomPath(32)
@@ -823,7 +842,7 @@ func (suite *DriverSuite) TestConcurrentStreamReads(c *check.C) {
 	readContents := func() {
 		defer wg.Done()
 		offset := rand.Int63n(int64(len(contents)))
-		reader, err := suite.StorageDriver.Reader(suite.ctx, filename, offset)
+		reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, offset)
 		c.Assert(err, check.IsNil)
 
 		readContents, err := ioutil.ReadAll(reader)
@@ -839,7 +858,7 @@ func (suite *DriverSuite) TestConcurrentStreamReads(c *check.C) {
 }
 
 // TestConcurrentFileStreams checks that multiple *os.File objects can be passed
-// in to Writer concurrently without hanging.
+// in to WriteStream concurrently without hanging.
 func (suite *DriverSuite) TestConcurrentFileStreams(c *check.C) {
 	numStreams := 32
 
@@ -863,54 +882,53 @@ func (suite *DriverSuite) TestConcurrentFileStreams(c *check.C) {
 	wg.Wait()
 }
 
-// TODO (brianbland): evaluate the relevancy of this test
 // TestEventualConsistency checks that if stat says that a file is a certain size, then
 // you can freely read from the file (this is the only guarantee that the driver needs to provide)
-// func (suite *DriverSuite) TestEventualConsistency(c *check.C) {
-// 	if testing.Short() {
-// 		c.Skip("Skipping test in short mode")
-// 	}
-//
-// 	filename := randomPath(32)
-// 	defer suite.deletePath(c, firstPart(filename))
-//
-// 	var offset int64
-// 	var misswrites int
-// 	var chunkSize int64 = 32
-//
-// 	for i := 0; i < 1024; i++ {
-// 		contents := randomContents(chunkSize)
-// 		read, err := suite.StorageDriver.Writer(suite.ctx, filename, offset, bytes.NewReader(contents))
-// 		c.Assert(err, check.IsNil)
-//
-// 		fi, err := suite.StorageDriver.Stat(suite.ctx, filename)
-// 		c.Assert(err, check.IsNil)
-//
-// 		// We are most concerned with being able to read data as soon as Stat declares
-// 		// it is uploaded. This is the strongest guarantee that some drivers (that guarantee
-// 		// at best eventual consistency) absolutely need to provide.
-// 		if fi.Size() == offset+chunkSize {
-// 			reader, err := suite.StorageDriver.Reader(suite.ctx, filename, offset)
-// 			c.Assert(err, check.IsNil)
-//
-// 			readContents, err := ioutil.ReadAll(reader)
-// 			c.Assert(err, check.IsNil)
-//
-// 			c.Assert(readContents, check.DeepEquals, contents)
-//
-// 			reader.Close()
-// 			offset += read
-// 		} else {
-// 			misswrites++
-// 		}
-// 	}
-//
-// 	if misswrites > 0 {
-//		c.Log("There were " + string(misswrites) + " occurrences of a write not being instantly available.")
-// 	}
-//
-// 	c.Assert(misswrites, check.Not(check.Equals), 1024)
-// }
+func (suite *DriverSuite) TestEventualConsistency(c *check.C) {
+	if testing.Short() {
+		c.Skip("Skipping test in short mode")
+	}
+
+	filename := randomPath(32)
+	defer suite.deletePath(c, firstPart(filename))
+
+	var offset int64
+	var misswrites int
+	var chunkSize int64 = 32
+
+	for i := 0; i < 1024; i++ {
+		contents := randomContents(chunkSize)
+		read, err := suite.StorageDriver.WriteStream(suite.ctx, filename, offset, bytes.NewReader(contents))
+		c.Assert(err, check.IsNil)
+
+		fi, err := suite.StorageDriver.Stat(suite.ctx, filename)
+		c.Assert(err, check.IsNil)
+
+		// We are most concerned with being able to read data as soon as Stat declares
+		// it is uploaded. This is the strongest guarantee that some drivers (that guarantee
+		// at best eventual consistency) absolutely need to provide.
+		if fi.Size() == offset+chunkSize {
+			reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, offset)
+			c.Assert(err, check.IsNil)
+
+			readContents, err := ioutil.ReadAll(reader)
+			c.Assert(err, check.IsNil)
+
+			c.Assert(readContents, check.DeepEquals, contents)
+
+			reader.Close()
+			offset += read
+		} else {
+			misswrites++
+		}
+	}
+
+	if misswrites > 0 {
+		c.Log("There were " + string(misswrites) + " occurrences of a write not being instantly available.")
+	}
+
+	c.Assert(misswrites, check.Not(check.Equals), 1024)
+}
 
 // BenchmarkPutGetEmptyFiles benchmarks PutContent/GetContent for 0B files
 func (suite *DriverSuite) BenchmarkPutGetEmptyFiles(c *check.C) {
@@ -950,22 +968,22 @@ func (suite *DriverSuite) benchmarkPutGetFiles(c *check.C, size int64) {
 	}
 }
 
-// BenchmarkStreamEmptyFiles benchmarks Writer/Reader for 0B files
+// BenchmarkStreamEmptyFiles benchmarks WriteStream/ReadStream for 0B files
 func (suite *DriverSuite) BenchmarkStreamEmptyFiles(c *check.C) {
 	suite.benchmarkStreamFiles(c, 0)
 }
 
-// BenchmarkStream1KBFiles benchmarks Writer/Reader for 1KB files
+// BenchmarkStream1KBFiles benchmarks WriteStream/ReadStream for 1KB files
 func (suite *DriverSuite) BenchmarkStream1KBFiles(c *check.C) {
 	suite.benchmarkStreamFiles(c, 1024)
 }
 
-// BenchmarkStream1MBFiles benchmarks Writer/Reader for 1MB files
+// BenchmarkStream1MBFiles benchmarks WriteStream/ReadStream for 1MB files
 func (suite *DriverSuite) BenchmarkStream1MBFiles(c *check.C) {
 	suite.benchmarkStreamFiles(c, 1024*1024)
 }
 
-// BenchmarkStream1GBFiles benchmarks Writer/Reader for 1GB files
+// BenchmarkStream1GBFiles benchmarks WriteStream/ReadStream for 1GB files
 func (suite *DriverSuite) BenchmarkStream1GBFiles(c *check.C) {
 	suite.benchmarkStreamFiles(c, 1024*1024*1024)
 }
@@ -980,18 +998,11 @@ func (suite *DriverSuite) benchmarkStreamFiles(c *check.C, size int64) {
 
 	for i := 0; i < c.N; i++ {
 		filename := path.Join(parentDir, randomPath(32))
-		writer, err := suite.StorageDriver.Writer(suite.ctx, filename, false)
-		c.Assert(err, check.IsNil)
-		written, err := io.Copy(writer, bytes.NewReader(randomContents(size)))
+		written, err := suite.StorageDriver.WriteStream(suite.ctx, filename, 0, bytes.NewReader(randomContents(size)))
 		c.Assert(err, check.IsNil)
 		c.Assert(written, check.Equals, size)
 
-		err = writer.Commit()
-		c.Assert(err, check.IsNil)
-		err = writer.Close()
-		c.Assert(err, check.IsNil)
-
-		rc, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+		rc, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 		c.Assert(err, check.IsNil)
 		rc.Close()
 	}
@@ -1072,18 +1083,11 @@ func (suite *DriverSuite) testFileStreams(c *check.C, size int64) {
 	tf.Sync()
 	tf.Seek(0, os.SEEK_SET)
 
-	writer, err := suite.StorageDriver.Writer(suite.ctx, filename, false)
-	c.Assert(err, check.IsNil)
-	nn, err := io.Copy(writer, tf)
+	nn, err := suite.StorageDriver.WriteStream(suite.ctx, filename, 0, tf)
 	c.Assert(err, check.IsNil)
 	c.Assert(nn, check.Equals, size)
 
-	err = writer.Commit()
-	c.Assert(err, check.IsNil)
-	err = writer.Close()
-	c.Assert(err, check.IsNil)
-
-	reader, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+	reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 
@@ -1108,18 +1112,11 @@ func (suite *DriverSuite) writeReadCompare(c *check.C, filename string, contents
 func (suite *DriverSuite) writeReadCompareStreams(c *check.C, filename string, contents []byte) {
 	defer suite.deletePath(c, firstPart(filename))
 
-	writer, err := suite.StorageDriver.Writer(suite.ctx, filename, false)
-	c.Assert(err, check.IsNil)
-	nn, err := io.Copy(writer, bytes.NewReader(contents))
+	nn, err := suite.StorageDriver.WriteStream(suite.ctx, filename, 0, bytes.NewReader(contents))
 	c.Assert(err, check.IsNil)
 	c.Assert(nn, check.Equals, int64(len(contents)))
 
-	err = writer.Commit()
-	c.Assert(err, check.IsNil)
-	err = writer.Close()
-	c.Assert(err, check.IsNil)
-
-	reader, err := suite.StorageDriver.Reader(suite.ctx, filename, 0)
+	reader, err := suite.StorageDriver.ReadStream(suite.ctx, filename, 0)
 	c.Assert(err, check.IsNil)
 	defer reader.Close()
 

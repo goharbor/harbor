@@ -19,7 +19,7 @@ Users interact with a registry by using docker push and pull commands.
 
   > Example: `docker pull registry-1.docker.io/distribution/registry:2.1`.
 
-Storage itself is delegated to drivers. The default storage driver is the local posix filesystem, which is suitable for development or small deployments. Additional cloud-based storage drivers like S3, Microsoft Azure, OpenStack Swift and Aliyun OSS are also supported. People looking into using other storage backends may do so by writing their own driver implementing the [Storage API](storagedrivers.md).
+Storage itself is delegated to drivers. The default storage driver is the local posix filesystem, which is suitable for development or small deployments. Additional cloud-based storage drivers like S3, Microsoft Azure, Ceph Rados, OpenStack Swift and Aliyun OSS are also supported. People looking into using other storage backends may do so by writing their own driver implementing the [Storage API](storagedrivers.md).
 
 Since securing access to your hosted images is paramount, the Registry natively supports TLS and basic authentication.
 

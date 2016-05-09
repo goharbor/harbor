@@ -117,7 +117,6 @@ instances. Configuring different redis instances will work (at the time
 of writing), but will not be optimal if the instances are not shared, causing
 more requests to be directed to the backend.
 
-#### Important/Required HTTP-Headers
 Getting the headers correct is very important. For all responses to any
 request under the "/v2/" url space, the `Docker-Distribution-API-Version`
 header should be set to the value "registry/2.0", even for a 4xx response.

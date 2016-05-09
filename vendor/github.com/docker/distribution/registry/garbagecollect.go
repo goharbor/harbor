@@ -17,7 +17,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func markAndSweep(ctx context.Context, storageDriver driver.StorageDriver) error {
+func markAndSweep(storageDriver driver.StorageDriver) error {
+	ctx := context.Background()
+
 	// Construct a registry
 	registry, err := storage.NewRegistry(ctx, storageDriver)
 	if err != nil {
@@ -139,14 +141,7 @@ var GCCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		ctx := context.Background()
-		ctx, err = configureLogging(ctx, config)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "unable to configure logging with config: %s", err)
-			os.Exit(1)
-		}
-
-		err = markAndSweep(ctx, driver)
+		err = markAndSweep(driver)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to garbage collect: %v", err)
 			os.Exit(1)

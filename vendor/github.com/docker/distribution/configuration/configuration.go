@@ -73,10 +73,6 @@ type Configuration struct {
 		// Secret specifies the secret key which HMAC tokens are created with.
 		Secret string `yaml:"secret,omitempty"`
 
-		// RelativeURLs specifies that relative URLs should be returned in
-		// Location headers
-		RelativeURLs bool `yaml:"relativeurls,omitempty"`
-
 		// TLS instructs the http server to listen with a TLS configuration.
 		// This only support simple tls configuration with a cert and key.
 		// Mostly, this is useful for testing situations or simple deployments

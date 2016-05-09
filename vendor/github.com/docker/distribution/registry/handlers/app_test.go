@@ -160,7 +160,7 @@ func TestNewApp(t *testing.T) {
 	app := NewApp(ctx, &config)
 
 	server := httptest.NewServer(app)
-	builder, err := v2.NewURLBuilderFromString(server.URL, false)
+	builder, err := v2.NewURLBuilderFromString(server.URL)
 	if err != nil {
 		t.Fatalf("error creating urlbuilder: %v", err)
 	}

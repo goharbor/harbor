@@ -107,8 +107,7 @@ const (
 	fieldTypeBit
 )
 const (
-	fieldTypeJSON byte = iota + 0xf5
-	fieldTypeNewDecimal
+	fieldTypeNewDecimal byte = iota + 0xf6
 	fieldTypeEnum
 	fieldTypeSet
 	fieldTypeTinyBLOB

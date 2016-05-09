@@ -68,9 +68,6 @@ type Event struct {
 
 		// URL provides a direct link to the content.
 		URL string `json:"url,omitempty"`
-
-		// Tag provides the tag
-		Tag string `json:"tag,omitempty"`
 	} `json:"target,omitempty"`
 
 	// Request covers the request that generated the event.

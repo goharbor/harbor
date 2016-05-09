@@ -161,7 +161,7 @@ func TestNoDeletionNoEffect(t *testing.T) {
 	}
 
 	// Run GC
-	err = markAndSweep(context.Background(), inmemoryDriver)
+	err = markAndSweep(inmemoryDriver)
 	if err != nil {
 		t.Fatalf("Failed mark and sweep: %v", err)
 	}
@@ -193,7 +193,7 @@ func TestDeletionHasEffect(t *testing.T) {
 	manifests.Delete(ctx, image3.manifestDigest)
 
 	// Run GC
-	err = markAndSweep(context.Background(), inmemoryDriver)
+	err = markAndSweep(inmemoryDriver)
 	if err != nil {
 		t.Fatalf("Failed mark and sweep: %v", err)
 	}
@@ -327,7 +327,7 @@ func TestOrphanBlobDeleted(t *testing.T) {
 	uploadRandomSchema2Image(t, repo)
 
 	// Run GC
-	err = markAndSweep(context.Background(), inmemoryDriver)
+	err = markAndSweep(inmemoryDriver)
 	if err != nil {
 		t.Fatalf("Failed mark and sweep: %v", err)
 	}

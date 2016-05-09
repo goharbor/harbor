@@ -179,7 +179,7 @@ func (lbs *linkedBlobStore) Create(ctx context.Context, options ...distribution.
 		return nil, err
 	}
 
-	return lbs.newBlobUpload(ctx, uuid, path, startedAt, false)
+	return lbs.newBlobUpload(ctx, uuid, path, startedAt)
 }
 
 func (lbs *linkedBlobStore) Resume(ctx context.Context, id string) (distribution.BlobWriter, error) {
@@ -218,7 +218,7 @@ func (lbs *linkedBlobStore) Resume(ctx context.Context, id string) (distribution
 		return nil, err
 	}
 
-	return lbs.newBlobUpload(ctx, id, path, startedAt, true)
+	return lbs.newBlobUpload(ctx, id, path, startedAt)
 }
 
 func (lbs *linkedBlobStore) Delete(ctx context.Context, dgst digest.Digest) error {
@@ -312,21 +312,18 @@ func (lbs *linkedBlobStore) mount(ctx context.Context, sourceRepo reference.Name
 }
 
 // newBlobUpload allocates a new upload controller with the given state.
-func (lbs *linkedBlobStore) newBlobUpload(ctx context.Context, uuid, path string, startedAt time.Time, append bool) (distribution.BlobWriter, error) {
-	fw, err := lbs.driver.Writer(ctx, path, append)
+func (lbs *linkedBlobStore) newBlobUpload(ctx context.Context, uuid, path string, startedAt time.Time) (distribution.BlobWriter, error) {
+	fw, err := newFileWriter(ctx, lbs.driver, path)
 	if err != nil {
 		return nil, err
 	}
 
 	bw := &blobWriter{
-		ctx:        ctx,
-		blobStore:  lbs,
-		id:         uuid,
-		startedAt:  startedAt,
-		digester:   digest.Canonical.New(),
-		fileWriter: fw,
-		driver:     lbs.driver,
-		path:       path,
+		blobStore:              lbs,
+		id:                     uuid,
+		startedAt:              startedAt,
+		digester:               digest.Canonical.New(),
+		fileWriter:             *fw,
 		resumableDigestEnabled: lbs.resumableDigestEnabled,
 	}
 
@@ -384,8 +381,8 @@ var _ distribution.BlobDescriptorService = &linkedBlobStatter{}
 
 func (lbs *linkedBlobStatter) Stat(ctx context.Context, dgst digest.Digest) (distribution.Descriptor, error) {
 	var (
-		found  bool
-		target digest.Digest
+		resolveErr error
+		target     digest.Digest
 	)
 
 	// try the many link path functions until we get success or an error that
@@ -395,20 +392,19 @@ func (lbs *linkedBlobStatter) Stat(ctx context.Context, dgst digest.Digest) (dis
 		target, err = lbs.resolveWithLinkFunc(ctx, dgst, linkPathFn)
 
 		if err == nil {
-			found = true
 			break // success!
 		}
 
 		switch err := err.(type) {
 		case driver.PathNotFoundError:
-			// do nothing, just move to the next linkPathFn
+			resolveErr = distribution.ErrBlobUnknown // move to the next linkPathFn, saving the error
 		default:
 			return distribution.Descriptor{}, err
 		}
 	}
 
-	if !found {
-		return distribution.Descriptor{}, distribution.ErrBlobUnknown
+	if resolveErr != nil {
+		return distribution.Descriptor{}, resolveErr
 	}
 
 	if target != dgst {

@@ -89,17 +89,6 @@ image manifest based on the Content-Type returned in the HTTP response.
             The os field specifies the operating system, for example
             `linux` or `windows`.
 
-        - **`os.version`** *string*
-
-            The optional os.version field specifies the operating system version,
-            for example `10.0.10586`.
-
-        - **`os.features`** *array*
-
-            The optional os.features field specifies an array of strings,
-            each listing a required OS feature (for example on Windows
-            `win32k`).
-
         - **`variant`** *string*
 
             The optional variant field specifies a variant of the CPU, for

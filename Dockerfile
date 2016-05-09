@@ -1,21 +1,19 @@
-FROM testregistry.dataman.io/golang:1.5.1
-
+FROM index.shurenyun.com/zqdou/ubuntu-go:1.5.1
 MAINTAINER jiangd@vmware.com
 
 RUN apt-get update \
     && apt-get install -y libldap2-dev \
     && rm -r /var/lib/apt/lists/*
 
+ENV GOPATH /go
+RUN go get github.com/go-sql-driver/mysql 
 COPY . /go/src/github.com/vmware/harbor
 #golang.org is blocked in China
-COPY ./vendor/golang.org /go/src/golang.org
+#COPY ./vendor/golang.org /go/src/golang.org
 WORKDIR /go/src/github.com/vmware/harbor
 
 ENV GO15VENDOREXPERIMENT 1
-RUN go get -d github.com/docker/distribution \
-    && go get -d github.com/docker/libtrust \
-    && go get -d github.com/go-sql-driver/mysql \
-    && go install -v -a
+RUN go build -v
 
 ENV MYSQL_USR root \
     MYSQL_PWD root \

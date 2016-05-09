@@ -43,6 +43,7 @@ var headerConfig = http.Header{
 // 200 OK response.
 func TestCheckAPI(t *testing.T) {
 	env := newTestEnv(t, false)
+
 	baseURL, err := env.builder.BuildBaseURL()
 	if err != nil {
 		t.Fatalf("unexpected error building base url: %v", err)
@@ -293,79 +294,6 @@ func TestBlobDelete(t *testing.T) {
 	testBlobDelete(t, env, args)
 }
 
-func TestRelativeURL(t *testing.T) {
-	config := configuration.Configuration{
-		Storage: configuration.Storage{
-			"inmemory": configuration.Parameters{},
-		},
-	}
-	config.HTTP.Headers = headerConfig
-	config.HTTP.RelativeURLs = false
-	env := newTestEnvWithConfig(t, &config)
-	ref, _ := reference.WithName("foo/bar")
-	uploadURLBaseAbs, _ := startPushLayer(t, env, ref)
-
-	u, err := url.Parse(uploadURLBaseAbs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !u.IsAbs() {
-		t.Fatal("Relative URL returned from blob upload chunk with non-relative configuration")
-	}
-
-	args := makeBlobArgs(t)
-	resp, err := doPushLayer(t, env.builder, ref, args.layerDigest, uploadURLBaseAbs, args.layerFile)
-	if err != nil {
-		t.Fatalf("unexpected error doing layer push relative url: %v", err)
-	}
-	checkResponse(t, "relativeurl blob upload", resp, http.StatusCreated)
-	u, err = url.Parse(resp.Header.Get("Location"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !u.IsAbs() {
-		t.Fatal("Relative URL returned from blob upload with non-relative configuration")
-	}
-
-	config.HTTP.RelativeURLs = true
-	args = makeBlobArgs(t)
-	uploadURLBaseRelative, _ := startPushLayer(t, env, ref)
-	u, err = url.Parse(uploadURLBaseRelative)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if u.IsAbs() {
-		t.Fatal("Absolute URL returned from blob upload chunk with relative configuration")
-	}
-
-	// Start a new upload in absolute mode to get a valid base URL
-	config.HTTP.RelativeURLs = false
-	uploadURLBaseAbs, _ = startPushLayer(t, env, ref)
-	u, err = url.Parse(uploadURLBaseAbs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !u.IsAbs() {
-		t.Fatal("Relative URL returned from blob upload chunk with non-relative configuration")
-	}
-
-	// Complete upload with relative URLs enabled to ensure the final location is relative
-	config.HTTP.RelativeURLs = true
-	resp, err = doPushLayer(t, env.builder, ref, args.layerDigest, uploadURLBaseAbs, args.layerFile)
-	if err != nil {
-		t.Fatalf("unexpected error doing layer push relative url: %v", err)
-	}
-
-	checkResponse(t, "relativeurl blob upload", resp, http.StatusCreated)
-	u, err = url.Parse(resp.Header.Get("Location"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if u.IsAbs() {
-		t.Fatal("Relative URL returned from blob upload with non-relative configuration")
-	}
-}
-
 func TestBlobDeleteDisabled(t *testing.T) {
 	deleteEnabled := false
 	env := newTestEnv(t, deleteEnabled)
@@ -421,7 +349,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 
 	// ------------------------------------------
 	// Start an upload, check the status then cancel
-	uploadURLBase, uploadUUID := startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID := startPushLayer(t, env.builder, imageName)
 
 	// A status check should work
 	resp, err = http.Get(uploadURLBase)
@@ -456,7 +384,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 
 	// -----------------------------------------
 	// Do layer push with an empty body and different digest
-	uploadURLBase, uploadUUID = startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID = startPushLayer(t, env.builder, imageName)
 	resp, err = doPushLayer(t, env.builder, imageName, layerDigest, uploadURLBase, bytes.NewReader([]byte{}))
 	if err != nil {
 		t.Fatalf("unexpected error doing bad layer push: %v", err)
@@ -472,7 +400,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 		t.Fatalf("unexpected error digesting empty buffer: %v", err)
 	}
 
-	uploadURLBase, uploadUUID = startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID = startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, zeroDigest, uploadURLBase, bytes.NewReader([]byte{}))
 
 	// -----------------------------------------
@@ -485,7 +413,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 		t.Fatalf("unexpected error digesting empty tar: %v", err)
 	}
 
-	uploadURLBase, uploadUUID = startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID = startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, emptyDigest, uploadURLBase, bytes.NewReader(emptyTar))
 
 	// ------------------------------------------
@@ -493,7 +421,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 	layerLength, _ := layerFile.Seek(0, os.SEEK_END)
 	layerFile.Seek(0, os.SEEK_SET)
 
-	uploadURLBase, uploadUUID = startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID = startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, layerDigest, uploadURLBase, layerFile)
 
 	// ------------------------------------------
@@ -507,7 +435,7 @@ func testBlobAPI(t *testing.T, env *testEnv, args blobArgs) *testEnv {
 	canonicalDigest := canonicalDigester.Digest()
 
 	layerFile.Seek(0, 0)
-	uploadURLBase, uploadUUID = startPushLayer(t, env, imageName)
+	uploadURLBase, uploadUUID = startPushLayer(t, env.builder, imageName)
 	uploadURLBase, dgst := pushChunk(t, env.builder, imageName, uploadURLBase, layerFile, layerLength)
 	finishUpload(t, env.builder, imageName, uploadURLBase, dgst)
 
@@ -657,7 +585,7 @@ func testBlobDelete(t *testing.T, env *testEnv, args blobArgs) {
 	// Reupload previously deleted blob
 	layerFile.Seek(0, os.SEEK_SET)
 
-	uploadURLBase, _ := startPushLayer(t, env, imageName)
+	uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, layerDigest, uploadURLBase, layerFile)
 
 	layerFile.Seek(0, os.SEEK_SET)
@@ -697,7 +625,7 @@ func TestDeleteDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error building blob URL")
 	}
-	uploadURLBase, _ := startPushLayer(t, env, imageName)
+	uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, layerDigest, uploadURLBase, layerFile)
 
 	resp, err := httpDelete(layerURL)
@@ -723,7 +651,7 @@ func TestDeleteReadOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error building blob URL")
 	}
-	uploadURLBase, _ := startPushLayer(t, env, imageName)
+	uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, layerDigest, uploadURLBase, layerFile)
 
 	env.app.readOnly = true
@@ -943,7 +871,7 @@ func testManifestAPISchema1(t *testing.T, env *testEnv, imageName reference.Name
 		expectedLayers[dgst] = rs
 		unsignedManifest.FSLayers[i].BlobSum = dgst
 
-		uploadURLBase, _ := startPushLayer(t, env, imageName)
+		uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 		pushLayer(t, env.builder, imageName, dgst, uploadURLBase, rs)
 	}
 
@@ -1249,7 +1177,7 @@ func testManifestAPISchema2(t *testing.T, env *testEnv, imageName reference.Name
 	}`)
 	sampleConfigDigest := digest.FromBytes(sampleConfig)
 
-	uploadURLBase, _ := startPushLayer(t, env, imageName)
+	uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 	pushLayer(t, env.builder, imageName, sampleConfigDigest, uploadURLBase, bytes.NewReader(sampleConfig))
 	manifest.Config.Digest = sampleConfigDigest
 	manifest.Config.Size = int64(len(sampleConfig))
@@ -1282,7 +1210,7 @@ func testManifestAPISchema2(t *testing.T, env *testEnv, imageName reference.Name
 		expectedLayers[dgst] = rs
 		manifest.Layers[i].Digest = dgst
 
-		uploadURLBase, _ := startPushLayer(t, env, imageName)
+		uploadURLBase, _ := startPushLayer(t, env.builder, imageName)
 		pushLayer(t, env.builder, imageName, dgst, uploadURLBase, rs)
 	}
 
@@ -1914,7 +1842,7 @@ func newTestEnvWithConfig(t *testing.T, config *configuration.Configuration) *te
 
 	app := NewApp(ctx, config)
 	server := httptest.NewServer(handlers.CombinedLoggingHandler(os.Stderr, app))
-	builder, err := v2.NewURLBuilderFromString(server.URL+config.HTTP.Prefix, false)
+	builder, err := v2.NewURLBuilderFromString(server.URL + config.HTTP.Prefix)
 
 	if err != nil {
 		t.Fatalf("error creating url builder: %v", err)
@@ -1976,33 +1904,21 @@ func putManifest(t *testing.T, msg, url, contentType string, v interface{}) *htt
 	return resp
 }
 
-func startPushLayer(t *testing.T, env *testEnv, name reference.Named) (location string, uuid string) {
-	layerUploadURL, err := env.builder.BuildBlobUploadURL(name)
+func startPushLayer(t *testing.T, ub *v2.URLBuilder, name reference.Named) (location string, uuid string) {
+	layerUploadURL, err := ub.BuildBlobUploadURL(name)
 	if err != nil {
 		t.Fatalf("unexpected error building layer upload url: %v", err)
 	}
 
-	u, err := url.Parse(layerUploadURL)
-	if err != nil {
-		t.Fatalf("error parsing layer upload URL: %v", err)
-	}
-
-	base, err := url.Parse(env.server.URL)
-	if err != nil {
-		t.Fatalf("error parsing server URL: %v", err)
-	}
-
-	layerUploadURL = base.ResolveReference(u).String()
 	resp, err := http.Post(layerUploadURL, "", nil)
 	if err != nil {
 		t.Fatalf("unexpected error starting layer push: %v", err)
 	}
-
 	defer resp.Body.Close()
 
 	checkResponse(t, fmt.Sprintf("pushing starting layer push %v", name.String()), resp, http.StatusAccepted)
 
-	u, err = url.Parse(resp.Header.Get("Location"))
+	u, err := url.Parse(resp.Header.Get("Location"))
 	if err != nil {
 		t.Fatalf("error parsing location header: %v", err)
 	}
@@ -2027,6 +1943,7 @@ func doPushLayer(t *testing.T, ub *v2.URLBuilder, name reference.Named, dgst dig
 
 	u.RawQuery = url.Values{
 		"_state": u.Query()["_state"],
+
 		"digest": []string{dgst.String()},
 	}.Encode()
 
@@ -2294,7 +2211,8 @@ func createRepository(env *testEnv, t *testing.T, imageName string, tag string) 
 
 		expectedLayers[dgst] = rs
 		unsignedManifest.FSLayers[i].BlobSum = dgst
-		uploadURLBase, _ := startPushLayer(t, env, imageNameRef)
+
+		uploadURLBase, _ := startPushLayer(t, env.builder, imageNameRef)
 		pushLayer(t, env.builder, imageNameRef, dgst, uploadURLBase, rs)
 	}
 

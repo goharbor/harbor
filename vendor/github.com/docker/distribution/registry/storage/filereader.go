@@ -119,7 +119,7 @@ func (fr *fileReader) reader() (io.Reader, error) {
 	}
 
 	// If we don't have a reader, open one up.
-	rc, err := fr.driver.Reader(fr.ctx, fr.path, fr.offset)
+	rc, err := fr.driver.ReadStream(fr.ctx, fr.path, fr.offset)
 	if err != nil {
 		switch err := err.(type) {
 		case storagedriver.PathNotFoundError:

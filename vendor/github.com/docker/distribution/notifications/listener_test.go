@@ -44,7 +44,7 @@ func TestListener(t *testing.T) {
 		"manifest:delete": 1,
 		"layer:push":      2,
 		"layer:pull":      2,
-		"layer:delete":    2,
+		"layer:delete":    2, // deletes not supported for now
 	}
 
 	if !reflect.DeepEqual(tl.ops, expectedOps) {
@@ -57,13 +57,13 @@ type testListener struct {
 	ops map[string]int
 }
 
-func (tl *testListener) ManifestPushed(repo reference.Named, m distribution.Manifest, options ...distribution.ManifestServiceOption) error {
+func (tl *testListener) ManifestPushed(repo reference.Named, m distribution.Manifest) error {
 	tl.ops["manifest:push"]++
 
 	return nil
 }
 
-func (tl *testListener) ManifestPulled(repo reference.Named, m distribution.Manifest, options ...distribution.ManifestServiceOption) error {
+func (tl *testListener) ManifestPulled(repo reference.Named, m distribution.Manifest) error {
 	tl.ops["manifest:pull"]++
 	return nil
 }

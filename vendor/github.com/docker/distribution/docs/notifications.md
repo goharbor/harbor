@@ -65,63 +65,44 @@ Events have a well-defined JSON structure and are sent as the body of
 notification requests. One or more events are sent in a structure called an
 envelope. Each event has a unique id that can be used to uniquely identify incoming
 requests, if required. Along with that, an _action_ is provided with a
-_target_, identifying the object mutated during the event.
+_target, identifying the object mutated during the event.
 
-The fields available in an `event` are described below.
+The fields available in an event are described in detail in the
+[godoc](http://godoc.org/github.com/docker/distribution/notifications#Event).
 
-Field | Type | Description
------ | ----- | -------------
-id | string |ID provides a unique identifier for the event.
-timestamp | Time | Timestamp is the time at which the event occurred.
-action |  string |  Action indicates what action encompasses the provided event.
-target | distribution.Descriptor | Target uniquely describes the target of the event.
-length | int | Length in bytes of content. Same as Size field in Descriptor.
-repository | string | Repository identifies the named repository.
-fromRepository | string |  FromRepository identifies the named repository which a blob was mounted from if appropriate.
-url | string | URL provides a direct link to the content.
-tag | string | Tag identifies a tag name in tag events
-request | [RequestRecord](https://godoc.org/github.com/docker/distribution/notifications#RequestRecord) | Request covers the request that generated the event.
-actor | [ActorRecord](https://godoc.org/github.com/docker/distribution/notifications#ActorRecord). |  Actor specifies the agent that initiated the event. For most situations, this could be from the authorization context of the request.
-source | [SourceRecord](https://godoc.org/github.com/docker/distribution/notifications#SourceRecord) |  Source identifies the registry node that generated the event. Put differently, while the actor "initiates" the event, the source "generates" it.
-
-
+**TODO:** Let's break out the fields here rather than rely on the godoc.
 
 The following is an example of a JSON event, sent in response to the push of a
 manifest:
 
 ```json
 {
-   "events": [
-      {
-         "id": "320678d8-ca14-430f-8bb6-4ca139cd83f7",
-         "timestamp": "2016-03-09T14:44:26.402973972-08:00",
-         "action": "pull",
-         "target": {
-            "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-            "size": 708,
-            "digest": "sha256:fea8895f450959fa676bcc1df0611ea93823a735a01205fd8622846041d0c7cf",
-            "length": 708,
-            "repository": "hello-world",
-            "url": "http://192.168.100.227:5000/v2/hello-world/manifests/sha256:fea8895f450959fa676bcc1df0611ea93823a735a01205fd8622846041d0c7cf",
-            "tag": "latest"
-         },
-         "request": {
-            "id": "6df24a34-0959-4923-81ca-14f09767db19",
-            "addr": "192.168.64.11:42961",
-            "host": "192.168.100.227:5000",
-            "method": "GET",
-            "useragent": "curl/7.38.0"
-         },
-         "actor": {},
-         "source": {
-            "addr": "xtal.local:5000",
-            "instanceID": "a53db899-3b4b-4a62-a067-8dd013beaca4"
-         }
-      }
-   ]
+   "id": "asdf-asdf-asdf-asdf-0",
+   "timestamp": "2006-01-02T15:04:05Z",
+   "action": "push",
+   "target": {
+      "mediaType": "application/vnd.docker.distribution.manifest.v1+json",
+      "size": 1,
+      "digest": "sha256:0123456789abcdef0",
+      "length": 1,
+      "repository": "library/test",
+      "url": "http://example.com/v2/library/test/manifests/latest"
+   },
+   "request": {
+      "id": "asdfasdf",
+      "addr": "client.local",
+      "host": "registrycluster.local",
+      "method": "PUT",
+      "useragent": "test/0.1"
+   },
+   "actor": {
+      "name": "test-actor"
+   },
+   "source": {
+      "addr": "hostname.local:port"
+   }
 }
 ```
-
 
 The target struct of events which are sent when manifests and blobs are deleted
 will contain a subset of the data contained in Get and Put events.  Specifically,
@@ -175,9 +156,9 @@ Content-Type: application/vnd.docker.distribution.events.v1+json
          "target": {
             "mediaType": "application/vnd.docker.distribution.manifest.v1+json",
             "length": 1,
-            "digest": "sha256:fea8895f450959fa676bcc1df0611ea93823a735a01205fd8622846041d0c7cf",
+            "digest": "sha256:0123456789abcdef0",
             "repository": "library/test",
-            "url": "http://example.com/v2/library/test/manifests/sha256:c3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5"
+            "url": "http://example.com/v2/library/test/manifests/latest"
          },
          "request": {
             "id": "asdfasdf",
@@ -200,9 +181,9 @@ Content-Type: application/vnd.docker.distribution.events.v1+json
          "target": {
             "mediaType": "application/vnd.docker.container.image.rootfs.diff+x-gtar",
             "length": 2,
-            "digest": "sha256:c3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5",
+            "digest": "sha256:3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5",
             "repository": "library/test",
-            "url": "http://example.com/v2/library/test/blobs/sha256:c3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5"
+            "url": "http://example.com/v2/library/test/manifests/latest"
          },
          "request": {
             "id": "asdfasdf",
@@ -225,9 +206,9 @@ Content-Type: application/vnd.docker.distribution.events.v1+json
          "target": {
             "mediaType": "application/vnd.docker.container.image.rootfs.diff+x-gtar",
             "length": 3,
-            "digest": "sha256:c3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5",
+            "digest": "sha256:3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d6",
             "repository": "library/test",
-            "url": "http://example.com/v2/library/test/blobs/sha256:c3b3692957d439ac1928219a83fac91e7bf96c153725526874673ae1f2023f8d5"
+            "url": "http://example.com/v2/library/test/manifests/latest"
          },
          "request": {
             "id": "asdfasdf",

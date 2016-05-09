@@ -15,17 +15,9 @@ import (
 	"github.com/docker/distribution/registry/client/transport"
 )
 
-var (
-	// ErrNoBasicAuthCredentials is returned if a request can't be authorized with
-	// basic auth due to lack of credentials.
-	ErrNoBasicAuthCredentials = errors.New("no basic auth credentials")
-
-	// ErrNoToken is returned if a request is successful but the body does not
-	// contain an authorization token.
-	ErrNoToken = errors.New("authorization server did not include a token in the response")
-)
-
-const defaultClientID = "registry-client"
+// ErrNoBasicAuthCredentials is returned if a request can't be authorized with
+// basic auth due to lack of credentials.
+var ErrNoBasicAuthCredentials = errors.New("no basic auth credentials")
 
 // AuthenticationHandler is an interface for authorizing a request from
 // params from a "WWW-Authenicate" header for a single scheme.
@@ -44,14 +36,6 @@ type AuthenticationHandler interface {
 type CredentialStore interface {
 	// Basic returns basic auth for the given URL
 	Basic(*url.URL) (string, string)
-
-	// RefreshToken returns a refresh token for the
-	// given URL and service
-	RefreshToken(*url.URL, string) string
-
-	// SetRefreshToken sets the refresh token if none
-	// is provided for the given url and service
-	SetRefreshToken(realm *url.URL, service, token string)
 }
 
 // NewAuthorizer creates an authorizer which can handle multiple authentication
@@ -83,7 +67,9 @@ func (ea *endpointAuthorizer) ModifyRequest(req *http.Request) error {
 		Path:   req.URL.Path[:v2Root+4],
 	}
 
-	challenges, err := ea.challenges.GetChallenges(ping)
+	pingEndpoint := ping.String()
+
+	challenges, err := ea.challenges.GetChallenges(pingEndpoint)
 	if err != nil {
 		return err
 	}
@@ -119,47 +105,27 @@ type clock interface {
 type tokenHandler struct {
 	header    http.Header
 	creds     CredentialStore
+	scope     tokenScope
 	transport http.RoundTripper
 	clock     clock
-
-	offlineAccess bool
-	forceOAuth    bool
-	clientID      string
-	scopes        []Scope
 
 	tokenLock       sync.Mutex
 	tokenCache      string
 	tokenExpiration time.Time
+
+	additionalScopes map[string]struct{}
 }
 
-// Scope is a type which is serializable to a string
-// using the allow scope grammar.
-type Scope interface {
-	String() string
+// tokenScope represents the scope at which a token will be requested.
+// This represents a specific action on a registry resource.
+type tokenScope struct {
+	Resource string
+	Scope    string
+	Actions  []string
 }
 
-// RepositoryScope represents a token scope for access
-// to a repository.
-type RepositoryScope struct {
-	Repository string
-	Actions    []string
-}
-
-// String returns the string representation of the repository
-// using the scope grammar
-func (rs RepositoryScope) String() string {
-	return fmt.Sprintf("repository:%s:%s", rs.Repository, strings.Join(rs.Actions, ","))
-}
-
-// TokenHandlerOptions is used to configure a new token handler
-type TokenHandlerOptions struct {
-	Transport   http.RoundTripper
-	Credentials CredentialStore
-
-	OfflineAccess bool
-	ForceOAuth    bool
-	ClientID      string
-	Scopes        []Scope
+func (ts tokenScope) String() string {
+	return fmt.Sprintf("%s:%s:%s", ts.Resource, ts.Scope, strings.Join(ts.Actions, ","))
 }
 
 // An implementation of clock for providing real time data.
@@ -171,33 +137,22 @@ func (realClock) Now() time.Time { return time.Now() }
 // NewTokenHandler creates a new AuthenicationHandler which supports
 // fetching tokens from a remote token server.
 func NewTokenHandler(transport http.RoundTripper, creds CredentialStore, scope string, actions ...string) AuthenticationHandler {
-	// Create options...
-	return NewTokenHandlerWithOptions(TokenHandlerOptions{
-		Transport:   transport,
-		Credentials: creds,
-		Scopes: []Scope{
-			RepositoryScope{
-				Repository: scope,
-				Actions:    actions,
-			},
-		},
-	})
+	return newTokenHandler(transport, creds, realClock{}, scope, actions...)
 }
 
-// NewTokenHandlerWithOptions creates a new token handler using the provided
-// options structure.
-func NewTokenHandlerWithOptions(options TokenHandlerOptions) AuthenticationHandler {
-	handler := &tokenHandler{
-		transport:     options.Transport,
-		creds:         options.Credentials,
-		offlineAccess: options.OfflineAccess,
-		forceOAuth:    options.ForceOAuth,
-		clientID:      options.ClientID,
-		scopes:        options.Scopes,
-		clock:         realClock{},
+// newTokenHandler exposes the option to provide a clock to manipulate time in unit testing.
+func newTokenHandler(transport http.RoundTripper, creds CredentialStore, c clock, scope string, actions ...string) AuthenticationHandler {
+	return &tokenHandler{
+		transport: transport,
+		creds:     creds,
+		clock:     c,
+		scope: tokenScope{
+			Resource: "repository",
+			Scope:    scope,
+			Actions:  actions,
+		},
+		additionalScopes: map[string]struct{}{},
 	}
-
-	return handler
 }
 
 func (th *tokenHandler) client() *http.Client {
@@ -214,162 +169,87 @@ func (th *tokenHandler) Scheme() string {
 func (th *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
 	var additionalScopes []string
 	if fromParam := req.URL.Query().Get("from"); fromParam != "" {
-		additionalScopes = append(additionalScopes, RepositoryScope{
-			Repository: fromParam,
-			Actions:    []string{"pull"},
+		additionalScopes = append(additionalScopes, tokenScope{
+			Resource: "repository",
+			Scope:    fromParam,
+			Actions:  []string{"pull"},
 		}.String())
 	}
-
-	token, err := th.getToken(params, additionalScopes...)
-	if err != nil {
+	if err := th.refreshToken(params, additionalScopes...); err != nil {
 		return err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", th.tokenCache))
 
 	return nil
 }
 
-func (th *tokenHandler) getToken(params map[string]string, additionalScopes ...string) (string, error) {
+func (th *tokenHandler) refreshToken(params map[string]string, additionalScopes ...string) error {
 	th.tokenLock.Lock()
 	defer th.tokenLock.Unlock()
-	scopes := make([]string, 0, len(th.scopes)+len(additionalScopes))
-	for _, scope := range th.scopes {
-		scopes = append(scopes, scope.String())
-	}
 	var addedScopes bool
 	for _, scope := range additionalScopes {
-		scopes = append(scopes, scope)
-		addedScopes = true
+		if _, ok := th.additionalScopes[scope]; !ok {
+			th.additionalScopes[scope] = struct{}{}
+			addedScopes = true
+		}
 	}
-
 	now := th.clock.Now()
 	if now.After(th.tokenExpiration) || addedScopes {
-		token, expiration, err := th.fetchToken(params, scopes)
+		tr, err := th.fetchToken(params)
 		if err != nil {
-			return "", err
+			return err
 		}
-
-		// do not update cache for added scope tokens
-		if !addedScopes {
-			th.tokenCache = token
-			th.tokenExpiration = expiration
-		}
-
-		return token, nil
+		th.tokenCache = tr.Token
+		th.tokenExpiration = tr.IssuedAt.Add(time.Duration(tr.ExpiresIn) * time.Second)
 	}
 
-	return th.tokenCache, nil
+	return nil
 }
 
-type postTokenResponse struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresIn    int       `json:"expires_in"`
-	IssuedAt     time.Time `json:"issued_at"`
-	Scope        string    `json:"scope"`
+type tokenResponse struct {
+	Token       string    `json:"token"`
+	AccessToken string    `json:"access_token"`
+	ExpiresIn   int       `json:"expires_in"`
+	IssuedAt    time.Time `json:"issued_at"`
 }
 
-func (th *tokenHandler) fetchTokenWithOAuth(realm *url.URL, refreshToken, service string, scopes []string) (token string, expiration time.Time, err error) {
-	form := url.Values{}
-	form.Set("scope", strings.Join(scopes, " "))
-	form.Set("service", service)
-
-	clientID := th.clientID
-	if clientID == "" {
-		// Use default client, this is a required field
-		clientID = defaultClientID
-	}
-	form.Set("client_id", clientID)
-
-	if refreshToken != "" {
-		form.Set("grant_type", "refresh_token")
-		form.Set("refresh_token", refreshToken)
-	} else if th.creds != nil {
-		form.Set("grant_type", "password")
-		username, password := th.creds.Basic(realm)
-		form.Set("username", username)
-		form.Set("password", password)
-
-		// attempt to get a refresh token
-		form.Set("access_type", "offline")
-	} else {
-		// refuse to do oauth without a grant type
-		return "", time.Time{}, fmt.Errorf("no supported grant type")
+func (th *tokenHandler) fetchToken(params map[string]string) (token *tokenResponse, err error) {
+	realm, ok := params["realm"]
+	if !ok {
+		return nil, errors.New("no realm specified for token auth challenge")
 	}
 
-	resp, err := th.client().PostForm(realm.String(), form)
+	// TODO(dmcgowan): Handle empty scheme
+
+	realmURL, err := url.Parse(realm)
 	if err != nil {
-		return "", time.Time{}, err
-	}
-	defer resp.Body.Close()
-
-	if !client.SuccessStatus(resp.StatusCode) {
-		err := client.HandleErrorResponse(resp)
-		return "", time.Time{}, err
+		return nil, fmt.Errorf("invalid token auth challenge realm: %s", err)
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-
-	var tr postTokenResponse
-	if err = decoder.Decode(&tr); err != nil {
-		return "", time.Time{}, fmt.Errorf("unable to decode token response: %s", err)
-	}
-
-	if tr.RefreshToken != "" && tr.RefreshToken != refreshToken {
-		th.creds.SetRefreshToken(realm, service, tr.RefreshToken)
-	}
-
-	if tr.ExpiresIn < minimumTokenLifetimeSeconds {
-		// The default/minimum lifetime.
-		tr.ExpiresIn = minimumTokenLifetimeSeconds
-		logrus.Debugf("Increasing token expiration to: %d seconds", tr.ExpiresIn)
-	}
-
-	if tr.IssuedAt.IsZero() {
-		// issued_at is optional in the token response.
-		tr.IssuedAt = th.clock.Now().UTC()
-	}
-
-	return tr.AccessToken, tr.IssuedAt.Add(time.Duration(tr.ExpiresIn) * time.Second), nil
-}
-
-type getTokenResponse struct {
-	Token        string    `json:"token"`
-	AccessToken  string    `json:"access_token"`
-	ExpiresIn    int       `json:"expires_in"`
-	IssuedAt     time.Time `json:"issued_at"`
-	RefreshToken string    `json:"refresh_token"`
-}
-
-func (th *tokenHandler) fetchTokenWithBasicAuth(realm *url.URL, service string, scopes []string) (token string, expiration time.Time, err error) {
-
-	req, err := http.NewRequest("GET", realm.String(), nil)
+	req, err := http.NewRequest("GET", realmURL.String(), nil)
 	if err != nil {
-		return "", time.Time{}, err
+		return nil, err
 	}
 
 	reqParams := req.URL.Query()
+	service := params["service"]
+	scope := th.scope.String()
 
 	if service != "" {
 		reqParams.Add("service", service)
 	}
 
-	for _, scope := range scopes {
+	for _, scopeField := range strings.Fields(scope) {
+		reqParams.Add("scope", scopeField)
+	}
+
+	for scope := range th.additionalScopes {
 		reqParams.Add("scope", scope)
 	}
 
-	if th.offlineAccess {
-		reqParams.Add("offline_token", "true")
-		clientID := th.clientID
-		if clientID == "" {
-			clientID = defaultClientID
-		}
-		reqParams.Add("client_id", clientID)
-	}
-
 	if th.creds != nil {
-		username, password := th.creds.Basic(realm)
+		username, password := th.creds.Basic(realmURL)
 		if username != "" && password != "" {
 			reqParams.Add("account", username)
 			req.SetBasicAuth(username, password)
@@ -380,24 +260,20 @@ func (th *tokenHandler) fetchTokenWithBasicAuth(realm *url.URL, service string, 
 
 	resp, err := th.client().Do(req)
 	if err != nil {
-		return "", time.Time{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if !client.SuccessStatus(resp.StatusCode) {
 		err := client.HandleErrorResponse(resp)
-		return "", time.Time{}, err
+		return nil, err
 	}
 
 	decoder := json.NewDecoder(resp.Body)
 
-	var tr getTokenResponse
-	if err = decoder.Decode(&tr); err != nil {
-		return "", time.Time{}, fmt.Errorf("unable to decode token response: %s", err)
-	}
-
-	if tr.RefreshToken != "" && th.creds != nil {
-		th.creds.SetRefreshToken(realm, service, tr.RefreshToken)
+	tr := new(tokenResponse)
+	if err = decoder.Decode(tr); err != nil {
+		return nil, fmt.Errorf("unable to decode token response: %s", err)
 	}
 
 	// `access_token` is equivalent to `token` and if both are specified
@@ -408,7 +284,7 @@ func (th *tokenHandler) fetchTokenWithBasicAuth(realm *url.URL, service string, 
 	}
 
 	if tr.Token == "" {
-		return "", time.Time{}, ErrNoToken
+		return nil, errors.New("authorization server did not include a token in the response")
 	}
 
 	if tr.ExpiresIn < minimumTokenLifetimeSeconds {
@@ -419,37 +295,10 @@ func (th *tokenHandler) fetchTokenWithBasicAuth(realm *url.URL, service string, 
 
 	if tr.IssuedAt.IsZero() {
 		// issued_at is optional in the token response.
-		tr.IssuedAt = th.clock.Now().UTC()
+		tr.IssuedAt = th.clock.Now()
 	}
 
-	return tr.Token, tr.IssuedAt.Add(time.Duration(tr.ExpiresIn) * time.Second), nil
-}
-
-func (th *tokenHandler) fetchToken(params map[string]string, scopes []string) (token string, expiration time.Time, err error) {
-	realm, ok := params["realm"]
-	if !ok {
-		return "", time.Time{}, errors.New("no realm specified for token auth challenge")
-	}
-
-	// TODO(dmcgowan): Handle empty scheme and relative realm
-	realmURL, err := url.Parse(realm)
-	if err != nil {
-		return "", time.Time{}, fmt.Errorf("invalid token auth challenge realm: %s", err)
-	}
-
-	service := params["service"]
-
-	var refreshToken string
-
-	if th.creds != nil {
-		refreshToken = th.creds.RefreshToken(realmURL, service)
-	}
-
-	if refreshToken != "" || th.forceOAuth {
-		return th.fetchTokenWithOAuth(realmURL, refreshToken, service, scopes)
-	}
-
-	return th.fetchTokenWithBasicAuth(realmURL, service, scopes)
+	return tr, nil
 }
 
 type basicHandler struct {
