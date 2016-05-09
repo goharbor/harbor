@@ -3,8 +3,10 @@
   angular
     .module('harbor.app', [
       'ngRoute',
+      'ngMessages',
       'harbor.layout.navigation',
       'harbor.layout.sign.up',
+      'harbor.layout.account.setting',
       'harbor.layout.index',
       'harbor.layout.project',
       'harbor.layout.repository',
@@ -24,6 +26,7 @@
       'harbor.repository',
       'harbor.project.member',
       'harbor.user',
-      'harbor.log'
+      'harbor.log',
+      'harbor.validator'
     ]);
 })();

@@ -14,7 +14,7 @@
     
     function SignUp(user) {      
       return $http
-        .post('/api/user', {
+        .post('/api/users', {
           'username': user.username,
           'email': user.email,
           'password': user.password,
