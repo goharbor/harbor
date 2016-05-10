@@ -89,6 +89,10 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		e, ok := isUnauthorizedError(err)
+		if ok {
+			return repos, e
+		}
 		return repos, err
 	}
 
@@ -115,6 +119,7 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	return repos, errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 }

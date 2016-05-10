@@ -168,6 +168,7 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 	if resp.StatusCode != http.StatusOK {
 		err = registry_errors.Error{
 			StatusCode: resp.StatusCode,
+			StatusText: resp.Status,
 			Message:    string(b),
 		}
 		return
