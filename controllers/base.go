@@ -127,8 +127,6 @@ func (b *BaseController) Prepare() {
 			log.Errorf("Error occurred in IsAdminRole:%v", err)
 			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
-	}else {
-		b.IsLdapAdminUser = false
 	}
 
 	b.Data["IsAdmin"] = b.IsAdmin
