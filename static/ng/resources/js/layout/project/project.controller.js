@@ -23,16 +23,15 @@
     
     vm.retrieve();
     
-    function retrieve() { 
-      $.when(
-        CurrentUserService()
-          .success(getCurrentUserSuccess)
-          .error(getCurrentUserFailed))
-      .then(function(){
-        ListProjectService(vm.projectName, vm.publicity)
-          .success(listProjectSuccess)
-          .error(listProjectFailed);
+    function retrieve() {       
+      
+      $scope.$on('currentUser', function(e, val) {
+        vm.currentUser = val;
       });
+    
+      ListProjectService(vm.projectName, vm.publicity)
+        .success(listProjectSuccess)
+        .error(listProjectFailed);
     }
     
     function listProjectSuccess(data, status) {
@@ -42,15 +41,7 @@
     function listProjectFailed(e) {
       console.log('Failed to list Project:' + e);
     }
-      
-    function getCurrentUserSuccess(data, status) {
-      vm.currentUser = data;
-    }
-    
-    function getCurrentUserFailed(e) {
-      console.log('Failed in getCurrentUser:' + e);
-    }
-    
+          
     $scope.$on('addedSuccess', function(e, val) {
       vm.retrieve();
     });

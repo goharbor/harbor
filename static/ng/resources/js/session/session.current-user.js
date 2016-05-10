@@ -5,34 +5,30 @@
   angular
     .module('harbor.session')
     .controller('CurrentUserController', CurrentUserController)
-    .directive('currentUser', currentUser);
+    
+  CurrentUserController.$inject = ['CurrentUserService', '$scope', '$timeout', '$window'];
   
-  CurrentUserController.$inject = ['CurrentUserService', '$log', '$window'];
-  
-  function CurrentUserController(CurrentUserService, $log, $window) {
+  function CurrentUserController(CurrentUserService, $scope, $timeout, $window) {
+    
+    var vm = this;
     
     CurrentUserService()
       .then(getCurrentUserComplete)
       .catch(getCurrentUserFailed);
       
-    function getCurrentUserComplete(data) {
-      $log.info('login success');
+    function getCurrentUserComplete(response) {
+      console.log('Successful logged in.');
+      $timeout(function(){
+        $scope.$broadcast('currentUser', response.data);
+      }, 50);
     }
     
     function getCurrentUserFailed(e){
-      if(e.status == 401) {
-        $window.location = '/ng';
-      }
+      console.log('Have not logged in yet.');
+      $timeout(function(){
+        $scope.$broadcast('currentUser', null);
+      });
     }
-  }
-
-  function currentUser() {
-    var directive = {
-      restrict: 'A',
-      controller: CurrentUserController,
-      bindToController: true
-    }
-    return directive;
   }
 
 })();

@@ -14,4 +14,6 @@ func initNgRouters() {
 	beego.Router("/ng/repository", &ng.RepositoryController{})
 	beego.Router("/ng/sign_up", &ng.SignUpController{})
 	beego.Router("/ng/account_setting", &ng.AccountSettingController{})
+	beego.Router("/ng/forgot_password", &ng.ForgotPasswordController{})
+	beego.Router("/ng/reset_password", &ng.ResetPasswordController{})
 }

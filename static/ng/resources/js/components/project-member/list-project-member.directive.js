@@ -6,10 +6,17 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['$scope', 'CurrentUserService', 'ListProjectMemberService', '$routeParams'];
+  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', '$routeParams'];
     
-  function ListProjectMemberController($scope, CurrentUserService, ListProjectMemberService, $routeParams) {
+  function ListProjectMemberController($scope, ListProjectMemberService, $routeParams) {
     var vm = this;
+    vm.currentUser = {};
+    
+    $scope.$on('currentUser', function(e, val) {
+      vm.currentUser = val; 
+      console.log('In list-project-member received current user:' + vm.currentUser);
+      $scope.$apply();
+    });
     
     vm.isOpen = false;
        
@@ -19,7 +26,8 @@
     
     vm.projectId = $routeParams.project_id;
     vm.username = "";
-    
+    vm.currentUser = {};
+
     vm.retrieve();
               
     function search(e) {
@@ -36,34 +44,21 @@
         vm.isOpen = true;
       }
     }
-    
+  
     function retrieve() {
-      $.when(
-        CurrentUserService()
-          .success(getCurrentUserSuccess)
-          .error(getCurrentUserFailed))
-      .then(function(){    
-        ListProjectMemberService(vm.projectId, {'username': vm.username})
-          .then(getProjectMemberComplete)
-          .catch(getProjectMemberFailed);      
-      });
+      
+      ListProjectMemberService(vm.projectId, {'username': vm.username})
+        .then(getProjectMemberComplete)
+        .catch(getProjectMemberFailed);            
+     
     }
-    
-    function getCurrentUserSuccess(data, status) {
-      vm.currentUser = data;
-    }
-    
-    function getCurrentUserFailed(e) {
-      console.log('Failed in getCurrentUser:' + e);
-    }
-
     
     function getProjectMemberComplete(response) {
       vm.projectMembers = response.data;  
     } 
            
     function getProjectMemberFailed(response) {
-      
+      console.log('Failed get project members:' + response);
     }
     
   }
@@ -73,6 +68,7 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/project-member/list-project-member.directive.html',
       replace: true,
+      scope: true,
       link: link,
       controller: ListProjectMemberController,
       controllerAs: 'vm',

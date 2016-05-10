@@ -6,9 +6,9 @@
     .module('harbor.project.member')
     .directive('addProjectMember', addProjectMember);
    
-  AddProjectMemberController.$inject = ['roles', 'AddProjectMemberService'];
+  AddProjectMemberController.$inject = ['$scope', 'roles', 'AddProjectMemberService'];
  
-  function AddProjectMemberController(roles, AddProjectMemberService) {
+  function AddProjectMemberController($scope, roles, AddProjectMemberService) {
     var vm = this;
     vm.username = "";
     vm.roles = roles();
@@ -16,8 +16,8 @@
     vm.save = save;
     vm.cancel = cancel;
     
-    function save() {
-      AddProjectMemberService(2, vm.optRole, vm.username)
+    function save() {     
+      AddProjectMemberService(vm.projectId, vm.optRole, vm.username)
         .success(addProjectMemberComplete)
         .error(addProjectMemberFailed);
       vm.username = "";
@@ -46,6 +46,7 @@
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/project-member/add-project-member.directive.html',
       'scope': {
+        'projectId': '@',
         'isOpen': '=',
         'reload': '&'
       },

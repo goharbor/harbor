@@ -27,6 +27,7 @@ body {
 .thumbnail {
   display: inline-block;
   border: none;
+  padding: 2px;
   box-shadow: none;
 }
 

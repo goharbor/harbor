@@ -1,22 +1,30 @@
-<ul class="nav navbar-nav navbar-left">
-  <li ng-show="//!vm.isLoggedIn//" class="dropdown">
+<ul ng-if="!vm.isLoggedIn" class="nav navbar-nav navbar-left">
+  <li class="dropdown">
   	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-      <span class="glyphicon glyphicon-globe"></span>Language<span class="caret"></span>
+      <span class="glyphicon glyphicon-globe"></span> Language<span class="caret"></span>
     </a>
-	  <ul class="dropdown-menu">
-      <li><a href="#">//vm.isLoggedIn ? 'Logged In' : 'Not Logged In'//</a></li>
+	  <ul class="dropdown-menu" style="left: 0;">
 	    <li><a href="#">English</a></li>						
 		  <li><a href="#">中文</a></li>
 	  </ul>
 	</li>
-  <li ng-show="//vm.isLoggedIn//" class="dropdown">
-  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-      <span class="glyphicon glyphicon-user"></span>//vm.username//<span class="caret"></span>
-    </a>
-	  <ul class="dropdown-menu">
-      <li><a href="#">//vm.username//</a></li>
-	    <li><a href="/ng/account_setting">Account Setting</a></li>						
-		  <li><a href="#">Log Out</a></li>
-	  </ul>
-	</li>
 </ul>
+
+
+<div ng-if="vm.isLoggedIn" class="dropdown">
+  <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
+      <span class="glyphicon glyphicon-user"></span> //vm.username//
+  </a>
+  <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+    <li><a href="/ng/account_setting"><span class="glyphicon glyphicon-pencil"></span> Account Setting</a></li>
+    <li class="dropdown-submenu">
+      <a tabindex="-1" href="#"><span class="glyphicon glyphicon-globe"></span> Languages</a>
+      <ul class="dropdown-menu">
+        <li><a href="#">English</a></li>						
+		    <li><a href="#">中文</a></li>
+      </ul>
+    </li>
+    <li class="divider"></li>
+    <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+  </ul>
+</div>

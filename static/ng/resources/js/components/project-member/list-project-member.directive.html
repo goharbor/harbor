@@ -11,7 +11,7 @@
       <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>Add Member</button>
     </div>
     <div class="pane"> 	           
-      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
       <div class="sub-pane">
         <table class="table table-pane" >
     			 <thead>

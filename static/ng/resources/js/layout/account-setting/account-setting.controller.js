@@ -6,9 +6,9 @@
     .module('harbor.layout.account.setting')
     .controller('AccountSettingController', AccountSettingController);
   
-  AccountSettingController.$inject = ['CurrentUserService', 'ChangePasswordService', '$window'];
+  AccountSettingController.$inject = ['ChangePasswordService', '$scope', '$window'];
   
-  function AccountSettingController(CurrentUserService, ChangePasswordService, $window) {
+  function AccountSettingController(ChangePasswordService, $scope, $window) {
     var vm = this;
     vm.isOpen = false;
     vm.user = {};
@@ -18,9 +18,9 @@
     vm.changePassword= changePassword;
     vm.cancel = cancel;
     
-    CurrentUserService()
-      .success(getCurrentUserSuccess)
-      .error(getCurrentUserFailed);
+    $scope.$on('currentUser', function(e, val) {
+      vm.user = val;
+    });
 
     function toggleChangePassword() {
       if(vm.isOpen) {
@@ -30,12 +30,7 @@
       }
       console.log('vm.isOpen:' + vm.isOpen);
     }
-    
-    function getCurrentUserSuccess(data, status) {
-      vm.user = angular.copy(data);
-      console.log(data);
-    }
-    
+        
     function getCurrentUserFailed(data) {
       console.log('Failed get current user:' + data);
     }

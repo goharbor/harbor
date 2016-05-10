@@ -38,6 +38,7 @@
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/sign-in/sign-in.directive.html',
+      'scope': true,
       'controller': SignInController,
       'controllerAs': 'vm',
       'bindToController': true

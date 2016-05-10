@@ -18,7 +18,7 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/layout/navigation/navigation-header.directive.html',
       link: link,
-      replace: true,
+      scope: true,
       controller: NavigationHeaderController,
       controllerAs: 'vm',
       bindToController: true

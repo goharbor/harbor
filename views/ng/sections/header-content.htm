@@ -1,4 +1,4 @@
-<nav class="navbar navbar-default navbar-custom" >
+<nav class="navbar navbar-default navbar-custom" ng-controller="HeaderController as vm">
  <div class="container container-custom">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
@@ -9,8 +9,8 @@
       <a class="navbar-brand" href="#"><img class="img-responsive" src="/static/ng/resources/img/Harbor_Logo_rec.png" alt="Harbor's Logo"/></a>
     </div>
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1" ng-controller="HeaderController as vm">
-		  <optional-menu is-logged-in="vm.isLoggedIn" username="vm.currentUser.username"></optional-menu>
+    <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1">
+		  <optional-menu></optional-menu>
 	    <ul class="nav navbar-nav navbar-right">
 		    <li>
 		      <navigation-header></navigation-header>

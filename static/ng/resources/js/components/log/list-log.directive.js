@@ -92,6 +92,7 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/log/list-log.directive.html',
       replace: true,
+      scope: true,
       controller: ListLogController,
       controllerAs: 'vm',
       bindToController: true

@@ -4,7 +4,7 @@
     
 	  <title>{{.Title}}</title>  
   </head>
-  <body ng-app="harbor.app">
+  <body ng-app="harbor.app" ng-controller="CurrentUserController as vm">
     {{.HeaderContent}}
     {{.LayoutContent}}
 	  {{.FooterContent}}
