@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -176,7 +175,7 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 
 	tk := struct {
 		Token     string `json:"token"`
-		ExpiresIn string `json:"expires_in"`
+		ExpiresIn int    `json:"expires_in"`
 		IssuedAt  string `json:"issued_at"`
 	}{}
 	if err = json.Unmarshal(b, &tk); err != nil {
@@ -185,19 +184,14 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 
 	token = tk.Token
 
-	expiresIn, err = strconv.Atoi(tk.ExpiresIn)
+	expiresIn = tk.ExpiresIn
+
+	t, err := time.Parse(time.RFC3339, tk.IssuedAt)
 	if err != nil {
-		expiresIn = 0
-		log.Errorf("error occurred while converting expires_in: %v", err)
+		log.Errorf("error occurred while parsing issued_at: %v", err)
 		err = nil
 	} else {
-		t, err := time.Parse(time.RFC3339, tk.IssuedAt)
-		if err != nil {
-			log.Errorf("error occurred while parsing issued_at: %v", err)
-			err = nil
-		} else {
-			issuedAt = &t
-		}
+		issuedAt = &t
 	}
 
 	log.Debug("get token from token server")
