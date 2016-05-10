@@ -103,7 +103,7 @@ func UpgradeDB() {
 	log.Printf("upgrading DB", dbStr)
 
 	sqlPath := os.Getenv("SQL_PATH")
-	fmt.Println(sqlPath)
+	log.Printf(sqlPath)
 	if len(sqlPath) == 0 {
 		sqlPath = "/go/src/github.com/vmware/harbor/sql"
 	}

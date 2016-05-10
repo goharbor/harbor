@@ -45,5 +45,9 @@ func ParseQuestions(catalogContent string) (*Catalog, error) {
 		return nil, err
 	}
 
+	if catalog.Questions == nil {
+		catalog.Questions = []Question{}
+	}
+
 	return catalog, nil
 }
