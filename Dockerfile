@@ -1,4 +1,4 @@
-FROM testregistry.dataman.io/golang:1.5.1
+FROM index.shurenyun.com/zhguo/golang:1.5.1
 
 MAINTAINER jiangd@vmware.com
 

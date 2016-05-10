@@ -2,7 +2,7 @@ FROM index.shurenyun.com/zqdou/mysql:5.6
 
 WORKDIR /tmp
 
-ADD registry.sql r.sql 
+ADD registry.sql r.sql
 
 ADD docker-entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh 
+RUN chmod u+x /entrypoint.sh
