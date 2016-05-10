@@ -1,5 +1,6 @@
 package api
 
+/*
 import (
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 type JobAPI struct {
 	BaseAPI
 }
+
 
 func (ja *JobAPI) Post() {
 	var je models.JobEntry
@@ -82,4 +84,4 @@ func (ja *JobAPI) Get() {
 		ja.Data["json"] = jobs
 	}
 	ja.ServeJSON()
-}
+}*/

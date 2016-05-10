@@ -3,58 +3,21 @@ package job
 import (
 	"fmt"
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
+	"os"
 	"sync"
 )
 
-// StateHandler handles transition, it associates with each state, will be called when
-// SM enters and exits a state during a transition.
-type StateHandler interface {
-	// Enter returns the next state, if it returns empty string the SM will hold the current state or
-	// or decide the next state.
-	Enter() (string, error)
-	//Exit should be idempotent
-	Exit() error
+type RepJobParm struct {
+	LocalRegURL    string
+	TargetURL      string
+	TargetUsername string
+	TargetPassword string
+	Repository     string
+	Enabled        int
+	Operation      string
 }
-
-type DummyHandler struct {
-	JobID int64
-}
-
-func (dh DummyHandler) Enter() (string, error) {
-	return "", nil
-}
-
-func (dh DummyHandler) Exit() error {
-	return nil
-}
-
-type StatusUpdater struct {
-	DummyHandler
-	State string
-}
-
-func (su StatusUpdater) Enter() (string, error) {
-	err := dao.UpdateJobStatus(su.JobID, su.State)
-	if err != nil {
-		log.Warningf("Failed to update state of job: %d, state: %s, error: %v", su.JobID, su.State, err)
-	}
-	var next string = JobContinue
-	if su.State == JobStopped || su.State == JobError || su.State == JobFinished {
-		next = ""
-	}
-	return next, err
-}
-
-const (
-	JobPending  string = "pending"
-	JobRunning  string = "running"
-	JobError    string = "error"
-	JobStopped  string = "stopped"
-	JobFinished string = "finished"
-	//  statemachine will move to next possible state based on trasition table
-	JobContinue string = "_continue"
-)
 
 type JobSM struct {
 	JobID         int64
@@ -64,8 +27,10 @@ type JobSM struct {
 	ForcedStates map[string]struct{}
 	Transitions  map[string]map[string]struct{}
 	Handlers     map[string]StateHandler
-	lock         *sync.Mutex
 	desiredState string
+	Logger       Logger
+	Parms        *RepJobParm
+	lock         *sync.Mutex
 }
 
 // EnsterState transit the statemachine from the current state to the state in parameter.
@@ -87,7 +52,7 @@ func (sm *JobSM) EnterState(s string) (string, error) {
 		log.Debugf("No handler found for state:%s, skip", sm.CurrentState)
 	}
 	enterHandler, ok := sm.Handlers[s]
-	var next string = JobContinue
+	var next string = models.JobContinue
 	var err error
 	if ok {
 		if next, err = enterHandler.Enter(); err != nil {
@@ -115,14 +80,14 @@ func (sm *JobSM) Start(s string) {
 			sm.setDesiredState("")
 			continue
 		}
-		if n == JobContinue && len(sm.Transitions[sm.CurrentState]) == 1 {
+		if n == models.JobContinue && len(sm.Transitions[sm.CurrentState]) == 1 {
 			for n = range sm.Transitions[sm.CurrentState] {
 				break
 			}
 			log.Debugf("Continue to state: %s", n)
 			continue
 		}
-		if n == JobContinue && len(sm.Transitions[sm.CurrentState]) != 1 {
+		if n == models.JobContinue && len(sm.Transitions[sm.CurrentState]) != 1 {
 			log.Errorf("Next state is continue but there are %d possible next states in transition table", len(sm.Transitions[sm.CurrentState]))
 			err = fmt.Errorf("Unable to continue")
 			break
@@ -132,7 +97,7 @@ func (sm *JobSM) Start(s string) {
 	}
 	if err != nil {
 		log.Warningf("The statemachin will enter error state due to error: %v", err)
-		sm.EnterState(JobError)
+		sm.EnterState(models.JobError)
 	}
 }
 
@@ -154,7 +119,7 @@ func (sm *JobSM) RemoveTransition(from string, to string) {
 }
 
 func (sm *JobSM) Stop() {
-	sm.setDesiredState(JobStopped)
+	sm.setDesiredState(models.JobStopped)
 }
 
 func (sm *JobSM) getDesiredState() string {
@@ -169,12 +134,60 @@ func (sm *JobSM) setDesiredState(s string) {
 	sm.desiredState = s
 }
 
-func (sm *JobSM) InitJobSM() {
+func (sm *JobSM) Init() error {
+	//init parms
+	regURL := os.Getenv("LOCAL_REGISTRY_URL")
+	if len(regURL) == 0 {
+		regURL = "http://registry:5000/"
+	}
+	job, err := dao.GetRepJob(sm.JobID)
+	if err != nil {
+		return fmt.Errorf("Failed to get job, error: %v", err)
+	}
+	if job == nil {
+		return fmt.Errorf("The job doesn't exist in DB, job id: %d", sm.JobID)
+	}
+	policy, err := dao.GetRepPolicy(job.PolicyID)
+	if err != nil {
+		return fmt.Errorf("Failed to get policy, error: %v", err)
+	}
+	if policy == nil {
+		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
+	}
+	sm.Parms = &RepJobParm{
+		LocalRegURL: regURL,
+		Repository:  job.Repository,
+		Enabled:     policy.Enabled,
+		Operation:   job.Operation,
+	}
+	if policy.Enabled == 0 {
+		//handler will cancel this job
+		return nil
+	}
+	target, err := dao.GetRepTarget(policy.TargetID)
+	if err != nil {
+		return fmt.Errorf("Failed to get target, error: %v", err)
+	}
+	if target == nil {
+		return fmt.Errorf("The target doesn't exist in DB, target id: %d", policy.TargetID)
+	}
+	sm.Parms.TargetURL = target.URL
+	sm.Parms.TargetUsername = target.Username
+	sm.Parms.TargetPassword = target.Password
+	//init states handlers
 	sm.lock = &sync.Mutex{}
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
-	sm.CurrentState = JobPending
-	sm.AddTransition(JobPending, JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, JobRunning})
-	sm.Handlers[JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, JobError}
-	sm.Handlers[JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, JobStopped}
+	sm.Logger = Logger{sm.JobID}
+	sm.CurrentState = models.JobPending
+	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
+	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
+	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
+	if sm.Parms.Operation == models.RepOpTransfer {
+		sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
+		//only handle on target for now
+		sm.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: DummyHandler{JobID: sm.JobID}, targetURL: sm.Parms.TargetURL, logger: sm.Logger})
+		sm.AddTransition("push-img", models.JobFinished, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+	}
+	return nil
 }
