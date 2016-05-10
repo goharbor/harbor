@@ -100,6 +100,8 @@ func clearUp(username string) {
 
 const username string = "Tester01"
 const projectName string = "test_project"
+const repoTag string = "test1.1"
+const repoTag2 string = "test1.2"
 const SysAdmin int = 1
 const projectAdmin int = 2
 const developer int = 3
@@ -414,6 +416,66 @@ func TestGetAccessLog(t *testing.T) {
 	}
 	if accessLogs[0].RepoName != projectName+"/" {
 		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogs[0].RepoName)
+	}
+}
+
+func TestAddAccessLog(t *testing.T) {
+	var err error
+	var accessLogList []models.AccessLog
+	accessLog := models.AccessLog{
+		UserID:    currentUser.UserID,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/",
+		RepoTag:   repoTag,
+		GUID:      "N/A",
+		Operation: "create",
+		OpTime:    time.Now(),
+	}
+	err = AddAccessLog(accessLog)
+	if err != nil {
+		t.Errorf("Error occurred in AddAccessLog: %v", err)
+	}
+	accessLogList, err = GetAccessLogs(accessLog)
+	if err != nil {
+		t.Errorf("Error occurred in GetAccessLog: %v", err)
+	}
+	if len(accessLogList) != 1 {
+		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
+	}
+	if accessLogList[0].RepoName != projectName+"/" {
+		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
+	}
+	if accessLogList[0].RepoTag != repoTag {
+		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag, accessLogList[0].RepoTag)
+	}
+}
+
+func TestAccessLog(t *testing.T) {
+	var err error
+	var accessLogList []models.AccessLog
+	accessLog := models.AccessLog{
+		UserID:    currentUser.UserID,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/",
+		RepoTag:   repoTag2,
+		Operation: "create",
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/", repoTag2, "create")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	accessLogList, err = GetAccessLogs(accessLog)
+	if err != nil {
+		t.Errorf("Error occurred in GetAccessLog: %v", err)
+	}
+	if len(accessLogList) != 1 {
+		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
+	}
+	if accessLogList[0].RepoName != projectName+"/" {
+		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
+	}
+	if accessLogList[0].RepoTag != repoTag2 {
+		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag2, accessLogList[0].RepoTag)
 	}
 }
 

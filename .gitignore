@@ -5,3 +5,4 @@ Deploy/config/ui/app.conf
 Deploy/config/db/env
 Deploy/harbor.cfg
 ui/ui
+*.pyc
