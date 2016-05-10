@@ -1,3 +1,6 @@
+drop database if exists drone;
+create database drone charset = utf8;
+
 drop database if exists registry;
 create database registry charset = utf8;
 
