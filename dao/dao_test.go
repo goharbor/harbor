@@ -645,9 +645,15 @@ func TestGetUserRelevantProjects(t *testing.T) {
 }
 
 func TestGetAllProjects(t *testing.T) {
-	_, err := GetAllProjects()
+	projects, err := GetAllProjects()
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
+	}
+	if len(projects) != 2 {
+		t.Errorf("Expected length of projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
+	}
+	if projects[1].Name != projectName {
+		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
 	}
 }
 
