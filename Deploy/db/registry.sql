@@ -111,3 +111,9 @@ create table properties (
 
 insert into properties (k, v) values 
 ('schema_version', '0.1.1');
+
+CREATE TABLE IF NOT EXISTS `alembic_version` (
+    `version_num` varchar(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into alembic_version values ('0.1.1');
