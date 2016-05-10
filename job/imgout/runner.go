@@ -1,5 +1,6 @@
 package imgout
 
+/*
 import (
 	"encoding/json"
 	//"github.com/vmware/harbor/dao"
@@ -72,3 +73,4 @@ func (r *Runner) init(je models.JobEntry) error {
 	r.AddTransition("push-img", job.JobFinished, job.StatusUpdater{job.DummyHandler{JobID: r.JobID}, job.JobFinished})
 	return nil
 }
+*/
