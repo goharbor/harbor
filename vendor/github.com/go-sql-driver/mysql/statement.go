@@ -101,9 +101,9 @@ func (stmt *mysqlStmt) Query(args []driver.Value) (driver.Rows, error) {
 	}
 
 	rows := new(binaryRows)
-	rows.mc = mc
 
 	if resLen > 0 {
+		rows.mc = mc
 		// Columns
 		// If not cached, read them and cache them
 		if stmt.columns == nil {

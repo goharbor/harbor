@@ -49,9 +49,9 @@ func initDB(b *testing.B, queries ...string) *sql.DB {
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			if w, ok := err.(MySQLWarnings); ok {
-				b.Logf("Warning on %q: %v", query, w)
+				b.Logf("warning on %q: %v", query, w)
 			} else {
-				b.Fatalf("Error on %q: %v", query, err)
+				b.Fatalf("error on %q: %v", query, err)
 			}
 		}
 	}
@@ -216,9 +216,9 @@ func BenchmarkRoundtripBin(b *testing.B) {
 
 func BenchmarkInterpolation(b *testing.B) {
 	mc := &mysqlConn{
-		cfg: &config{
-			interpolateParams: true,
-			loc:               time.UTC,
+		cfg: &Config{
+			InterpolateParams: true,
+			Loc:               time.UTC,
 		},
 		maxPacketAllowed: maxPacketSize,
 		maxWriteSize:     maxPacketSize - 1,

@@ -19,7 +19,7 @@ http:
 auth:
   token:
     issuer: registry-token-issuer
-    realm: http://localhost:5005/service/token
+    realm: http://192.168.99.100:5005/service/token
     rootcertbundle: /etc/registry/root.crt
     service: token-service
 
@@ -27,7 +27,7 @@ notifications:
   endpoints:
       - name: harbor
         disabled: false
-        url: http://localhost:5005/service/notifications
+        url: http://192.168.99.100:5005/service/notifications
         timeout: 500
         threshold: 5
         backoff: 1000

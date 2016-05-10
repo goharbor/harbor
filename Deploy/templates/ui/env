@@ -6,5 +6,3 @@ HARBOR_REG_URL=$hostname
 HARBOR_ADMIN_PASSWORD=$admin_pwd
 HARBOR_URL=$ui_url
 AUTH_MODE=$auth_mode
-LDAP_URL=$ldap_url
-LDAP_BASE_DN=$ldap_basedn
