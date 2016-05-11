@@ -87,11 +87,13 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
-	err = dao.AddProject(project)
+	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to add project")
 	}
+
+	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
 // Head ...
@@ -183,10 +185,21 @@ func (p *ProjectAPI) FilterAccessLog() {
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	p.Data["json"] = accessLogList
+
 	p.ServeJSON()
 }
 
 func isProjectAdmin(userID int, pid int64) bool {
+	isSysAdmin, err := dao.IsAdminRole(userID)
+	if err != nil {
+		log.Errorf("Error occurred in IsAdminRole, returning false, error: %v", err)
+		return false
+	}
+
+	if isSysAdmin {
+		return true
+	}
+
 	rolelist, err := dao.GetUserProjectRoles(userID, pid)
 	if err != nil {
 		log.Errorf("Error occurred in GetUserProjectRoles, returning false, error: %v", err)

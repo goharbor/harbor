@@ -29,41 +29,41 @@ import (
 //TODO:transaction, return err
 
 // AddProject adds a project to the database along with project roles information and access log records.
-func AddProject(project models.Project) error {
+func AddProject(project models.Project) (int64, error) {
 
 	if isIllegalLength(project.Name, 4, 30) {
-		return errors.New("project name is illegal in length. (greater than 4 or less than 30)")
+		return 0, errors.New("project name is illegal in length. (greater than 4 or less than 30)")
 	}
 	if isContainIllegalChar(project.Name, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
-		return errors.New("project name contains illegal characters")
+		return 0, errors.New("project name contains illegal characters")
 	}
 
 	o := orm.NewOrm()
 
 	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	now := time.Now()
 	r, err := p.Exec(project.OwnerID, project.Name, now, now, project.Deleted, project.Public)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	projectID, err := r.LastInsertId()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN); err != nil {
-		return err
+		return projectID, err
 	}
 
-	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", GUID: "N/A", Operation: "create", OpTime: time.Now()}
+	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", RepoTag: "N/A", GUID: "N/A", Operation: "create", OpTime: time.Now()}
 	err = AddAccessLog(accessLog)
 
-	return err
+	return projectID, err
 }
 
 // IsProjectPublic ...
@@ -208,18 +208,35 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
-// QueryRelevantProjects returns all projects that the user is a member of.
-func QueryRelevantProjects(userID int) ([]models.Project, error) {
+// GetUserRelevantProjects returns a project list,
+// which satisfies the following conditions:
+// 1. the project is not deleted
+// 2. the prject is public or the user is a member of the project
+func GetUserRelevantProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `select distinct p.project_id, p.name, p.public 
 		from project p 
 		left join project_member pm on p.project_id = pm.project_id 
-		left join user u on u.user_id = pm.user_id 
-		where u.user_id = ? or p.public = 1 and p.deleted = 0`
-	var res []models.Project
-	_, err := o.Raw(sql, userID).QueryRows(&res)
-	if err != nil {
+		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
+
+	var projects []models.Project
+
+	if _, err := o.Raw(sql, userID).QueryRows(&projects); err != nil {
 		return nil, err
 	}
-	return res, err
+
+	return projects, nil
+}
+
+// GetAllProjects returns all projects which are not deleted
+func GetAllProjects() ([]models.Project, error) {
+	o := orm.NewOrm()
+	sql := `select project_id, name, public 
+		from project
+		where deleted = 0`
+	var projects []models.Project
+	if _, err := o.Raw(sql).QueryRows(&projects); err != nil {
+		return nil, err
+	}
+	return projects, nil
 }

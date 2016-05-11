@@ -158,13 +158,14 @@ func (ua *UserAPI) Post() {
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
 
-	_, err := dao.Register(user)
+	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
 		ua.RenderError(http.StatusInternalServerError, "Internal error.")
 		return
 	}
 
+	ua.Redirect(http.StatusCreated, strconv.FormatInt(userID, 10))
 }
 
 // Delete ...
@@ -186,7 +187,9 @@ func (ua *UserAPI) Delete() {
 // ChangePassword handles PUT to /api/users/{}/password
 func (ua *UserAPI) ChangePassword() {
 
-	if !(ua.AuthMode == "db_auth") {
+	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
+	
+	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
 		ua.CustomAbort(http.StatusForbidden, "")
 	}
 

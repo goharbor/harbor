@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema1"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
@@ -40,61 +41,20 @@ type RepositoryAPI struct {
 	BaseAPI
 	userID   int
 	username string
-	registry *registry.Registry
 }
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
 func (ra *RepositoryAPI) Prepare() {
 	userID, ok := ra.GetSession("userId").(int)
 	if !ok {
-		ra.userID = dao.NonExistUserID
-	} else {
-		ra.userID = userID
+		userID = dao.NonExistUserID
 	}
+	ra.userID = userID
+
 	username, ok := ra.GetSession("username").(string)
-	if !ok {
-		log.Warning("failed to get username from session")
-		ra.username = ""
-	} else {
+	if ok {
 		ra.username = username
 	}
-
-	var client *http.Client
-
-	//no session, initialize a standard auth handler
-	if ra.userID == dao.NonExistUserID && len(ra.username) == 0 {
-		username, password, _ := ra.Ctx.Request.BasicAuth()
-
-		credential := auth.NewBasicAuthCredential(username, password)
-		client = registry.NewClientStandardAuthHandlerEmbeded(credential)
-		log.Debug("initializing standard auth handler")
-
-	} else {
-		// session works, initialize a username auth handler
-		username := ra.username
-		if len(username) == 0 {
-			user, err := dao.GetUser(models.User{
-				UserID: ra.userID,
-			})
-			if err != nil {
-				log.Errorf("error occurred whiling geting user for initializing a username auth handler: %v", err)
-				return
-			}
-
-			username = user.Username
-		}
-
-		client = registry.NewClientUsernameAuthHandlerEmbeded(username)
-		log.Debug("initializing username auth handler: %s", username)
-	}
-
-	endpoint := os.Getenv("REGISTRY_URL")
-	r, err := registry.New(endpoint, client)
-	if err != nil {
-		log.Fatalf("error occurred while initializing auth handler for repository API: %v", err)
-	}
-
-	ra.registry = r
 }
 
 // Get ...
@@ -156,10 +116,16 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
+	rc, err := ra.initializeRepositoryClient(repoName)
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+
 	tags := []string{}
 	tag := ra.GetString("tag")
 	if len(tag) == 0 {
-		tagList, err := ra.registry.ListTag(repoName)
+		tagList, err := rc.ListTag()
 		if err != nil {
 			e, ok := errors.ParseError(err)
 			if ok {
@@ -169,16 +135,14 @@ func (ra *RepositoryAPI) Delete() {
 				log.Error(err)
 				ra.CustomAbort(http.StatusInternalServerError, "internal error")
 			}
-
 		}
 		tags = append(tags, tagList...)
-
 	} else {
 		tags = append(tags, tag)
 	}
 
 	for _, t := range tags {
-		if err := ra.registry.DeleteTag(repoName, t); err != nil {
+		if err := rc.DeleteTag(t); err != nil {
 			e, ok := errors.ParseError(err)
 			if ok {
 				ra.CustomAbort(e.StatusCode, e.Message)
@@ -204,36 +168,33 @@ type tag struct {
 	Tags []string `json:"tags"`
 }
 
-type histroyItem struct {
-	V1Compatibility string `json:"v1Compatibility"`
-}
-
-type manifest struct {
-	Name          string        `json:"name"`
-	Tag           string        `json:"tag"`
-	Architecture  string        `json:"architecture"`
-	SchemaVersion int           `json:"schemaVersion"`
-	History       []histroyItem `json:"history"`
-}
-
 // GetTags handles GET /api/repositories/tags
 func (ra *RepositoryAPI) GetTags() {
-
-	var tags []string
-
 	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
 
-	tags, err := ra.registry.ListTag(repoName)
+	rc, err := ra.initializeRepositoryClient(repoName)
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+
+	tags := []string{}
+
+	ts, err := rc.ListTag()
 	if err != nil {
 		e, ok := errors.ParseError(err)
 		if ok {
-			log.Info(e)
 			ra.CustomAbort(e.StatusCode, e.Message)
 		} else {
 			log.Error(err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 	}
+
+	tags = append(tags, ts...)
 
 	ra.Data["json"] = tags
 	ra.ServeJSON()
@@ -244,21 +205,30 @@ func (ra *RepositoryAPI) GetManifests() {
 	repoName := ra.GetString("repo_name")
 	tag := ra.GetString("tag")
 
+	if len(repoName) == 0 || len(tag) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
+	}
+
+	rc, err := ra.initializeRepositoryClient(repoName)
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+
 	item := models.RepoItem{}
 
-	_, _, payload, err := ra.registry.PullManifest(repoName, tag, registry.ManifestVersion1)
+	mediaTypes := []string{schema1.MediaTypeManifest}
+	_, _, payload, err := rc.PullManifest(tag, mediaTypes)
 	if err != nil {
 		e, ok := errors.ParseError(err)
 		if ok {
-			log.Info(e)
 			ra.CustomAbort(e.StatusCode, e.Message)
 		} else {
 			log.Error(err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 	}
-
-	mani := manifest{}
+	mani := models.Manifest{}
 	err = json.Unmarshal(payload, &mani)
 	if err != nil {
 		log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repoName, tag, err)
@@ -277,4 +247,32 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	ra.Data["json"] = item
 	ra.ServeJSON()
+}
+
+func (ra *RepositoryAPI) initializeRepositoryClient(repoName string) (r *registry.Repository, err error) {
+	endpoint := os.Getenv("REGISTRY_URL")
+
+	//no session, use basic auth
+	if ra.userID == dao.NonExistUserID {
+		username, password, _ := ra.Ctx.Request.BasicAuth()
+		credential := auth.NewBasicAuthCredential(username, password)
+
+		return registry.NewRepositoryWithCredential(repoName, endpoint, credential)
+
+	}
+
+	//session exists, use username
+	if len(ra.username) == 0 {
+		u := models.User{
+			UserID: ra.userID,
+		}
+		user, err := dao.GetUser(u)
+		if err != nil {
+			return nil, err
+		}
+
+		ra.username = user.Username
+	}
+
+	return registry.NewRepositoryWithUsername(repoName, endpoint, ra.username)
 }

@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego/orm"
 )
@@ -27,14 +28,14 @@ import (
 func AddAccessLog(accessLog models.AccessLog) error {
 	o := orm.NewOrm()
 	p, err := o.Raw(`insert into access_log
-		 (user_id, project_id, repo_name, guid, operation, op_time)
-		 values (?, ?, ?, ?, ?, now())`).Prepare()
+		 (user_id, project_id, repo_name, repo_tag, guid, operation, op_time)
+		 values (?, ?, ?, ?, ?, ?, now())`).Prepare()
 	if err != nil {
 		return err
 	}
 	defer p.Close()
 
-	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.GUID, accessLog.Operation)
+	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.RepoTag, accessLog.GUID, accessLog.Operation)
 
 	return err
 }
@@ -43,7 +44,7 @@ func AddAccessLog(accessLog models.AccessLog) error {
 func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 
 	o := orm.NewOrm()
-	sql := `select a.log_id, u.username, a.repo_name, a.operation, a.op_time
+	sql := `select a.log_id, u.username, a.repo_name, a.repo_tag, a.operation, a.op_time
 		from access_log a left join user u on a.user_id = u.user_id
 		where a.project_id = ? `
 	queryParam := make([]interface{}, 1)
@@ -60,6 +61,14 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 	if accessLog.Username != "" {
 		sql += ` and u.username like ? `
 		queryParam = append(queryParam, accessLog.Username)
+	}
+	if accessLog.RepoName != "" {
+		sql += ` and a.repo_name = ? `
+		queryParam = append(queryParam, accessLog.RepoName)
+	}
+	if accessLog.RepoTag != "" {
+		sql += ` and a.repo_tag = ? `
+		queryParam = append(queryParam, accessLog.RepoTag)
 	}
 	if accessLog.Keywords != "" {
 		sql += ` and a.operation in ( `
@@ -96,12 +105,15 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 }
 
 // AccessLog ...
-func AccessLog(username, projectName, repoName, action string) error {
+func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	o := orm.NewOrm()
-	sql := "insert into  access_log (user_id, project_id, repo_name, operation, op_time) " +
+	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +
 		"select (select user_id as user_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, now() "
-	_, err := o.Raw(sql, username, projectName, repoName, action).Exec()
+		"(select project_id as project_id from project where name=?), ?, ?, ?, now() "
+	_, err := o.Raw(sql, username, projectName, repoName, repoTag, action).Exec()
 
+	if err != nil {
+		log.Errorf("error in AccessLog: %v ", err)
+	}
 	return err
 }

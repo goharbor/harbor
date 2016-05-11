@@ -36,6 +36,7 @@
 				        <ul class="dropdown-menu">
 						  <li><a href="/language?lang=en-US">{{i18n .Lang "language_en-US"}}</a></li>						
 						  <li><a href="/language?lang=zh-CN">{{i18n .Lang "language_zh-CN"}}</a></li>
+						  <li><a href="/language?lang=de-DE">{{i18n .Lang "language_de-DE"}}</a></li>
 						</ul>
 					</li>
 			   	  </ul>
@@ -56,6 +57,10 @@
 						<li><a id="aChangePassword" href="/changePassword" target="_blank"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;{{i18n .Lang "change_password"}}</a></li>
 						<li role="separator" class="divider"></li>
 						{{ end }}
+						{{ if eq .IsLdapAdminUser true }}
+						<li><a id="aChangePassword" href="/changePassword" target="_blank"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;{{i18n .Lang "change_password"}}</a></li>
+						<li role="separator" class="divider"></li>
+						{{ end }} 
 						{{ if eq .AuthMode "db_auth" }}
 						  {{ if eq .IsAdmin true }}
 						    <li><a id="aAddUser" href="/addUser" target="_blank"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;{{i18n .Lang "add_user"}}</a></li>
