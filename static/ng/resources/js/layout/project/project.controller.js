@@ -6,9 +6,9 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', 'CurrentUserService']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService']; 
 
-  function ProjectController($scope, ListProjectService, CurrentUserService) {
+  function ProjectController($scope, ListProjectService) {
     var vm = this;
     
     vm.isOpen = false;
@@ -21,14 +21,14 @@
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;
     
+    $scope.$on('currentUser', function(e, val) {
+      vm.currentUser = val;
+    });
+    
     vm.retrieve();
     
     function retrieve() {       
-      
-      $scope.$on('currentUser', function(e, val) {
-        vm.currentUser = val;
-      });
-    
+       
       ListProjectService(vm.projectName, vm.publicity)
         .success(listProjectSuccess)
         .error(listProjectFailed);

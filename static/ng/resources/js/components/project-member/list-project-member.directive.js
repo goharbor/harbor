@@ -6,18 +6,12 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', '$routeParams'];
+  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', '$routeParams', 'currentUser'];
     
-  function ListProjectMemberController($scope, ListProjectMemberService, $routeParams) {
+  function ListProjectMemberController($scope, ListProjectMemberService, $routeParams, currentUser) {
     var vm = this;
-    vm.currentUser = {};
-    
-    $scope.$on('currentUser', function(e, val) {
-      vm.currentUser = val; 
-      console.log('In list-project-member received current user:' + vm.currentUser);
-      $scope.$apply();
-    });
-    
+
+ 
     vm.isOpen = false;
        
     vm.search = search; 
@@ -46,14 +40,13 @@
     }
   
     function retrieve() {
-      
       ListProjectMemberService(vm.projectId, {'username': vm.username})
         .then(getProjectMemberComplete)
-        .catch(getProjectMemberFailed);            
-     
+        .catch(getProjectMemberFailed);             
     }
     
-    function getProjectMemberComplete(response) {
+    function getProjectMemberComplete(response) {  
+      vm.currentUser = currentUser.get();
       vm.projectMembers = response.data;  
     } 
            
@@ -78,7 +71,7 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-
+     
     }
   }
   

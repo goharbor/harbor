@@ -31,10 +31,8 @@
     vm.selectItem = selectItem;  
     
     $scope.$watch('vm.publicity', function(current, origin) { 
-      if(typeof current != "undefined") {
-        vm.isPublic = current ? 1 : 0;        
-        vm.retrieve();
-      }
+      vm.isPublic = current ? 1 : 0;        
+      vm.retrieve();      
     });
        
     function retrieve() {
@@ -45,7 +43,13 @@
     
     function getProjectSuccess(data, status) {
       vm.projects = data;
+      if(vm.projects == null) {
+        vm.publicity = 1;
+        console.log('vm.projects is null, load public projects.');
+      }
+      
       vm.selectedProject = vm.projects[0];  
+      
       if($routeParams.project_id){
         angular.forEach(vm.projects, function(value, index) {
           if(value['ProjectId'] == $routeParams.project_id) {
@@ -53,6 +57,7 @@
           }
         }); 
       }
+      
       $location.search('project_id', vm.selectedProject.ProjectId);
       vm.checkProjectMember(vm.selectedProject.ProjectId);
       vm.resultCount = vm.projects.length;

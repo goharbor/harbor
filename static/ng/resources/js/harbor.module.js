@@ -22,6 +22,7 @@
       'harbor.services.repository',
       'harbor.services.project.member',
       'harbor.optional.menu',
+      'harbor.modal.dialog',
       'harbor.sign.in',
       'harbor.search',
       'harbor.project',

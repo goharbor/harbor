@@ -21,13 +21,22 @@
           .catch(getTagFailed);
       }
     });
+    
+    vm.deleteTag = deleteTag;
+    
     function getTagComplete(response) {
       vm.tags = response.data;
     }
       
     function getTagFailed(response) {
-      
+      console.log('Failed get tag:' + response);
     }
+    
+    function deleteTag(e) {
+      $scope.$emit('tag', e.tag);
+      $scope.$emit('repoName', e.repoName);
+    }
+    
   }
   
   function listTag() {

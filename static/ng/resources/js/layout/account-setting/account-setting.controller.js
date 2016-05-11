@@ -6,9 +6,9 @@
     .module('harbor.layout.account.setting')
     .controller('AccountSettingController', AccountSettingController);
   
-  AccountSettingController.$inject = ['ChangePasswordService', '$scope', '$window'];
+  AccountSettingController.$inject = ['ChangePasswordService', '$scope', '$window', 'currentUser'];
   
-  function AccountSettingController(ChangePasswordService, $scope, $window) {
+  function AccountSettingController(ChangePasswordService, $scope, $window, currentUser) {
     var vm = this;
     vm.isOpen = false;
     vm.user = {};
@@ -21,7 +21,7 @@
     $scope.$on('currentUser', function(e, val) {
       vm.user = val;
     });
-
+     
     function toggleChangePassword() {
       if(vm.isOpen) {
         vm.isOpen = false;

@@ -15,6 +15,19 @@
     vm.projectId = $routeParams.project_id;
     
     vm.retrieve();
+
+    $scope.$on('repoName', function(e, val) {
+      vm.repoName = val;
+    });
+
+    $scope.$on('tag', function(e, val){
+      vm.tag = val;
+    });
+    
+    vm.message = "Are you sure to delete the tag of image?";
+    vm.deleteImage = deleteImage;
+
+
     
     function retrieve(){
       ListRepositoryService(vm.projectId, vm.filterInput)
@@ -27,10 +40,12 @@
     }
     
     function getRepositoryFailed(repsonse) {
-      console.log('failed to list repositories:' + response);      
+      console.log('Failed list repositories:' + response);      
     }
    
-    
+    function deleteImage() {
+      console.log('repoName:' + vm.repoName + ', tag:' + vm.tag);
+    }
   }
   
   function listRepository() {
