@@ -190,6 +190,16 @@ func (p *ProjectAPI) FilterAccessLog() {
 }
 
 func isProjectAdmin(userID int, pid int64) bool {
+	isSysAdmin, err := dao.IsAdminRole(userID)
+	if err != nil {
+		log.Errorf("Error occurred in IsAdminRole, returning false, error: %v", err)
+		return false
+	}
+
+	if isSysAdmin {
+		return true
+	}
+
 	rolelist, err := dao.GetUserProjectRoles(userID, pid)
 	if err != nil {
 		log.Errorf("Error occurred in GetUserProjectRoles, returning false, error: %v", err)
