@@ -84,7 +84,7 @@ func (s *StatisticAPI) Get() {
 	s.ServeJSON()
 }
 
-//return repo numbers of specified project
+//GetReposByProject returns repo numbers of specified project
 func (s *StatisticAPI) GetReposByProject(projectName string, isAdmin bool) int {
 	repoList, err := svc_utils.GetRepoFromCache()
 	if err != nil {
