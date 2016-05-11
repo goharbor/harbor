@@ -6,9 +6,10 @@
     .module('harbor.modal.dialog')
     .directive('modalDialog', modalDialog);
   
-  function ModalDialogController() {
+  ModalDialogController.$inject = ['$scope'];
+  
+  function ModalDialogController($scope) {
     var vm = this;
-    vm.action();
   }
   
   function modalDialog() {
@@ -17,6 +18,8 @@
       'templateUrl': '/static/ng/resources/js/components/modal-dialog/modal-dialog.directive.html',
       'link': link,
       'scope': {
+        'contentType': '@',
+        'title': '@',
         'message': '@',
         'action': '&'
       },
@@ -28,6 +31,27 @@
     
     function link(scope, element, attrs, ctrl) {
       
+      console.log('Received contentType in modal:' + ctrl.contentType);
+                  
+      scope.$watch('vm.message', function(current) {
+        if(current) {
+          switch(ctrl.contentType) {
+          case 'text/html':
+            element.find('.modal-body').html(current); break;
+          case 'text/plain':
+            element.find('.modal-body').text(current); break;
+          default:
+            element.find('.modal-body').text(current); break;
+          }
+        }
+      });
+      
+      element.find('#btnOk').on('click', clickHandler);
+
+      function clickHandler(e) {
+        ctrl.action();
+        element.find('#myModal').modal('hide');
+      }
     }
   }
   

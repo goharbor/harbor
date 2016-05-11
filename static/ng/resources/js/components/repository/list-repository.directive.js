@@ -5,14 +5,15 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'ListTagService', 'nameFilter', '$routeParams'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', 'nameFilter', '$routeParams'];
   
-  function ListRepositoryController($scope, ListRepositoryService, ListTagService, nameFilter, $routeParams) {
+  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, nameFilter, $routeParams) {
     var vm = this;
         
     vm.filterInput = "";
     vm.retrieve = retrieve;
     vm.projectId = $routeParams.project_id;
+    vm.tagCount = {};
     
     vm.retrieve();
 
@@ -24,11 +25,21 @@
       vm.tag = val;
     });
     
-    vm.message = "Are you sure to delete the tag of image?";
-    vm.deleteImage = deleteImage;
-
-
+    $scope.$on('tagCount', function(e, val) {
+      vm.tagCount = val;
+    });
     
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+    
+    vm.deleteByRepo = deleteByRepo;
+    vm.deleteImage =  deleteImage;
+
     function retrieve(){
       ListRepositoryService(vm.projectId, vm.filterInput)
         .success(getRepositoryComplete)
@@ -39,13 +50,35 @@
       vm.repositories = data;
     }
     
-    function getRepositoryFailed(repsonse) {
+    function getRepositoryFailed(response) {
       console.log('Failed list repositories:' + response);      
     }
    
+  
+    function deleteByRepo(repoName) {
+      vm.repoName = repoName;
+      vm.tag = '';      
+      vm.modalTitle = 'Delete repository - ' + repoName;
+      vm.modalMessage = 'After deleting the associated tags with the repository will be deleted together.<br/>' +
+      'And the corresponding image will be removed from the system.<br/>' +
+      '<br/>Delete this "' + repoName + '" repository now?';
+    }
+  
     function deleteImage() {
       console.log('repoName:' + vm.repoName + ', tag:' + vm.tag);
+      DeleteRepositoryService(vm.repoName, vm.tag)
+        .success(deleteRepositorySuccess)
+        .error(deleteRepositoryFailed);
     }
+    
+    function deleteRepositorySuccess(data, status) {
+      vm.retrieve();
+    }
+    
+    function deleteRepositoryFailed(data, status) {
+      console.log('Failed delete repository:' + data);
+    }
+    
   }
   
   function listRepository() {
