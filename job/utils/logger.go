@@ -1,7 +1,8 @@
-package job
+package utils
 
 import (
 	"fmt"
+
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/utils/log"
 )
