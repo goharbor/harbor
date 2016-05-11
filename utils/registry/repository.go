@@ -103,7 +103,7 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 		client:   client,
 	}
 
-	log.Debugf("initialized a repository client with username: %s %s", endpoint, name, username)
+	log.Debugf("initialized a repository client with username: %s %s %s", endpoint, name, username)
 
 	return repository, nil
 }

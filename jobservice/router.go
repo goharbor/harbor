@@ -7,5 +7,5 @@ import (
 )
 
 func initRouters() {
-	beego.Router("/api/jobs/?:id", &api.JobAPI{})
+	beego.Router("/api/jobs/replication", &api.ReplicationJob{})
 }
