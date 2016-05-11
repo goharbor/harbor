@@ -84,7 +84,7 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public 
+		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
 	 from project p 
 		left join project_member pm on p.project_id = pm.project_id
 	 where p.deleted = 0 `

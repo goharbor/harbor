@@ -17,21 +17,19 @@ package api
 
 import (
 	"net/http"
-	"os"
+	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry"
-	"github.com/vmware/harbor/utils/registry/auth"
 )
 
+// StatisticAPI handles request to /api/statistics/
 type StatisticAPI struct {
 	BaseAPI
 	userID   int
 	username string
-	registry *registry.Registry
 }
 
 //Prepare validates the URL and the user
@@ -41,7 +39,6 @@ func (s *StatisticAPI) Prepare() {
 		s.userID = dao.NonExistUserID
 	} else {
 		s.userID = userID
-		log.Debug("userID is xxx", userID)
 	}
 	username, ok := s.GetSession("username").(string)
 	if !ok {
@@ -49,98 +46,62 @@ func (s *StatisticAPI) Prepare() {
 		s.username = ""
 	} else {
 		s.username = username
-		log.Debug("username is xxx", username)
 	}
-
-	var client *http.Client
-
-	//no session, initialize a standard auth handler
-	if s.userID == dao.NonExistUserID && len(s.username) == 0 {
-		username, password, _ := s.Ctx.Request.BasicAuth()
-
-		credential := auth.NewBasicAuthCredential(username, password)
-		client = registry.NewClientStandardAuthHandlerEmbeded(credential)
-		log.Debug("initializing standard auth handler")
-
-	} else {
-		// session works, initialize a username auth handler
-		username := s.username
-		if len(username) == 0 {
-			user, err := dao.GetUser(models.User{
-				UserID: s.userID,
-			})
-			if err != nil {
-				log.Errorf("error occurred whiling geting user for initializing a username auth handler: %v", err)
-				return
-			}
-
-			username = user.Username
-		}
-
-		client = registry.NewClientUsernameAuthHandlerEmbeded(username)
-		log.Debug("initializing username auth handler: %s", username)
-	}
-
-	endpoint := os.Getenv("REGISTRY_URL")
-	r, err := registry.New(endpoint, client)
-	if err != nil {
-		log.Fatalf("error occurred while initializing auth handler for repository API: %v", err)
-	}
-
-	s.registry = r
 }
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	queryProject := models.Project{UserID: s.userID}
 	projectList, err := dao.QueryProject(queryProject)
-	var projectArr [6]int
+	proMap := map[string]int{}
 	if err != nil {
 		log.Errorf("Error occured in QueryProject, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	log.Debug("projectList xxx ", projectList)
-	isAdmin, _ := dao.IsAdminRole(s.userID)
-	for i := 0; i < len(projectList); i++ {
-		if isProjectAdmin(s.userID, projectList[i].ProjectID) {
-			projectArr[0] += 1
-			projectArr[1] += s.GetRepos(projectList[i].ProjectID)
-		}
-		if projectList[i].Public == 1 {
-			projectArr[2] += 1
-			projectArr[3] += s.GetRepos(projectList[i].ProjectID)
-		}
-		if isAdmin {
-			projectArr[5] += s.GetRepos(projectList[i].ProjectID)
-		}
+	isAdmin, err0 := dao.IsAdminRole(s.userID)
+	if err0 != nil {
+		log.Errorf("Error occured in check admin, error: %v", err0)
+		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if isAdmin {
-		projectArr[4] = len(projectList)
+		proMap["total_project"] = len(projectList)
 	}
-	s.Data["json"] = projectArr
+	for i := 0; i < len(projectList); i++ {
+		if projectList[i].Role == 1 || projectList[i].Role == 2 {
+			proMap["my_project"]++
+			proMap["my_repos"] += s.GetReposByProject(projectList[i].Name, false)
+		}
+		if projectList[i].Public == 1 {
+			proMap["public_project"]++
+			proMap["public_repos"] += s.GetReposByProject(projectList[i].Name, false)
+		}
+		if isAdmin {
+			proMap["total_repos"] = s.GetReposByProject(projectList[i].Name, true)
+		}
+	}
+	log.Debug(projectList)
+	s.Data["json"] = proMap
 	s.ServeJSON()
 }
 
-func (s *StatisticAPI) GetRepos(projectID int64) int {
-	p, err := dao.GetProjectByID(projectID)
-	if err != nil {
-		log.Errorf("Error occurred in GetProjectById, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if p == nil {
-		log.Warningf("Project with Id: %d does not exist", projectID)
-		s.RenderError(http.StatusNotFound, "")
-		return 0
-	}
-	if p.Public == 0 && !checkProjectPermission(s.userID, projectID) {
-		s.RenderError(http.StatusForbidden, "")
-		return 0
-	}
-
+//return repo numbers of specified project
+func (s *StatisticAPI) GetReposByProject(projectName string, isAdmin bool) int {
 	repoList, err := svc_utils.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		s.RenderError(http.StatusInternalServerError, "internal sever error")
 	}
-	return len(repoList)
+	if isAdmin {
+		return len(repoList)
+	}
+	var resp []string
+	if len(projectName) > 0 {
+		for _, r := range repoList {
+			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
+				resp = append(resp, r)
+			}
+		}
+		return len(resp)
+	}
+	return 0
 }

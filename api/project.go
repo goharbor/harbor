@@ -126,10 +126,12 @@ func (p *ProjectAPI) Get() {
 		log.Errorf("Error occurred in QueryProject, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
+	sa := &StatisticAPI{userID: p.userID, username: ""}
 	for i := 0; i < len(projectList); i++ {
-		if isProjectAdmin(p.userID, projectList[i].ProjectID) {
+		if projectList[i].Role == 1 {
 			projectList[i].Togglable = true
 		}
+		projectList[i].Repos = sa.GetReposByProject(projectList[i].Name, false)
 	}
 	p.Data["json"] = projectList
 	p.ServeJSON()
