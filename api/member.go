@@ -92,7 +92,7 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 		pma.Data["json"] = userList
 	} else { //return detail of a  member
-		roleList, err := dao.GetUserProjectRoles(pma.memberID, pid)
+		roleList, err := listRoles(pma.memberID, pid)
 		if err != nil {
 			log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -240,4 +240,28 @@ func (pma *ProjectMemberAPI) Delete() {
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")
 		return
 	}
+}
+
+//sysadmin has all privileges to all projects
+func listRoles(userID int, projectID int64) ([]models.Role, error) {
+	roles := make([]models.Role, 1)
+	isSysAdmin, err := dao.IsAdminRole(userID)
+	if err != nil {
+		return roles, err
+	}
+	if isSysAdmin {
+		role, err := dao.GetRoleByID(models.PROJECTADMIN)
+		if err != nil {
+			return roles, err
+		}
+		roles = append(roles, *role)
+		return roles, nil
+	}
+
+	rs, err := dao.GetUserProjectRoles(userID, projectID)
+	if err != nil {
+		return roles, err
+	}
+	roles = append(roles, rs...)
+	return roles, nil
 }
