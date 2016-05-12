@@ -574,7 +574,7 @@ paths:
           description: Retrieved tags from a relevant repository successfully.
         500:
           description: Unexpected internal errors.
-  /repositories/manifest:
+  /repositories/manifests:
     get:
       summary: Get manifests of a relevant repository.
       description: |
