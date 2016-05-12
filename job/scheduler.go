@@ -6,9 +6,10 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+var JobQueue chan int64 = make(chan int64)
+
 func Schedule(jobID int64) {
-	//TODO: introduce jobqueue to better control concurrent job numbers
-	go HandleRepJob(jobID)
+	JobQueue <- jobID
 }
 
 func HandleRepJob(id int64) {
