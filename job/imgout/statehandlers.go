@@ -16,6 +16,11 @@
 package imgout
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -121,7 +126,7 @@ type Checker struct {
 // check existence of project, if it does not exist, create it,
 // if it exists, check whether the user has write privilege to it.
 func (c *Checker) Enter() (string, error) {
-	exist, err := c.projectExist()
+	exist, canWrite, err := c.projectExist()
 	if err != nil {
 		c.logger.Errorf("an error occurred while checking existence of project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
 		return "", err
@@ -136,14 +141,10 @@ func (c *Checker) Enter() (string, error) {
 	}
 
 	c.logger.Infof("project %s already exists on %s", c.project, c.dstURL)
-	canWrite, err := c.canWrite()
-	if err != nil {
-		c.logger.Errorf("an error occurred while checking %s 's privileges to project %s on %s : %v", c.dstUsr, c.project, c.dstURL, err)
-		return "", err
-	}
 
 	if !canWrite {
-		c.logger.Errorf("the user %s has no write privilege to project %s on %s", c.dstUsr, c.project, c.dstURL)
+		err = fmt.Errorf("the user %s has no write privilege to project %s on %s", c.dstUsr, c.project, c.dstURL)
+		c.logger.Errorf("%v", err)
 		return "", err
 	}
 	c.logger.Infof("the user %s has write privilege to project %s on %s", c.dstUsr, c.project, c.dstURL)
@@ -151,18 +152,96 @@ func (c *Checker) Enter() (string, error) {
 	return StatePullManifest, nil
 }
 
-func (c *Checker) projectExist() (bool, error) {
-	exist := true
-	return exist, nil
+// check the existence of project, if it exists, returning whether the user has write privilege to it
+func (c *Checker) projectExist() (exist, canWrite bool, err error) {
+	url := strings.TrimRight(c.dstURL, "/") + "/api/projects/?project_name=" + c.project
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return
+	}
+
+	req.SetBasicAuth(c.dstUsr, c.dstPwd)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		exist = true
+		return
+	}
+
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		projects := make([]models.Project, 1)
+		if err = json.Unmarshal(data, &projects); err != nil {
+			return
+		}
+
+		if len(projects) == 0 {
+			return
+		}
+
+		exist = true
+		// TODO handle canWrite when new API is ready
+		canWrite = true
+
+		return
+	}
+
+	err = fmt.Errorf("an error occurred while checking existen of project %s on %s with user %s: %d %s",
+		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(data))
+
+	return
 }
 
 func (c *Checker) createProject() error {
-	return nil
-}
+	// TODO handle publicity of project
+	project := struct {
+		ProjectName string `json:"project_name"`
+		Public      bool   `json:"public"`
+	}{
+		ProjectName: c.project,
+	}
 
-func (c *Checker) canWrite() (bool, error) {
-	canWrite := true
-	return canWrite, nil
+	data, err := json.Marshal(project)
+	if err != nil {
+		return err
+	}
+
+	url := strings.TrimRight(c.dstURL, "/") + "/api/projects/"
+	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+
+	req.SetBasicAuth(c.dstUsr, c.dstPwd)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		defer resp.Body.Close()
+		message, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			c.logger.Errorf("an error occurred while reading message from response: %v", err)
+		}
+
+		return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
+			c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
+	}
+
+	return nil
 }
 
 type ManifestPuller struct {
@@ -274,6 +353,7 @@ func (m *ManifestPusher) Enter() (string, error) {
 			m.logger.Errorf("an error occurred while getting payload of manifest for %s:%s : %v", name, tag, err)
 			return "", err
 		}
+
 		if _, err = m.dstClient.PushManifest(tag, mediaType, data); err != nil {
 			m.logger.Errorf("an error occurred while pushing manifest of %s:%s to %s : %v", name, tag, m.dstURL, err)
 			return "", err
