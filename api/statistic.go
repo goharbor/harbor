@@ -79,7 +79,6 @@ func (s *StatisticAPI) Get() {
 			proMap["total_repos"] = s.GetReposByProject(projectList[i].Name, true)
 		}
 	}
-	log.Debug(projectList)
 	s.Data["json"] = proMap
 	s.ServeJSON()
 }

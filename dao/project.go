@@ -84,19 +84,19 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
-	 from project p 
-		left join project_member pm on p.project_id = pm.project_id
-	 where p.deleted = 0 `
-
+		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public`
 	queryParam := make([]interface{}, 1)
-
+	isAdmin, _ := IsAdminRole(query.UserID)
 	if query.Public == 1 {
-		sql += ` and p.public = ?`
+		sql += ` from project p where p.deleted = 0 and p.public = ?`
 		queryParam = append(queryParam, query.Public)
-	} else if isAdmin, _ := IsAdminRole(query.UserID); isAdmin == false {
-		sql += ` and (pm.user_id = ?) `
+	} else if !isAdmin {
+		sql += `, pm.role role from project p 
+		left join project_member pm on p.project_id = pm.project_id
+	    where p.deleted = 0  and (pm.user_id = ?) `
 		queryParam = append(queryParam, query.UserID)
+	} else if isAdmin {
+		sql += ` from project p where p.deleted = 0 `
 	}
 
 	if query.Name != "" {
@@ -111,6 +111,11 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 
 	if err != nil {
 		return nil, err
+	}
+	if isAdmin {
+		for i := 0; i < len(r); i++ {
+			r[i].Role = 1
+		}
 	}
 	return r, nil
 }
