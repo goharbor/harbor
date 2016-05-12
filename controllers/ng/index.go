@@ -4,6 +4,6 @@ type IndexController struct {
 	BaseController
 }
 
-func (c *IndexController) Get() {
-	c.Forward("Index", "index.htm")
+func (ic *IndexController) Get() {
+	ic.Forward("Index", "index.htm")
 }

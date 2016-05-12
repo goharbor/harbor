@@ -4,11 +4,11 @@
   
   angular
     .module('harbor.session')
-    .controller('CurrentUserController', CurrentUserController)
-    
-  CurrentUserController.$inject = ['CurrentUserService', 'currentUser', '$scope', '$timeout'];
+    .controller('CurrentUserController', CurrentUserController);
+ 
+  CurrentUserController.$inject = ['CurrentUserService', 'currentUser', '$scope', '$timeout', '$window'];
   
-  function CurrentUserController(CurrentUserService, currentUser, $scope, $timeout) {
+  function CurrentUserController(CurrentUserService, currentUser, $scope, $timeout, $window) {
     
     var vm = this;
     
@@ -25,8 +25,15 @@
     }
     
     function getCurrentUserFailed(e){
-      console.log('Have not logged in yet.');
+      var url = location.pathname;
+      var exclusions = ['/ng', '/ng/forgot_password', '/ng/sign_up', '/ng/reset_password'];
+      for(var i = 0; i < exclusions.length; i++) {
+        if(exclusions[i]===url) {
+          return;
+        }
+      }
+      $window.location.href = '/ng';
     }
   }
-
+ 
 })();

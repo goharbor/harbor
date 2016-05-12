@@ -12,7 +12,9 @@
     vm.principal = "";
     vm.password = "";
     vm.doSignIn = doSignIn;
- 
+    vm.doSignUp = doSignUp;
+    vm.doForgotPassword = doForgotPassword;
+    
     function doSignIn() {
       if(vm.principal != "" && vm.password != "") {
         SignInService(vm.principal, vm.password)
@@ -32,6 +34,13 @@
       console.log(status);
     }
     
+    function doSignUp() {
+      $window.location.href = '/ng/sign_up';
+    }
+    
+    function doForgotPassword() {
+      $window.location.href = '/ng/forgot_password';
+    }
   }
   
   function signIn() {

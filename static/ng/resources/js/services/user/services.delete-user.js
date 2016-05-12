@@ -12,8 +12,9 @@
     
     return DeleteUser;
     
-    function DeleteUser(user) {
-      
+    function DeleteUser(userId) {
+      return $http
+        .delete('/api/users/' + userId);
     }
     
   }

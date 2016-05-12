@@ -1,1 +1,33 @@
-<list-user></list-user>
+<div class="sub-pane">
+  <div class="form-inline">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="" ng-model="vm.username" size="30">
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="button" ng-click="vm.searchUser()"><span class="glyphicon glyphicon-search"></span></button>
+      </span>
+    </div>
+  </div>    
+  <div style="height: 500px; overflow-y: auto;">
+    <table class="table">
+      <thead>
+        <th>Username</th><th>Role</th><th>Email</th><th>Registration Time</th><th>Operation</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="u in vm.users">
+          <td>//u.username//</td>
+          <td>N/A</td>
+          <td>//u.email//</td>
+          <td>//u.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+          <td>
+            <toggle-admin has-admin-role="u.HasAdminRole == 1" user-id="//u.UserId//"></toggle-admin>&nbsp;&nbsp;
+            &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.deleteUser(u.UserId)"><span class="glyphicon glyphicon-trash"></span></a>
+          </td>
+        	</tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="col-xs-4 col-md-12 well well-sm well-custom">
+  <div class="col-md-offset-10">//vm.users ? vm.users.length : 0// items</div>
+</div>
+

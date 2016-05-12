@@ -1,0 +1,20 @@
+<div class="container-fluid container-fluid-custom" ng-controller="AdminOptionController as vm">
+  <div class="container container-custom">
+    <div class="row extend-height">
+      <div class="col-xs-12 col-md-12 extend-height">
+  	      <div class="section">
+  		      <h4 class="page-header">
+             <span ng-show="!vm.toggle">Users</span>
+             <a ng-show="vm.toggle" href="#/all_user" ng-click="vm.toggleAdminOption()">Users</a>
+             <span class="gutter">|</span>
+             <span ng-show="vm.toggle">System Management</span>
+             <a ng-show="!vm.toggle" href="#/system_management" class="title-color" ng-click="vm.toggleAdminOption()">System Management</a>
+          </h4>
+          <div class="project-pane">  
+    		      <ng-view></ng-view>
+          </div>
+  	      </div>
+      </div>
+    </div>
+  </div>
+</div>

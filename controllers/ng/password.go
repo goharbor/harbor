@@ -22,6 +22,10 @@ func (cc *CommonController) Render() error {
 	return nil
 }
 
+func (cc *CommonController) LogOut() {
+	cc.DestroySession()
+}
+
 type messageDetail struct {
 	Hint string
 	URL  string

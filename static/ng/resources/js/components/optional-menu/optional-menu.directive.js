@@ -6,10 +6,22 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$scope'];
+  OptionalMenuController.$inject = ['$scope', '$window', 'LogOutService'];
 
-  function OptionalMenuController($scope, $timeout) {
+  function OptionalMenuController($scope, $window, LogOutService) {
     var vm = this;
+    vm.logOut = logOut;
+    function logOut() {
+      LogOutService()
+        .success(logOutSuccess)
+        .error(logOutFailed);
+    }
+    function logOutSuccess(data, status) {
+      $window.location.href= '/ng';
+    }
+    function logOutFailed(data, status) {
+      console.log('Failed to log out:' + data);
+    }
   }
   
   function optionalMenu() {

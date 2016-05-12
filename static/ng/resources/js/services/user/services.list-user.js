@@ -10,10 +10,15 @@
   
   function ListUserService($http, $log) {
     
-    return ListUser;
+    return listUser;
     
-    function ListUser(queryParams) {      
-      $log.info(queryParams);
+    function listUser(username) {      
+      return $http
+        .get('/api/users', {
+          'params' : {
+            'username': username
+          }
+        });
     }
   }
 })();

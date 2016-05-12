@@ -1,4 +1,4 @@
-<div class="container-fluid container-fluid-custom">
+<div class="container-fluid container-fluid-custom" ng-controller="DashboardController as vm">
   <div class="container">
     <div class="row row-custom">
 	    <div class="col-xs-4 col-md-4"> 
@@ -6,34 +6,28 @@
 	        <div class="up-section">
   		        <h4 class="page-header title-color underlined">Summary</h4>  
   		      	  <dl class="page-content dl-horizontal">
-        			  <dt>Projects:</dt><dd>40</dd>
-        			  <dt>Public Projects:</dt><dd>30</dd>
-        			  <dt>Total Projects:</dt><dd>60</dd>
-        			  <dt>Repositories:</dt><dd>20</dd>
-        			  <dt>Public Repositories:</dt><dd>18</dd>
-        			  <dt>Total Repositories:</dt><dd>32</dd>
+        			  <dt>Projects:</dt><dd>//vm.statProjects['projects']//</dd>
+        			  <dt>Public Projects:</dt><dd>//vm.statProjects['public_projects']//</dd>
+        			  <dt>Total Projects:</dt><dd>//vm.statProjects['total_projects']//</dd>
+        			  <dt>Repositories:</dt><dd>//vm.statProjects['repositories']//</dd>
+        			  <dt>Public Repositories:</dt><dd>//vm.statProjects['public_repositories']//</dd>
+        			  <dt>Total Repositories:</dt><dd>//vm.statProjects['total_repositories']//</dd>
         			</dl>
           </div>
         </div>						
       </div>
       <div class="col-xs-8 col-md-8">
 	      <div class="up-section">	
-		      <h4 class="page-header title-color underlined">Logs</h4>
+		      <h4 class="page-header title-color underlined">Top 10 Repositories</h4>
 		      <div class="col-xs-4 col-md-12 up-table-pane">
 		        <table class="table">
         			  <thead>
-        			    <th>Username</th><th>Repository Name</th><th>Operation</th><th>Timestamp</th>
+        			    <th>Repository Name</th><th>Size</th><th>Creator</th>
         			  </thead>
         			  <tbody>
-        			    <tr>
-        				  <td>Haox</td><td>myrepo/Ubuntu</td><td>Create</td><td>2016-03-22 12:35:00</td>
-        				</tr>
-        			    <tr>
-        				  <td>Haox</td><td>myrepo/MySQL</td><td>Push</td><td>2016-03-22 12:35:00</td>
-        				</tr>
-        				<tr>
-        				  <td>Daniel</td><td>myproject/Golang</td><td>Create</td><td>2016-03-12 12:35:00</td>
-        				</tr>
+        			    <tr ng-repeat="t in vm.top10Repositories">
+        				    <td>//t.repo_name//</td><td>//t.image_size//MB</td><td>//t.creator//</td>
+        				  </tr>
         			  </tbody>
       			  </table>
 		      </div>  
@@ -45,25 +39,18 @@
     <div class="row row-custom">
       <div class="col-xs-12 col-md-12">
 	      <div class="down-section single">
-    	    		<h4 class="page-header title-color underlined">Total Projects and Repositories Trends</h4>
-    	    		<p class="page-content text-justify">
-    			  Project Harbor is to build an enterprise-class, 
-    			  reliable registry server. Enterprises can set 
-    			  up a private registry server in their own environment 
-    			  to improve productivity as well as security. 
-    			  Project Harbor can be used in both development
-    			  and production environment.
-    	    		</p>
-    	    		<ul>
-      			  <li title="Security: Keep their intellectual properties within their organizations.">Security: Keep their intellectual properties ...</li>
-      			  <li title="Efficiency: A private registry server is set up within the organization's network and can reduce significantly the internet traffic to the public service.">Efficiency: A private registry server is set up ...</li>
-      			  <li title="Access Control: RBAC (Role Based Access Control) is provided. User management can be integrated with existing enterprise identity services like AD/LDAP.">Access Control: RBAC (Role Based Access ...</li>
-      			  <li title="Audit: All access to the registry are logged and can be used for audit purpose.">Audit: All access to the registry are logged ...</li>
-      			  <li title="GUI: User friendly single-pane-of-glass management console.">GUI: User friendly single-pane-of-glass ...</li>
-      			</ul>
-    	    		<div class="page-content pull-right">
-    		      <a href="#">Learn more...</a>
-    		    </div>
+    	    		<h4 class="page-header title-color underlined">Logs</h4>
+    	    		
+      			 <table class="table">
+      			  <thead>
+      			    <th>Task Name</th><th>Details</th><th>User</th><th>Time</th>
+      			  </thead>
+      			  <tbody>
+      			    <tr ng-repeat="t in vm.integratedLogs">
+      				    <td>//t.task_name//</td><td>//t.details//</td><td>//t.user//</td><td>//t.creation_time//</td>
+      				  </tr>
+      			  </tbody>
+    			  </table>		
         </div>						
 	    </div>
     </div>
