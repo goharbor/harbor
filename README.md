@@ -69,7 +69,6 @@ features added to facility Shurenyun internal usage.
 
 # docker_compose 文件支持的compose参数包括
 
-	Name         string      `json:"name" yaml:"name"`
 	Image        string      `json:"image" yaml:"image"`
 	Command      interface{} `json:"command" yaml:"command"`
 	EntryPoint   string      `json:"entrypoint" yaml:"entrypoint"`
@@ -80,7 +79,9 @@ features added to facility Shurenyun internal usage.
 	Ports        []*Port     `json:"ports" yaml:"ports"`
 	Net          string      `json:"net" yaml:"net"`                   // bridge, host
 	NetworkMode  string      `json:"network_mode" yaml:"network_mode"` //compose version2 for net, same as net
-	Restart      string      `json:"restart" yaml:"restart"`
+	Links       []*Link     `json:"links" yaml:"links,omitempty"`
+
+
 
 # marathon_config 包含参数包括
 
