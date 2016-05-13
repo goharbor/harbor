@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/utils/log"
+	//"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
@@ -48,7 +48,7 @@ type tagResp struct {
 }
 
 func TestMain(m *testing.M) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	credential = auth.NewBasicAuthCredential(username, password)
 
 	tokenServer = initTokenServer()
@@ -157,8 +157,8 @@ func TestListTag(t *testing.T) {
 
 }
 
-func TestListTagWithInvalidUser(t *testing.T) {
-	credential := auth.NewBasicAuthCredential("user", "test")
+func TestListTagWithInvalidCredential(t *testing.T) {
+	credential := auth.NewBasicAuthCredential(username, "wrong_password")
 	client, err := NewRepositoryWithCredential(repo, registryServer.URL, credential)
 	if err != nil {
 		t.Error(err)
@@ -174,38 +174,3 @@ func TestListTagWithInvalidUser(t *testing.T) {
 		return
 	}
 }
-
-/*tokenHandler := func(w http.ResponseWriter, r *http.Request) {
-	username, _, ok := r.BasicAuth()
-	if !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	service := r.FormValue("service")
-	scopes := r.URL.Query()["scope"]
-	access := token_util.GetResourceActions(scopes)
-
-	token, _, issuedAt, err := token_util.MakeToken(username, service, access)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		t.Error(err)
-		return
-	}
-
-	result := make(map[string]interface{})
-	result["token"] = token
-	result["expires_in"] = "dfsd"
-	result["issued_at"] = issuedAt.Format(time.RFC3339)
-
-	encoder := json.NewEncoder(w)
-	if err = encoder.Encode(result); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		t.Error(err)
-		return
-	}
-}
-
-tokenServer := httptest.NewServer(http.HandlerFunc(tokenHandler))
-defer tokenServer.Close()
-*/
