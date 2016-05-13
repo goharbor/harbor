@@ -53,14 +53,14 @@ func (s *StatisticAPI) Prepare() {
 func (s *StatisticAPI) Get() {
 	queryProject := models.Project{UserID: s.userID}
 	projectList, err := dao.QueryProject(queryProject)
-	proMap := map[string]int{}
 	if err != nil {
 		log.Errorf("Error occured in QueryProject, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	isAdmin, err0 := dao.IsAdminRole(s.userID)
-	if err0 != nil {
-		log.Errorf("Error occured in check admin, error: %v", err0)
+	proMap := map[string]int{}
+	isAdmin, err := dao.IsAdminRole(s.userID)
+	if err != nil {
+		log.Errorf("Error occured in check admin, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if isAdmin {
@@ -68,7 +68,8 @@ func (s *StatisticAPI) Get() {
 		proMap["total_repo_count"] = getTotalRepoCount()
 	}
 	for i := 0; i < len(projectList); i++ {
-		if projectList[i].Role == models.PROJECTADMIN || projectList[i].Role == models.DEVELOPER {
+		if projectList[i].Role == models.PROJECTADMIN || projectList[i].Role == models.DEVELOPER ||
+			projectList[i].Role == models.GUEST {
 			proMap["my_project_count"]++
 			proMap["my_repo_count"] += getRepoCountByProject(projectList[i].Name)
 		}
@@ -88,14 +89,14 @@ func getRepoCountByProject(projectName string) int {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		return 0
 	}
-	var resp []string
+	var resp int
 	if len(projectName) > 0 {
 		for _, r := range repoList {
 			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp = append(resp, r)
+				resp += 1
 			}
 		}
-		return len(resp)
+		return resp
 	}
 	return 0
 }
