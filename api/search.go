@@ -38,17 +38,36 @@ type searchResult struct {
 }
 
 // Get ...
-func (n *SearchAPI) Get() {
-	userID, ok := n.GetSession("userId").(int)
+func (s *SearchAPI) Get() {
+	userID, ok := s.GetSession("userId").(int)
 	if !ok {
 		userID = dao.NonExistUserID
 	}
-	keyword := n.GetString("q")
-	projects, err := dao.QueryRelevantProjects(userID)
+
+	keyword := s.GetString("q")
+
+	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
-		log.Errorf("Failed to get projects of user id: %d, error: %v", userID, err)
-		n.CustomAbort(http.StatusInternalServerError, "Failed to get project search result")
+		log.Errorf("failed to check whether the user %d is system admin: %v", userID, err)
+		s.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
+
+	var projects []models.Project
+
+	if isSysAdmin {
+		projects, err = dao.GetAllProjects()
+		if err != nil {
+			log.Errorf("failed to get all projects: %v", err)
+			s.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
+	} else {
+		projects, err = dao.GetUserRelevantProjects(userID)
+		if err != nil {
+			log.Errorf("failed to get user %d 's relevant projects: %v", userID, err)
+			s.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
+	}
+
 	projectSorter := &utils.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
 	projectResult := []map[string]interface{}{}
@@ -69,17 +88,17 @@ func (n *SearchAPI) Get() {
 	repositories, err2 := svc_utils.GetRepoFromCache()
 	if err2 != nil {
 		log.Errorf("Failed to get repos from cache, error: %v", err2)
-		n.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
+		s.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
 	result := &searchResult{Project: projectResult, Repository: repositoryResult}
-	n.Data["json"] = result
-	n.ServeJSON()
+	s.Data["json"] = result
+	s.ServeJSON()
 }
 
 func filterRepositories(repositories []string, projects []models.Project, keyword string) []map[string]interface{} {
-	var i, j int = 0, 0
+	i, j := 0, 0
 	result := []map[string]interface{}{}
 	for i < len(repositories) && j < len(projects) {
 		r := &utils.Repository{Name: repositories[i]}
