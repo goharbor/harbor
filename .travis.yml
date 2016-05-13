@@ -3,7 +3,7 @@ language: go
 go: 
   - 1.6.2
 
-go_import_path: github.com/vmware/harbor
+#go_import_path: github.com/vmware/harbor
 
 service: 
   - docker 
@@ -11,7 +11,7 @@ service:
 #env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 
 install: 
-  - docker-compose -f ./Deploy/docker-compose.yml up -d
+  - docker-compose -f Deploy/docker-compose.yml up -d
 
 #before_script:
   # create tables and load data
