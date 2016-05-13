@@ -113,7 +113,7 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	sql += " order by p.name "
 
 	var r []models.Project
-	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+	_, err = o.Raw(sql, queryParam).QueryRows(&r)
 	if err != nil {
 		return nil, err
 	}
