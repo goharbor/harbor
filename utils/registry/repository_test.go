@@ -31,12 +31,12 @@ import (
 )
 
 var (
-	username         string  = "user"
-	password         string  = "P@ssw0rd"
-	repo             string  = "samalba/my-app"
-	tags             tagResp = tagResp{Tags: []string{"1.0", "2.0", "3.0"}}
-	validToken       string  = "valid_token"
-	invalidToken     string  = "invalid_token"
+	username         = "user"
+	password         = "P@ssw0rd"
+	repo             = "samalba/my-app"
+	tags             = tagResp{Tags: []string{"1.0", "2.0", "3.0"}}
+	validToken       = "valid_token"
+	invalidToken     = "invalid_token"
 	credential       auth.Credential
 	registryServer   *httptest.Server
 	tokenServer      *httptest.Server
