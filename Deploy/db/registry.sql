@@ -103,53 +103,6 @@ create table access_log (
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 
-create table replication_policy (
- id int NOT NULL AUTO_INCREMENT,
- name varchar(256),
- project_id int NOT NULL,
- target_id int NOT NULL,
- enabled tinyint(1) NOT NULL DEFAULT 1,
- description text,
- cron_str varchar(256),
- start_time timestamp,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY (id)
- );
-
-create table replication_target (
- id int NOT NULL AUTO_INCREMENT,
- name varchar(64),
- url varchar(64),
- username varchar(40),
- password varchar(40),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY (id)
- );
-
-create table replication_job (
- id int NOT NULL AUTO_INCREMENT,
- status varchar(64) NOT NULL,
- policy_id int NOT NULL,
- repository varchar(256) NOT NULL,
- operation  varchar(64) NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY (id)
- );
-
-create table job_log (
- log_id int NOT NULL AUTO_INCREMENT,
- job_id int NOT NULL,
- level varchar(64) NOT NULL,
- message text,
- creation_time timestamp,
- update_time timestamp,
- PRIMARY KEY (log_id),
- FOREIGN KEY (job_id) REFERENCES replication_job (id) 
- );
- 
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
