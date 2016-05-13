@@ -38,6 +38,7 @@ Migration is a module for migrating database schema between different version of
     ```docker run -ti -v /data/database:/var/lib/mysql your-image-name up head```
 
 you can use `-v /etc/localtime:/etc/localtime` to sync container timezone with host timezone.
+
 you may change `/data/database` to the mysql volumes path you set in docker-compose.yml.
 ###migration step
 - step 1: stop and remove harbor service
