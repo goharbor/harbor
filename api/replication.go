@@ -33,6 +33,11 @@ func (rj *ReplicationJob) Post() {
 		rj.RenderError(http.StatusInternalServerError, fmt.Sprintf("Failed to get policy, id: %d", data.PolicyID))
 		return
 	}
+	if p == nil {
+		log.Errorf("Policy not found, id: %d", data.PolicyID)
+		rj.RenderError(http.StatusNotFound, fmt.Sprintf("Policy not found, id: %d", data.PolicyID))
+		return
+	}
 	repoList, err := getRepoList(p.ProjectID)
 	if err != nil {
 		log.Errorf("Failed to get repository list, project id: %d, error: %v", p.ProjectID, err)

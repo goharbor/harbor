@@ -2,10 +2,10 @@ package job
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/job/config"
 	"github.com/vmware/harbor/job/imgout"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
@@ -137,12 +137,17 @@ func (sm *JobSM) setDesiredState(s string) {
 	sm.desiredState = s
 }
 
-func (sm *JobSM) Init() error {
+func (sm *JobSM) Init() {
+	sm.lock = &sync.Mutex{}
+	sm.Handlers = make(map[string]StateHandler)
+	sm.Transitions = make(map[string]map[string]struct{})
+	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
+	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
+	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
+}
+func (sm *JobSM) Reset(jid int64) error {
+	sm.JobID = jid
 	//init parms
-	regURL := os.Getenv("LOCAL_REGISTRY_URL")
-	if len(regURL) == 0 {
-		regURL = "http://registry:5000/"
-	}
 	job, err := dao.GetRepJob(sm.JobID)
 	if err != nil {
 		return fmt.Errorf("Failed to get job, error: %v", err)
@@ -158,7 +163,7 @@ func (sm *JobSM) Init() error {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: regURL,
+		LocalRegURL: config.LocalRegURL(),
 		Repository:  job.Repository,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
@@ -178,14 +183,8 @@ func (sm *JobSM) Init() error {
 	sm.Parms.TargetUsername = target.Username
 	sm.Parms.TargetPassword = target.Password
 	//init states handlers
-	sm.lock = &sync.Mutex{}
-	sm.Handlers = make(map[string]StateHandler)
-	sm.Transitions = make(map[string]map[string]struct{})
 	sm.Logger = utils.Logger{sm.JobID}
 	sm.CurrentState = models.JobPending
-	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
-	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
-	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
 	if sm.Parms.Operation == models.RepOpTransfer {
 		/*
 			sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
@@ -207,13 +206,11 @@ func addImgOutTransition(sm *JobSM) error {
 	if err != nil {
 		return err
 	}
-
 	sm.AddTransition(models.JobRunning, imgout.StateCheck, &imgout.Checker{BaseHandler: base})
 	sm.AddTransition(imgout.StateCheck, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
 	sm.AddTransition(imgout.StatePullManifest, imgout.StateTransferBlob, &imgout.BlobTransfer{BaseHandler: base})
 	sm.AddTransition(imgout.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
 	sm.AddTransition(imgout.StateTransferBlob, imgout.StatePushManifest, &imgout.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(imgout.StatePushManifest, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
-
 	return nil
 }
