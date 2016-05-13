@@ -4,11 +4,11 @@
       <div class="col-xs-12 col-md-12 extend-height">
   	      <div class="section">
   		      <h4 class="page-header">
-             <span ng-show="!vm.publicity">My Projects</span>
-             <a ng-show="vm.publicity" href="#" ng-click="vm.togglePublicity({publicity: 0})">My Projects</a>
+             <span ng-show="!vm.publicity">// 'my_projects' | tr //</span>
+             <a ng-show="vm.publicity" href="#" ng-click="vm.togglePublicity({publicity: 0})">// 'my_projects' | tr //</a>
              <span class="gutter">|</span>
-             <span ng-show="vm.publicity">Public Projects</span>
-             <a ng-show="!vm.publicity" href="#" class="title-color" ng-click="vm.togglePublicity({publicity: 1})">Public Projects</a></h4>
+             <span ng-show="vm.publicity">// 'public_projects' | tr //</span>
+             <a ng-show="!vm.publicity" href="#" class="title-color" ng-click="vm.togglePublicity({publicity: 1})">// 'public_projects' | tr //</a></h4>
           <div class="search-pane">
     		      <div class="form-inline">
     		        <div class="input-group">
@@ -17,8 +17,8 @@
     		            <button class="btn btn-primary" type="button" ng-click="vm.searchProject()"><span class="glyphicon glyphicon-search"></span></button>
     		          </span>
     		        </div>
-              <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>New Project</button>
-              <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span>New Project</button>               
+              <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>
+              <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>               
     		      </div>    
           </div>
           <div class="pane project-pane">  
@@ -26,7 +26,7 @@
             <div class="sub-pane">
       		      <table class="table">
                 <thead>
-                  <th>Project Name</th><th>Repositories</th><th>Role</th><th>Creation Time</th><th>Publicity</th>
+                  <th>// 'project_name' | tr //</th><th>// 'repositories' | tr //</th><th>// 'role' | tr //</th><th>// 'creation_time' | tr //</th><th>// 'publicity' | tr //</th>
                 </thead>
                 <tbody>
                   <tr ng-repeat="p in vm.projects">
@@ -39,7 +39,7 @@
                 </tbody>
               </table>
             </div>
-            <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// items</div></div>  
+            <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>  
           </div>
   	      </div>
       </div>

@@ -32,6 +32,7 @@
     
     $scope.$watch('vm.publicity', function(current, origin) { 
       vm.isPublic = current ? 1 : 0;        
+      vm.projectType = (vm.isPublic == 1) ? 'public_projects' : 'my_projects';
       vm.retrieve();      
     });
        

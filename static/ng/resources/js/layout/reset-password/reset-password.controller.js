@@ -6,7 +6,7 @@
     .module('harbor.layout.reset.password')
     .controller('ResetPasswordController', ResetPasswordController);
   
-  ResetPasswordController.$inject = ['$location', 'ResetPasswordService'];
+  ResetPasswordController.$inject = ['$location', 'ResetPasswordService', '$window'];
   
   function getParameterByName(name, url) {
     name = name.replace(/[\[\]]/g, "\\$&");
@@ -17,7 +17,7 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
   
-  function ResetPasswordController($location, ResetPasswordService) {
+  function ResetPasswordController($location, ResetPasswordService, $window) {
     var vm = this;
     vm.resetUuid = getParameterByName('reset_uuid', $location.absUrl());
     vm.resetPassword = resetPassword;
@@ -31,6 +31,7 @@
     
     function resetPasswordSuccess(data, status) {
       console.log('Successful reset password:' + data);
+      $window.location.href = '/ng';
     }
     
     function resetPasswordFailed(data) {

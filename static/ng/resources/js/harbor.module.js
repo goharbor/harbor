@@ -4,6 +4,7 @@
     .module('harbor.app', [
       'ngRoute',
       'ngMessages',
+      'ngCookies',
       'harbor.session',
       'harbor.layout.header',
       'harbor.layout.navigation',
@@ -20,6 +21,7 @@
       'harbor.layout.system.management',
       'harbor.layout.log',
       'harbor.layout.admin.option',
+      'harbor.services.i18n',
       'harbor.services.project',
       'harbor.services.user',
       'harbor.services.repository',

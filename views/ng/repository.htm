@@ -4,11 +4,11 @@
   	  <div class="col-xs-12 col-md-12 extend-height">
   	    <div class="section"> 
   		    <h4 class="page-header">
-          <span ng-show="!vm.publicity">My Projects</span>
-          <a ng-show="vm.publicity" href="#/repositories?project_id=//vm.selectedProject.ProjectId//" class="title-color" ng-click="vm.togglePublicity({publicity: false})">My Projects</a>
+          <span ng-show="!vm.publicity">// 'my_projects' | tr //</span>
+          <a ng-show="vm.publicity" href="#/repositories?project_id=//vm.selectedProject.ProjectId//" class="title-color" ng-click="vm.togglePublicity({publicity: false})">// 'my_projects' | tr //</a>
           <span class="gutter">|</span>
-          <span ng-show="vm.publicity">Public Projects</span>
-          <a ng-show="!vm.publicity" href="#/repositories?project_id=//vm.selectedProject.ProjectId//" class="title-color" ng-click="vm.togglePublicity({publicity: true})">Public Projects</a></h4>
+          <span ng-show="vm.publicity">// 'public_projects' | tr //</span>
+          <a ng-show="!vm.publicity" href="#/repositories?project_id=//vm.selectedProject.ProjectId//" class="title-color" ng-click="vm.togglePublicity({publicity: true})">// 'public_projects' | tr //</a></h4>
   		    <div class="switch-pane">
             <switch-pane-projects is-open="vm.open" selected-project="vm.selectedProject"></switch-pane-projects>
             <span> 

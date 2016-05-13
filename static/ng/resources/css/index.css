@@ -17,7 +17,6 @@ body {
   margin: 20px 0 20px 0;
   background-color: #FFFFFF;
   height: 257px;
-  overflow: auto;
 }
 
 .up-section h4 label {
@@ -25,10 +24,12 @@ body {
 }
 
 .thumbnail {
+  margin-top: 10px;
   display: inline-block;
   border: none;
   padding: 2px;
   box-shadow: none;
+  width: 30%;
 }
 
 .down-section {
@@ -61,7 +62,7 @@ body {
 
 .page-header {
   padding-bottom: 10px;
-  margin: 0 10px 10px 10px;
+  margin: 10px;
   border-bottom: none;
 }
 
@@ -70,7 +71,7 @@ body {
 }
 
 .step-content {
-  width: 210px;
+  text-align: center;
 }
 
 .display-inline-block {

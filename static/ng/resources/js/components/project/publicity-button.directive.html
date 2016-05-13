@@ -1,4 +1,2 @@
-<button ng-if="vm.isPublic && vm.owned" class="//vm.btnClass//" ng-click="vm.toggle()">On</button>
-<button ng-if="vm.isPublic && !vm.owned" class="btn btn-success" disabled="disabled">On</button>
-<button ng-if="!vm.isPublic && vm.owned" class="//vm.btnClass//" ng-click="vm.toggle()">Off</button>
-<button ng-if="!vm.isPublic && !vm.owned" class="btn btn-danger" disabled="disabled">Off</button>
+<button ng-if="vm.isPublic" ng-disabled="!vm.owned" class="btn btn-success" ng-click="vm.toggle()">// 'button_on' | tr //</button>
+<button ng-if="!vm.isPublic" ng-disabled="!vm.owned" class="btn btn-danger" ng-click="vm.toggle()">// 'button_off' | tr //</button>

@@ -1,6 +1,7 @@
 .up-section .up-table-pane {
     overflow-y: scroll;
     height: 180px;
+    margin-top: -10px;
 }
 
 .up-section .dl-horizontal dt{

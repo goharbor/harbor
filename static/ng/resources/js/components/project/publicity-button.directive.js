@@ -17,20 +17,7 @@
     }else{
       vm.isPublic = false;
     }
-    
-    var publicClass  = 'btn btn-success';
-    var privateClass = 'btn btn-danger';
-    
-    function setBtnClass() {
-      if(vm.isPublic) {
-        vm.btnClass = publicClass;
-      }else{
-        vm.btnClass = privateClass;
-      }
-    }
-    vm.setBtnClass = setBtnClass;
-    vm.setBtnClass();
-    
+        
     function toggle() {
       
       if(vm.isPublic) {
@@ -45,7 +32,6 @@
     }
     
     function editProjectSuccess(data, status) {
-      setBtnClass();
       console.log('edit project successfully:' + status);
     }
     

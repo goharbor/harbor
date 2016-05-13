@@ -6,11 +6,22 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$scope', '$window', 'LogOutService'];
+  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService'];
 
-  function OptionalMenuController($scope, $window, LogOutService) {
+  function OptionalMenuController($scope, $window, I18nService, LogOutService) {
     var vm = this;
+    vm.currentLanguage = I18nService().getCurrentLanguage();
+    vm.setLanguage = setLanguage;
+    vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
+    console.log('current language:' + I18nService().getCurrentLanguage());
+    
     vm.logOut = logOut;
+    
+    function setLanguage(name) {
+      I18nService().setCurrentLanguage(name);
+      $window.location.reload();
+    }
+        
     function logOut() {
       LogOutService()
         .success(logOutSuccess)

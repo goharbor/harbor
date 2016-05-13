@@ -7,15 +7,15 @@
           <button class="btn btn-primary" type="button" ng-click="vm.search({projectId: vm.projectId, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>Add Member</button>
-      <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>Add Member</button>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+      <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
     </div>
     <div class="pane"> 	           
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
       <div class="sub-pane">
         <table class="table table-pane" >
     			 <thead>
-    			   <th width="30%">Username</th><th width="40%">Role</th><th width="30%">Operation</th>
+    			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>
     			 </thead>
     			 <tbody>
             <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.UserId" current-user-id="vm.currentUser.UserId" role-name="pr.Rolename" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 

@@ -6,9 +6,9 @@
     .module('harbor.layout.forgot.password')
     .controller('ForgotPasswordController', ForgotPasswordController);
   
-  ForgotPasswordController.$inject = ['SendMailService'];
+  ForgotPasswordController.$inject = ['SendMailService', '$window'];
   
-  function ForgotPasswordController(SendMailService) {
+  function ForgotPasswordController(SendMailService, $window) {
     var vm = this;
     vm.hasError = false;
     vm.errorMessage = '';
@@ -24,6 +24,7 @@
     
     function sendMailSuccess(data, status) {
       console.log('Successful send mail:' + data);
+      $window.location.href = '/ng';
     }
     
     function sendMailFailed(data) {

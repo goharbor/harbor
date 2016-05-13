@@ -7,7 +7,7 @@
           <button class="btn btn-primary" type="button" ng-click="vm.search({op: vm.op, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-link" type="button" ng-click="vm.showAdvancedSearch()">Advanced Search</button>
+          <button class="btn btn-link" type="button" ng-click="vm.showAdvancedSearch()">// 'advanced_search' | tr //</button>
         </span>
       </div>
     </div>
@@ -16,7 +16,7 @@
       <div class="sub-pane">
         <table class="table table-pane">
       	    <thead>
-      		    <th>Username</th><th>Repository Name</th><th>Operation</th><th>Timestamp</th>
+      		    <th>// 'username' | tr //</th><th>// 'repository_name' | tr //</th><th>// 'operation' | tr //</th><th>// 'timestamp' | tr //</th>
       		  </thead>
       		  <tbody>
       		    <tr ng-repeat="log in vm.logs">
