@@ -93,7 +93,7 @@ func getRepoCountByProject(projectName string) int {
 	if len(projectName) > 0 {
 		for _, r := range repoList {
 			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp += 1
+				resp++
 			}
 		}
 		return resp
