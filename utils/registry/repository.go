@@ -72,6 +72,9 @@ func NewRepositoryWithCredential(name, endpoint string, credential auth.Credenti
 	}
 
 	client, err := newClient(endpoint, "", credential, "repository", name, "pull", "push")
+	if err != nil {
+		return nil, err
+	}
 
 	repository := &Repository{
 		Name:     name,

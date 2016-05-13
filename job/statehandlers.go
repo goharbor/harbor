@@ -1,10 +1,12 @@
 package job
 
 import (
+	"time"
+
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-	"time"
 )
 
 // StateHandler handles transition, it associates with each state, will be called when
@@ -49,7 +51,7 @@ func (su StatusUpdater) Enter() (string, error) {
 type ImgPuller struct {
 	DummyHandler
 	img    string
-	logger Logger
+	logger utils.Logger
 }
 
 func (ip ImgPuller) Enter() (string, error) {
@@ -62,7 +64,7 @@ func (ip ImgPuller) Enter() (string, error) {
 type ImgPusher struct {
 	DummyHandler
 	targetURL string
-	logger    Logger
+	logger    utils.Logger
 }
 
 func (ip ImgPusher) Enter() (string, error) {

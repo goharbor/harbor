@@ -2,11 +2,14 @@ package job
 
 import (
 	"fmt"
-	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/utils/log"
 	"os"
 	"sync"
+
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/job/imgout"
+	"github.com/vmware/harbor/job/utils"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 )
 
 type RepJobParm struct {
@@ -28,7 +31,7 @@ type JobSM struct {
 	Transitions  map[string]map[string]struct{}
 	Handlers     map[string]StateHandler
 	desiredState string
-	Logger       Logger
+	Logger       utils.Logger
 	Parms        *RepJobParm
 	lock         *sync.Mutex
 }
@@ -178,16 +181,39 @@ func (sm *JobSM) Init() error {
 	sm.lock = &sync.Mutex{}
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
-	sm.Logger = Logger{sm.JobID}
+	sm.Logger = utils.Logger{sm.JobID}
 	sm.CurrentState = models.JobPending
 	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
 	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
 	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
 	if sm.Parms.Operation == models.RepOpTransfer {
-		sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
-		//only handle on target for now
-		sm.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: DummyHandler{JobID: sm.JobID}, targetURL: sm.Parms.TargetURL, logger: sm.Logger})
-		sm.AddTransition("push-img", models.JobFinished, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+		/*
+			sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
+			//only handle on target for now
+			sm.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: DummyHandler{JobID: sm.JobID}, targetURL: sm.Parms.TargetURL, logger: sm.Logger})
+			sm.AddTransition("push-img", models.JobFinished, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+		*/
+		if err = addImgOutTransition(sm); err != nil {
+			return err
+		}
 	}
+	return nil
+}
+
+func addImgOutTransition(sm *JobSM) error {
+	base, err := imgout.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, "",
+		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
+		nil, &sm.Logger)
+	if err != nil {
+		return err
+	}
+
+	sm.AddTransition(models.JobRunning, imgout.StateCheck, &imgout.Checker{BaseHandler: base})
+	sm.AddTransition(imgout.StateCheck, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
+	sm.AddTransition(imgout.StatePullManifest, imgout.StateTransferBlob, &imgout.BlobTransfer{BaseHandler: base})
+	sm.AddTransition(imgout.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+	sm.AddTransition(imgout.StateTransferBlob, imgout.StatePushManifest, &imgout.ManifestPusher{BaseHandler: base})
+	sm.AddTransition(imgout.StatePushManifest, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
+
 	return nil
 }

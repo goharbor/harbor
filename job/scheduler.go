@@ -16,7 +16,7 @@ func HandleRepJob(id int64) {
 	sm := &JobSM{JobID: id}
 	err := sm.Init()
 	if err != nil {
-		log.Errorf("Failed to initialize statemachine, error: %v")
+		log.Errorf("Failed to initialize statemachine, error: %v", err)
 		err2 := dao.UpdateRepJobStatus(id, models.JobError)
 		if err2 != nil {
 			log.Errorf("Failed to update job status to ERROR, error:%v", err2)

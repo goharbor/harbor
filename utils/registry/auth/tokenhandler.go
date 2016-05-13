@@ -186,12 +186,14 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 
 	expiresIn = tk.ExpiresIn
 
-	t, err := time.Parse(time.RFC3339, tk.IssuedAt)
-	if err != nil {
-		log.Errorf("error occurred while parsing issued_at: %v", err)
-		err = nil
-	} else {
-		issuedAt = &t
+	if len(tk.IssuedAt) != 0 {
+		t, err := time.Parse(time.RFC3339, tk.IssuedAt)
+		if err != nil {
+			log.Errorf("error occurred while parsing issued_at: %v", err)
+			err = nil
+		} else {
+			issuedAt = &t
+		}
 	}
 
 	log.Debug("get token from token server")
