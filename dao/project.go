@@ -113,9 +113,8 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	sql += " order by p.name "
 
 	var r []models.Project
-	_, err0 := o.Raw(sql, queryParam).QueryRows(&r)
-
-	if err0 != nil {
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+	if err != nil {
 		return nil, err
 	}
 	if isAdmin {

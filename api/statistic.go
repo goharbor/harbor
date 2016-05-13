@@ -57,12 +57,16 @@ func (s *StatisticAPI) Get() {
 		log.Errorf("Error occured in QueryProject, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	proMap := map[string]int{}
 	isAdmin, err := dao.IsAdminRole(s.userID)
 	if err != nil {
 		log.Errorf("Error occured in check admin, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
+	proMap := map[string]int{}
+	proMap["my_project_count"] = 0
+	proMap["my_repo_count"] = 0
+	proMap["public_project_count"] = 0
+	proMap["public_repo_count"] = 0
 	if isAdmin {
 		proMap["total_project_count"] = len(projectList)
 		proMap["total_repo_count"] = getTotalRepoCount()
