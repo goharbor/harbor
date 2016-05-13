@@ -64,34 +64,29 @@ func (s *StatisticAPI) Get() {
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if isAdmin {
-		proMap["total_project"] = len(projectList)
+		proMap["total_project_count"] = len(projectList)
+		proMap["total_repo_count"] = getTotalRepoCount()
 	}
 	for i := 0; i < len(projectList); i++ {
-		if projectList[i].Role == 1 || projectList[i].Role == 2 {
-			proMap["my_project"]++
-			proMap["my_repos"] += s.GetReposByProject(projectList[i].Name, false)
+		if projectList[i].Role == models.PROJECTADMIN || projectList[i].Role == models.DEVELOPER {
+			proMap["my_project_count"]++
+			proMap["my_repo_count"] += getRepoCountByProject(projectList[i].Name)
 		}
 		if projectList[i].Public == 1 {
-			proMap["public_project"]++
-			proMap["public_repos"] += s.GetReposByProject(projectList[i].Name, false)
-		}
-		if isAdmin {
-			proMap["total_repos"] = s.GetReposByProject(projectList[i].Name, true)
+			proMap["public_project_count"]++
+			proMap["public_repo_count"] += getRepoCountByProject(projectList[i].Name)
 		}
 	}
 	s.Data["json"] = proMap
 	s.ServeJSON()
 }
 
-//GetReposByProject returns repo numbers of specified project
-func (s *StatisticAPI) GetReposByProject(projectName string, isAdmin bool) int {
+//getReposByProject returns repo numbers of specified project
+func getRepoCountByProject(projectName string) int {
 	repoList, err := svc_utils.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
-		s.RenderError(http.StatusInternalServerError, "internal sever error")
-	}
-	if isAdmin {
-		return len(repoList)
+		return 0
 	}
 	var resp []string
 	if len(projectName) > 0 {
@@ -103,4 +98,15 @@ func (s *StatisticAPI) GetReposByProject(projectName string, isAdmin bool) int {
 		return len(resp)
 	}
 	return 0
+}
+
+//getTotalRepoCount returns total repo count
+func getTotalRepoCount() int {
+	repoList, err := svc_utils.GetRepoFromCache()
+	if err != nil {
+		log.Errorf("Failed to get repo from cache, error: %v", err)
+		return 0
+	}
+	return len(repoList)
+
 }

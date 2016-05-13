@@ -86,19 +86,25 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	sql := `select distinct
 		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public`
 	queryParam := make([]interface{}, 1)
-	isAdmin, _ := IsAdminRole(query.UserID)
+	isAdmin, err := IsAdminRole(query.UserID)
+	if err != nil {
+		return nil, err
+	}
+
 	if query.Public == 1 {
+		//if the project is public
 		sql += ` from project p where p.deleted = 0 and p.public = ?`
 		queryParam = append(queryParam, query.Public)
 	} else if !isAdmin {
+		//if the user is not admin, should join the project_member table to query his/her projects and role id
 		sql += `, pm.role role from project p 
 		left join project_member pm on p.project_id = pm.project_id
 	    where p.deleted = 0  and (pm.user_id = ?) `
 		queryParam = append(queryParam, query.UserID)
 	} else if isAdmin {
+		//if the user is admin, return all projects
 		sql += ` from project p where p.deleted = 0 `
 	}
-
 	if query.Name != "" {
 		sql += " and p.name like ? "
 		queryParam = append(queryParam, query.Name)
@@ -107,14 +113,14 @@ func QueryProject(query models.Project) ([]models.Project, error) {
 	sql += " order by p.name "
 
 	var r []models.Project
-	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+	_, err0 := o.Raw(sql, queryParam).QueryRows(&r)
 
-	if err != nil {
+	if err0 != nil {
 		return nil, err
 	}
 	if isAdmin {
 		for i := 0; i < len(r); i++ {
-			r[i].Role = 1
+			r[i].Role = models.PROJECTADMIN
 		}
 	}
 	return r, nil

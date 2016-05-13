@@ -34,6 +34,6 @@ type Project struct {
 	Togglable bool
 
 	UpdateTime time.Time `orm:"update_time" json:"update_time"`
-	Role       int       `json:"RoleId"`
-	Repos      int
+	Role       int       `json:"role_id"`
+	RepoCount  int       `json:"repo_count"`
 }
