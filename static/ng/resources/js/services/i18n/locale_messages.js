@@ -354,5 +354,33 @@ var global_messages = {
   'system_management': {
     'en-US': 'System Management',
     'zh-CN': '系统管理'
+  },
+  'change_password': {
+    'en-US': 'Change Password',
+    'zh-CN': '修改密码'
+  },
+  'old_password': {
+    'en-US': 'Old Password',
+    'zh-CN': '原密码'
+  },
+  'old_password_is_required': {
+    'en-US': 'Old password is required.',
+    'zh-CN': '原密码为必填项。'
+  },
+  'old_password_is_incorrect': {
+    'en-US': 'Old password is incorrect.',
+    'zh-CN': '原密码不正确。'
+  },
+  'new_password_is_required': {
+    'en-US': 'New password is required.',
+    'zh-CN': '新密码为必填项。'
+  },
+  'new_password_is_invalid': {
+    'en-US': 'New password is invalid. At least 7 characters with 1 lowercase letter, 1 capital letter and 1 numeric character.',
+	  'zh-CN': '新密码无效。至少输入 7个字符且包含 1个小写字母，1个大写字母和 1个数字。'
+  },
+  'new_password': {
+    'en-US': 'New Password',
+    'zh-CN': '新密码'
   }
 };

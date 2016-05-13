@@ -18,7 +18,7 @@
     return tr;
     function tr() {
       return {
-        'setCurrentLanguage': function(language) {
+        'setCurrentLanguage': function(language) {          
           if(!language){
             language = defaultLanguage;
           }
