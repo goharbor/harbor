@@ -23,12 +23,13 @@ import (
 // an Error instance will be returned
 type Error struct {
 	StatusCode int
+	StatusText string
 	Message    string
 }
 
 // Error ...
 func (e Error) Error() string {
-	return fmt.Sprintf("%d %s", e.StatusCode, e.Message)
+	return fmt.Sprintf("%d %s %s", e.StatusCode, e.StatusText, e.Message)
 }
 
 // ParseError parses err, if err is type Error, convert it to Error
