@@ -35,13 +35,13 @@
 }
 
 .pane {
-  height: 80%;
+  min-height: 500px;
   overflow-y: auto;
 }
 
 .sub-pane {
   margin: 0 10px 0 10px;
-  height: 60%;
+  min-height: 500px;
   overflow-y: auto;
 }
 

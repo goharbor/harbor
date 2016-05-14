@@ -31,7 +31,7 @@
         if(exclusions[i]===url) {
           return;
         }
-      }
+      }     
       $window.location.href = '/ng';
     }
   }

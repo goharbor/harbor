@@ -179,7 +179,7 @@ var global_messages = {
     'en-US': 'Please input the Email used when you signed up, a reset password Email will be sent to you.',
     'zh-CN': '重置邮件将发送到此邮箱。'
   },
-  'emaTimestampil_does_not_exist': {
+  'email_does_not_exist': {
     'en-US': 'Email does not exist',
     'zh-CN': '邮箱不存在。'
   },
@@ -382,5 +382,21 @@ var global_messages = {
   'new_password': {
     'en-US': 'New Password',
     'zh-CN': '新密码'
+  },
+  'username_already_exist': {
+    'en-US': 'Username already exist.',
+    'zh-CN': '用户名已存在。'
+  },
+  'username_does_not_exist': {
+    'en-US': 'Username does not exist.',
+    'zh-CN': '用户名不存在。'
+  },
+  'username_or_password_is_incorrect': {
+    'en-US': 'Username or password is incorrect',
+    'zh-CN': '用户名或密码不正确。'
+  },
+  'username_email': {
+    'en-US': 'Username/Email',
+    'zh-CN': '用户名/邮箱'
   }
 };

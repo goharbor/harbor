@@ -68,6 +68,7 @@
     
     function togglePublicity(e) {
       vm.publicity = e.publicity;
+      vm.isOpen = false;
       vm.retrieve();
       console.log('vm.publicity:' + vm.publicity);
     }

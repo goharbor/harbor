@@ -13,19 +13,34 @@
     vm.username = "";
     vm.roles = roles();
     vm.optRole = 1;
+    
+    vm.reset = reset;
     vm.save = save;
     vm.cancel = cancel;
+
+    vm.hasError = false;
+    vm.errorMessage = '';
     
-    function save() {     
-      AddProjectMemberService(vm.projectId, vm.optRole, vm.username)
-        .success(addProjectMemberComplete)
-        .error(addProjectMemberFailed);
-      vm.username = "";
-      vm.optRole = 1;
-      vm.reload();
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
+    }
+    
+    function save(pm) {     
+      if(pm && angular.isDefined(pm.username)) {
+        AddProjectMemberService(vm.projectId, vm.optRole, vm.username)
+          .success(addProjectMemberComplete)
+          .error(addProjectMemberFailed);
+        vm.username = "";
+        vm.optRole = 1;
+        vm.reload();
+      }
     }    
    
-    function cancel() {
+    function cancel(form) {
+      if(form) {
+        form.$setPristine();
+      }
       vm.isOpen = false;  
       vm.username = "";
       vm.optRole = 1;
@@ -36,6 +51,14 @@
     }
     
     function addProjectMemberFailed(data, status, headers) {
+      if(status === 409) {
+        vm.hasError = true;
+        vm.errorMessage = 'username_already_exist';
+      }
+      if(status == 404) {
+        vm.hasError = true;
+        vm.errorMessage = 'username_does_not_exist';
+      }
       console.log('addProjectMemberFailed: status:' + status + ', data:' + data);
     }
     

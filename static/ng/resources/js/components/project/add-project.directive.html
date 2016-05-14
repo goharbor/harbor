@@ -1,9 +1,15 @@
 <div class="well panel-group">
   <div class="row">
     <div class="col-xs-10 col-md-10">
-      <form>  
-        <div class="form-group">               
-          <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="vm.projectName">
+      <form name="form" ng-submit="form.$valid">  
+        <div class="form-group col-md-6">               
+          <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="p.projectName" name="uProjectName" ng-change="vm.reset()" required>
+          <div class="error-message">
+            <div ng-messages="form.$dirty && form.uProjectName.$error">
+              <span ng-message="required">Project name is required.</span>
+            </div>
+            <span ng-show="vm.hasError">// vm.errorMessage //</span>
+          </div>
         </div>
         <div class="form-group">
           <input type="checkbox" ng-model="vm.isPublic">&nbsp;// 'public_projects' | tr //                     
@@ -12,9 +18,9 @@
     </div>
     <div class="col-xs-2 col-md-2"> 
       <form>                        
-        <div class="form-group" style="margin-top: 20%;">               
-          <button type="button" class="btn btn-default" ng-click="vm.cancel()">// 'cancel' | tr //</button>
-          <button type="button" class="btn btn-primary" ng-click="vm.addProject()">// 'save' | tr //</button>     
+        <div class="form-group">               
+          <button type="button" class="btn btn-default" ng-click="vm.cancel(form)">// 'cancel' | tr //</button>
+          <button type="button" class="btn btn-primary" ng-click="vm.addProject(p)">// 'save' | tr //</button>     
         </div>
       </form>
     </div>

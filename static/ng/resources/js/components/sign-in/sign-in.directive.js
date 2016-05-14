@@ -6,32 +6,41 @@
     .module('harbor.sign.in')
     .directive('signIn', signIn);
     
-  SignInController.$inject = ['SignInService', '$window'];
-  function SignInController(SignInService, $window) {
+  SignInController.$inject = ['SignInService', '$window', '$scope'];
+  function SignInController(SignInService, $window, $scope) {
     var vm = this;
-    vm.principal = "";
-    vm.password = "";
+
+    vm.hasError = false;
+    vm.errorMessage = '';
+    
+    vm.reset = reset;
     vm.doSignIn = doSignIn;
     vm.doSignUp = doSignUp;
     vm.doForgotPassword = doForgotPassword;
-    
-    function doSignIn() {
-      if(vm.principal != "" && vm.password != "") {
-        SignInService(vm.principal, vm.password)
+       
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
+    } 
+      
+    function doSignIn(user) {  
+      if(user && angular.isDefined(user.principal) && angular.isDefined(user.password)) {
+        SignInService(user.principal, user.password)
           .success(signedInSuccess)
           .error(signedInFailed);
-      }else{
-        $window.alert('Please input your username or password!');
       }
     }
     
     function signedInSuccess(data, status) {
-      console.log(status);
       $window.location.href = "/ng/project";
     }
     
     function signedInFailed(data, status) {
-      console.log(status);
+      if(status === 401) {
+        vm.hasError = true;
+        vm.errorMessage = 'username_or_password_is_incorrect';
+      }
+      console.log('Failed sign in:' + data + ', status:' + status);     
     }
     
     function doSignUp() {
@@ -53,6 +62,7 @@
       'bindToController': true
     }
     return directive;
+
   }
   
 })();

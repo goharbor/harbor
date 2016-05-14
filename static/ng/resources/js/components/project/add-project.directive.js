@@ -13,35 +13,47 @@
     vm.projectName = "";
     vm.isPublic = false;
     
+    vm.reset = reset;
     vm.addProject = addProject;
     vm.cancel = cancel;
     
-    function addProject() {
-      
-      if(vm.projectName == "") {
-        alert("Please input the project name.");
-        return;
+    vm.hasError = false;
+    vm.errorMessage = '';
+    
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
+    }
+    
+    function addProject(p) {
+      if(p && angular.isDefined(p.projectName)) {
+        AddProjectService(p.projectName, vm.isPublic)
+          .success(addProjectSuccess)
+          .error(addProjectFailed);
       }
- 
-      AddProjectService(vm.projectName, vm.isPublic)
-        .success(addProjectSuccess)
-        .error(addProjectFailed);
     }
     
     function addProjectSuccess(data, status) {
       vm.isOpen = false;
       vm.projectName = "";
-      vm.isPublic = false;
+      vm.isPublic = false;     
       $scope.$emit('addedSuccess', true);
     }
     
     function addProjectFailed(data, status) {
+      if(status === 409) {
+        vm.hasError = true;
+        vm.errorMessage = 'Project already exists.';
+      }
       console.log('Failed to add project:' + status);
     }
     
-    function cancel(){
+    function cancel(form){
+      if(form) {
+        form.$setPristine();
+      }
       vm.isOpen = false;
-      vm.projectName = "";
+      vm.projectName = '';
       vm.isPublic = false;
     }
   }
@@ -54,10 +66,15 @@
       'scope' : {
         'isOpen': '='
       },
+      'link': link,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+
+    function link(scope, element, attrs, ctrl) {
+      
+    }
   }
    
 })();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+    {{.HeaderInclude}}
 	  <title>{{.Title}}</title>  
   </head>
   <body ng-app="harbor.app" ng-controller="CurrentUserController as vm">
@@ -9,6 +9,5 @@
     {{.LayoutContent}}
 	  {{.FooterContent}}
 	  {{.FooterInclude}}
-    {{.HeaderInclude}}
   </body>
 </html>

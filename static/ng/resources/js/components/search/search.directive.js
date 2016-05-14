@@ -26,11 +26,10 @@
     function searchSuccess(data, status) {
       console.log('filterBy:' + vm.filterBy + ", data:" + data);
       vm.searchResult = data[vm.filterBy];
-      
     }
     
     function searchFailed(data, status) {
-      
+      console.log('Failed search:' + data);
     }
     
   }

@@ -20,26 +20,43 @@
   function ResetPasswordController($location, ResetPasswordService, $window) {
     var vm = this;
     vm.resetUuid = getParameterByName('reset_uuid', $location.absUrl());
+    
+    vm.reset = reset;
     vm.resetPassword = resetPassword;
-    console.log(vm.resetUuid);
+    vm.cancel = cancel;
+    
+    vm.hasError = false;
+    vm.errorMessage = '';
+    
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
+    }    
+        
     function resetPassword(user) {
-      console.log('rececived password:' + user.password + ', reset_uuid:' + vm.resetUuid);
-      ResetPasswordService(vm.resetUuid, user.password)
-        .success(resetPasswordSuccess)
-        .error(resetPasswordFailed);
+      if(user && angular.isDefined(user.resetUuid) && angular.isDefined(user.password)) {
+        console.log('rececived password:' + user.password + ', reset_uuid:' + vm.resetUuid);
+        ResetPasswordService(vm.resetUuid, user.password)
+          .success(resetPasswordSuccess)
+          .error(resetPasswordFailed);
+      }
     }
     
     function resetPasswordSuccess(data, status) {
-      console.log('Successful reset password:' + data);
       $window.location.href = '/ng';
     }
     
     function resetPasswordFailed(data) {
+      vm.hasError = true;
+      vm.errorMessage = data;
       console.log('Failed reset password:' + data);
     }
     
-    
-    
+    function cancel(form) {
+      if(form) {
+        form.$setPristine();
+      }
+    }
   }
   
 })();

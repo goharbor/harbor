@@ -10,20 +10,27 @@
   
   function ForgotPasswordController(SendMailService, $window) {
     var vm = this;
+    
     vm.hasError = false;
     vm.errorMessage = '';
+    
+    vm.reset = reset;
     vm.sendMail = sendMail;
     
-    function sendMail(user) {
+    function reset(){
       vm.hasError = false;
-      console.log('Email address:' + user.email);
-      SendMailService(user.email)
-        .success(sendMailSuccess)
-        .error(sendMailFailed);
+      vm.errorMessage = '';
+    }
+    
+    function sendMail(user) {
+      if(user && angular.isDefined(user.email)) { 
+        SendMailService(user.email)
+          .success(sendMailSuccess)
+          .error(sendMailFailed);
+      }
     }
     
     function sendMailSuccess(data, status) {
-      console.log('Successful send mail:' + data);
       $window.location.href = '/ng';
     }
     

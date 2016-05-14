@@ -6,9 +6,9 @@
     .module('harbor.services.i18n')
     .factory('I18nService', I18nService);
   
-  I18nService.$inject = ['$cookies'];
+  I18nService.$inject = ['$cookies', '$window'];
   
-  function I18nService($cookies) {
+  function I18nService($cookies, $window) {
     var languages = $.extend(true, {}, global_messages);
     var defaultLanguage = navigator.language || 'en-US';
     var languageNames = {
@@ -23,6 +23,7 @@
             language = defaultLanguage;
           }
           $cookies.put('language', language);
+          $window.location.reload();
         },
         'getCurrentLanguage': function() {
           return $cookies.get('language') || defaultLanguage;
