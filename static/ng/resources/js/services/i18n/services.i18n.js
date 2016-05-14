@@ -22,7 +22,7 @@
           if(!language){
             language = defaultLanguage;
           }
-          $cookies.put('language', language, {'path': '/ng/'});
+          $cookies.put('language', language, {'path': '/'});
           $window.location.reload();
         },
         'getCurrentLanguage': function() {
