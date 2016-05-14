@@ -448,5 +448,13 @@ var global_messages = {
   'alert_delete_tag': {
     'en-US': 'Delete this "$0" tag now?',
     'zh-CN': '删除镜像标签 "$0" ?'
+  },
+  'close': {
+    'en-US': 'Close',
+    'zh-CN': '关闭'
+  },
+  'ok': {
+    'en-US': 'OK',
+    'zh-CN': '确认'
   }
 };

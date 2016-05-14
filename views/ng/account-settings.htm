@@ -67,6 +67,9 @@
                   <label for="oldPassword" class="col-sm-3 control-label">// 'old_password' | tr //:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="oldPassword" ng-model="user.oldPassword" ng-change="vm.reset()" name="uOldPassword" required>
+                    <div class="error-message" ng-messages="form.uOldPassword.$error" ng-if="form.uOldPassword.$touched">
+                      <span ng-message="required">// 'old_password_is_required' | tr //</span>
+                    </div> 
                   </div>
                   <div class="col-sm-2">
                     <span class="asterisk">*</span>
@@ -76,6 +79,10 @@
                   <label for="password" class="col-sm-3 control-label">// 'new_password' | tr //:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="password" ng-model="user.password" ng-change="vm.reset()" name="uPassword" required password>
+                    <div class="error-message" ng-messages="form.uPassword.$error" ng-if="form.uPassword.$touched">
+                      <span ng-message="required">// 'password_is_required' | tr //</span>
+                      <span ng-message="password">// 'password_is_invalid' | tr //</span>
+                    </div>
                     <p class="help-block small-size-fonts">// 'password_desc' | tr //</p>
                   </div>
                   <div class="col-sm-2">
@@ -86,6 +93,9 @@
                   <label for="confirmPassword" class="col-sm-3 control-label">// 'confirm_password' | tr //:</label>
                   <div class="col-sm-7">
                     <input type="password" class="form-control" id="confirmPassword" ng-model="user.confirmPassword" ng-change="vm.reset()" name="uConfirmPassword" compare-to="user.password">
+                    <div class="error-message" ng-messages="form.uConfirmPassword.$error" ng-if="form.uConfirmPassword.$touched">
+                      <span ng-message="compareTo">// 'password_does_not_match' | tr //</span>
+                    </div>
                   </div>
                   <div class="col-sm-2">
                     <span class="asterisk">*</span>
@@ -99,16 +109,6 @@
                 </div>
               </div>  
               <div class="error-message">
-                <div ng-messages="form.uOldPassword.$error" ng-if="form.uOldPassword.$touched">
-                  <span ng-message="required">// 'old_password_is_required' | tr //</span>
-                </div>
-                <div ng-messages="form.uPassword.$error" ng-if="form.uPassword.$touched">
-                  <span ng-message="required">// 'new_password_is_required' | tr //</span>
-                  <span ng-message="password">// 'new_password_is_invalid' | tr //</span>
-                </div>
-                <div ng-messages="form.uConfirmPassword.$error" ng-if="form.uConfirmPassword.$touched">
-                  <span ng-message="compareTo">// 'password_does_not_match' | tr //</span>
-                </div>
                 <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
               </div>
             </form>

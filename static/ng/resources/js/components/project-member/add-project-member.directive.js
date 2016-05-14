@@ -10,7 +10,7 @@
  
   function AddProjectMemberController($scope, roles, AddProjectMemberService) {
     var vm = this;
-    vm.username = "";
+    vm.username = '';
     vm.roles = roles();
     vm.optRole = 1;
     
@@ -31,7 +31,7 @@
         AddProjectMemberService(vm.projectId, vm.optRole, pm.username)
           .success(addProjectMemberComplete)
           .error(addProjectMemberFailed);
-        vm.username = "";
+        vm.username = '';
         vm.optRole = 1;
         vm.reload();
       }
@@ -42,7 +42,7 @@
         form.$setPristine();
       }
       vm.isOpen = false;  
-      vm.username = "";
+      vm.username = '';
       vm.optRole = 1;
     }
     
