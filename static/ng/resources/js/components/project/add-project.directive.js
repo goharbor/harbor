@@ -34,7 +34,6 @@
     }
     
     function addProjectSuccess(data, status) {
-      vm.isOpen = false;
       vm.projectName = "";
       vm.isPublic = false;     
       $scope.$emit('addedSuccess', true);
@@ -43,7 +42,11 @@
     function addProjectFailed(data, status) {
       if(status === 409) {
         vm.hasError = true;
-        vm.errorMessage = 'Project already exists.';
+        vm.errorMessage = 'project_already_exist';
+      }
+      if(status == 500) {
+        vm.hasError = true;
+        vm.errorMessage = 'project_name_is_invalid';
       }
       console.log('Failed to add project:' + status);
     }

@@ -24,12 +24,18 @@
   
   function tr(I18nService) {
     return tr;
-    function tr(label) {
+    function tr(label, params) {
       var currentLanguage = I18nService().getCurrentLanguage();
+      var result = '';
       if(label && label.length > 0){
-        return I18nService().getValue(label, currentLanguage); 
+        result = I18nService().getValue(label, currentLanguage); 
       }
-      return '';
+      if(angular.isArray(params)) {
+        angular.forEach(params, function(value, index) {
+          result = result.replace('$' + index, params[index]);
+        });
+      }
+      return result;
     }
   }  
     

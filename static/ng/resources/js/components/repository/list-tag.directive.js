@@ -6,9 +6,9 @@
     .module('harbor.repository')
     .directive('listTag', listTag);
     
-  ListTagController.$inject = ['$scope', 'ListTagService'];
+  ListTagController.$inject = ['$scope', 'ListTagService', '$filter', 'trFilter'];
   
-  function ListTagController($scope, ListTagService) {
+  function ListTagController($scope, ListTagService, $filter, trFilter) {
     var vm = this;
     
     vm.tags = [];
@@ -37,15 +37,13 @@
     function deleteByTag(e) {
       $scope.$emit('tag', e.tag);
       $scope.$emit('repoName', e.repoName);
-      $scope.$emit('modalTitle', 'Delete tag - ' + e.tag);
+      $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [e.tag]));
       
       var message;
       if(vm.tags.length == 1) {
-        message = 'After deleting the associated repository with the tag will be deleted together,<br/>' +
-        'because a repository contains at least one tag. And the corresponding image will be removed from the system.<br/>' +
-        '<br/>Delete this "' + e.tag + '" tag now?';
+        message = $filter('tr')('alert_delete_last_tag', [e.tag]);
       }else {
-        message = 'Delete this "' + e.tag + '" tag now?';
+        message = $filter('tr')('alert_delete_tag', [e.tag]);
       }
       
       $scope.$emit('modalMessage', message);

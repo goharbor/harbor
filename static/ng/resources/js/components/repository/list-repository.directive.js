@@ -5,9 +5,9 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', 'nameFilter', '$routeParams'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$routeParams', '$filter', 'trFilter'];
   
-  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, nameFilter, $routeParams) {
+  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $routeParams, $filter, trFilter) {
     var vm = this;
         
     vm.filterInput = "";
@@ -58,10 +58,8 @@
     function deleteByRepo(repoName) {
       vm.repoName = repoName;
       vm.tag = '';      
-      vm.modalTitle = 'Delete repository - ' + repoName;
-      vm.modalMessage = 'After deleting the associated tags with the repository will be deleted together.<br/>' +
-      'And the corresponding image will be removed from the system.<br/>' +
-      '<br/>Delete this "' + repoName + '" repository now?';
+      vm.modalTitle = $filter('tr')('alert_delete_repo_title', [repoName]);
+      vm.modalMessage = $filter('tr')('alert_delete_repo', [repoName]);
     }
   
     function deleteImage() {

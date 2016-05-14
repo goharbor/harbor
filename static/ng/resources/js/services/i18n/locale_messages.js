@@ -398,5 +398,55 @@ var global_messages = {
   'username_email': {
     'en-US': 'Username/Email',
     'zh-CN': '用户名/邮箱'
+  },
+  'project_already_exist': {
+    'en-US': 'Project already exist',
+    'zh-CN': '项目已存在。'
+  },
+  'project_name_is_invalid': {
+    'en-US': 'Project name is invalid',
+    'zh-CN': '项目名称无效。'
+  },
+  'projects_or_repositories': {
+    'en-US': 'Projects or repositories',
+    'zh-CN': '项目和镜像资源'
+  },
+  'tag': {
+    'en-US': 'Tag',
+    'zh-CN': '标签'
+  },
+  'image_details': {
+    'en-US': 'Image Details',
+    'zh-CN': '镜像明细'
+  },
+  'pull_command': {
+    'en-US': 'Pull Command',
+    'zh-CN': 'Pull 命令'
+  },
+  'alert_delete_repo_title': {
+    'en-US': 'Delete repository - $0',
+    'zh-CN': '删除镜像仓库 - $0'
+  },
+  'alert_delete_repo': {
+    'en-US': 'After deleting the associated tags with the repository will be deleted together.<br/>' +
+      'And the corresponding image will be removed from the system.<br/>' +
+      '<br/>Delete this "$0" repository now?',
+    'zh-CN': '删除镜像仓库也会删除其所有相关联的镜像标签，<br/>并且其对应镜像资源文件也会被从系统删除。<br/>' +
+      '<br/>是否删除镜像仓库 "$0" ?'
+  },
+  'alert_delete_last_tag': {
+    'en-US': 'After deleting the associated repository with the tag will be deleted together,<br/>' +
+        'because a repository contains at least one tag. And the corresponding image will be removed from the system.<br/>' +
+        '<br/>Delete this "$0" tag now?',
+    'zh-CN': '当删除只包含一个镜像标签的镜像仓库时，其对应的镜像仓库也会被从系统中删除。<br/>' + 
+        '<br/>删除镜像标签 "$0" ?'
+  },
+  'alert_delete_tag_title': {
+    'en-US': 'Delete tag - $0',
+    'zh-CN': '删除镜像标签 - $0'
+  },
+  'alert_delete_tag': {
+    'en-US': 'Delete this "$0" tag now?',
+    'zh-CN': '删除镜像标签 "$0" ?'
   }
 };

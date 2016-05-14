@@ -34,11 +34,9 @@
   font-size: 14pt;
 }
 
-.css-form input .ng-valid .ng-submitted {
-  border-color: black;
-}
 
-.css-form input .ng-invalid .ng-submitted {
+
+.css-form input.ng-invalid.ng-dirty {
   border-color: red;
 }
 

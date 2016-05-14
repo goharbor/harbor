@@ -28,7 +28,7 @@
     
     function save(pm) {     
       if(pm && angular.isDefined(pm.username)) {
-        AddProjectMemberService(vm.projectId, vm.optRole, vm.username)
+        AddProjectMemberService(vm.projectId, vm.optRole, pm.username)
           .success(addProjectMemberComplete)
           .error(addProjectMemberFailed);
         vm.username = "";
