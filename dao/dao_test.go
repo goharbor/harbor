@@ -604,10 +604,10 @@ func TestGetUserRelevantProjects(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
 	}
-	if len(projects) != 2 {
-		t.Errorf("Expected length of relevant projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
+	if len(projects) != 1 {
+		t.Errorf("Expected length of relevant projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
 	}
-	if projects[1].Name != projectName {
+	if projects[0].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
 	}
 }
