@@ -37,22 +37,22 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "mysql"
-#  ui:
-#    build:  ./ui/
+  ui:
+    build:  ./ui/
       #context: ../
       #dockerfile: ../Dockerfile.ui
-#    env_file:
-#      - ./config/ui/env
-#    volumes:
-#      - ./config/ui/app.conf:/etc/ui/app.conf
-#      - ./config/ui/private_key.pem:/etc/ui/private_key.pem
-#    depends_on:
-#      - log
-#    logging:
-#      driver: "syslog"
-#      options:  
-#        syslog-address: "tcp://127.0.0.1:1514"
-#        syslog-tag: "ui"
+    env_file:
+      - ./config/ui/env
+    volumes:
+      - ./config/ui/app.conf:/etc/ui/app.conf
+      - ./config/ui/private_key.pem:/etc/ui/private_key.pem
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "ui"
   proxy:
     image: library/nginx:1.9
     volumes:
@@ -63,7 +63,7 @@ services:
     depends_on:
       - mysql
       - registry
-#      - ui
+      - ui
       - log
     logging:
       driver: "syslog"
