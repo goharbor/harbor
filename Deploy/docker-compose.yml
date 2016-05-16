@@ -39,7 +39,7 @@ services:
         syslog-tag: "mysql"
   ui:
     build:
-      context: ../
+      #context: ../
       dockerfile: ../Dockerfile.ui
     env_file:
       - ./config/ui/env
