@@ -399,6 +399,10 @@ var global_messages = {
     'en-US': 'Username/Email',
     'zh-CN': '用户名/邮箱'
   },
+  'project_name_is_required': {
+    'en-US': 'Project name is required',
+    'zh-CN': '项目名称为必填项。'
+  },
   'project_already_exist': {
     'en-US': 'Project already exist',
     'zh-CN': '项目已存在。'

@@ -6,7 +6,7 @@
           <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="p.projectName" name="uProjectName" ng-change="vm.reset()" required>
           <div class="error-message">
             <div ng-messages="form.$dirty && form.uProjectName.$error" ng-if="form.uProjectName.$touched">
-              <span ng-message="required">Project name is required.</span>
+              <span ng-message="required">// 'project_name_is_required' | tr //</span>
             </div>
             <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
           </div>

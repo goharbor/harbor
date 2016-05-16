@@ -34,7 +34,7 @@
     }    
         
     function resetPassword(user) {
-      if(user && angular.isDefined(user.resetUuid) && angular.isDefined(user.password)) {
+      if(user && angular.isDefined(user.password)) {
         console.log('rececived password:' + user.password + ', reset_uuid:' + vm.resetUuid);
         ResetPasswordService(vm.resetUuid, user.password)
           .success(resetPasswordSuccess)
