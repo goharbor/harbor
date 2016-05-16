@@ -89,21 +89,21 @@ func (ra *RepositoryV3API) GetRepository() {
 		ra.project_name, ra.repository_name))
 	if err != nil {
 		beego.Error("Failed to get repository from DB: ", err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to get repository")
+		ra.RenderError(http.StatusNotFound, "Failed to get repository")
 		return
 	}
 
 	catalog, err := utils.ParseQuestions(repository.Catalog)
 	if err != nil {
 		beego.Error("Sry Compose parse error", err)
-		ra.RenderError(http.StatusInternalServerError, "sry compose parse error")
+		ra.RenderError(http.StatusNotFound, "sry compose parse error")
 		return
 	}
 
 	questionsJson, err := json.Marshal(catalog.Questions)
 	if err != nil {
 		beego.Error("json marshal error", err)
-		ra.RenderError(http.StatusInternalServerError, "json marshal error")
+		ra.RenderError(http.StatusBadRequest, "json marshal error")
 		return
 	}
 
