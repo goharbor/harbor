@@ -40,7 +40,7 @@ services:
   ui:
     build:
       context: ../
-      dockerfile: Dockerfile.ui
+      dockerfile: ../Dockerfile.ui
     env_file:
       - ./config/ui/env
     volumes:
