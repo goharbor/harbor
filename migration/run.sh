@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PYTHONPATH=$PYTHONPATH:/harbor-migration
+
 source ./migration.cfg
 
 WAITTIME=60
@@ -14,6 +16,7 @@ if [[ $1 = "help" || $1 = "h" || $# = 0 ]]; then
     echo "backup                perform database backup"
     echo "restore               perform database restore"
     echo "up,   upgrade         perform database schema upgrade"
+    echo "test                  test database connection"
     echo "h,    help            usage help"
     exit 0
 fi
@@ -36,7 +39,7 @@ fi
 
 echo 'Trying to start mysql server...'
 DBRUN=0
-nohup mysqld 2>&1 > ./nohup.log&
+nohup mysqld 2>&1 > ./mysqld.log&
 for i in $(seq 1 $WAITTIME); do
     echo "$(/usr/sbin/service mysql status)"
     if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then
@@ -47,9 +50,17 @@ for i in $(seq 1 $WAITTIME); do
     fi
 done
 
-if [[ $DBRUN -eq 0 ]]; then
+if [[ $DBRUN -eq 0  ]]; then
     echo "timeout. Can't run mysql server."
+    if [[ $1 = "test" ]]; then
+        echo "test failed."
+    fi
     exit 1
+fi
+
+if [[ $1 = "test" ]]; then
+    echo "test passed."
+    exit 0
 fi
 
 key="$1"
