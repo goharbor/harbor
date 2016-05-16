@@ -200,8 +200,8 @@ var global_messages = {
     'zh-CN': '项目'
   },
   'public_projects': {
-    'en-US': 'Public Projects',
-    'zh-CN': '公开项目'
+    'en-US': 'Public',
+    'zh-CN': '公开'
   },
   'total_projects': {
     'en-US': 'Total Projects',
@@ -254,10 +254,6 @@ var global_messages = {
   'my_projects': {
     'en-US': 'My Projects',
     'zh-CN': '我的项目'
-  },
-  'public_projects': {
-    'en-US': 'Public Projects',
-    'zh-CN': '公开项目'
   },
   'project_name': {
     'en-US': 'Project Name',

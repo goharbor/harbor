@@ -9,7 +9,7 @@
               <div class="form-group">
                 <label for="username" class="col-sm-3 control-label">// 'username' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="username" ng-model="user.username" ng-value="vm.user.username" name="uUsername" ng-model-options="{ updateOn: 'blur' }" required maxlength="20" invalid-chars>                 
+                  <input type="text" class="form-control" id="username" ng-model="user.username" ng-value="vm.user.username" name="uUsername" ng-model-options="{ updateOn: 'blur' }" ng-disabled="true" required maxlength="20" invalid-chars>                 
                   <div ng-messages="form.$submitted && form.uUsername.$error">
                     <span ng-message="required">// 'username_is_required' | tr //</span>
                     <span ng-message="maxlength">// 'username_is_too_long' | tr //</span>
@@ -23,7 +23,7 @@
               <div class="form-group">
                 <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="email" class="form-control" id="email" ng-model="user.email" ng-value="vm.user.email" ng-model-options="{ updateOn: 'blur' }"  name="uEmail" required>
+                  <input type="email" class="form-control" id="email" ng-model="user.email" ng-value="vm.user.email" ng-model-options="{ updateOn: 'blur' }"  ng-disabled="true" name="uEmail" required>
                   <div ng-messages="form.$submitted && form.uEmail.$error">
                     <span ng-message="required">// 'email_is_required' | tr //</span>
                     <span ng-message="email">// 'email_content_illegal' | tr //</span>
@@ -36,7 +36,7 @@
               <div class="form-group">
                 <label for="fullName" class="col-sm-3 control-label">// 'full_name' | tr //:</label>
                 <div class="col-sm-7"> 
-                  <input type="text" class="form-control" id="fullName" ng-model="user.fullName" name="uFullName" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.user.realname" required maxlength="20" invalid-chars>
+                  <input type="text" class="form-control" id="fullName" ng-model="user.fullName" name="uFullName" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.user.realname" ng-disabled="true" required maxlength="20" invalid-chars>
                   <div ng-messages="form.$submitted && form.uFullName.$error">
                     <span ng-message="required">// 'full_name_is_required' | tr //</span>
                     <span ng-message="invalidChars">// 'full_name_contains_illegal_chars' | tr //</span>
@@ -50,7 +50,7 @@
               <div class="form-group">
                 <label for="comments" class="col-sm-3 control-label">// 'comments' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.user.comment" ng-model-options="{ updateOn: 'blur' }" maxlength="20">
+                  <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.user.comment" ng-disabled="true" ng-model-options="{ updateOn: 'blur' }" maxlength="20">
                   <div ng-messages="form.$submitted && form.uComments.$error">
                     <span ng-show="maxlength">// 'comment_is_too_long' | tr //</span>
                   </div>

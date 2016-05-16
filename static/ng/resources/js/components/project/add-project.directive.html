@@ -3,7 +3,7 @@
     <div class="col-xs-10 col-md-10">
       <form name="form" ng-submit="form.$valid">  
         <div class="form-group col-md-6">               
-          <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="p.projectName" name="uProjectName" ng-model-options="{ updateOn: 'blur' }" ng-change="vm.reset()" required>
+          <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="p.projectName" name="uProjectName" ng-model-options="{ debounce: 250 }" ng-change="vm.reset()" required>
           <div class="error-message">
             <div ng-messages="form.$dirty && form.uProjectName.$error" ng-if="form.uProjectName.$touched">
               <span ng-message="required">// 'project_name_is_required' | tr //</span>
