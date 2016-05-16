@@ -353,8 +353,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	project := models.Project{UserID: currentUser.UserID}
-	projects, err := GetUserRelevantProjects(project)
+	projects, err := SearchProjects(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
