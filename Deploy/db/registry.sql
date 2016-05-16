@@ -39,7 +39,7 @@ insert into role (role_code, name) values
 create table user (
  user_id int NOT NULL AUTO_INCREMENT,
  username varchar(15),
- email varchar(30),
+ email varchar(128),
  password varchar(40) NOT NULL,
  realname varchar (20) NOT NULL,
  comment varchar (30),
