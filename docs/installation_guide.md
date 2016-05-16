@@ -75,6 +75,34 @@ For information on how to use Harbor, please refer to [User Guide of Harbor](use
 #### Configuring Harbor with HTTPS Access
 Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. This makes it relatively simple to configure, especially for a development or testing environment. However, it is highly recommended that security be enabled for any production environment. Refer to [Configuring Harbor with HTTPS Access](configure_https.md) if you want to enable HTTPS access to Harbor.
 
+#### Configuring Harbor as a local registry mirror
+The Harbor runs as a local private registry by default, it can be easily configured to run as a local registry mirror, which can keep most of the redundant image fetch traffic on your local network. You just need to edit `config/registry/config.yml` after execute `./prepare`, and append a `proxy` section as follows:
+
+```
+proxy:
+  remoteurl: https://registry-1.docker.io
+```
+In order to access private images on the Docker Hub, a username and password can be supplied:
+
+```
+proxy:
+  remoteurl: https://registry-1.docker.io
+  username: [username]
+  password: [password]
+```
+You will need to pass the `--registry-mirror` option to your Docker daemon on startup:
+
+```
+docker --registry-mirror=https://<my-docker-mirror-host> daemon
+```
+For example, if your mirror is serving on `http:/reg.yourdomain.com`, you would run:
+
+```
+docker --registry-mirror=https://reg.yourdomain.com daemon
+```
+
+Refer to the [Registry as a pull through cache](https://github.com/docker/distribution/blob/master/docs/mirror.md) for detail information.
+
 ## Installing Harbor via a pre-built installation package 
 
 A pre-built installation package of each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases). After downloading the package file **harbor-&lt;version&gt;.tgz** , extract files in the package.  
