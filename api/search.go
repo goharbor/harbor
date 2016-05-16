@@ -61,7 +61,7 @@ func (s *SearchAPI) Get() {
 			s.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 	} else {
-		projects, err = dao.GetUserRelevantProjects(userID)
+		projects, err = dao.SearchProjects(userID)
 		if err != nil {
 			log.Errorf("failed to get user %d 's relevant projects: %v", userID, err)
 			s.CustomAbort(http.StatusInternalServerError, "internal error")

@@ -572,39 +572,6 @@ func TestIsProjectPublic(t *testing.T) {
 	}
 }
 
-func TestQueryProject(t *testing.T) {
-	query1 := models.Project{
-		UserID: 1,
-	}
-	projects, err := QueryProject(query1)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query1)
-	}
-	if len(projects) != 2 {
-		t.Errorf("Expecting get 2 projects, but actual: %d, the list: %+v", len(projects), projects)
-	}
-	query2 := models.Project{
-		Public: 1,
-	}
-	projects, err = QueryProject(query2)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query2)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expecting get 1 project, but actual: %d, the list: %+v", len(projects), projects)
-	}
-	query3 := models.Project{
-		UserID: 9,
-	}
-	projects, err = QueryProject(query3)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query3)
-	}
-	if len(projects) != 0 {
-		t.Errorf("Expecting get 0 project, but actual: %d, the list: %+v", len(projects), projects)
-	}
-}
-
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {

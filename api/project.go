@@ -118,15 +118,34 @@ func (p *ProjectAPI) Get() {
 	if len(projectName) > 0 {
 		queryProject.Name = "%" + projectName + "%"
 	}
-	public, _ := p.GetInt("is_public")
-	queryProject.Public = public
-
-	projectList, err := dao.QueryProject(queryProject)
+	isPublic := p.GetString("is_public")
+	if len(isPublic) > 0 {
+		public, err := strconv.ParseInt(isPublic, 10, 64)
+		if err != nil {
+			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
+			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
+		}
+		queryProject.Public = int(public)
+	}
+	isAdmin, err := dao.IsAdminRole(p.userID)
 	if err != nil {
-		log.Errorf("Error occurred in QueryProject, error: %v", err)
+		log.Errorf("Error occured in check admin, error: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	var projectList []models.Project
+	if isAdmin {
+		projectList, err = dao.GetAllProjects()
+	} else {
+		projectList, err = dao.GetUserRelevantProjects(queryProject)
+	}
+	if err != nil {
+		log.Errorf("Error occured in QueryProject, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
+		if isAdmin {
+			projectList[i].Role = models.PROJECTADMIN
+		}
 		if projectList[i].Role == models.PROJECTADMIN {
 			projectList[i].Togglable = true
 		}

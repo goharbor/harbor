@@ -79,52 +79,6 @@ func IsProjectPublic(projectName string) bool {
 	return project.Public == 1
 }
 
-// QueryProject querys the projects based on publicity and user, disregarding the names etc.
-func QueryProject(query models.Project) ([]models.Project, error) {
-	o := orm.NewOrm()
-
-	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public`
-	queryParam := make([]interface{}, 1)
-	isAdmin, err := IsAdminRole(query.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	if query.Public == 1 {
-		//if the project is public
-		sql += ` from project p where p.deleted = 0 and p.public = ?`
-		queryParam = append(queryParam, query.Public)
-	} else if !isAdmin {
-		//if the user is not admin, should join the project_member table to query his/her projects and role id
-		sql += `, pm.role role from project p 
-		left join project_member pm on p.project_id = pm.project_id
-	    where p.deleted = 0  and (pm.user_id = ?) `
-		queryParam = append(queryParam, query.UserID)
-	} else if isAdmin {
-		//if the user is admin, return all projects
-		sql += ` from project p where p.deleted = 0 `
-	}
-	if query.Name != "" {
-		sql += " and p.name like ? "
-		queryParam = append(queryParam, query.Name)
-	}
-
-	sql += " order by p.name "
-
-	var r []models.Project
-	_, err = o.Raw(sql, queryParam).QueryRows(&r)
-	if err != nil {
-		return nil, err
-	}
-	if isAdmin {
-		for i := 0; i < len(r); i++ {
-			r[i].Role = models.PROJECTADMIN
-		}
-	}
-	return r, nil
-}
-
 //ProjectExists returns whether the project exists according to its name of ID.
 func ProjectExists(nameOrID interface{}) (bool, error) {
 	o := orm.NewOrm()
@@ -218,16 +172,16 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
-// GetUserRelevantProjects returns a project list,
+// SearchProjects returns a project list,
 // which satisfies the following conditions:
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
-func GetUserRelevantProjects(userID int) ([]models.Project, error) {
+func SearchProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `select distinct p.project_id, p.name, p.public 
 		from project p 
 		left join project_member pm on p.project_id = pm.project_id 
-		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
+		where (pm.user_id = ? or p.pulic=1) and p.deleted = 0`
 
 	var projects []models.Project
 
@@ -236,6 +190,38 @@ func GetUserRelevantProjects(userID int) ([]models.Project, error) {
 	}
 
 	return projects, nil
+}
+
+// GetUserRelevantProjects returns the projects based on publicity and user, disregarding the names etc.
+func GetUserRelevantProjects(query models.Project) ([]models.Project, error) {
+	o := orm.NewOrm()
+
+	sql := `select distinct
+		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
+	 from project p 
+		left join project_member pm on p.project_id = pm.project_id
+	 where p.deleted = 0 and pm.user_id= ?`
+
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, query.UserID)
+	if query.Public == 1 {
+		sql += ` and p.public = ?`
+		queryParam = append(queryParam, query.Public)
+	}
+	if query.Name != "" {
+		sql += " and p.name like ? "
+		queryParam = append(queryParam, query.Name)
+	}
+
+	sql += " order by p.name "
+
+	var r []models.Project
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 // GetAllProjects returns all projects which are not deleted

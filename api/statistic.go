@@ -28,38 +28,30 @@ import (
 // StatisticAPI handles request to /api/statistics/
 type StatisticAPI struct {
 	BaseAPI
-	userID   int
-	username string
+	userID int
 }
 
 //Prepare validates the URL and the user
 func (s *StatisticAPI) Prepare() {
-	userID, ok := s.GetSession("userId").(int)
-	if !ok {
-		s.userID = dao.NonExistUserID
-	} else {
-		s.userID = userID
-	}
-	username, ok := s.GetSession("username").(string)
-	if !ok {
-		log.Warning("failed to get username from session")
-		s.username = ""
-	} else {
-		s.username = username
-	}
+	s.userID = s.ValidateUser()
 }
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	queryProject := models.Project{UserID: s.userID}
-	projectList, err := dao.QueryProject(queryProject)
-	if err != nil {
-		log.Errorf("Error occured in QueryProject, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
 	isAdmin, err := dao.IsAdminRole(s.userID)
 	if err != nil {
 		log.Errorf("Error occured in check admin, error: %v", err)
+		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	var projectList []models.Project
+	if isAdmin {
+		projectList, err = dao.GetAllProjects()
+	} else {
+		projectList, err = dao.GetUserRelevantProjects(queryProject)
+	}
+	if err != nil {
+		log.Errorf("Error occured in QueryProject, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	proMap := map[string]int{}
@@ -72,6 +64,9 @@ func (s *StatisticAPI) Get() {
 		proMap["total_repo_count"] = getTotalRepoCount()
 	}
 	for i := 0; i < len(projectList); i++ {
+		if isAdmin {
+			projectList[i].Role = models.PROJECTADMIN
+		}
 		if projectList[i].Role == models.PROJECTADMIN || projectList[i].Role == models.DEVELOPER ||
 			projectList[i].Role == models.GUEST {
 			proMap["my_project_count"]++
