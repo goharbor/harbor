@@ -181,7 +181,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 	sql := `select distinct p.project_id, p.name, p.public 
 		from project p 
 		left join project_member pm on p.project_id = pm.project_id 
-		where (pm.user_id = ? or p.pulic = 1) and p.deleted = 0`
+		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
 
 	var projects []models.Project
 
