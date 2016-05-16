@@ -64,7 +64,7 @@ services:
       - mysql
       - registry
 #      - ui
-      - log
+#      - log
     logging:
       driver: "syslog"
       options:  
