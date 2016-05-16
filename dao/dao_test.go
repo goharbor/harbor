@@ -734,7 +734,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
-var targetID, policyID, jobID int64
+var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestAddRepTarget(t *testing.T) {
 	target := models.RepTarget{
@@ -849,17 +849,17 @@ func TestAddRepPolicy2(t *testing.T) {
 		Description: "whatever",
 		Name:        "mypolicy",
 	}
-	id, err := AddRepPolicy(policy2)
-	t.Logf("added policy, id: %d", id)
+	policyID2, err := AddRepPolicy(policy2)
+	t.Logf("added policy, id: %d", policyID2)
 	if err != nil {
 		t.Errorf("Error occurred in AddRepPolicy: %v", err)
 	}
-	p, err := GetRepPolicy(id)
+	p, err := GetRepPolicy(policyID2)
 	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, id)
+		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID2)
 	}
 	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", id)
+		t.Errorf("Unable to find a policy with id: %d", policyID2)
 	}
 	var tm time.Time
 	if p.StartTime.After(tm) {
@@ -907,6 +907,57 @@ func TestUpdateRepJobStatus(t *testing.T) {
 	}
 	if j.Status != models.JobFinished {
 		t.Errorf("Job's status: %s, expected: %s, id: %d", j.Status, models.JobFinished, jobID)
+	}
+}
+
+func TestGetRepPolicyByProject(t *testing.T) {
+	p1, err := GetRepPolicyByProject(99)
+	if err != nil {
+		t.Errorf("Error occured in GetRepPolicyByProject:%v, project ID: %d", err, 99)
+		return
+	}
+	if len(p1) > 0 {
+		t.Errorf("Unexpected length of policy list, expected: 0, in fact: %d, project id: %d", len(p1), 99)
+		return
+	}
+
+	p2, err := GetRepPolicyByProject(1)
+	if err != nil {
+		t.Errorf("Error occuered in GetRepPolicyByProject:%v, project ID: %d", err, 2)
+		return
+	}
+	if len(p2) != 1 {
+		t.Errorf("Unexpected length of policy list, expected: 1, in fact: %d, project id: %d", len(p2), 1)
+		return
+	}
+	if p2[0].ID != policyID {
+		t.Errorf("Unexpecred policy id in result, expected: %d, in fact: %d", policyID, p2[0].ID)
+		return
+	}
+}
+
+func TestGetRepJobByPolicy(t *testing.T) {
+	jobs, err := GetRepJobByPolicy(999)
+	if err != nil {
+		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
+		return
+	}
+	if len(jobs) > 0 {
+		log.Errorf("Unexpected length of jobs, expected: 0, in fact: %d", len(jobs))
+		return
+	}
+	jobs, err = GetRepJobByPolicy(policyID)
+	if err != nil {
+		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
+		return
+	}
+	if len(jobs) != 1 {
+		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		return
+	}
+	if jobs[0].ID != jobID {
+		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
 	}
 }
 

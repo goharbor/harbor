@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
 	"github.com/vmware/harbor/models"
@@ -16,7 +17,7 @@ import (
 )
 
 type ReplicationJob struct {
-	BaseAPI
+	api.BaseAPI
 }
 
 type ReplicationReq struct {
