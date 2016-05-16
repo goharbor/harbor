@@ -353,7 +353,8 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID)
+	project := models.Project{UserID: currentUser.UserID}
+	projects, err := GetUserRelevantProjects(project)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -599,7 +600,8 @@ func TestProjectPermission(t *testing.T) {
 }
 
 func TestGetUserRelevantProjects(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID)
+	project := models.Project{UserID: currentUser.UserID}
+	projects, err := GetUserRelevantProjects(project)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
 	}
