@@ -13,14 +13,14 @@ FROM library/ubuntu:14.04
 #	&& rm /etc/rsyslog.d/*
 
 # logrotate configuration file for docker
-ADD logrotate_docker.conf /etc/logrotate.d/
+#ADD logrotate_docker.conf /etc/logrotate.d/
 
 # rsyslog configuration file for docker
-ADD rsyslog_docker.conf /etc/rsyslog.d/
+#ADD rsyslog_docker.conf /etc/rsyslog.d/
 
 #VOLUME /var/log/docker/
 
-EXPOSE 514
+#EXPOSE 514
 
-CMD cron && rsyslogd -n
+#CMD cron && rsyslogd -n
 
