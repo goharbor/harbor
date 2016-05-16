@@ -1,5 +1,7 @@
 # Harbor
 
+[![Join the chat at https://gitter.im/vmware/harbor](https://badges.gitter.im/vmware/harbor.svg)](https://gitter.im/vmware/harbor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
 
 ![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
