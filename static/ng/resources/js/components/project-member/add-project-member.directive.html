@@ -3,7 +3,7 @@
     <div class="col-xs-10 col-md-10">
       <form name="form" novalidate ng-submit="form.$valid">  
         <div class="form-group col-md-6">               
-          <input type="text" class="form-control" id="addUsername" placeholder="// 'username' | tr //" ng-model="pm.username" name="uUsername" ng-change="vm.reset()" required>
+          <input type="text" class="form-control" id="addUsername" placeholder="// 'username' | tr //" ng-model="pm.username"  name="uUsername" ng-model-options="{ updateOn: 'blur' }" ng-change="vm.reset()" required>
           <div class="error-message">
             <div ng-messages="form.$dirty && form.uUsername.$error">
               <span ng-message="required">// 'username_is_required' | tr //</span>

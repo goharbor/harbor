@@ -123,6 +123,10 @@ var global_messages = {
 	  'en-US': 'Email does not exist.',
 	  'zh-CN': '邮箱不存在。'
   },
+  'email_is_too_long': {
+    'en-US': 'Email is to long. (maximum 50 characters)',
+    'zh-CN': '邮箱名称长度超出限制。（最长为50个字符）'
+  },
   'full_name': {
     'en-US': 'Full Name',
     'zh-CN': '全名'
