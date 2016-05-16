@@ -18,6 +18,7 @@
           <retrieve-projects is-open="vm.open" selected-project="vm.selectedProject" is-project-member="vm.isProjectMember" publicity="vm.publicity"></retrieve-projects>
           <!-- Tab panes -->
   		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
+          <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
           <ng-view></ng-view>
         </div>
       </div>

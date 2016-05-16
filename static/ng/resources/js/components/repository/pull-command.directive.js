@@ -26,7 +26,9 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-     
+       
+      ctrl.harborRegUrl = $('#HarborRegUrl').val() + '/';
+    
       ZeroClipboard.config( { swfPath: "/static/ng/vendors/zc/v2.2.0/ZeroClipboard.swf" } );
       var clip = new ZeroClipboard(element.find('a'));
       element.find('span').tooltip({'trigger': 'click'});
