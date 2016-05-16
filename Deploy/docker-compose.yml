@@ -2,8 +2,7 @@
 #services:
   log:
     build: ./log
- volumes:
-      - /var/log/harbor/:/var/log/docker/
+ volumes:  /var/log/harbor/:/var/log/docker/
     ports:
       - 1514:514
 #  registry:
