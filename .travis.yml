@@ -13,7 +13,7 @@ services:
 install: 
   - cd Deploy
   - ./prepare
-  - docker-compose docker-compose.yml up
+  - docker-compose up -d
 
 #before_script:
   # create tables and load data
