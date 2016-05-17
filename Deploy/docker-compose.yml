@@ -44,7 +44,7 @@
 #        syslog-address: "tcp://127.0.0.1:1514"
 #        syslog-tag: "mysql"
   ui:
-    build:  ./ui/
+    build:  
       context: ../
       dockerfile: ../Dockerfile.ui
     env_file:
