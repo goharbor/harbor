@@ -1,21 +1,28 @@
-# Installation and Configuration Guide of Harbor
-Harbor can be installed by two approaches:  
+# Installation and Configuration Guide
+Harbor can be installed in one of two ways:  
 
-1. Installing from the source code, which goes through a full build process. Internet connection is required.
-2. Installing via a pre-built installation package, which saves time for building the code. Further, it provides a way to install Harbor to a host that is isolated from the Internet (offline installation).
+1. From source code - This goes through a full build process, _and requires an Internet connection_.
+2. Pre-built installation package - This can save time (no building necessary!) as well as allows for installation on a host that is _not_ connected to the Internet.
 
-This guide describes both approaches and their usage.
+This guide describes both of these approaches
 
-## Prerequisites of the target host
-Harbor is deployed as several Docker containers. Hence, it can be deployed on any Linux distribution that supports Docker. 
-Before deploying Harbor, the target host requires Python, Docker, Docker Compose to be installed.  
-* Python should be version 2.7 or higher.  Some Linux distributions (Gentoo, Arch) may not have a Python interpreter installed by default. On those systems, you need to install Python manually.  
-* The Docker engine should be version 1.10 or higher.  For the details to install Docker engine, please refer to: https://docs.docker.com/engine/installation/
-* The Docker Compose needs to be version 1.6.0 or higher.  For the details to install Docker compose, please refer to: https://docs.docker.com/compose/install/
+## Prerequisites for the target host
+Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. 
+The target host requires Python, Docker, and Docker Compose to be installed.  
+* Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
+* Docker engine should be version 1.10 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
+* Docker Compose needs to be version 1.6.0 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
 
-## Installing Harbor from the source code
+## Installation from source code
 
-To install from the source, the target host must be connected to the Internet.
+_Note: To install from source, the target host must be connected to the Internet!_
+The steps boil down to the following
+
+1. Get the source code
+2. Configure **harbor.cfg**
+3. **prepare** the configuration files
+4. Start Harbor with Docker Compose
+
 #### Getting the source code:
 
 ```sh
@@ -23,30 +30,28 @@ $ git clone https://github.com/vmware/harbor
 ```
     
 #### Configuring Harbor
-Before installing Harbor, you should configure the parameters in the file **harbor.cfg**. You then execute the **prepare** script to generate configuration files for Harbor's containers. Finally, you use Docker Compose to start Harbor.  
+Configuration parameters are located in the file **harbor.cfg**. 
+The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
 
-At minimum, you need to change the **hostname** attribute in **harbor.cfg**. The description of each attribute is as follows:  
+* **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
+* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do mnote that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.
+	* email_server = smtp.mydomain.com 
+	* email_server_port = 25
+	* email_username = sample_admin@mydomain.com
+	* email_password = abc
+	* email_from = admin <sample_admin@mydomain.com>  
+	* email_ssl = false
 
-**hostname**: The hostname for a user to access the user interface and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, for example 192.168.1.10 or reg.yourdomain.com . Do NOT use localhost or 127.0.0.1 for the hostname because the registry service needs to be accessed by external clients.  
-**ui_url_protocol**: The protocol for accessing the user interface and the token/notification service, by default it is http. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
-**Email settings**: the following 6 attributes are used to send an email to reset a user's password,  they are not mandatory unless the password reset function is needed in Harbor. By default SSL connection is not enabled, if your smtp server(such as exmail.qq.com) requires SSL connection and doesn't support STARTTLS, then you should enable it by set **email_ssl = true**.
-* email_server = smtp.mydomain.com 
-* email_server_port = 25
-* email_username = sample_admin@mydomain.com
-* email_password = abc
-* email_from = admin <sample_admin@mydomain.com>  
-* email_ssl = false
-
-**harbor_admin_password**: The password for the administrator of Harbor, by default the password is Harbor12345, the user name is admin.  
-**auth_mode**: The authentication mode of Harbor. By default it is *db_auth*, i.e. the credentials are stored in a database. Please set it to *ldap_auth* if you want to verify user's credentials against an LDAP server.  
-**ldap_url**: The URL for LDAP endpoint, for example ldaps://ldap.mydomain.com. It is only used when **auth_mode** is set to *ldap_auth*.    
-**ldap_basedn**: The basedn template for verifying the user's credentials against LDAP, for example uid=%s,ou=people,dc=mydomain,dc=com.  It is only used when **auth_mode** is set to *ldap_auth*.  
-**db_password**: The password of root user of mySQL database. Change this password for any production use.  
-**self_registration**: The flag to turn on or off the user self-registration function. If this flag is turned off, only an admin user can create new users in Harbor. The default value is on. 
-NOTE: When **auth_mode** is *ldap_auth*, the self-registration feature is always disabled, therefore, this flag is ignored.  
+* **harbor_admin_password**: The adminstrator's password. _Note that the default username/password are **admin/Harbor12345** ._  
+* **auth_mode**: The type of authentication that is used. By default it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
+* **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
+* **ldap_basedn**: The basedn template for verifying the user's credentials against LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com`).  _Only used when **auth_mode** is set to *ldap_auth* ._ 
+* **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!!_ 
+* **self_registration**: (**on** or **off**.  Default is **on**) Enable / Disable the ability for a user to register themselves.  When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored.  
 
 #### Building and starting Harbor
-After configuring harbor.cfg, build and start Harbor by the following commands. Because it requires downloading necessary files from the Internet, it may take a while for the docker-compose process to finish.  
+Once **harbord.cfg** is configured, build and start Harbor as follows.  Note that  Note that the docker-compose process can take a while!  
 
 ```sh
     $ cd Deploy
@@ -61,19 +66,19 @@ After configuring harbor.cfg, build and start Harbor by the following commands. 
     $ sudo docker-compose up -d
 ```
 
-If everything works fine, you can open a browser to visit the admin portal at http://reg.yourdomain.com . The default administrator username and password are admin/Harbor12345 .
+_If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
 
-Log in to the admin portal and create a new project, e.g. myproject. You can then use docker commands to login and push images. The default port of Harbor registry server is 80:
+Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (By default, the registry server listens on port 80):
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
 ```
-**NOTE:** The default installation of Harbor uses HTTP protocol, you should add the option "--insecure-registry" to your client's Docker daemon and restart Docker service. 
+**NOTE:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. 
 
 For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md) .
 
 #### Configuring Harbor with HTTPS Access
-Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. This makes it relatively simple to configure, especially for a development or testing environment. However, it is highly recommended that security be enabled for any production environment. Refer to [Configuring Harbor with HTTPS Access](configure_https.md) if you want to enable HTTPS access to Harbor.
+Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set-up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to [Configuring Harbor with HTTPS Access](configure_https.md) 
 
 #### Configuring Harbor as a local registry mirror
 The Harbor runs as a local private registry by default, it can be easily configured to run as a local registry mirror, which can keep most of the redundant image fetch traffic on your local network. You just need to edit `config/registry/config.yml` after execute `./prepare`, and append a `proxy` section as follows:
@@ -119,15 +124,18 @@ storage:
     container: docker_images
 ```
 
-## Installing Harbor via a pre-built installation package 
+## Installation from a pre-built package 
 
-A pre-built installation package of each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases). After downloading the package file **harbor-&lt;version&gt;.tgz** , extract files in the package.  
+Pre-built installation packages of each release are available at [release page](https://github.com/vmware/harbor/releases). 
+Download the package file **harbor-&lt;version&gt;.tgz** , and then extract the files.  
 ```
 $ tar -xzvf harbor-0.1.1.tgz
 $ cd harbor
 ```
 
-Then configure Harbor by following instructions in Section [Configuring Harbor](#configuring-harbor). Next, run **prepare** script to generate config files and use docker compose to build Harbor's container images and eventually spin it up.
+Next, configure Harbor as described earlier in [Configuring Harbor](#configuring-harbor). 
+
+Finally, run the **prepare** script to generate config files, and use docker compose to build / start Harbor.
 
 
 ```
@@ -142,11 +150,24 @@ $ sudo docker-compose up -d
 ......
 ```
 
-### Deploying Harbor to a host which does not have Internet access
-When you run *docker-compose up* to start Harbor, it will pull base images from Docker Hub and build new images for the containers. This process requires accessing the Internet. If you want to deploy Harbor to a host that is not connected to the Internet, you need to prepare Harbor on a machine that has access to the Internet. After that, you export the images as tgz files and transfer them to the target machine. Then load the tgz file into Docker's local image repo.
+### Deploying Harbor on a host which does not have Internet access
+*docker-compose up* pulls the base images from Docker Hub and builds new images for the containers, which, necessarily, requires internet access. To deploy Harbor on a host that is not connected to the Internet
+1. Prepare Harbor on a machine that has access to the Internet. 
+2. Export the images as tgz files
+3. Transfer them to the target host. 
+4. Load the tgz file into Docker's local image repo on the host.
+
+THese steps are detailed below
 
 #### Building and saving images for offline installation
-On a machine that is connected to the Internet, extract files from the pre-built installation package. Then run command "docker-compose build" to build the images and use the script *save_image.sh* to export them as tar files. The tar files will be stored in *images/* directory. Next, package everything in the directory *harbor/* into a tgz file and transfer it to the target machine. This can be done by executing the following commands:
+On a machine that is connected to the Internet, 
+1. Extract the files from the pre-built installation package. 
+2. Then, run `docker-compose build` to build the images.
+3. Use the script `save_image.sh` to export these images as tar files.   Note that the tar files will be stored in the `images/` directory. 
+4. Package everything in the directory `harbor/` into a tgz file
+5. Transfer this tgz file to the target machine. 
+
+The commands, in detail, are as follows
 
 ```
 $ cd harbor
@@ -167,10 +188,9 @@ $ cd ../
 $ tar -cvzf harbor_offline-0.1.1.tgz harbor
 ```
 
-The file **harbor_offline-0.1.1.tgz** contains the images saved by previous steps and the other files required to start Harbor.
-You can use tools such as scp to transfer the file **harbor_offline-0.1.1.tgz** to the target machine that does not have Internet connection. 
-On the target machine, you can execute the following commands to start Harbor. Again, before running the **prepare** script, 
-be sure to update **harbor.cfg** to reflect the right configuration of the target machine. (Refer to Section [Configuring Harbor](#configuring-harbor) .)
+The file `harbor_offline-0.1.1.tgz` contains the images and other files required to start Harbor.  You can use tools such as `rsync` or `scp` to transfer the this file to the target host. 
+On the target host, execute the following commands to start Harbor. _Note that before running the **prepare** script, you **must** update **harbor.cfg** to reflect the right configuration of the target machine!!_ (Refer to Section [Configuring Harbor](#configuring-harbor)
+
 ```
 $ tar -xzvf harbor_offline-0.1.1.tgz  
 $ cd harbor  
@@ -199,9 +219,9 @@ $ sudo docker-compose up -d
 ```
 
 ### Managing Harbor's lifecycle
-Harbor is composed of a few containers which are deployed via docker-compose, you can use docker-compose to manage the lifecycle of the containers. Below are a few useful commands: 
+You can use docker-compose to manage the container lifecycle of the containers. A few useful commands are listed below: 
 
-Build and start Harbor:  
+*Build and start Harbor:*  
 ```
 $ sudo docker-compose up -d 
 Creating harbor_log_1
@@ -210,7 +230,7 @@ Creating harbor_registry_1
 Creating harbor_ui_1
 Creating harbor_proxy_1
 ```  
-Stop Harbor:
+*Stop Harbor:*
 ```
 $ sudo docker-compose stop
 Stopping harbor_proxy_1 ... done
@@ -219,7 +239,7 @@ Stopping harbor_registry_1 ... done
 Stopping harbor_mysql_1 ... done
 Stopping harbor_log_1 ... done
 ```  
-Restart Harbor after stopping
+*Restart Harbor after stopping*
 ```
 $ sudo docker-compose start
 Starting harbor_log_1
@@ -228,7 +248,7 @@ Starting harbor_registry_1
 Starting harbor_ui_1
 Starting harbor_proxy_1
 ````  
-Remove Harbor's containers while keeping the image data and Harbor's database files on the file system: 
+*Remove Harbor's containers while keeping the image data and Harbor's database files on the file system: *
 ```
 $ sudo docker-compose rm
 Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1
@@ -239,19 +259,20 @@ Removing harbor_registry_1 ... done
 Removing harbor_mysql_1 ... done
 ```  
 
-Remove Harbor's database and image data (for a clean re-installation):
+*Remove Harbor's database and image data (for a clean re-installation):*
 ```sh
 $ rm -r /data/database
 $ rm -r /data/registry
 ```
 
-[Docker Compose command-line reference](https://docs.docker.com/compose/reference/) describes the usage information for the docker-compose subcommands.
+Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose
 
 ### Persistent data and log files
-By default, the data of database and image files in the registry are persisted in the directory **/data/** of the target machine. When Harbor's containers are removed and recreated, the data  remain unchanged. Harbor leverages rsyslog to collect the logs of each container, by default the log files are stored in the directory **/var/log/harbor/** on Harbor's host.  
+By default, registry data is persisted in the target host's `/data/` of directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.
+In addition, Harbor users `rsyslog` to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host.  
 
 ##Troubleshooting
-1.When setting up Harbor behind another nginx proxy or elastic load balancing, remove the below line if the proxy already has similar settings. Be sure to edit Deploy/config/nginx/nginx.conf and remove the line under these 3 sections: "location /", "location /v2/" and "location /service/".
+1.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections: `location /`, `location /v2/` and `location /service/`.
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
