@@ -8,7 +8,9 @@ body {
 
 .container-fluid-custom {
   background-color: #EFEFEF;
-  height: 100%;
+  height: 90%;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 .up-section {
