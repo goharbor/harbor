@@ -29,7 +29,6 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
-	"github.com/vmware/harbor/utils/registry/auth"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
@@ -39,22 +38,12 @@ import (
 // the security of registry
 type RepositoryAPI struct {
 	BaseAPI
-	userID   int
-	username string
+	userID int
 }
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
 func (ra *RepositoryAPI) Prepare() {
-	userID, ok := ra.GetSession("userId").(int)
-	if !ok {
-		userID = dao.NonExistUserID
-	}
-	ra.userID = userID
-
-	username, ok := ra.GetSession("username").(string)
-	if ok {
-		ra.username = username
-	}
+	ra.userID = ra.ValidateUser()
 }
 
 // Get ...
@@ -250,29 +239,15 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initializeRepositoryClient(repoName string) (r *registry.Repository, err error) {
+	u := models.User{
+		UserID: ra.userID,
+	}
+	user, err := dao.GetUser(u)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := os.Getenv("REGISTRY_URL")
 
-	//no session, use basic auth
-	if ra.userID == dao.NonExistUserID {
-		username, password, _ := ra.Ctx.Request.BasicAuth()
-		credential := auth.NewBasicAuthCredential(username, password)
-
-		return registry.NewRepositoryWithCredential(repoName, endpoint, credential)
-
-	}
-
-	//session exists, use username
-	if len(ra.username) == 0 {
-		u := models.User{
-			UserID: ra.userID,
-		}
-		user, err := dao.GetUser(u)
-		if err != nil {
-			return nil, err
-		}
-
-		ra.username = user.Username
-	}
-
-	return registry.NewRepositoryWithUsername(repoName, endpoint, ra.username)
+	return registry.NewRepositoryWithUsername(repoName, endpoint, user.Username)
 }

@@ -27,57 +27,10 @@ branch_labels = None
 depends_on = None
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import mysql
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
+from db_meta import *
 
 Session = sessionmaker()
-
-Base = declarative_base()
-
-class Properties(Base):
-    __tablename__ = 'properties'
-
-    k = sa.Column(sa.String(64), primary_key = True)
-    v = sa.Column(sa.String(128), nullable = False)
-
-class ProjectMember(Base):
-    __tablename__ = 'project_member'
-
-    project_id = sa.Column(sa.Integer(), primary_key = True)
-    user_id = sa.Column(sa.Integer(), primary_key = True)
-    role = sa.Column(sa.Integer(), nullable = False)
-    creation_time = sa.Column(sa.DateTime(), nullable = True)
-    update_time = sa.Column(sa.DateTime(), nullable = True)
-    sa.ForeignKeyConstraint(['project_id'], [u'project.project_id'], ),
-    sa.ForeignKeyConstraint(['role'], [u'role.role_id'], ),
-    sa.ForeignKeyConstraint(['user_id'], [u'user.user_id'], ),
-
-class UserProjectRole(Base):
-    __tablename__ = 'user_project_role'
-
-    upr_id = sa.Column(sa.Integer(), primary_key = True)
-    user_id = sa.Column(sa.Integer(), sa.ForeignKey('user.user_id'))
-    pr_id = sa.Column(sa.Integer(), sa.ForeignKey('project_role.pr_id'))
-    project_role = relationship("ProjectRole")
-
-class ProjectRole(Base):
-    __tablename__ = 'project_role'
-
-    pr_id = sa.Column(sa.Integer(), primary_key = True)
-    project_id = sa.Column(sa.Integer(), nullable = False)
-    role_id = sa.Column(sa.Integer(), nullable = False)
-    sa.ForeignKeyConstraint(['role_id'], [u'role.role_id'])
-    sa.ForeignKeyConstraint(['project_id'], [u'project.project_id'])
-
-class Access(Base):
-    __tablename__ = 'access'
-
-    access_id = sa.Column(sa.Integer(), primary_key = True)
-    access_code = sa.Column(sa.String(1))
-    comment = sa.Column(sa.String(30))
 
 def upgrade():
     """
@@ -86,39 +39,60 @@ def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
 
-    #delete M from table access
-    acc = session.query(Access).filter_by(access_id=1).first()
-    session.delete(acc)
-
     #create table property
     Properties.__table__.create(bind)
     session.add(Properties(k='schema_version', v='0.1.1'))
 
+    #add column to table user
+    op.add_column('user', sa.Column('creation_time', sa.DateTime(), nullable=True))
+    op.add_column('user', sa.Column('sysadmin_flag', sa.Integer(), nullable=True))
+    op.add_column('user', sa.Column('update_time', sa.DateTime(), nullable=True))
+
+    #fill update_time data into table user
+    session.query(User).update({User.update_time: datetime.now()})
+
+    #init all sysadmin_flag = 0
+    session.query(User).update({User.sysadmin_flag: 0})
+
     #create table project_member
     ProjectMember.__table__.create(bind)
 
-    #fill data
+    #fill data into project_member and user
     join_result = session.query(UserProjectRole).join(UserProjectRole.project_role).all()
     for result in join_result:
         session.add(ProjectMember(project_id=result.project_role.project_id, \
             user_id=result.user_id, role=result.project_role.role_id, \
             creation_time=datetime.now(), update_time=datetime.now()))
 
+    #update sysadmin_flag
+    sys_admin_result = session.query(UserProjectRole).\
+        join(UserProjectRole.project_role).filter(ProjectRole.role_id ==1).all()
+    for result in sys_admin_result:
+        session.query(User).filter(User.user_id == result.user_id).update({User.sysadmin_flag: 1})
+
+    #add column to table role
+    op.add_column('role', sa.Column('role_mask', sa.Integer(), server_default=sa.text(u"'0'"), nullable=False))
+
     #drop user_project_role table before drop project_role
     #because foreign key constraint
     op.drop_table('user_project_role')
     op.drop_table('project_role')
 
+    #delete sysadmin from table role
+    role = session.query(Role).filter_by(role_id=1).first()
+    session.delete(role)
+    session.query(Role).update({Role.role_id: Role.role_id - 1})
+
+    #delete M from table access
+    acc = session.query(Access).filter_by(access_id=1).first()
+    session.delete(acc)
+    session.query(Access).update({Access.access_id: Access.access_id - 1})
+
     #add column to table project
     op.add_column('project', sa.Column('update_time', sa.DateTime(), nullable=True))
 
-    #add column to table role
-    op.add_column('role', sa.Column('role_mask', sa.Integer(), server_default=sa.text(u"'0'"), nullable=False))
-
-    #add column to table user
-    op.add_column('user', sa.Column('creation_time', sa.DateTime(), nullable=True))
-    op.add_column('user', sa.Column('sysadmin_flag', sa.Integer(), nullable=True))
-    op.add_column('user', sa.Column('update_time', sa.DateTime(), nullable=True))
+    #fill update_time data into table project
+    session.query(Project).update({Project.update_time: datetime.now()})
     session.commit()
 
 def downgrade():
