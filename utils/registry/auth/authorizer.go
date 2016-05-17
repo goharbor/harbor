@@ -46,8 +46,8 @@ func NewRequestAuthorizer(handlers []Handler, challenges []au.Challenge) *Reques
 
 // ModifyRequest adds authorization to the request
 func (r *RequestAuthorizer) ModifyRequest(req *http.Request) error {
-	for _, handler := range r.handlers {
-		for _, challenge := range r.challenges {
+	for _, challenge := range r.challenges {
+		for _, handler := range r.handlers {
 			if handler.Scheme() == challenge.Scheme {
 				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
 					return err

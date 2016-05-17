@@ -69,7 +69,7 @@ func (c *CommonController) Login() {
 // SwitchLanguage handles UI request to switch between different languages and re-render template based on language.
 func (c *CommonController) SwitchLanguage() {
 	lang := c.GetString("lang")
-	if lang == "en-US" || lang == "zh-CN" || lang == "de-DE" {
+	if lang == "en-US" || lang == "zh-CN" || lang == "de-DE" || lang == "ru-RU" {
 		c.SetSession("lang", lang)
 		c.Data["Lang"] = lang
 	}

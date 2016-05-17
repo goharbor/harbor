@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	token_util "github.com/vmware/harbor/service/token"
@@ -48,6 +49,7 @@ type tokenHandler struct {
 	cache     string     // cached token
 	expiresIn int        // The duration in seconds since the token was issued that it will remain valid
 	issuedAt  *time.Time // The RFC3339-serialized UTC standard time at which a given token was issued
+	sync.Mutex
 }
 
 // Scheme returns the scheme that the handler can handle
@@ -77,8 +79,10 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 
 	expired := true
 
-	if t.expiresIn != 0 && t.issuedAt != nil {
-		expired = t.issuedAt.Add(time.Duration(t.expiresIn) * time.Second).Before(time.Now().UTC())
+	cachedToken, cachedExpiredIn, cachedIssuedAt := t.getCachedToken()
+
+	if len(cachedToken) != 0 && cachedExpiredIn != 0 && cachedIssuedAt != nil {
+		expired = cachedIssuedAt.Add(time.Duration(cachedExpiredIn) * time.Second).Before(time.Now().UTC())
 	}
 
 	if expired || hasFrom {
@@ -93,13 +97,11 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 		token = to
 
 		if !hasFrom {
-			t.cache = token
-			t.expiresIn = expiresIn
-			t.issuedAt = issuedAt
+			t.updateCachedToken(to, expiresIn, issuedAt)
 			log.Debug("add token to cache")
 		}
 	} else {
-		token = t.cache
+		token = cachedToken
 		log.Debug("get token from cache")
 	}
 
@@ -107,6 +109,20 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 	log.Debugf("add token to request: %s %s", req.Method, req.URL.String())
 
 	return nil
+}
+
+func (t *tokenHandler) getCachedToken() (string, int, *time.Time) {
+	t.Lock()
+	defer t.Unlock()
+	return t.cache, t.expiresIn, t.issuedAt
+}
+
+func (t *tokenHandler) updateCachedToken(token string, expiresIn int, issuedAt *time.Time) {
+	t.Lock()
+	defer t.Unlock()
+	t.cache = token
+	t.expiresIn = expiresIn
+	t.issuedAt = issuedAt
 }
 
 // Implements interface Handler
@@ -168,6 +184,7 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 	if resp.StatusCode != http.StatusOK {
 		err = registry_errors.Error{
 			StatusCode: resp.StatusCode,
+			StatusText: resp.Status,
 			Message:    string(b),
 		}
 		return

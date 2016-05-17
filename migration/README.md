@@ -16,6 +16,10 @@ Migration is a module for migrating database schema between different version of
 - show instruction of harbor-migration
 
     ```docker run your-image-name help```
+    
+- test mysql connection in harbor-migration
+
+    ```docker run -v /data/database:/var/lib/mysql your-image-name test```
 
 - create backup file in `/path/to/backup`
 
@@ -33,15 +37,14 @@ Migration is a module for migrating database schema between different version of
 
     ```docker run -ti -v /data/database:/var/lib/mysql your-image-name up head```
 
-- perform database schema downgrade(downgrade has been disabled)
+you can use `-v /etc/localtime:/etc/localtime` to sync container timezone with host timezone.
 
-    ```docker run -v /data/database:/var/lib/mysql your-image-name down base```
-
+you may change `/data/database` to the mysql volumes path you set in docker-compose.yml.
 ###migration step
 - step 1: stop and remove harbor service
 
     ``` 
-    docker-compose stop && docker-compose rm -f
+    docker-compose down
     ```
 - step 2: perform migration operation
 - step 3: rebuild newest harbor images and restart service

@@ -72,6 +72,9 @@ func NewRepositoryWithCredential(name, endpoint string, credential auth.Credenti
 	}
 
 	client, err := newClient(endpoint, "", credential, "repository", name, "pull", "push")
+	if err != nil {
+		return nil, err
+	}
 
 	repository := &Repository{
 		Name:     name,
@@ -108,6 +111,17 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 	return repository, nil
 }
 
+// try to convert err to errors.Error if it is
+func isUnauthorizedError(err error) (bool, error) {
+	if strings.Contains(err.Error(), http.StatusText(http.StatusUnauthorized)) {
+		return true, errors.Error{
+			StatusCode: http.StatusUnauthorized,
+			StatusText: http.StatusText(http.StatusUnauthorized),
+		}
+	}
+	return false, err
+}
+
 // ListTag ...
 func (r *Repository) ListTag() ([]string, error) {
 	tags := []string{}
@@ -118,6 +132,10 @@ func (r *Repository) ListTag() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return tags, e
+		}
 		return tags, err
 	}
 
@@ -141,9 +159,9 @@ func (r *Repository) ListTag() ([]string, error) {
 
 		return tags, nil
 	}
-
 	return tags, errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 
@@ -161,6 +179,11 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			err = e
+			return
+		}
 		return
 	}
 
@@ -183,6 +206,7 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 
 	err = errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 	return
@@ -201,6 +225,11 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			err = e
+			return
+		}
 		return
 	}
 
@@ -219,6 +248,7 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 
 	err = errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 
@@ -236,6 +266,11 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			err = e
+			return
+		}
 		return
 	}
 
@@ -253,6 +288,7 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	err = errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 
@@ -268,6 +304,10 @@ func (r *Repository) DeleteManifest(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return e
+		}
 		return err
 	}
 
@@ -284,6 +324,7 @@ func (r *Repository) DeleteManifest(digest string) error {
 
 	return errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 }
@@ -298,6 +339,7 @@ func (r *Repository) DeleteTag(tag string) error {
 	if !exist {
 		return errors.Error{
 			StatusCode: http.StatusNotFound,
+			StatusText: http.StatusText(http.StatusNotFound),
 		}
 	}
 
@@ -313,6 +355,10 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return false, e
+		}
 		return false, err
 	}
 
@@ -333,6 +379,7 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 
 	return false, errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 }
@@ -346,6 +393,11 @@ func (r *Repository) PullBlob(digest string) (size int64, data []byte, err error
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			err = e
+			return
+		}
 		return
 	}
 
@@ -367,6 +419,7 @@ func (r *Repository) PullBlob(digest string) (size int64, data []byte, err error
 
 	err = errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 
@@ -379,6 +432,11 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			err = e
+			return
+		}
 		return
 	}
 
@@ -397,6 +455,7 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 
 	err = errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 
@@ -411,6 +470,10 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return e
+		}
 		return err
 	}
 
@@ -427,6 +490,7 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 
 	return errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 }
@@ -460,6 +524,10 @@ func (r *Repository) DeleteBlob(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return e
+		}
 		return err
 	}
 
@@ -476,6 +544,7 @@ func (r *Repository) DeleteBlob(digest string) error {
 
 	return errors.Error{
 		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
 		Message:    string(b),
 	}
 }

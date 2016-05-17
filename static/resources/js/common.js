@@ -69,7 +69,8 @@ AjaxUtil.prototype.exec = function(){
 var SUPPORT_LANGUAGES = {
 	"en-US": "English",
 	"zh-CN": "Chinese",
-	"de-DE": "German"
+	"de-DE": "German",
+	"ru-RU": "Russian"
 };
 
 var DEFAULT_LANGUAGE = "en-US";
