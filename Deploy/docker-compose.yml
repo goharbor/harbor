@@ -4,9 +4,9 @@ services:
     build: 
       context: ./log
     volumes: 
-      - logdata:/var/log/harbor/
+      - logdata:/var/log/harbor
     ports:
-      - 1514:514
+      - "1514:514"
 volumes:
   logdata:
     external: true
