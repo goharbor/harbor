@@ -1,5 +1,5 @@
-#version: '2'
-#services:
+version: 2
+services:
   log:
     build: 
       context: ./log
@@ -10,6 +10,7 @@
 volumes:
   logdata:
     external: true
+
 #  registry:
 #    image: library/registry:2.4.0
 #    volumes:
