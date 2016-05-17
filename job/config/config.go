@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/vmware/harbor/utils/log"
 	"os"
 	"strconv"
+
+	"github.com/vmware/harbor/utils/log"
 )
 
 const defaultMaxWorkers int = 10
@@ -20,7 +21,7 @@ func init() {
 		maxJobWorkers = defaultMaxWorkers
 	}
 
-	localRegURL := os.Getenv("LOCAL_REGISTRY_URL")
+	localRegURL = os.Getenv("LOCAL_REGISTRY_URL")
 	if len(localRegURL) == 0 {
 		localRegURL = "http://registry:5000/"
 	}

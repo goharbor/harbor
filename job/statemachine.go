@@ -141,12 +141,15 @@ func (sm *JobSM) Init() {
 	sm.lock = &sync.Mutex{}
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
-	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
-	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
-	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
+
 }
 func (sm *JobSM) Reset(jid int64) error {
 	sm.JobID = jid
+
+	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
+	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
+	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
+
 	//init parms
 	job, err := dao.GetRepJob(sm.JobID)
 	if err != nil {
