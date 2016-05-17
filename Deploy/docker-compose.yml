@@ -2,9 +2,14 @@
 #services:
   log:
     build: ./log/
-    volumes: /var/log/harbor/:/var/log/harbor
+    volumes: 
+      logdata: /var/log/harbor
     ports:
       - "1514:514"
+
+ volumes:
+   logdata:
+     external: true
 
 
 #  registry:
