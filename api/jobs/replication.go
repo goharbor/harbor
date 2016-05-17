@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
 	"github.com/vmware/harbor/models"
@@ -16,7 +17,7 @@ import (
 )
 
 type ReplicationJob struct {
-	BaseAPI
+	api.BaseAPI
 }
 
 type ReplicationReq struct {
@@ -102,7 +103,7 @@ func getRepoList(projectID int64) ([]string, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("Failed to read the response body, error: %v")
+		log.Errorf("Failed to read the response body, error: %v", err)
 		return nil, err
 	}
 	var repoList []string
