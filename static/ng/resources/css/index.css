@@ -10,7 +10,9 @@ body {
   background-color: #EFEFEF;
   height: 90%;
   max-height: 100%;
+  margin-bottom: 30px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .up-section {
