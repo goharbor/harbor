@@ -30,12 +30,12 @@
 #      options:  
 #        syslog-address: "tcp://127.0.0.1:1514"
 #        syslog-tag: "registry"
-#  mysql:
-#    build: ./db/
+  mysql:
+    build: ./db/
 #    volumes:
 #      - /data/database:/var/lib/mysql
-#    env_file:
-#      - ./config/db/env
+    env_file:
+      - ./config/db/env
 #    depends_on:
 #      - log
 #    logging:
