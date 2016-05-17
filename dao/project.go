@@ -193,7 +193,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 }
 
 // GetUserRelevantProjects returns the projects based on publicity and user, disregarding the names etc.
-func GetUserRelevantProjects(userId int, projectName string) ([]models.Project, error) {
+func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select distinct
@@ -203,7 +203,7 @@ func GetUserRelevantProjects(userId int, projectName string) ([]models.Project, 
 	 where p.deleted = 0 and pm.user_id= ?`
 
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, userId)
+	queryParam = append(queryParam, userID)
 	if projectName != "" {
 		sql += " and p.name like ? "
 		queryParam = append(queryParam, projectName)
