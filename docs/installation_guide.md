@@ -56,7 +56,7 @@ The parameters are described below - note that at the very least, you will need 
 
 By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
 using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
-What you need is to update the section of `storage` in the file `Deploy/templates/registry/config.yml`. 
+What you need to update is the section of `storage` in the file `Deploy/templates/registry/config.yml`. 
 For example, if you use Openstack Swift as your storage backend, the section may look like this:
 
 ```
@@ -75,7 +75,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 
 
 #### Building and starting Harbor
-Once **harbord.cfg** is configured, build and start Harbor as follows.  Note that the docker-compose process can take a while.  
+Once **harbord.cfg** and storage backend (optional) are configured, build and start Harbor as follows.  Note that the docker-compose process can take a while.  
 
 ```sh
     $ cd Deploy
