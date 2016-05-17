@@ -1,6 +1,6 @@
-## Deploy harbor on kubernetes.
-For now, it's a little tricky to start harbor on kubernetes because
-  1. Registry uses https, so we need cert or workaround to avoid errors like this:
+## Deploying Harbor on Kubernetes
+To deploy Harbor on Kubernetes, it requires some additional steps because
+  1. When Harbor registry uses https, so we need cert or workaround to avoid errors like this:
      ```
      Error response from daemon: invalid registry endpoint https://{HOST}/v0/: unable to ping registry endpoint https://{HOST}/v0/
      v2 ping attempt failed with error: Get https://{HOST}/v2/: EOF
@@ -19,12 +19,12 @@ For now, it's a little tricky to start harbor on kubernetes because
      sudo service docker restart
      ```
 
-  2. The registry config file need to know the IP (or DNS name) of the registry, but on kubernetes, you won't know the IP before the service is created. There are several workarounds to solve this problem for now:
+  2. The registry config file needs to have the IP (or DNS name) of the registry, but on Kubernetes, you don't know the IP before the service is created. There are several workarounds to solve this problem for now:
      - Use DNS name and link th DNS name with the IP after the service is created.
      - Rebuild the registry image with the service IP after the service is created and use ```kubectl rolling-update``` to update to the new image.
         
  
-To start harbor on kubernetes, you first need to build the docker images. The docker images for deploying Harbor on Kubernetes depends on the docker images to deploy Harbor with docker-compose. So the first step is to build docker images with docker-compose. Before actually building the images, you need to first adjust the [configuration](https://github.com/vmware/harbor/blob/master/Deploy/harbor.cfg):
+To start Harbor on Kubernetes, you first need to build the docker images. The docker images for deploying Harbor on Kubernetes depends on the docker images to deploy Harbor with docker-compose. So the first step is to build docker images with docker-compose. Before actually building the images, you need to first adjust the [configuration](https://github.com/vmware/harbor/blob/master/Deploy/harbor.cfg):
 - Change the [hostname](https://github.com/vmware/harbor/blob/master/Deploy/harbor.cfg#L5) to ```localhost```
 - Adjust the [email settings](https://github.com/vmware/harbor/blob/master/Deploy/harbor.cfg#L11) according to your needs.
 
