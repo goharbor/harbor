@@ -63,9 +63,9 @@
     image: library/nginx:1.9
     volumes:
       - ./config/nginx:/etc/nginx
-   ports:
-      - 80:80
-      - 443:443
+    ports:
+      - "80:80"
+      - "443:443"
 #    depends_on:
 #      - mysql
 #      - registry
