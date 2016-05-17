@@ -103,6 +103,22 @@ docker --registry-mirror=https://reg.yourdomain.com daemon
 
 Refer to the [Registry as a pull through cache](https://github.com/docker/distribution/blob/master/docs/mirror.md) for detail information.
 
+#### Configuring storage backend
+
+By default, the Harbor store images on your local filesystem. In production environment, you may consider using higher available storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. Fortunately, the Registry supports multiple storage backend, refer to the [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) for detail information. All you need to do is update the section of `storage`, and fill in the fields according to your specied backend. For example, if you use Openstack Swift as your storage backend, the file may look like this:
+
+```
+storage:
+  swift:
+    username: admin
+    password: ADMIN_PASS
+    authurl: http://keystone_addr:35357/v3
+    tenant: admin
+    domain: default
+    region: regionOne
+    container: docker_images
+```
+
 ## Installing Harbor via a pre-built installation package 
 
 A pre-built installation package of each release can be downloaded from the [release page](https://github.com/vmware/harbor/releases). After downloading the package file **harbor-&lt;version&gt;.tgz** , extract files in the package.  
