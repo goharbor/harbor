@@ -6,17 +6,19 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$routeParams', '$location'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$routeParams', '$route', '$location'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $routeParams, $location) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $routeParams, $route, $location) {
     var vm = this;
-   
+    
     vm.projectName = '';
-    vm.isPublic = 0;        
-    vm.publicity = false;
     
+    if($route.current.params.is_public) {
+      vm.isPublic = $route.current.params.is_public === 'true' ? 1 : 0;
+      vm.publicity = (vm.isPublic === 1) ? true : false;
+    }
+
     vm.retrieve = retrieve;
-    
     vm.retrieve();
     
     vm.checkProjectMember = checkProjectMember;
@@ -31,8 +33,9 @@
     vm.selectItem = selectItem;  
     
     $scope.$watch('vm.publicity', function(current, origin) { 
-      vm.isPublic = current ? 1 : 0;        
-      vm.projectType = (vm.isPublic == 1) ? 'public_projects' : 'my_projects';
+      vm.publicity = current ? 1 : 0;
+      vm.isPublic =  vm.publicity ? 1 : 0;
+      vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
       vm.retrieve();      
     });
        
@@ -44,12 +47,15 @@
     
     function getProjectSuccess(data, status) {
       vm.projects = data;
-      if(vm.projects == null) {
+
+      if(!angular.isDefined(vm.projects)) {
+        vm.isPublic = 1;
         vm.publicity = 1;
-        console.log('vm.projects is null, load public projects.');
+        vm.projectType = 'public_projects';
+        console.log('vm.projects is undefined, load public projects.');
       }
       
-      vm.selectedProject = vm.projects[0];  
+      vm.selectedProject = vm.projects[0];
       
       if($routeParams.project_id){
         angular.forEach(vm.projects, function(value, index) {
@@ -109,7 +115,6 @@
         'publicity': '=',
         'isProjectMember': '='
       },
-      link: link,
       replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
@@ -118,9 +123,6 @@
     
     return directive;
     
-    function link(scope, element, attrs, ctrl) {
-      
-    }
   }
   
 })();

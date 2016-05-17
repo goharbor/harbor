@@ -200,6 +200,10 @@ var global_messages = {
     'zh-CN': '项目'
   },
   'public_projects': {
+    'en-US': 'Public Projects',
+    'zh-CN': '公开项目'
+  },
+  'public': {
     'en-US': 'Public',
     'zh-CN': '公开'
   },
