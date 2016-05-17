@@ -80,6 +80,50 @@ For information on how to use Harbor, please refer to [User Guide of Harbor](use
 #### Configuring Harbor with HTTPS Access
 Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set-up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to [Configuring Harbor with HTTPS Access](configure_https.md) 
 
+#### Configuring Harbor as a local registry mirror
+The Harbor runs as a local private registry by default, it can be easily configured to run as a local registry mirror, which can keep most of the redundant image fetch traffic on your local network. You just need to edit `config/registry/config.yml` after execute `./prepare`, and append a `proxy` section as follows:
+
+```
+proxy:
+  remoteurl: https://registry-1.docker.io
+```
+In order to access private images on the Docker Hub, a username and password can be supplied:
+
+```
+proxy:
+  remoteurl: https://registry-1.docker.io
+  username: [username]
+  password: [password]
+```
+You will need to pass the `--registry-mirror` option to your Docker daemon on startup:
+
+```
+docker --registry-mirror=https://<my-docker-mirror-host> daemon
+```
+For example, if your mirror is serving on `http:/reg.yourdomain.com`, you would run:
+
+```
+docker --registry-mirror=https://reg.yourdomain.com daemon
+```
+
+Refer to the [Registry as a pull through cache](https://github.com/docker/distribution/blob/master/docs/mirror.md) for detail information.
+
+#### Configuring storage backend
+
+By default, the Harbor store images on your local filesystem. In production environment, you may consider using higher available storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. Fortunately, the Registry supports multiple storage backend, refer to the [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) for detail information. All you need to do is update the section of `storage`, and fill in the fields according to your specied backend. For example, if you use Openstack Swift as your storage backend, the file may look like this:
+
+```
+storage:
+  swift:
+    username: admin
+    password: ADMIN_PASS
+    authurl: http://keystone_addr:35357/v3
+    tenant: admin
+    domain: default
+    region: regionOne
+    container: docker_images
+```
+
 ## Installation from a pre-built package 
 
 Pre-built installation packages of each release are available at [release page](https://github.com/vmware/harbor/releases). 
