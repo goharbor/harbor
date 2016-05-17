@@ -43,7 +43,7 @@ func (w *Worker) Stop() {
 func (w *Worker) handleRepJob(id int64) {
 	err := w.SM.Reset(id)
 	if err != nil {
-		log.Errorf("Worker %d, failed to re-initialize statemachine, error: %v", err)
+		log.Errorf("Worker %d, failed to re-initialize statemachine, error: %v", w.ID, err)
 		err2 := dao.UpdateRepJobStatus(id, models.JobError)
 		if err2 != nil {
 			log.Errorf("Failed to update job status to ERROR, error:%v", err2)

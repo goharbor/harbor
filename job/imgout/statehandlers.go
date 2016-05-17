@@ -67,6 +67,9 @@ type BaseHandler struct {
 func InitBaseHandler(repository, srcURL, srcSecretKey,
 	dstURL, dstUsr, dstPwd string, tags []string, logger *utils.Logger) (*BaseHandler, error) {
 
+	logger.Infof("initializing base handler: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
+		repository, tags, srcURL, dstURL, dstUsr)
+
 	base := &BaseHandler{
 		repository:   repository,
 		tags:         tags,

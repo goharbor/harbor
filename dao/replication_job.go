@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 )
@@ -119,7 +120,7 @@ func UpdateRepJobStatus(id int64, status string) error {
 	}
 	num, err := o.Update(&j, "Status")
 	if num == 0 {
-		err = fmt.Errorf("Failed to update replication job with id: %d", id)
+		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
 	}
 	return err
 }
