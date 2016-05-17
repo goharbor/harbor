@@ -52,6 +52,28 @@ The parameters are described below - note that at the very least, you will need 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **self_registration**: (**on** or **off**.  Default is **on**) Enable / Disable the ability for a user to register themselves.  When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 
+#### Configuring storage backend (optional)
+
+By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
+using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
+What you need is to update the section of `storage` in the file `Deploy/templates/registry/config.yml`. 
+For example, if you use Openstack Swift as your storage backend, the section may look like this:
+
+```
+storage:
+  swift:
+    username: admin
+    password: ADMIN_PASS
+    authurl: http://keystone_addr:35357/v3
+    tenant: admin
+    domain: default
+    region: regionOne
+    container: docker_images
+```
+
+_NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
+
+
 #### Building and starting Harbor
 Once **harbord.cfg** is configured, build and start Harbor as follows.  Note that the docker-compose process can take a while.  
 
@@ -82,28 +104,6 @@ For information on how to use Harbor, please refer to [User Guide of Harbor](use
 #### Configuring Harbor with HTTPS access
 Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
 
-#### Configuring storage backend
-
-By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
-using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
-What you need is to update the section of `storage` in the file `Deploy/templates/registry/config.yml`. 
-For example, if you use Openstack Swift as your storage backend, the section may look like this:
-
-```
-storage:
-  swift:
-    username: admin
-    password: ADMIN_PASS
-    authurl: http://keystone_addr:35357/v3
-    tenant: admin
-    domain: default
-    region: regionOne
-    container: docker_images
-```
-
-Next, run `prepare` script to generate the configuration files and `docker-compose` to build and start Harbor.  
-
-_NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
 
 ## Installation from a pre-built package 
 
@@ -132,7 +132,7 @@ $ sudo docker-compose up -d
 ```
 
 ### Deploying Harbor on a host which does not have Internet access
-*docker-compose up* pulls the base images from Docker Hub and builds new images for the containers, which, necessarily, requires Internet access. To deploy Harbor on a host that is not connected to the Internet  
+*docker-compose up* pulls the base images from Docker Hub and builds new images for the containers, which, necessarily, requires Internet access. To deploy Harbor on a host that is not connected to the Internet:  
 
 1. Prepare Harbor on a machine that has access to the Internet. 
 2. Export the images as tgz files
@@ -143,6 +143,7 @@ These steps are detailed below:
 
 #### Building and saving images for offline installation
 On a machine that is connected to the Internet,  
+
 1. Extract the files from the pre-built installation package. 
 2. Then, run `docker-compose build` to build the images.
 3. Use the script `save_image.sh` to export these images as tar files.   Note that the tar files will be stored in the `images/` directory. 
