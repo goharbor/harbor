@@ -7,9 +7,9 @@
     ports:
       - "1514:514"
 
- volumes:
-   logdata:
-     external: true
+# volumes:
+#   logdata:
+#     external: true
 
 
 #  registry:
