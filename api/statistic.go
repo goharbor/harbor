@@ -38,7 +38,6 @@ func (s *StatisticAPI) Prepare() {
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
-	queryProject := models.Project{UserID: s.userID}
 	isAdmin, err := dao.IsAdminRole(s.userID)
 	if err != nil {
 		log.Errorf("Error occured in check admin, error: %v", err)
@@ -46,9 +45,9 @@ func (s *StatisticAPI) Get() {
 	}
 	var projectList []models.Project
 	if isAdmin {
-		projectList, err = dao.GetAllProjects()
+		projectList, err = dao.GetAllProjects("")
 	} else {
-		projectList, err = dao.GetUserRelevantProjects(queryProject)
+		projectList, err = dao.GetUserRelevantProjects(s.userID, "")
 	}
 	if err != nil {
 		log.Errorf("Error occured in QueryProject, error: %v", err)

@@ -113,34 +113,41 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	queryProject := models.Project{UserID: p.userID}
-	projectName := p.GetString("project_name")
-	if len(projectName) > 0 {
-		queryProject.Name = "%" + projectName + "%"
-	}
-	isPublic := p.GetString("is_public")
-	if len(isPublic) > 0 {
-		public, err := strconv.ParseInt(isPublic, 10, 64)
-		if err != nil {
-			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
-			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
-		}
-		queryProject.Public = int(public)
-	}
+	var projectList []models.Project
 	isAdmin, err := dao.IsAdminRole(p.userID)
 	if err != nil {
 		log.Errorf("Error occured in check admin, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	var projectList []models.Project
-	if isAdmin {
-		projectList, err = dao.GetAllProjects()
-	} else {
-		projectList, err = dao.GetUserRelevantProjects(queryProject)
+	projectName := p.GetString("project_name")
+	if len(projectName) > 0 {
+		projectName = "%" + projectName + "%"
 	}
-	if err != nil {
-		log.Errorf("Error occured in QueryProject, error: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	var public int
+	isPublic := p.GetString("is_public")
+	if len(isPublic) > 0 {
+		public, err = strconv.Atoi(isPublic)
+		if err != nil {
+			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
+			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
+		}
+	}
+	if public == 1 {
+		projectList, err = dao.GetPublicProjects(projectName)
+		if err != nil {
+			log.Errorf("Error occured in GetPulicProjects, error: %v", err)
+			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+	} else {
+		if isAdmin {
+			projectList, err = dao.GetAllProjects(projectName)
+		} else {
+			projectList, err = dao.GetUserRelevantProjects(p.userID, projectName)
+		}
+		if err != nil {
+			log.Errorf("Error occured in GetUserRelevantProjects, error: %v", err)
+			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
 	}
 	for i := 0; i < len(projectList); i++ {
 		if isAdmin {

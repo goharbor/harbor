@@ -599,8 +599,7 @@ func TestProjectPermission(t *testing.T) {
 }
 
 func TestGetUserRelevantProjects(t *testing.T) {
-	project := models.Project{UserID: currentUser.UserID}
-	projects, err := GetUserRelevantProjects(project)
+	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
 	if err != nil {
 		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
 	}
@@ -613,7 +612,7 @@ func TestGetUserRelevantProjects(t *testing.T) {
 }
 
 func TestGetAllProjects(t *testing.T) {
-	projects, err := GetAllProjects()
+	projects, err := GetAllProjects("")
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}

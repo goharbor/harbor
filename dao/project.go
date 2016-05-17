@@ -193,7 +193,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 }
 
 // GetUserRelevantProjects returns the projects based on publicity and user, disregarding the names etc.
-func GetUserRelevantProjects(query models.Project) ([]models.Project, error) {
+func GetUserRelevantProjects(userId int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 
 	sql := `select distinct
@@ -203,33 +203,50 @@ func GetUserRelevantProjects(query models.Project) ([]models.Project, error) {
 	 where p.deleted = 0 and pm.user_id= ?`
 
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, query.UserID)
-	if query.Public == 1 {
-		sql += ` and p.public = ?`
-		queryParam = append(queryParam, query.Public)
-	}
-	if query.Name != "" {
+	queryParam = append(queryParam, userId)
+	if projectName != "" {
 		sql += " and p.name like ? "
-		queryParam = append(queryParam, query.Name)
+		queryParam = append(queryParam, projectName)
 	}
 
 	sql += " order by p.name "
 
 	var r []models.Project
 	_, err := o.Raw(sql, queryParam).QueryRows(&r)
-
 	if err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
+//GetPublicProjects return all public projects whose name like projectName
+func GetPublicProjects(projectName string) ([]models.Project, error) {
+	o := orm.NewOrm()
+	var publicProjects []models.Project
+	sql := `select project_id, name, public 
+		from project
+		where deleted = 0 and public=1`
+	if len(projectName) > 0 {
+		sql += " and name like '" + projectName + "'"
+	}
+	sql += " order by name "
+	_, err := o.Raw(sql).QueryRows(&publicProjects)
+	if err != nil {
+		return nil, err
+	}
+	return publicProjects, nil
+}
+
 // GetAllProjects returns all projects which are not deleted
-func GetAllProjects() ([]models.Project, error) {
+func GetAllProjects(projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `select project_id, name, public 
 		from project
 		where deleted = 0`
+	if len(projectName) > 0 {
+		sql += " and name like '" + projectName + "'"
+	}
+	sql += " order by name "
 	var projects []models.Project
 	if _, err := o.Raw(sql).QueryRows(&projects); err != nil {
 		return nil, err
