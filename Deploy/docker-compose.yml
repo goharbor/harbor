@@ -25,11 +25,11 @@
       ["serve", "/etc/registry/config.yml"]
     depends_on:
       - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "registry"
+#    logging:
+#      driver: "syslog"
+#      options:  
+#        syslog-address: "tcp://127.0.0.1:1514"
+#        syslog-tag: "registry"
 #  mysql:
 #    build: ./db/
 #    volumes:
