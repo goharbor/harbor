@@ -1,0 +1,50 @@
+.container-custom {
+  position: relative;
+  height: 100%;
+}
+
+.extend-height {
+  height: 100%;  
+}
+
+.section {
+  position: relative;
+  padding: 15px 15px 0;
+  margin: 20px 0 20px 0;
+  background-color: #FFFFFF;
+  height: 100%;
+  width: 100%;
+}
+
+.search-pane {
+  margin: 0 10px 0 10px;
+  height: 3em;
+}
+
+
+.table>tbody>tr>td, .table>tbody>tr>th {
+  vertical-align: middle;
+}
+
+.gutter {
+  margin: 0 1em 0 1em;
+}
+
+.project-pane {
+  margin: 0 10px 0 10px;
+}
+
+.pane {
+  min-height: 500px;
+  overflow-y: auto;
+}
+
+.sub-pane {
+  margin: 0 10px 0 10px;
+  min-height: 500px;
+  overflow-y: auto;
+}
+
+.well-custom {
+  margin-top: 10px;
+}

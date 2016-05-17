@@ -1,0 +1,26 @@
+<div class="tab-pane active" id="repositories" >
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="" ng-model="vm.filterInput" value="" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.retrieve()"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+    </div>
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+      <modal-dialog action="vm.deleteImage()" content-type="text/html" title="//vm.modalTitle//" message="//vm.modalMessage//"></modal-dialog>
+      <div class="panel panel-default" ng-repeat="repo in vm.repositories">
+        <div class="panel-heading" role="tab" id="heading//$index + 1//">
+          <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">
+              <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
+            </a>
+            <a class="pull-right" style="margin-right: 78px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)"><span class="glyphicon glyphicon-trash"></span></a>          
+          </h4>
+        </div>
+        <list-tag associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount"></list-tag>
+      </div>
+    </div>
+  </div>
+</div>

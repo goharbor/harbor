@@ -1,0 +1,59 @@
+<div class="container-fluid container-fluid-custom" ng-controller="DashboardController as vm">
+  <div class="container">
+    <div class="row row-custom">
+	    <div class="col-xs-4 col-md-4"> 
+	      <div class="row">
+	        <div class="up-section">
+  		        <h4 class="page-header title-color underlined">// 'summary' | tr //</h4>  
+  		      	  <dl class="page-content dl-horizontal">
+        			  <dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['projects']//</dd>
+        			  <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_projects']//</dd>
+        			  <dt>// 'total_projects' | tr //:</dt><dd>//vm.statProjects['total_projects']//</dd>
+        			  <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['repositories']//</dd>
+        			  <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repositories']//</dd>
+        			  <dt>// 'total_repositories' | tr //:</dt><dd>//vm.statProjects['total_repositories']//</dd>
+        			</dl>
+          </div>
+        </div>						
+      </div>
+      <div class="col-xs-8 col-md-8">
+	      <div class="up-section">	
+		      <h4 class="page-header title-color underlined">// 'top_10_repositories' | tr //</h4>
+		      <div class="col-xs-4 col-md-12 up-table-pane">
+		        <table class="table">
+        			  <thead>
+        			    <th>// 'repository_name' | tr //</th><th>// 'size' | tr //</th><th>// 'creator' | tr //</th>
+        			  </thead>
+        			  <tbody>
+        			    <tr ng-repeat="t in vm.top10Repositories">
+        				    <td>//t.repo_name//</td><td>//t.image_size//MB</td><td>//t.creator//</td>
+        				  </tr>
+        			  </tbody>
+      			  </table>
+		      </div>  
+		    </div>
+	    </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row row-custom">
+      <div class="col-xs-12 col-md-12">
+	      <div class="down-section single">
+    	    		<h4 class="page-header title-color underlined">// 'logs' | tr //</h4>
+    	    		 <div style="padding: 15px;">
+      			 <table class="table">
+      			  <thead>
+      			    <th>// 'task_name' | tr //</th><th>// 'details' | tr //</th><th>// 'user' | tr //</th><th>// 'creation_time' | tr //</th>
+      			  </thead>
+      			  <tbody>
+      			    <tr ng-repeat="t in vm.integratedLogs">
+      				    <td>//t.task_name//</td><td>//t.details//</td><td>//t.user//</td><td>//t.creation_time//</td>
+      				  </tr>
+      			  </tbody>
+    			  </table>		
+          </div>
+        </div>						
+	    </div>
+    </div>
+  </div>
+</div>
