@@ -1,16 +1,11 @@
 #version: '2'
 #services:
   log:
-    build: 
-      context: ./log
-    volumes: 
-      - logdata:/var/log/harbor
+    build: ./log/
+    volumes: /var/log/harbor/:/var/log/harbor
     ports:
       - "1514:514"
 
-volumes:
-  data:
-    external: true
 
 #  registry:
 #    image: library/registry:2.4.0
