@@ -18,11 +18,11 @@ const (
 )
 
 type RepPolicy struct {
-	ID           int64     `orm:"column(id)" json:"id"`
-	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
-	TargetID     int64     `orm:"column(target_id)" json:"target_id"`
-	Name         string    `orm:"column(name)" json:"name"`
-	Target       RepTarget `orm:"-" json:"target"`
+	ID        int64  `orm:"column(id)" json:"id"`
+	ProjectID int64  `orm:"column(project_id)" json:"project_id"`
+	TargetID  int64  `orm:"column(target_id)" json:"target_id"`
+	Name      string `orm:"column(name)" json:"name"`
+	//	Target       RepTarget `orm:"-" json:"target"`
 	Enabled      int       `orm:"column(enabled)" json:"enabled"`
 	Description  string    `orm:"column(description)" json:"description"`
 	CronStr      string    `orm:"column(cron_str)" json:"cron_str"`
@@ -32,12 +32,12 @@ type RepPolicy struct {
 }
 
 type RepJob struct {
-	ID           int64     `orm:"column(id)" json:"id"`
-	Status       string    `orm:"column(status)" json:"status"`
-	Repository   string    `orm:"column(repository)" json:"repository"`
-	PolicyID     int64     `orm:"column(policy_id)" json:"policy_id"`
-	Operation    string    `orm:"column(operation)" json:"operation"`
-	Policy       RepPolicy `orm:"-" json:"policy"`
+	ID         int64  `orm:"column(id)" json:"id"`
+	Status     string `orm:"column(status)" json:"status"`
+	Repository string `orm:"column(repository)" json:"repository"`
+	PolicyID   int64  `orm:"column(policy_id)" json:"policy_id"`
+	Operation  string `orm:"column(operation)" json:"operation"`
+	//	Policy       RepPolicy `orm:"-" json:"policy"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }

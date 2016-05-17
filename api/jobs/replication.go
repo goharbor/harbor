@@ -103,7 +103,7 @@ func getRepoList(projectID int64) ([]string, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("Failed to read the response body, error: %v")
+		log.Errorf("Failed to read the response body, error: %v", err)
 		return nil, err
 	}
 	var repoList []string
