@@ -1,7 +1,8 @@
 version: '2'
 services:
   log:
-    build: ./log/
+    build: 
+      context: ./log
     volumes: 
       - logdata:/var/log/harbor/
     ports:
