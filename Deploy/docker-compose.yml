@@ -8,9 +8,9 @@ services:
 #      - 1514:514
   registry:
     image: library/registry:2.4.0
-    volumes:
-      - /data/registry:/storage
-     - ./config/registry/:/etc/registry/
+   # volumes:
+   #   - /data/registry:/storage
+   #   - ./config/registry/:/etc/registry/
     environment:
       - GODEBUG=netdns=cgo
     ports:
