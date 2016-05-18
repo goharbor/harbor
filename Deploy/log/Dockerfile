@@ -23,7 +23,7 @@ ADD rsyslog_docker.conf /etc/rsyslog.d/
 
 VOLUME /var/log/docker/
 
-#EXPOSE 514
+EXPOSE 514
 
 CMD cron && rsyslogd -n
 
