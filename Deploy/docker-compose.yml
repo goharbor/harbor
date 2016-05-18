@@ -48,6 +48,8 @@ services:
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
     depends_on:
       - log
+    ports:
+      - 80:80
     logging:
       driver: "syslog"
       options:  
@@ -57,9 +59,9 @@ services:
     image: library/nginx:1.9
     volumes:
       - ./config/nginx:/etc/nginx
-    ports:
-      - 80:80
-      - 443:443
+  #  ports:
+  #    - 80:80
+  #    - 443:443
     depends_on:
       - mysql
       - registry
