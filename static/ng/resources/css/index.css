@@ -9,7 +9,7 @@ body {
 .container-fluid-custom {
   background-color: #EFEFEF;
   max-height: 100%;
-  height: 680px;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
 }
