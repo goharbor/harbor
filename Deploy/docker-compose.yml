@@ -55,20 +55,20 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "ui"
-  proxy:
-    image: library/nginx:1.9
-    volumes:
-      - ./config/nginx:/etc/nginx
-  #  ports:
-  #    - 80:80
-  #    - 443:443
-    depends_on:
-      - mysql
-      - registry
-      - ui
-      - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "proxy"
+#  proxy:
+#    image: library/nginx:1.9
+#    volumes:
+#      - ./config/nginx:/etc/nginx
+#  #  ports:
+#  #    - 80:80
+#  #    - 443:443
+#    depends_on:
+#      - mysql
+#      - registry
+#      - ui
+#      - log
+#    logging:
+#      driver: "syslog"
+#      options:  
+#        syslog-address: "tcp://127.0.0.1:1514"
+#        syslog-tag: "proxy"
