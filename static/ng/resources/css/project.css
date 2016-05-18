@@ -44,6 +44,7 @@
   height: auto;
   min-height: 1px;
   max-height: 600px;
+  overflow-y: auto;
 }
 
 .sub-pane {
