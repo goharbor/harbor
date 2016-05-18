@@ -144,7 +144,7 @@ func (p *ProjectAPI) Get() {
 		}
 	}
 	if err != nil {
-		log.Errorf("Error occured in GetUserRelevantProjects, error: %v", err)
+		log.Errorf("Error occured in get projects info, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
