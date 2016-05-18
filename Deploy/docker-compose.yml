@@ -37,15 +37,15 @@
 #      options:  
 #        syslog-address: "tcp://127.0.0.1:1514"
 #        syslog-tag: "mysql"
-#  ui:
-#    build: 
-#      context: ../
-#      dockerfile: ../Dockerfile.ui
-#    env_file:
-#      - ./config/ui/env
-#    volumes:
-#      - ./config/ui/app.conf:/etc/ui/app.conf
-#      - ./config/ui/private_key.pem:/etc/ui/private_key.pem
+  ui:
+    build: 
+      context: ../
+      dockerfile: ../Dockerfile.ui
+    env_file:
+      - ./config/ui/env
+    volumes:
+      - ./config/ui/app.conf:/etc/ui/app.conf
+      - ./config/ui/private_key.pem:/etc/ui/private_key.pem
 #    depends_on:
 #      - log
 #    logging:
