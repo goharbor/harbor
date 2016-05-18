@@ -31,5 +31,6 @@ script:
   - docker ps
   - docker version
   - docker-compose version
+  - ip addr |grep eth0
   - go run ../tests/test.go http://localhost/
 
