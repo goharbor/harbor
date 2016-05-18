@@ -39,7 +39,7 @@
 #        syslog-tag: "mysql"
   ui:
     build: ../
-    dockerfile:Dockerfile.ui 
+    dockerfile: Dockerfile.ui 
      # context: ../
      # dockerfile: ../Dockerfile.ui
     env_file:
