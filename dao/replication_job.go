@@ -55,6 +55,12 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	}
 	return &p, err
 }
+func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
+	var res []*models.RepPolicy
+	o := orm.NewOrm()
+	_, err := o.QueryTable("replication_policy").Filter("project_id", projectID).All(&res)
+	return res, err
+}
 func DeleteRepPolicy(id int64) error {
 	o := orm.NewOrm()
 	_, err := o.Delete(&models.RepPolicy{ID: id})
@@ -94,6 +100,12 @@ func GetRepJob(id int64) (*models.RepJob, error) {
 		return nil, nil
 	}
 	return &j, err
+}
+func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
+	o := orm.NewOrm()
+	var res []*models.RepJob
+	_, err := o.QueryTable("replication_job").Filter("policy_id", policyID).All(&res)
+	return res, err
 }
 func DeleteRepJob(id int64) error {
 	o := orm.NewOrm()

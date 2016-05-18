@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/vmware/harbor/api"
+	api "github.com/vmware/harbor/api/jobs"
 
 	"github.com/astaxie/beego"
 )
