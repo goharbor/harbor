@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    build: ./log/
+    build: ./log
 #    volumes:
 #      - /var/log/harbor/:/var/log/docker/
 #    ports:

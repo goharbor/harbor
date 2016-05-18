@@ -23,7 +23,7 @@ before_install:
 install: 
   - cd Deploy
   - ./prepare
-  - docker-compose -f ./Deploy/docker-compose.yml up -d
+  - docker-compose -f docker-compose.yml up -d
 
 
 
