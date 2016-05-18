@@ -192,7 +192,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 	return projects, nil
 }
 
-// GetUserRelevantProjects returns the projects based on publicity and user, disregarding the names etc.
+// GetUserRelevantProjects returns the projects of the user which are not deleted and name like projectName
 func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 
@@ -219,11 +219,11 @@ func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, 
 	return r, nil
 }
 
-//GetPublicProjects return all public projects whose name like projectName
+//GetPublicProjects returns all public projects whose name like projectName
 func GetPublicProjects(projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 	var publicProjects []models.Project
-	sql := `select project_id, name, public 
+	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0 and public=1`
 	if len(projectName) > 0 {
@@ -237,10 +237,10 @@ func GetPublicProjects(projectName string) ([]models.Project, error) {
 	return publicProjects, nil
 }
 
-// GetAllProjects returns all projects which are not deleted
+// GetAllProjects returns all projects which are not deleted and name like projectName
 func GetAllProjects(projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
-	sql := `select project_id, name, public 
+	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0`
 	if len(projectName) > 0 {
