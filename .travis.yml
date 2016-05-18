@@ -29,5 +29,5 @@ install:
 
 script:
 - docker ps
-- go run ../tests/test.go http://localhost:443/
+- go run ../tests/test.go http://localhost/
 
