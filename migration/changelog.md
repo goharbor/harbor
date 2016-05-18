@@ -14,6 +14,6 @@ Changelog for harbor database schema
   - add column `update_time` to table `user`
   - add column `role_mask` to table `role`
   - add column `update_time` to table `project`
-  - delete data `sysadmin` from table `role`
+  - delete data `AMDRWS` from table `role`
   - delete data `A` from table `access`
   
