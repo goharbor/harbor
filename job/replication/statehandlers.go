@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package imgout
+package replication
 
 import (
 	"bytes"
@@ -72,7 +72,7 @@ type BaseHandler struct {
 func InitBaseHandler(repository, srcURL, srcSecretKey,
 	dstURL, dstUsr, dstPwd string, tags []string, logger *utils.Logger) (*BaseHandler, error) {
 
-	logger.Infof("initializing base handler: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
+	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		repository, tags, srcURL, dstURL, dstUsr)
 
 	base := &BaseHandler{
@@ -112,7 +112,7 @@ func InitBaseHandler(repository, srcURL, srcSecretKey,
 		base.tags = tags
 	}
 
-	base.logger.Infof("initialization of base handler completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
+	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.dstUsr)
 
 	return base, nil
@@ -264,7 +264,7 @@ type ManifestPuller struct {
 // Enter pulls manifest of a tag and checks if all blobs exist in the destination registry
 func (m *ManifestPuller) Enter() (string, error) {
 	if len(m.tags) == 0 {
-		m.logger.Infof("no tag needs to be replicated, entering finish state")
+		m.logger.Infof("no tag needs to be replicated, next state is \"finished\"")
 		return models.JobFinished, nil
 	}
 
@@ -319,11 +319,11 @@ func (m *ManifestPuller) Enter() (string, error) {
 
 		if !exist {
 			m.blobs = append(m.blobs, blob)
+		} else {
+			m.logger.Infof("blob %s of %s:%s already exists in %s", blob, name, tag, m.dstURL)
 		}
 	}
 	m.logger.Infof("blobs of %s:%s need to be transferred to %s: %v", name, tag, m.dstURL, m.blobs)
-
-	m.blobs = blobs
 
 	return StateTransferBlob, nil
 }
@@ -338,6 +338,7 @@ func (b *BlobTransfer) Enter() (string, error) {
 	name := b.repository
 	tag := b.tags[0]
 	for _, blob := range b.blobs {
+		b.logger.Infof("transferring blob %s of %s:%s to %s ...", blob, name, tag, b.dstURL)
 		size, data, err := b.srcClient.PullBlob(blob)
 		if err != nil {
 			b.logger.Errorf("an error occurred while pulling blob %s of %s:%s from %s: %v", blob, name, tag, b.srcURL, err)
@@ -347,7 +348,7 @@ func (b *BlobTransfer) Enter() (string, error) {
 			b.logger.Errorf("an error occurred while pushing blob %s of %s:%s to %s : %v", blob, name, tag, b.dstURL, err)
 			return "", err
 		}
-		b.logger.Infof("blob %s of %s:%s tranferred to %s completed", blob, name, tag, b.dstURL)
+		b.logger.Infof("blob %s of %s:%s transferred to %s completed", blob, name, tag, b.dstURL)
 	}
 
 	return StatePushManifest, nil
@@ -387,6 +388,8 @@ func (m *ManifestPusher) Enter() (string, error) {
 	}
 
 	m.tags = m.tags[1:]
+	m.manifest = nil
+	m.blobs = nil
 
 	return StatePullManifest, nil
 }
