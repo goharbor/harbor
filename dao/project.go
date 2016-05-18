@@ -195,7 +195,6 @@ func SearchProjects(userID int) ([]models.Project, error) {
 // GetUserRelevantProjects returns the projects of the user which are not deleted and name like projectName
 func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
-
 	sql := `select distinct
 		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
 	 from project p 
@@ -208,9 +207,7 @@ func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, 
 		sql += " and p.name like ? "
 		queryParam = append(queryParam, projectName)
 	}
-
 	sql += " order by p.name "
-
 	var r []models.Project
 	_, err := o.Raw(sql, queryParam).QueryRows(&r)
 	if err != nil {
@@ -226,11 +223,13 @@ func GetPublicProjects(projectName string) ([]models.Project, error) {
 	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0 and public=1`
+	queryParam := make([]interface{}, 1)
 	if len(projectName) > 0 {
-		sql += " and name like '" + projectName + "'"
+		sql += " and name like ? "
+		queryParam = append(queryParam, projectName)
 	}
 	sql += " order by name "
-	_, err := o.Raw(sql).QueryRows(&publicProjects)
+	_, err := o.Raw(sql, queryParam).QueryRows(&publicProjects)
 	if err != nil {
 		return nil, err
 	}
@@ -243,12 +242,14 @@ func GetAllProjects(projectName string) ([]models.Project, error) {
 	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0`
+	queryParam := make([]interface{}, 1)
 	if len(projectName) > 0 {
-		sql += " and name like '" + projectName + "'"
+		sql += " and name like ? "
+		queryParam = append(queryParam, projectName)
 	}
 	sql += " order by name "
 	var projects []models.Project
-	if _, err := o.Raw(sql).QueryRows(&projects); err != nil {
+	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
 		return nil, err
 	}
 	return projects, nil

@@ -114,16 +114,12 @@ func (p *ProjectAPI) Head() {
 // Get ...
 func (p *ProjectAPI) Get() {
 	var projectList []models.Project
-	isAdmin, err := dao.IsAdminRole(p.userID)
-	if err != nil {
-		log.Errorf("Error occured in check admin, error: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
 	projectName := p.GetString("project_name")
 	if len(projectName) > 0 {
 		projectName = "%" + projectName + "%"
 	}
 	var public int
+	var err error
 	isPublic := p.GetString("is_public")
 	if len(isPublic) > 0 {
 		public, err = strconv.Atoi(isPublic)
@@ -132,29 +128,33 @@ func (p *ProjectAPI) Get() {
 			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		}
 	}
+	isAdmin := false
 	if public == 1 {
 		projectList, err = dao.GetPublicProjects(projectName)
+	} else {
+		isAdmin, err = dao.IsAdminRole(p.userID)
 		if err != nil {
-			log.Errorf("Error occured in GetPulicProjects, error: %v", err)
+			log.Errorf("Error occured in check admin, error: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
-	} else {
 		if isAdmin {
 			projectList, err = dao.GetAllProjects(projectName)
 		} else {
 			projectList, err = dao.GetUserRelevantProjects(p.userID, projectName)
 		}
-		if err != nil {
-			log.Errorf("Error occured in GetUserRelevantProjects, error: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
+	}
+	if err != nil {
+		log.Errorf("Error occured in GetUserRelevantProjects, error: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
-		if isAdmin {
-			projectList[i].Role = models.PROJECTADMIN
-		}
-		if projectList[i].Role == models.PROJECTADMIN {
-			projectList[i].Togglable = true
+		if public != 1 {
+			if isAdmin {
+				projectList[i].Role = models.PROJECTADMIN
+			}
+			if projectList[i].Role == models.PROJECTADMIN {
+				projectList[i].Togglable = true
+			}
 		}
 		projectList[i].RepoCount = getRepoCountByProject(projectList[i].Name)
 	}

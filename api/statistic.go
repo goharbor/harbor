@@ -58,6 +58,16 @@ func (s *StatisticAPI) Get() {
 	proMap["my_repo_count"] = 0
 	proMap["public_project_count"] = 0
 	proMap["public_repo_count"] = 0
+	var publicProjects []models.Project
+	publicProjects, err = dao.GetPublicProjects("")
+	if err != nil {
+		log.Errorf("Error occured in QueryPublicProject, error: %v", err)
+		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	proMap["public_project_count"] = len(publicProjects)
+	for i := 0; i < len(publicProjects); i++ {
+		proMap["public_repo_count"] += getRepoCountByProject(publicProjects[i].Name)
+	}
 	if isAdmin {
 		proMap["total_project_count"] = len(projectList)
 		proMap["total_repo_count"] = getTotalRepoCount()
@@ -70,10 +80,6 @@ func (s *StatisticAPI) Get() {
 			projectList[i].Role == models.GUEST {
 			proMap["my_project_count"]++
 			proMap["my_repo_count"] += getRepoCountByProject(projectList[i].Name)
-		}
-		if projectList[i].Public == 1 {
-			proMap["public_project_count"]++
-			proMap["public_repo_count"] += getRepoCountByProject(projectList[i].Name)
 		}
 	}
 	s.Data["json"] = proMap
