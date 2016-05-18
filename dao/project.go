@@ -218,31 +218,33 @@ func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, 
 
 //GetPublicProjects returns all public projects whose name like projectName
 func GetPublicProjects(projectName string) ([]models.Project, error) {
-	o := orm.NewOrm()
-	var publicProjects []models.Project
-	sql := `select project_id, owner_id, creation_time, update_time, name, public 
-		from project
-		where deleted = 0 and public=1`
-	queryParam := make([]interface{}, 1)
-	if len(projectName) > 0 {
-		sql += " and name like ? "
-		queryParam = append(queryParam, projectName)
-	}
-	sql += " order by name "
-	_, err := o.Raw(sql, queryParam).QueryRows(&publicProjects)
+	publicProjects, err := getProjects(1, projectName)
 	if err != nil {
 		return nil, err
+
 	}
 	return publicProjects, nil
 }
 
 // GetAllProjects returns all projects which are not deleted and name like projectName
 func GetAllProjects(projectName string) ([]models.Project, error) {
+	allProjects, err := getProjects(0, projectName)
+	if err != nil {
+		return nil, err
+	}
+	return allProjects, nil
+}
+
+func getProjects(public int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0`
 	queryParam := make([]interface{}, 1)
+	if public == 1 {
+		sql += "and public = ?"
+		queryParam = append(queryParam, public)
+	}
 	if len(projectName) > 0 {
 		sql += " and name like ? "
 		queryParam = append(queryParam, projectName)
