@@ -16,7 +16,7 @@ env:
 
 before_install:
   - echo "deb https://packages.docker.com/1.10/apt/repo ubuntu-trusty main" | sudo tee /etc/apt/sources.list.d/docker.list
-  - sudo apt-get -y update && sudo apt-get -y upgrade docker-engine
+  - sudo apt-get update && sudo apt-get -y upgrade docker-engine
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
