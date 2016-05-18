@@ -61,11 +61,11 @@
       });
      
       element.find('a[tag*="' + visited + '"]').addClass('active');
-      element.on('click', click);
+      element.find('a').on('click', click);
       
       function click(event) {
         element.find('a').removeClass('active');
-        $(event.target).not('span').addClass('active');
+        $(event.target).addClass('active');
         ctrl.clickTab();
       }
      
