@@ -5,9 +5,11 @@ Changelog for harbor database schema
 
 ## 0.1.1
 
+  - create table `schema_version`
   - add column `creation_time` to table `user`
   - add column `sysadmin_flag` to table `user`
   - add column `update_time` to table `user`
+  - create table `project_member`
   - add column `role_mask` to table `role`
   - drop table `user_project_role`
   - drop table `project_role`
