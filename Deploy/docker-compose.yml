@@ -54,13 +54,13 @@
 #      options:  
 #        syslog-address: "tcp://127.0.0.1:1514"
 #        syslog-tag: "ui"
-#  proxy:
-#    image: library/nginx:1.9
-#    volumes:
-#      - ./config/nginx:/etc/nginx
-#    ports:
-#      - 80:80
-#      - 443:443
+  proxy:
+    image: library/nginx:1.9
+    volumes:
+      - ./config/nginx:/etc/nginx
+    ports:
+      - 80:80
+      - 443:443
 #    depends_on:
 #      - mysql
 #      - registry
