@@ -1,7 +1,7 @@
-#version: '2'
-#services:
+version: '2'
+services:
   log:
-    build: ./log
+    build: ./log/
     volumes:
       - /var/log/harbor/:/var/log/docker/
     ports:
@@ -17,43 +17,42 @@
       - 5001:5001
     command:
       ["serve", "/etc/registry/config.yml"]
-#    depends_on:
-#      - log
-#    logging:
-#      driver: "syslog"
-#      options:  
-#        syslog-address: "tcp://127.0.0.1:1514"
-#        syslog-tag: "registry"
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "registry"
   mysql:
     build: ./db/
     volumes:
       - /data/database:/var/lib/mysql
     env_file:
       - ./config/db/env
-#    depends_on:
-#      - log
-#    logging:
-#      driver: "syslog"
-#      options:  
-#        syslog-address: "tcp://127.0.0.1:1514"
-#        syslog-tag: "mysql"
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "mysql"
   ui:
-    build: ../
-    dockerfile: Dockerfile.ui 
-     # context: ../
-     # dockerfile: ../Dockerfile.ui
+    build:
+      context: ../
+      dockerfile: Dockerfile.ui
     env_file:
       - ./config/ui/env
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
-#    depends_on:
-#      - log
-#    logging:
-#      driver: "syslog"
-#      options:  
-#        syslog-address: "tcp://127.0.0.1:1514"
-#        syslog-tag: "ui"
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "ui"
   proxy:
     image: library/nginx:1.9
     volumes:
@@ -61,13 +60,13 @@
     ports:
       - 80:80
       - 443:443
-#    depends_on:
-#      - mysql
-#      - registry
-#      - ui
-#      - log
-#    logging:
-#      driver: "syslog"
-#      options:  
-#        syslog-address: "tcp://127.0.0.1:1514"
-#        syslog-tag: "proxy"
+    depends_on:
+      - mysql
+      - registry
+      - ui
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "proxy"
