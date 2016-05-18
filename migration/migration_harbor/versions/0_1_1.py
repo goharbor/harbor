@@ -83,7 +83,7 @@ def upgrade():
     session.delete(role)
     session.query(Role).update({Role.role_id: Role.role_id - 1})
 
-    #delete M from table access
+    #delete A from table access
     acc = session.query(Access).filter_by(access_id=1).first()
     session.delete(acc)
     session.query(Access).update({Access.access_id: Access.access_id - 1})
