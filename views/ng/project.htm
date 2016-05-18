@@ -1,0 +1,49 @@
+<div class="container-fluid container-fluid-custom" ng-controller="ProjectController as vm">
+  <div class="container container-custom">
+    <div class="row extend-height">
+      <div class="col-xs-12 col-md-12">
+  	      <div class="section">
+  		      <h4 class="page-header">
+             <span ng-show="!vm.publicity">// 'my_projects' | tr //</span>
+             <a ng-show="vm.publicity" href="#" ng-click="vm.togglePublicity({publicity: 0})">// 'my_projects' | tr //</a>
+             <span class="gutter">|</span>
+             <span ng-show="vm.publicity">// 'public_projects' | tr //</span>
+             <a ng-show="!vm.publicity" href="#" class="title-color" ng-click="vm.togglePublicity({publicity: 1})">// 'public_projects' | tr //</a>
+          </h4>
+          <div class="search-pane">
+    		      <div class="form-inline">
+    		        <div class="input-group">
+    		          <input type="text" class="form-control" placeholder="" ng-model="vm.projectName" size="30">
+    		          <span class="input-group-btn">
+    		            <button class="btn btn-primary" type="button" ng-click="vm.searchProject()"><span class="glyphicon glyphicon-search"></span></button>
+    		          </span>
+    		        </div>
+              <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>
+              <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>               
+    		      </div>    
+          </div>
+          <div class="pane project-pane">  
+            <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
+            <div class="sub-pane">
+      		      <table class="table">
+                <thead>
+                  <th>// 'project_name' | tr //</th><th>// 'repositories' | tr //</th><th>// 'role' | tr //</th><th>// 'creation_time' | tr //</th><th>// 'publicity' | tr //</th>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="p in vm.projects">
+                    <td><a href="/ng/repository#/repositories?project_id=//p.ProjectId//&is_public=//p.Public//">//p.Name//</a></td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>//p.CreationTime | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                    <td><publicity-button is-public="p.Public" owned="p.OwnerId == vm.currentUser.UserId" project-id="p.ProjectId"></publicity-button></td>
+                  	</tr>
+                </tbody>
+              </table>             
+            </div>
+            <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>  
+          </div>
+  	      </div>
+      </div>
+    </div>
+  </div>
+</div>

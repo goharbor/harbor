@@ -1,0 +1,53 @@
+<div class="well panel-group">
+  <div class="row">
+    <div class="col-xs-10 col-md-10">
+      <form class="form">
+        <div class="form-group">
+          <label for="">// 'operation' | tr //:</label>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" ng-model="vm.opAll" ng-checked="vm.opCreate && vm.opPull && vm.opPush && vm.opDelete && vm.opOthers" ng-click="vm.checkOperation({checked: 'all'})">&nbsp;// 'all' | tr //&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opCreate" ng-model="vm.opCreate" ng-click="vm.checkOperation({checked: 'create'})">&nbsp;Create&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opPull" ng-model="vm.opPull" ng-click="vm.checkOperation({checked: 'pull'})">&nbsp;Pull&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opPush" ng-model="vm.opPush" ng-click="vm.checkOperation({checked: 'push'})">&nbsp;Push&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opDelete" ng-model="vm.opDelete" ng-click="vm.checkOperation({checked: 'delete'})">&nbsp;Delete&nbsp;&nbsp;
+          <input type="checkbox" ng-checked="vm.opOthers" ng-model="vm.opOthers" ng-click="vm.checkOperation({checked: 'others'})">&nbsp;// 'others' | tr //&nbsp;&nbsp;
+          <input type="text" ng-model="vm.others" size="10">
+        </div>
+    
+        <div class="form-group">
+          <label for="">// 'duration' | tr //:</label>
+        </div>
+        
+        <div class="form-group inline-block col-md-5">
+          <span class="datetime-picker-title">// 'from' | tr //:</span>
+	          <!--date-picker picked-date="vm.fromDate"></date-picker-->
+          <div class="input-group datetimepicker">
+            <input id="fromDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.fromDate" ng-change="vm.pickUp({key:'fromDate', value: vm.fromDate})">
+            <span class="input-group-addon">
+              <a href="javascript:void(0);"><span class="glyphicon glyphicon-calendar"></span></a>
+            </span>
+          </div>
+        </div>
+      
+        <div class="form-group  inline-block col-md-5">
+          <span class="datetime-picker-title">// 'to' | tr //:</span>
+  	        <div class="input-group datetimepicker">
+            <input id="toDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.toDate" ng-change="vm.pickUp({key:'toDate', value: vm.toDate})">
+            <span class="input-group-addon">
+              <a href="javascript:void(0);"><span class="glyphicon glyphicon-calendar"></span></a>
+            </span>
+          </div>
+        </div>								
+        
+      </form>
+    </div>
+    <div class="col-xs-2 col-md-2"> 
+      <form>                        
+        <div class="form-group" style="margin-top: 40%;">               
+          <button type="button" class="btn btn-primary" ng-click="vm.search({op: vm.op})">// 'search' | tr //</button>     
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

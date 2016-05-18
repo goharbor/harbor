@@ -1,0 +1,18 @@
+.up-section .up-table-pane {
+    overflow-y: scroll;
+    height: 180px;
+    margin-top: -10px;
+}
+
+.up-section .dl-horizontal dt{
+    line-height: 25px;
+}
+
+.up-section .dl-horizontal dt {
+    text-align: left;
+}
+
+.single {
+    margin-right: 0;
+}
+
