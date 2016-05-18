@@ -8,7 +8,8 @@
              <a ng-show="vm.publicity" href="#" ng-click="vm.togglePublicity({publicity: 0})">// 'my_projects' | tr //</a>
              <span class="gutter">|</span>
              <span ng-show="vm.publicity">// 'public_projects' | tr //</span>
-             <a ng-show="!vm.publicity" href="#" class="title-color" ng-click="vm.togglePublicity({publicity: 1})">// 'public_projects' | tr //</a></h4>
+             <a ng-show="!vm.publicity" href="#" class="title-color" ng-click="vm.togglePublicity({publicity: 1})">// 'public_projects' | tr //</a>
+          </h4>
           <div class="search-pane">
     		      <div class="form-inline">
     		        <div class="input-group">
@@ -37,10 +38,9 @@
                     <td><publicity-button is-public="p.Public" owned="p.OwnerId == vm.currentUser.UserId" project-id="p.ProjectId"></publicity-button></td>
                   	</tr>
                 </tbody>
-              </table>
-             
+              </table>             
             </div>
-             <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>  
+            <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>  
           </div>
   	      </div>
       </div>

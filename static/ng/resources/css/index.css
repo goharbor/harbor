@@ -8,9 +8,8 @@ body {
 
 .container-fluid-custom {
   background-color: #EFEFEF;
-  height: 90%;
   max-height: 100%;
-  margin-bottom: 30px;
+  height: 680px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -39,7 +38,6 @@ body {
 .down-section {
   position: relative;
   padding: 15px 15px 15px;
-  margin: 0 0 20px 0;
   background-color: #FFFFFF;
   height: 350px;
 }

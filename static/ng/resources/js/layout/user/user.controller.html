@@ -1,4 +1,4 @@
-<div class="sub-pane">
+<div class="search-pane">
   <div class="form-inline">
     <div class="input-group">
       <input type="text" class="form-control" placeholder="" ng-model="vm.username" size="30">
@@ -6,8 +6,11 @@
         <button class="btn btn-primary" type="button" ng-click="vm.searchUser()"><span class="glyphicon glyphicon-search"></span></button>
       </span>
     </div>
-  </div>    
-  <div style="height: 500px; overflow-y: auto;">
+  </div> 
+</div>
+<div class="pane project-pane">
+  <div class="sub-pane">   
+  
     <table class="table">
       <thead>
         <th>// 'username' | tr //</th><th>// 'role' | tr //</th><th>// 'email' | tr //</th><th>// 'registration_time' | tr //</th><th>// 'operation' | tr //</th>
@@ -25,9 +28,10 @@
         	</tr>
       </tbody>
     </table>
+    
   </div>
-</div>
-<div class="col-xs-4 col-md-12 well well-sm well-custom">
-  <div class="col-md-offset-10">//vm.users ? vm.users.length : 0// items</div>
+  <div class="col-xs-4 col-md-12 well well-sm well-custom">
+      <div class="col-md-offset-10">//vm.users ? vm.users.length : 0// items</div>
+    </div>
 </div>
 
