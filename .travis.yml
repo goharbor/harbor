@@ -27,5 +27,7 @@ install:
   - ./prepare
   - docker-compose -f docker-compose.yml up -d
 
-
+script:
+- docker ps
+- go run tests/test.go http://localhost/
 
