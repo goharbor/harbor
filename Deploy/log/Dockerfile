@@ -1,7 +1,7 @@
 FROM library/ubuntu:14.04
 
 # run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
-#RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
+RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
 	&& rm /etc/rsyslog.d/* \
         && rm /etc/rsyslog.conf
 ADD rsyslog.conf /etc/rsyslog.conf
