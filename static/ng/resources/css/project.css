@@ -7,8 +7,8 @@
   height: 100%;
   min-height: 1px;
   max-height: 680px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  min-width: 1024px;
+  overflow: hidden;
 }
 
 .section {
@@ -16,10 +16,10 @@
   padding: 15px;
   margin-top: 20px;
   background-color: #FFFFFF;
-  height: 650px;
+  height: 660px;
   width: 100%;
   min-height: 1px;
-  max-height: 680px;
+  max-height: 660px;
 }
 
 .search-pane {
