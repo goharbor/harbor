@@ -6,7 +6,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job/config"
-	"github.com/vmware/harbor/job/imgout"
+	"github.com/vmware/harbor/job/replication"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
@@ -203,17 +203,17 @@ func (sm *JobSM) Reset(jid int64) error {
 }
 
 func addImgOutTransition(sm *JobSM) error {
-	base, err := imgout.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, "",
+	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, "",
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		nil, &sm.Logger)
 	if err != nil {
 		return err
 	}
-	sm.AddTransition(models.JobRunning, imgout.StateCheck, &imgout.Checker{BaseHandler: base})
-	sm.AddTransition(imgout.StateCheck, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
-	sm.AddTransition(imgout.StatePullManifest, imgout.StateTransferBlob, &imgout.BlobTransfer{BaseHandler: base})
-	sm.AddTransition(imgout.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
-	sm.AddTransition(imgout.StateTransferBlob, imgout.StatePushManifest, &imgout.ManifestPusher{BaseHandler: base})
-	sm.AddTransition(imgout.StatePushManifest, imgout.StatePullManifest, &imgout.ManifestPuller{BaseHandler: base})
+	sm.AddTransition(models.JobRunning, replication.StateCheck, &replication.Checker{BaseHandler: base})
+	sm.AddTransition(replication.StateCheck, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
+	sm.AddTransition(replication.StatePullManifest, replication.StateTransferBlob, &replication.BlobTransfer{BaseHandler: base})
+	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
+	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 	return nil
 }

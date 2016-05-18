@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -385,7 +386,7 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 }
 
 // PullBlob ...
-func (r *Repository) PullBlob(digest string) (size int64, data []byte, err error) {
+func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, err error) {
 	req, err := http.NewRequest("GET", buildBlobURL(r.Endpoint.String(), r.Name, digest), nil)
 	if err != nil {
 		return
@@ -401,19 +402,19 @@ func (r *Repository) PullBlob(digest string) (size int64, data []byte, err error
 		return
 	}
 
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
 	if resp.StatusCode == http.StatusOK {
 		contengLength := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
 		size, err = strconv.ParseInt(contengLength, 10, 64)
 		if err != nil {
 			return
 		}
-		data = b
+		data = resp.Body
+		return
+	}
+
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return
 	}
 
@@ -462,8 +463,8 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 	return
 }
 
-func (r *Repository) monolithicBlobUpload(location, digest string, size int64, data []byte) error {
-	req, err := http.NewRequest("PUT", buildMonolithicBlobUploadURL(location, digest), bytes.NewReader(data))
+func (r *Repository) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
+	req, err := http.NewRequest("PUT", buildMonolithicBlobUploadURL(location, digest), data)
 	if err != nil {
 		return err
 	}
@@ -496,17 +497,7 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 }
 
 // PushBlob ...
-func (r *Repository) PushBlob(digest string, size int64, data []byte) error {
-	exist, err := r.BlobExist(digest)
-	if err != nil {
-		return err
-	}
-
-	if exist {
-		log.Infof("blob already exists, skip pushing: %s %s", r.Name, digest)
-		return nil
-	}
-
+func (r *Repository) PushBlob(digest string, size int64, data io.Reader) error {
 	location, _, err := r.initiateBlobUpload(r.Name)
 	if err != nil {
 		return err
