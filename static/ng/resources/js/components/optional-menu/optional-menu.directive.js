@@ -19,6 +19,7 @@
     
     function setLanguage(name) {
       I18nService().setCurrentLanguage(name);
+      $window.location.reload();
     }
         
     function logOut() {

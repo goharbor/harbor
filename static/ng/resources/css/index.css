@@ -17,7 +17,7 @@ body {
 .up-section {
   position: relative;
   padding: 15px 15px 15px;
-  margin: 20px 0 20px 0;
+  margin: 20px -10px 0 0;
   background-color: #FFFFFF;
   height: 277px;
 }
@@ -38,6 +38,7 @@ body {
 .down-section {
   position: relative;
   padding: 15px 15px 15px;
+  margin: 20px -10px 0 0;
   background-color: #FFFFFF;
   height: 350px;
 }

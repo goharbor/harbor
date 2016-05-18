@@ -23,7 +23,6 @@
             language = defaultLanguage;
           }
           $cookies.put('language', language, {'path': '/'});
-          $window.location.reload();
         },
         'getCurrentLanguage': function() {
           return $cookies.get('language') || defaultLanguage;

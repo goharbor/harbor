@@ -6,10 +6,10 @@
     .module('harbor.layout.header')
     .controller('HeaderController', HeaderController);
   
-  HeaderController.$inject = ['$scope'];
+  HeaderController.$inject = ['$scope', 'I18nService', '$cookies', '$window'];
   
-  function HeaderController($scope) {
-    var vm = this;
+  function HeaderController($scope, I18nService, $cookies, $window) {
+    
   }
   
 })();
