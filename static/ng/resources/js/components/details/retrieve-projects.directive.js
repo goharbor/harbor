@@ -99,7 +99,6 @@
       vm.selectedProject = item;
       vm.checkProjectMember(vm.selectedProject.ProjectId);
       vm.isOpen = false;
-      
       $location.search('project_id', vm.selectedProject.ProjectId);
     }       
     

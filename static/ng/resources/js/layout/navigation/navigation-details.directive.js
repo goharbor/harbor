@@ -6,9 +6,9 @@
     .module('harbor.layout.navigation')
     .directive('navigationDetails', navigationDetails);
   
-  NavigationDetailsController.$inject = ['$window', '$location', '$scope'];
+  NavigationDetailsController.$inject = ['$window', '$location', '$scope', '$route'];
   
-  function NavigationDetailsController($window, $location, $scope) {
+  function NavigationDetailsController($window, $location, $scope, $route) {
     var vm = this;    
     
     $scope.$watch('vm.selectedProject', function(current, origin) {
@@ -48,9 +48,17 @@
     function link(scope, element, attrs, ctrl) {
       
       var visited = ctrl.url.substring(1);
+      
       if(visited.indexOf('?') >= 0) {
         visited = ctrl.url.substring(1, ctrl.url.indexOf('?') - 1);
       }
+      
+      scope.$watch('vm.selectedProject', function(current) {
+        if(current) {
+          element.find('a').removeClass('active');
+          element.find('a:first').addClass('active');
+        }
+      });
      
       element.find('a[tag*="' + visited + '"]').addClass('active');
       element.on('click', click);
