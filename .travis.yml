@@ -23,6 +23,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 install: 
+  - ./tests/hostcfg.sh
   - cd Deploy
   - ./prepare
   - docker-compose -f docker-compose.yml up -d
@@ -31,6 +32,6 @@ script:
   - docker ps
   - docker version
   - docker-compose version
-  - ip addr |grep eth0
+  - ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
   - go run ../tests/test.go http://localhost/
 
