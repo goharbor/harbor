@@ -25,7 +25,7 @@ func main() {
             os.Exit(1)
         }
 //        fmt.Printf("%s", b)
-        if strings.Contains(string(b), "harbor") {
+        if strings.Contains(string(b), "Harbor") {
           fmt.Printf("sucess!\n")
         } else {
             os.Exit(1)
