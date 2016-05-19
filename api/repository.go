@@ -38,19 +38,19 @@ import (
 // the security of registry
 type RepositoryAPI struct {
 	BaseAPI
-	userID int
+	//userID int
 }
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
-func (ra *RepositoryAPI) Prepare() {
-	ra.userID = ra.ValidateUser()
-}
+//func (ra *RepositoryAPI) Prepare() {
+//	ra.userID = ra.ValidateUser()
+//}
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
-	projectID, err0 := ra.GetInt64("project_id")
-	if err0 != nil {
-		log.Errorf("Failed to get project id, error: %v", err0)
+	projectID, err := ra.GetInt64("project_id")
+	if err != nil {
+		log.Errorf("Failed to get project id, error: %v", err)
 		ra.RenderError(http.StatusBadRequest, "Invalid project id")
 		return
 	}
@@ -64,9 +64,14 @@ func (ra *RepositoryAPI) Get() {
 		ra.RenderError(http.StatusNotFound, "")
 		return
 	}
-	if p.Public == 0 && !checkProjectPermission(ra.userID, projectID) {
-		ra.RenderError(http.StatusForbidden, "")
-		return
+
+	if p.Public == 0 {
+		userID := ra.ValidateUser()
+
+		if !checkProjectPermission(userID, projectID) {
+			ra.RenderError(http.StatusForbidden, "")
+			return
+		}
 	}
 
 	repoList, err := svc_utils.GetRepoFromCache()
@@ -239,15 +244,44 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initializeRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	u := models.User{
-		UserID: ra.userID,
-	}
-	user, err := dao.GetUser(u)
-	if err != nil {
-		return nil, err
+	var username string
+	var sessionUsername, sessionUserID interface{}
+
+	// get username from basic auth
+	username, _, ok := ra.Ctx.Request.BasicAuth()
+	if ok {
+		goto enter
 	}
 
+	// get username from session
+	sessionUsername = ra.GetSession("username")
+	if sessionUsername != nil {
+		username, ok = sessionUsername.(string)
+		if ok {
+			goto enter
+		}
+	}
+
+	// if username does not exist in session, try to get userId from sessiion
+	// and then get username from DB according to the userId
+	sessionUserID = ra.GetSession("userId")
+	if sessionUserID != nil {
+		userID, ok := sessionUserID.(int)
+		if ok {
+			u := models.User{
+				UserID: userID,
+			}
+			user, err := dao.GetUser(u)
+			if err != nil {
+				return nil, err
+			}
+			username = user.Username
+			goto enter
+		}
+	}
+
+enter:
 	endpoint := os.Getenv("REGISTRY_URL")
 
-	return registry.NewRepositoryWithUsername(repoName, endpoint, user.Username)
+	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
 }
