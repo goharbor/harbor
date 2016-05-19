@@ -64,6 +64,33 @@ func (rj *ReplicationJob) Post() {
 	}
 }
 
+type RepActionReq struct {
+	PolicyID int64  `json:"policy_id"`
+	Action   string `json:"action"`
+}
+
+func (rj *ReplicationJob) HandleAction() {
+	var data RepActionReq
+	rj.DecodeJSONReq(&data)
+	//Currently only support stop action
+	if data.Action != "stop" {
+		log.Errorf("Unrecognized action: %s", data.Action)
+		rj.RenderError(http.StatusBadRequest, fmt.Sprintf("Unrecongized action: %s", data.Action))
+		return
+	}
+	jobs, err := dao.GetRepJobToStop(data.PolicyID)
+	if err != nil {
+		log.Errorf("Failed to get jobs to stop, error: %v", err)
+		rj.RenderError(http.StatusInternalServerError, "Faild to get jobs to stop")
+		return
+	}
+	var jobIDList []int64
+	for _, j := range jobs {
+		jobIDList = append(jobIDList, j.ID)
+	}
+	job.WorkerPool.StopJobs(jobIDList)
+}
+
 // calls the api from UI to get repo list
 func getRepoList(projectID int64) ([]string, error) {
 	uiURL := os.Getenv("UI_URL")
