@@ -7,9 +7,11 @@ import (
     "net/http"
     "os"
     "strings"
+    "time"
 )
 
 func main() {
+    time.sleep(60*time.second)
     for _, url := range os.Args[1:] {
         resp, err := http.Get(url)
         if err != nil {
