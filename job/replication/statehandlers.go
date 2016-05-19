@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package imgout
+package replication
 
 import (
 	"bytes"
@@ -43,6 +43,7 @@ const (
 	StatePushManifest = "push_manifest"
 )
 
+// BaseHandler holds informations shared by other state handlers
 type BaseHandler struct {
 	project    string // project_name
 	repository string // prject_name/repo_name
@@ -61,24 +62,29 @@ type BaseHandler struct {
 	manifest distribution.Manifest // manifest of tags[0]
 	blobs    []string              // blobs need to be transferred for tags[0]
 
+	blobsExistence map[string]bool //key: digest of blob, value: existence
+
 	logger *utils.Logger
 }
 
+// InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
+// listing tags of the repository if parameter tags is nil.
 func InitBaseHandler(repository, srcURL, srcSecretKey,
 	dstURL, dstUsr, dstPwd string, tags []string, logger *utils.Logger) (*BaseHandler, error) {
 
-	logger.Infof("initializing base handler: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
+	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		repository, tags, srcURL, dstURL, dstUsr)
 
 	base := &BaseHandler{
-		repository:   repository,
-		tags:         tags,
-		srcURL:       srcURL,
-		srcSecretKey: srcSecretKey,
-		dstURL:       dstURL,
-		dstUsr:       dstUsr,
-		dstPwd:       dstPwd,
-		logger:       logger,
+		repository:     repository,
+		tags:           tags,
+		srcURL:         srcURL,
+		srcSecretKey:   srcSecretKey,
+		dstURL:         dstURL,
+		dstUsr:         dstUsr,
+		dstPwd:         dstPwd,
+		blobsExistence: make(map[string]bool, 10),
+		logger:         logger,
 	}
 
 	base.project = getProjectName(base.repository)
@@ -106,12 +112,13 @@ func InitBaseHandler(repository, srcURL, srcSecretKey,
 		base.tags = tags
 	}
 
-	base.logger.Infof("initialization of base handler completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
+	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.dstUsr)
 
 	return base, nil
 }
 
+// Exit ...
 func (b *BaseHandler) Exit() error {
 	return nil
 }
@@ -122,11 +129,12 @@ func getProjectName(repository string) string {
 	return repository[:strings.LastIndex(repository, "/")]
 }
 
+// Checker checks the existence of project and the user's privlege to the project
 type Checker struct {
 	*BaseHandler
 }
 
-// check existence of project, if it does not exist, create it,
+// Enter check existence of project, if it does not exist, create it,
 // if it exists, check whether the user has write privilege to it.
 func (c *Checker) Enter() (string, error) {
 	exist, canWrite, err := c.projectExist()
@@ -247,13 +255,16 @@ func (c *Checker) createProject() error {
 	return nil
 }
 
+// ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,
+// the next state that state machine should enter is "finished".
 type ManifestPuller struct {
 	*BaseHandler
 }
 
+// Enter pulls manifest of a tag and checks if all blobs exist in the destination registry
 func (m *ManifestPuller) Enter() (string, error) {
 	if len(m.tags) == 0 {
-		m.logger.Infof("no tag needs to be replicated, entering finish state")
+		m.logger.Infof("no tag needs to be replicated, next state is \"finished\"")
 		return models.JobFinished, nil
 	}
 
@@ -296,30 +307,38 @@ func (m *ManifestPuller) Enter() (string, error) {
 	m.logger.Infof("all blobs of %s:%s from %s: %v", name, tag, m.srcURL, blobs)
 
 	for _, blob := range blobs {
-		exist, err := m.dstClient.BlobExist(blob)
-		if err != nil {
-			m.logger.Errorf("an error occurred while checking existence of blob %s of %s:%s on %s: %v", blob, name, tag, m.dstURL, err)
-			return "", err
+		exist, ok := m.blobsExistence[blob]
+		if !ok {
+			exist, err = m.dstClient.BlobExist(blob)
+			if err != nil {
+				m.logger.Errorf("an error occurred while checking existence of blob %s of %s:%s on %s: %v", blob, name, tag, m.dstURL, err)
+				return "", err
+			}
+			m.blobsExistence[blob] = exist
 		}
+
 		if !exist {
 			m.blobs = append(m.blobs, blob)
+		} else {
+			m.logger.Infof("blob %s of %s:%s already exists in %s", blob, name, tag, m.dstURL)
 		}
 	}
 	m.logger.Infof("blobs of %s:%s need to be transferred to %s: %v", name, tag, m.dstURL, m.blobs)
 
-	m.blobs = blobs
-
 	return StateTransferBlob, nil
 }
 
+// BlobTransfer transfers blobs of a tag
 type BlobTransfer struct {
 	*BaseHandler
 }
 
+// Enter pulls blobs and then pushs them to destination registry.
 func (b *BlobTransfer) Enter() (string, error) {
 	name := b.repository
 	tag := b.tags[0]
 	for _, blob := range b.blobs {
+		b.logger.Infof("transferring blob %s of %s:%s to %s ...", blob, name, tag, b.dstURL)
 		size, data, err := b.srcClient.PullBlob(blob)
 		if err != nil {
 			b.logger.Errorf("an error occurred while pulling blob %s of %s:%s from %s: %v", blob, name, tag, b.srcURL, err)
@@ -329,16 +348,20 @@ func (b *BlobTransfer) Enter() (string, error) {
 			b.logger.Errorf("an error occurred while pushing blob %s of %s:%s to %s : %v", blob, name, tag, b.dstURL, err)
 			return "", err
 		}
-		b.logger.Infof("blob %s of %s:%s tranferred to %s completed", blob, name, tag, b.dstURL)
+		b.logger.Infof("blob %s of %s:%s transferred to %s completed", blob, name, tag, b.dstURL)
 	}
 
 	return StatePushManifest, nil
 }
 
+// ManifestPusher pushs the manifest to destination registry
 type ManifestPusher struct {
 	*BaseHandler
 }
 
+// Enter checks the existence of manifest in the source registry first, and if it
+// exists, pushs it to destination registry. The checking operation is to avoid
+// the situation that the tag is deleted during the blobs transfering
 func (m *ManifestPusher) Enter() (string, error) {
 	name := m.repository
 	tag := m.tags[0]
@@ -365,6 +388,8 @@ func (m *ManifestPusher) Enter() (string, error) {
 	}
 
 	m.tags = m.tags[1:]
+	m.manifest = nil
+	m.blobs = nil
 
 	return StatePullManifest, nil
 }

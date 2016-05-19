@@ -1,4 +1,4 @@
-package imgout
+package replication
 
 /*
 import (

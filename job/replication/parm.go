@@ -1,4 +1,4 @@
-package imgout
+package replication
 
 type ImgOutParm struct {
 	Secret  string          `json:"secret"`
