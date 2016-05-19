@@ -34,5 +34,8 @@ script:
   - docker-compose version
   - ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
   - head -n 10 harbor.cfg
+  - cat /var/log/harbor/2016-05-19/docker_ui.log
+  - cat /var/log/harbor/2016-05-19/docker_mysql.log
   - go run ../tests/test.go http://localhost/
+  
 
