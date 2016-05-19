@@ -221,7 +221,6 @@ func GetPublicProjects(projectName string) ([]models.Project, error) {
 	publicProjects, err := getProjects(1, projectName)
 	if err != nil {
 		return nil, err
-
 	}
 	return publicProjects, nil
 }
@@ -242,7 +241,7 @@ func getProjects(public int, projectName string) ([]models.Project, error) {
 		where deleted = 0`
 	queryParam := make([]interface{}, 1)
 	if public == 1 {
-		sql += "and public = ?"
+		sql += " and public = ? "
 		queryParam = append(queryParam, public)
 	}
 	if len(projectName) > 0 {
@@ -251,6 +250,7 @@ func getProjects(public int, projectName string) ([]models.Project, error) {
 	}
 	sql += " order by name "
 	var projects []models.Project
+	log.Debugf("sql xxx", sql)
 	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
 		return nil, err
 	}

@@ -624,6 +624,19 @@ func TestGetAllProjects(t *testing.T) {
 	}
 }
 
+func TestGetPublicProjects(t *testing.T) {
+	projects, err := GetPublicProjects("")
+	if err != nil {
+		t.Errorf("Error occurred in getProjects: %v", err)
+	}
+	if len(projects) != 1 {
+		t.Errorf("Expected length of projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
+	}
+	if projects[0].Name != "library" {
+		t.Errorf("Expected project name in the list: %s, actual: %s", "library", projects[0].Name)
+	}
+}
+
 func TestAddProjectMember(t *testing.T) {
 	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
 	if err != nil {
