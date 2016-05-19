@@ -21,11 +21,7 @@ nav .container-custom {
 }
 
 .navbar-brand > img {
-  height: 60px;
-  width: 100px;
   margin-top: -30px; 
-  filter: brightness(0) invert(1);
-  -webkit-filter: brightness(0) invert(1);
 }
 
 .navbar-form {
@@ -40,21 +36,21 @@ nav .container-custom {
 }
 
 .nav-custom li {
-    float: left;
-    padding: 10px 0 0 0;
-    margin-right: 12px;
-    list-style: none;
-    display: inline-block;
+  float: left;
+  padding: 10px 0 0 0;
+  margin-right: 12px;
+  list-style: none;
+  display: inline-block;
 }
 
 .nav-custom li a {
-    font-size: 14px;
-    color: #FFFFFF;
-    text-decoration: none;
+  font-size: 14px;
+  color: #FFFFFF;
+  text-decoration: none;
 }
 
 .nav-custom .active {
-     border-bottom: 3px solid #EFEFEF;
+  border-bottom: 3px solid #EFEFEF;
 }
 
 .dropdown {

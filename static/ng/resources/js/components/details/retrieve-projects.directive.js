@@ -12,6 +12,7 @@
     var vm = this;
     
     vm.projectName = '';
+    vm.isOpen = false;
     
     if($route.current.params.is_public) {
       vm.isPublic = $route.current.params.is_public === 'true' ? 1 : 0;
@@ -114,6 +115,7 @@
         'publicity': '=',
         'isProjectMember': '='
       },
+      link: link,
       replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
@@ -122,6 +124,22 @@
     
     return directive;
     
+    function link(scope, element, attrs, ctrl) {
+      $(document).on('click', clickHandler);
+      
+      function clickHandler(e) {
+        var targetId = $(e.target).attr('id');
+        if(targetId === 'switchPane' || 
+           targetId === 'retrievePane' ||
+           targetId === 'retrieveFilter') {
+          return;            
+        }else{
+          ctrl.isOpen = false;
+          scope.$apply();
+        }
+      }
+    }
+
   }
   
 })();

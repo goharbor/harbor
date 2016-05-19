@@ -18,14 +18,6 @@
     });
     
     vm.url = $location.url();
-    vm.clickTab = clickTab;
-     
-    function clickTab() {       
-      console.log("triggered clickTab of Controller.");
-      vm.isOpen = false;  
-      $scope.$apply();
-    }
- 
   }
   
   function navigationDetails() {
@@ -34,7 +26,6 @@
       templateUrl: '/static/ng/resources/js/layout/navigation/navigation-details.directive.html',
       link: link,
       scope: {
-        'isOpen': '=',
         'selectedProject': '='
       },
       replace: true,
@@ -66,7 +57,6 @@
       function click(event) {
         element.find('a').removeClass('active');
         $(event.target).addClass('active');
-        ctrl.clickTab();
       }
      
     }
