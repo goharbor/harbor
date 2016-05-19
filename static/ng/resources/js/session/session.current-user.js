@@ -26,7 +26,7 @@
     
     function getCurrentUserFailed(e){
       var url = location.pathname;
-      var exclusions = ['/ng', '/ng/forgot_password', '/ng/sign_up', '/ng/reset_password'];
+      var exclusions = ['/ng', '/ng/forgot_password', '/ng/sign_up', '/ng/reset_password', '/ng/search', '/ng/repository'];
       for(var i = 0; i < exclusions.length; i++) {
         if(exclusions[i]===url) {
           return;

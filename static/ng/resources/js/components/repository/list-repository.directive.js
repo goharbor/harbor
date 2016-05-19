@@ -5,12 +5,23 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$routeParams', '$filter', 'trFilter'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$routeParams', '$filter', 'trFilter', '$location'];
   
-  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $routeParams, $filter, trFilter) {
+  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $routeParams, $filter, trFilter, $location) {
     var vm = this;
+  
+    vm.filterInput = '';
+
+    var hashValue = $location.hash();
+    if(hashValue) {
+      var slashIndex = hashValue.indexOf('/');
+      if(slashIndex >=0) {
+        vm.filterInput = hashValue.substring(slashIndex + 1);      
+      }else{
+        vm.filterInput = hashValue;
+      }
+    }
         
-    vm.filterInput = "";
     vm.retrieve = retrieve;
     vm.projectId = $routeParams.project_id;
     vm.tagCount = {};

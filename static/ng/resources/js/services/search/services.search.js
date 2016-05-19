@@ -10,21 +10,15 @@
   
   function SearchService($http, $log) {
     
-    return Search;
+    return search;
     
-    function Search(keywords) {
-      return $http({
-          method: 'GET',
-          url: '/api/search',
-       
-          transformRequest: function(obj) {
-              var str = [];
-              for(var p in obj)
-              str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-              return str.join("&");
-          },
-          data: {'q': keywords}
-      });
+    function search(keywords) {
+      return $http
+        .get('/api/search',{
+          params: {
+            'q': keywords
+          }
+        });
     }
     
   }

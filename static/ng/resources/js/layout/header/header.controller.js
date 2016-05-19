@@ -6,10 +6,14 @@
     .module('harbor.layout.header')
     .controller('HeaderController', HeaderController);
   
-  HeaderController.$inject = ['$scope', 'I18nService', '$cookies', '$window'];
+  HeaderController.$inject = ['$scope', '$window', 'getParameterByName'];
   
-  function HeaderController($scope, I18nService, $cookies, $window) {
-    
+  function HeaderController($scope, $window, getParameterByName) {
+    var vm = this;
+    if($window.location.search) {
+      vm.searchInput = getParameterByName('q', $window.location.search);
+      console.log('vm.searchInput at header:' + vm.searchInput);
+    }
   }
   
 })();

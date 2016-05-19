@@ -12,7 +12,11 @@
     var vm = this;
     vm.url = $window.location.pathname;   
     vm.isAdmin = false;
+    vm.isShow = false;
     $scope.$on('currentUser', function(e, val) {
+      if(val) {
+        vm.isShow = true;
+      }
       if(val.HasAdminRole === 1) {
         vm.isAdmin = true;
       }
