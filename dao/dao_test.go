@@ -351,7 +351,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID)
+	projects, err := SearchProjects(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -570,39 +570,6 @@ func TestIsProjectPublic(t *testing.T) {
 	}
 }
 
-func TestQueryProject(t *testing.T) {
-	query1 := models.Project{
-		UserID: 1,
-	}
-	projects, err := QueryProject(query1)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query1)
-	}
-	if len(projects) != 2 {
-		t.Errorf("Expecting get 2 projects, but actual: %d, the list: %+v", len(projects), projects)
-	}
-	query2 := models.Project{
-		Public: 1,
-	}
-	projects, err = QueryProject(query2)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query2)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expecting get 1 project, but actual: %d, the list: %+v", len(projects), projects)
-	}
-	query3 := models.Project{
-		UserID: 9,
-	}
-	projects, err = QueryProject(query3)
-	if err != nil {
-		t.Errorf("Error in Query Project: %v, query: %+v", err, query3)
-	}
-	if len(projects) != 0 {
-		t.Errorf("Expecting get 0 project, but actual: %d, the list: %+v", len(projects), projects)
-	}
-}
-
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
@@ -630,20 +597,20 @@ func TestProjectPermission(t *testing.T) {
 }
 
 func TestGetUserRelevantProjects(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID)
+	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
 	if err != nil {
 		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
 	}
-	if len(projects) != 2 {
-		t.Errorf("Expected length of relevant projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
+	if len(projects) != 1 {
+		t.Errorf("Expected length of relevant projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
 	}
-	if projects[1].Name != projectName {
+	if projects[0].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
 	}
 }
 
 func TestGetAllProjects(t *testing.T) {
-	projects, err := GetAllProjects()
+	projects, err := GetAllProjects("")
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -652,6 +619,19 @@ func TestGetAllProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
+	}
+}
+
+func TestGetPublicProjects(t *testing.T) {
+	projects, err := GetPublicProjects("")
+	if err != nil {
+		t.Errorf("Error occurred in getProjects: %v", err)
+	}
+	if len(projects) != 1 {
+		t.Errorf("Expected length of projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
+	}
+	if projects[0].Name != "library" {
+		t.Errorf("Expected project name in the list: %s, actual: %s", "library", projects[0].Name)
 	}
 }
 
