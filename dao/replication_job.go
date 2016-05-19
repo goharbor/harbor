@@ -26,6 +26,12 @@ func DeleteRepTarget(id int64) error {
 	return err
 }
 
+func UpdateRepTarget(target models.RepTarget) error {
+	o := orm.NewOrm()
+	_, err := o.Update(&target)
+	return err
+}
+
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := orm.NewOrm()
 	sqlTpl := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, %s, NOW(), NOW())`
