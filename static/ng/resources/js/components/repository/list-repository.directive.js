@@ -95,18 +95,13 @@
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/repository/list-repository.directive.html',
       replace: true,
-      link: 'link',
       controller: ListRepositoryController,
       controllerAs: 'vm',
       bindToController: true
     }
     
     return directive;
-   
-    function link(scope, element, attrs, ctrl) {
-
-    }
-    
+  
   }
   
 })();

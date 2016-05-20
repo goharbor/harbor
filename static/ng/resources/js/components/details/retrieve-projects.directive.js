@@ -20,8 +20,6 @@
     }
 
     vm.retrieve = retrieve;
-    vm.retrieve();
-    
     vm.checkProjectMember = checkProjectMember;
     
     $scope.$watch('vm.selectedProject', function(current, origin) {
@@ -34,7 +32,7 @@
     vm.selectItem = selectItem;  
     
     $scope.$watch('vm.publicity', function(current, origin) { 
-      vm.publicity = current ? 1 : 0;
+      vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
       vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
       vm.retrieve();      
@@ -65,9 +63,8 @@
           }
         }); 
       }
-      
-      $location.search('project_id', vm.selectedProject.ProjectId);
       vm.checkProjectMember(vm.selectedProject.ProjectId);
+      $location.search('project_id', vm.selectedProject.ProjectId);
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  

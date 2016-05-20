@@ -6,22 +6,24 @@
     .module('harbor.layout.navigation')
     .directive('navigationHeader', navigationHeader);
   
-  NavigationHeaderController.$inject = ['$window', '$scope'];
+  NavigationHeaderController.$inject = ['$window', '$scope', 'currentUser', '$timeout'];
     
-  function NavigationHeaderController($window, $scope) {
+  function NavigationHeaderController($window, $scope, currentUser, $timeout) {
     var vm = this;
-    vm.url = $window.location.pathname;   
-    vm.isAdmin = false;
+    
     vm.isShow = false;
-    $scope.$on('currentUser', function(e, val) {
-      if(val) {
-        vm.isShow = true;
+    vm.isAdmin = false;
+    
+    $timeout(function() {
+      vm.user = currentUser.get();
+      if(angular.isDefined(vm.user)) {
+          vm.isShow = true;
+          if(vm.user.HasAdminRole === 1) {
+            vm.isAdmin = true;
+          }
       }
-      if(val.HasAdminRole === 1) {
-        vm.isAdmin = true;
-      }
-      $scope.$apply();
     });
+    vm.url = $window.location.pathname;    
   }
   
   function navigationHeader() {

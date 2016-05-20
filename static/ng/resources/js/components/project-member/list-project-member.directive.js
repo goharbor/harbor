@@ -10,24 +10,19 @@
     
   function ListProjectMemberController($scope, ListProjectMemberService, $routeParams, currentUser) {
     var vm = this;
-
- 
-    vm.isOpen = false;
-       
+    
+    vm.isOpen = false;      
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
     vm.retrieve = retrieve;
-    
     vm.projectId = $routeParams.project_id;
     vm.username = "";
-    vm.currentUser = {};
-
+   
     vm.retrieve();
               
     function search(e) {
       vm.projectId = e.projectId;
       vm.username = e.username;
-      console.log('project_id:' + e.projectId);
       retrieve();
     }
     
@@ -46,7 +41,7 @@
     }
     
     function getProjectMemberComplete(response) {  
-      vm.currentUser = currentUser.get();
+      vm.user = currentUser.get();
       vm.projectMembers = response.data;  
     } 
            
@@ -62,17 +57,11 @@
       templateUrl: '/static/ng/resources/js/components/project-member/list-project-member.directive.html',
       replace: true,
       scope: true,
-      link: link,
       controller: ListProjectMemberController,
       controllerAs: 'vm',
       bindToController: true
-    }
-   
+    }   
     return directive;
-    
-    function link(scope, element, attrs, ctrl) {
-     
-    }
   }
   
 })();

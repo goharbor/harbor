@@ -1,16 +1,6 @@
-<div ng-if="!vm.isLoggedIn" class="dropdown">
-  <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
-      <span class="glyphicon glyphicon-globe"></span> //vm.languageName//
-  </a>
-  <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
-    <li><a href="javascript:void(0);" ng-click="vm.setLanguage('en-US')">English</a></li>
-    <li><a href="javascript:void(0);" ng-click="vm.setLanguage('zh-CN')">中文</a></li>
-  </ul>
-</div>
-
 <div ng-if="vm.isLoggedIn" class="dropdown">
-  <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
-      <span class="glyphicon glyphicon-user"></span> //vm.username//
+  <a role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
+      <span class="glyphicon glyphicon-user"></span> //vm.user.username//
   </a>
   <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
     <li><a href="/ng/account_setting"><span class="glyphicon glyphicon-pencil"></span> // 'account_setting' | tr //</a></li>
@@ -23,5 +13,14 @@
     </li>
     <li class="divider"></li>
     <li><a href="javascript:void(0)" ng-click="vm.logOut()"><span class="glyphicon glyphicon-log-out"></span> // 'log_out' | tr //</a></li>
+  </ul>
+</div>
+<div ng-if="!vm.isLoggedIn" class="dropdown">
+  <a role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
+      <span class="glyphicon glyphicon-globe"></span> //vm.languageName//
+  </a>
+  <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+    <li><a href="javascript:void(0);" ng-click="vm.setLanguage('en-US')">English</a></li>
+    <li><a href="javascript:void(0);" ng-click="vm.setLanguage('zh-CN')">中文</a></li>
   </ul>
 </div>

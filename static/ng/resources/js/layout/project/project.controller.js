@@ -6,9 +6,9 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser']; 
 
-  function ProjectController($scope, ListProjectService) {
+  function ProjectController($scope, ListProjectService, $timeout, currentUser) {
     var vm = this;
     
     vm.isOpen = false;
@@ -21,8 +21,8 @@
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;
     
-    $scope.$on('currentUser', function(e, val) {
-      vm.currentUser = val;
+    $timeout(function() {
+      vm.user = currentUser.get();
     });
     
     vm.retrieve();

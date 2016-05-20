@@ -6,15 +6,24 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$scope', '$window', '$cookies', 'I18nService', 'LogOutService'];
+  OptionalMenuController.$inject = ['$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout'];
 
-  function OptionalMenuController($scope, $window, $cookies, I18nService, LogOutService) {
+  function OptionalMenuController($window, I18nService, LogOutService, currentUser, $timeout) {
     var vm = this;
+    
     vm.currentLanguage = I18nService().getCurrentLanguage();
-    vm.setLanguage = setLanguage;
     vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
     console.log('current language:' + I18nService().getCurrentLanguage());
-    
+
+    vm.isLoggedIn = false;    
+    $timeout(function() {
+      vm.user = currentUser.get();
+      if(angular.isDefined(vm.user)) {
+        vm.isLoggedIn = true;
+      }
+    });
+
+    vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
     
     function setLanguage(name) {
@@ -28,6 +37,7 @@
         .error(logOutFailed);
     }
     function logOutSuccess(data, status) {
+      currentUser.unset();
       $window.location.href= '/ng';
     }
     function logOutFailed(data, status) {
@@ -39,23 +49,12 @@
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/ng/resources/js/components/optional-menu/optional-menu.directive.html',
-      'link': link,
       'scope': true,
       'controller': OptionalMenuController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
-    function link(scope, element, attrs, ctrl) {
-      ctrl.isLoggedIn = false;
-      scope.$on('currentUser', function(e, val) {
-        if(val != null) {
-          ctrl.isLoggedIn = true;
-          ctrl.username = val.username;
-        }
-        scope.$apply();
-      });
-    }
   }
   
 })();

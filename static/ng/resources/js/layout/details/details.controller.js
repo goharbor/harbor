@@ -5,23 +5,17 @@
   angular
     .module('harbor.details')
     .controller('DetailsController', DetailsController);
-    
-  DetailsController.$inject = ['$scope', '$location', '$routeParams'];
-  
-  function DetailsController($scope, $location, $routeParams) {
+
+  function DetailsController() {
     var vm = this;
-    vm.isOpen = false;
+   
     vm.publicity = false;
-    vm.isProjectMember = true;
-    vm.closeRetrievePane = closeRetrievePane;   
+    vm.isProjectMember = false;
+    
     vm.togglePublicity = togglePublicity;
     
-    function closeRetrievePane() {
-      $scope.$broadcast('isOpen', false);
-    }
     function togglePublicity(e) {
       vm.publicity = e.publicity;
-      console.log('current project publicity:' + vm.publicity);
     }
   }
   
