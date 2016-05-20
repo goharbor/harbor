@@ -43,7 +43,6 @@ const projectNameMaxLen int = 30
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
-	p.userID = p.ValidateUser()
 	idStr := p.Ctx.Input.Param(":id")
 	if len(idStr) > 0 {
 		var err error
@@ -65,6 +64,8 @@ func (p *ProjectAPI) Prepare() {
 
 // Post ...
 func (p *ProjectAPI) Post() {
+	p.userID = p.ValidateUser()
+
 	var req projectReq
 	var public int
 	p.DecodeJSONReq(&req)
@@ -99,15 +100,24 @@ func (p *ProjectAPI) Post() {
 // Head ...
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
-	result, err := dao.ProjectExists(projectName)
+	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
-		log.Errorf("Error while communicating with DB, error: %v", err)
-		p.RenderError(http.StatusInternalServerError, "Error while communicating with DB")
+		log.Errorf("error occurred in GetProjectByName: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	// only public project can be Headed by user without login
+	if project != nil && project.Public == 1 {
 		return
 	}
-	if !result {
-		p.RenderError(http.StatusNotFound, "")
-		return
+
+	userID := p.ValidateUser()
+	if project == nil {
+		p.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	if !checkProjectPermission(userID, project.ProjectID) {
+		p.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 }
 
@@ -132,6 +142,8 @@ func (p *ProjectAPI) Get() {
 	if public == 1 {
 		projectList, err = dao.GetPublicProjects(projectName)
 	} else {
+		//if the request is not for public projects, user must login or provide credential
+		p.userID = p.ValidateUser()
 		isAdmin, err = dao.IsAdminRole(p.userID)
 		if err != nil {
 			log.Errorf("Error occured in check admin, error: %v", err)
@@ -164,6 +176,8 @@ func (p *ProjectAPI) Get() {
 
 // Put ...
 func (p *ProjectAPI) Put() {
+	p.userID = p.ValidateUser()
+
 	var req projectReq
 	var public int
 
@@ -192,6 +206,7 @@ func (p *ProjectAPI) Put() {
 
 // FilterAccessLog handles GET to /api/projects/{}/logs
 func (p *ProjectAPI) FilterAccessLog() {
+	p.userID = p.ValidateUser()
 
 	var filter models.AccessLog
 	p.DecodeJSONReq(&filter)
