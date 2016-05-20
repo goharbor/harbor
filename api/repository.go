@@ -38,13 +38,7 @@ import (
 // the security of registry
 type RepositoryAPI struct {
 	BaseAPI
-	//userID int
 }
-
-// Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
-//func (ra *RepositoryAPI) Prepare() {
-//	ra.userID = ra.ValidateUser()
-//}
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
