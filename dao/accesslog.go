@@ -117,3 +117,25 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	}
 	return err
 }
+
+//GetRecentLogs returns recent logs according to parameters
+func GetRecentLogs(lines int, start_time, end_time string) ([]models.AccessLog, error) {
+	var recentLogList []models.AccessLog
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, start_time)
+	queryParam = append(queryParam, end_time)
+	qb, _ := orm.NewQueryBuilder("mysql")
+	qb.Select("log_id",
+		"user_id", "project_id", "repo_name", "repo_tag", "GUID", "operation", "op_time").
+		From("access_log").
+		Where("op_time BETWEEN ? AND ? ").
+		OrderBy("op_time").Desc().
+		Limit(lines)
+	sql := qb.String()
+	o := orm.NewOrm()
+	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
+	if err != nil {
+		return nil, err
+	}
+	return recentLogList, nil
+}

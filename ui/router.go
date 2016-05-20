@@ -59,9 +59,11 @@ func initRouters() {
 	beego.Router("/api/users", &api.UserAPI{})
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/users/:id/password", &api.UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id/profile", &api.UserAPI{}, "put:ChangeProfile")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("api/logs", &api.LogAPI{})
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})

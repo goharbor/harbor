@@ -230,3 +230,18 @@ func DeleteUser(userID int) error {
 	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
 	return err
 }
+
+// ChangeUserProfile ...
+func ChangeUserProfile(user models.User) error {
+	err := commonValidate(user)
+	if err != nil {
+		log.Errorf("user check failed!", err)
+		return err
+	}
+	o := orm.NewOrm()
+	if _, err = o.Update(&user, "Email", "Realname", "Comment"); err != nil {
+		log.Errorf("update user failed", err)
+		return err
+	}
+	return nil
+}

@@ -186,9 +186,8 @@ func (ua *UserAPI) Delete() {
 
 // ChangePassword handles PUT to /api/users/{}/password
 func (ua *UserAPI) ChangePassword() {
-
 	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
-	
+
 	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
 		ua.CustomAbort(http.StatusForbidden, "")
 	}
@@ -226,5 +225,27 @@ func (ua *UserAPI) ChangePassword() {
 	if err != nil {
 		log.Errorf("Error occurred in ChangeUserPassword: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+}
+
+// ChangeProfile handles PUT api/users/{}/profile
+func (ua *UserAPI) ChangeProfile() {
+	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
+
+	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
+		ua.CustomAbort(http.StatusForbidden, "")
+	}
+	log.Debugf("request body", string(ua.Ctx.Input.RequestBody))
+	if !ua.IsAdmin {
+		if ua.userID != ua.currentUserID {
+			log.Error("Guests can only change their own account.")
+			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
+		}
+	}
+	user := models.User{UserID: ua.userID}
+	ua.DecodeJSONReq(&user)
+	if err := dao.ChangeUserProfile(user); err != nil {
+		log.Errorf("Failed to update user profile", err)
+		ua.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 }

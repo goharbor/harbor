@@ -250,7 +250,6 @@ func getProjects(public int, projectName string) ([]models.Project, error) {
 	}
 	sql += " order by name "
 	var projects []models.Project
-	log.Debugf("sql xxx", sql)
 	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
 		return nil, err
 	}

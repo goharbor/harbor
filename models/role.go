@@ -26,7 +26,7 @@ const (
 
 // Role holds the details of a role.
 type Role struct {
-	RoleID   int    `orm:"column(role_id)" json:"role_id"`
+	RoleID   int    `orm:"pk;column(role_id)" json:"role_id"`
 	RoleCode string `orm:"column(role_code)" json:"role_code"`
 	Name     string `orm:"column(name)" json:"role_name"`
 

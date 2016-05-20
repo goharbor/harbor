@@ -74,6 +74,18 @@ func validate(user models.User) error {
 		return errors.New("Username already exists.")
 	}
 
+	if isIllegalLength(user.Password, 0, 20) {
+		return errors.New("Password with illegal length.")
+	}
+	if err := commonValidate(user); err != nil {
+		return err
+	}
+	return nil
+}
+
+//commonValidate validates information when user register or change their profile
+func commonValidate(user models.User) error {
+
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
 			return errors.New("Email with illegal format.")
@@ -81,6 +93,8 @@ func validate(user models.User) error {
 		if exist, _ := UserExists(models.User{Email: user.Email}, "email"); exist {
 			return errors.New("Email already exists.")
 		}
+	} else {
+		return errors.New("Email can't be empty")
 	}
 
 	if isIllegalLength(user.Realname, 0, 20) {
@@ -90,15 +104,11 @@ func validate(user models.User) error {
 	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
 		return errors.New("Realname contains illegal characters.")
 	}
-
-	if isIllegalLength(user.Password, 0, 20) {
-		return errors.New("Password with illegal length.")
-	}
-
 	if isIllegalLength(user.Comment, -1, 30) {
 		return errors.New("Comment with illegal length.")
 	}
 	return nil
+
 }
 
 // UserExists returns whether a user exists according username or Email.
