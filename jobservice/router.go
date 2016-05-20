@@ -8,4 +8,5 @@ import (
 
 func initRouters() {
 	beego.Router("/api/jobs/replication", &api.ReplicationJob{})
+	beego.Router("/api/jobs/replication/actions", &api.ReplicationJob{}, "post:HandleAction")
 }

@@ -25,13 +25,13 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
-func execUpdate(o orm.Ormer, sql string, params interface{}) error {
+func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
 		return err
 	}
 	defer p.Close()
-	_, err = p.Exec(params)
+	_, err = p.Exec(params...)
 	if err != nil {
 		return err
 	}
@@ -93,6 +93,19 @@ func clearUp(username string) {
 	err = execUpdate(o, `delete from user where username = ?`, username)
 	if err != nil {
 		o.Rollback()
+		log.Error(err)
+	}
+
+	err = execUpdate(o, `delete from replication_job where id < 99`)
+	if err != nil {
+		log.Error(err)
+	}
+	err = execUpdate(o, `delete from replication_policy where id < 99`)
+	if err != nil {
+		log.Error(err)
+	}
+	err = execUpdate(o, `delete from replication_target where id < 99`)
+	if err != nil {
 		log.Error(err)
 	}
 	o.Commit()
@@ -876,19 +889,23 @@ func TestAddRepJob(t *testing.T) {
 	id, err := AddRepJob(job)
 	if err != nil {
 		t.Errorf("Error occurred in AddRepJob: %v", err)
+		return
 	} else {
 		jobID = id
 	}
 	j, err := GetRepJob(id)
 	if err != nil {
 		t.Errorf("Error occurred in GetRepJob: %v, id: %d", err, id)
+		return
 	}
 	if j == nil {
 		t.Errorf("Unable to find a job with id: %d", id)
+		return
 	}
 	if j.Status != models.JobPending || j.Repository != "library/ubuntu" || j.PolicyID != policyID || j.Operation != "transfer" {
 		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, PolicyID: %d, Operation: transfer, "+
 			"but in returned data:, Status: %s, Repository: %s, Operation: %s, PolicyID: %d", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID)
+		return
 	}
 }
 
@@ -907,6 +924,11 @@ func TestUpdateRepJobStatus(t *testing.T) {
 	}
 	if j.Status != models.JobFinished {
 		t.Errorf("Job's status: %s, expected: %s, id: %d", j.Status, models.JobFinished, jobID)
+	}
+	err = UpdateRepJobStatus(jobID, models.JobPending)
+	if err != nil {
+		t.Errorf("Error occured in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
+		return
 	}
 }
 
@@ -957,6 +979,47 @@ func TestGetRepJobByPolicy(t *testing.T) {
 	}
 	if jobs[0].ID != jobID {
 		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
+	}
+}
+
+func TestGetRepoJobToStop(t *testing.T) {
+	jobs := [...]models.RepJob{
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobRunning,
+		},
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobFinished,
+		},
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobCanceled,
+		},
+	}
+	var err error
+	for _, j := range jobs {
+		_, err = AddRepJob(j)
+		if err != nil {
+			log.Errorf("Failed to add Job: %+v, error: %v", j, err)
+			return
+		}
+	}
+	res, err := GetRepJobToStop(policyID)
+	if err != nil {
+		log.Errorf("Failed to Get Jobs, error: %v", err)
+		return
+	}
+	//time.Sleep(15 * time.Second)
+	if len(res) != 2 {
+		log.Errorf("Expected length of stoppable jobs, expected:2, in fact: %d", len(res))
 		return
 	}
 }
