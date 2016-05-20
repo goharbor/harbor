@@ -100,6 +100,10 @@ func (p *ProjectAPI) Post() {
 // Head ...
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")
+	if len(projectName) == 0 {
+		p.CustomAbort(http.StatusBadRequest, "project_name is needed")
+	}
+
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
 		log.Errorf("error occurred in GetProjectByName: %v", err)
