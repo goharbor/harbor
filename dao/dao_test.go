@@ -736,7 +736,7 @@ func TestChangeUserProfile(t *testing.T) {
 		t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Email)
 	}
 }
-func GetRecentLogs(t *testing.T) {
+func TestGetRecentLogs(t *testing.T) {
 	logs, err := GetRecentLogs(10, "2016-05-13 00:00:00", time.Now().String())
 	if err != nil {
 		t.Errorf("error occured in getting recent logs", err)

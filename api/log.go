@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+//LogAPi handles request api/logs
 type LogAPI struct {
 	BaseAPI
 	userID int
