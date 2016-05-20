@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -183,6 +184,8 @@ func (ra *RepositoryAPI) GetTags() {
 	}
 
 	tags = append(tags, ts...)
+
+	sort.Strings(tags)
 
 	ra.Data["json"] = tags
 	ra.ServeJSON()
