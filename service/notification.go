@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
 
 	"github.com/astaxie/beego"
 )
@@ -54,7 +55,8 @@ func (n *NotificationHandler) Post() {
 			log.Errorf("Failed to match the media type against pattern, error: %v", err)
 			matched = false
 		}
-		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
+		if matched && (strings.HasPrefix(e.Request.UserAgent, "docker") ||
+			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == strings.ToLower(registry.UserAgent)) {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository

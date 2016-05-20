@@ -28,6 +28,10 @@ import (
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
+const (
+	UserAgent string = "registry-client"
+)
+
 // Registry holds information of a registry entity
 type Registry struct {
 	Endpoint *url.URL
@@ -149,8 +153,9 @@ func newClient(endpoint, username string, credential auth.Credential,
 
 	challenges := auth.ParseChallengeFromResponse(resp)
 	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
+	headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
 
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer, headerModifier})
 	return &http.Client{
 		Transport: transport,
 	}, nil
