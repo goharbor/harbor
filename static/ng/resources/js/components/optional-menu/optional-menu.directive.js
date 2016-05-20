@@ -18,10 +18,11 @@
     vm.isLoggedIn = false;    
     $timeout(function() {
       vm.user = currentUser.get();
+      console.log('current user:' + angular.toJson(vm.user));
       if(angular.isDefined(vm.user)) {
         vm.isLoggedIn = true;
       }
-    });
+    }, 300);
 
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;

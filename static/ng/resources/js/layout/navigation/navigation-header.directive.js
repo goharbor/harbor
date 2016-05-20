@@ -22,7 +22,7 @@
             vm.isAdmin = true;
           }
       }
-    });
+    }, 300);
     vm.url = $window.location.pathname;    
   }
   
