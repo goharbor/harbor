@@ -100,7 +100,7 @@ func InitDB() {
 
 var globalOrm orm.Ormer
 
-//orm singleton
+// GetOrmer :set ormer singleton
 func GetOrmer() orm.Ormer {
 	if globalOrm == nil {
 		globalOrm = orm.NewOrm()
