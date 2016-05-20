@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
 
 import (
@@ -22,7 +23,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
-//LogAPi handles request api/logs
+//LogAPI handles request api/logs
 type LogAPI struct {
 	BaseAPI
 	userID int

@@ -717,7 +717,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestChangeUserProfile(t *testing.T) {
-	user := models.User{UserID: currentUser.UserID, Email: currentUser.Username + "@vmware.com", Realname: "test", Comment: "Unit Test"}
+	user := models.User{UserID: currentUser.UserID, Email: currentUser.Username + "@163.com", Realname: "test", Comment: "Unit Test"}
 	err := ChangeUserProfile(user)
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
@@ -726,8 +726,8 @@ func TestChangeUserProfile(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetUser: %v", err)
 	}
-	if loginedUser.Email != username+"@vmware.com" {
-		t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@vmware.com", loginedUser.Email)
+	if loginedUser.Email != username+"@163.com" {
+		t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
 	}
 	if loginedUser.Realname != "test" {
 		t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Email)
