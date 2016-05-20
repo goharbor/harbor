@@ -97,3 +97,13 @@ func InitDB() {
 		panic(err)
 	}
 }
+
+var globalOrm orm.Ormer
+
+//orm singleton
+func GetOrmer() orm.Ormer {
+	if globalOrm == nil {
+		globalOrm = orm.NewOrm()
+	}
+	return globalOrm
+}
