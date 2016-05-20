@@ -730,16 +730,16 @@ func TestChangeUserProfile(t *testing.T) {
 		t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
 	}
 	if loginedUser.Realname != "test" {
-		t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Email)
+		t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
 	}
 	if loginedUser.Comment != "Unit Test" {
-		t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Email)
+		t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 	}
 }
 func TestGetRecentLogs(t *testing.T) {
 	logs, err := GetRecentLogs(10, "2016-05-13 00:00:00", time.Now().String())
 	if err != nil {
-		t.Errorf("error occured in getting recent logs", err)
+		t.Errorf("error occured in getting recent logs, error: %v", err)
 	}
 	if len(logs) <= 0 {
 		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))

@@ -41,18 +41,19 @@ func (l *LogAPI) Get() {
 	endTime := l.GetString("end_time")
 
 	if err != nil {
-		log.Errorf("Get parameters error--lines", err)
+		log.Errorf("Get parameters error--lines, err: %v", err)
 		l.CustomAbort(http.StatusBadRequest, "bad request of lines")
+		log.e
 	}
 	if lines <= 0 {
 		lines = 10
 	}
 	if len(startTime) <= 0 {
-		log.Errorf("Get parameters error--startTime", startTime)
+		log.Errorf("Get parameters error--startTime: %s", startTime)
 		l.CustomAbort(http.StatusBadRequest, "bad request of startTime")
 	}
 	if len(endTime) <= 0 {
-		log.Errorf("Get parameters error--endTime", endTime)
+		log.Errorf("Get parameters error--endTime: %s", endTime)
 		l.CustomAbort(http.StatusBadRequest, "bad request of endTime")
 	}
 	var logList []models.AccessLog

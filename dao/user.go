@@ -235,12 +235,12 @@ func DeleteUser(userID int) error {
 func ChangeUserProfile(user models.User) error {
 	err := commonValidate(user)
 	if err != nil {
-		log.Errorf("user check failed!", err)
+		log.Errorf("user check failed! error: %v", err)
 		return err
 	}
 	o := orm.NewOrm()
 	if _, err = o.Update(&user, "Email", "Realname", "Comment"); err != nil {
-		log.Errorf("update user failed", err)
+		log.Errorf("update user failed, error: %v", err)
 		return err
 	}
 	return nil

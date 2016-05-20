@@ -235,7 +235,6 @@ func (ua *UserAPI) ChangeProfile() {
 	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
 		ua.CustomAbort(http.StatusForbidden, "")
 	}
-	log.Debugf("request body", string(ua.Ctx.Input.RequestBody))
 	if !ua.IsAdmin {
 		if ua.userID != ua.currentUserID {
 			log.Error("Guests can only change their own account.")
@@ -245,7 +244,7 @@ func (ua *UserAPI) ChangeProfile() {
 	user := models.User{UserID: ua.userID}
 	ua.DecodeJSONReq(&user)
 	if err := dao.ChangeUserProfile(user); err != nil {
-		log.Errorf("Failed to update user profile", err)
+		log.Errorf("Failed to update user profile, error: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 }
