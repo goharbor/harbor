@@ -17,6 +17,7 @@ package dao
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -726,6 +727,10 @@ func TestChangeUserProfile(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetUser: %v", err)
 	}
+	log.Debugf("loginedUser: %v", loginedUser)
+	log.Debugf("loginedUser: %v", loginedUser.Email)
+	log.Debugf("loginedUser: %v", loginedUser.Realname)
+	log.Debugf("loginedUser: %v", loginedUser.Comment)
 	if loginedUser.Email != username+"@163.com" {
 		t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
 	}
@@ -736,6 +741,7 @@ func TestChangeUserProfile(t *testing.T) {
 		t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 	}
 }
+
 func TestGetRecentLogs(t *testing.T) {
 	logs, err := GetRecentLogs(10, "2016-05-13 00:00:00", time.Now().String())
 	if err != nil {

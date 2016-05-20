@@ -43,7 +43,6 @@ func (l *LogAPI) Get() {
 	if err != nil {
 		log.Errorf("Get parameters error--lines, err: %v", err)
 		l.CustomAbort(http.StatusBadRequest, "bad request of lines")
-		log.e
 	}
 	if lines <= 0 {
 		lines = 10
