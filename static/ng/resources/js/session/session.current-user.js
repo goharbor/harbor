@@ -6,20 +6,20 @@
     .module('harbor.session')
     .controller('CurrentUserController', CurrentUserController);
  
-  CurrentUserController.$inject = ['CurrentUserService', 'currentUser', '$scope', '$timeout', '$window'];
+  CurrentUserController.$inject = ['CurrentUserService', 'currentUser', '$window'];
   
-  function CurrentUserController(CurrentUserService, currentUser, $scope, $timeout, $window) {
+  function CurrentUserController(CurrentUserService, currentUser, $window) {
     
     var vm = this;
     
-    if(!angular.isDefined(currentUser.get())) {
-      CurrentUserService()
-        .then(getCurrentUserComplete)
-        .catch(getCurrentUserFailed);
-    }
-      
+    CurrentUserService()
+      .then(getCurrentUserComplete)
+      .catch(getCurrentUserFailed);
+        
     function getCurrentUserComplete(response) {
-      currentUser.set(response.data);     
+      if(angular.isDefined(response)) {
+        currentUser.set(response.data);  
+      }   
     }
     
     function getCurrentUserFailed(e){

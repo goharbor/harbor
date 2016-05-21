@@ -3,7 +3,7 @@
     <div class="col-sm-offset-1 col-sm-10">
       <input id="username"  type="text" class="form-control" placeholder="// 'username_email' | tr //" name="uPrincipal" ng-change="vm.reset()" ng-model="user.principal" required>
       <div class="error-message">
-        <div ng-messages="form.uPrincipal.$error" ng-if="form.uPrincipal.$touched">
+        <div ng-messages="form.uPrincipal.$error" ng-if="form.uPrincipal.$touched || form.$submitted">
           <span ng-message="required">// 'username_is_required' | tr //</span>
         </div>
       </div>
@@ -13,7 +13,7 @@
     <div class="col-sm-offset-1 col-sm-10">
       <input type="password" class="form-control" placeholder="// 'password' | tr //" name="uPassword" ng-change="vm.reset()" ng-model="user.password" required>
       <div class="error-message">
-        <div ng-messages="form.uPassword.$error" ng-if="form.uPassword.$touched">
+        <div ng-messages="form.uPassword.$error" ng-if="form.uPassword.$touched || form.$submitted">
           <span ng-message="required">// 'password_is_required' | tr //</span>
         </div>
         <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>

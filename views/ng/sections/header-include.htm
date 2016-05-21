@@ -98,7 +98,13 @@
 <script src="/static/ng/resources/js/layout/search/search.controller.js"></script>
 
 <script src="/static/ng/resources/js/services/i18n/services.i18n.module.js"></script>
-<script src="/static/ng/resources/js/services/i18n/locale_messages.js"></script>
+
+{{ if  eq .Lang  "zh-CN" }}
+<script src="/static/ng/resources/js/services/i18n/locale_messages_zh-CN.js"></script>
+{{ else if eq .Lang "en-US"}}
+<script src="/static/ng/resources/js/services/i18n/locale_messages_en-US.js"></script>
+{{ end }}
+
 <script src="/static/ng/resources/js/services/i18n/services.i18n.js"></script>
 
 <script src="/static/ng/resources/js/services/search/services.search.module.js"></script>
