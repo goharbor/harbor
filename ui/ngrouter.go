@@ -20,4 +20,7 @@ func initNgRouters() {
 	beego.Router("/ng/log_out", &ng.CommonController{}, "get:LogOut")
 	beego.Router("/ng/reset", &ng.CommonController{}, "post:ResetPassword")
 	beego.Router("/ng/sendEmail", &ng.CommonController{}, "get:SendEmail")
+
+	beego.Router("/ng/optional_menu", &ng.OptionalMenuController{})
+	beego.Router("/ng/navigation_header", &ng.NavigationHeaderController{})
 }

@@ -14,15 +14,7 @@
     vm.currentLanguage = I18nService().getCurrentLanguage();
     vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
     console.log('current language:' + I18nService().getCurrentLanguage());
-
-    vm.isLoggedIn = false;    
-    $timeout(function() {
-      vm.user = currentUser.get();
-      console.log('current user:' + angular.toJson(vm.user));
-      if(angular.isDefined(vm.user)) {
-        vm.isLoggedIn = true;
-      }
-    }, 300);
+    vm.user = currentUser.get();
 
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
@@ -49,7 +41,7 @@
   function optionalMenu() {
     var directive = {
       'restrict': 'E',
-      'templateUrl': '/static/ng/resources/js/components/optional-menu/optional-menu.directive.html',
+      'templateUrl': '/ng/optional_menu',
       'scope': true,
       'controller': OptionalMenuController,
       'controllerAs': 'vm',
