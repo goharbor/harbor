@@ -13,31 +13,17 @@
    limitations under the License.
 */
 
-package api
+package registry
 
 import (
-	"net/http"
-
-	"github.com/vmware/harbor/dao"
+	"fmt"
 )
 
-// TargetAPI handles request to /api/targets/ping /api/targets/{}
-type TargetAPI struct {
-	BaseAPI
+type Error struct {
+	StatusCode int
+	Detail     string
 }
 
-// Prepare validates the user
-func (t *TargetAPI) Prepare() {
-	userID := t.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if !isSysAdmin {
-		t.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	}
-}
-
-func (t *TargetAPI) Ping() {
+func (e *Error) Error() string {
+	return fmt.Sprintf("%d %s", e.StatusCode, e.Detail)
 }

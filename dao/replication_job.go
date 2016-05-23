@@ -32,6 +32,14 @@ func UpdateRepTarget(target models.RepTarget) error {
 	return err
 }
 
+func GetAllRepTargets() ([]models.RepTarget, error) {
+	o := orm.NewOrm()
+	qs := o.QueryTable(&models.RepTarget{})
+	var targets []models.RepTarget
+	_, err := qs.All(targets)
+	return targets, err
+}
+
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := orm.NewOrm()
 	sqlTpl := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, %s, NOW(), NOW())`

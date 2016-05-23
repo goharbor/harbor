@@ -82,6 +82,34 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 	return registry, nil
 }
 
+func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := newClient(endpoint, "", credential, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	registry := &Registry{
+		Endpoint: u,
+		client:   client,
+	}
+
+	log.Debugf("initialized a registry client with credential: %s", endpoint)
+
+	return registry, nil
+}
+
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
@@ -122,6 +150,40 @@ func (r *Registry) Catalog() ([]string, error) {
 	}
 
 	return repos, errors.Error{
+		StatusCode: resp.StatusCode,
+		StatusText: resp.Status,
+		Message:    string(b),
+	}
+}
+
+// Ping ...
+func (r *Registry) Ping() error {
+	req, err := http.NewRequest("GET", buildPingURL(r.Endpoint.String()), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		ok, e := isUnauthorizedError(err)
+		if ok {
+			return e
+		}
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return errors.Error{
 		StatusCode: resp.StatusCode,
 		StatusText: resp.Status,
 		Message:    string(b),
