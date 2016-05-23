@@ -33,7 +33,7 @@
     retrieve(vm.queryParams);
      
     function search(e) {
-      if(e.op[0] == 'all') {
+      if(e.op[0] === 'all') {
         vm.queryParams.keywords = '';
       }else {
         vm.queryParams.keywords = e.op.join('/') ;
@@ -68,7 +68,7 @@
     }
     
     	function toUTCSeconds(date, hour, min, sec) {
-      if(date == "") {
+      if(date === "") {
         return 0;
       }
       
@@ -96,7 +96,7 @@
       controller: ListLogController,
       controllerAs: 'vm',
       bindToController: true
-    }
+    };
     
     return directive;
   }

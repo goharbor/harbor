@@ -12,7 +12,7 @@
     var vm = this;
     vm.toggle = toggle;
     
-    if(vm.isPublic == 1) {
+    if(vm.isPublic === 1) {
       vm.isPublic = true;
     }else{
       vm.isPublic = false;

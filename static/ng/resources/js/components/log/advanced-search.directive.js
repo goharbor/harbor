@@ -24,7 +24,7 @@
     vm.op = [];
     vm.op.push('all');
     function checkOperation(e) {        
-      if(e.checked == 'all') {
+      if(e.checked === 'all') {
         vm.opCreate = vm.opAll;
         vm.opPull = vm.opAll;
         vm.opPush = vm.opAll;
@@ -48,7 +48,7 @@
       if(vm.opDelete) {
          vm.op.push('delete');
       }
-      if(vm.opOthers && vm.others != "") {
+      if(vm.opOthers && vm.others !== "") {
          vm.op.push(vm.others);
       }      
     }   
