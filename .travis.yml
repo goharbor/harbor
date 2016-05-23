@@ -49,7 +49,7 @@ install:
   - go get -d github.com/go-sql-driver/mysql
   - go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
-  - docker-compose -f docker-compose.yml up -d
+#  - docker-compose -f docker-compose.yml up -d
 
 before_script:
   # create tables and load data
@@ -60,7 +60,7 @@ script:
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
 
-  - docker-compose -f docker-compose.yml up -d
+  - docker-compose -f Deply/docker-compose.yml up -d
   - docker ps
   - docker version
   - docker-compose version
