@@ -40,12 +40,12 @@ func AddRepo(repo models.RepoRecord) (int64, error) {
 		log.Errorf("error in AddRepo: %v ", err)
 	}
 
-	repoId, err := r.LastInsertId()
+	repoID, err := r.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 
-	return repoId, err
+	return repoID, err
 }
 
 // DeleteRepo ...
@@ -55,7 +55,7 @@ func DeleteRepo(repoID int) error {
 	return err
 }
 
-// Increase pull count..
+// IncreasePullCount ...
 func IncreasePullCount(repo models.RepoRecord) (err error) {
 
 	o := orm.NewOrm()
