@@ -14,7 +14,7 @@ services:
 env:
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
-  HARBOR_ADMIN_PASSED: Harbor12345 
+  HARBOR_ADMIN_PASSWD: Harbor12345 
 
 before_install:
   - sudo apt-get update
