@@ -18,7 +18,7 @@
     			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>
     			 </thead>
     			 <tbody>
-            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.UserId" current-user-id="vm.currentUser.UserId" role-name="pr.Rolename" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.UserId" current-user-id="vm.user.UserId" role-name="pr.Rolename" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
           </tbody>
     		</table>
       </div>

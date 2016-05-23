@@ -1,36 +1,40 @@
 (function() {
   
+  'use strict';
+  
   angular
-    .module('harbor.app')
+    .module('harbor.app') 
     .factory('currentUser', currentUser)
-    .factory('projectMember', projectMember);
-    
-  function currentUser() {
-    var currentUser;
+    .factory('currentProjectMember', currentProjectMember);
+  
+  currentUser.$inject = ['$cookies', '$timeout'];
+  
+  function currentUser($cookies, $timeout) {
     return {
       set: function(user) {
-        currentUser = user;
-        console.log('set currentUser:' + currentUser);
+        $cookies.putObject('user', user, {'path': '/'});
       },
       get: function() {
-        console.log('get currentUser:' + currentUser);
-        return currentUser;
+        return $cookies.getObject('user');
+      },
+      unset: function() {
+        $cookies.remove('user', {'path': '/'});
       }
     }
   }  
   
-  function projectMember() {
-    var projectMember;
+  currentProjectMember.$inject = ['$cookies'];
+  
+  function currentProjectMember($cookies) {
     return {
       set: function(member) {
-        projectMember = member;
-        console.log('set projectMember:');
-        console.log(projectMember);
+        $cookies.putObject('member', member, {'path': '/'});
       },
       get: function() {
-        console.log('get projectMember:');
-        console.log(projectMember);
-        return projectMember;
+        return $cookies.getObject('member');
+      },
+      unset: function() {
+        $cookies.remove('member', {'path': '/'});
       }
     }
   }

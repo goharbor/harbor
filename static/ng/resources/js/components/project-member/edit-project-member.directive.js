@@ -74,16 +74,11 @@
         'projectId': '=',
         'reload': '&'
       },
-      'link': link,
       'controller': EditProjectMemberController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
-    
-    function link(scope, element, attrs, ctrl) {
-    
-    }
   }
 
 })();

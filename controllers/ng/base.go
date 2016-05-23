@@ -8,7 +8,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
-	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -74,6 +73,7 @@ func (b *BaseController) Prepare() {
 	b.Data["Lang"] = curLang.Lang
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
+	b.Data["SupportLanguages"] = supportLanguages
 
 	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
 	if authMode == "" {
@@ -81,28 +81,6 @@ func (b *BaseController) Prepare() {
 	}
 	b.AuthMode = authMode
 	b.Data["AuthMode"] = b.AuthMode
-
-	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
-
-	if selfRegistration == "on" {
-		b.SelfRegistration = true
-	}
-
-	sessionUserID := b.GetSession("userId")
-	if sessionUserID != nil {
-		b.Data["Username"] = b.GetSession("username")
-		b.Data["UserId"] = sessionUserID.(int)
-
-		var err error
-		b.IsAdmin, err = dao.IsAdminRole(sessionUserID.(int))
-		if err != nil {
-			log.Errorf("Error occurred in IsAdminRole:%v", err)
-			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
-	}
-
-	b.Data["IsAdmin"] = b.IsAdmin
-	b.Data["SelfRegistration"] = b.SelfRegistration
 
 }
 
@@ -119,6 +97,27 @@ func (bc *BaseController) Forward(title, templateName string) {
 }
 
 var langTypes []*langType
+
+type CommonController struct {
+	BaseController
+}
+
+func (cc *CommonController) Render() error {
+	return nil
+}
+
+func (cc *CommonController) LogOut() {
+	cc.DestroySession()
+}
+
+func (cc *CommonController) SwitchLanguage() {
+	lang := cc.GetString("lang")
+	if _, exist := supportLanguages[lang]; exist {
+		cc.SetSession("lang", lang)
+		cc.Data["Lang"] = lang
+	}
+	cc.Redirect(cc.Ctx.Request.Header.Get("Referer"), http.StatusFound)
+}
 
 func init() {
 

@@ -21,6 +21,7 @@
       'harbor.layout.system.management',
       'harbor.layout.log',
       'harbor.layout.admin.option',
+      'harbor.layout.search',
       'harbor.services.i18n',
       'harbor.services.project',
       'harbor.services.user',

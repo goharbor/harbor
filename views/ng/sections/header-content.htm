@@ -10,17 +10,13 @@
     </div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1">
-		  <optional-menu></optional-menu>     
+		  <optional-menu login-status="//vm.loginStatus//"></optional-menu>     
 	    <ul class="nav navbar-nav navbar-right">
 		    <li>
 		      <navigation-header></navigation-header>
 		    </li>
 	      <li>
-	        <form class="navbar-form pull-right" role="search">
-	          <div class="form-group">
-	            <input type="text" class="form-control search-icon" placeholder="// 'projects_or_repositories' | tr //" size="35">
-	          </div>           
-	        </form>
+	        <search-input search-input='vm.searchInput'></search-input>
 		    </li>
 	    </ul>
     </div><!-- /.navbar-collapse -->

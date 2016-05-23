@@ -10,12 +10,12 @@
             <span ng-show="vm.publicity">// 'public_projects' | tr //</span>
             <a ng-show="!vm.publicity" href="#/repositories?project_id=//vm.selectedProject.ProjectId//" class="title-color" ng-click="vm.togglePublicity({publicity: true})">// 'public_projects' | tr //</a></h4>
     		    <div class="switch-pane">
-              <switch-pane-projects is-open="vm.open" selected-project="vm.selectedProject"></switch-pane-projects>
+              <switch-pane-projects is-open="vm.isOpen" selected-project="vm.selectedProject"></switch-pane-projects>
               <span> 
-                <navigation-details is-open="vm.open" selected-project="vm.selectedProject" ng-show="vm.isProjectMember"></navigation-details>
+                <navigation-details selected-project="vm.selectedProject" ng-show="vm.isProjectMember"></navigation-details>
               </span>
     		    </div>
-            <retrieve-projects is-open="vm.open" selected-project="vm.selectedProject" is-project-member="vm.isProjectMember" publicity="vm.publicity"></retrieve-projects>
+            <retrieve-projects is-open="vm.isOpen" selected-project="vm.selectedProject" is-project-member="vm.isProjectMember" publicity="vm.publicity"></retrieve-projects>
             <!-- Tab panes -->
     		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
             <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">

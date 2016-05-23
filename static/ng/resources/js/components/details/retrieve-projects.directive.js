@@ -12,6 +12,7 @@
     var vm = this;
     
     vm.projectName = '';
+    vm.isOpen = false;
     
     if($route.current.params.is_public) {
       vm.isPublic = $route.current.params.is_public === 'true' ? 1 : 0;
@@ -19,8 +20,6 @@
     }
 
     vm.retrieve = retrieve;
-    vm.retrieve();
-    
     vm.checkProjectMember = checkProjectMember;
     
     $scope.$watch('vm.selectedProject', function(current, origin) {
@@ -33,7 +32,7 @@
     vm.selectItem = selectItem;  
     
     $scope.$watch('vm.publicity', function(current, origin) { 
-      vm.publicity = current ? 1 : 0;
+      vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
       vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
       vm.retrieve();      
@@ -64,9 +63,8 @@
           }
         }); 
       }
-      
-      $location.search('project_id', vm.selectedProject.ProjectId);
       vm.checkProjectMember(vm.selectedProject.ProjectId);
+      $location.search('project_id', vm.selectedProject.ProjectId);
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  
@@ -114,6 +112,7 @@
         'publicity': '=',
         'isProjectMember': '='
       },
+      link: link,
       replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
@@ -122,6 +121,22 @@
     
     return directive;
     
+    function link(scope, element, attrs, ctrl) {
+      $(document).on('click', clickHandler);
+      
+      function clickHandler(e) {
+        var targetId = $(e.target).attr('id');
+        if(targetId === 'switchPane' || 
+           targetId === 'retrievePane' ||
+           targetId === 'retrieveFilter') {
+          return;            
+        }else{
+          ctrl.isOpen = false;
+          scope.$apply();
+        }
+      }
+    }
+
   }
   
 })();

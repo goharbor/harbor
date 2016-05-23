@@ -9,9 +9,22 @@
       .config(function($httpProvider) {
         $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
       })
+      .factory('getParameterByName', getParameterByName)
       .filter('dateL', localizeDate)
       .filter('tr', tr);
-    
+  
+  function getParameterByName() {
+    return get;
+    function get(name, url) {
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+  }
+  
   function localizeDate() {
     return filter;
     
