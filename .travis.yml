@@ -9,7 +9,7 @@ go_import_path: github.com/vmware/harbor
 
 services: 
   - mysql
-#  - docker 
+  - docker 
 
 env:
   DB_HOST: 127.0.0.1
