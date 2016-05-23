@@ -37,6 +37,22 @@ type RepoItem struct {
 	//Size           int       `json:"Size"`
 }
 
+// RepoRecord holds the record of an Repo in DB, all the infors are from the registry notification event.
+type RepoRecord struct {
+	ID          int64  `orm:"column(repo_id)" json:"RepoId"`
+	Name        string `orm:"column(name)" json:"Name"`
+	OwnerName   string
+	OwnerID     int64 `orm:"column(owner_id)"  json:"OwnerId"`
+	ProjectName string
+	ProjectID   int64     `orm:"column(project_id)"  json:"ProjectId"`
+	Created     time.Time `orm:"column(creation_time)"`
+	Url         string    `orm:"column(url)" json:"Url"`
+	Deleted     int       `orm:"column(deleted)"`
+	UpdateTime  time.Time `orm:"update_time" json:"update_time"`
+	PullCount   int       `orm:"column(pull_count)"`
+	StarCount   int       `orm:"column(star_count)"`
+}
+
 // Tag holds information about a tag.
 type Tag struct {
 	Version string `json:"version"`

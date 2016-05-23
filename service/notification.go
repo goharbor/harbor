@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -46,7 +47,8 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project, repoTag string
+	var username, action, repo, project, repoTag, url string
+	var timestamp time.Time
 	var matched bool
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
@@ -55,6 +57,8 @@ func (n *NotificationHandler) Post() {
 			matched = false
 		}
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
+			timestamp = e.TimeStamp
+			url = e.Target.URL
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
@@ -73,6 +77,32 @@ func (n *NotificationHandler) Post() {
 					err2 := svc_utils.RefreshCatalogCache()
 					if err2 != nil {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
+					}
+				}()
+				go func() {
+					exist, err4ReopExists := dao.RepoExists(repo)
+					if err4ReopExists != nil {
+						log.Errorf("Error happened checking repo existence in db, error: %v, repo name: %s", err4ReopExists, repo)
+					}
+					if exist {
+						return
+					}
+					log.Debugf("Add repo %s into DB.", repo)
+					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project, Created: timestamp, Url: url}
+					_, err4AddRepo := dao.AddRepo(repoItem)
+					if err4AddRepo != nil {
+						log.Errorf("Error happens when adding repo: %v", err4AddRepo)
+					}
+				}()
+
+			}
+			if action == "pull" {
+				go func() {
+					log.Debugf("Increase the repo %s pull count.", repo)
+					repoItem := models.RepoRecord{Name: repo}
+					err4IncreasePullCount := dao.IncreasePullCount(repoItem)
+					if err4IncreasePullCount != nil {
+						log.Errorf("Error happens when increaing pull count: %v", err4IncreasePullCount)
 					}
 				}()
 			}

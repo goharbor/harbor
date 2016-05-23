@@ -89,6 +89,23 @@ create table project_member (
 insert into project_member (project_id, user_id, role, creation_time, update_time) values
 (1, 1, 1, NOW(), NOW());
 
+create table repo (
+ repo_id int NOT NULL AUTO_INCREMENT,	
+ project_id int NOT NULL,
+ owner_id int NOT NULL,
+ name varchar(30) NOT NULL,
+ creation_time timestamp,
+ update_time timestamp,
+ url varchar (128), 
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ pull_count int (1) DEFAULT 0 NOT NULL,
+ star_count int (1) DEFAULT 0 NOT NULL,
+ primary key (repo_id),
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id),
+ UNIQUE (name)
+);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,
