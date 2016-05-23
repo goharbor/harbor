@@ -13,6 +13,8 @@ services:
 #env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 env:
   DOCKER_COMPOSE_VERSION: 1.7.1
+  HARBOR_ADMIN: admin
+  HARBOR_ADMIN_PASSED: Harbor12345 
 
 before_install:
   - sudo apt-get update
@@ -33,7 +35,7 @@ script:
   - docker version
   - docker-compose version
   - go run ../tests/startuptest.go http://localhost/
-  - go run ../tests/userlogintest.go admin Harbor12345
+  - go run ../tests/userlogintest.go ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 #  - sudo cat /var/log/harbor/2016-05-19/docker_ui.log          #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_mysql.log       #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_registry.log    #should change date
