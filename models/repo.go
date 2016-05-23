@@ -46,7 +46,7 @@ type RepoRecord struct {
 	ProjectName string
 	ProjectID   int64     `orm:"column(project_id)"  json:"ProjectId"`
 	Created     time.Time `orm:"column(creation_time)"`
-	Url         string    `orm:"column(url)" json:"Url"`
+	URL         string    `orm:"column(url)" json:"URL"`
 	Deleted     int       `orm:"column(deleted)"`
 	UpdateTime  time.Time `orm:"update_time" json:"update_time"`
 	PullCount   int       `orm:"column(pull_count)"`

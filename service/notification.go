@@ -88,7 +88,7 @@ func (n *NotificationHandler) Post() {
 						return
 					}
 					log.Debugf("Add repo %s into DB.", repo)
-					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project, Created: timestamp, Url: url}
+					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project, Created: timestamp, URL: url}
 					_, err4AddRepo := dao.AddRepo(repoItem)
 					if err4AddRepo != nil {
 						log.Errorf("Error happens when adding repo: %v", err4AddRepo)
