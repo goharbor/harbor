@@ -32,6 +32,7 @@ install:
   - ./tests/hostcfg.sh
   - cd Deploy
   - ./prepare
+  - cd ..
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
@@ -42,7 +43,7 @@ install:
 
 before_script:
   # create tables and load data
-  - mysql < ./db/registry.sql -uroot --verbose
+  - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
 script: 
   - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
