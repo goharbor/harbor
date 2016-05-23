@@ -702,6 +702,29 @@ func TestToggleAdminRole(t *testing.T) {
 	}
 }
 
+func TestChangeUserProfile(t *testing.T) {
+	user := models.User{UserID: currentUser.UserID, Email: username + "@163.com", Realname: "test", Comment: "Unit Test"}
+	err := ChangeUserProfile(user)
+	if err != nil {
+		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
+	}
+	loginedUser, err := GetUser(models.User{UserID: currentUser.UserID})
+	if err != nil {
+		t.Errorf("Error occurred in GetUser: %v", err)
+	}
+	if loginedUser != nil {
+		if loginedUser.Email != username+"@163.com" {
+			t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
+		}
+		if loginedUser.Realname != "test" {
+			t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
+		}
+		if loginedUser.Comment != "Unit Test" {
+			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
+		}
+	}
+}
+
 func TestDeleteUser(t *testing.T) {
 	err := DeleteUser(currentUser.UserID)
 	if err != nil {
@@ -713,31 +736,6 @@ func TestDeleteUser(t *testing.T) {
 	}
 	if user != nil {
 		t.Errorf("user is not nil after deletion, user: %+v", user)
-	}
-}
-
-func TestChangeUserProfile(t *testing.T) {
-	user := models.User{UserID: currentUser.UserID, Email: currentUser.Username + "@163.com", Realname: "test", Comment: "Unit Test"}
-	err := ChangeUserProfile(user)
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
-	}
-	loginedUser, err := GetUser(models.User{UserID: currentUser.UserID})
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-	log.Debugf("loginedUser: %v", loginedUser)
-	log.Debugf("loginedUser: %v", loginedUser.Email)
-	log.Debugf("loginedUser: %v", loginedUser.Realname)
-	log.Debugf("loginedUser: %v", loginedUser.Comment)
-	if loginedUser.Email != username+"@163.com" {
-		t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
-	}
-	if loginedUser.Realname != "test" {
-		t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
-	}
-	if loginedUser.Comment != "Unit Test" {
-		t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 	}
 }
 
