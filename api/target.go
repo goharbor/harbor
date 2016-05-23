@@ -16,12 +16,12 @@
 package api
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 
-	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
@@ -31,7 +31,7 @@ import (
 
 // TargetAPI handles request to /api/targets/ping /api/targets/{}
 type TargetAPI struct {
-	api.BaseAPI
+	BaseAPI
 }
 
 // Prepare validates the user
@@ -74,7 +74,14 @@ func (t *TargetAPI) Ping() {
 		}
 
 		username = t.GetString("username")
-		password = t.GetString("password")
+		pwd := t.GetString("password")
+		b, err := base64.StdEncoding.DecodeString(pwd)
+		if err != nil {
+			log.Errorf("failed to decode password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		password = string(b)
 	}
 
 	credential := auth.NewBasicAuthCredential(username, password)
@@ -129,6 +136,18 @@ func (t *TargetAPI) Get() {
 			log.Errorf("failed to get all targets: %v", err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
+
+		for _, target := range targets {
+			if len(target.Password) != 0 {
+				b, err := base64.StdEncoding.DecodeString(target.Password)
+				if err != nil {
+					log.Errorf("failed to decode password: %v", err)
+					t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+				}
+				target.Password = string(b)
+			}
+		}
+
 		t.Data["json"] = targets
 		t.ServeJSON()
 		return
@@ -144,6 +163,15 @@ func (t *TargetAPI) Get() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
+	if len(target.Password) != 0 {
+		b, err := base64.StdEncoding.DecodeString(target.Password)
+		if err != nil {
+			log.Errorf("failed to decode password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		target.Password = string(b)
+	}
+
 	t.Data["json"] = target
 	t.ServeJSON()
 }
@@ -155,6 +183,10 @@ func (t *TargetAPI) Post() {
 
 	if len(target.Name) == 0 || len(target.URL) == 0 {
 		t.CustomAbort(http.StatusBadRequest, "name or URL is nil")
+	}
+
+	if len(target.Password) != 0 {
+		target.Password = base64.StdEncoding.EncodeToString([]byte(target.Password))
 	}
 
 	id, err := dao.AddRepTarget(*target)
@@ -180,6 +212,10 @@ func (t *TargetAPI) Put() {
 		t.CustomAbort(http.StatusBadRequest, "IDs mismatch")
 	}
 
+	if len(target.Password) != 0 {
+		target.Password = base64.StdEncoding.EncodeToString([]byte(target.Password))
+	}
+
 	if err := dao.UpdateRepTarget(*target); err != nil {
 		log.Errorf("failed to update target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -187,15 +223,14 @@ func (t *TargetAPI) Put() {
 }
 
 func (t *TargetAPI) getIDFromURL() int64 {
-	idStr := t.Ctx.Input.Param("id")
+	idStr := t.Ctx.Input.Param(":id")
 	if len(idStr) == 0 {
 		return 0
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		log.Errorf("failed to get ID from URL: %v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.CustomAbort(http.StatusBadRequest, "invalid ID in request URL")
 	}
 
 	return id

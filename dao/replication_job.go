@@ -32,11 +32,11 @@ func UpdateRepTarget(target models.RepTarget) error {
 	return err
 }
 
-func GetAllRepTargets() ([]models.RepTarget, error) {
+func GetAllRepTargets() ([]*models.RepTarget, error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(&models.RepTarget{})
-	var targets []models.RepTarget
-	_, err := qs.All(targets)
+	var targets []*models.RepTarget
+	_, err := qs.All(&targets)
 	return targets, err
 }
 
