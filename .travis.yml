@@ -52,12 +52,12 @@ install:
 before_script:
   # create tables and load data
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
+
+script: 
   - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
 
-
-script: 
   - docker-compose -f Deploy/docker-compose.yml up -d
   
   - docker ps
