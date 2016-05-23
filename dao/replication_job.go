@@ -102,11 +102,23 @@ func GetRepJob(id int64) (*models.RepJob, error) {
 	return &j, err
 }
 func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
-	o := orm.NewOrm()
 	var res []*models.RepJob
-	_, err := o.QueryTable("replication_job").Filter("policy_id", policyID).All(&res)
+	_, err := repJobPolicyIDQs(policyID).All(&res)
 	return res, err
 }
+
+// GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
+func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
+	var res []*models.RepJob
+	_, err := repJobPolicyIDQs(policyID).Filter("status__in", models.JobPending, models.JobRunning).All(&res)
+	return res, err
+}
+
+func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
+	o := orm.NewOrm()
+	return o.QueryTable("replication_job").Filter("policy_id", policyID)
+}
+
 func DeleteRepJob(id int64) error {
 	o := orm.NewOrm()
 	_, err := o.Delete(&models.RepJob{ID: id})

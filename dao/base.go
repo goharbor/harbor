@@ -64,6 +64,7 @@ func GenerateRandomString() (string, error) {
 
 //InitDB initializes the database
 func InitDB() {
+	//	orm.Debug = true
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	addr := os.Getenv("MYSQL_HOST")
 	port := os.Getenv("MYSQL_PORT")
