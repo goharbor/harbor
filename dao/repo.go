@@ -35,7 +35,7 @@ func AddRepo(repo models.RepoRecord) (int64, error) {
 		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, ?, ?, ? "
 
 	now := time.Now()
-	r, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Created, repo.Url, repo.Deleted, now, repo.PullCount, repo.StarCount).Exec()
+	r, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Created, repo.URL, repo.Deleted, now, repo.PullCount, repo.StarCount).Exec()
 	if err != nil {
 		log.Errorf("error in AddRepo: %v ", err)
 	}
