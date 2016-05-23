@@ -8,10 +8,12 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// NavigationHeaderController handles requests to /ng/navigation_header
 type NavigationHeaderController struct {
 	BaseController
 }
 
+// Get renders user's navigation header
 func (nhc *NavigationHeaderController) Get() {
 	sessionUserID := nhc.GetSession("userId")
 	var hasLoggedIn bool

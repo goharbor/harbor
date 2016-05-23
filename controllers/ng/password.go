@@ -95,10 +95,12 @@ func (cc *CommonController) SendEmail() {
 
 }
 
+// ForgotPasswordController handles requests to /ng/forgot_password
 type ForgotPasswordController struct {
 	BaseController
 }
 
+// Get renders forgot password page
 func (fpc *ForgotPasswordController) Get() {
 	fpc.Forward("Forgot Password", "forgot-password.htm")
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
 type BaseController struct {
 	beego.Controller
 	i18n.Locale
@@ -84,32 +85,37 @@ func (b *BaseController) Prepare() {
 
 }
 
-func (bc *BaseController) Forward(title, templateName string) {
-	bc.Layout = filepath.Join(prefixNg, "layout.htm")
-	bc.TplName = filepath.Join(prefixNg, templateName)
-	bc.Data["Title"] = title
-	bc.LayoutSections = make(map[string]string)
-	bc.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
-	bc.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
-	bc.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "header-content.htm")
-	bc.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footer-content.htm")
+// Forward to setup layout and template for content for a page.
+func (b *BaseController) Forward(title, templateName string) {
+	b.Layout = filepath.Join(prefixNg, "layout.htm")
+	b.TplName = filepath.Join(prefixNg, templateName)
+	b.Data["Title"] = title
+	b.LayoutSections = make(map[string]string)
+	b.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
+	b.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
+	b.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "header-content.htm")
+	b.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footer-content.htm")
 
 }
 
 var langTypes []*langType
 
+// CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
 type CommonController struct {
 	BaseController
 }
 
+// Render returns nil.
 func (cc *CommonController) Render() error {
 	return nil
 }
 
+// LogOut Habor UI
 func (cc *CommonController) LogOut() {
 	cc.DestroySession()
 }
 
+// SwitchLanguage User can swith to prefered language
 func (cc *CommonController) SwitchLanguage() {
 	lang := cc.GetString("lang")
 	if _, exist := supportLanguages[lang]; exist {
