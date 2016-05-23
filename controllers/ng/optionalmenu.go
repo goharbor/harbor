@@ -8,10 +8,12 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// OptionalMenuController handles request to /ng/optional_menu
 type OptionalMenuController struct {
 	BaseController
 }
 
+// Get renders optional menu, Admin user has "Add User" menu
 func (omc *OptionalMenuController) Get() {
 	sessionUserID := omc.GetSession("userId")
 
