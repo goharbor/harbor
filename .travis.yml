@@ -9,7 +9,7 @@ go_import_path: github.com/vmware/harbor
 
 services: 
   - mysql
-  - docker 
+#  - docker 
 
 env:
   DB_HOST: 127.0.0.1
@@ -20,13 +20,14 @@ env:
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
 
-#before_install:
-#  - sudo apt-get update
-#  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
 #  - sudo rm /usr/local/bin/docker-compose
 #  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
 #  - chmod +x docker-compose
 #  - sudo mv docker-compose /usr/local/bin
+
 
 install: 
 #  - ./tests/hostcfg.sh
