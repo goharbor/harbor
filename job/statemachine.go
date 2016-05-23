@@ -31,7 +31,7 @@ type JobSM struct {
 	Transitions  map[string]map[string]struct{}
 	Handlers     map[string]StateHandler
 	desiredState string
-	Logger       utils.Logger
+	Logger       *log.Logger
 	Parms        *RepJobParm
 	lock         *sync.Mutex
 }
@@ -200,7 +200,7 @@ func (sm *JobSM) Reset(jid int64) error {
 	sm.Parms.TargetUsername = target.Username
 	sm.Parms.TargetPassword = target.Password
 	//init states handlers
-	sm.Logger = utils.Logger{sm.JobID}
+	sm.Logger = utils.NewLogger(sm.JobID)
 	sm.CurrentState = models.JobPending
 
 	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
@@ -226,7 +226,7 @@ func (sm *JobSM) Reset(jid int64) error {
 func addImgOutTransition(sm *JobSM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, "",
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		nil, &sm.Logger)
+		nil, sm.Logger)
 	if err != nil {
 		return err
 	}
