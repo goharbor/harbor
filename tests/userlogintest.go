@@ -6,13 +6,17 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-        "os"
+        "flag"
 )
 
 func main() {
+        usrNamePtr := flag.String("name","anaymous","user name")
+        usrPasswdPtr := flag.String("passwd","anaymous","user password")
+        flag.Parse()
+
         v := url.Values{}
-	v.Set("principal", os.Args[1])
-	v.Set("password", os.Args[2])
+        v.Set("principal", *usrNamePtr)
+        v.Set("password", *usrPasswdPtr)
 
 	body := ioutil.NopCloser(strings.NewReader(v.Encode())) //endode v:[body struce]
         fmt.Println(v)

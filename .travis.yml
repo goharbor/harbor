@@ -35,7 +35,7 @@ script:
   - docker version
   - docker-compose version
   - go run ../tests/startuptest.go http://localhost/
-  - go run ../tests/userlogintest.go ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
+  - go run ../tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 #  - sudo cat /var/log/harbor/2016-05-19/docker_ui.log          #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_mysql.log       #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_registry.log    #should change date
