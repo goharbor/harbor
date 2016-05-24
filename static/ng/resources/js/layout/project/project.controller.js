@@ -20,11 +20,7 @@
     vm.searchProject = searchProject;    
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;
-    
-    $timeout(function() {
-      vm.user = currentUser.get();
-    });
-    
+    vm.user = currentUser.get();  
     vm.retrieve();
     
     function retrieve() {       

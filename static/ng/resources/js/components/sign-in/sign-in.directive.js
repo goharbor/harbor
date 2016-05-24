@@ -32,7 +32,7 @@
     }
     
     function signedInSuccess(data, status) {
-      $window.location.href = "/ng/project";
+      $window.location.href = "/ng/dashboard";
     }
     
     function signedInFailed(data, status) {
