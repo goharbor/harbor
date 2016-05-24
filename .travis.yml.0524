@@ -1,0 +1,84 @@
+sudo: true
+
+language: go
+
+go: 
+  - 1.6.2
+
+go_import_path: github.com/vmware/harbor
+
+services: 
+  - mysql
+#  - docker 
+
+dist: trusty
+addons:
+  apt:
+    packages:
+    - mysql-server-5.6
+    - mysql-client-core-5.6
+    - mysql-client-5.6
+
+env:
+  DB_HOST: 127.0.0.1
+  DB_PORT: 3306 
+  DB_USR: root 
+  DB_PWD: ""
+  DOCKER_COMPOSE_VERSION: 1.7.1
+  HARBOR_ADMIN: admin
+  HARBOR_ADMIN_PASSWD: Harbor12345 
+
+before_install:
+  - sudo apt-get update && sudo apt-get install -y libldap2-dev
+  - go get -d github.com/docker/distribution
+  - go get -d github.com/docker/libtrust
+  - go get -d github.com/go-sql-driver/mysql
+  - go get github.com/golang/lint/golint
+  - go get github.com/GeertJohan/fgt
+
+#  - sudo apt-get update
+#  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
+#  - sudo rm /usr/local/bin/docker-compose
+#  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+#  - chmod +x docker-compose
+#  - sudo mv docker-compose /usr/local/bin
+
+
+install: 
+#  - ./tests/hostcfg.sh
+#  - cd Deploy
+#  - ./prepare
+#  - cd ..
+#  - sudo apt-get update && sudo apt-get install -y libldap2-dev
+#  - go get -d github.com/docker/distribution
+#  - go get -d github.com/docker/libtrust
+#  - go get -d github.com/go-sql-driver/mysql
+#  - go get github.com/golang/lint/golint
+  - go get github.com/GeertJohan/fgt
+
+before_script:
+  # create tables and load data
+  - mysql < ./Deploy/db/registry.sql -uroot --verbose
+
+script: 
+  - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
+  - go list ./... | grep -v 'vendor' | xargs -L1 go vet
+  - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
+
+  - ./tests/hostcfg.sh
+  - cd Deploy
+  - ./prepare
+  - cd ..
+
+#  - docker-compose -f Deploy/docker-compose.yml up -d
+  
+#  - docker ps
+#  - docker version
+#  - docker-compose version
+#  - go run tests/startuptest.go http://localhost/
+#  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+#  - sudo cat /var/log/harbor/2016-05-19/docker_ui.log          #should change date
+#  - sudo cat /var/log/harbor/2016-05-19/docker_mysql.log       #should change date
+#  - sudo cat /var/log/harbor/2016-05-19/docker_registry.log    #should change date
+  
+
