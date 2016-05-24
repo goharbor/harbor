@@ -6,7 +6,7 @@ go:
 
 go_import_path: github.com/vmware/harbor
 
-service: 
+services: 
   - mysql
   - docker
 
