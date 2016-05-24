@@ -202,9 +202,14 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 			return
 		}
 
-		exist = true
-		// TODO handle canWrite when new API is ready
-		canWrite = true
+		for _, project := range projects {
+			if project.Name == c.project {
+				exist = true
+				canWrite = (project.Role == models.PROJECTADMIN ||
+					project.Role == models.DEVELOPER)
+				break
+			}
+		}
 
 		return
 	}
