@@ -59,7 +59,7 @@
     }
     
     function showAddButton() {
-      if(vm.publicity == 0) {
+      if(vm.publicity === 0) {
         return true;
       }else{
         return false;

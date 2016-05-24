@@ -21,7 +21,7 @@
       ctrl.$validators.compareTo = validator;
       
       function validator(modelValue) {
-        return modelValue == scope.otherModelValue;
+        return modelValue === scope.otherModelValue;
       }
       
       scope.$watch("otherModelValue", function(current, origin) {

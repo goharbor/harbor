@@ -98,7 +98,7 @@
       controller: ListRepositoryController,
       controllerAs: 'vm',
       bindToController: true
-    }
+    };
     
     return directive;
   

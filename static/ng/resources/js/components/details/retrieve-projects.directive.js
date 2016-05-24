@@ -58,7 +58,7 @@
       
       if($routeParams.project_id){
         angular.forEach(vm.projects, function(value, index) {
-          if(value['ProjectId'] == $routeParams.project_id) {
+          if(value['ProjectId'] === $routeParams.project_id) {
             vm.selectedProject = value;
           }
         }); 
@@ -117,7 +117,7 @@
       controller: RetrieveProjectsController,
       bindToController: true,
       controllerAs: 'vm'
-    }
+    };
     
     return directive;
     

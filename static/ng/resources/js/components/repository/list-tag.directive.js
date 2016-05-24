@@ -40,7 +40,7 @@
       $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [e.tag]));
       
       var message;
-      if(vm.tags.length == 1) {
+      if(vm.tags.length === 1) {
         message = $filter('tr')('alert_delete_last_tag', [e.tag]);
       }else {
         message = $filter('tr')('alert_delete_tag', [e.tag]);

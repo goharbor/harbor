@@ -35,10 +35,10 @@
       input = input || [];
       var filteredResults = [];
  
-      if (filterInput != '') {
+      if (filterInput !== '') {
         for(var i = 0; i < input.length; i++) {
           var item = input[i];
-          if((key == "" && item.indexOf(filterInput) >= 0) || (key != "" && item[key].indexOf(filterInput) >= 0)) {
+          if((key === "" && item.indexOf(filterInput) >= 0) || (key !== "" && item[key].indexOf(filterInput) >= 0)) {
             filteredResults.push(item);
             continue;
           }   
