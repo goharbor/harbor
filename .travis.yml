@@ -1,3 +1,5 @@
+sudo: true
+
 language: go
 
 go: 
@@ -5,8 +7,9 @@ go:
 
 go_import_path: github.com/vmware/harbor
 
-service: 
-  - mysql
+services: 
+  - docker
+  - mysql 
 
 env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 
