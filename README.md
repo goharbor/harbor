@@ -9,18 +9,18 @@
 Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, control, and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require.  It also helps minimize bandwidth usage, which is helpful to both improve productivity (local network access) as well as performance (for those with poor internet connectivity).
 
 ### Features
-* **Role Based Access Control**: Users and docker repositories are organized via "projects", a user can have different permission for images under a namespace.
-* **Graphical user portal**: User can easily browse, search docker repositories, manage projects/namespaces.
+* **Role Based Access Control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
+* **Graphical user portal**: User can easily browse, search Docker repositories, manage projects/namespaces.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
-* **Internationalization**: Already Localized for English, Chinese and German. More languages can be added.
+* **Internationalization**: Already localized for English, Chinese, German and Russian. More languages can be added.
 * **RESTful API**: RESTful APIs for most administrative operations, easing intergration with external management platforms.
 
 ### Getting Started
 Harbor is self-contained and can be easily deployed via docker-compose (Quick-Start steps below). Refer to the [Installation and Configuration Guide](docs/installation_guide.md) for detailed information.  
 
 **System requirements:**  
-Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-connected host
+Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-connected host.
 
 1. Get the source code:
     
@@ -30,7 +30,7 @@ Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-c
 2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
 
 
-3. Install Harbor with the following commands. Note that the docker-compose process can take a while!
+3. Install Harbor with the following commands. Note that the docker-compose process can take a while.
     ```sh
     $ cd Deploy
     
@@ -56,9 +56,6 @@ For those who don't want to clone the source, or need to install Harbor on a ser
 
 For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
 
-### Deploy Harbor on Kubernetes
-Detailed instruction about deploying Harbor on Kubernetes is available [here](docs/kubernetes_deployment.md).
-
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
 
@@ -67,6 +64,7 @@ Harbor is available under the [Apache 2 license](LICENSE).
 
 ### Partners
 <a href="https://www.shurenyun.com/" border="0" target="_blank"><img alt="DataMan" src="docs/img/dataman.png"></a> &nbsp; &nbsp; <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamteclogo.png"></a>
+&nbsp; &nbsp; <a href="https://www.caicloud.io" border="0"><img alt="CaiCloud" src="docs/img/caicloudLogoWeb.png"></a>
 
 ### Users
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
