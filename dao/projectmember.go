@@ -16,13 +16,12 @@
 package dao
 
 import (
-	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 )
 
 // AddProjectMember inserts a record to table project_member
 func AddProjectMember(projectID int64, userID int, role int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := "insert into project_member (project_id, user_id , role) values (?, ?, ?)"
 
@@ -33,7 +32,7 @@ func AddProjectMember(projectID int64, userID int, role int) error {
 
 // UpdateProjectMember updates the record in table project_member
 func UpdateProjectMember(projectID int64, userID int, role int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := "update project_member set role = ? where project_id = ? and user_id = ?"
 
@@ -44,7 +43,7 @@ func UpdateProjectMember(projectID int64, userID int, role int) error {
 
 // DeleteProjectMember delete the record from table project_member
 func DeleteProjectMember(projectID int64, userID int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := "delete from project_member where project_id = ? and user_id = ?"
 
@@ -57,7 +56,7 @@ func DeleteProjectMember(projectID int64, userID int) error {
 
 // GetUserByProject gets all members of the project.
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	u := []models.User{}
 	sql := `select u.user_id, u.username, r.name rolename, r.role_id
 		from user u 

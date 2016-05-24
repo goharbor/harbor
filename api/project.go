@@ -113,23 +113,50 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	queryProject := models.Project{UserID: p.userID}
+	var projectList []models.Project
 	projectName := p.GetString("project_name")
 	if len(projectName) > 0 {
-		queryProject.Name = "%" + projectName + "%"
+		projectName = "%" + projectName + "%"
 	}
-	public, _ := p.GetInt("is_public")
-	queryProject.Public = public
-
-	projectList, err := dao.QueryProject(queryProject)
+	var public int
+	var err error
+	isPublic := p.GetString("is_public")
+	if len(isPublic) > 0 {
+		public, err = strconv.Atoi(isPublic)
+		if err != nil {
+			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
+			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
+		}
+	}
+	isAdmin := false
+	if public == 1 {
+		projectList, err = dao.GetPublicProjects(projectName)
+	} else {
+		isAdmin, err = dao.IsAdminRole(p.userID)
+		if err != nil {
+			log.Errorf("Error occured in check admin, error: %v", err)
+			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		if isAdmin {
+			projectList, err = dao.GetAllProjects(projectName)
+		} else {
+			projectList, err = dao.GetUserRelevantProjects(p.userID, projectName)
+		}
+	}
 	if err != nil {
-		log.Errorf("Error occurred in QueryProject, error: %v", err)
+		log.Errorf("Error occured in get projects info, error: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	for i := 0; i < len(projectList); i++ {
-		if isProjectAdmin(p.userID, projectList[i].ProjectID) {
-			projectList[i].Togglable = true
+		if public != 1 {
+			if isAdmin {
+				projectList[i].Role = models.PROJECTADMIN
+			}
+			if projectList[i].Role == models.PROJECTADMIN {
+				projectList[i].Togglable = true
+			}
 		}
+		projectList[i].RepoCount = getRepoCountByProject(projectList[i].Name)
 	}
 	p.Data["json"] = projectList
 	p.ServeJSON()

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -11,6 +12,7 @@ const defaultMaxWorkers int = 10
 
 var maxJobWorkers int
 var localRegURL string
+var logDir string
 
 func init() {
 	maxWorkersEnv := os.Getenv("MAX_JOB_WORKERS")
@@ -26,8 +28,27 @@ func init() {
 		localRegURL = "http://registry:5000/"
 	}
 
+	logDir = os.Getenv("LOG_DIR")
+	if len(logDir) == 0 {
+		logDir = "/var/log"
+	}
+
+	f, err := os.Open(logDir)
+	defer f.Close()
+	if err != nil {
+		panic(err)
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+	if !finfo.IsDir() {
+		panic(fmt.Sprintf("%s is not a direcotry", logDir))
+	}
+
 	log.Debugf("config: maxJobWorkers: %d", maxJobWorkers)
 	log.Debugf("config: localRegURL: %s", localRegURL)
+	log.Debugf("config: logDir: %s", logDir)
 }
 
 func MaxJobWorkers() int {
@@ -36,4 +57,8 @@ func MaxJobWorkers() int {
 
 func LocalRegURL() string {
 	return localRegURL
+}
+
+func LogDir() string {
+	return logDir
 }

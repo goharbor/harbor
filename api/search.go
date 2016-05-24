@@ -55,13 +55,13 @@ func (s *SearchAPI) Get() {
 	var projects []models.Project
 
 	if isSysAdmin {
-		projects, err = dao.GetAllProjects()
+		projects, err = dao.GetAllProjects("")
 		if err != nil {
 			log.Errorf("failed to get all projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 	} else {
-		projects, err = dao.GetUserRelevantProjects(userID)
+		projects, err = dao.SearchProjects(userID)
 		if err != nil {
 			log.Errorf("failed to get user %d 's relevant projects: %v", userID, err)
 			s.CustomAbort(http.StatusInternalServerError, "internal error")
