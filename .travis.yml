@@ -30,9 +30,9 @@ env:
 
 before_install:
    - ./tests/hostcfg.sh
-#   - cd Deploy
+   - cd Deploy
    - ./Deploy/prepare
-#  - cd ..
+   - cd ..
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
