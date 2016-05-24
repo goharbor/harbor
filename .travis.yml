@@ -58,13 +58,13 @@ script:
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
 
-  - docker-compose -f Deploy/docker-compose.yml up -d
+#  - docker-compose -f Deploy/docker-compose.yml up -d
   
-  - docker ps
-  - docker version
-  - docker-compose version
-  - go run tests/startuptest.go http://localhost/
-  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+#  - docker ps
+#  - docker version
+#  - docker-compose version
+#  - go run tests/startuptest.go http://localhost/
+#  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 #  - sudo cat /var/log/harbor/2016-05-19/docker_ui.log          #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_mysql.log       #should change date
 #  - sudo cat /var/log/harbor/2016-05-19/docker_registry.log    #should change date
