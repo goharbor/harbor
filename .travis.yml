@@ -31,7 +31,7 @@ env:
 before_install:
    - ./tests/hostcfg.sh
    - cd Deploy
-   - ./Deploy/prepare
+   - ./prepare
    - cd ..
 
 install: 
