@@ -20,7 +20,7 @@
       unset: function() {
         $cookies.remove('user', {'path': '/'});
       }
-    }
+    };
   }  
   
   currentProjectMember.$inject = ['$cookies'];
@@ -36,7 +36,7 @@
       unset: function() {
         $cookies.remove('member', {'path': '/'});
       }
-    }
+    };
   }
       
 })();

@@ -42,7 +42,7 @@
       controller: SwitchPaneProjectsController,
       controllerAs: 'vm',
       bindToController: true
-    }
+    };
     
     return directive;
       

@@ -60,7 +60,8 @@
       controller: ListProjectMemberController,
       controllerAs: 'vm',
       bindToController: true
-    }   
+    };
+       
     return directive;
   }
   

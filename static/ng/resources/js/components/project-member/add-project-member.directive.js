@@ -55,7 +55,7 @@
         vm.hasError = true;
         vm.errorMessage = 'username_already_exist';
       }
-      if(status == 404) {
+      if(status === 404) {
         vm.hasError = true;
         vm.errorMessage = 'username_does_not_exist';
       }
@@ -76,7 +76,8 @@
       'controller': AddProjectMemberController,
       'controllerAs': 'vm',
       'bindToController': true
-    }
+    };
+    
     return directive;
   }
   

@@ -60,7 +60,8 @@
       'controller': SignInController,
       'controllerAs': 'vm',
       'bindToController': true
-    }
+    };
+    
     return directive;
 
   }

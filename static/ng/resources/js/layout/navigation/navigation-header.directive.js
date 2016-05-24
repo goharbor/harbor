@@ -22,13 +22,13 @@
       controller: NavigationHeaderController,
       controllerAs: 'vm',
       bindToController: true
-    }
+    };
     
     return directive;
    
     function link(scope, element, attrs, ctrl) {     
       var visited = ctrl.url;
-      if (visited != "/ng") {
+      if (visited !== "/ng") {
          element.find('a[href*="' + visited + '"]').addClass('active'); 
       }      
       element.find('a').on('click', click);

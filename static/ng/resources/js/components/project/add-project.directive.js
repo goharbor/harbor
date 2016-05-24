@@ -44,7 +44,7 @@
         vm.hasError = true;
         vm.errorMessage = 'project_already_exist';
       }
-      if(status == 500) {
+      if(status === 500) {
         vm.hasError = true;
         vm.errorMessage = 'project_name_is_invalid';
       }

@@ -18,15 +18,16 @@
     };
     var isSupportLanguage = function(language) {
       for (var i in supportLanguages) {
-        if(language == i) {
+        if(language === i) {
           return true;
         }
       }
       return false;
-    }
+    };
         
     return tr;
     function tr() {
+      
       return {
         'setCurrentLanguage': function(language) {
           if(!angular.isDefined(language) || !isSupportLanguage(language)) {
@@ -52,7 +53,8 @@
         'getValue': function(key) {
           return messages[key];
         }
-      }
+      };
+      
     }
   }
   
