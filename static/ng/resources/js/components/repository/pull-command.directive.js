@@ -29,26 +29,10 @@
        
       ctrl.harborRegUrl = $('#HarborRegUrl').val() + '/';
     
-      ZeroClipboard.config( { swfPath: "/static/ng/vendors/zc/v2.2.0/ZeroClipboard.swf" } );
-      var clip = new ZeroClipboard(element.find('a'));
-      element.find('span').tooltip({'trigger': 'click'});
-      
-      clip.on("ready", function() {
-        console.log("Flash movie loaded and ready.");
-        this.on("aftercopy", function(event) {
-          console.log("Copied text to clipboard: " + event.data["text/plain"]);
-          element.find('span').tooltip('show');
-          setTimeout(function(){
-            element.find('span').tooltip('hide');
-          }, 1000);
-        });
-      });
-  
-      clip.on("error", function(event) {
-        console.log('error[name="' + event.name + '"]: ' + event.message);
-        ZeroClipboard.destroy();
-        element.find('span').tooltip('destroy');
-      });
+      element.find('a').on('click', clickHandler);
+      function clickHandler(e) {
+        element.find('input[type="text"]').select();
+      }
   
     }
     

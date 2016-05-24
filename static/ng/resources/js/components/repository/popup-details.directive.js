@@ -39,6 +39,7 @@
         'tag': '@',
         'index': '@'
       },
+      'replace': true,
       'link': link,
       'controller': PopupDetailsController,
       'controllerAs': 'vm',
@@ -48,9 +49,9 @@
     
     function link(scope, element, attrs, ctrl) {
       ctrl.retrieve();
-     
       scope.$watch('vm.manifest', function(current) {
         if(current) {
+          
           element
             .popover({
               'template': '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-title"></div><div class="popover-content"></div></div>',
@@ -58,15 +59,16 @@
               'content': generateContent,
               'html': true
             })
-            .on('shown.bs.popover', function(e){                       
-              $('[type="text"]:input', element.parent())
+            .on('shown.bs.popover', function(e){      
+              var self = jQuery(this);                 
+              $('[type="text"]:input', self.parent())
                 .select()
                 .end()
                 .on('click', function() {
                   $(this).select();
                 });
-              element.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
-                element.trigger('click');        
+              self.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
+                element.trigger('click');
               });
             });
         }
