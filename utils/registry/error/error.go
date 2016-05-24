@@ -13,27 +13,19 @@
    limitations under the License.
 */
 
-package errors
+package error
 
 import (
 	"fmt"
 )
 
-// Error : if response's status code is not 200 or does not meet requirement,
-// an Error instance will be returned
+// Error : if response is returned but the status code is not 200, an Error instance will be returned
 type Error struct {
 	StatusCode int
-	StatusText string
-	Message    string
+	Detail     string
 }
 
-// Error ...
-func (e Error) Error() string {
-	return fmt.Sprintf("%d %s %s", e.StatusCode, e.StatusText, e.Message)
-}
-
-// ParseError parses err, if err is type Error, convert it to Error
-func ParseError(err error) (Error, bool) {
-	e, ok := err.(Error)
-	return e, ok
+// Error returns the details as string
+func (e *Error) Error() string {
+	return fmt.Sprintf("%d %s", e.StatusCode, e.Detail)
 }

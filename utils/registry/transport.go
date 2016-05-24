@@ -26,6 +26,26 @@ type RequestModifier interface {
 	ModifyRequest(*http.Request) error
 }
 
+// HeaderModifier adds headers to request
+type HeaderModifier struct {
+	headers map[string]string
+}
+
+// NewHeaderModifier ...
+func NewHeaderModifier(headers map[string]string) *HeaderModifier {
+	return &HeaderModifier{
+		headers: headers,
+	}
+}
+
+// ModifyRequest adds headers to the request
+func (h *HeaderModifier) ModifyRequest(req *http.Request) error {
+	for key, value := range h.headers {
+		req.Header.Add(key, value)
+	}
+	return nil
+}
+
 // Transport holds information about base transport and modifiers
 type Transport struct {
 	transport http.RoundTripper
