@@ -125,6 +125,14 @@
       $(document).on('click', clickHandler);
       
       function clickHandler(e) {
+        var target = $(e.target).parent();
+        $('[data-toggle="popover"]').each(function () {
+          //the 'is' for buttons that trigger popups
+          //the 'has' for icons within a button that triggers a popup
+          if (!$(this).is(target) && $(this).has(target).length === 0 && $('.popover').has(target).length === 0) {
+            $(this).parent().popover('hide');
+          }
+        });
         var targetId = $(e.target).attr('id');
         if(targetId === 'switchPane' || 
            targetId === 'retrievePane' ||
