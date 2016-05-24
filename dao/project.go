@@ -79,42 +79,6 @@ func IsProjectPublic(projectName string) bool {
 	return project.Public == 1
 }
 
-// QueryProject querys the projects based on publicity and user, disregarding the names etc.
-func QueryProject(query models.Project) ([]models.Project, error) {
-	o := orm.NewOrm()
-
-	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public 
-	 from project p 
-		left join project_member pm on p.project_id = pm.project_id
-	 where p.deleted = 0 `
-
-	queryParam := make([]interface{}, 1)
-
-	if query.Public == 1 {
-		sql += ` and p.public = ?`
-		queryParam = append(queryParam, query.Public)
-	} else if isAdmin, _ := IsAdminRole(query.UserID); isAdmin == false {
-		sql += ` and (pm.user_id = ?) `
-		queryParam = append(queryParam, query.UserID)
-	}
-
-	if query.Name != "" {
-		sql += " and p.name like ? "
-		queryParam = append(queryParam, query.Name)
-	}
-
-	sql += " order by p.name "
-
-	var r []models.Project
-	_, err := o.Raw(sql, queryParam).QueryRows(&r)
-
-	if err != nil {
-		return nil, err
-	}
-	return r, nil
-}
-
 //ProjectExists returns whether the project exists according to its name of ID.
 func ProjectExists(nameOrID interface{}) (bool, error) {
 	o := orm.NewOrm()
@@ -208,11 +172,11 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
-// GetUserRelevantProjects returns a project list,
+// SearchProjects returns a project list,
 // which satisfies the following conditions:
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
-func GetUserRelevantProjects(userID int) ([]models.Project, error) {
+func SearchProjects(userID int) ([]models.Project, error) {
 	o := orm.NewOrm()
 	sql := `select distinct p.project_id, p.name, p.public 
 		from project p 
@@ -228,14 +192,66 @@ func GetUserRelevantProjects(userID int) ([]models.Project, error) {
 	return projects, nil
 }
 
-// GetAllProjects returns all projects which are not deleted
-func GetAllProjects() ([]models.Project, error) {
+// GetUserRelevantProjects returns the projects of the user which are not deleted and name like projectName
+func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
 	o := orm.NewOrm()
-	sql := `select project_id, name, public 
+	sql := `select distinct
+		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
+	 from project p 
+		left join project_member pm on p.project_id = pm.project_id
+	 where p.deleted = 0 and pm.user_id= ?`
+
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, userID)
+	if projectName != "" {
+		sql += " and p.name like ? "
+		queryParam = append(queryParam, projectName)
+	}
+	sql += " order by p.name "
+	var r []models.Project
+	_, err := o.Raw(sql, queryParam).QueryRows(&r)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+//GetPublicProjects returns all public projects whose name like projectName
+func GetPublicProjects(projectName string) ([]models.Project, error) {
+	publicProjects, err := getProjects(1, projectName)
+	if err != nil {
+		return nil, err
+	}
+	return publicProjects, nil
+}
+
+// GetAllProjects returns all projects which are not deleted and name like projectName
+func GetAllProjects(projectName string) ([]models.Project, error) {
+	allProjects, err := getProjects(0, projectName)
+	if err != nil {
+		return nil, err
+	}
+	return allProjects, nil
+}
+
+func getProjects(public int, projectName string) ([]models.Project, error) {
+	o := orm.NewOrm()
+	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0`
+	queryParam := make([]interface{}, 1)
+	if public == 1 {
+		sql += " and public = ? "
+		queryParam = append(queryParam, public)
+	}
+	if len(projectName) > 0 {
+		sql += " and name like ? "
+		queryParam = append(queryParam, projectName)
+	}
+	sql += " order by name "
 	var projects []models.Project
-	if _, err := o.Raw(sql).QueryRows(&projects); err != nil {
+	log.Debugf("sql xxx", sql)
+	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
 		return nil, err
 	}
 	return projects, nil

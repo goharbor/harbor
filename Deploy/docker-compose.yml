@@ -48,8 +48,6 @@ services:
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
     depends_on:
       - log
-#    ports:
-#      - 80:80
     logging:
       driver: "syslog"
       options:  

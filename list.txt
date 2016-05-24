@@ -1,4 +1,0 @@
-./.travis.yml.bak:  - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
-./.travis.yml:#  - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
-./vendor/github.com/astaxie/beego/testing/client.go:// TestHTTPRequest beego test request client
-./vendor/github.com/astaxie/beego/validation/README.md:	go test github.com/astaxie/beego/validation
