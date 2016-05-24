@@ -6,8 +6,8 @@
     .module('harbor.sign.in')
     .directive('signIn', signIn);
     
-  SignInController.$inject = ['SignInService', '$window', '$scope'];
-  function SignInController(SignInService, $window, $scope) {
+  SignInController.$inject = ['SignInService', 'LogOutService', 'currentUser', 'I18nService', '$window', '$scope'];
+  function SignInController(SignInService, LogOutService, currentUser, I18nService, $window, $scope) {
     var vm = this;
 
     vm.hasError = false;
@@ -18,6 +18,9 @@
     vm.doSignUp = doSignUp;
     vm.doForgotPassword = doForgotPassword;
        
+    vm.doContinue = doContinue;
+    vm.doLogOut = doLogOut;
+    
     function reset() {
       vm.hasError = false;
       vm.errorMessage = '';
@@ -50,12 +53,32 @@
     function doForgotPassword() {
       $window.location.href = '/ng/forgot_password';
     }
+    
+    function doContinue() {
+      $window.location.href = '/ng/dashboard';
+    }
+    
+    function doLogOut() {
+      LogOutService()
+        .success(logOutSuccess)
+        .error(logOutFailed);
+    }
+    
+    function logOutSuccess(data, status) {
+      currentUser.unset();
+      I18nService().unset();
+      $window.location.href= '/ng';
+    }
+    
+    function logOutFailed(data, status) {
+      console.log('Failed to log out:' + data);
+    }
   }
   
   function signIn() {
     var directive = {
       'restrict': 'E',
-      'templateUrl': '/static/ng/resources/js/components/sign-in/sign-in.directive.html',
+      'templateUrl': '/ng/sign_in',
       'scope': true,
       'controller': SignInController,
       'controllerAs': 'vm',

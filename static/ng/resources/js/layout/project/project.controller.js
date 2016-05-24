@@ -31,7 +31,7 @@
     }
     
     function listProjectSuccess(data, status) {
-      vm.projects = data;
+      vm.projects = data || [];
     }
     
     function listProjectFailed(e) {

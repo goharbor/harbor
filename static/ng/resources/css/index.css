@@ -6,6 +6,29 @@ body {
   position: fixed;
 }
 
+.has-logged-in {
+  position: relative; 
+  top: 50px;
+}
+
+.has-logged-in h4 {
+  float: left; 
+  width: 100%;
+  line-height: 2em; 
+  text-align: center;
+}
+
+.has-logged-in .last-logged-in-time {
+  text-align: center;
+}
+
+.has-logged-in .control-button {
+  height: 2em;
+  width: 100%;
+  padding-right: 10%;
+  clear: both;
+}
+
 .container-fluid-custom {
   background-color: #EFEFEF;
   max-height: 100%;

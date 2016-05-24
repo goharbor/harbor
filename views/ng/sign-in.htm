@@ -1,3 +1,11 @@
+{{ if eq .HasLoggedIn true }}
+<div class="has-logged-in">
+  <h4>// 'welcome' | tr // <strong>{{ .Username }}</strong> // 'to_harbor' | tr //</h4>
+  <!--p class="text-muted last-logged-in-time">Last login time: //vm.lastLoggedInTime//</p-->
+  <p class="control-button"><input type="button" class="btn btn-default pull-right" value="// 'continue' | tr //" ng-click="vm.doContinue()"></p>
+  <p class="control-button"><input type="button" class="btn btn-link pull-right" value="// 'log_out' | tr //" ng-click="vm.doLogOut()"></p>
+</div>
+{{ else }}
 <form name="form" class="form-horizontal css-form" ng-submit="form.$valid" novalidate>
   <div class="form-group"> 
     <div class="col-sm-offset-1 col-sm-10">
@@ -36,3 +44,4 @@
     </div>
   </div>
 </form>
+{{ end }}
