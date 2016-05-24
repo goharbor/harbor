@@ -62,6 +62,6 @@ script:
   - docker ps
   - docker version
   - docker-compose version
-  - go run temp/startuptest.go http://localhost/
-  - go run temp/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+  - go run temp/test4startup.go http://localhost/
+  - go run temp/test4userlogin.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
