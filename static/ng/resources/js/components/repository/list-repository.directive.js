@@ -27,6 +27,12 @@
     vm.tagCount = {};
     vm.retrieve();
 
+    $scope.$watch('vm.repositories', function(current) {
+      if(current) {
+        vm.repositories = current || [];
+      }
+    });
+
     $scope.$on('repoName', function(e, val) {
       vm.repoName = val;
     });

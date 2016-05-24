@@ -122,5 +122,5 @@ var locale_messages = {
   'to_harbor': ' to Harbor!',
   'continue' : 'Continue',
   'no_projects_add_new_project': 'No projects, add new project now.',
-  'no_repositories': 'No repositories, use "push command" to upload new images.'
+  'no_repositories': 'No repositories found, please use "docker push" to upload images.'
 };

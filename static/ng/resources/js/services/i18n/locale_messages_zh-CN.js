@@ -120,5 +120,5 @@ var locale_messages = {
   'to_harbor': ' 使用Harbor!',
   'continue' : '继续',
   'no_projects_add_new_project': '当前没有项目，请新增项目。',
-  'no_repositories': '当前没有镜像仓库，使用"push命令"上传镜像。'
+  'no_repositories': '未发现镜像，请用"docker push"命令上传镜像。'
 };
