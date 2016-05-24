@@ -29,7 +29,7 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -116,14 +116,12 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
-			e, ok := errors.ParseError(err)
-			if ok {
-				log.Info(e)
-				ra.CustomAbort(e.StatusCode, e.Message)
-			} else {
-				log.Error(err)
-				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
+
+			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		tags = append(tags, tagList...)
 	} else {
@@ -132,13 +130,12 @@ func (ra *RepositoryAPI) Delete() {
 
 	for _, t := range tags {
 		if err := rc.DeleteTag(t); err != nil {
-			e, ok := errors.ParseError(err)
-			if ok {
-				ra.CustomAbort(e.StatusCode, e.Message)
-			} else {
-				log.Error(err)
-				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
+
+			log.Errorf("error occurred while deleting tags of %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s %s", repoName, t)
 	}
@@ -174,13 +171,12 @@ func (ra *RepositoryAPI) GetTags() {
 
 	ts, err := rc.ListTag()
 	if err != nil {
-		e, ok := errors.ParseError(err)
-		if ok {
-			ra.CustomAbort(e.StatusCode, e.Message)
-		} else {
-			log.Error(err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		if regErr, ok := err.(*registry_error.Error); ok {
+			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
+
+		log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
 	tags = append(tags, ts...)
@@ -209,13 +205,12 @@ func (ra *RepositoryAPI) GetManifests() {
 	mediaTypes := []string{schema1.MediaTypeManifest}
 	_, _, payload, err := rc.PullManifest(tag, mediaTypes)
 	if err != nil {
-		e, ok := errors.ParseError(err)
-		if ok {
-			ra.CustomAbort(e.StatusCode, e.Message)
-		} else {
-			log.Error(err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		if regErr, ok := err.(*registry_error.Error); ok {
+			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
+
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	mani := models.Manifest{}
 	err = json.Unmarshal(payload, &mani)

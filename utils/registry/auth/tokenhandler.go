@@ -27,7 +27,7 @@ import (
 
 	token_util "github.com/vmware/harbor/service/token"
 	"github.com/vmware/harbor/utils/log"
-	registry_errors "github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 type scope struct {
@@ -75,7 +75,9 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 		hasFrom = true
 	}
 
-	scopes = append(scopes, t.scope)
+	if t.scope != nil {
+		scopes = append(scopes, t.scope)
+	}
 
 	expired := true
 
@@ -143,11 +145,14 @@ func NewStandardTokenHandler(credential Credential, scopeType, scopeName string,
 		credential: credential,
 	}
 
-	handler.scope = &scope{
-		Type:    scopeType,
-		Name:    scopeName,
-		Actions: scopeActions,
+	if len(scopeType) != 0 || len(scopeName) != 0 {
+		handler.scope = &scope{
+			Type:    scopeType,
+			Name:    scopeName,
+			Actions: scopeActions,
+		}
 	}
+
 	handler.tg = handler.generateToken
 
 	return handler
@@ -182,10 +187,9 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		err = registry_errors.Error{
+		err = &registry_error.Error{
 			StatusCode: resp.StatusCode,
-			StatusText: resp.Status,
-			Message:    string(b),
+			Detail:     string(b),
 		}
 		return
 	}

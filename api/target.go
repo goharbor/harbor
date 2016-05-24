@@ -18,6 +18,7 @@ package api
 import (
 	"encoding/base64"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 	registry_util "github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 // TargetAPI handles request to /api/targets/ping /api/targets/{}
@@ -64,9 +66,24 @@ func (t *TargetAPI) Ping() {
 			log.Errorf("failed to get target %d: %v", id, err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
+
+		if target == nil {
+			t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		}
+
 		endpoint = target.URL
 		username = target.Username
 		password = target.Password
+
+		if len(password) != 0 {
+			b, err := base64.StdEncoding.DecodeString(password)
+			if err != nil {
+				log.Errorf("failed to decode password: %v", err)
+				t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
+
+			password = string(b)
+		}
 	} else {
 		endpoint = t.GetString("endpoint")
 		if len(endpoint) == 0 {
@@ -74,55 +91,41 @@ func (t *TargetAPI) Ping() {
 		}
 
 		username = t.GetString("username")
-		pwd := t.GetString("password")
-		b, err := base64.StdEncoding.DecodeString(pwd)
-		if err != nil {
-			log.Errorf("failed to decode password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		password = string(b)
+		password = t.GetString("password")
 	}
 
 	credential := auth.NewBasicAuthCredential(username, password)
 	registry, err := registry_util.NewRegistryWithCredential(endpoint, credential)
 	if err != nil {
-		log.Errorf("failed to create registry client: %v", err)
+		// timeout, dns resolve error, connection refused, etc.
+		if urlErr, ok := err.(*url.Error); ok {
+			if netErr, ok := urlErr.Err.(net.Error); ok {
+				t.CustomAbort(http.StatusBadRequest, netErr.Error())
+			} else {
+				t.CustomAbort(http.StatusBadRequest, urlErr.Error())
+			}
+		}
+
+		log.Errorf("failed to create registry client: %#v", err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
 	if err = registry.Ping(); err != nil {
-		log.Errorf("failed to ping registry %s: %v", registry.Endpoint.String(), err)
-
 		// timeout, dns resolve error, connection refused, etc.
 		if urlErr, ok := err.(*url.Error); ok {
-			t.CustomAbort(http.StatusBadRequest, urlErr.Error())
+			if netErr, ok := urlErr.Err.(net.Error); ok {
+				t.CustomAbort(http.StatusBadRequest, netErr.Error())
+			} else {
+				t.CustomAbort(http.StatusBadRequest, urlErr.Error())
+			}
 		}
 
-		if regErr, ok := err.(*registry_util.Error); ok {
+		if regErr, ok := err.(*registry_error.Error); ok {
 			t.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
 
+		log.Errorf("failed to ping registry %s: %v", registry.Endpoint.String(), err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-}
-
-// Head ...
-func (t *TargetAPI) Head() {
-	id := t.getIDFromURL()
-	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
-
-	target, err := dao.GetRepTarget(id)
-	if err != nil {
-		log.Errorf("failed to get target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	// not exist
-	if target == nil {
-		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 }
 
@@ -218,6 +221,28 @@ func (t *TargetAPI) Put() {
 
 	if err := dao.UpdateRepTarget(*target); err != nil {
 		log.Errorf("failed to update target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+}
+
+func (t *TargetAPI) Delete() {
+	id := t.getIDFromURL()
+	if id == 0 {
+		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
+
+	target, err := dao.GetRepTarget(id)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if target == nil {
+		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	if err = dao.DeleteRepTarget(id); err != nil {
+		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 }

@@ -30,7 +30,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 // Repository holds information of a repository entity
@@ -112,17 +112,6 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 	return repository, nil
 }
 
-// try to convert err to errors.Error if it is
-func isUnauthorizedError(err error) (bool, error) {
-	if strings.Contains(err.Error(), http.StatusText(http.StatusUnauthorized)) {
-		return true, errors.Error{
-			StatusCode: http.StatusUnauthorized,
-			StatusText: http.StatusText(http.StatusUnauthorized),
-		}
-	}
-	return false, err
-}
-
 // ListTag ...
 func (r *Repository) ListTag() ([]string, error) {
 	tags := []string{}
@@ -133,10 +122,10 @@ func (r *Repository) ListTag() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return tags, e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return tags, regErr
 		}
+
 		return tags, err
 	}
 
@@ -160,10 +149,9 @@ func (r *Repository) ListTag() ([]string, error) {
 
 		return tags, nil
 	}
-	return tags, errors.Error{
+	return tags, &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 
 }
@@ -180,9 +168,8 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			err = e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			err = regErr
 			return
 		}
 		return
@@ -205,10 +192,9 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 		return
 	}
 
-	err = errors.Error{
+	err = &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 	return
 }
@@ -226,9 +212,8 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			err = e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			err = regErr
 			return
 		}
 		return
@@ -247,10 +232,9 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 		return
 	}
 
-	err = errors.Error{
+	err = &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 
 	return
@@ -267,9 +251,8 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			err = e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			err = regErr
 			return
 		}
 		return
@@ -287,10 +270,9 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 		return
 	}
 
-	err = errors.Error{
+	err = &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 
 	return
@@ -305,9 +287,8 @@ func (r *Repository) DeleteManifest(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return regErr
 		}
 		return err
 	}
@@ -323,10 +304,9 @@ func (r *Repository) DeleteManifest(digest string) error {
 		return err
 	}
 
-	return errors.Error{
+	return &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 
@@ -338,9 +318,8 @@ func (r *Repository) DeleteTag(tag string) error {
 	}
 
 	if !exist {
-		return errors.Error{
+		return &registry_error.Error{
 			StatusCode: http.StatusNotFound,
-			StatusText: http.StatusText(http.StatusNotFound),
 		}
 	}
 
@@ -356,9 +335,8 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return false, e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return false, regErr
 		}
 		return false, err
 	}
@@ -378,10 +356,9 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 		return false, err
 	}
 
-	return false, errors.Error{
+	return false, &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 
@@ -394,9 +371,8 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			err = e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			err = regErr
 			return
 		}
 		return
@@ -418,10 +394,9 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 		return
 	}
 
-	err = errors.Error{
+	err = &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 
 	return
@@ -433,9 +408,8 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			err = e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			err = regErr
 			return
 		}
 		return
@@ -454,10 +428,9 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 		return
 	}
 
-	err = errors.Error{
+	err = &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 
 	return
@@ -471,9 +444,8 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return regErr
 		}
 		return err
 	}
@@ -489,10 +461,9 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 		return err
 	}
 
-	return errors.Error{
+	return &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 
@@ -515,9 +486,8 @@ func (r *Repository) DeleteBlob(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return regErr
 		}
 		return err
 	}
@@ -533,10 +503,9 @@ func (r *Repository) DeleteBlob(digest string) error {
 		return err
 	}
 
-	return errors.Error{
+	return &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 

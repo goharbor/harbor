@@ -25,7 +25,7 @@ import (
 
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 const (
@@ -121,10 +121,10 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return repos, e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return repos, regErr
 		}
+
 		return repos, err
 	}
 
@@ -149,10 +149,9 @@ func (r *Registry) Catalog() ([]string, error) {
 		return repos, nil
 	}
 
-	return repos, errors.Error{
+	return repos, &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 
@@ -165,10 +164,16 @@ func (r *Registry) Ping() error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return e
+		if urlErr, ok := err.(*url.Error); ok {
+			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+				return &registry_error.Error{
+					StatusCode: regErr.StatusCode,
+					Detail:     regErr.Detail,
+				}
+			}
+			return urlErr.Err
 		}
+
 		return err
 	}
 
@@ -183,10 +188,9 @@ func (r *Registry) Ping() error {
 		return err
 	}
 
-	return errors.Error{
+	return &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
 	}
 }
 
