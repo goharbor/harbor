@@ -29,8 +29,8 @@ env:
   HARBOR_ADMIN_PASSWD: Harbor12345 
 
 before_install:
-   - ./tests/hostcfg.sh
    - cd Deploy
+   - ./hostcfg.sh
    - ./prepare
    - cd ..
 
@@ -57,4 +57,11 @@ script:
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
 
+  - docker-compose -f Deploy/docker-compose.yml up -d
+  
+  - docker ps
+  - docker version
+  - docker-compose version
+  - go run temp/startuptest.go http://localhost/
+  - go run temp/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
