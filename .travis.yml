@@ -38,10 +38,10 @@ before_install:
 
 
 install: 
-  - ./tests/hostcfg.sh
-  - cd Deploy
-  - ./prepare
-  - cd ..
+#  - ./tests/hostcfg.sh
+#  - cd Deploy
+#  - ./prepare
+#  - cd ..
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
@@ -57,6 +57,11 @@ script:
   - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
   - go list ./... | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
+
+  - ./tests/hostcfg.sh
+  - cd Deploy
+  - ./prepare
+  - cd ..
 
 #  - docker-compose -f Deploy/docker-compose.yml up -d
   
