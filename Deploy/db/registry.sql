@@ -138,17 +138,6 @@ create table replication_job (
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
-
-create table job_log (
- log_id int NOT NULL AUTO_INCREMENT,
- job_id int NOT NULL,
- level varchar(64) NOT NULL,
- message text,
- creation_time timestamp,
- update_time timestamp,
- PRIMARY KEY (log_id),
- FOREIGN KEY (job_id) REFERENCES replication_job (id) 
- );
  
 create table properties (
  k varchar(64) NOT NULL,

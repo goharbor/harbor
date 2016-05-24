@@ -6,6 +6,7 @@ import (
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
+	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 	"io/ioutil"
@@ -89,6 +90,18 @@ func (rj *ReplicationJob) HandleAction() {
 		jobIDList = append(jobIDList, j.ID)
 	}
 	job.WorkerPool.StopJobs(jobIDList)
+}
+
+func (rj *ReplicationJob) GetLog() {
+	idStr := rj.Ctx.Input.Param(":id")
+	jid, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing job id: %s, error: %v", idStr, err)
+		rj.RenderError(http.StatusBadRequest, "Invalid job id")
+		return
+	}
+	logFile := utils.GetJobLogPath(jid)
+	rj.Ctx.Output.Download(logFile)
 }
 
 // calls the api from UI to get repo list

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -51,7 +50,7 @@ func (su StatusUpdater) Enter() (string, error) {
 type ImgPuller struct {
 	DummyHandler
 	img    string
-	logger utils.Logger
+	logger *log.Logger
 }
 
 func (ip ImgPuller) Enter() (string, error) {
@@ -64,7 +63,7 @@ func (ip ImgPuller) Enter() (string, error) {
 type ImgPusher struct {
 	DummyHandler
 	targetURL string
-	logger    utils.Logger
+	logger    *log.Logger
 }
 
 func (ip ImgPusher) Enter() (string, error) {

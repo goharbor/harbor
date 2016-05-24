@@ -26,8 +26,8 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
 )
@@ -64,13 +64,13 @@ type BaseHandler struct {
 
 	blobsExistence map[string]bool //key: digest of blob, value: existence
 
-	logger *utils.Logger
+	logger *log.Logger
 }
 
 // InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
 // listing tags of the repository if parameter tags is nil.
 func InitBaseHandler(repository, srcURL, srcSecretKey,
-	dstURL, dstUsr, dstPwd string, tags []string, logger *utils.Logger) (*BaseHandler, error) {
+	dstURL, dstUsr, dstPwd string, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
 	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		repository, tags, srcURL, dstURL, dstUsr)
