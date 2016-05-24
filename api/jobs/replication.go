@@ -22,7 +22,9 @@ type ReplicationJob struct {
 }
 
 type ReplicationReq struct {
-	PolicyID int64 `json:"policy_id"`
+	PolicyID  int64  `json:"policy_id"`
+	Repo      string `json:"repository"`
+	Operation string `json:"operation"`
 }
 
 func (rj *ReplicationJob) Post() {
@@ -40,29 +42,52 @@ func (rj *ReplicationJob) Post() {
 		rj.RenderError(http.StatusNotFound, fmt.Sprintf("Policy not found, id: %d", data.PolicyID))
 		return
 	}
-	repoList, err := getRepoList(p.ProjectID)
-	if err != nil {
-		log.Errorf("Failed to get repository list, project id: %d, error: %v", p.ProjectID, err)
-		rj.RenderError(http.StatusInternalServerError, err.Error())
-		return
-	}
-	log.Debugf("repo list: %v", repoList)
-	for _, repo := range repoList {
-		j := models.RepJob{
-			Repository: repo,
-			PolicyID:   data.PolicyID,
-			Operation:  models.RepOpTransfer,
+	if len(data.Repo) == 0 { // sync all repositories
+		repoList, err := getRepoList(p.ProjectID)
+		if err != nil {
+			log.Errorf("Failed to get repository list, project id: %d, error: %v", p.ProjectID, err)
+			rj.RenderError(http.StatusInternalServerError, err.Error())
+			return
 		}
-		log.Debugf("Creating job for repo: %s, policy: %d", repo, data.PolicyID)
-		id, err := dao.AddRepJob(j)
+		log.Debugf("repo list: %v", repoList)
+		for _, repo := range repoList {
+			err := rj.addJob(repo, data.PolicyID, models.RepOpTransfer)
+			if err != nil {
+				log.Errorf("Failed to insert job record, error: %v", err)
+				rj.RenderError(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+	} else { // sync a single repository
+		var op string
+		if len(data.Operation) > 0 {
+			op = data.Operation
+		} else {
+			op = models.RepOpTransfer
+		}
+		err := rj.addJob(data.Repo, data.PolicyID, op)
 		if err != nil {
 			log.Errorf("Failed to insert job record, error: %v", err)
 			rj.RenderError(http.StatusInternalServerError, err.Error())
 			return
 		}
-		log.Debugf("Send job to scheduler, job id: %d", id)
-		job.Schedule(id)
 	}
+}
+
+func (rj *ReplicationJob) addJob(repo string, policyID int64, operation string) error {
+	j := models.RepJob{
+		Repository: repo,
+		PolicyID:   policyID,
+		Operation:  operation,
+	}
+	log.Debugf("Creating job for repo: %s, policy: %d", repo, policyID)
+	id, err := dao.AddRepJob(j)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Send job to scheduler, job id: %d", id)
+	job.Schedule(id)
+	return nil
 }
 
 type RepActionReq struct {
