@@ -1051,3 +1051,10 @@ func TestDeleteRepJob(t *testing.T) {
 		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
 	}
 }
+
+func TestGetOrmer(t *testing.T) {
+	o := GetOrmer()
+	if o == nil {
+		t.Errorf("Error get ormer.")
+	}
+}
