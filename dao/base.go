@@ -22,6 +22,7 @@ import (
 
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -99,11 +100,12 @@ func InitDB() {
 }
 
 var globalOrm orm.Ormer
+var once sync.Once
 
 // GetOrmer :set ormer singleton
 func GetOrmer() orm.Ormer {
-	if globalOrm == nil {
+	once.Do(func() {
 		globalOrm = orm.NewOrm()
-	}
+	})
 	return globalOrm
 }
