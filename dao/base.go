@@ -22,6 +22,7 @@ import (
 
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -96,4 +97,15 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+var globalOrm orm.Ormer
+var once sync.Once
+
+// GetOrmer :set ormer singleton
+func GetOrmer() orm.Ormer {
+	once.Do(func() {
+		globalOrm = orm.NewOrm()
+	})
+	return globalOrm
 }

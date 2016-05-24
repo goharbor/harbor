@@ -18,14 +18,13 @@ package dao
 import (
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 )
 
 // GetUserProjectRoles returns roles that the user has according to the project.
 func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `select *
 		from role
@@ -76,7 +75,7 @@ func IsAdminRole(userIDOrUsername interface{}) (bool, error) {
 
 // GetRoleByID ...
 func GetRoleByID(id int) (*models.Role, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `select *
 		from role
