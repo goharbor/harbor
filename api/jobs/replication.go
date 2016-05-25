@@ -21,9 +21,10 @@ type ReplicationJob struct {
 }
 
 type ReplicationReq struct {
-	PolicyID  int64  `json:"policy_id"`
-	Repo      string `json:"repository"`
-	Operation string `json:"operation"`
+	PolicyID  int64    `json:"policy_id"`
+	Repo      string   `json:"repository"`
+	Operation string   `json:"operation"`
+	TagList   []string `json:"tags"`
 }
 
 func (rj *ReplicationJob) Post() {
@@ -64,7 +65,7 @@ func (rj *ReplicationJob) Post() {
 		} else {
 			op = models.RepOpTransfer
 		}
-		err := rj.addJob(data.Repo, data.PolicyID, op)
+		err := rj.addJob(data.Repo, data.PolicyID, op, data.TagList...)
 		if err != nil {
 			log.Errorf("Failed to insert job record, error: %v", err)
 			rj.RenderError(http.StatusInternalServerError, err.Error())
@@ -73,11 +74,12 @@ func (rj *ReplicationJob) Post() {
 	}
 }
 
-func (rj *ReplicationJob) addJob(repo string, policyID int64, operation string) error {
+func (rj *ReplicationJob) addJob(repo string, policyID int64, operation string, tags ...string) error {
 	j := models.RepJob{
 		Repository: repo,
 		PolicyID:   policyID,
 		Operation:  operation,
+		TagList:    tags,
 	}
 	log.Debugf("Creating job for repo: %s, policy: %d", repo, policyID)
 	id, err := dao.AddRepJob(j)
