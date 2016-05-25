@@ -23,7 +23,7 @@
   function navigationDetails() {
     var directive = {
       restrict: 'E',
-      templateUrl: '/static/ng/resources/js/layout/navigation/navigation-details.directive.html',
+      templateUrl: '/ng/navigation_detail',
       link: link,
       scope: {
         'selectedProject': '='

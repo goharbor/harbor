@@ -28,8 +28,6 @@
 
 .switch-pane-tabs {
   width: 265px;
-  min-width: 265px;
-  float: right;
   list-style-type: none;
 }
 

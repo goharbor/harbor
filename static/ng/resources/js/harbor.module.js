@@ -22,6 +22,7 @@
       'harbor.layout.log',
       'harbor.layout.admin.option',
       'harbor.layout.search',
+      'harbor.layout.replication',
       'harbor.services.i18n',
       'harbor.services.project',
       'harbor.services.user',
@@ -37,6 +38,7 @@
       'harbor.project.member',
       'harbor.user',
       'harbor.log',
-      'harbor.validator'
+      'harbor.validator',
+      'harbor.replication'
     ]);
 })();

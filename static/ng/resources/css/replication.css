@@ -1,0 +1,21 @@
+.create-policy {
+  height: 535px; 
+  overflow-y: auto;
+}
+
+.form-group-custom {
+  margin-top: 10px;
+}
+
+.h4-custom {
+  margin-top: 20px;
+}
+
+.hr-line {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.form-control-custom {
+  width: 100% !important;
+}

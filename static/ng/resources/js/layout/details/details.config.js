@@ -15,6 +15,11 @@
         controller: 'RepositoryController',
         controllerAs: 'vm'
        })
+      .when('/replication', {
+        templateUrl: '/static/ng/resources/js/layout/replication/replication.controller.html',
+        controller: 'ReplicationController',
+        controllerAs: 'vm'
+      })
       .when('/users', {
         templateUrl: '/static/ng/resources/js/layout/project-member/project-member.controller.html',
         controller: 'ProjectMemberController',
