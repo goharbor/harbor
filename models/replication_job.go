@@ -34,11 +34,13 @@ type RepPolicy struct {
 }
 
 type RepJob struct {
-	ID         int64  `orm:"column(id)" json:"id"`
-	Status     string `orm:"column(status)" json:"status"`
-	Repository string `orm:"column(repository)" json:"repository"`
-	PolicyID   int64  `orm:"column(policy_id)" json:"policy_id"`
-	Operation  string `orm:"column(operation)" json:"operation"`
+	ID         int64    `orm:"column(id)" json:"id"`
+	Status     string   `orm:"column(status)" json:"status"`
+	Repository string   `orm:"column(repository)" json:"repository"`
+	PolicyID   int64    `orm:"column(policy_id)" json:"policy_id"`
+	Operation  string   `orm:"column(operation)" json:"operation"`
+	Tags       string   `orm:"column(tags)" json:"-"`
+	TagList    []string `orm:"-" json:"tags"`
 	//	Policy       RepPolicy `orm:"-" json:"policy"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
