@@ -6,15 +6,14 @@ import (
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
+	"github.com/vmware/harbor/job/config"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
-	"os"
 	"strconv"
-	"strings"
 )
 
 type ReplicationJob struct {
@@ -131,29 +130,27 @@ func (rj *ReplicationJob) GetLog() {
 
 // calls the api from UI to get repo list
 func getRepoList(projectID int64) ([]string, error) {
-	uiURL := os.Getenv("UI_URL")
-	if len(uiURL) == 0 {
-		uiURL = "ui"
-	}
-	if !strings.HasSuffix(uiURL, "/") {
-		uiURL += "/"
-	}
-	//TODO:Use secret key instead
-	uiUser := os.Getenv("UI_USR")
-	if len(uiUser) == 0 {
-		uiUser = "admin"
-	}
-	uiPwd := os.Getenv("UI_PWD")
-	if len(uiPwd) == 0 {
-		uiPwd = "Harbor12345"
-	}
+	/*
+		uiUser := os.Getenv("UI_USR")
+		if len(uiUser) == 0 {
+			uiUser = "admin"
+		}
+		uiPwd := os.Getenv("UI_PWD")
+		if len(uiPwd) == 0 {
+			uiPwd = "Harbor12345"
+		}
+	*/
+	uiURL := config.LocalHarborURL()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", uiURL+"api/repositories?project_id="+strconv.Itoa(int(projectID)), nil)
 	if err != nil {
 		log.Errorf("Error when creating request: %v")
 		return nil, err
 	}
-	req.SetBasicAuth(uiUser, uiPwd)
+	//req.SetBasicAuth(uiUser, uiPwd)
+	req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.UISecret()})
+	//dump, err := httputil.DumpRequest(req, true)
+	//log.Debugf("req: %q", dump)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf("Error when calling UI api to get repositories, error: %v", err)
