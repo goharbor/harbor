@@ -28,7 +28,6 @@
     
     function updateProjectMember(e) {            
       if(vm.editMode) {
-        vm.editMode = false;
         console.log('update project member, roleId:' + e.roleId);         
         EditProjectMemberService(e.projectId, e.userId, e.roleId)
           .success(editProjectMemberComplete)
@@ -42,12 +41,13 @@
       DeleteProjectMemberService(e.projectId, e.userId)
         .success(editProjectMemberComplete)
         .error(editProjectMemberFailed);
-      vm.reload();
     }
     
     function editProjectMemberComplete(data, status, headers) {
       console.log('edit project member complete: ' + status);
       vm.lastRoleName = vm.roleName;
+      vm.editMode = false;
+      vm.reload();      
     }
     
     function editProjectMemberFailed(e) {
@@ -56,7 +56,6 @@
     
     function cancelUpdate() {
       vm.editMode = false;
-      console.log('lastRoleName:' + vm.lastRoleName);
       vm.roleName = vm.lastRoleName;
     }
     

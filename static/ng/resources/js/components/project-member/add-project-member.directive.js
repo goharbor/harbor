@@ -31,9 +31,6 @@
         AddProjectMemberService(vm.projectId, vm.optRole, pm.username)
           .success(addProjectMemberComplete)
           .error(addProjectMemberFailed);
-        vm.username = '';
-        vm.optRole = 1;
-        vm.reload();
       }
     }    
    
@@ -48,6 +45,7 @@
     
     function addProjectMemberComplete(data, status, header) {
       console.log('addProjectMemberComplete: status:' + status + ', data:' + data);
+      vm.reload();
     }
     
     function addProjectMemberFailed(data, status, headers) {
