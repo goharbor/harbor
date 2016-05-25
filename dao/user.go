@@ -113,7 +113,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 func ToggleUserAdminRole(u models.User) error {
 	o := orm.NewOrm()
 
-	sql := `update user set sysadmin_flag =not sysadmin_flag where user_id = ?`
+	sql := `update user set sysadmin_flag = not sysadmin_flag where user_id = ?`
 
 	r, err := o.Raw(sql, u.UserID).Exec()
 	if err != nil {
@@ -233,13 +233,8 @@ func DeleteUser(userID int) error {
 
 // ChangeUserProfile ...
 func ChangeUserProfile(user models.User) error {
-	err := commonValidate(user)
-	if err != nil {
-		log.Errorf("user check failed! error: %v", err)
-		return err
-	}
 	o := orm.NewOrm()
-	if _, err = o.Update(&user, "Email", "Realname", "Comment"); err != nil {
+	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
 		log.Errorf("update user failed, error: %v", err)
 		return err
 	}

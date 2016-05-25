@@ -162,8 +162,8 @@ func (p *ProjectAPI) Get() {
 	p.ServeJSON()
 }
 
-// Put ...
-func (p *ProjectAPI) Put() {
+// ToggleProjectPublic handles request POST /api/projects/:id/toggle_project_public
+func (p *ProjectAPI) ToggleProjectPublic() {
 	var req projectReq
 	var public int
 
@@ -251,6 +251,12 @@ func validateProjectReq(req projectReq) error {
 	}
 	if len(pn) > projectNameMaxLen {
 		return fmt.Errorf("Project name is too long")
+	}
+	if isIllegalLength(req.ProjectName, 4, 30) {
+		return fmt.Errorf("project name is illegal in length. (greater than 4 or less than 30)")
+	}
+	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
+		return fmt.Errorf("project name contains illegal characters")
 	}
 	return nil
 }

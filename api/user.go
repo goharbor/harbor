@@ -16,8 +16,10 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -133,14 +135,40 @@ func (ua *UserAPI) Get() {
 }
 
 // Put ...
-func (ua *UserAPI) Put() { //currently only for toggle admin, so no request body
+func (ua *UserAPI) Put() {
+	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
+
+	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
+		ua.CustomAbort(http.StatusForbidden, "")
+	}
 	if !ua.IsAdmin {
-		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
-		ua.RenderError(http.StatusForbidden, "User does not have admin role")
+		if ua.userID != ua.currentUserID {
+			log.Error("Guests can only change their own account.")
+			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
+		}
+	}
+	user := models.User{UserID: ua.userID}
+	ua.DecodeJSONReq(&user)
+	err := commonValidate(user)
+	if err != nil {
+		log.Errorf("Bad request in change user profile: %v", err)
+		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
 		return
 	}
-	userQuery := models.User{UserID: ua.userID}
-	dao.ToggleUserAdminRole(userQuery)
+	emailExist, err := dao.UserExists(user, "email")
+	if err != nil {
+		log.Errorf("Error occurred in change user profile: %v", err)
+		ua.RenderError(http.StatusInternalServerError, "Internal error.")
+		return
+	}
+	if emailExist {
+		log.Warning("email has already been used!")
+		ua.CustomAbort(http.StatusForbidden, "email has already been used!")
+	}
+	if err := dao.ChangeUserProfile(user); err != nil {
+		log.Errorf("Failed to update user profile, error: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
 }
 
 // Post ...
@@ -157,7 +185,22 @@ func (ua *UserAPI) Post() {
 
 	user := models.User{}
 	ua.DecodeJSONReq(&user)
-
+	err := validate(user)
+	if err != nil {
+		log.Errorf("Bad request in Register: %v", err)
+		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
+		return
+	}
+	userExist, err := dao.UserExists(user, "username")
+	if err != nil {
+		log.Errorf("Error occurred in Register: %v", err)
+		ua.RenderError(http.StatusInternalServerError, "Internal error.")
+		return
+	}
+	if userExist {
+		log.Warning("username has already been used!")
+		ua.CustomAbort(http.StatusForbidden, "username has already been used!")
+	}
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -228,23 +271,75 @@ func (ua *UserAPI) ChangePassword() {
 	}
 }
 
-// ChangeProfile handles PUT api/users/{}/profile
-func (ua *UserAPI) ChangeProfile() {
-	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
-
-	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
-		ua.CustomAbort(http.StatusForbidden, "")
-	}
+// ToggleUserAdminRole handles Post api/users/{}/toggleadmin
+func (ua *UserAPI) ToggleUserAdminRole() {
 	if !ua.IsAdmin {
-		if ua.userID != ua.currentUserID {
-			log.Error("Guests can only change their own account.")
-			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
+		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
+		ua.RenderError(http.StatusForbidden, "User does not have admin role")
+		return
+	}
+	userQuery := models.User{UserID: ua.userID}
+	if err := dao.ToggleUserAdminRole(userQuery); err != nil {
+		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+}
+
+func validate(user models.User) error {
+
+	if isIllegalLength(user.Username, 0, 20) {
+		return fmt.Errorf("Username with illegal length.")
+	}
+	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
+		return fmt.Errorf("Username contains illegal characters.")
+	}
+	if isIllegalLength(user.Password, 0, 20) {
+		return fmt.Errorf("Password with illegal length.")
+	}
+	if err := commonValidate(user); err != nil {
+		return err
+	}
+	return nil
+}
+
+//commonValidate validates information when user register or change their profile
+func commonValidate(user models.User) error {
+
+	if len(user.Email) > 0 {
+		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
+			return fmt.Errorf("Email with illegal format.")
 		}
 	}
-	user := models.User{UserID: ua.userID}
-	ua.DecodeJSONReq(&user)
-	if err := dao.ChangeUserProfile(user); err != nil {
-		log.Errorf("Failed to update user profile, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, err.Error())
+
+	if isIllegalLength(user.Realname, 0, 20) {
+		return fmt.Errorf("Realname with illegal length.")
 	}
+
+	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
+		return fmt.Errorf("Realname contains illegal characters.")
+	}
+	if isIllegalLength(user.Comment, -1, 30) {
+		return fmt.Errorf("Comment with illegal length.")
+	}
+	return nil
+
+}
+
+func isIllegalLength(s string, min int, max int) bool {
+	if min == -1 {
+		return (len(s) > max)
+	}
+	if max == -1 {
+		return (len(s) <= min)
+	}
+	return (len(s) < min || len(s) > max)
+}
+
+func isContainIllegalChar(s string, illegalChar []string) bool {
+	for _, c := range illegalChar {
+		if strings.Index(s, c) >= 0 {
+			return true
+		}
+	}
+	return false
 }
