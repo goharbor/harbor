@@ -865,6 +865,7 @@ func TestAddRepJob(t *testing.T) {
 		Repository: "library/ubuntu",
 		PolicyID:   policyID,
 		Operation:  "transfer",
+		TagList:    []string{"12.01", "14.04", "latest"},
 	}
 	id, err := AddRepJob(job)
 	if err != nil {
@@ -882,9 +883,9 @@ func TestAddRepJob(t *testing.T) {
 		t.Errorf("Unable to find a job with id: %d", id)
 		return
 	}
-	if j.Status != models.JobPending || j.Repository != "library/ubuntu" || j.PolicyID != policyID || j.Operation != "transfer" {
-		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, PolicyID: %d, Operation: transfer, "+
-			"but in returned data:, Status: %s, Repository: %s, Operation: %s, PolicyID: %d", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID)
+	if j.Status != models.JobPending || j.Repository != "library/ubuntu" || j.PolicyID != policyID || j.Operation != "transfer" || len(j.TagList) != 3 {
+		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, PolicyID: %d, Operation: transfer, taglist length 3"+
+			"but in returned data:, Status: %s, Repository: %s, Operation: %s, PolicyID: %d, TagList: %v", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID, j.TagList)
 		return
 	}
 }

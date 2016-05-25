@@ -5,6 +5,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
+	"strings"
 )
 
 func AddRepTarget(target models.RepTarget) (int64, error) {
@@ -104,8 +105,12 @@ func AddRepJob(job models.RepJob) (int64, error) {
 	if len(job.Status) == 0 {
 		job.Status = models.JobPending
 	}
+	if len(job.TagList) > 0 {
+		job.Tags = strings.Join(job.TagList, ",")
+	}
 	return o.Insert(&job)
 }
+
 func GetRepJob(id int64) (*models.RepJob, error) {
 	o := orm.NewOrm()
 	j := models.RepJob{ID: id}
@@ -113,11 +118,14 @@ func GetRepJob(id int64) (*models.RepJob, error) {
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
-	return &j, err
+	genTagListForJob(&j)
+	return &j, nil
 }
+
 func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	var res []*models.RepJob
 	_, err := repJobPolicyIDQs(policyID).All(&res)
+	genTagListForJob(res...)
 	return res, err
 }
 
@@ -125,6 +133,7 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 	var res []*models.RepJob
 	_, err := repJobPolicyIDQs(policyID).Filter("status__in", models.JobPending, models.JobRunning).All(&res)
+	genTagListForJob(res...)
 	return res, err
 }
 
@@ -149,4 +158,12 @@ func UpdateRepJobStatus(id int64, status string) error {
 		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
 	}
 	return err
+}
+
+func genTagListForJob(jobs ...*models.RepJob) {
+	for _, j := range jobs {
+		if len(j.Tags) > 0 {
+			j.TagList = strings.Split(j.Tags, ",")
+		}
+	}
 }
