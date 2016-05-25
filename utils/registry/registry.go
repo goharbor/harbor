@@ -25,7 +25,11 @@ import (
 
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
+)
+
+const (
+	UserAgent string = "registry-client"
 )
 
 // Registry holds information of a registry entity
@@ -78,6 +82,34 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 	return registry, nil
 }
 
+func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := newClient(endpoint, "", credential, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	registry := &Registry{
+		Endpoint: u,
+		client:   client,
+	}
+
+	log.Debugf("initialized a registry client with credential: %s", endpoint)
+
+	return registry, nil
+}
+
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
@@ -89,10 +121,10 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return repos, e
+		if regErr, ok := err.(*registry_error.Error); ok {
+			return repos, regErr
 		}
+
 		return repos, err
 	}
 
@@ -117,10 +149,48 @@ func (r *Registry) Catalog() ([]string, error) {
 		return repos, nil
 	}
 
-	return repos, errors.Error{
+	return repos, &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
+	}
+}
+
+// Ping ...
+func (r *Registry) Ping() error {
+	req, err := http.NewRequest("GET", buildPingURL(r.Endpoint.String()), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		if urlErr, ok := err.(*url.Error); ok {
+			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+				return &registry_error.Error{
+					StatusCode: regErr.StatusCode,
+					Detail:     regErr.Detail,
+				}
+			}
+			return urlErr.Err
+		}
+
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return &registry_error.Error{
+		StatusCode: resp.StatusCode,
+		Detail:     string(b),
 	}
 }
 
@@ -149,8 +219,9 @@ func newClient(endpoint, username string, credential auth.Credential,
 
 	challenges := auth.ParseChallengeFromResponse(resp)
 	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
+	headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
 
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer, headerModifier})
 	return &http.Client{
 		Transport: transport,
 	}, nil
