@@ -2,11 +2,13 @@ package api
 
 import (
 	"fmt"
+
+	"net/http"
+	"strconv"
+
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-	"net/http"
-	"strconv"
 )
 
 type RepPolicyAPI struct {
@@ -70,6 +72,15 @@ func (pa *RepPolicyAPI) Post() {
 		pa.RenderError(http.StatusInternalServerError, "Internal Error")
 		return
 	}
+
+	go func() {
+		if err := TriggerReplication(pid, "", models.RepOpTransfer); err != nil {
+			log.Errorf("failed to trigger replication of %d: %v", pid, err)
+		} else {
+			log.Infof("replication of %d triggered", pid)
+		}
+	}()
+
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(pid, 10))
 }
 
@@ -93,5 +104,15 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 		log.Errorf("Failed to update policy enablement in DB, error: %v", err)
 		pa.RenderError(http.StatusInternalServerError, "Internal Error")
 		return
+	}
+
+	if e.Enabled == 1 {
+		go func() {
+			if err := TriggerReplication(pa.policyID, "", models.RepOpTransfer); err != nil {
+				log.Errorf("failed to trigger replication of %d: %v", pa.policyID, err)
+			} else {
+				log.Infof("replication of %d triggered", pa.policyID)
+			}
+		}()
 	}
 }

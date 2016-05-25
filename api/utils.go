@@ -16,6 +16,13 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
@@ -48,4 +55,85 @@ func checkUserExists(name string) int {
 		return u.UserID
 	}
 	return 0
+}
+
+// TriggerReplication triggers the replication according to the policy
+func TriggerReplication(policyID int64, repository, operation string) error {
+	data := struct {
+		PolicyID  int64  `json:"policy_id"`
+		Repo      string `json:"repository"`
+		Operation string `json:"operation"`
+	}{
+		PolicyID:  policyID,
+		Repo:      repository,
+		Operation: operation,
+	}
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	url := buildReplicationURL()
+
+	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+}
+
+// GetPoliciesByRepository returns policies according the repository
+func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
+	repository = strings.TrimSpace(repository)
+	repository = strings.TrimRight(repository, "/")
+	projectName := repository[:strings.LastIndex(repository, "/")]
+
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	policies, err := dao.GetRepPolicyByProject(project.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
+func TriggerReplicationByRepository(repository, operation string) {
+	policies, err := GetPoliciesByRepository(repository)
+	if err != nil {
+		log.Errorf("failed to get policies for repository %s: %v", repository, err)
+		return
+	}
+
+	for _, policy := range policies {
+		if err := TriggerReplication(policy.ProjectID, repository, operation); err != nil {
+			log.Errorf("failed to trigger replication of %d for %s: %v", policy.ID, repository, err)
+		} else {
+			log.Infof("replication of %d for %s triggered", policy.ID, repository)
+		}
+	}
+}
+
+func buildReplicationURL() string {
+	return "http://job_service/api/replicationJobs"
+}
+
+func buildJobLogURL(jobID string) string {
+	return fmt.Sprintf("http://job_service/api/replicationJobs/%s/log", jobID)
 }

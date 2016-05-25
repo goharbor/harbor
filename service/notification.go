@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	svc_utils "github.com/vmware/harbor/service/utils"
@@ -77,6 +78,8 @@ func (n *NotificationHandler) Post() {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}
 				}()
+
+				go api.TriggerReplicationByRepository(repo, models.RepOpTransfer)
 			}
 		}
 	}

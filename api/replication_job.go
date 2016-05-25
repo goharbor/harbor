@@ -1,9 +1,11 @@
 package api
 
 import (
+	"io/ioutil"
+	"net/http"
+
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/utils/log"
-	"net/http"
 )
 
 type RepJobAPI struct {
@@ -19,6 +21,7 @@ func (ja *RepJobAPI) Prepare() {
 	if !isAdmin {
 		ja.CustomAbort(http.StatusForbidden, "")
 	}
+
 }
 
 func (ja *RepJobAPI) Get() {
@@ -36,6 +39,37 @@ func (ja *RepJobAPI) Get() {
 	}
 	ja.Data["json"] = jobs
 	ja.ServeJSON()
+}
+
+// GetLog ...
+func (ja *RepJobAPI) GetLog() {
+	id := ja.Ctx.Input.Param(":id")
+	if len(id) == 0 {
+		ja.CustomAbort(http.StatusBadRequest, "id is nil")
+	}
+
+	resp, err := http.Get(buildJobLogURL(id))
+	if err != nil {
+		log.Errorf("failed to get log for job %s: %v", id, err)
+		ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("failed to read response body for job %s: %v", id, err)
+		ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		if _, err = ja.Ctx.ResponseWriter.Write(b); err != nil {
+			log.Errorf("failed to write log to response; %v", err)
+			ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		return
+	}
+
+	ja.CustomAbort(resp.StatusCode, string(b))
 }
 
 //TODO:add Post handler to call job service API to submit jobs by policy
