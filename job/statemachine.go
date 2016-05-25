@@ -180,7 +180,7 @@ func (sm *JobSM) Reset(jid int64) error {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: config.LocalRegURL(),
+		LocalRegURL: config.LocalHarborURL(),
 		Repository:  job.Repository,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
@@ -224,7 +224,7 @@ func (sm *JobSM) Reset(jid int64) error {
 }
 
 func addImgOutTransition(sm *JobSM) error {
-	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, "",
+	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		nil, sm.Logger)
 	if err != nil {

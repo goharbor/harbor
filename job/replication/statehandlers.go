@@ -49,12 +49,11 @@ type BaseHandler struct {
 	repository string // prject_name/repo_name
 	tags       []string
 
-	srcURL       string // url of source registry
-	srcSecretKey string // secretKey ...
+	srcURL string // url of source registry
 
 	dstURL string // url of target registry
 	dstUsr string // username ...
-	dstPwd string // password ...
+	dstPwd string // username ...
 
 	srcClient *registry.Repository
 	dstClient *registry.Repository
@@ -69,7 +68,7 @@ type BaseHandler struct {
 
 // InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
 // listing tags of the repository if parameter tags is nil.
-func InitBaseHandler(repository, srcURL, srcSecretKey,
+func InitBaseHandler(repository, srcURL, srcSecret,
 	dstURL, dstUsr, dstPwd string, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
 	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
@@ -79,7 +78,6 @@ func InitBaseHandler(repository, srcURL, srcSecretKey,
 		repository:     repository,
 		tags:           tags,
 		srcURL:         srcURL,
-		srcSecretKey:   srcSecretKey,
 		dstURL:         dstURL,
 		dstUsr:         dstUsr,
 		dstPwd:         dstPwd,
@@ -89,8 +87,9 @@ func InitBaseHandler(repository, srcURL, srcSecretKey,
 
 	base.project = getProjectName(base.repository)
 
-	//TODO using secret key
-	srcCred := auth.NewBasicAuthCredential("admin", "Harbor12345")
+	c := &http.Cookie{Name: models.UISecretCookie, Value: srcSecret}
+	srcCred := auth.NewCookieCredential(c)
+	//	srcCred := auth.NewBasicAuthCredential("admin", "Harbor12345")
 	srcClient, err := registry.NewRepositoryWithCredential(base.repository, base.srcURL, srcCred)
 	if err != nil {
 		return nil, err

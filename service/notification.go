@@ -22,7 +22,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
@@ -70,7 +70,7 @@ func (n *NotificationHandler) Post() {
 			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {
-					err2 := svc_utils.RefreshCatalogCache()
+					err2 := cache.RefreshCatalogCache()
 					if err2 != nil {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}

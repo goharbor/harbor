@@ -11,8 +11,9 @@ import (
 const defaultMaxWorkers int = 10
 
 var maxJobWorkers int
-var localRegURL string
+var localURL string
 var logDir string
+var uiSecret string
 
 func init() {
 	maxWorkersEnv := os.Getenv("MAX_JOB_WORKERS")
@@ -23,9 +24,9 @@ func init() {
 		maxJobWorkers = defaultMaxWorkers
 	}
 
-	localRegURL = os.Getenv("LOCAL_REGISTRY_URL")
-	if len(localRegURL) == 0 {
-		localRegURL = "http://registry:5000/"
+	localURL = os.Getenv("LOCAL_HARBOR_URL")
+	if len(localURL) == 0 {
+		localURL = "http://ui/"
 	}
 
 	logDir = os.Getenv("LOG_DIR")
@@ -46,19 +47,29 @@ func init() {
 		panic(fmt.Sprintf("%s is not a direcotry", logDir))
 	}
 
+	uiSecret = os.Getenv("UI_SECRET")
+	if len(uiSecret) == 0 {
+		panic("UI Secret is not set")
+	}
+
 	log.Debugf("config: maxJobWorkers: %d", maxJobWorkers)
-	log.Debugf("config: localRegURL: %s", localRegURL)
+	log.Debugf("config: localHarborURL: %s", localURL)
 	log.Debugf("config: logDir: %s", logDir)
+	log.Debugf("config: uiSecret: ******")
 }
 
 func MaxJobWorkers() int {
 	return maxJobWorkers
 }
 
-func LocalRegURL() string {
-	return localRegURL
+func LocalHarborURL() string {
+	return localURL
 }
 
 func LogDir() string {
 	return logDir
+}
+
+func UISecret() string {
+	return uiSecret
 }
