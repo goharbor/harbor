@@ -232,7 +232,7 @@ func DeleteUser(userID int) error {
 
 // ChangeUserProfile ...
 func ChangeUserProfile(user models.User) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
 		log.Errorf("update user failed, error: %v", err)
 		return err

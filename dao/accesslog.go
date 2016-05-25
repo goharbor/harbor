@@ -18,6 +18,8 @@ package dao
 import (
 	"strings"
 
+	"github.com/astaxie/beego/orm"
+
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -130,7 +132,7 @@ func GetRecentLogs(lines int, startTime, endTime string) ([]models.AccessLog, er
 		OrderBy("op_time").Desc().
 		Limit(lines)
 	sql := qb.String()
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
 	if err != nil {
 		return nil, err
