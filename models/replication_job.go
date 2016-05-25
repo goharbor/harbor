@@ -15,6 +15,8 @@ const (
 	JobContinue   string = "_continue"
 	RepOpTransfer string = "transfer"
 	RepOpDelete   string = "delete"
+	//cookie name to contain the UI secret
+	UISecretCookie string = "uisecret"
 )
 
 type RepPolicy struct {

@@ -26,6 +26,7 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/cache"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
@@ -43,7 +44,11 @@ type RepositoryAPI struct {
 
 // Prepare will set a non existent user ID in case the request tries to view repositories under a project he doesn't has permission.
 func (ra *RepositoryAPI) Prepare() {
-	ra.userID = ra.ValidateUser()
+	if svc_utils.VerifySecret(ra.Ctx.Request) {
+		ra.userID = 1
+	} else {
+		ra.userID = ra.ValidateUser()
+	}
 }
 
 // Get ...
@@ -69,7 +74,7 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	repoList, err := svc_utils.GetRepoFromCache()
+	repoList, err := cache.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		ra.RenderError(http.StatusInternalServerError, "internal sever error")
@@ -142,7 +147,7 @@ func (ra *RepositoryAPI) Delete() {
 
 	go func() {
 		log.Debug("refreshing catalog cache")
-		if err := svc_utils.RefreshCatalogCache(); err != nil {
+		if err := cache.RefreshCatalogCache(); err != nil {
 			log.Errorf("error occurred while refresh catalog cache: %v", err)
 		}
 	}()

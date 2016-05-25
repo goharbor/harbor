@@ -42,3 +42,17 @@ func NewBasicAuthCredential(username, password string) Credential {
 func (b *basicAuthCredential) AddAuthorization(req *http.Request) {
 	req.SetBasicAuth(b.username, b.password)
 }
+
+type cookieCredential struct {
+	cookie *http.Cookie
+}
+
+func NewCookieCredential(c *http.Cookie) Credential {
+	return &cookieCredential{
+		cookie: c,
+	}
+}
+
+func (c *cookieCredential) AddAuthorization(req *http.Request) {
+	req.AddCookie(c.cookie)
+}
