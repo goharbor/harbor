@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"os"
+	"sync"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -46,7 +47,6 @@ func GenerateRandomString() (string, error) {
 func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	orm.RegisterModel(new(models.User), new(models.Project), new(models.Role), new(models.AccessLog))
-	orm.Debug = true
 	addr := os.Getenv("MYSQL_HOST")
 	port := os.Getenv("MYSQL_PORT")
 	username := os.Getenv("MYSQL_USR")
@@ -78,4 +78,15 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+var globalOrm orm.Ormer
+var once sync.Once
+
+// GetOrmer :set ormer singleton
+func GetOrmer() orm.Ormer {
+	once.Do(func() {
+		globalOrm = orm.NewOrm()
+	})
+	return globalOrm
 }

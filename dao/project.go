@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -29,7 +28,19 @@ import (
 
 // AddProject adds a project to the database along with project roles information and access log records.
 func AddProject(project models.Project) (int64, error) {
+<<<<<<< HEAD
 	o := orm.NewOrm()
+=======
+
+	if isIllegalLength(project.Name, 4, 30) {
+		return 0, errors.New("project name is illegal in length. (greater than 4 or less than 30)")
+	}
+	if isContainIllegalChar(project.Name, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
+		return 0, errors.New("project name contains illegal characters")
+	}
+
+	o := GetOrmer()
+>>>>>>> upstream/master
 
 	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
@@ -72,7 +83,7 @@ func IsProjectPublic(projectName string) bool {
 
 //ProjectExists returns whether the project exists according to its name of ID.
 func ProjectExists(nameOrID interface{}) (bool, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	type dummy struct{}
 	sql := `select project_id from project where deleted = 0 and `
 	switch nameOrID.(type) {
@@ -95,7 +106,7 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 
 // GetProjectByID ...
 func GetProjectByID(id int64) (*models.Project, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time, p.public  
 		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
@@ -118,7 +129,7 @@ func GetProjectByID(id int64) (*models.Project, error) {
 
 // GetProjectByName ...
 func GetProjectByName(name string) (*models.Project, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	var p []models.Project
 	n, err := o.Raw(`select * from project where name = ? and deleted = 0`, name).QueryRows(&p)
 	if err != nil {
@@ -134,7 +145,7 @@ func GetProjectByName(name string) (*models.Project, error) {
 
 // GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `select r.role_code from role as r
 		inner join project_member as pm on r.role_id = pm.role
@@ -157,7 +168,7 @@ func GetPermission(username, projectName string) (string, error) {
 
 // ToggleProjectPublicity toggles the publicity of the project.
 func ToggleProjectPublicity(projectID int64, publicity int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := "update project set public = ? where project_id = ?"
 	_, err := o.Raw(sql, publicity, projectID).Exec()
 	return err
@@ -168,7 +179,7 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
 func SearchProjects(userID int) ([]models.Project, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := `select distinct p.project_id, p.name, p.public 
 		from project p 
 		left join project_member pm on p.project_id = pm.project_id 
@@ -185,7 +196,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 
 // GetUserRelevantProjects returns the projects of the user which are not deleted and name like projectName
 func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := `select distinct
 		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
 	 from project p 
@@ -226,7 +237,7 @@ func GetAllProjects(projectName string) ([]models.Project, error) {
 }
 
 func getProjects(public int, projectName string) ([]models.Project, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := `select project_id, owner_id, creation_time, update_time, name, public 
 		from project
 		where deleted = 0`

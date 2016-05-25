@@ -748,3 +748,10 @@ func TestGetRecentLogs(t *testing.T) {
 		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
 	}
 }
+
+func TestGetOrmer(t *testing.T) {
+	o := GetOrmer()
+	if o == nil {
+		t.Errorf("Error get ormer.")
+	}
+}
