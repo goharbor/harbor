@@ -119,8 +119,8 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}:
-    put:
+  /projects/{project_id}/toggle_project_public:
+    post:
       summary: Update properties for a selected project.
       description: |
         This endpoint is aimed to toggle a project publicity status.
@@ -353,7 +353,34 @@ paths:
         404:
           description: Project ID does not exist.
         500:
-          description: Unexpected internal errors.   
+          description: Unexpected internal errors. 
+  /statistics:
+  	get:
+	  summary: Get projects and repositories
+	  description: |
+	    This endpoint is aimed to list all of the projects and repositories relevant with the loggined user, also the public projects and repositories 
+	  parameters: 
+		- null
+	  tags:
+		-Products
+	  reponses:
+	    200:
+		  description: Get the projects and repositories relevant with the user successfully.
+		  schema:
+		    type: map
+			items:
+			  - my_project_count----integer
+			  - my_repo_count----integer
+			  - public_project_count----integer
+			  - public_repo_count----integer
+			  - total_project_count----integer (if user is admin)
+			  - total_repo_count----integer (if user is admin)
+		400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
   /users:
     get:
       summary: Get registered users of Harbor.
@@ -407,10 +434,9 @@ paths:
           description: Unexpected internal errors.
   /users/{user_id}:
     put:
-      summary: Update a registered user to change to be an administrator of Harbor.
+      summary: Update a registered user to change his profile.
       description: |
-        This endpoint let a registered user change to be an administrator
-        of Harbor.
+        This endpoint let a registered user change his profile
       parameters:
         - name: user_id
           in: path
@@ -422,7 +448,7 @@ paths:
         - Products
       responses:
         200:
-          description: Updated user's admin role successfully.
+          description: Updated user's profile successfully.
         400:
           description: Invalid user ID.
         401:
@@ -490,7 +516,35 @@ paths:
         403:
           description: Guests can only change their own account.
         500:
-          description: Unexpected internal errors.	
+          description: Unexpected internal errors.
+   /users/{user_id}/toggle_user_admin:
+     post:
+      summary: Update a registered user to change to be an administrator of Harbor.
+      description: |
+        This endpoint let a registered user change to be an administrator
+        of Harbor.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
@@ -595,6 +649,43 @@ paths:
       responses:
         200:
           description: Retrieved manifests from a relevant repository successfully.
+        500:
+          description: Unexpected internal errors.
+  /logs:
+    get:
+      summary: Get recent logs in the Harbor
+      description: |
+        This endpoint let user see the recent operation logs in the Harbor
+      parameters:
+        - name: lines
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The number of logs to be shown
+        - name: start_time
+          in: query
+          type: string
+          format: date
+          required: true
+          description: The start time of the logs to be shown
+		- name: end_time
+          in: query
+          type: string
+          format: date
+          required: true
+          description: The end time of the logs to be shown
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get the required logs successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AccessLog'
+        401:
+          description: Invalid user ID.
         500:
           description: Unexpected internal errors.
 definitions:

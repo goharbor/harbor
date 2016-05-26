@@ -53,6 +53,7 @@ func initRouters() {
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/:pid/members/?:mid", &api.ProjectMemberAPI{})
+	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
 	beego.Router("/api/projects/:id/toggle_project_public", &api.ProjectAPI{}, "post:ToggleProjectPublic")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
