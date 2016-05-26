@@ -28,6 +28,7 @@
       'harbor.services.user',
       'harbor.services.repository',
       'harbor.services.project.member',
+      'harbor.services.replication.policy',
       'harbor.optional.menu',
       'harbor.modal.dialog',
       'harbor.sign.in',

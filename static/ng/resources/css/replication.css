@@ -19,3 +19,35 @@
 .form-control-custom {
   width: 100% !important;
 }
+
+.pane-split {
+  height: auto;
+  min-height: 50px;
+  max-height: 300px;  
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.sub-pane-split {
+  margin: 15px;
+  height: auto;
+  min-height: 50px;
+  width: 100%;
+}
+
+.well-split {
+  margin-bottom: 0;
+}
+
+.split-strip {
+  width: 100%;
+}
+
+.split-handle {
+  margin-left: auto;
+  margin-right: auto; 
+  width: 1em;
+  cursor: ns-resize;
+  color: #C0C0C0;
+}

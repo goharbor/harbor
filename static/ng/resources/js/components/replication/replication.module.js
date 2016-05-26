@@ -3,6 +3,8 @@
   'use strict';
   
   angular
-    .module('harbor.replication', []);
+    .module('harbor.replication', [
+      'harbor.services.replication.policy'
+    ]);
   
 })();
