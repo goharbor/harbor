@@ -22,14 +22,13 @@ import (
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/utils/log"
 )
 
 // GetUser ...
 func GetUser(query models.User) (*models.User, error) {
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `select user_id, username, email, realname, comment, reset_uuid, salt,
 		sysadmin_flag, creation_time, update_time
@@ -66,7 +65,7 @@ func GetUser(query models.User) (*models.User, error) {
 
 // LoginByDb is used for user to login with database auth mode.
 func LoginByDb(auth models.AuthModel) (*models.User, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	var users []models.User
 	n, err := o.Raw(`select * from user where (username = ? or email = ?) and deleted = 0`,
@@ -91,7 +90,7 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 
 // ListUsers lists all users according to different conditions.
 func ListUsers(query models.User) ([]models.User, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	u := []models.User{}
 	sql := `select  user_id, username, email, realname, comment, reset_uuid, salt,
 		sysadmin_flag, creation_time, update_time
@@ -111,7 +110,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 
 // ToggleUserAdminRole gives a user admin role.
 func ToggleUserAdminRole(u models.User) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	sql := `update user set sysadmin_flag =not sysadmin_flag where user_id = ?`
 
@@ -133,7 +132,7 @@ func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 		return errors.New("Wrong numbers of params.")
 	}
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 
 	var r sql.Result
 	if len(oldPassword) == 0 {
@@ -159,7 +158,7 @@ func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 
 // ResetUserPassword ...
 func ResetUserPassword(u models.User) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	r, err := o.Raw(`update user set password=?, reset_uuid=? where reset_uuid=?`, utils.Encrypt(u.Password, u.Salt), "", u.ResetUUID).Exec()
 	if err != nil {
 		return err
@@ -176,7 +175,7 @@ func ResetUserPassword(u models.User) error {
 
 // UpdateUserResetUUID ...
 func UpdateUserResetUUID(u models.User) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Raw(`update user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
 	return err
 }
@@ -207,7 +206,7 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 		queryParam = append(queryParam, currentUser.Username)
 		queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
 	}
-	o := orm.NewOrm()
+	o := GetOrmer()
 	var user []models.User
 
 	n, err := o.Raw(sql, queryParam).QueryRows(&user)
@@ -226,7 +225,7 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 
 // DeleteUser ...
 func DeleteUser(userID int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
 	return err
 }
