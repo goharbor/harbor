@@ -42,6 +42,18 @@ type Deleter struct {
 	logger *log.Logger
 }
 
+// NewDeleter returns a Deleter
+func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, logger *log.Logger) *Deleter {
+	return &Deleter{
+		repository: repository,
+		tags:       tags,
+		dstURL:     dstURL,
+		dstUsr:     dstUsr,
+		dstPwd:     dstPwd,
+		logger:     logger,
+	}
+}
+
 // Exit ...
 func (d *Deleter) Exit() error {
 	return nil

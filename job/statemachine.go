@@ -207,23 +207,19 @@ func (sm *JobSM) Reset(jid int64) error {
 	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
 	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
 
-	if sm.Parms.Operation == models.RepOpTransfer {
-		/*
-			sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
-			//only handle one target for now
-			sm.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: DummyHandler{JobID: sm.JobID}, targetURL: sm.Parms.TargetURL, logger: sm.Logger})
-			sm.AddTransition("push-img", models.JobFinished, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
-		*/
-
-		if err = addImgOutTransition(sm); err != nil {
-			return err
-		}
-
+	switch sm.Parms.Operation {
+	case models.RepOpTransfer:
+		err = addImgTransferTransition(sm)
+	case models.RepOpDelete:
+		err = addImgDeleteTransition(sm)
+	default:
+		err = fmt.Errorf("unsupported operation: %s", sm.Parms.Operation)
 	}
-	return nil
+
+	return err
 }
 
-func addImgOutTransition(sm *JobSM) error {
+func addImgTransferTransition(sm *JobSM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		nil, sm.Logger)
@@ -236,5 +232,15 @@ func addImgOutTransition(sm *JobSM) error {
 	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
 	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
+	return nil
+}
+
+func addImgDeleteTransition(sm *JobSM) error {
+	deleter := replication.NewDeleter(sm.Parms.Repository, nil, sm.Parms.TargetURL,
+		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
+
+	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
+	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+
 	return nil
 }
