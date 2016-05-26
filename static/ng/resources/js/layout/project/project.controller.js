@@ -11,6 +11,13 @@
   function ProjectController($scope, ListProjectService, $timeout, currentUser) {
     var vm = this;
     
+    vm.MAP = {
+      0: 'NA',
+      1: 'Project Admin',
+      2: 'Developer',
+      3: 'Guest'
+    };
+    
     vm.isOpen = false;
     vm.projectName = '';
     vm.publicity = 0;
@@ -35,6 +42,9 @@
     }
     
     function listProjectSuccess(data, status) {
+      data.forEach(function(data){
+        data.role = vm.MAP[data.role_id];
+      });
       vm.projects = data;
     }
     

@@ -32,8 +32,8 @@
                 <tbody>
                   <tr ng-repeat="p in vm.projects">
                     <td><a href="/ng/repository#/repositories?project_id=//p.ProjectId//&is_public=//p.Public//">//p.Name//</a></td>
-                    <td>N/A</td>
-                    <td>N/A</td>
+                    <td>//p.count//</td>
+                    <td>//p.role//</td>
                     <td>//p.CreationTime | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                     <td><publicity-button is-public="p.Public" owned="p.OwnerId == vm.user.UserId" project-id="p.ProjectId"></publicity-button></td>
                   	</tr>
