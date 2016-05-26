@@ -105,7 +105,7 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
-	rc, err := ra.initializeRepositoryClient(repoName)
+	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -164,7 +164,7 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
-	rc, err := ra.initializeRepositoryClient(repoName)
+	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -200,7 +200,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
 	}
 
-	rc, err := ra.initializeRepositoryClient(repoName)
+	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -240,28 +240,36 @@ func (ra *RepositoryAPI) GetManifests() {
 	ra.ServeJSON()
 }
 
-func (ra *RepositoryAPI) initializeRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	var username string
-	var sessionUsername, sessionUserID interface{}
+func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
+	username, err := ra.getUsername()
+	if err != nil {
+		return nil, err
+	}
 
+	endpoint := os.Getenv("REGISTRY_URL")
+
+	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
+}
+
+func (ra *RepositoryAPI) getUsername() (string, error) {
 	// get username from basic auth
 	username, _, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		goto enter
+		return username, nil
 	}
 
 	// get username from session
-	sessionUsername = ra.GetSession("username")
+	sessionUsername := ra.GetSession("username")
 	if sessionUsername != nil {
 		username, ok = sessionUsername.(string)
 		if ok {
-			goto enter
+			return username, nil
 		}
 	}
 
 	// if username does not exist in session, try to get userId from sessiion
 	// and then get username from DB according to the userId
-	sessionUserID = ra.GetSession("userId")
+	sessionUserID := ra.GetSession("userId")
 	if sessionUserID != nil {
 		userID, ok := sessionUserID.(int)
 		if ok {
@@ -270,15 +278,12 @@ func (ra *RepositoryAPI) initializeRepositoryClient(repoName string) (r *registr
 			}
 			user, err := dao.GetUser(u)
 			if err != nil {
-				return nil, err
+				return "", err
 			}
-			username = user.Username
-			goto enter
+
+			return user.Username, nil
 		}
 	}
 
-enter:
-	endpoint := os.Getenv("REGISTRY_URL")
-
-	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
+	return "", nil
 }
