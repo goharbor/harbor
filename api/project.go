@@ -127,6 +127,25 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
+	project, err := dao.GetProjectByID(p.projectID)
+	if err != nil {
+		log.Errorf("failed to get project %d: %v", p.projectID, err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if project.Public == 0 {
+		userID := p.ValidateUser()
+		if !checkProjectPermission(userID, p.projectID) {
+			p.CustomAbort(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		}
+	}
+
+	p.Data["json"] = project
+	p.ServeJSON()
+}
+
+// List ...
+func (p *ProjectAPI) List() {
 	var projectList []models.Project
 	projectName := p.GetString("project_name")
 	if len(projectName) > 0 {
