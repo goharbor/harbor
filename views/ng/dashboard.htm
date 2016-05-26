@@ -6,12 +6,19 @@
 	        <div class="up-section">
   		        <h4 class="page-header title-color underlined">// 'summary' | tr //</h4>  
               <dl class="page-content dl-horizontal">
-        			  <dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['projects']//</dd>
-        			  <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_projects']//</dd>
-        			  <dt>// 'total_projects' | tr //:</dt><dd>//vm.statProjects['total_projects']//</dd>
-        			  <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['repositories']//</dd>
-        			  <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repositories']//</dd>
-        			  <dt>// 'total_repositories' | tr //:</dt><dd>//vm.statProjects['total_repositories']//</dd>
+								{{ if eq .IsAdmin 1 }}
+        			  <dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['my_project_count']//</dd>
+        			  <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_project_count']//</dd>
+        			  <dt>// 'total_projects' | tr //:</dt><dd>//vm.statProjects['total_project_count']//</dd>
+        			  <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['my_repo_count']//</dd>
+        			  <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repo_count']//</dd>
+        			  <dt>// 'total_repositories' | tr //:</dt><dd>//vm.statProjects['total_repo_count']//</dd>
+								{{ else }}
+								<dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['my_project_count']//</dd>
+        			  <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_project_count']//</dd>
+        			  <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['my_repo_count']//</dd>
+        			  <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repo_count']//</dd>
+								{{ end }}
         			</dl>
           </div>
         </div>						

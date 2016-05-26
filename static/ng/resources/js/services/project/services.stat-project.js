@@ -6,35 +6,18 @@
     .module('harbor.services.project')
     .factory('StatProjectService', StatProjectService);
     
-  StatProjectService.$inject = ['$http', '$q', '$timeout'];
+  StatProjectService.$inject = ['$http', '$log'];
   
-  function StatProjectService($http, $q, $timeout) {
+  function StatProjectService($http, $log) {
+   
+    return StatProject;
     
-    var mockData = {
-      'projects': 30,
-      'public_projects': 50,
-      'total_projects': 120,
-      'repositories': 50,
-      'public_repositories': 40,
-      'total_repositories': 110
-    };
-    
-    function async() {
-      var deferred = $q.defer();
-      
-      $timeout(function() {
-        deferred.resolve(mockData);
-      }, 500);
-      
-      return deferred.promise;
+    function StatProject() {
+      $log.info('statistics projects and repositories');
+      return $http
+        .get('/api/statistics');
     }
-    
-    return statProject;
-    
-    function statProject() {
-      return async();
-    }
-    
+
   }
   
 })();

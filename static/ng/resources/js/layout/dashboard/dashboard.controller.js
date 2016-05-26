@@ -20,12 +20,12 @@
     ListIntegratedLogService()
       .then(listIntegratedLogSuccess, listIntegratedLogFailed);
       
-    function statProjectSuccess(data) {
-      vm.statProjects = data;
+    function statProjectSuccess(response) {
+      vm.statProjects = response.data;
     }
     
-    function statProjectFailed(data) {
-      console.log('Failed stat project:' + data);
+    function statProjectFailed(response) {
+      console.log('Failed stat project:' + response.data);
     }    
     
     function listTop10RepositorySuccess(data) {
