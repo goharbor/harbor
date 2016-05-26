@@ -1,0 +1,37 @@
+package ng
+
+import (
+	"net/http"
+
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
+)
+
+type SignInController struct {
+	BaseController
+}
+
+func (sic *SignInController) Get() {
+	sessionUserID := sic.GetSession("userId")
+	var hasLoggedIn bool
+	var username string
+	if sessionUserID != nil {
+		hasLoggedIn = true
+		userID := sessionUserID.(int)
+		u, err := dao.GetUser(models.User{UserID: userID})
+		if err != nil {
+			log.Errorf("Error occurred in GetUser, error: %v", err)
+			sic.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		if u == nil {
+			log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
+			sic.CustomAbort(http.StatusUnauthorized, "")
+		}
+		username = u.Username
+	}
+	sic.Data["Username"] = username
+	sic.Data["HasLoggedIn"] = hasLoggedIn
+	sic.TplName = "ng/sign-in.htm"
+	sic.Render()
+}

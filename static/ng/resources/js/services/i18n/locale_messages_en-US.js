@@ -117,5 +117,10 @@ var locale_messages = {
   'alert_delete_tag_title': 'Delete tag - $0',
   'alert_delete_tag': 'Delete this "$0" tag now?',
   'close': 'Close',
-  'ok': 'OK'
+  'ok': 'OK',
+  'welcome': 'Welcome ',
+  'to_harbor': ' to Harbor!',
+  'continue' : 'Continue',
+  'no_projects_add_new_project': 'No projects, add new project now.',
+  'no_repositories': 'No repositories found, please use "docker push" to upload images.'
 };

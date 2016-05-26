@@ -10,8 +10,9 @@
   
   function PopupDetailsController(ListManifestService, $filter, dateLFilter) {
     var vm = this;
-
+    
     vm.retrieve = retrieve;
+    
     function retrieve() {
       ListManifestService(vm.repoName, vm.tag)
         .success(getManifestSuccess)
@@ -35,8 +36,10 @@
       'templateUrl': '/static/ng/resources/js/components/repository/popup-details.directive.html',
       'scope': {
         'repoName': '@',
-        'tag': '@'
+        'tag': '@',
+        'index': '@'
       },
+      'replace': true,
       'link': link,
       'controller': PopupDetailsController,
       'controllerAs': 'vm',
@@ -46,21 +49,35 @@
     
     function link(scope, element, attrs, ctrl) {
       ctrl.retrieve();
-      scope.$watch('vm.manifest', function(current, origin) {
+      scope.$watch('vm.manifest', function(current) {
         if(current) {
-          element.find('span').popover({
-            'content': generateContent,
-            'html': true
-          });  
+          
+          element
+            .popover({
+              'template': '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-title"></div><div class="popover-content"></div></div>',
+              'title': '<div class="pull-right clearfix"><a href="javascript:void(0);"><span class="glyphicon glyphicon-remove-circle"></span></a></div>',
+              'content': generateContent,
+              'html': true
+            })
+            .on('shown.bs.popover', function(e){      
+              var self = jQuery(this);                 
+              $('[type="text"]:input', self.parent())
+                .select()
+                .end()
+                .on('click', function() {
+                  $(this).select();
+                });
+              self.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
+                element.trigger('click');
+              });
+            });
         }
       });
-      
       function generateContent() {
-        var content = 
-        '<form class="form-horizontal">' +
+        var content =  '<form class="form-horizontal">' +
           '<div class="form-group">' +
           '<label class="col-sm-3 control-label">Id</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line">' + ctrl.manifest['Id'] + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line"><input type="text" id="txtImageId" value="' + ctrl.manifest['Id'] + '" readonly size="40"></p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Parent</label>' +
           '<div class="col-sm-9"><p class="form-control-static long-line">' + ctrl.manifest['Parent'] + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Created</label>' +

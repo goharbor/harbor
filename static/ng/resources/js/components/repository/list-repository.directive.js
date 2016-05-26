@@ -25,8 +25,13 @@
     vm.retrieve = retrieve;
     vm.projectId = $routeParams.project_id;
     vm.tagCount = {};
-    
     vm.retrieve();
+
+    $scope.$watch('vm.repositories', function(current) {
+      if(current) {
+        vm.repositories = current || [];
+      }
+    });
 
     $scope.$on('repoName', function(e, val) {
       vm.repoName = val;
@@ -58,7 +63,7 @@
     }
    
     function getRepositoryComplete(data, status) {
-      vm.repositories = data;
+      vm.repositories = data || [];
     }
     
     function getRepositoryFailed(response) {

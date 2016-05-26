@@ -58,7 +58,7 @@
       
       if($routeParams.project_id){
         angular.forEach(vm.projects, function(value, index) {
-          if(value['ProjectId'] === $routeParams.project_id) {
+          if(value['ProjectId'] === Number($routeParams.project_id)) {
             vm.selectedProject = value;
           }
         }); 
@@ -123,8 +123,15 @@
     
     function link(scope, element, attrs, ctrl) {
       $(document).on('click', clickHandler);
-      
+    
       function clickHandler(e) {
+        $('[data-toggle="popover"]').each(function () {          
+          //the 'is' for buttons that trigger popups
+          //the 'has' for icons within a button that triggers a popup
+          if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).parent().popover('hide');
+          }
+        });
         var targetId = $(e.target).attr('id');
         if(targetId === 'switchPane' || 
            targetId === 'retrievePane' ||

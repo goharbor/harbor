@@ -61,11 +61,18 @@
         'repoName': '='
       },
       'replace': true,
+      'link': link,
       'controller': ListTagController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      
+    }
+    
+    
   }
   
 })();

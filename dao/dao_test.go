@@ -715,3 +715,10 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("user is not nil after deletion, user: %+v", user)
 	}
 }
+
+func TestGetOrmer(t *testing.T) {
+	o := GetOrmer()
+	if o == nil {
+		t.Errorf("Error get ormer.")
+	}
+}

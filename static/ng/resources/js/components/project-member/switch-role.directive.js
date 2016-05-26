@@ -16,6 +16,7 @@
         vm.currentRole = getRole({'key': 'roleName', 'value': current});            
       }
     });
+
     vm.selectRole = selectRole;
     
     function selectRole(role) {

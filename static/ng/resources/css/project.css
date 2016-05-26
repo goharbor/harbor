@@ -57,3 +57,8 @@
   position: relative;
   width: 100%;
 }
+
+.empty-hint {
+  text-align: center;
+  vertical-align: middle;
+}

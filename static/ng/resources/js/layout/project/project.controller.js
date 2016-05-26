@@ -27,11 +27,7 @@
     vm.searchProject = searchProject;    
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;
-    
-    $timeout(function() {
-      vm.user = currentUser.get();
-    });
-    
+    vm.user = currentUser.get();  
     vm.retrieve();
     
     function retrieve() {       
@@ -45,7 +41,9 @@
       data.forEach(function(data){
         data.role = vm.MAP[data.role_id];
       });
-      vm.projects = data;
+      
+      vm.projects = data || [];
+
     }
     
     function listProjectFailed(e) {

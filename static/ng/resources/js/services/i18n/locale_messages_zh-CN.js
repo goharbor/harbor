@@ -115,5 +115,10 @@ var locale_messages = {
   'alert_delete_tag_title': '删除镜像标签 - $0',
   'alert_delete_tag': '删除镜像标签 "$0" ?',
   'close': '关闭',
-  'ok': '确认'
+  'ok': '确认',
+  'welcome': '欢迎 ',
+  'to_harbor': ' 使用Harbor!',
+  'continue' : '继续',
+  'no_projects_add_new_project': '当前没有项目，请新增项目。',
+  'no_repositories': '未发现镜像，请用"docker push"命令上传镜像。'
 };
