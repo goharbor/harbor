@@ -79,7 +79,7 @@ func (n *NotificationHandler) Post() {
 					}
 				}()
 
-				go api.TriggerReplicationByRepository(repo, models.RepOpTransfer)
+				go api.TriggerReplicationByRepository(repo, []string{repoTag}, models.RepOpTransfer)
 			}
 		}
 	}

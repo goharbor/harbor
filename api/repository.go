@@ -145,6 +145,8 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s %s", repoName, t)
+		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
+
 	}
 
 	go func() {

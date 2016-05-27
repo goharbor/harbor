@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/vmware/harbor/dao"
@@ -90,18 +91,21 @@ func checkUserExists(name string) int {
 }
 
 // TriggerReplication triggers the replication according to the policy
-func TriggerReplication(policyID int64, repository, operation string) error {
+func TriggerReplication(policyID int64, repository string,
+	tags []string, operation string) error {
 	data := struct {
-		PolicyID  int64  `json:"policy_id"`
-		Repo      string `json:"repository"`
-		Operation string `json:"operation"`
+		PolicyID  int64    `json:"policy_id"`
+		Repo      string   `json:"repository"`
+		Operation string   `json:"operation"`
+		TagList   []string `json:"tags"`
 	}{
 		PolicyID:  policyID,
 		Repo:      repository,
+		TagList:   tags,
 		Operation: operation,
 	}
 
-	b, err := json.Marshal(data)
+	b, err := json.Marshal(&data)
 	if err != nil {
 		return err
 	}
@@ -146,7 +150,7 @@ func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
-func TriggerReplicationByRepository(repository, operation string) {
+func TriggerReplicationByRepository(repository string, tags []string, operation string) {
 	policies, err := GetPoliciesByRepository(repository)
 	if err != nil {
 		log.Errorf("failed to get policies for repository %s: %v", repository, err)
@@ -154,7 +158,7 @@ func TriggerReplicationByRepository(repository, operation string) {
 	}
 
 	for _, policy := range policies {
-		if err := TriggerReplication(policy.ProjectID, repository, operation); err != nil {
+		if err := TriggerReplication(policy.ProjectID, repository, tags, operation); err != nil {
 			log.Errorf("failed to trigger replication of %d for %s: %v", policy.ID, repository, err)
 		} else {
 			log.Infof("replication of %d for %s triggered", policy.ID, repository)
@@ -163,9 +167,25 @@ func TriggerReplicationByRepository(repository, operation string) {
 }
 
 func buildReplicationURL() string {
-	return "http://job_service/api/replicationJobs"
+	url := getJobServiceURL()
+	url = strings.TrimSpace(url)
+	url = strings.TrimRight(url, "/")
+
+	return fmt.Sprintf("%s/api/replicationJobs", url)
 }
 
 func buildJobLogURL(jobID string) string {
-	return fmt.Sprintf("http://job_service/api/replicationJobs/%s/log", jobID)
+	url := getJobServiceURL()
+	url = strings.TrimSpace(url)
+	url = strings.TrimRight(url, "/")
+
+	return fmt.Sprintf("%s/api/replicationJobs/%s/log", url, jobID)
+}
+
+func getJobServiceURL() string {
+	url := os.Getenv("JOB_SERVICE_URL")
+	if len(url) == 0 {
+		url = "http://job_service"
+	}
+	return url
 }

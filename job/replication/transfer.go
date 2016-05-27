@@ -153,7 +153,7 @@ func (c *Checker) Enter() (string, error) {
 	c.logger.Infof("project %s already exists on %s", c.project, c.dstURL)
 
 	if !canWrite {
-		err = fmt.Errorf("the user %s has no write privilege to project %s on %s", c.dstUsr, c.project, c.dstURL)
+		err = fmt.Errorf("the user %s is unauthorized to write to project %s on %s", c.dstUsr, c.project, c.dstURL)
 		c.logger.Errorf("%v", err)
 		return "", err
 	}

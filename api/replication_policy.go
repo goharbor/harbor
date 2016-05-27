@@ -74,7 +74,7 @@ func (pa *RepPolicyAPI) Post() {
 	}
 
 	go func() {
-		if err := TriggerReplication(pid, "", models.RepOpTransfer); err != nil {
+		if err := TriggerReplication(pid, "", nil, models.RepOpTransfer); err != nil {
 			log.Errorf("failed to trigger replication of %d: %v", pid, err)
 		} else {
 			log.Infof("replication of %d triggered", pid)
@@ -108,7 +108,7 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 
 	if e.Enabled == 1 {
 		go func() {
-			if err := TriggerReplication(pa.policyID, "", models.RepOpTransfer); err != nil {
+			if err := TriggerReplication(pa.policyID, "", nil, models.RepOpTransfer); err != nil {
 				log.Errorf("failed to trigger replication of %d: %v", pa.policyID, err)
 			} else {
 				log.Infof("replication of %d triggered", pa.policyID)

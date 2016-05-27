@@ -9,6 +9,7 @@ import (
 	"github.com/vmware/harbor/job/replication"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
+	uti "github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -18,6 +19,7 @@ type RepJobParm struct {
 	TargetUsername string
 	TargetPassword string
 	Repository     string
+	Tags           []string
 	Enabled        int
 	Operation      string
 }
@@ -182,6 +184,7 @@ func (sm *JobSM) Reset(jid int64) error {
 	sm.Parms = &RepJobParm{
 		LocalRegURL: config.LocalHarborURL(),
 		Repository:  job.Repository,
+		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
 	}
@@ -198,7 +201,17 @@ func (sm *JobSM) Reset(jid int64) error {
 	}
 	sm.Parms.TargetURL = target.URL
 	sm.Parms.TargetUsername = target.Username
-	sm.Parms.TargetPassword = target.Password
+	pwd := target.Password
+
+	if len(pwd) != 0 {
+		pwd, err = uti.ReversibleDecrypt(pwd)
+		if err != nil {
+			return fmt.Errorf("failed to decrypt password: %v", err)
+		}
+	}
+
+	sm.Parms.TargetPassword = pwd
+
 	//init states handlers
 	sm.Logger = utils.NewLogger(sm.JobID)
 	sm.CurrentState = models.JobPending
@@ -222,7 +235,7 @@ func (sm *JobSM) Reset(jid int64) error {
 func addImgTransferTransition(sm *JobSM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		nil, sm.Logger)
+		sm.Parms.Tags, sm.Logger)
 	if err != nil {
 		return err
 	}
@@ -236,7 +249,7 @@ func addImgTransferTransition(sm *JobSM) error {
 }
 
 func addImgDeleteTransition(sm *JobSM) error {
-	deleter := replication.NewDeleter(sm.Parms.Repository, nil, sm.Parms.TargetURL,
+	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
 		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
