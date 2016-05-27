@@ -119,7 +119,7 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/toggle_project_public:
+  /projects/{project_id}/publicity:
     post:
       summary: Update properties for a selected project.
       description: |
@@ -444,6 +444,24 @@ paths:
           format: int32
           required: true
           description: Registered user ID
+        - name: email
+          in: body
+          type: string
+          format: string
+          required: false
+          description: Email of the user
+        - name: realname
+          in: body
+          type: string
+          format: string
+          required: true
+          description: Realname of the user
+        - name: comment
+          in: body
+          type: string
+          format: string
+          required: false
+          description: Comment of the user
       tags:
         - Products
       responses:
@@ -517,7 +535,7 @@ paths:
           description: Guests can only change their own account.
         500:
           description: Unexpected internal errors.
-   /users/{user_id}/toggle_user_admin:
+   /users/{user_id}/sysadmin:
      post:
       summary: Update a registered user to change to be an administrator of Harbor.
       description: |

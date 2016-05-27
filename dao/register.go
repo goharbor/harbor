@@ -25,7 +25,10 @@ import (
 
 // Register is used for user to register, the password is encrypted before the record is inserted into database.
 func Register(user models.User) (int64, error) {
-
+	//when register from ldap, email may be empty
+	if user.Email == "" || len(user.Email) == 0 {
+		user.Email = user.Username + "@vmware.com"
+	}
 	o := GetOrmer()
 	p, err := o.Raw("insert into user (username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
