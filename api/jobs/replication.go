@@ -144,7 +144,7 @@ func getRepoList(projectID int64) ([]string, error) {
 	*/
 	uiURL := config.LocalHarborURL()
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", uiURL+"api/repositories?project_id="+strconv.Itoa(int(projectID)), nil)
+	req, err := http.NewRequest("GET", uiURL+"/api/repositories?project_id="+strconv.Itoa(int(projectID)), nil)
 	if err != nil {
 		log.Errorf("Error when creating request: %v")
 		return nil, err

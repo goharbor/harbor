@@ -53,6 +53,19 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "ui"
+  jobservice:
+    build:
+      context: ../
+      dockerfile: Dockerfile.job
+    env_file:
+      - ./config/jobservice/env
+    depends_on:
+      - ui
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "jobservice"
   proxy:
     image: library/nginx:1.9
     volumes:

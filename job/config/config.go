@@ -24,9 +24,9 @@ func init() {
 		maxJobWorkers = defaultMaxWorkers
 	}
 
-	localURL = os.Getenv("LOCAL_HARBOR_URL")
+	localURL = os.Getenv("HARBOR_URL")
 	if len(localURL) == 0 {
-		localURL = "http://ui/"
+		localURL = "http://registry:5000/"
 	}
 
 	logDir = os.Getenv("LOG_DIR")
