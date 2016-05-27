@@ -14,6 +14,7 @@ import (
 type RepPolicyAPI struct {
 	BaseAPI
 	policyID int64
+	policy   *models.RepPolicy
 }
 
 func (pa *RepPolicyAPI) Prepare() {
@@ -41,6 +42,7 @@ func (pa *RepPolicyAPI) Prepare() {
 		if p == nil {
 			pa.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy does not exist, id: %v", pa.policyID))
 		}
+		pa.policy = p
 	}
 }
 
@@ -73,13 +75,15 @@ func (pa *RepPolicyAPI) Post() {
 		return
 	}
 
-	go func() {
-		if err := TriggerReplication(pid, "", nil, models.RepOpTransfer); err != nil {
-			log.Errorf("failed to trigger replication of %d: %v", pid, err)
-		} else {
-			log.Infof("replication of %d triggered", pid)
-		}
-	}()
+	if policy.Enabled == 1 {
+		go func() {
+			if err := TriggerReplication(pid, "", nil, models.RepOpTransfer); err != nil {
+				log.Errorf("failed to trigger replication of %d: %v", pid, err)
+			} else {
+				log.Infof("replication of %d triggered", pid)
+			}
+		}()
+	}
 
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(pid, 10))
 }
@@ -90,17 +94,17 @@ type enablementReq struct {
 
 func (pa *RepPolicyAPI) UpdateEnablement() {
 	e := enablementReq{}
-	var err error
 	pa.DecodeJSONReq(&e)
-	if e.Enabled == 1 {
-		err = dao.EnableRepPolicy(pa.policyID)
-	} else if e.Enabled == 0 {
-		err = dao.DisableRepPolicy(pa.policyID)
-	} else {
+	if e.Enabled != 0 && e.Enabled != 1 {
 		pa.RenderError(http.StatusBadRequest, "invalid enabled value")
 		return
 	}
-	if err != nil {
+
+	if pa.policy.Enabled == e.Enabled {
+		return
+	}
+
+	if err := dao.UpdateRepPolicyEnablement(pa.policyID, e.Enabled); err != nil {
 		log.Errorf("Failed to update policy enablement in DB, error: %v", err)
 		pa.RenderError(http.StatusInternalServerError, "Internal Error")
 		return

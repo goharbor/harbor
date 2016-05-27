@@ -44,7 +44,7 @@ type Deleter struct {
 
 // NewDeleter returns a Deleter
 func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, logger *log.Logger) *Deleter {
-	return &Deleter{
+	deleter := &Deleter{
 		repository: repository,
 		tags:       tags,
 		dstURL:     dstURL,
@@ -52,6 +52,9 @@ func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string,
 		dstPwd:     dstPwd,
 		logger:     logger,
 	}
+	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, destination user: %s",
+		deleter.repository, deleter.tags, deleter.dstURL, deleter.dstUsr)
+	return deleter
 }
 
 // Exit ...

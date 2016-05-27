@@ -158,7 +158,7 @@ func TriggerReplicationByRepository(repository string, tags []string, operation 
 	}
 
 	for _, policy := range policies {
-		if err := TriggerReplication(policy.ProjectID, repository, tags, operation); err != nil {
+		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
 			log.Errorf("failed to trigger replication of %d for %s: %v", policy.ID, repository, err)
 		} else {
 			log.Infof("replication of %d for %s triggered", policy.ID, repository)

@@ -70,6 +70,11 @@ func (n *NotificationHandler) Post() {
 			if username == "" {
 				username = "anonymous"
 			}
+
+			if username == "job-service-user" {
+				return
+			}
+
 			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {

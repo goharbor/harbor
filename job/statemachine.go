@@ -214,6 +214,8 @@ func (sm *JobSM) Reset(jid int64) error {
 
 	//init states handlers
 	sm.Logger = utils.NewLogger(sm.JobID)
+	sm.Handlers = make(map[string]StateHandler)
+	sm.Transitions = make(map[string]map[string]struct{})
 	sm.CurrentState = models.JobPending
 
 	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})

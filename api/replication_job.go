@@ -3,6 +3,7 @@ package api
 import (
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/utils/log"
@@ -62,6 +63,9 @@ func (ja *RepJobAPI) GetLog() {
 	}
 
 	if resp.StatusCode == http.StatusOK {
+		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Disposition"), "attachment; filename=replication_job.log")
+		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), resp.Header.Get(http.CanonicalHeaderKey("Content-Type")))
+		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(b)))
 		if _, err = ja.Ctx.ResponseWriter.Write(b); err != nil {
 			log.Errorf("failed to write log to response; %v", err)
 			ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
