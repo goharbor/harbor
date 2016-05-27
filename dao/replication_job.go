@@ -9,10 +9,13 @@ import (
 	"github.com/vmware/harbor/models"
 )
 
+// AddRepTarget ...
 func AddRepTarget(target models.RepTarget) (int64, error) {
 	o := orm.NewOrm()
 	return o.Insert(&target)
 }
+
+// GetRepTarget ...
 func GetRepTarget(id int64) (*models.RepTarget, error) {
 	o := orm.NewOrm()
 	t := models.RepTarget{ID: id}
@@ -22,18 +25,27 @@ func GetRepTarget(id int64) (*models.RepTarget, error) {
 	}
 	return &t, err
 }
+
+// DeleteRepTarget ...
 func DeleteRepTarget(id int64) error {
 	o := orm.NewOrm()
 	_, err := o.Delete(&models.RepTarget{ID: id})
 	return err
 }
 
+// UpdateRepTarget ...
 func UpdateRepTarget(target models.RepTarget) error {
 	o := orm.NewOrm()
-	_, err := o.Update(&target)
+	if len(target.Password) != 0 {
+		_, err := o.Update(&target)
+		return err
+	}
+
+	_, err := o.Update(&target, "URL", "Name", "Username")
 	return err
 }
 
+// GetAllRepTargets ...
 func GetAllRepTargets() ([]*models.RepTarget, error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(&models.RepTarget{})
@@ -42,6 +54,7 @@ func GetAllRepTargets() ([]*models.RepTarget, error) {
 	return targets, err
 }
 
+// AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := orm.NewOrm()
 	sqlTpl := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, %s, NOW(), NOW())`
@@ -62,6 +75,8 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	id, err := r.LastInsertId()
 	return id, err
 }
+
+// GetRepPolicy ...
 func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	o := orm.NewOrm()
 	p := models.RepPolicy{ID: id}
@@ -71,17 +86,23 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	}
 	return &p, err
 }
+
+// GetRepPolicyByProject ...
 func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	var res []*models.RepPolicy
 	o := orm.NewOrm()
 	_, err := o.QueryTable("replication_policy").Filter("project_id", projectID).All(&res)
 	return res, err
 }
+
+// DeleteRepPolicy ...
 func DeleteRepPolicy(id int64) error {
 	o := orm.NewOrm()
 	_, err := o.Delete(&models.RepPolicy{ID: id})
 	return err
 }
+
+// UpdateRepPolicyEnablement ...
 func UpdateRepPolicyEnablement(id int64, enabled int) error {
 	o := orm.NewOrm()
 	p := models.RepPolicy{
@@ -91,14 +112,18 @@ func UpdateRepPolicyEnablement(id int64, enabled int) error {
 
 	return err
 }
+
+// EnableRepPolicy ...
 func EnableRepPolicy(id int64) error {
 	return UpdateRepPolicyEnablement(id, 1)
 }
 
+// DisableRepPolicy ...
 func DisableRepPolicy(id int64) error {
 	return UpdateRepPolicyEnablement(id, 0)
 }
 
+// AddRepJob ...
 func AddRepJob(job models.RepJob) (int64, error) {
 	o := orm.NewOrm()
 	if len(job.Status) == 0 {
@@ -110,6 +135,7 @@ func AddRepJob(job models.RepJob) (int64, error) {
 	return o.Insert(&job)
 }
 
+// GetRepJob ...
 func GetRepJob(id int64) (*models.RepJob, error) {
 	o := orm.NewOrm()
 	j := models.RepJob{ID: id}
@@ -121,6 +147,7 @@ func GetRepJob(id int64) (*models.RepJob, error) {
 	return &j, nil
 }
 
+// GetRepJobByPolicy ...
 func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	var res []*models.RepJob
 	_, err := repJobPolicyIDQs(policyID).All(&res)
@@ -141,11 +168,14 @@ func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
 	return o.QueryTable("replication_job").Filter("policy_id", policyID)
 }
 
+// DeleteRepJob ...
 func DeleteRepJob(id int64) error {
 	o := orm.NewOrm()
 	_, err := o.Delete(&models.RepJob{ID: id})
 	return err
 }
+
+// UpdateRepJobStatus ...
 func UpdateRepJobStatus(id int64, status string) error {
 	o := orm.NewOrm()
 	j := models.RepJob{
