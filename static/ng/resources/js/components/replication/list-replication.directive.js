@@ -6,19 +6,26 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['ListReplicationPolicyService'];
+  ListReplicationController.$inject = ['ListReplicationPolicyService', 'ListReplicationJobService'];
   
-  function ListReplicationController(ListReplicationPolicyService) {
+  function ListReplicationController(ListReplicationPolicyService, ListReplicationJobService) {
     var vm = this;
     
     vm.addReplication = addReplication;
-    vm.retrieve = retrieve;
+    vm.retrievePolicy = retrievePolicy;
+    vm.retrieveJob = retrieveJob;
     vm.last = false;
-    vm.retrieve();
-        
-    function retrieve() {
+    
+    vm.retrievePolicy();
+   
+    function retrievePolicy() {
       ListReplicationPolicyService()
         .then(listReplicationPolicySuccess, listReplicationPolicyFailed);
+    }
+    
+    function retrieveJob(policyId) {
+      ListReplicationJobService(policyId)
+        .then(listReplicationJobSuccess, listReplicationJobFailed);
     }
 
     function listReplicationPolicySuccess(data, status) {
@@ -27,6 +34,14 @@
     
     function listReplicationPolicyFailed(data, status) {
       console.log('Failed list replication policy:' + data);
+    }
+
+    function listReplicationJobSuccess(data, status) {
+      vm.replicationJobs = data || [];
+    }
+    
+    function listReplicationJobFailed(data, status) {
+      console.log('Failed list replication job:' + data);
     }
 
     function addReplication() {
@@ -50,25 +65,27 @@
     
     function link(scope, element, attrs, ctrl) {
       var uponPaneHeight = element.find('#upon-pane').height();
-      var downPaneHeight = element.find('#down-pane').height() + element.find('#down-pane').offset().top;
-      var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top;
+      var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top + element.find('.well').height() - 24;
       
-      console.log('uponPaneHeight:' + uponPaneHeight + ', downPaneHeight:' + downPaneHeight + ', handleHeight:' + handleHeight);
-      
+      var maxDownPaneHeight = 245;
+            
       element.find('.split-handle').on('mousedown', mousedownHandler);
       
       function mousedownHandler(e) {
         e.preventDefault();
-        console.log('pageY:' + e.pageY + ', offset:' + (handleHeight - e.pageY));
         $(document).on('mousemove', mousemoveHandler);    
         $(document).on('mouseup', mouseupHandler);
       }
       
       function mousemoveHandler(e) {
-        element.find('#upon-pane').css({'height' : uponPaneHeight - (handleHeight - e.pageY) + 'px'});
-        element.find('#down-pane').css({'height' : downPaneHeight - (e.pageY - handleHeight)  + 'px'});
+        if(element.find('#down-pane').height() <= maxDownPaneHeight) {
+          element.find('#upon-pane').css({'height' : (uponPaneHeight - (handleHeight - e.pageY)) + 'px'});
+          element.find('#down-pane').css({'height' : (uponPaneHeight + (handleHeight - e.pageY - 196)) + 'px'});  
+        }else{
+          element.find('#down-pane').css({'height' : (maxDownPaneHeight) + 'px'});
+          $(document).off('mousemove');
+        }
       }
-      
       function mouseupHandler(e) {
         $(document).off('mousedown');
         $(document).off('mousemove');
@@ -91,6 +108,7 @@
         $(this)
           .css({'background-color': '#057ac9'})
           .css({'color': '#fff'});
+        ctrl.retrieveJob($(this).attr('policy_id'));
       }
     }
   }
