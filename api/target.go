@@ -16,7 +16,6 @@
 package api
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net"
 	"net/http"
@@ -25,6 +24,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 	registry_util "github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
@@ -76,13 +76,11 @@ func (t *TargetAPI) Ping() {
 		password = target.Password
 
 		if len(password) != 0 {
-			b, err := base64.StdEncoding.DecodeString(password)
+			password, err = utils.ReversibleDecrypt(password)
 			if err != nil {
-				log.Errorf("failed to decode password: %v", err)
+				log.Errorf("failed to decrypt password: %v", err)
 				t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
-
-			password = string(b)
 		}
 	} else {
 		endpoint = t.GetString("endpoint")
@@ -142,12 +140,12 @@ func (t *TargetAPI) Get() {
 
 		for _, target := range targets {
 			if len(target.Password) != 0 {
-				b, err := base64.StdEncoding.DecodeString(target.Password)
+				str, err := utils.ReversibleDecrypt(target.Password)
 				if err != nil {
-					log.Errorf("failed to decode password: %v", err)
+					log.Errorf("failed to decrypt password: %v", err)
 					t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
-				target.Password = string(b)
+				target.Password = str
 			}
 		}
 
@@ -167,12 +165,12 @@ func (t *TargetAPI) Get() {
 	}
 
 	if len(target.Password) != 0 {
-		b, err := base64.StdEncoding.DecodeString(target.Password)
+		pwd, err := utils.ReversibleDecrypt(target.Password)
 		if err != nil {
-			log.Errorf("failed to decode password: %v", err)
+			log.Errorf("failed to decrypt password: %v", err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		target.Password = string(b)
+		target.Password = pwd
 	}
 
 	t.Data["json"] = target
@@ -189,7 +187,7 @@ func (t *TargetAPI) Post() {
 	}
 
 	if len(target.Password) != 0 {
-		target.Password = base64.StdEncoding.EncodeToString([]byte(target.Password))
+		target.Password = utils.ReversibleEncrypt(target.Password)
 	}
 
 	id, err := dao.AddRepTarget(*target)
@@ -216,7 +214,7 @@ func (t *TargetAPI) Put() {
 	}
 
 	if len(target.Password) != 0 {
-		target.Password = base64.StdEncoding.EncodeToString([]byte(target.Password))
+		target.Password = utils.ReversibleEncrypt(target.Password)
 	}
 
 	if err := dao.UpdateRepTarget(*target); err != nil {

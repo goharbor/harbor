@@ -9,6 +9,7 @@ import (
 	"github.com/vmware/harbor/job/replication"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
+	uti "github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -18,6 +19,7 @@ type RepJobParm struct {
 	TargetUsername string
 	TargetPassword string
 	Repository     string
+	Tags           []string
 	Enabled        int
 	Operation      string
 }
@@ -182,6 +184,7 @@ func (sm *JobSM) Reset(jid int64) error {
 	sm.Parms = &RepJobParm{
 		LocalRegURL: config.LocalHarborURL(),
 		Repository:  job.Repository,
+		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
 	}
@@ -198,35 +201,43 @@ func (sm *JobSM) Reset(jid int64) error {
 	}
 	sm.Parms.TargetURL = target.URL
 	sm.Parms.TargetUsername = target.Username
-	sm.Parms.TargetPassword = target.Password
+	pwd := target.Password
+
+	if len(pwd) != 0 {
+		pwd, err = uti.ReversibleDecrypt(pwd)
+		if err != nil {
+			return fmt.Errorf("failed to decrypt password: %v", err)
+		}
+	}
+
+	sm.Parms.TargetPassword = pwd
+
 	//init states handlers
 	sm.Logger = utils.NewLogger(sm.JobID)
+	sm.Handlers = make(map[string]StateHandler)
+	sm.Transitions = make(map[string]map[string]struct{})
 	sm.CurrentState = models.JobPending
 
 	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
 	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
 	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
 
-	if sm.Parms.Operation == models.RepOpTransfer {
-		/*
-			sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{DummyHandler: DummyHandler{JobID: sm.JobID}, img: sm.Parms.Repository, logger: sm.Logger})
-			//only handle one target for now
-			sm.AddTransition("pull-img", "push-img", ImgPusher{DummyHandler: DummyHandler{JobID: sm.JobID}, targetURL: sm.Parms.TargetURL, logger: sm.Logger})
-			sm.AddTransition("push-img", models.JobFinished, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
-		*/
-
-		if err = addImgOutTransition(sm); err != nil {
-			return err
-		}
-
+	switch sm.Parms.Operation {
+	case models.RepOpTransfer:
+		err = addImgTransferTransition(sm)
+	case models.RepOpDelete:
+		err = addImgDeleteTransition(sm)
+	default:
+		err = fmt.Errorf("unsupported operation: %s", sm.Parms.Operation)
 	}
-	return nil
+
+	return err
 }
 
-func addImgOutTransition(sm *JobSM) error {
+func addImgTransferTransition(sm *JobSM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		nil, sm.Logger)
+		sm.Parms.Tags, sm.Logger)
 	if err != nil {
 		return err
 	}
@@ -236,5 +247,15 @@ func addImgOutTransition(sm *JobSM) error {
 	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
 	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
+	return nil
+}
+
+func addImgDeleteTransition(sm *JobSM) error {
+	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
+		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
+
+	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
+	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+
 	return nil
 }

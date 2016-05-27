@@ -53,6 +53,7 @@ func initRouters() {
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/:pid/members/?:mid", &api.ProjectMemberAPI{})
+	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
 	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/projects/:id/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
@@ -62,6 +63,10 @@ func initRouters() {
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/replicationJobs", &api.RepJobAPI{})
+	beego.Router("/api/replicationJobs/:id/log", &api.RepJobAPI{}, "get:GetLog")
+	beego.Router("/api/replicationPolicies", &api.RepPolicyAPI{})
+	beego.Router("/api/replicationPolicies/:id/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/targets/?:id", &api.TargetAPI{})
 	beego.Router("/api/target_ping", &api.TargetAPI{}, "get:Ping")
 

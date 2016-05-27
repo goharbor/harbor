@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/service/cache"
@@ -69,6 +70,11 @@ func (n *NotificationHandler) Post() {
 			if username == "" {
 				username = "anonymous"
 			}
+
+			if username == "job-service-user" {
+				return
+			}
+
 			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {
@@ -77,6 +83,8 @@ func (n *NotificationHandler) Post() {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}
 				}()
+
+				go api.TriggerReplicationByRepository(repo, []string{repoTag}, models.RepOpTransfer)
 			}
 		}
 	}

@@ -3,9 +3,10 @@ package dao
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
-	"strings"
 )
 
 func AddRepTarget(target models.RepTarget) (int64, error) {
@@ -81,23 +82,21 @@ func DeleteRepPolicy(id int64) error {
 	_, err := o.Delete(&models.RepPolicy{ID: id})
 	return err
 }
-func updateRepPolicyEnablement(id int64, enabled int) error {
+func UpdateRepPolicyEnablement(id int64, enabled int) error {
 	o := orm.NewOrm()
 	p := models.RepPolicy{
 		ID:      id,
 		Enabled: enabled}
-	num, err := o.Update(&p, "Enabled")
-	if num == 0 {
-		err = fmt.Errorf("Failed to update replication policy with id: %d", id)
-	}
+	_, err := o.Update(&p, "Enabled")
+
 	return err
 }
 func EnableRepPolicy(id int64) error {
-	return updateRepPolicyEnablement(id, 1)
+	return UpdateRepPolicyEnablement(id, 1)
 }
 
 func DisableRepPolicy(id int64) error {
-	return updateRepPolicyEnablement(id, 0)
+	return UpdateRepPolicyEnablement(id, 0)
 }
 
 func AddRepJob(job models.RepJob) (int64, error) {
