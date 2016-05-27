@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals # We require Python 2.6 or later
 from string import Template
+import random
+import string
 import os
 import sys
 from io import open
@@ -44,12 +46,14 @@ crt_organization = rcp.get("configuration", "crt_organization")
 crt_organizationalunit = rcp.get("configuration", "crt_organizationalunit")
 crt_commonname = rcp.get("configuration", "crt_commonname")
 crt_email = rcp.get("configuration", "crt_email")
+max_job_workers = rcp.get("configuration", "max_job_workers")
 ########
+
+ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "config")
 templates_dir = os.path.join(base_dir, "templates")
-
 
 ui_config_dir = os.path.join(config_dir,"ui")
 if not os.path.exists(ui_config_dir):
@@ -58,6 +62,10 @@ if not os.path.exists(ui_config_dir):
 db_config_dir = os.path.join(config_dir, "db")
 if not os.path.exists(db_config_dir):
     os.makedirs(os.path.join(config_dir, "db"))
+
+job_config_dir = os.path.join(config_dir, "jobservice")
+if not os.path.exists(job_config_dir):
+    os.makedirs(job_config_dir)
 
 def render(src, dest, **kw):
     t = Template(open(src, 'r').read())
@@ -69,8 +77,9 @@ ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
+job_conf_env = os.path.join(config_dir, "jobservice", "env")
 
-conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env ]
+conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env, job_conf_env ]
 def rmdir(cf):
     for f in cf:
         if os.path.exists(f):
@@ -87,7 +96,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         harbor_admin_password=harbor_admin_password,
         ldap_url=ldap_url,
         ldap_basedn=ldap_basedn,
-	self_registration=self_registration)
+	self_registration=self_registration,
+        ui_secret=ui_secret)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
@@ -106,6 +116,13 @@ render(os.path.join(templates_dir, "registry", "config.yml"),
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
+
+render(os.path.join(templates_dir, "jobservice", "env"),
+        job_conf_env,
+        db_password=db_password,
+        ui_secret=ui_secret,
+        max_job_workers=max_job_workers,
+        ui_url=ui_url)
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \
