@@ -16,26 +16,66 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
-	exist, err := dao.IsAdminRole(userID)
+	roles, err := listRoles(userID, projectID)
 	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
+		log.Errorf("error occurred in getProjectPermission: %v", err)
 		return false
 	}
-	if exist {
-		return true
-	}
-	roleList, err := dao.GetUserProjectRoles(userID, projectID)
+	return len(roles) > 0
+}
+
+func hasProjectAdminRole(userID int, projectID int64) bool {
+	roles, err := listRoles(userID, projectID)
 	if err != nil {
-		log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
+		log.Errorf("error occurred in getProjectPermission: %v", err)
 		return false
 	}
-	return len(roleList) > 0
+
+	for _, role := range roles {
+		if role.RoleID == models.PROJECTADMIN {
+			return true
+		}
+	}
+
+	return false
+}
+
+//sysadmin has all privileges to all projects
+func listRoles(userID int, projectID int64) ([]models.Role, error) {
+	roles := make([]models.Role, 1)
+	isSysAdmin, err := dao.IsAdminRole(userID)
+	if err != nil {
+		return roles, err
+	}
+	if isSysAdmin {
+		role, err := dao.GetRoleByID(models.PROJECTADMIN)
+		if err != nil {
+			return roles, err
+		}
+		roles = append(roles, *role)
+		return roles, nil
+	}
+
+	rs, err := dao.GetUserProjectRoles(userID, projectID)
+	if err != nil {
+		return roles, err
+	}
+	roles = append(roles, rs...)
+	return roles, nil
 }
 
 func checkUserExists(name string) int {
@@ -48,4 +88,104 @@ func checkUserExists(name string) int {
 		return u.UserID
 	}
 	return 0
+}
+
+// TriggerReplication triggers the replication according to the policy
+func TriggerReplication(policyID int64, repository string,
+	tags []string, operation string) error {
+	data := struct {
+		PolicyID  int64    `json:"policy_id"`
+		Repo      string   `json:"repository"`
+		Operation string   `json:"operation"`
+		TagList   []string `json:"tags"`
+	}{
+		PolicyID:  policyID,
+		Repo:      repository,
+		TagList:   tags,
+		Operation: operation,
+	}
+
+	b, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+
+	url := buildReplicationURL()
+
+	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+}
+
+// GetPoliciesByRepository returns policies according the repository
+func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
+	repository = strings.TrimSpace(repository)
+	repository = strings.TrimRight(repository, "/")
+	projectName := repository[:strings.LastIndex(repository, "/")]
+
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	policies, err := dao.GetRepPolicyByProject(project.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
+func TriggerReplicationByRepository(repository string, tags []string, operation string) {
+	policies, err := GetPoliciesByRepository(repository)
+	if err != nil {
+		log.Errorf("failed to get policies for repository %s: %v", repository, err)
+		return
+	}
+
+	for _, policy := range policies {
+		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
+			log.Errorf("failed to trigger replication of %d for %s: %v", policy.ID, repository, err)
+		} else {
+			log.Infof("replication of %d for %s triggered", policy.ID, repository)
+		}
+	}
+}
+
+func buildReplicationURL() string {
+	url := getJobServiceURL()
+	url = strings.TrimSpace(url)
+	url = strings.TrimRight(url, "/")
+
+	return fmt.Sprintf("%s/api/replicationJobs", url)
+}
+
+func buildJobLogURL(jobID string) string {
+	url := getJobServiceURL()
+	url = strings.TrimSpace(url)
+	url = strings.TrimRight(url, "/")
+
+	return fmt.Sprintf("%s/api/replicationJobs/%s/log", url, jobID)
+}
+
+func getJobServiceURL() string {
+	url := os.Getenv("JOB_SERVICE_URL")
+	if len(url) == 0 {
+		url = "http://job_service"
+	}
+	return url
 }
