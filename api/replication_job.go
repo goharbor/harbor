@@ -1,79 +1,119 @@
 package api
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
 
+// RepJobAPI handles request to /api/replicationJobs /api/replicationJobs/:id/log
 type RepJobAPI struct {
 	BaseAPI
+	jobID int64
 }
 
-func (ja *RepJobAPI) Prepare() {
-	uid := ja.ValidateUser()
+// Prepare validates that whether user has system admin role
+func (ra *RepJobAPI) Prepare() {
+	uid := ra.ValidateUser()
 	isAdmin, err := dao.IsAdminRole(uid)
 	if err != nil {
 		log.Errorf("Failed to Check if the user is admin, error: %v, uid: %d", err, uid)
 	}
 	if !isAdmin {
-		ja.CustomAbort(http.StatusForbidden, "")
+		ra.CustomAbort(http.StatusForbidden, "")
+	}
+
+	idStr := ra.Ctx.Input.Param(":id")
+	if len(idStr) != 0 {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			ra.CustomAbort(http.StatusBadRequest, "ID is invalid")
+		}
+		ra.jobID = id
 	}
 
 }
 
-func (ja *RepJobAPI) Get() {
-	policyID, err := ja.GetInt64("policy_id")
+// Get ...
+func (ra *RepJobAPI) Get() {
+	policyID, err := ra.GetInt64("policy_id")
 	if err != nil {
 		log.Errorf("Failed to get policy id, error: %v", err)
-		ja.RenderError(http.StatusBadRequest, "Invalid policy id")
+		ra.RenderError(http.StatusBadRequest, "Invalid policy id")
 		return
 	}
 	jobs, err := dao.GetRepJobByPolicy(policyID)
 	if err != nil {
 		log.Errorf("Failed to query job from db, error: %v", err)
-		ja.RenderError(http.StatusInternalServerError, "Failed to query job")
+		ra.RenderError(http.StatusInternalServerError, "Failed to query job")
 		return
 	}
-	ja.Data["json"] = jobs
-	ja.ServeJSON()
+	ra.Data["json"] = jobs
+	ra.ServeJSON()
+}
+
+// Delete ...
+func (ra *RepJobAPI) Delete() {
+	if ra.jobID == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "id is nil")
+	}
+
+	job, err := dao.GetRepJob(ra.jobID)
+	if err != nil {
+		log.Errorf("failed to get job %d: %v", ra.jobID, err)
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if job.Status == models.JobPending || job.Status == models.JobRunning {
+		ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("job is %s, can not be deleted", job.Status))
+	}
+
+	if err = dao.DeleteRepJob(ra.jobID); err != nil {
+		log.Errorf("failed to deleted job %d: %v", ra.jobID, err)
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 }
 
 // GetLog ...
-func (ja *RepJobAPI) GetLog() {
-	id := ja.Ctx.Input.Param(":id")
-	if len(id) == 0 {
-		ja.CustomAbort(http.StatusBadRequest, "id is nil")
+func (ra *RepJobAPI) GetLog() {
+	if ra.jobID == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
 
-	resp, err := http.Get(buildJobLogURL(id))
+	resp, err := http.Get(buildJobLogURL(strconv.FormatInt(ra.jobID, 10)))
 	if err != nil {
-		log.Errorf("failed to get log for job %s: %v", id, err)
-		ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		for key, values := range resp.Header {
+			for _, value := range values {
+				ra.Ctx.ResponseWriter.Header().Set(key, value)
+			}
+		}
+
+		if _, err = io.Copy(ra.Ctx.ResponseWriter, resp.Body); err != nil {
+			log.Errorf("failed to write log to response; %v", err)
+			ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		return
 	}
 
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("failed to read response body for job %s: %v", id, err)
-		ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		log.Errorf("failed to read reponse body: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Disposition"), "attachment; filename=replication_job.log")
-		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), resp.Header.Get(http.CanonicalHeaderKey("Content-Type")))
-		ja.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(b)))
-		if _, err = ja.Ctx.ResponseWriter.Write(b); err != nil {
-			log.Errorf("failed to write log to response; %v", err)
-			ja.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		return
-	}
-
-	ja.CustomAbort(resp.StatusCode, string(b))
+	ra.CustomAbort(resp.StatusCode, string(b))
 }
 
 //TODO:add Post handler to call job service API to submit jobs by policy

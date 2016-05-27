@@ -793,7 +793,7 @@ func TestAddRepPolicy(t *testing.T) {
 		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Enabled: 1, Description: whatever;\n result: Name: %s, TargetID: %d, Enabled: %d, Description: %s",
 			targetID, p.Name, p.TargetID, p.Enabled, p.Description)
 	}
-	var tm time.Time = time.Now().AddDate(0, 0, -1)
+	var tm = time.Now().AddDate(0, 0, -1)
 	if !p.StartTime.After(tm) {
 		t.Errorf("Unexpected start_time: %v", p.StartTime)
 	}
@@ -871,9 +871,9 @@ func TestAddRepJob(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddRepJob: %v", err)
 		return
-	} else {
-		jobID = id
 	}
+	jobID = id
+
 	j, err := GetRepJob(id)
 	if err != nil {
 		t.Errorf("Error occurred in GetRepJob: %v, id: %d", err, id)

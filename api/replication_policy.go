@@ -11,12 +11,15 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
 type RepPolicyAPI struct {
 	BaseAPI
 	policyID int64
 	policy   *models.RepPolicy
 }
 
+// Prepare validates whether the user has system admin role
+// and parsed the policy ID if it exists
 func (pa *RepPolicyAPI) Prepare() {
 	uid := pa.ValidateUser()
 	var err error
@@ -92,6 +95,7 @@ type enablementReq struct {
 	Enabled int `json:"enabled"`
 }
 
+// UpdateEnablement changes the enablement of policy
 func (pa *RepPolicyAPI) UpdateEnablement() {
 	e := enablementReq{}
 	pa.DecodeJSONReq(&e)
