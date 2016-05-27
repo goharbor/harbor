@@ -30,6 +30,7 @@ import (
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry/auth"
 	"github.com/vmware/harbor/utils/registry/errors"
 )
 
@@ -241,27 +242,27 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	username, err := ra.getUsername()
+	endpoint := os.Getenv("REGISTRY_URL")
+
+	username, password, ok := ra.Ctx.Request.BasicAuth()
+	if ok {
+		credential := auth.NewBasicAuthCredential(username, password)
+		return registry.NewRepositoryWithCredential(repoName, endpoint, credential)
+	}
+
+	username, err = ra.getUsername()
 	if err != nil {
 		return nil, err
 	}
-
-	endpoint := os.Getenv("REGISTRY_URL")
 
 	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
 }
 
 func (ra *RepositoryAPI) getUsername() (string, error) {
-	// get username from basic auth
-	username, _, ok := ra.Ctx.Request.BasicAuth()
-	if ok {
-		return username, nil
-	}
-
 	// get username from session
 	sessionUsername := ra.GetSession("username")
 	if sessionUsername != nil {
-		username, ok = sessionUsername.(string)
+		username, ok := sessionUsername.(string)
 		if ok {
 			return username, nil
 		}
