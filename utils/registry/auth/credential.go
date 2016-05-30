@@ -47,6 +47,8 @@ type cookieCredential struct {
 	cookie *http.Cookie
 }
 
+// NewCookieCredential initialize a cookie based crendential handler, the cookie in parameter will be added to request to registry
+// if this crendential is attached to a registry client.
 func NewCookieCredential(c *http.Cookie) Credential {
 	return &cookieCredential{
 		cookie: c,

@@ -13,6 +13,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// RepJobParm wraps the parm of a job
 type RepJobParm struct {
 	LocalRegURL    string
 	TargetURL      string
@@ -24,7 +25,8 @@ type RepJobParm struct {
 	Operation      string
 }
 
-type JobSM struct {
+// SM is the state machine to handle job, it handles one job at a time.
+type SM struct {
 	JobID         int64
 	CurrentState  string
 	PreviousState string
@@ -38,9 +40,9 @@ type JobSM struct {
 	lock         *sync.Mutex
 }
 
-// EnsterState transit the statemachine from the current state to the state in parameter.
+// EnterState transit the statemachine from the current state to the state in parameter.
 // It returns the next state the statemachine should tranit to.
-func (sm *JobSM) EnterState(s string) (string, error) {
+func (sm *SM) EnterState(s string) (string, error) {
 	log.Debugf("Job id: %d, transiting from State: %s, to State: %s", sm.JobID, sm.CurrentState, s)
 	targets, ok := sm.Transitions[sm.CurrentState]
 	_, exist := targets[s]
@@ -57,7 +59,7 @@ func (sm *JobSM) EnterState(s string) (string, error) {
 		log.Debugf("Job id: %d, no handler found for state:%s, skip", sm.JobID, sm.CurrentState)
 	}
 	enterHandler, ok := sm.Handlers[s]
-	var next string = models.JobContinue
+	var next = models.JobContinue
 	var err error
 	if ok {
 		if next, err = enterHandler.Enter(); err != nil {
@@ -75,7 +77,7 @@ func (sm *JobSM) EnterState(s string) (string, error) {
 // Start kicks off the statemachine to transit from current state to s, and moves on
 // It will search the transit map if the next state is "_continue", and
 // will enter error state if there's more than one possible path when next state is "_continue"
-func (sm *JobSM) Start(s string) {
+func (sm *SM) Start(s string) {
 	n, err := sm.EnterState(s)
 	log.Debugf("Job id: %d, next state from handler: %s", sm.JobID, n)
 	for len(n) > 0 && err == nil {
@@ -106,7 +108,8 @@ func (sm *JobSM) Start(s string) {
 	}
 }
 
-func (sm *JobSM) AddTransition(from string, to string, h StateHandler) {
+// AddTransition add a transition to the transition table of state machine, the handler is the handler of target state "to"
+func (sm *SM) AddTransition(from string, to string, h StateHandler) {
 	_, ok := sm.Transitions[from]
 	if !ok {
 		sm.Transitions[from] = make(map[string]struct{})
@@ -115,7 +118,8 @@ func (sm *JobSM) AddTransition(from string, to string, h StateHandler) {
 	sm.Handlers[to] = h
 }
 
-func (sm *JobSM) RemoveTransition(from string, to string) {
+// RemoveTransition removes a transition from transition table of the state machine
+func (sm *SM) RemoveTransition(from string, to string) {
 	_, ok := sm.Transitions[from]
 	if !ok {
 		return
@@ -123,7 +127,9 @@ func (sm *JobSM) RemoveTransition(from string, to string) {
 	delete(sm.Transitions[from], to)
 }
 
-func (sm *JobSM) Stop(id int64) {
+// Stop will set the desired state as "stopped" such that when next tranisition happen the state machine will stop handling the current job
+// and the worker can release itself to the workerpool.
+func (sm *SM) Stop(id int64) {
 	log.Debugf("Trying to stop the job: %d", id)
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
@@ -136,19 +142,20 @@ func (sm *JobSM) Stop(id int64) {
 	}
 }
 
-func (sm *JobSM) getDesiredState() string {
+func (sm *SM) getDesiredState() string {
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
 	return sm.desiredState
 }
 
-func (sm *JobSM) setDesiredState(s string) {
+func (sm *SM) setDesiredState(s string) {
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
 	sm.desiredState = s
 }
 
-func (sm *JobSM) Init() {
+// Init initialzie the state machine, it will be called once in the lifecycle of state machine.
+func (sm *SM) Init() {
 	sm.lock = &sync.Mutex{}
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
@@ -159,7 +166,8 @@ func (sm *JobSM) Init() {
 	}
 }
 
-func (sm *JobSM) Reset(jid int64) error {
+// Reset resets the state machine so it will start handling another job.
+func (sm *SM) Reset(jid int64) error {
 	//To ensure the new jobID is visible to the thread to stop the SM
 	sm.lock.Lock()
 	sm.JobID = jid
@@ -234,7 +242,7 @@ func (sm *JobSM) Reset(jid int64) error {
 	return err
 }
 
-func addImgTransferTransition(sm *JobSM) error {
+func addImgTransferTransition(sm *SM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		sm.Parms.Tags, sm.Logger)
@@ -250,7 +258,7 @@ func addImgTransferTransition(sm *JobSM) error {
 	return nil
 }
 
-func addImgDeleteTransition(sm *JobSM) error {
+func addImgDeleteTransition(sm *SM) error {
 	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
 		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
 
