@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -47,8 +46,7 @@ func (n *NotificationHandler) Post() {
 		log.Errorf("error while decoding json: %v", err)
 		return
 	}
-	var username, action, repo, project, repoTag, url string
-	var timestamp time.Time
+	var username, action, repo, project, repoTag string
 	var matched bool
 	for _, e := range notification.Events {
 		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
@@ -57,8 +55,6 @@ func (n *NotificationHandler) Post() {
 			matched = false
 		}
 		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
-			timestamp = e.TimeStamp
-			url = e.Target.URL
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
