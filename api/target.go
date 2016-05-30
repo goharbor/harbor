@@ -139,14 +139,7 @@ func (t *TargetAPI) Get() {
 		}
 
 		for _, target := range targets {
-			if len(target.Password) != 0 {
-				str, err := utils.ReversibleDecrypt(target.Password)
-				if err != nil {
-					log.Errorf("failed to decrypt password: %v", err)
-					t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-				}
-				target.Password = str
-			}
+			target.Password = ""
 		}
 
 		t.Data["json"] = targets
@@ -177,7 +170,7 @@ func (t *TargetAPI) Get() {
 	t.ServeJSON()
 }
 
-// Post
+// Post ...
 func (t *TargetAPI) Post() {
 	target := &models.RepTarget{}
 	t.DecodeJSONReq(target)
@@ -209,8 +202,8 @@ func (t *TargetAPI) Put() {
 	target := &models.RepTarget{}
 	t.DecodeJSONReq(target)
 
-	if target.ID != id {
-		t.CustomAbort(http.StatusBadRequest, "IDs mismatch")
+	if target.ID == 0 {
+		target.ID = id
 	}
 
 	if len(target.Password) != 0 {
@@ -223,6 +216,7 @@ func (t *TargetAPI) Put() {
 	}
 }
 
+// Delete ...
 func (t *TargetAPI) Delete() {
 	id := t.getIDFromURL()
 	if id == 0 {

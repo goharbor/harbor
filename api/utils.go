@@ -150,6 +150,7 @@ func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
+// TriggerReplicationByRepository triggers the replication according to the repository
 func TriggerReplicationByRepository(repository string, tags []string, operation string) {
 	policies, err := GetPoliciesByRepository(repository)
 	if err != nil {

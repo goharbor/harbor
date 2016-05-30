@@ -3,6 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httputil"
+	"strconv"
+
 	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/job"
@@ -10,16 +15,15 @@ import (
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-	"io/ioutil"
-	"net/http"
-	"net/http/httputil"
-	"strconv"
 )
 
+// ReplicationJob handles /api/replicationJobs /api/replicationJobs/:id/log
+// /api/replicationJobs/actions
 type ReplicationJob struct {
 	api.BaseAPI
 }
 
+// ReplicationReq holds informations of request for /api/replicationJobs
 type ReplicationReq struct {
 	PolicyID  int64    `json:"policy_id"`
 	Repo      string   `json:"repository"`
@@ -27,6 +31,7 @@ type ReplicationReq struct {
 	TagList   []string `json:"tags"`
 }
 
+// Post ...
 func (rj *ReplicationJob) Post() {
 	var data ReplicationReq
 	rj.DecodeJSONReq(&data)
@@ -91,11 +96,13 @@ func (rj *ReplicationJob) addJob(repo string, policyID int64, operation string, 
 	return nil
 }
 
+// RepActionReq holds informations of request for /api/replicationJobs/actions
 type RepActionReq struct {
 	PolicyID int64  `json:"policy_id"`
 	Action   string `json:"action"`
 }
 
+// HandleAction stops jobs of policy
 func (rj *ReplicationJob) HandleAction() {
 	var data RepActionReq
 	rj.DecodeJSONReq(&data)
@@ -118,6 +125,7 @@ func (rj *ReplicationJob) HandleAction() {
 	job.WorkerPool.StopJobs(jobIDList)
 }
 
+// GetLog gets log of a job
 func (rj *ReplicationJob) GetLog() {
 	idStr := rj.Ctx.Input.Param(":id")
 	jid, err := strconv.ParseInt(idStr, 10, 64)
