@@ -14,14 +14,20 @@ type Catalog struct {
 	Questions         Questions `json:"questions" yaml:"questions"`
 }
 
+type Validation struct {
+	Schema string `json:"schema" yaml:"schema"`
+	Value  string `json:"value" yaml:"value"`
+}
+
 type Question struct {
-	Variable    string   `json:"variable" yaml:"variable"`
-	Description string   `json:"description" yaml:"description"`
-	Label       string   `json:"label" yaml:"label"`
-	Type        string   `json:"type" yaml:"type"`
-	Required    bool     `json:"required" yaml:"required"`
-	Default     string   `json:"default" yaml:"default"`
-	Options     []string `json:"options" yaml:"options"`
+	Variable    string        `json:"variable" yaml:"variable"`
+	Description string        `json:"description" yaml:"description"`
+	Label       string        `json:"label" yaml:"label"`
+	Type        string        `json:"type" yaml:"type"`
+	Required    bool          `json:"required" yaml:"required"`
+	Default     string        `json:"default" yaml:"default"`
+	Options     []string      `json:"options" yaml:"options"`
+	Validations []*Validation `json:"validations" yaml:"validations"`
 }
 
 type Questions []Question

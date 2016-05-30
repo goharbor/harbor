@@ -17,7 +17,7 @@ clean:
 
 
 localbuild:
-	go build -v
+	GO15VENDOREXPERIMENT=1 go build -v
 
 run: 
 	MYSQL_USR=root MYSQL_PWD= MYSQL_PORT_3306_TCP_ADDR=localhost  MYSQL_PORT_3306_TCP_PORT=3306  REDIS_HOST=localhost REDIS_PORT=6379  REGISTRY_URL=http://10.3.10.36:5000 SQL_PATH=${PWD}/sql  ./harbor
