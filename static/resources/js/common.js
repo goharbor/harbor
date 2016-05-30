@@ -71,7 +71,7 @@ var SUPPORT_LANGUAGES = {
 	"zh-CN": "Chinese",
 	"de-DE": "German",
 	"ru-RU": "Russian",
-	"ja-JP": "Japanese",
+	"ja-JP": "Japanese"
 };
 
 var DEFAULT_LANGUAGE = "en-US";
