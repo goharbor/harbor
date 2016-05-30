@@ -17,6 +17,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -36,27 +37,31 @@ func (l *LogAPI) Prepare() {
 
 //Get returns the recent logs according to parameters
 func (l *LogAPI) Get() {
-	lines, err := l.GetInt("lines")
-	startTime := l.GetString("start_time")
-	endTime := l.GetString("end_time")
+	var linesNum int
+	var err error
+	lines := l.GetString("lines")
+	if len(lines) == 0 {
+		linesNum = 0
+	} else {
+		linesNum, err = strconv.Atoi(lines)
+		if err != nil {
+			log.Errorf("Get parameters error--lines, err: %v", err)
+			l.CustomAbort(http.StatusBadRequest, "bad request of lines")
+		}
+	}
 
-	if err != nil {
-		log.Errorf("Get parameters error--lines, err: %v", err)
-		l.CustomAbort(http.StatusBadRequest, "bad request of lines")
+	startTime := l.GetString("start_time")
+	if len(startTime) == 0 {
+		startTime = ""
 	}
-	if lines <= 0 {
-		lines = 10
+
+	endTime := l.GetString("end_time")
+	if len(endTime) == 0 {
+		endTime = ""
 	}
-	if len(startTime) <= 0 {
-		log.Errorf("Get parameters error--startTime: %s", startTime)
-		l.CustomAbort(http.StatusBadRequest, "bad request of startTime")
-	}
-	if len(endTime) <= 0 {
-		log.Errorf("Get parameters error--endTime: %s", endTime)
-		l.CustomAbort(http.StatusBadRequest, "bad request of endTime")
-	}
+
 	var logList []models.AccessLog
-	logList, err = dao.GetRecentLogs(lines, startTime, endTime)
+	logList, err = dao.GetRecentLogs(l.userID, linesNum, startTime, endTime)
 	if err != nil {
 		l.CustomAbort(http.StatusInternalServerError, "Internal error")
 		return

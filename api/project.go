@@ -40,6 +40,7 @@ type projectReq struct {
 }
 
 const projectNameMaxLen int = 30
+const projectNameMinLen int = 4
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -286,10 +287,7 @@ func validateProjectReq(req projectReq) error {
 	if len(pn) == 0 {
 		return fmt.Errorf("Project name can not be empty")
 	}
-	if len(pn) > projectNameMaxLen {
-		return fmt.Errorf("Project name is too long")
-	}
-	if isIllegalLength(req.ProjectName, 4, 30) {
+	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
 		return fmt.Errorf("project name is illegal in length. (greater than 4 or less than 30)")
 	}
 	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {

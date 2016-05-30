@@ -18,8 +18,6 @@ package dao
 import (
 	"strings"
 
-	"github.com/astaxie/beego/orm"
-
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -119,19 +117,32 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 }
 
 //GetRecentLogs returns recent logs according to parameters
-func GetRecentLogs(lines int, startTime, endTime string) ([]models.AccessLog, error) {
+func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
 	var recentLogList []models.AccessLog
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, startTime)
-	queryParam = append(queryParam, endTime)
-	qb, _ := orm.NewQueryBuilder("mysql")
-	qb.Select("log_id",
-		"user_id", "project_id", "repo_name", "repo_tag", "GUID", "operation", "op_time").
-		From("access_log").
-		Where("op_time BETWEEN ? AND ? ").
-		OrderBy("op_time").Desc().
-		Limit(lines)
-	sql := qb.String()
+
+	sql := "select user_id, project_id, repo_name, repo_tag, GUID, operation, op_time from access_log where user_id = ?"
+	queryParam = append(queryParam, userID)
+	if startTime != "" || len(startTime) > 0 {
+		sql += " and op_time >= ?"
+		queryParam = append(queryParam, startTime)
+	}
+
+	if endTime != "" || len(endTime) > 0 {
+		sql += " and op_time <= ?"
+		queryParam = append(queryParam, endTime)
+	}
+
+	sql += " order by op_time desc"
+	if linesNum > 0 {
+		sql += " limit ?"
+		queryParam = append(queryParam, linesNum)
+	} else if startTime == "" || endTime == "" {
+		linesNum = 10
+		sql += " limit ?"
+		queryParam = append(queryParam, linesNum)
+	}
+
 	o := GetOrmer()
 	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
 	if err != nil {
