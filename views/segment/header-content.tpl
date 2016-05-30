@@ -63,7 +63,6 @@
 			{{ else if eq .AuthMode "db_auth" }}
 			  <div class="input-group">
 	  		    &nbsp;<button type="button" class="btn btn-default" id="btnSignIn">{{i18n .Lang "sign_in"}}</button>
-				&nbsp;<button type="button" class="btn btn-success" id="btnSignUp">{{i18n .Lang "sign_up"}}</button>
 			  </div>
 		    {{ else }}
 			  <div class="input-group">
