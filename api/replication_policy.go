@@ -49,7 +49,7 @@ func (pa *RepPolicyAPI) Prepare() {
 	}
 }
 
-// Get ...
+// Get gets all the policies according to the project
 func (pa *RepPolicyAPI) Get() {
 	projectID, err := pa.GetInt64("project_id")
 	if err != nil {
@@ -67,7 +67,7 @@ func (pa *RepPolicyAPI) Get() {
 	pa.ServeJSON()
 }
 
-// Post ...
+// Post creates a policy, and if it is enbled, the replication will be triggered right now.
 func (pa *RepPolicyAPI) Post() {
 	policy := models.RepPolicy{}
 	pa.DecodeJSONReq(&policy)
@@ -95,7 +95,7 @@ type enablementReq struct {
 	Enabled int `json:"enabled"`
 }
 
-// UpdateEnablement changes the enablement of policy
+// UpdateEnablement changes the enablement of the policy
 func (pa *RepPolicyAPI) UpdateEnablement() {
 	e := enablementReq{}
 	pa.DecodeJSONReq(&e)

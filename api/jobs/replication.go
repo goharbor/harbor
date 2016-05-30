@@ -31,7 +31,7 @@ type ReplicationReq struct {
 	TagList   []string `json:"tags"`
 }
 
-// Post ...
+// Post creates replication jobs according to the policy.
 func (rj *ReplicationJob) Post() {
 	var data ReplicationReq
 	rj.DecodeJSONReq(&data)
@@ -102,7 +102,7 @@ type RepActionReq struct {
 	Action   string `json:"action"`
 }
 
-// HandleAction stops jobs of policy
+// HandleAction supports some operations to all the jobs of one policy
 func (rj *ReplicationJob) HandleAction() {
 	var data RepActionReq
 	rj.DecodeJSONReq(&data)
@@ -125,7 +125,7 @@ func (rj *ReplicationJob) HandleAction() {
 	job.WorkerPool.StopJobs(jobIDList)
 }
 
-// GetLog gets log of a job
+// GetLog gets logs of the job
 func (rj *ReplicationJob) GetLog() {
 	idStr := rj.Ctx.Input.Param(":id")
 	jid, err := strconv.ParseInt(idStr, 10, 64)

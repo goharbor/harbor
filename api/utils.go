@@ -160,9 +160,9 @@ func TriggerReplicationByRepository(repository string, tags []string, operation 
 
 	for _, policy := range policies {
 		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
-			log.Errorf("failed to trigger replication of %d for %s: %v", policy.ID, repository, err)
+			log.Errorf("failed to trigger replication of policy %d for %s: %v", policy.ID, repository, err)
 		} else {
-			log.Infof("replication of %d for %s triggered", policy.ID, repository)
+			log.Infof("replication of policy %d for %s triggered", policy.ID, repository)
 		}
 	}
 }
@@ -172,7 +172,7 @@ func buildReplicationURL() string {
 	url = strings.TrimSpace(url)
 	url = strings.TrimRight(url, "/")
 
-	return fmt.Sprintf("%s/api/replicationJobs", url)
+	return fmt.Sprintf("%s/api/jobs/replication", url)
 }
 
 func buildJobLogURL(jobID string) string {
@@ -180,13 +180,13 @@ func buildJobLogURL(jobID string) string {
 	url = strings.TrimSpace(url)
 	url = strings.TrimRight(url, "/")
 
-	return fmt.Sprintf("%s/api/replicationJobs/%s/log", url, jobID)
+	return fmt.Sprintf("%s/api/jobs/replication/%s/log", url, jobID)
 }
 
 func getJobServiceURL() string {
 	url := os.Getenv("JOB_SERVICE_URL")
 	if len(url) == 0 {
-		url = "http://job_service"
+		url = "http://jobservice"
 	}
 	return url
 }
