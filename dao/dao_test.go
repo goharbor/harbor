@@ -725,6 +725,16 @@ func TestChangeUserProfile(t *testing.T) {
 	}
 }
 
+func TestGetRecentLogs(t *testing.T) {
+	logs, err := GetRecentLogs(currentUser.UserID, 10, "2016-05-13 00:00:00", time.Now().String())
+	if err != nil {
+		t.Errorf("error occured in getting recent logs, error: %v", err)
+	}
+	if len(logs) <= 0 {
+		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
+	}
+}
+
 func TestDeleteUser(t *testing.T) {
 	err := DeleteUser(currentUser.UserID)
 	if err != nil {
@@ -736,16 +746,6 @@ func TestDeleteUser(t *testing.T) {
 	}
 	if user != nil {
 		t.Errorf("user is not nil after deletion, user: %+v", user)
-	}
-}
-
-func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(10, "2016-05-13 00:00:00", time.Now().String())
-	if err != nil {
-		t.Errorf("error occured in getting recent logs, error: %v", err)
-	}
-	if len(logs) <= 0 {
-		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
 	}
 }
 
