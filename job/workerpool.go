@@ -12,8 +12,11 @@ type workerPool struct {
 	workerList []*Worker
 }
 
+// WorkerPool is a set of workers each worker is associate to a statemachine for handling jobs.
+// it consists of a channel for free workers and a list to all workers
 var WorkerPool *workerPool
 
+// StopJobs accepts a list of jobs and will try to stop them if any of them is being executed by the worker.
 func (wp *workerPool) StopJobs(jobs []int64) {
 	log.Debugf("Works working on jobs: %v will be stopped", jobs)
 	for _, id := range jobs {
@@ -26,13 +29,16 @@ func (wp *workerPool) StopJobs(jobs []int64) {
 	}
 }
 
+// Worker consists of a channel for job from which worker gets the next job to handle, and a pointer to a statemachine,
+// the actual work to handle the job is done via state machine.
 type Worker struct {
 	ID      int
 	RepJobs chan int64
-	SM      *JobSM
+	SM      *SM
 	quit    chan bool
 }
 
+// Start is a loop worker gets id from its channel and handle it.
 func (w *Worker) Start() {
 	go func() {
 		for {
@@ -51,6 +57,7 @@ func (w *Worker) Start() {
 	}()
 }
 
+// Stop ...
 func (w *Worker) Stop() {
 	go func() {
 		w.quit <- true
@@ -75,17 +82,19 @@ func (w *Worker) handleRepJob(id int64) {
 	}
 }
 
+// NewWorker returns a pointer to new instance of worker
 func NewWorker(id int) *Worker {
 	w := &Worker{
 		ID:      id,
 		RepJobs: make(chan int64),
 		quit:    make(chan bool),
-		SM:      &JobSM{},
+		SM:      &SM{},
 	}
 	w.SM.Init()
 	return w
 }
 
+// InitWorkerPool create workers according to configuration.
 func InitWorkerPool() {
 	WorkerPool = &workerPool{
 		workerChan: make(chan *Worker, config.MaxJobWorkers()),
@@ -99,10 +108,11 @@ func InitWorkerPool() {
 	}
 }
 
+// Dispatch will listen to the jobQueue of job service and try to pick a free worker from the worker pool and assign the job to it.
 func Dispatch() {
 	for {
 		select {
-		case job := <-JobQueue:
+		case job := <-jobQueue:
 			go func(jobID int64) {
 				log.Debugf("Trying to dispatch job: %d", jobID)
 				worker := <-WorkerPool.workerChan

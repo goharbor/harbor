@@ -5,20 +5,29 @@ import (
 )
 
 const (
-	JobPending  string = "pending"
-	JobRunning  string = "running"
-	JobError    string = "error"
-	JobStopped  string = "stopped"
+	//JobPending ...
+	JobPending string = "pending"
+	//JobRunning ...
+	JobRunning string = "running"
+	//JobError ...
+	JobError string = "error"
+	//JobStopped ...
+	JobStopped string = "stopped"
+	//JobFinished ...
 	JobFinished string = "finished"
+	//JobCanceled ...
 	JobCanceled string = "canceled"
-	//  statemachine will move to next possible state based on trasition table
-	JobContinue   string = "_continue"
+	//JobContinue is the status returned by statehandler to tell statemachine to move to next possible state based on trasition table.
+	JobContinue string = "_continue"
+	//RepOpTransfer represents the operation of a job to transfer repository to a remote registry/harbor instance.
 	RepOpTransfer string = "transfer"
-	RepOpDelete   string = "delete"
-	//cookie name to contain the UI secret
+	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
+	RepOpDelete string = "delete"
+	//UISecretCookie is the cookie name to contain the UI secret
 	UISecretCookie string = "uisecret"
 )
 
+// RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
 	ID        int64  `orm:"column(id)" json:"id"`
 	ProjectID int64  `orm:"column(project_id)" json:"project_id"`
@@ -33,6 +42,8 @@ type RepPolicy struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+// RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove
+// a repository to/from a remote registry instance.
 type RepJob struct {
 	ID         int64    `orm:"column(id)" json:"id"`
 	Status     string   `orm:"column(status)" json:"status"`
@@ -46,6 +57,7 @@ type RepJob struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+// RepTarget is the model for a replication targe, i.e. destination, which wraps the endpoint URL and username/password of a remote registry.
 type RepTarget struct {
 	ID           int64     `orm:"column(id)" json:"id"`
 	URL          string    `orm:"column(url)" json:"url"`
@@ -56,14 +68,17 @@ type RepTarget struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+//TableName is required by by beego orm to map RepTarget to table replication_target
 func (rt *RepTarget) TableName() string {
 	return "replication_target"
 }
 
+//TableName is required by by beego orm to map RepJob to table replication_job
 func (rj *RepJob) TableName() string {
 	return "replication_job"
 }
 
+//TableName is required by by beego orm to map RepPolicy to table replication_policy
 func (rp *RepPolicy) TableName() string {
 	return "replication_policy"
 }

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 )
 
+// NewLogger create a logger for a speicified job
 func NewLogger(jobID int64) *log.Logger {
 	logFile := GetJobLogPath(jobID)
 	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
@@ -19,6 +20,7 @@ func NewLogger(jobID int64) *log.Logger {
 	return log.New(f, log.NewTextFormatter(), log.InfoLevel)
 }
 
+// GetJobLogPath returns the absolute path in which the job log file is located.
 func GetJobLogPath(jobID int64) string {
 	fn := fmt.Sprintf("job_%d.log", jobID)
 	return filepath.Join(config.LogDir(), fn)

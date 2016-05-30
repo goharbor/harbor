@@ -29,6 +29,7 @@ import (
 )
 
 const (
+	// UserAgent is used to decorate the request so it can be identified by webhook.
 	UserAgent string = "registry-client"
 )
 
@@ -82,6 +83,8 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 	return registry, nil
 }
 
+// NewRegistryWithCredential returns a Registry instance which associate to a crendential.
+// And Credential is essentially a decorator for client to docorate the request before sending it to the registry.
 func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
 	endpoint = strings.TrimSpace(endpoint)
 	endpoint = strings.TrimRight(endpoint, "/")

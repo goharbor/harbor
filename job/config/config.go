@@ -58,18 +58,22 @@ func init() {
 	log.Debugf("config: uiSecret: ******")
 }
 
+// MaxJobWorkers ...
 func MaxJobWorkers() int {
 	return maxJobWorkers
 }
 
+// LocalHarborURL returns the local registry url, job service will use this URL to pull manifest and repository.
 func LocalHarborURL() string {
 	return localURL
 }
 
+// LogDir returns the absolute path to which the log file will be written
 func LogDir() string {
 	return logDir
 }
 
+// UISecret will return the value of secret cookie for jobsevice to call UI API.
 func UISecret() string {
 	return uiSecret
 }
