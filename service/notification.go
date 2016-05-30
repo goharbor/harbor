@@ -80,29 +80,25 @@ func (n *NotificationHandler) Post() {
 					}
 				}()
 				go func() {
-					exist, err4ReopExists := dao.RepoExists(repo)
-					if err4ReopExists != nil {
-						log.Errorf("Error happened checking repo existence in db, error: %v, repo name: %s", err4ReopExists, repo)
-					}
+					exist := dao.RepositoryExists(repo)
 					if exist {
 						return
 					}
-					log.Debugf("Add repo %s into DB.", repo)
-					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project, Created: timestamp, URL: url}
-					_, err4AddRepo := dao.AddRepo(repoItem)
-					if err4AddRepo != nil {
-						log.Errorf("Error happens when adding repo: %v", err4AddRepo)
+					log.Debugf("Add repository %s into DB.", repo)
+					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project}
+					err4AddRepository := dao.AddRepository(repoItem)
+					if err4AddRepository != nil {
+						log.Errorf("Error happens when adding repository: %v", err4AddRepository)
 					}
 				}()
 
 			}
 			if action == "pull" {
 				go func() {
-					log.Debugf("Increase the repo %s pull count.", repo)
-					repoItem := models.RepoRecord{Name: repo}
-					err4IncreasePullCount := dao.IncreasePullCount(repoItem)
+					log.Debugf("Increase the repository %s pull count.", repo)
+					err4IncreasePullCount := dao.IncreasePullCount(repo)
 					if err4IncreasePullCount != nil {
-						log.Errorf("Error happens when increaing pull count: %v", err4IncreasePullCount)
+						log.Errorf("Error happens when increasing pull count: %v", err4IncreasePullCount)
 					}
 				}()
 			}
