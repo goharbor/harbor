@@ -52,7 +52,7 @@ func initRouters() {
 
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid([0-9]+)", &api.ProjectMemberAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
 	beego.Router("/api/statistics", &api.StatisticAPI{})
