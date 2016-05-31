@@ -65,11 +65,8 @@ func IncreasePullCount(name string) (err error) {
 		orm.Params{
 			"pull_count": orm.ColValue(orm.ColAdd, 1),
 		})
-	if err != nil {
-		fmt.Printf("error update pull count, %v", err)
-	}
 	if num == 0 {
-		err = fmt.Errorf("Failed to increase repository pull count with name: %s", name)
+		err = fmt.Errorf("Failed to increase repository pull count with name: %s %s", name, err.Error())
 	}
 	return err
 }
