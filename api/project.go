@@ -18,6 +18,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"unicode"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -292,6 +293,11 @@ func validateProjectReq(req projectReq) error {
 	}
 	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
 		return fmt.Errorf("project name contains illegal characters")
+	}
+	for _, v := range pn {
+		if !unicode.IsLower(v) {
+			return fmt.Errorf("project name must be in lower case")
+		}
 	}
 	return nil
 }

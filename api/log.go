@@ -18,6 +18,7 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -37,27 +38,42 @@ func (l *LogAPI) Prepare() {
 
 //Get returns the recent logs according to parameters
 func (l *LogAPI) Get() {
-	var linesNum int
 	var err error
+	startTime := l.GetString("start_time")
+	if len(startTime) == 0 {
+		startTime = ""
+	} else {
+		i, err := strconv.ParseInt(startTime, 10, 64)
+		if err != nil {
+			l.CustomAbort(http.StatusInternalServerError, "Internal error")
+		}
+		startTime = time.Unix(i, 0).String()
+	}
+
+	endTime := l.GetString("end_time")
+	if len(endTime) == 0 {
+		endTime = ""
+	} else {
+		j, err := strconv.ParseInt(endTime, 10, 64)
+		if err != nil {
+			l.CustomAbort(http.StatusInternalServerError, "Internal error")
+		}
+		endTime = time.Unix(j, 0).String()
+	}
+
+	var linesNum int
 	lines := l.GetString("lines")
 	if len(lines) == 0 {
 		linesNum = 0
+		if startTime == "" || endTime == "" {
+			linesNum = 10
+		}
 	} else {
 		linesNum, err = strconv.Atoi(lines)
 		if err != nil {
 			log.Errorf("Get parameters error--lines, err: %v", err)
 			l.CustomAbort(http.StatusBadRequest, "bad request of lines")
 		}
-	}
-
-	startTime := l.GetString("start_time")
-	if len(startTime) == 0 {
-		startTime = ""
-	}
-
-	endTime := l.GetString("end_time")
-	if len(endTime) == 0 {
-		endTime = ""
 	}
 
 	var logList []models.AccessLog

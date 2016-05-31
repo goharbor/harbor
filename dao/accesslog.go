@@ -121,28 +121,23 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 	var recentLogList []models.AccessLog
 	queryParam := make([]interface{}, 1)
 
-	sql := "select user_id, project_id, repo_name, repo_tag, GUID, operation, op_time from access_log where user_id = ?"
+	sql := "select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username from access_log left join  user on access_log.user_id=user.user_id where project_id in (select distinct project_id from access_log where user_id = ?)"
 	queryParam = append(queryParam, userID)
-	if startTime != "" || len(startTime) > 0 {
+	if startTime != "" {
 		sql += " and op_time >= ?"
 		queryParam = append(queryParam, startTime)
 	}
 
-	if endTime != "" || len(endTime) > 0 {
+	if endTime != "" {
 		sql += " and op_time <= ?"
 		queryParam = append(queryParam, endTime)
 	}
 
 	sql += " order by op_time desc"
-	if linesNum > 0 {
-		sql += " limit ?"
-		queryParam = append(queryParam, linesNum)
-	} else if startTime == "" || endTime == "" {
-		linesNum = 10
+	if linesNum != 0 {
 		sql += " limit ?"
 		queryParam = append(queryParam, linesNum)
 	}
-
 	o := GetOrmer()
 	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
 	if err != nil {
