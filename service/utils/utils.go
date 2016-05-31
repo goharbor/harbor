@@ -12,6 +12,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+// Package utils contains methods to support security, cache, and webhook functions.
 package utils
 
 import (
@@ -20,6 +22,7 @@ import (
 	"os"
 )
 
+// VerifySecret verifies the UI_SECRET cookie in a http request.
 func VerifySecret(r *http.Request) bool {
 	secret := os.Getenv("UI_SECRET")
 	c, err := r.Cookie("uisecret")
