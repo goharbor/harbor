@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/vmware/harbor/auth/db"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -63,6 +64,9 @@ func updateInitPassword(userID int, password string) error {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	beego.BConfig.WebConfig.Session.SessionProvider = "redis"
+	beego.BConfig.WebConfig.Session.SessionProviderConfig = fmt.Sprintf("%s:%s,20", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+
 	dao.InitDB()
 	dao.UpgradeDB()
 	updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
