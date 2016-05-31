@@ -51,6 +51,7 @@ nav .container-custom {
 
 .nav-custom .active {
   border-bottom: 3px solid #EFEFEF;
+  font-weight: bold;
 }
 
 .dropdown {

@@ -3,11 +3,14 @@
   'use strict';
   
   angular
-    .module('harbor.layout.system.management')
-    .controller('SystemManagementController', SystemManagementController);
-    
-  function SystemManagementController() {
+    .module('harbor.system.management')
+    .directive('configuration', configuration);
+  
+  ConfigurationController.$inject = [];
+  
+  function ConfigurationController() {
     var vm = this;
+
     vm.registrationOptions = [
       { 
         'name': 'on',
@@ -34,6 +37,18 @@
     function changeSettings(system) {
       console.log(system);
     }
+  }
+  
+  function configuration() {
+    var directive = {
+      'restrict': 'E',
+      'templateUrl': '/static/ng/resources/js/components/system-management/configuration.directive.html',
+      'scope': true,
+      'controller': ConfigurationController,
+      'controllerAs': 'vm',
+      'bindToController': true
+    };
+    return directive;
   }
   
 })();

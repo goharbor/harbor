@@ -13,6 +13,7 @@
     vm.isProjectMember = false;
     
     vm.togglePublicity = togglePublicity;
+    vm.target = 'repositories';
     
     function togglePublicity(e) {
       vm.publicity = e.publicity;

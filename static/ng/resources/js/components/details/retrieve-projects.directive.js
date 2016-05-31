@@ -6,16 +6,16 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$routeParams', '$route', '$location'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$location', 'getParameterByName', '$window'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $routeParams, $route, $location) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $location, getParameterByName, $window) {
     var vm = this;
     
     vm.projectName = '';
     vm.isOpen = false;
     
-    if($route.current.params.is_public) {
-      vm.isPublic = $route.current.params.is_public === 'true' ? 1 : 0;
+    if(getParameterByName('is_public', $location.absUrl())) {
+      vm.isPublic = getParameterByName('is_public', $location.absUrl()) === 'true' ? 1 : 0;
       vm.publicity = (vm.isPublic === 1) ? true : false;
     }
 
@@ -56,9 +56,9 @@
       
       vm.selectedProject = vm.projects[0];
       
-      if($routeParams.project_id){
+      if(getParameterByName('project_id', $location.absUrl())){
         angular.forEach(vm.projects, function(value, index) {
-          if(value['ProjectId'] === Number($routeParams.project_id)) {
+          if(value['ProjectId'] === Number(getParameterByName('project_id', $location.absUrl()))) {
             vm.selectedProject = value;
           }
         }); 
@@ -98,6 +98,7 @@
       vm.checkProjectMember(vm.selectedProject.ProjectId);
       vm.isOpen = false;
       $location.search('project_id', vm.selectedProject.ProjectId);
+      $window.location.reload();
     }       
     
   }
@@ -113,7 +114,6 @@
         'isProjectMember': '='
       },
       link: link,
-      replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
       controllerAs: 'vm'

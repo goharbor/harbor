@@ -34,7 +34,6 @@
     var directive = {
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/details/switch-pane-projects.directive.html',
-      replace: true,
       scope: {
         'isOpen': '=',
         'selectedProject': '='

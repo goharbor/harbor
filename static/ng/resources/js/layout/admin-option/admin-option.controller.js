@@ -6,6 +6,8 @@
     .module('harbor.layout.admin.option')
     .controller('AdminOptionController', AdminOptionController);
   
+  AdminOptionController.$inject = [];
+  
   function AdminOptionController() {
     var vm = this;
     vm.toggle = false;
@@ -16,7 +18,7 @@
         vm.toggle = false;
       }else{
         vm.toggle = true;
-      }  
+      }
     }
   }
   

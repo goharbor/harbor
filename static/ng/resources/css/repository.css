@@ -39,6 +39,7 @@
 
 .switch-pane-tabs li .active { 
   border-bottom: 2px solid rgb(0, 84, 190);
+  font-weight: bold;
 }
 
 .switch-pane-drop-down {

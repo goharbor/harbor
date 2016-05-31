@@ -17,7 +17,7 @@
       }
     });
     
-    vm.url = $location.url();
+    vm.path = $location.path();
   }
   
   function navigationDetails() {
@@ -26,7 +26,8 @@
       templateUrl: '/ng/navigation_detail',
       link: link,
       scope: {
-        'selectedProject': '='
+        'selectedProject': '=',
+        'target': '='
       },
       replace: true,
       controller: NavigationDetailsController,
@@ -38,26 +39,24 @@
     
     function link(scope, element, attrs, ctrl) {
       
-      var visited = ctrl.url.substring(1);  
+      var visited = ctrl.path.substring(1);  
       if(visited.indexOf('?') >= 0) {
         visited = ctrl.url.substring(1, ctrl.url.indexOf('?'));
       }
-      scope.$watch('vm.selectedProject', function(current) {
-        if(current) {
-          element.find('a').removeClass('active');
-          if(visited) {
-            element.find('a[tag="' + visited + '"]').addClass('active');
-          }else{
-            element.find('a:first').addClass('active');
-          }
-        }
-      });
       
+      if(visited) {
+        element.find('a[tag="' + visited + '"]').addClass('active');
+      }else{
+        element.find('a:first').addClass('active');
+      }
+
       element.find('a').on('click', click);
             
       function click(event) {
         element.find('a').removeClass('active');
         $(event.target).addClass('active');
+        ctrl.target = $(this).attr('tag');
+        scope.$apply();
       }
      
     }

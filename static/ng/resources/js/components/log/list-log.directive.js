@@ -6,9 +6,9 @@
     .module('harbor.log')
     .directive('listLog', listLog);
     
-  ListLogController.$inject  = ['$scope','ListLogService', '$routeParams'];
+  ListLogController.$inject  = ['$scope','ListLogService', 'getParameterByName', '$location'];
   
-  function ListLogController($scope, ListLogService, $routeParams) {
+  function ListLogController($scope, ListLogService, getParameterByName, $location) {
     var vm = this;
     vm.isOpen = false;
        
@@ -22,7 +22,7 @@
     vm.search = search;
     vm.showAdvancedSearch = showAdvancedSearch;
   
-    vm.projectId = $routeParams.project_id;
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.queryParams = {
       'beginTimestamp' : vm.beginTimestamp,
       'endTimestamp'   : vm.endTimestamp,
@@ -91,7 +91,6 @@
     var directive = {
       restrict: 'E',
       templateUrl: '/static/ng/resources/js/components/log/list-log.directive.html',
-      replace: true,
       scope: true,
       controller: ListLogController,
       controllerAs: 'vm',

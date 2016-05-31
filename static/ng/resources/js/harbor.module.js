@@ -15,14 +15,8 @@
       'harbor.layout.index',
       'harbor.layout.dashboard',
       'harbor.layout.project',
-      'harbor.layout.repository',
-      'harbor.layout.project.member',
-      'harbor.layout.user',
-      'harbor.layout.system.management',
-      'harbor.layout.log',
       'harbor.layout.admin.option',
       'harbor.layout.search',
-      'harbor.layout.replication',
       'harbor.services.i18n',
       'harbor.services.project',
       'harbor.services.user',
@@ -41,6 +35,7 @@
       'harbor.user',
       'harbor.log',
       'harbor.validator',
-      'harbor.replication'
+      'harbor.replication',
+      'harbor.system.management'
     ]);
 })();

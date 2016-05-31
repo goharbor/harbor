@@ -3,12 +3,12 @@
   'use strict';
   
   angular
-    .module('harbor.layout.user')
-    .controller('UserController', UserController);
+    .module('harbor.user')
+    .directive('listUser', listUser);
     
-  UserController.$inject = ['ListUserService', 'DeleteUserService'];
+  ListUserController.$inject = ['ListUserService', 'DeleteUserService'];
   
-  function UserController(ListUserService, DeleteUserService) {
+  function ListUserController(ListUserService, DeleteUserService) {
     var vm = this;
     
     vm.username = '';
@@ -49,10 +49,19 @@
     
     function listUserFailed(data, status) {
       console.log('Failed list user:' + data);
-    }
-    
-    
-      
+    }      
+  }
+  
+  function listUser() {
+    var directive = {
+      'restrict': 'E',
+      'templateUrl': '/static/ng/resources/js/components/user/list-user.directive.html',
+      'scope': true,
+      'controller': ListUserController,
+      'controllerAs': 'vm',
+      'bindToController': true
+    };
+    return directive;
   }
   
 })();
