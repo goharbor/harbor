@@ -31,6 +31,18 @@
       'username' : vm.username
     };
     retrieve(vm.queryParams);
+  
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.queryParams = {
+        'beginTimestamp' : vm.beginTimestamp,
+        'endTimestamp'   : vm.endTimestamp,
+        'keywords' : vm.keywords,
+        'projectId': vm.projectId,
+        'username' : vm.username
+      };
+      retrieve(vm.queryParams);
+    });
      
     function search(e) {
       if(e.op[0] === 'all') {

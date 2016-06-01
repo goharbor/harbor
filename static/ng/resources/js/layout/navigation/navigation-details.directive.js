@@ -6,16 +6,29 @@
     .module('harbor.layout.navigation')
     .directive('navigationDetails', navigationDetails);
   
-  NavigationDetailsController.$inject = ['$window', '$location', '$scope', '$route'];
+  NavigationDetailsController.$inject = ['$window', '$location', '$scope', 'getParameterByName', 'CurrentProjectMemberService'];
   
-  function NavigationDetailsController($window, $location, $scope, $route) {
+  function NavigationDetailsController($window, $location, $scope, getParameterByName, CurrentProjectMemberService) {
     var vm = this;    
-    
-    $scope.$watch('vm.selectedProject', function(current, origin) {
-      if(current) {
-        vm.projectId = current.ProjectId;
-      }
+     
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
+
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      CurrentProjectMemberService(vm.projectId)
+        .success(getCurrentProjectMemberSuccess)
+        .error(getCurrentProjectMemberFailed);
     });
+    
+    function getCurrentProjectMemberSuccess(data, status) {
+      console.log('Successful get current project member:' + status);
+      vm.isProjectMember = true;
+    }
+    
+    function getCurrentProjectMemberFailed(data, status) {
+      console.log('Failed get current project member:' + status);
+      vm.isProjectMember = false;
+    }
     
     vm.path = $location.path();
   }
@@ -26,7 +39,6 @@
       templateUrl: '/ng/navigation_detail',
       link: link,
       scope: {
-        'selectedProject': '=',
         'target': '='
       },
       replace: true,
@@ -38,7 +50,7 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-      
+           
       var visited = ctrl.path.substring(1);  
       if(visited.indexOf('?') >= 0) {
         visited = ctrl.url.substring(1, ctrl.url.indexOf('?'));

@@ -23,9 +23,16 @@
     }
         
     vm.retrieve = retrieve;
-    vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.tagCount = {};
-    vm.retrieve();
+    
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
+    vm.retrieve(); 
+    
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.retrieve();    
+    });
+    
 
     $scope.$watch('vm.repositories', function(current) {
       if(current) {

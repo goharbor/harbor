@@ -6,9 +6,9 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$location', 'getParameterByName', '$window'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', '$window'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $location, getParameterByName, $window) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, $window) {
     var vm = this;
     
     vm.projectName = '';
@@ -20,8 +20,7 @@
     }
 
     vm.retrieve = retrieve;
-    vm.checkProjectMember = checkProjectMember;
-    
+       
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
         vm.selectedId = current.ProjectId;
@@ -63,7 +62,7 @@
           }
         }); 
       }
-      vm.checkProjectMember(vm.selectedProject.ProjectId);
+     
       $location.search('project_id', vm.selectedProject.ProjectId);
       vm.resultCount = vm.projects.length;
     
@@ -75,31 +74,16 @@
     function getProjectFailed(response) {
       console.log('Failed to list projects:' + response);
     }
-    
-    function checkProjectMember(projectId) {
-      CurrentProjectMemberService(projectId)
-        .success(getCurrentProjectMemberSuccess)
-        .error(getCurrentProjectMemberFailed);
-    }
-    
-    function getCurrentProjectMemberSuccess(data, status) {
-      console.log('Successful get current project member:' + status);
-      vm.isProjectMember = true;
-    }
-    
-    function getCurrentProjectMemberFailed(data, status) {
-      console.log('Failed get current project member:' + status);
-      vm.isProjectMember = false;
-    }
-  
+      
     function selectItem(item) {
-      vm.selectedId = item.ProjectId;
       vm.selectedProject = item;
-      vm.checkProjectMember(vm.selectedProject.ProjectId);
-      vm.isOpen = false;
       $location.search('project_id', vm.selectedProject.ProjectId);
-      $window.location.reload();
     }       
+  
+    $scope.$on('$locationChangeSuccess', function(e) {
+      var projectId = getParameterByName('project_id', $location.absUrl());
+      vm.isOpen = false;   
+    });
     
   }
   

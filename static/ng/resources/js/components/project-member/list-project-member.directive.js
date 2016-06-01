@@ -15,11 +15,16 @@
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
     vm.retrieve = retrieve;
+    vm.username = '';
+    
     vm.projectId = getParameterByName('project_id', $location.absUrl());
-    vm.username = "";
-   
     vm.retrieve();
-              
+    
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.retrieve();
+    });
+           
     function search(e) {
       vm.projectId = e.projectId;
       vm.username = e.username;
