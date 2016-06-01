@@ -289,7 +289,7 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	return "", nil
 }
 
-//getTopTenRepos handles request GET /api/repositories/toprepos
+//GetTopTenRepos handles request GET /api/repositories/toprepos
 func (ra *RepositoryAPI) GetTopTenRepos() {
 	repos, err := dao.GetTop10Repos()
 	if err != nil {
