@@ -38,6 +38,7 @@
 						  <li><a href="/language?lang=zh-CN">{{i18n .Lang "language_zh-CN"}}</a></li>
 						  <li><a href="/language?lang=de-DE">{{i18n .Lang "language_de-DE"}}</a></li>
 						  <li><a href="/language?lang=ru-RU">{{i18n .Lang "language_ru-RU"}}</a></li>
+						  <li><a href="/language?lang=ja-JP">{{i18n .Lang "language_ja-JP"}}</a></li>
 						</ul>
 					</li>
 			   	  </ul>
