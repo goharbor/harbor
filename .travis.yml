@@ -11,7 +11,19 @@ go_import_path: github.com/vmware/harbor
 env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 
 install: 
-  - sudo apt-get update && sudo apt-get install -y libldap2-dev mysql-server-5.6 mysql-client-core-5.6 mysql-client-5.6
+  - sudo apt-get update && sudo apt-get install -y libldap2-dev 
+  - sudo apt-get remove mysql-common mysql-server-5.5 mysql-server-core-5.5 mysql-client-5.5 mysql-client-core-5.5
+  - sudo apt-get autoremove
+  - sudo apt-get install libaio1
+  - wget -O mysql-5.6.14.deb http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.14-debian6.0-x86_64.deb/from/http://cdn.mysql.com/
+  - sudo dpkg -i mysql-5.6.14.deb
+  - sudo cp /opt/mysql/server-5.6/support-files/mysql.server /etc/init.d/mysql.server
+  - sudo ln -s /opt/mysql/server-5.6/bin/* /usr/bin/
+  - sudo sed -i'' 's/table_cache/table_open_cache/' /etc/mysql/my.cnf
+  - sudo sed -i'' 's/log_slow_queries/slow_query_log/' /etc/mysql/my.cnf
+  - sudo sed -i'' 's/basedir[^=]\\+=.*$/basedir = \\/opt\\/mysql\\/server-5.6/' /etc/mysql/my.cnf
+  - sudo /etc/init.d/mysql.server start
+  - mysql --version
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
   - go get -d github.com/go-sql-driver/mysql
