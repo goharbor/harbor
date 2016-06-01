@@ -99,9 +99,9 @@ func (t *TargetAPI) Ping() {
 		if urlErr, ok := err.(*url.Error); ok {
 			if netErr, ok := urlErr.Err.(net.Error); ok {
 				t.CustomAbort(http.StatusBadRequest, netErr.Error())
-			} else {
-				t.CustomAbort(http.StatusBadRequest, urlErr.Error())
 			}
+
+			t.CustomAbort(http.StatusBadRequest, urlErr.Error())
 		}
 
 		log.Errorf("failed to create registry client: %#v", err)
@@ -109,15 +109,6 @@ func (t *TargetAPI) Ping() {
 	}
 
 	if err = registry.Ping(); err != nil {
-		// timeout, dns resolve error, connection refused, etc.
-		if urlErr, ok := err.(*url.Error); ok {
-			if netErr, ok := urlErr.Err.(net.Error); ok {
-				t.CustomAbort(http.StatusBadRequest, netErr.Error())
-			} else {
-				t.CustomAbort(http.StatusBadRequest, urlErr.Error())
-			}
-		}
-
 		if regErr, ok := err.(*registry_error.Error); ok {
 			t.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}

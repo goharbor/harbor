@@ -112,6 +112,16 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 	return repository, nil
 }
 
+func parseError(err error) error {
+	if urlErr, ok := err.(*url.Error); ok {
+		if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+			return regErr
+		}
+		return urlErr.Err
+	}
+	return err
+}
+
 // ListTag ...
 func (r *Repository) ListTag() ([]string, error) {
 	tags := []string{}
@@ -122,11 +132,7 @@ func (r *Repository) ListTag() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return tags, regErr
-		}
-
-		return tags, err
+		return tags, parseError(err)
 	}
 
 	defer resp.Body.Close()
@@ -168,10 +174,7 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			err = regErr
-			return
-		}
+		err = parseError(err)
 		return
 	}
 
@@ -212,10 +215,7 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			err = regErr
-			return
-		}
+		err = parseError(err)
 		return
 	}
 
@@ -251,10 +251,7 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			err = regErr
-			return
-		}
+		err = parseError(err)
 		return
 	}
 
@@ -287,10 +284,7 @@ func (r *Repository) DeleteManifest(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return regErr
-		}
-		return err
+		return parseError(err)
 	}
 
 	if resp.StatusCode == http.StatusAccepted {
@@ -335,10 +329,7 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return false, regErr
-		}
-		return false, err
+		return false, parseError(err)
 	}
 
 	if resp.StatusCode == http.StatusOK {
@@ -371,10 +362,7 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			err = regErr
-			return
-		}
+		err = parseError(err)
 		return
 	}
 
@@ -408,10 +396,7 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			err = regErr
-			return
-		}
+		err = parseError(err)
 		return
 	}
 
@@ -444,10 +429,7 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return regErr
-		}
-		return err
+		return parseError(err)
 	}
 
 	if resp.StatusCode == http.StatusCreated {
@@ -486,10 +468,7 @@ func (r *Repository) DeleteBlob(digest string) error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return regErr
-		}
-		return err
+		return parseError(err)
 	}
 
 	if resp.StatusCode == http.StatusAccepted {

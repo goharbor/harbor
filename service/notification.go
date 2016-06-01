@@ -71,7 +71,7 @@ func (n *NotificationHandler) Post() {
 				username = "anonymous"
 			}
 
-			if username == "job-service-user" {
+			if action == "pull" && username == "job-service-user" {
 				return
 			}
 

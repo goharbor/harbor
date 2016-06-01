@@ -25,9 +25,8 @@ import (
 	"testing"
 	"time"
 
-	//"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	"github.com/vmware/harbor/utils/registry/error"
 )
 
 var (
@@ -164,12 +163,12 @@ func TestListTagWithInvalidCredential(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err = client.ListTag()
-	if err != nil {
-		e, ok := errors.ParseError(err)
+	if _, err = client.ListTag(); err != nil {
+		e, ok := err.(*error.Error)
 		if ok && e.StatusCode == http.StatusUnauthorized {
 			return
 		}
+
 		t.Error(err)
 		return
 	}

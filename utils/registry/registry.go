@@ -124,11 +124,7 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
-			return repos, regErr
-		}
-
-		return repos, err
+		return repos, parseError(err)
 	}
 
 	defer resp.Body.Close()
@@ -167,17 +163,17 @@ func (r *Registry) Ping() error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok {
-			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
-				return &registry_error.Error{
-					StatusCode: regErr.StatusCode,
-					Detail:     regErr.Detail,
-				}
-			}
-			return urlErr.Err
-		}
+		//		if urlErr, ok := err.(*url.Error); ok {
+		//			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+		//				return &registry_error.Error{
+		//					StatusCode: regErr.StatusCode,
+		//					Detail:     regErr.Detail,
+		//				}
+		//			}
+		//			return urlErr.Err
+		//		}
 
-		return err
+		return parseError(err)
 	}
 
 	if resp.StatusCode == http.StatusOK {
