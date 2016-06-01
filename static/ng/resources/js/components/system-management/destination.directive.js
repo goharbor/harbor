@@ -6,8 +6,17 @@
     .module('harbor.system.management')
     .directive('destination', destination);
     
-  function DestinationController() {
+  DestinationController.$inject = ['ListDestinationService'];
+  
+  function DestinationController(ListDestinationService) {
     var vm = this;
+    
+    ListDestinationService()
+      .then(function(data) {
+        vm.destinations = data; 
+      }, function() {
+                
+      });
   }
   
   function destination() {

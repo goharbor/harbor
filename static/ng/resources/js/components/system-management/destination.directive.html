@@ -1,1 +1,38 @@
-destination
+<div class="tab-pane">
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="" ng-model="vm.destinationName" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.search()"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addDestination()" data-toggle="modal" data-target="#createDestinationModal"><span class="glyphicon glyphicon-plus"></span>New Destination</button>
+      <create-destination></create-destination>
+    </div>
+    <div class="pane"> 	           
+      <div class="sub-pane">
+        <table class="table table-pane">
+    			 <thead>
+            <th width="20%">Name</th>
+            <th width="40%">Endpoint</th>
+            <th width="20%">Creation Time</th>
+            <th width="20%">Action</th>
+    			 </thead>
+    			 <tbody>
+            <tr ng-if="vm.destinations.length == 0">
+              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">No destinations, add new destination.</h3></td>
+            </tr>
+            <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
+              <td>//r.name//</td>
+              <td>//r.endpoint//</td>
+              <td>//r.creation_time//</td>
+              <td></td>
+            </tr>
+          </tbody>
+    		</table>
+      </div>
+    </div>
+    <div class="col-xs-4 col-md-12 well well-sm well-custom well-split"><div class="col-md-offset-10">//vm.destinations ? vm.destinations.length : 0// // 'items' | tr //</div></div>  
+  </div>          
+</div>

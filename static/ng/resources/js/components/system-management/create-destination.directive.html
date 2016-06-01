@@ -1,0 +1,62 @@
+<div class="modal fade" id="createDestinationModal" tabindex="-1"  role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Create New Destination</h4>
+      </div>
+      <div class="modal-body">
+        <div class="create-destination">
+          <form name="form" class="form-horizontal" ng-submit="form.$valid" novalidate>     
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="name" class="col-md-3 control-label">Name:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control form-control-custom" id="name" ng-model="destination.name" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.destination.name" name="uName" required>                 
+                <div ng-messages="form.$dirty && form.uName.$error">
+                  <span ng-message="required">Name is required.</span>
+                </div>
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="description" class="col-md-3 control-label">Endpoint:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="destination.endpoint" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.destination.endpoint" name="uEndpoint" required >              
+                <div ng-messages="form.$dirty && form.uEndpoint.$error">
+                  <span ng-message="required">Endpoint is required.</span>
+                </div>
+              </div>
+            </div>          
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="username" class="col-md-3 control-label">Username:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control" id="username" ng-model="destination.username" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.destination.username" name="uUsername" required>                 
+                <div ng-messages="form.$dirty && form.uUsername.$error">
+                  <span ng-message="required">Username is required.</span>
+                </div>
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="password" class="col-md-3 control-label">Password:</label>
+              <div class="col-md-9">
+                <input type="password" class="form-control" id="password" ng-model="destination.password" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.destination.password" name="uPassword" required>                 
+                <div ng-messages="form.$dirty && form.uPassword.$error">
+                  <span ng-message="required">Password is required.</span>
+                </div>
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+              <button class="btn btn-default" ng-click="vm.testConnection()">Test Connection</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnOk">// 'ok' | tr //</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

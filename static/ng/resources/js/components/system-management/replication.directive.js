@@ -6,8 +6,16 @@
     .module('harbor.system.management')
     .directive('replication', replication);
   
-  function ReplicationController() {
+  ReplicationController.$inject = ['ListReplicationPolicyService'];
+  
+  function ReplicationController(ListReplicationPolicyService) {
     var vm = this;
+    ListReplicationPolicyService()
+      .then(function(data) {
+        vm.replications = data;
+      }, function(data) {
+        
+      });
   }
   
   function replication() {
