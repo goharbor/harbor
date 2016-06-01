@@ -293,7 +293,7 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 func (ra *RepositoryAPI) GetTopTenRepos() {
 	repos, err := dao.GetTop10Repos()
 	if err != nil {
-		log.Errorf("error occured in get top 10 repos: v%", err)
+		log.Errorf("error occured in get top 10 repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 	ra.Data["json"] = repos
