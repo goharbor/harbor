@@ -18,38 +18,18 @@ package dao
 import (
 	"net"
 
-	"github.com/vmware/harbor/utils/log"
-
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" //register mysql driver
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // NonExistUserID : if a user does not exist, the ID of the user will be 0.
 const NonExistUserID = 0
-
-func isIllegalLength(s string, min int, max int) bool {
-	if min == -1 {
-		return (len(s) > max)
-	}
-	if max == -1 {
-		return (len(s) <= min)
-	}
-	return (len(s) < min || len(s) > max)
-}
-
-func isContainIllegalChar(s string, illegalChar []string) bool {
-	for _, c := range illegalChar {
-		if strings.Index(s, c) >= 0 {
-			return true
-		}
-	}
-	return false
-}
 
 // GenerateRandomString generates a random string
 func GenerateRandomString() (string, error) {
@@ -66,6 +46,7 @@ func GenerateRandomString() (string, error) {
 //InitDB initializes the database
 func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
+	orm.RegisterModel(new(models.User), new(models.Project), new(models.Role), new(models.AccessLog))
 	addr := os.Getenv("MYSQL_HOST")
 	port := os.Getenv("MYSQL_PORT")
 	username := os.Getenv("MYSQL_USR")

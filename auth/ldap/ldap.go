@@ -111,6 +111,9 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		u.Realname = m.Principal
 		u.Password = "12345678AbC"
 		u.Comment = "registered from LDAP."
+		if u.Email == "" {
+			u.Email = u.Username + "@vmware.com"
+		}
 		userID, err := dao.Register(u)
 		if err != nil {
 			return nil, err
