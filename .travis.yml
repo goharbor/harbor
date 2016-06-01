@@ -21,7 +21,7 @@ install:
   - sudo ln -s /opt/mysql/server-5.6/bin/* /usr/bin/
   - sudo sed -i'' 's/table_cache/table_open_cache/' /etc/mysql/my.cnf
   - sudo sed -i'' 's/log_slow_queries/slow_query_log/' /etc/mysql/my.cnf
-  - sudo sed -i'' 's/basedir[^=]\\+=.*$/basedir = \\/opt\\/mysql\\/server-5.6/' /etc/mysql/my.cnf
+  - sudo sed -i'' 's/basedir[^=]\+=.*$/basedir = \/opt\/mysql\/server-5.6/' /etc/mysql/my.cnf
   - sudo /etc/init.d/mysql.server start
   - mysql --version
   - go get -d github.com/docker/distribution
