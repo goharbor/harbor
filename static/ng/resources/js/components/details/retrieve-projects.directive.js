@@ -6,9 +6,9 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', '$window'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, $window) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService) {
     var vm = this;
     
     vm.projectName = '';
@@ -20,16 +20,16 @@
     }
 
     vm.retrieve = retrieve;
+    vm.filterInput = "";
+    vm.selectItem = selectItem;  
+    vm.checkProjectMember = checkProjectMember;  
        
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
         vm.selectedId = current.ProjectId;
       }
     });
-    
-    vm.filterInput = "";
-    vm.selectItem = selectItem;  
-    
+       
     $scope.$watch('vm.publicity', function(current, origin) { 
       vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
@@ -64,6 +64,8 @@
       }
      
       $location.search('project_id', vm.selectedProject.ProjectId);
+      vm.checkProjectMember(vm.selectedProject.ProjectId);
+      
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  
@@ -82,8 +84,25 @@
   
     $scope.$on('$locationChangeSuccess', function(e) {
       var projectId = getParameterByName('project_id', $location.absUrl());
+      vm.checkProjectMember(projectId);
       vm.isOpen = false;   
     });
+    
+    function checkProjectMember(projectId) {
+      CurrentProjectMemberService(projectId)
+        .success(getCurrentProjectMemberSuccess)
+        .error(getCurrentProjectMemberFailed);
+    }
+    
+    function getCurrentProjectMemberSuccess(data, status) {
+      console.log('Successful get current project member:' + status);
+      vm.isProjectMember = true;
+    }
+    
+    function getCurrentProjectMemberFailed(data, status) {
+      console.log('Use has no member for current project:' + status);
+      vm.isProjectMember = false;
+    }
     
   }
   
@@ -110,10 +129,10 @@
     
       function clickHandler(e) {
         $('[data-toggle="popover"]').each(function () {          
-          //the 'is' for buttons that trigger popups
-          //the 'has' for icons within a button that triggers a popup
-          if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-            $(this).parent().popover('hide');
+          if (!$(this).is(e.target) && 
+               $(this).has(e.target).length === 0 &&
+               $('.popover').has(e.target).length === 0) {
+             $(this).parent().popover('hide');
           }
         });
         var targetId = $(e.target).attr('id');
