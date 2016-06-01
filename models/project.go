@@ -26,7 +26,7 @@ type Project struct {
 	Name            string    `orm:"column(name)" json:"name"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
 	CreationTimeStr string    `json:"creation_time_str"`
-	Deleted         int       `orm:"column(deleted)" json:"deleted""`
+	Deleted         int       `orm:"column(deleted)" json:"deleted"`
 	//UserID          int `json:"UserId"`
 	OwnerName string `json:"owner_name"`
 	Public    int    `orm:"column(public)" json:"public"`
