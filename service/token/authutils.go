@@ -46,10 +46,24 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 			continue
 		}
 		items := strings.Split(s, ":")
+		length := len(items)
+
+		typee := items[0]
+
+		name := ""
+		if length > 1 {
+			name = items[1]
+		}
+
+		actions := []string{}
+		if length > 2 {
+			actions = strings.Split(items[2], ",")
+		}
+
 		res = append(res, &token.ResourceActions{
-			Type:    items[0],
-			Name:    items[1],
-			Actions: strings.Split(items[2], ","),
+			Type:    typee,
+			Name:    name,
+			Actions: actions,
 		})
 	}
 	return res
