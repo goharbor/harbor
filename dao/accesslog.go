@@ -18,6 +18,8 @@ package dao
 import (
 	"strings"
 
+	"github.com/astaxie/beego/orm"
+
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -144,4 +146,17 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 		return nil, err
 	}
 	return recentLogList, nil
+}
+
+//GetTop10Repos return top 10 accessed public repos
+func GetTop10Repos() ([]orm.ParamsList, error) {
+
+	o := GetOrmer()
+	sql := "select log_id, access_log.user_id, access_log.project_id, repo_name, repo_tag, GUID, operation, op_time, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where project.public=1 and access_log.operation<>'create' group by repo_name order by access_count desc limit 10"
+	var lists []orm.ParamsList
+	_, err := o.Raw(sql).ValuesList(&lists)
+	if err != nil {
+		return nil, err
+	}
+	return lists, nil
 }
