@@ -291,7 +291,23 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 
 //GetTopTenRepos handles request GET /api/repositories/toprepos
 func (ra *RepositoryAPI) GetTopTenRepos() {
-	repos, err := dao.GetTop10Repos()
+	var err error
+	var countNum int
+	count := ra.GetString("count")
+	if len(count) == 0 {
+		countNum = 10
+	} else {
+		countNum, err = strconv.Atoi(count)
+		if err != nil {
+			log.Errorf("Get parameters error--count, err: %v", err)
+			ra.CustomAbort(http.StatusBadRequest, "bad request of count")
+		}
+		if countNum <= 0 {
+			log.Warning("count must be a positive integer")
+			ra.CustomAbort(http.StatusBadRequest, "count is 0 or negative")
+		}
+	}
+	repos, err := dao.GetTop10Repos(countNum)
 	if err != nil {
 		log.Errorf("error occured in get top 10 repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")

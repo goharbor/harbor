@@ -149,12 +149,15 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 }
 
 //GetTop10Repos return top 10 accessed public repos
-func GetTop10Repos() ([]orm.ParamsList, error) {
+func GetTop10Repos(countNum int) ([]orm.ParamsList, error) {
 
 	o := GetOrmer()
-	sql := "select log_id, access_log.user_id, access_log.project_id, repo_name, repo_tag, GUID, operation, op_time, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where project.public=1 and access_log.operation<>'create' group by repo_name order by access_count desc limit 10"
+
+	sql := "select log_id, access_log.user_id, access_log.project_id, repo_name, repo_tag, GUID, operation, op_time, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where project.public=1 and (access_log.operation = 'push' or access_log.operation = 'pull') group by repo_name order by access_count desc limit ? "
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, countNum)
 	var lists []orm.ParamsList
-	_, err := o.Raw(sql).ValuesList(&lists)
+	_, err := o.Raw(sql, queryParam).ValuesList(&lists)
 	if err != nil {
 		return nil, err
 	}
