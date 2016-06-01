@@ -143,7 +143,7 @@ func (ua *UserAPI) Put() {
 	}
 	if !ua.IsAdmin {
 		if ua.userID != ua.currentUserID {
-			log.Error("Guests can only change their own account.")
+			log.Warning("Guests can only change their own account.")
 			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
 		}
 	}
@@ -151,19 +151,19 @@ func (ua *UserAPI) Put() {
 	ua.DecodeJSONReq(&user)
 	err := commonValidate(user)
 	if err != nil {
-		log.Errorf("Bad request in change user profile: %v", err)
+		log.Warning("Bad request in change user profile: %v", err)
 		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
 		return
 	}
 	emailExist, err := dao.UserExists(user, "email")
 	if err != nil {
 		log.Errorf("Error occurred in change user profile: %v", err)
-		ua.RenderError(http.StatusInternalServerError, "Internal error.")
-		return
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if emailExist {
 		log.Warning("email has already been used!")
-		ua.CustomAbort(http.StatusForbidden, "email has already been used!")
+		ua.RenderError(http.StatusConflict, "email has already been used!")
+		return
 	}
 	if err := dao.ChangeUserProfile(user); err != nil {
 		log.Errorf("Failed to update user profile, error: %v", err)
@@ -187,25 +187,24 @@ func (ua *UserAPI) Post() {
 	ua.DecodeJSONReq(&user)
 	err := validate(user)
 	if err != nil {
-		log.Errorf("Bad request in Register: %v", err)
+		log.Warning("Bad request in Register: %v", err)
 		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
 		return
 	}
 	userExist, err := dao.UserExists(user, "username")
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
-		ua.RenderError(http.StatusInternalServerError, "Internal error.")
-		return
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	if userExist {
 		log.Warning("username has already been used!")
-		ua.CustomAbort(http.StatusForbidden, "username has already been used!")
+		ua.RenderError(http.StatusConflict, "username has already been used!")
+		return
 	}
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
-		ua.RenderError(http.StatusInternalServerError, "Internal error.")
-		return
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 
 	ua.Redirect(http.StatusCreated, strconv.FormatInt(userID, 10))

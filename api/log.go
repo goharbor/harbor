@@ -40,35 +40,30 @@ func (l *LogAPI) Prepare() {
 func (l *LogAPI) Get() {
 	var err error
 	startTime := l.GetString("start_time")
-	if len(startTime) == 0 {
-		startTime = ""
-	} else {
+	if len(startTime) != 0 {
 		i, err := strconv.ParseInt(startTime, 10, 64)
 		if err != nil {
-			l.CustomAbort(http.StatusInternalServerError, "Internal error")
+			log.Errorf("Parse startTime to int error, err: %v", err)
+			l.CustomAbort(http.StatusBadRequest, "startTime is not a valid integer")
 		}
 		startTime = time.Unix(i, 0).String()
 	}
 
 	endTime := l.GetString("end_time")
-	if len(endTime) == 0 {
-		endTime = ""
-	} else {
+	if len(endTime) != 0 {
 		j, err := strconv.ParseInt(endTime, 10, 64)
 		if err != nil {
-			l.CustomAbort(http.StatusInternalServerError, "Internal error")
+			log.Errorf("Parse endTime to int error, err: %v", err)
+			l.CustomAbort(http.StatusBadRequest, "endTime is not a valid integer")
 		}
 		endTime = time.Unix(j, 0).String()
 	}
 
 	var linesNum int
 	lines := l.GetString("lines")
-	if len(lines) == 0 {
-		linesNum = 0
-		if startTime == "" || endTime == "" {
-			linesNum = 10
-		}
-	} else {
+	if len(lines) == 0 && len(startTime) == 0 && len(endTime) == 0 {
+		linesNum = 10
+	} else if len(lines) != 0 {
 		linesNum, err = strconv.Atoi(lines)
 		if err != nil {
 			log.Errorf("Get parameters error--lines, err: %v", err)
@@ -79,8 +74,8 @@ func (l *LogAPI) Get() {
 	var logList []models.AccessLog
 	logList, err = dao.GetRecentLogs(l.userID, linesNum, startTime, endTime)
 	if err != nil {
+		log.Errorf("Get recent logs error, err: %v", err)
 		l.CustomAbort(http.StatusInternalServerError, "Internal error")
-		return
 	}
 	l.Data["json"] = logList
 	l.ServeJSON()
