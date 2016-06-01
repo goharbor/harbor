@@ -21,14 +21,14 @@ import (
 
 // AccessLog holds information about logs which are used to record the actions that user take to the resourses.
 type AccessLog struct {
-	LogID     int       `orm:"column(log_id)" json:"LogId"`
-	UserID    int       `orm:"column(user_id)"  json:"UserId"`
-	ProjectID int64     `orm:"column(project_id)"  json:"ProjectId"`
-	RepoName  string    `orm:"column(repo_name)"`
-	RepoTag   string    `orm:"column(repo_tag)"`
-	GUID      string    `orm:"column(GUID)"  json:"Guid"`
-	Operation string    `orm:"column(operation)"`
-	OpTime    time.Time `orm:"column(op_time)"`
+	LogID     int       `orm:"column(log_id)" json:"log_id"`
+	UserID    int       `orm:"column(user_id)"  json:"user_id"`
+	ProjectID int64     `orm:"column(project_id)"  json:"project_id"`
+	RepoName  string    `orm:"column(repo_name)" json:"repo_name"`
+	RepoTag   string    `orm:"column(repo_tag)" json:"repo_tag"`
+	GUID      string    `orm:"column(GUID)"  json:"guid"`
+	Operation string    `orm:"column(operation)" json:"operation"`
+	OpTime    time.Time `orm:"column(op_time)" json:"op_time"`
 	Username  string
 	Keywords  string
 
