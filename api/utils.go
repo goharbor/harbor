@@ -48,7 +48,7 @@ func hasProjectAdminRole(userID int, projectID int64) bool {
 
 //sysadmin has all privileges to all projects
 func listRoles(userID int, projectID int64) ([]models.Role, error) {
-	roles := make([]models.Role, 1)
+	roles := make([]models.Role, 0, 1)
 	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
 		return roles, err
