@@ -154,7 +154,7 @@ func getRepoList(projectID int64) ([]string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", uiURL+"/api/repositories?project_id="+strconv.Itoa(int(projectID)), nil)
 	if err != nil {
-		log.Errorf("Error when creating request: %v")
+		log.Errorf("Error when creating request: %v", err)
 		return nil, err
 	}
 	//req.SetBasicAuth(uiUser, uiPwd)

@@ -111,7 +111,7 @@ create table replication_policy (
  enabled tinyint(1) NOT NULL DEFAULT 1,
  description text,
  cron_str varchar(256),
- start_time timestamp,
+ start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
