@@ -40,7 +40,7 @@ func (ra *RepJobAPI) Prepare() {
 
 }
 
-// Get ...
+// Get gets all the jobs according to the policy
 func (ra *RepJobAPI) Get() {
 	policyID, err := ra.GetInt64("policy_id")
 	if err != nil {
