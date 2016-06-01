@@ -5,13 +5,13 @@ go:
 
 go_import_path: github.com/vmware/harbor
 
-service: 
-  - mysql
+#service: 
+#  - mysql
 
 env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
 
 install: 
-  - sudo apt-get update && sudo apt-get install -y libldap2-dev
+  - sudo apt-get update && sudo apt-get install -y libldap2-dev mysql-server-5.6 mysql-client-core-5.6 mysql-client-5.6
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
   - go get -d github.com/go-sql-driver/mysql
