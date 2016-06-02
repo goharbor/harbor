@@ -65,3 +65,5 @@ script:
   - go run tests/startuptest.go http://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
+  # test for API
+  - go list ./... | grep 'APItests' | xargs -L1 go test -v
