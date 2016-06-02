@@ -199,7 +199,7 @@ func (p *ProjectAPI) List() {
 	p.ServeJSON()
 }
 
-// ToggleProjectPulic handles request PUT /api/projects/:id/publicity
+// ToggleProjectPublic handles request PUT /api/projects/:id/publicity
 func (p *ProjectAPI) ToggleProjectPublic() {
 	p.userID = p.ValidateUser()
 	var req projectReq
