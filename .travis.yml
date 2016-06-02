@@ -47,14 +47,14 @@ install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   
-
+  - sudo brew install swagger-codegen
 before_script:
   # create tables and load data
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
 script: 
-  - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
-  - go list ./... | grep -v 'vendor' | xargs -L1 go vet
+  - go list ./... | grep -v 'tests' | grep -v /vendor/ | xargs -L1 fgt golint
+  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go vet
   - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go test -v
 
   - docker-compose -f Deploy/docker-compose.yml up -d
@@ -66,4 +66,6 @@ script:
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
   # test for API
+  - go list ./... | grep 'APItests' | xargs -L1 fgt golint
+  - go list ./... | grep 'APItests' | xargs -L1 go vet
   - go list ./... | grep 'APItests' | xargs -L1 go test -v
