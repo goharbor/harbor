@@ -13,7 +13,7 @@
     limitations under the License.
 */
 jQuery(function(){
-		
+	
 	new AjaxUtil({
 		url: "/api/users/current",
 		type: "get",
@@ -29,57 +29,57 @@ jQuery(function(){
 	
 	function renderForAnyRole(){
 		$("#tabProject a:first").tab("show");
-	
+		
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
-			  e.preventDefault();
-			  if($("#tabProject li:eq(0)").is(":focus") || $("#txtSearchProject").is(":focus")){
-			    $("#btnSearch").trigger("click");	
-			  }else if($("#tabProject li:eq(1)").is(":focus") || $("#txtSearchPublicProjects").is(":focus")){
-			    $("#btnSearchPublicProjects").trigger("click");	
-			  }else if($("#tabProject li:eq(1)").is(":focus") || $("#txtSearchUsername").is(":focus")){
-			    $("#btnSearchUsername").trigger("click");	
-			  }else if($("#dlgAddProject").is(":focus") || $("#projectName").is(":focus")){
-				$("#btnSave").trigger("click");
-			  }
+				e.preventDefault();
+				if($("#tabProject li:eq(0)").is(":focus") || $("#txtSearchProject").is(":focus")){
+					$("#btnSearch").trigger("click");	
+				}else if($("#tabProject li:eq(1)").is(":focus") || $("#txtSearchPublicProjects").is(":focus")){
+					$("#btnSearchPublicProjects").trigger("click");	
+				}else if($("#tabProject li:eq(1)").is(":focus") || $("#txtSearchUsername").is(":focus")){
+					$("#btnSearchUsername").trigger("click");	
+				}else if($("#dlgAddProject").is(":focus") || $("#projectName").is(":focus")){
+					$("#btnSave").trigger("click");
+				}
 			}
 		});
-	
+		
 		function listProject(projectName, isPublic){
 			currentPublic = isPublic;
 			$.when(
 				new AjaxUtil({
-				  url: "/api/projects?is_public=" + isPublic + "&project_name=" + (projectName == null ? "" : projectName) + "&timestamp=" + new Date().getTime(),
-				  type: "get",
-				  success: function(data, status, xhr){
-		              $("#tblProject tbody tr").remove();
-		              $.each(data || [], function(i, e){
-		                  var row = '<tr>' +
-		                  '<td style="vertical-align: middle;"><a href="/registry/detail?project_id=' + e.project_id + '">' + e.name + '</a></td>' +
-		                  '<td style="vertical-align: middle;">' + moment(new Date(e.creation_time)).format("YYYY-MM-DD HH:mm:ss") + '</td>';
-		                  if(e.Public == 1 && e.Togglable){
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '">' + i18n.getMessage("button_on")+ '</button></td>'
-		                  } else if (e.Public == 1) {
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_on")+ '</button></td>';
-		                  } else if (e.Public == 0 && e.Togglable) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '">' + i18n.getMessage("button_off")+ '</button></td>';
-		                  } else if (e.Public == 0) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
-		                      row += '</tr>';
-		                  }
-		                  $("#tblProject tbody").append(row);
-		              });
-		          }
-			}).exec())
+					url: "/api/projects?is_public=" + isPublic + "&project_name=" + (projectName == null ? "" : projectName) + "&timestamp=" + new Date().getTime(),
+					type: "get",
+					success: function(data, status, xhr){
+						$("#tblProject tbody tr").remove();
+						$.each(data || [], function(i, e){
+							var row = '<tr>' +
+							'<td style="vertical-align: middle;"><a href="/registry/detail?project_id=' + e.project_id + '">' + e.name + '</a></td>' +
+							'<td style="vertical-align: middle;">' + moment(new Date(e.creation_time)).format("YYYY-MM-DD HH:mm:ss") + '</td>';
+							if(e.public == 1 && e.Togglable){
+								row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '">' + i18n.getMessage("button_on")+ '</button></td>'
+							} else if (e.public == 1) {
+								row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_on")+ '</button></td>';
+							} else if (e.public == 0 && e.Togglable) {
+								row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '">' + i18n.getMessage("button_off")+ '</button></td>';
+							} else if (e.public == 0) {
+								row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
+								row += '</tr>';
+							}
+							$("#tblProject tbody").append(row);
+						});
+					}
+				}).exec())
 			.done(function() {
-                $("#tblProject tbody tr :button").on("click", function(){
-                    var projectId = $(this).attr("projectid");
-                    var self = this;
-					 new AjaxUtil({
-					   url: "/api/projects/" + projectId, 
-					   data: {"public": ($(self).hasClass("btn-success") ? false : true)},
-					   type: "put",
-					   complete: function(jqXhr, status) {
+				$("#tblProject tbody tr :button").on("click", function(){
+					var projectId = $(this).attr("projectid");
+					var self = this;
+					new AjaxUtil({
+						url: "/api/projects/" + projectId, 
+						data: {"public": ($(self).hasClass("btn-success") ? false : true)},
+						type: "put",
+						complete: function(jqXhr, status) {
 							if($(self).hasClass("btn-success")){
 								$(self).removeClass("btn-success").addClass("btn-danger");
 								$(self).html(i18n.getMessage("button_off"));
@@ -88,9 +88,9 @@ jQuery(function(){
 								$(self).html(i18n.getMessage("button_on"));
 							}
 						}
-					 }).exec();
-                });
-            });
+					}).exec();
+				});
+			});
 		}	
 		listProject(null, 0);
 		var currentPublic = 0;
@@ -119,7 +119,7 @@ jQuery(function(){
 			$("#projectName").val("");
 			$("#projectName").parent().addClass("has-feedback");
 			$("#projectName").siblings("span").removeClass("glyphicon-warning-sign").removeClass("glyphicon-ok");
-	        $("#isPublic").prop('checked', false);
+			$("#isPublic").prop('checked', false);
 		});
 		
 		$("#btnSave").on("click", function(){	
@@ -161,9 +161,9 @@ jQuery(function(){
 						$("#tblUser tbody tr").remove();
 						$.each(data || [], function(i, e){
 							var row = '<tr>' +
-								'<td style="vertical-align: middle;">' + e.username + '</td>' +
-								'<td style="vertical-align: middle;">' + e.email + '</td>';
-							if(e.HasAdminRole == 1){
+							'<td style="vertical-align: middle;">' + e.username + '</td>' +
+							'<td style="vertical-align: middle;">' + e.email + '</td>';
+							if(e.has_admin_role == 1){
 								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.user_id + '">' + i18n.getMessage("button_on") + '</button></td>';
 							} else {
 								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-danger" userid="' + e.user_id + '">' + i18n.getMessage("button_off") + '</button></td>';
@@ -174,39 +174,39 @@ jQuery(function(){
 						});
 					}
 				}).exec()
-			).done(function(){
-				$("#tblUser tbody tr :button").on("click",function(){
-					var userId = $(this).attr("userid");
-					var self = this;
-					new AjaxUtil({
-						url: "/api/users/" + userId,
-						type: "put",
-						complete: function(jqXhr, status){
-							if(jqXhr && jqXhr.status == 200){
-								if($(self).hasClass("btn-success")){
-									$(self).removeClass("btn-success").addClass("btn-danger");
-									$(self).html(i18n.getMessage("button_off"));
-								}else{
-									$(self).removeClass("btn-danger").addClass("btn-success");
-									$(self).html(i18n.getMessage("button_on"));
-								}
-							}		
-						}
-					}).exec();
-				});
-				$("#tblUser tbody tr").on("mouseover", function(){
-					$(".tdDeleteUser", this).css({"visibility":"visible"});
-				}).on("mouseout", function(){
-					$(".tdDeleteUser", this).css({"visibility":"hidden"});
-				});
-				$("#tblUser tbody tr .tdDeleteUser").on("click", function(){
-					var userId = $(this).attr("userid");
-					$("#dlgModal")
+				).done(function(){
+					$("#tblUser tbody tr :button").on("click",function(){
+						var userId = $(this).attr("userid");
+						var self = this;
+						new AjaxUtil({
+							url: "/api/users/" + userId,
+							type: "put",
+							complete: function(jqXhr, status){
+								if(jqXhr && jqXhr.status == 200){
+									if($(self).hasClass("btn-success")){
+										$(self).removeClass("btn-success").addClass("btn-danger");
+										$(self).html(i18n.getMessage("button_off"));
+									}else{
+										$(self).removeClass("btn-danger").addClass("btn-success");
+										$(self).html(i18n.getMessage("button_on"));
+									}
+								}		
+							}
+						}).exec();
+					});
+					$("#tblUser tbody tr").on("mouseover", function(e){
+						$(".tdDeleteUser", this).css({"visibility":"visible"});
+					}).on("mouseout", function(e){
+						$(".tdDeleteUser", this).css({"visibility":"hidden"});
+					});
+					$("#tblUser tbody tr .tdDeleteUser").on("click", function(e){
+						var userId = $(this).attr("userid");
+						$("#dlgModal")
 						.dialogModal({
 							"title": i18n.getMessage("delete_user"), 
 							"content": i18n.getMessage("are_you_sure_to_delete_user") + $(this).attr("username") + " ?", 
 							"enableCancel": true, 
-							"callback": function(){
+							"callback": function(){                
 								new AjaxUtil({
 									url: "/api/users/" + userId,
 									type: "delete",
@@ -218,17 +218,18 @@ jQuery(function(){
 									error: function(jqXhr){}
 								}).exec();
 							}	
+						});
+						
 					});
 				});
+			}
+			listUserAdminRole(null);
+			$("#btnSearchUsername").on("click", function(){
+				var username = $("#txtSearchUsername").val();
+				if($.trim(username).length == 0){
+					username = null;
+				}
+				listUserAdminRole(username);
 			});
 		}
-	    listUserAdminRole(null);
-		$("#btnSearchUsername").on("click", function(){
-			var username = $("#txtSearchUsername").val();
-			if($.trim(username).length == 0){
-				username = null;
-			}
-			listUserAdminRole(username);
-		});
-	}
-})
+	})

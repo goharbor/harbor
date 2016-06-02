@@ -13,28 +13,28 @@
     limitations under the License.
 -->
 <div class="container">
-  <form class="form-signin form-horizontal">
-	<div class="form-group">
-    	<label for="Principal" class="col-md-4 control-label">{{i18n .Lang "username_email"}}</label>
-		<div class="col-md-8">
-    		<input type="text" id="Principal" class="form-control" placeholder="{{i18n .Lang "username_email"}}">
+	<form class="form-signin form-horizontal">
+		<div class="form-group">
+			<label for="Principal" class="col-md-4 control-label">{{i18n .Lang "username_email"}}</label>
+			<div class="col-md-8">
+				<input type="text" id="Principal" class="form-control" placeholder="{{i18n .Lang "username_email"}}">
+			</div>
 		</div>
-	</div>
-	<div class="form-group">
-    	<label for="Password" class="col-md-4 control-label">{{i18n .Lang "password"}}</label>
-		<div class="col-md-8">
-    		<input type="password" id="Password" class="form-control" placeholder="{{i18n .Lang "password"}}">
+		<div class="form-group">
+			<label for="Password" class="col-md-4 control-label">{{i18n .Lang "password"}}</label>
+			<div class="col-md-8">
+				<input type="password" id="Password" class="form-control" placeholder="{{i18n .Lang "password"}}">
+			</div>
 		</div>
-	</div>
-    <button class="btn btn-lg btn-primary btn-block" type="button" id="btnPageSignIn">{{i18n .Lang "sign_in"}}</button>
-	{{ if eq .AuthMode "db_auth" }}
-	<div class="form-group">
-	   <div class="col-md-12">
-	      <button type="button" class="btn btn-link pull-right" id="btnForgot">{{i18n .Lang "forgot_password"}}</button>
-	   </div>
-	</div>
-	{{ end }}
-  </form>
+		<button class="btn btn-lg btn-primary btn-block" type="button" id="btnPageSignIn">{{i18n .Lang "sign_in"}}</button>
+		{{ if eq .AuthMode "db_auth" }}
+		<div class="form-group">
+			<div class="col-md-12">
+				<button type="button" class="btn btn-link pull-right" id="btnForgot">{{i18n .Lang "forgot_password"}}</button>
+			</div>
+		</div>
+		{{ end }}
+	</form>
 </div>
 <link href="static/resources/css/sign-in.css" type="text/css" rel="stylesheet">
 <script src="static/resources/js/sign-in.js"></script>

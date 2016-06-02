@@ -18,15 +18,15 @@
 		<li><a href="/">{{i18n .Lang "home"}}</a></li>
 		<li>{{i18n .Lang "search"}}</li>
 	</ol>
-    <div class="panel panel-default">
-	     <div class="panel-heading" id="panelCommonSearchProjectsHeader">{{i18n .Lang "projects"}}</div>
-		 <div class="panel-body" id="panelCommonSearchProjectsBody">
-		 </div>
+	<div class="panel panel-default">
+		<div class="panel-heading" id="panelCommonSearchProjectsHeader">{{i18n .Lang "projects"}}</div>
+		<div class="panel-body" id="panelCommonSearchProjectsBody">
+		</div>
 	</div>
 	<div class="panel panel-default">
-	     <div class="panel-heading" id="panelCommonSearchRepositoriesHeader">{{i18n .Lang "repositories"}}</div>
-		 <div class="panel-body" id="panelCommonSearchRepositoriesBody">
-		 </div>
+		<div class="panel-heading" id="panelCommonSearchRepositoriesHeader">{{i18n .Lang "repositories"}}</div>
+		<div class="panel-body" id="panelCommonSearchRepositoriesBody">
+		</div>
 	</div>
 </div>
 <script src="static/resources/js/search.js"></script>
