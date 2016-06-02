@@ -65,4 +65,6 @@ script:
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
   # test for API
+  - go get github.com/dghubble/sling
+  - github.com/stretchr/testify/assert
   - go test -v ./tests/APItests
