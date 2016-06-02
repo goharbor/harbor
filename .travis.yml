@@ -66,5 +66,5 @@ script:
 
   # test for API
   - go get github.com/dghubble/sling
-  - go get github.com/stretchr/testify/assert
+  - go get github.com/stretchr/testify
   - go test -v ./tests/APItests
