@@ -47,7 +47,6 @@ install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   
-  - sudo brew install swagger-codegen
 before_script:
   # create tables and load data
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
