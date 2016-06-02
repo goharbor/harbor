@@ -122,5 +122,13 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 				log.Infof("replication of %d triggered", pa.policyID)
 			}
 		}()
+	} else {
+		go func() {
+			if err := postReplicationAction(pa.policyID, "stop"); err != nil {
+				log.Errorf("failed to stop replication of %d: %v", pa.policyID, err)
+			} else {
+				log.Infof("try to stop replication of %d", pa.policyID)
+			}
+		}()
 	}
 }
