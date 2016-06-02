@@ -1,7 +1,6 @@
 sudo: true
 
 language: go
-language: java
 
 go: 
   - 1.6.2
@@ -66,6 +65,9 @@ script:
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
   # test for API
+  - docker pull swagger-generator
+  - docker run -d -p 8080 swagger-generator
+  - docker ps
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
   - go test -v ./tests/APItests
