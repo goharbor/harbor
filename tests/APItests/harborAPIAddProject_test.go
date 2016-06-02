@@ -65,7 +65,7 @@ func TestAddProject(t *testing.T) {
 		t.Error("Error while creat project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(resault, int(200), "Case 2: Project creation status should be 200")
+		assert.Equal(resault, int(201), "Case 2: Project creation status should be 201")
 		//t.Log(resault)
 	}
 
