@@ -65,6 +65,4 @@ script:
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
   # test for API
-  - golint ./tests/APItests
-  - go ./tests/APItests
   - go test -v ./tests/APItests
