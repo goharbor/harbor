@@ -1,11 +1,11 @@
 // HarborLogout.go
-package HarborApi
+package HarborAPI
 
 import (
 	"net/http"
 )
 
-func (a HarborApi) HarborLogout() (int, error) {
+func (a HarborAPI) HarborLogout() (int, error) {
 
 	response, err := http.Get(a.basePath + "/logout")
 

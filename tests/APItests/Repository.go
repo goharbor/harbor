@@ -1,4 +1,4 @@
-package HarborApi
+package HarborAPI
 
 import (
 	"time"

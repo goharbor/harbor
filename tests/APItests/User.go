@@ -1,4 +1,4 @@
-package HarborApi
+package HarborAPI
 
 type User struct {
 	UserId   int32  `json:"user_id,omitempty"`

@@ -1,4 +1,4 @@
-package HarborApi
+package HarborAPI
 
 import (
 	//"fmt"
@@ -10,7 +10,7 @@ func TestSearch(t *testing.T) {
 
 	assert := assert.New(t)
 
-	apiTest := NewHarborApi()
+	apiTest := NewHarborAPI()
 	var resault Search
 	resault, err := apiTest.SearchGet("library")
 	//fmt.Printf("%+v\n", resault)

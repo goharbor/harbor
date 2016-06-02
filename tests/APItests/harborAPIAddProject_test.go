@@ -1,4 +1,4 @@
-package HarborApi
+package HarborAPI
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ func TestAddProject(t *testing.T) {
 
 	assert := assert.New(t)
 
-	apiTest := NewHarborApi()
+	apiTest := NewHarborAPI()
 
 	//prepare test
 	adminEr := &UsrInfo{"admin", "Harbor1234"}

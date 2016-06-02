@@ -1,4 +1,4 @@
-package HarborApi
+package HarborAPI
 
 type RoleParam struct {
 	Roles    []int32 `json:"roles,omitempty"`

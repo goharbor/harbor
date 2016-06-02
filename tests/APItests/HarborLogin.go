@@ -1,5 +1,5 @@
 // HarborLogon.go
-package HarborApi
+package HarborAPI
 
 import (
 	"io/ioutil"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (a HarborApi) HarborLogin(user UsrInfo) (int, error) {
+func (a HarborAPI) HarborLogin(user UsrInfo) (int, error) {
 
 	v := url.Values{}
 	v.Set("principal", user.Name)
