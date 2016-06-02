@@ -7,5 +7,9 @@ import (
 func init() {
 	orm.RegisterModel(new(RepTarget),
 		new(RepPolicy),
-		new(RepJob))
+		new(RepJob),
+	        new(User),
+		new(Project),
+		new(Role),
+		new(AccessLog))
 }

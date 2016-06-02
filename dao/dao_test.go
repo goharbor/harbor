@@ -713,6 +713,39 @@ func TestToggleAdminRole(t *testing.T) {
 	}
 }
 
+func TestChangeUserProfile(t *testing.T) {
+	user := models.User{UserID: currentUser.UserID, Email: username + "@163.com", Realname: "test", Comment: "Unit Test"}
+	err := ChangeUserProfile(user)
+	if err != nil {
+		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
+	}
+	loginedUser, err := GetUser(models.User{UserID: currentUser.UserID})
+	if err != nil {
+		t.Errorf("Error occurred in GetUser: %v", err)
+	}
+	if loginedUser != nil {
+		if loginedUser.Email != username+"@163.com" {
+			t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
+		}
+		if loginedUser.Realname != "test" {
+			t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
+		}
+		if loginedUser.Comment != "Unit Test" {
+			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
+		}
+	}
+}
+
+func TestGetRecentLogs(t *testing.T) {
+	logs, err := GetRecentLogs(currentUser.UserID, 10, "2016-05-13 00:00:00", time.Now().String())
+	if err != nil {
+		t.Errorf("error occured in getting recent logs, error: %v", err)
+	}
+	if len(logs) <= 0 {
+		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
+	}
+}
+
 func TestDeleteUser(t *testing.T) {
 	err := DeleteUser(currentUser.UserID)
 	if err != nil {

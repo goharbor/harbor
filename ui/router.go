@@ -55,6 +55,7 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
+	beego.Router("/api/projects/:id/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/users/?:id", &api.UserAPI{})
@@ -68,6 +69,9 @@ func initRouters() {
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/targets/?:id([0-9]+)", &api.TargetAPI{})
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
+	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
+	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
+	beego.Router("api/logs", &api.LogAPI{})
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
