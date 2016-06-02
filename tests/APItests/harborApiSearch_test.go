@@ -15,7 +15,7 @@ func TestSearch(t *testing.T) {
 	resault, err := apiTest.SearchGet("library")
 	//fmt.Printf("%+v\n", resault)
 	if err != nil {
-		t.Errorf("Error while search project or repository", err.Error())
+		t.Error("Error while search project or repository", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(resault.Projects[0].ProjectId, int32(1), "Project id should be equal")
