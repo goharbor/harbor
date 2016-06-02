@@ -38,7 +38,7 @@ type Handler struct {
 // checkes the permission agains local DB and generates jwt token.
 func (h *Handler) Get() {
 
-	var username string
+	var username, password string
 	request := h.Ctx.Request
 	service := h.GetString("service")
 	scopes := h.GetStrings("scope")
@@ -49,7 +49,7 @@ func (h *Handler) Get() {
 		log.Debugf("Will grant all access as this request is from job service with legal secret.")
 		username = "job-service-user"
 	} else {
-		username, password, _ := request.BasicAuth()
+		username, password, _ = request.BasicAuth()
 		authenticated := authenticate(username, password)
 
 		if len(scopes) == 0 && !authenticated {
