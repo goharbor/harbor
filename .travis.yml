@@ -1,6 +1,7 @@
 sudo: true
 
 language: go
+language: java
 
 go: 
   - 1.6.2
