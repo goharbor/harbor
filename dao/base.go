@@ -65,7 +65,7 @@ func GenerateRandomString() (string, error) {
 //InitDB initializes the database
 func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	addr, port, username, password := dbConfig()
+	addr, port, username, password := DbConfig()
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
 	log.Println(dbStr)
 	ch := make(chan int, 1)
@@ -96,7 +96,7 @@ func InitDB() {
 
 func UpgradeDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	addr, port, username, password := dbConfig()
+	addr, port, username, password := DbConfig()
 
 	dbStr := fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/registry",
 		username, password, addr, port)
@@ -122,7 +122,7 @@ func UpgradeDB() {
 	log.Printf("DB upgraded")
 }
 
-func dbConfig() (string, string, string, string) {
+func DbConfig() (string, string, string, string) {
 	addr := os.Getenv("MYSQL_HOST")
 	if len(addr) == 0 {
 		addr = os.Getenv("MYSQL_PORT_3306_TCP_ADDR")

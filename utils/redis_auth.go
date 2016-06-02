@@ -26,7 +26,7 @@ func OpenRedisPool() redis.Conn {
 }
 
 func initConn() (redis.Conn, error) {
-	host, port := redisConfig()
+	host, port := RedisConfig()
 	addr := fmt.Sprintf("%s:%d", host, port)
 	c, err := redis.Dial("tcp", addr)
 	if err != nil {
@@ -56,7 +56,7 @@ func DestroyCache() {
 	}
 }
 
-func redisConfig() (string, int) {
+func RedisConfig() (string, int) {
 	addr := os.Getenv("REDIS_HOST")
 	port, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 
