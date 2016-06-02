@@ -29,11 +29,11 @@ type AccessLog struct {
 	GUID      string    `orm:"column(GUID)"  json:"guid"`
 	Operation string    `orm:"column(operation)" json:"operation"`
 	OpTime    time.Time `orm:"column(op_time)" json:"op_time"`
-	Username  string
-	Keywords  string
+	Username  string    `json:"username"`
+	Keywords  string    `json:"keywords"`
 
 	BeginTime      time.Time
-	BeginTimestamp int64
+	BeginTimestamp int64 `json:"begin_timestamp"`
 	EndTime        time.Time
-	EndTimestamp   int64
+	EndTimestamp   int64 `json:"end_timestamp"`
 }
