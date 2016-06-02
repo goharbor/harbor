@@ -17,7 +17,7 @@ package dao
 
 import (
 	"strings"
-
+	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 )

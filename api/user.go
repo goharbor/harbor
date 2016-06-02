@@ -280,7 +280,7 @@ func (ua *UserAPI) ChangePassword() {
 	}
 }
 
-// ToggleUserAdminRole handles Post api/users/{}/toggleadmin
+// ToggleUserAdminRole handles PUT api/users/{}/toggleadmin
 func (ua *UserAPI) ToggleUserAdminRole() {
 	if !ua.IsAdmin {
 		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
@@ -288,12 +288,13 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 		return
 	}
 	userQuery := models.User{UserID: ua.userID}
-	if err := dao.ToggleUserAdminRole(userQuery); err != nil {
+	ua.DecodeJSONReq(&userQuery)
+	if err := dao.ToggleUserAdminRole(userQuery.UserID,userQuery.HasAdminRole); err != nil {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
-
+// validate only validate when user register
 func validate(user models.User) error {
 
 	if isIllegalLength(user.Username, 0, 20) {
@@ -311,7 +312,7 @@ func validate(user models.User) error {
 	return nil
 }
 
-//commonValidate validates information when user register or change their profile
+//commonValidate validates email, realname, comment information when user register or change their profile
 func commonValidate(user models.User) error {
 
 	if len(user.Email) > 0 {
