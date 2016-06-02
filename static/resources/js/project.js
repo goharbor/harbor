@@ -19,7 +19,7 @@ jQuery(function(){
 		type: "get",
 		success: function(data, status, xhr){
 			if(xhr && xhr.status == 200){
-				if(data.HasAdminRole == 1) {
+				if(data.has_admin_role == 1) {
 					renderForAdminRole();
 				}
 				renderForAnyRole();
@@ -55,16 +55,16 @@ jQuery(function(){
 		              $("#tblProject tbody tr").remove();
 		              $.each(data || [], function(i, e){
 		                  var row = '<tr>' +
-		                  '<td style="vertical-align: middle;"><a href="/registry/detail?project_id=' + e.ProjectId + '">' + e.Name + '</a></td>' +
-		                  '<td style="vertical-align: middle;">' + moment(new Date(e.CreationTime)).format("YYYY-MM-DD HH:mm:ss") + '</td>';
+		                  '<td style="vertical-align: middle;"><a href="/registry/detail?project_id=' + e.project_id + '">' + e.name + '</a></td>' +
+		                  '<td style="vertical-align: middle;">' + moment(new Date(e.creation_time)).format("YYYY-MM-DD HH:mm:ss") + '</td>';
 		                  if(e.Public == 1 && e.Togglable){
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_on")+ '</button></td>'
+		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '">' + i18n.getMessage("button_on")+ '</button></td>'
 		                  } else if (e.Public == 1) {
-		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_on")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-success" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_on")+ '</button></td>';
 		                  } else if (e.Public == 0 && e.Togglable) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '">' + i18n.getMessage("button_off")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '">' + i18n.getMessage("button_off")+ '</button></td>';
 		                  } else if (e.Public == 0) {
-		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.ProjectId + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
+		                      row += '<td><button type="button" class="btn btn-danger" projectid="' + e.project_id + '" disabled>' + i18n.getMessage("button_off")+ '</button></td>';
 		                      row += '</tr>';
 		                  }
 		                  $("#tblProject tbody").append(row);
@@ -164,11 +164,11 @@ jQuery(function(){
 								'<td style="vertical-align: middle;">' + e.username + '</td>' +
 								'<td style="vertical-align: middle;">' + e.email + '</td>';
 							if(e.HasAdminRole == 1){
-								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.UserId + '">' + i18n.getMessage("button_on") + '</button></td>';
+								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-success" userid="' + e.user_id + '">' + i18n.getMessage("button_on") + '</button></td>';
 							} else {
-								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-danger" userid="' + e.UserId + '">' + i18n.getMessage("button_off") + '</button></td>';
+								row += '<td style="padding-left: 30px;"><button type="button" class="btn btn-danger" userid="' + e.user_id + '">' + i18n.getMessage("button_off") + '</button></td>';
 							}
-							row += '<td style="padding-left: 30px; vertical-align: middle;"><a href="#" style="visibility: hidden;" class="tdDeleteUser" userid="' + e.UserId + '" username="' + e.Username + '"><span class="glyphicon glyphicon-trash"></span></a></td>';
+							row += '<td style="padding-left: 30px; vertical-align: middle;"><a href="#" style="visibility: hidden;" class="tdDeleteUser" userid="' + e.user_id + '" username="' + e.username + '"><span class="glyphicon glyphicon-trash"></span></a></td>';
 							row += '</tr>';
 							$("#tblUser tbody").append(row);
 						});

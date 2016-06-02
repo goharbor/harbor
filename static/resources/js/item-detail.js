@@ -243,22 +243,26 @@ jQuery(function(){
 				$("#tblUser tbody tr").remove();
 				for(var i = 0; i < userList.length; ){
 				
-					var userId = userList[i].UserId;
-					var roleId = userList[i].RoleId;
+					var userId = userList[i].user_id;
+					var roleId = userList[i].role_id;
 					var username = userList[i].username;
-					var roleNameList = [];
+//					var roleNameList = [];
 				
-					for(var j = i; j < userList.length; i++, j++){
-						if(userList[j].UserId == userId){
-							roleNameList.push(name_mapping[userList[j].Rolename]);					
-						}else{
-							break;
-						}
-					}
+//					for(var j = i; j < userList.length; i++, j++){
+//						if(userList[j].UserId == userId){
+//							roleNameList.push(name_mapping[userList[j].Rolename]);					
+//						}else{
+//							break;
+//						}
+//					}
 							
-					var row = '<tr>' + 
+//					var row = '<tr>' + 
+//					'<td>' + username + '</td>' + 
+//					'<td>' + roleNameList.join(",") + '</td>' +
+//					'<td>';
+          var row = '<tr>' +
 					'<td>' + username + '</td>' + 
-					'<td>' + roleNameList.join(",") + '</td>' +
+					'<td>' + '--' + '</td>' +
 					'<td>';
 					var isShowOperations = true;
 					if(loginedUserRoleId >= 3 /*role: developer guest*/){
@@ -285,10 +289,10 @@ jQuery(function(){
 					$("#tabOperationLog tbody").append(
 						'<tr>' + 
 						'<td>' + e.Username + '</td>' + 
-						'<td>' + e.RepoName + '</td>' +
-						'<td>' + e.RepoTag + '</td>' +
-						'<td>' + e.Operation + '</td>' +
-						'<td>' + moment(new Date(e.OpTime)).format("YYYY-MM-DD HH:mm:ss") + '</td>' +
+						'<td>' + e.repo_name + '</td>' +
+						'<td>' + e.repo_tag + '</td>' +
+						'<td>' + e.operation + '</td>' +
+						'<td>' + moment(new Date(e.op_time)).format("YYYY-MM-DD HH:mm:ss") + '</td>' +
 						'</tr>');
 				});
 			}
@@ -326,7 +330,7 @@ jQuery(function(){
 					  }
 					}).exec()
 				).done(function(userList){
-					listUserByProjectCallback(userList || []);
+//					listUserByProjectCallback(userList || []);
 					$("#tblUser .glyphicon-pencil").on("click", function(e){
 						var userId = $(this).attr("userid")
 						getUserRoleCallback(userId);				
@@ -404,7 +408,7 @@ jQuery(function(){
 			
 				new AjaxUtil({
 					url: "/api/projects/" + projectId + "/logs/filter",
-					data:{"username":username, "project_id" : projectId, "keywords" : getKeyWords() , "beginTimestamp" : beginTimestamp, "endTimestamp" : endTimestamp},
+					data:{"Username":username, "project_id" : Number(projectId), "keywords" : getKeyWords() , "begin_timestamp" : beginTimestamp, "end_timestamp" : endTimestamp},
 					type: "post",
 					success: function(data, status, xhr){
 						if(xhr && xhr.status == 200){
