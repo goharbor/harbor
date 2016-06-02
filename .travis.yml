@@ -46,6 +46,8 @@ install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - go get github.com/dghubble/sling
+  - go get github.com/stretchr/testify
   
 before_script:
   # create tables and load data
@@ -65,9 +67,7 @@ script:
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
   # test for API
-  - docker pull swagger-generator
-  - docker run -d -p 8080 swagger-generator
+  - docker pull swaggerapi/swagger-generator
+  - docker run -d -p 8000:8080 swaggerapi/swagger-generator
   - docker ps
-  - go get github.com/dghubble/sling
-  - go get github.com/stretchr/testify
   - go test -v ./tests/APItests
