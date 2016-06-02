@@ -21,7 +21,7 @@ import (
 
 // Project holds the details of a project.
 type Project struct {
-	ProjectID       int64     `orm:"column(project_id)" json:"ProjectId"`
+	ProjectID       int64     `orm:"pk;column(project_id)" json:"ProjectId"`
 	OwnerID         int       `orm:"column(owner_id)" json:"OwnerId"`
 	Name            string    `orm:"column(name)"`
 	CreationTime    time.Time `orm:"column(creation_time)"`

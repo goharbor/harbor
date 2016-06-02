@@ -17,7 +17,6 @@ package dao
 
 import (
 	"errors"
-	"regexp"
 	"time"
 
 	"github.com/vmware/harbor/models"
@@ -26,14 +25,7 @@ import (
 
 // Register is used for user to register, the password is encrypted before the record is inserted into database.
 func Register(user models.User) (int64, error) {
-
-	err := validate(user)
-	if err != nil {
-		return 0, err
-	}
-
 	o := GetOrmer()
-
 	p, err := o.Raw("insert into user (username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
@@ -57,46 +49,6 @@ func Register(user models.User) (int64, error) {
 	}
 
 	return userID, nil
-}
-
-func validate(user models.User) error {
-
-	if isIllegalLength(user.Username, 0, 20) {
-		return errors.New("Username with illegal length.")
-	}
-	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
-		return errors.New("Username contains illegal characters.")
-	}
-
-	if exist, _ := UserExists(models.User{Username: user.Username}, "username"); exist {
-		return errors.New("Username already exists.")
-	}
-
-	if len(user.Email) > 0 {
-		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
-			return errors.New("Email with illegal format.")
-		}
-		if exist, _ := UserExists(models.User{Email: user.Email}, "email"); exist {
-			return errors.New("Email already exists.")
-		}
-	}
-
-	if isIllegalLength(user.Realname, 0, 20) {
-		return errors.New("Realname with illegal length.")
-	}
-
-	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
-		return errors.New("Realname contains illegal characters.")
-	}
-
-	if isIllegalLength(user.Password, 0, 20) {
-		return errors.New("Password with illegal length.")
-	}
-
-	if isIllegalLength(user.Comment, -1, 30) {
-		return errors.New("Comment with illegal length.")
-	}
-	return nil
 }
 
 // UserExists returns whether a user exists according username or Email.
