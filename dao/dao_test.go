@@ -689,7 +689,7 @@ func TestDeleteProjectMember(t *testing.T) {
 }
 
 func TestToggleAdminRole(t *testing.T) {
-	err := ToggleUserAdminRole(*currentUser)
+	err := ToggleUserAdminRole(currentUser.UserID, 1)
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
@@ -700,7 +700,7 @@ func TestToggleAdminRole(t *testing.T) {
 	if !isAdmin {
 		t.Errorf("User is not admin after toggled, user id: %d", currentUser.UserID)
 	}
-	err = ToggleUserAdminRole(*currentUser)
+	err = ToggleUserAdminRole(currentUser.UserID, 0)
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
