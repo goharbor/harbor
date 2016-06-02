@@ -6,17 +6,10 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser', 'getRole']; 
 
-  function ProjectController($scope, ListProjectService, $timeout, currentUser) {
+  function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole) {
     var vm = this;
-    
-    vm.MAP = {
-      0: 'NA',
-      1: 'Project Admin',
-      2: 'Developer',
-      3: 'Guest'
-    };
     
     vm.isOpen = false;
     vm.projectName = '';
@@ -39,7 +32,8 @@
     
     function listProjectSuccess(data, status) {
       data.forEach(function(data){
-        data.role = vm.MAP[data.role_id];
+        var currentRole = getRole({'key': 'roleId', 'value': data.role_id}); 
+        data.role_name = currentRole.name;
       });
       
       vm.projects = data || [];

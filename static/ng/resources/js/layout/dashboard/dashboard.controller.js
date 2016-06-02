@@ -6,28 +6,17 @@
     .module('harbor.layout.dashboard')
     .controller('DashboardController', DashboardController);
   
-  DashboardController.$inject = ['StatProjectService', 'ListTop10RepositoryService', 'ListIntegratedLogService'];
+  DashboardController.$inject = ['ListTop10RepositoryService', 'ListIntegratedLogService'];
   
-  function DashboardController(StatProjectService, ListTop10RepositoryService, ListIntegratedLogService) {
+  function DashboardController(ListTop10RepositoryService, ListIntegratedLogService) {
     var vm = this;
-    
-    StatProjectService()
-      .then(statProjectSuccess, statProjectFailed);
-      
+  
     ListTop10RepositoryService()
       .then(listTop10RepositorySuccess, listTop10RepositoryFailed);
      
     ListIntegratedLogService()
       .then(listIntegratedLogSuccess, listIntegratedLogFailed);
-      
-    function statProjectSuccess(response) {
-      vm.statProjects = response.data;
-    }
-    
-    function statProjectFailed(response) {
-      console.log('Failed stat project:' + response.data);
-    }    
-    
+     
     function listTop10RepositorySuccess(data) {
       vm.top10Repositories = data;
     }
