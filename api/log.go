@@ -61,14 +61,18 @@ func (l *LogAPI) Get() {
 
 	var linesNum int
 	lines := l.GetString("lines")
-	if len(lines) == 0 && len(startTime) == 0 && len(endTime) == 0 {
-		linesNum = 10
-	} else if len(lines) != 0 {
+	if len(lines) != 0 {
 		linesNum, err = strconv.Atoi(lines)
 		if err != nil {
 			log.Errorf("Get parameters error--lines, err: %v", err)
 			l.CustomAbort(http.StatusBadRequest, "bad request of lines")
 		}
+		if linesNum <= 0 {
+			log.Warning("lines must be a positive integer")
+			l.CustomAbort(http.StatusBadRequest, "lines is 0 or negative")
+		}
+	} else if len(startTime) == 0 && len(endTime) == 0 {
+		linesNum = 10
 	}
 
 	var logList []models.AccessLog

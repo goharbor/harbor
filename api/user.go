@@ -201,6 +201,16 @@ func (ua *UserAPI) Post() {
 		ua.RenderError(http.StatusConflict, "username has already been used!")
 		return
 	}
+	emailExist, err := dao.UserExists(user, "email")
+	if err != nil {
+		log.Errorf("Error occurred in change user profile: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if emailExist {
+		log.Warning("email has already been used!")
+		ua.RenderError(http.StatusConflict, "email has already been used!")
+		return
+	}
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -308,6 +318,8 @@ func commonValidate(user models.User) error {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
 			return fmt.Errorf("Email with illegal format.")
 		}
+	} else {
+		return fmt.Errorf("Email can't be empty")
 	}
 
 	if isIllegalLength(user.Realname, 0, 20) {

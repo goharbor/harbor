@@ -289,8 +289,8 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	return "", nil
 }
 
-//GetTopTenRepos handles request GET /api/repositories/toprepos
-func (ra *RepositoryAPI) GetTopTenRepos() {
+//GetTopRepos handles request GET /api/repositories/top
+func (ra *RepositoryAPI) GetTopRepos() {
 	var err error
 	var countNum int
 	count := ra.GetString("count")
@@ -307,7 +307,7 @@ func (ra *RepositoryAPI) GetTopTenRepos() {
 			ra.CustomAbort(http.StatusBadRequest, "count is 0 or negative")
 		}
 	}
-	repos, err := dao.GetTop10Repos(countNum)
+	repos, err := dao.GetTopRepos(countNum)
 	if err != nil {
 		log.Errorf("error occured in get top 10 repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")

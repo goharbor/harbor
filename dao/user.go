@@ -232,10 +232,6 @@ func DeleteUser(userID int) error {
 
 // ChangeUserProfile ...
 func ChangeUserProfile(user models.User) error {
-	//email is null is permitted
-	if user.Email == "" {
-		user.Email = user.Username + "@vmware.com"
-	}
 	o := GetOrmer()
 	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
 		log.Errorf("update user failed, error: %v", err)
