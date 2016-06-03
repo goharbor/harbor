@@ -60,7 +60,7 @@ type RepJob struct {
 // RepTarget is the model for a replication targe, i.e. destination, which wraps the endpoint URL and username/password of a remote registry.
 type RepTarget struct {
 	ID           int64     `orm:"column(id)" json:"id"`
-	URL          string    `orm:"column(url)" json:"url"`
+	URL          string    `orm:"column(url)" json:"endpoint"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Username     string    `orm:"column(username)" json:"username"`
 	Password     string    `orm:"column(password)" json:"password"`
