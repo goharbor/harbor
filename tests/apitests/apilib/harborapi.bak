@@ -26,13 +26,6 @@ func NewHarborAPIWithBasePath(basePath string) *HarborAPI {
 	}
 }
 
-func HarborClientDo(req *http.Request) (*http.Response, error) {
-	client := &http.Client{}
-	httpResponse, err := client.Do(req)
-	defer httpResponse.Body.Close()
-	return httpResponse, err
-}
-
 type UsrInfo struct {
 	Name   string
 	Passwd string
@@ -68,7 +61,11 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 
 	req, err := _sling.Request()
 
-	httpResponse, err := HarborClientDo(req)
+	client := &http.Client{}
+
+	httpResponse, err := client.Do(req)
+
+	defer httpResponse.Body.Close()
 
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
@@ -110,12 +107,22 @@ func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 
 	req, err := _sling.Request()
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
-
 	client := &http.Client{}
 
 	httpResponse, err := client.Do(req)
 
 	defer httpResponse.Body.Close()
+
+	//body, err := ioutil.ReadAll(httpResponse.Body)
+	//if err != nil {
+	// handle error
+	//}
+	// We use this map (below) so that any arbitrary error JSON can be handled.
+	// FIXME: This is in the absence of this Go generator honoring the non-2xx
+	// response (error) models, which needs to be implemented at some point.
+	//var failurePayload map[string]interface{}
+
+	//httpResponse, err := _sling.Receive(nil, &failurePayload)
 
 	return httpResponse.StatusCode, err
 }
