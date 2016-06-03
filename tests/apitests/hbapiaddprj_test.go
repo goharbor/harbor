@@ -1,27 +1,25 @@
-package HarborAPI
+package HarborAPItest
 
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
-        "github.com/yhua123/harbor/tests/APItests/APIlib"
+        "github.com/yhua123/harbor/tests/apitests/apilib"
 )
 
 func TestAddProject(t *testing.T) {
 
 	assert := assert.New(t)
 
-	apiTest := NewHarborAPI()
+	apiTest := HarborAPI.NewHarborAPI()
 
-	//prepare test
-	adminEr := &UsrInfo{"admin", "Harbor1234"}
-	admin := &UsrInfo{"admin", "Harbor12345"}
+	//prepare for test
+	adminEr := &HarborAPI.UsrInfo{"admin", "Harbor1234"}
+	admin := &HarborAPI.UsrInfo{"admin", "Harbor12345"}
 
-	var prjUsr = new(UsrInfo)
-	prjUsr.Name = "unknown"
-	prjUsr.Passwd = "unknown"
+	prjUsr := &HarborAPI.UsrInfo{"unknown", "unknown"}
 
-	var project Project
+	var project HarborAPI.Project
 	project.ProjectName = "testProject"
 	project.Public = true
 

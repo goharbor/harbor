@@ -1,18 +1,18 @@
-package HarborAPI
+package HarborAPItest
 
 import (
 	//"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
-        "github.com/yhua123/harbor/tests/APItests/APIlib"
+        "github.com/yhua123/harbor/tests/apitests/apilib"
 )
 
 func TestSearch(t *testing.T) {
 
 	assert := assert.New(t)
 
-	apiTest := NewHarborAPI()
-	var resault Search
+	apiTest := HarborAPI.NewHarborAPI()
+	var resault HarborAPI.Search
 	resault, err := apiTest.SearchGet("library")
 	//fmt.Printf("%+v\n", resault)
 	if err != nil {
