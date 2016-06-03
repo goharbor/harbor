@@ -11,7 +11,7 @@ This module is for those machine running Harbor's old version, such as 0.1.0. If
     ```
     cd harbor-migration
     
-    docker build -t your-image-name .
+    docker build -t migrate-tool .
     ```
 
 ###Migrate Step
@@ -41,11 +41,11 @@ This module is for those machine running Harbor's old version, such as 0.1.0. If
 You may change `/data/database` to the mysql volumes path you set in docker-compose.yml.
 
 ###Migration operation reference
-- You can use `help` to show instruction of harbor-migration
+- You can use `help` to show instruction of Harbor migration
 
     ```docker run migrate-tool help```
     
-- You can use `test` to test mysql connection in harbor-migration
+- You can use `test` to test mysql connection in Harbor migration
 
     ```docker run --rm -v /data/database:/var/lib/mysql migrate-tool test```
 
