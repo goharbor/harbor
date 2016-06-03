@@ -2,11 +2,11 @@
 
 ### About this document
 
-This document provides description of items that are gathered from the community and planned in Harbor¡¯s roadmap. This should serve as a reference point for Harbor users and contributors to understand where the project is heading, and help determine if a contribution could be conflicting with a longer term plan.
+This document provides description of items that are gathered from the community and planned in Harbor's roadmap. This should serve as a reference point for Harbor users and contributors to understand where the project is heading, and help determine if a contribution could be conflicting with a longer term plan.
 
 ### How to help?
 
-Discussion on the roadmap can take place in threads under Issues. Please open and comment on an issue if you want to provide suggestions and feedback to an item in the roadmap. Please review the roadmap to avoid potential duplicated effort.
+Discussion on the roadmap can take place in threads under [Issues](https://github.com/vmware/harbor/issues). Please open and comment on an issue if you want to provide suggestions and feedback to an item in the roadmap. Please review the roadmap to avoid potential duplicated effort.
 
 ### How to add an item to the roadmap?
 Please open an issue to track any initiative on the roadmap of Harbor. We will work with and rely on our community to focus our efforts to improve Harbor.
