@@ -1,4 +1,5 @@
-//Package HarborAPI ...
+//Package HarborAPI
+//These APIs provide services for manipulating Harbor project.
 package HarborAPI
 
 import (
@@ -38,12 +39,13 @@ type UsrInfo struct {
 	Passwd string
 }
 
-/**
- * Search for projects and repositories
- * The Search endpoint returns information about the projects and repositories\noffered at public status or related to the current logged in user. The\nresponse includes the project and repository list in a proper\ndisplay order.\n
- * @param q Search parameter for project and repository name.
- * @return []Search
- */
+//Search for projects and repositories
+//Implementation Notes
+//The Search endpoint returns information about the projects and repositories
+//offered at public status or related to the current logged in user.
+//The response includes the project and repository list in a proper display order.
+//@param q Search parameter for project and repository name.
+//@return []Search
 //func (a HarborAPI) SearchGet (q string) ([]Search, error) {
 func (a HarborAPI) SearchGet(q string) (Search, error) {
 
@@ -82,12 +84,11 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	return *successPayload, err
 }
 
-/**
- * Create a new project.
- * This endpoint is for user to create a new project.\n
- * @param project New created project.
- * @return void
- */
+//Create a new project.
+//Implementation Notes
+//This endpoint is for user to create a new project.
+//@param project New created project.
+//@return void
 //func (a HarborAPI) ProjectsPost (prjUsr UsrInfo, project Project) (int, error) {
 func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 
