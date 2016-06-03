@@ -38,7 +38,7 @@ func (ra *HealthV3API) Get() {
 	checker.AddCheckPoint("redis", redisDsn, nil, nil)
 
 	addr, port, username, password := dao.DbConfig()
-	mysqlDsn := fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/registry",
+	mysqlDsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/registry",
 		username, password, addr, port)
 	checker.AddCheckPoint("mysql", mysqlDsn, nil, nil)
 
