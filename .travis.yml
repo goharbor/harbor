@@ -48,6 +48,7 @@ install:
   - sudo mv docker-compose /usr/local/bin
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
+  - go get github.com/yhua123/harbor/tests/apitests/apilib
   
 before_script:
   # create tables and load data
@@ -70,4 +71,4 @@ script:
   #- docker pull swaggerapi/swagger-generator
   #- docker run -d -p 8000:8080 swaggerapi/swagger-generator -v /var:/var -
   - docker ps
-  - go test -v ./tests/APItests
+  - go test -v ./tests/apitests
