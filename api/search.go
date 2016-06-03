@@ -22,7 +22,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -85,7 +85,7 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	repositories, err2 := svc_utils.GetRepoFromCache()
+	repositories, err2 := cache.GetRepoFromCache()
 	if err2 != nil {
 		log.Errorf("Failed to get repos from cache, error: %v", err2)
 		s.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")

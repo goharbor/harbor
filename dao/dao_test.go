@@ -20,20 +20,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/utils/log"
-
-	"github.com/vmware/harbor/models"
-
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 )
 
-func execUpdate(o orm.Ormer, sql string, params interface{}) error {
+func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
 		return err
 	}
 	defer p.Close()
-	_, err = p.Exec(params)
+	_, err = p.Exec(params...)
 	if err != nil {
 		return err
 	}
@@ -95,6 +93,19 @@ func clearUp(username string) {
 	err = execUpdate(o, `delete from user where username = ?`, username)
 	if err != nil {
 		o.Rollback()
+		log.Error(err)
+	}
+
+	err = execUpdate(o, `delete from replication_job where id < 99`)
+	if err != nil {
+		log.Error(err)
+	}
+	err = execUpdate(o, `delete from replication_policy where id < 99`)
+	if err != nil {
+		log.Error(err)
+	}
+	err = execUpdate(o, `delete from replication_target where id < 99`)
+	if err != nil {
 		log.Error(err)
 	}
 	o.Commit()
@@ -713,6 +724,332 @@ func TestDeleteUser(t *testing.T) {
 	}
 	if user != nil {
 		t.Errorf("user is not nil after deletion, user: %+v", user)
+	}
+}
+
+var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
+
+func TestAddRepTarget(t *testing.T) {
+	target := models.RepTarget{
+		URL:      "127.0.0.1:5000",
+		Username: "admin",
+		Password: "admin",
+	}
+	//_, err := AddRepTarget(target)
+	id, err := AddRepTarget(target)
+	t.Logf("added target, id: %d", id)
+	if err != nil {
+		t.Errorf("Error occurred in AddRepTarget: %v", err)
+	} else {
+		targetID = id
+	}
+	id2 := id + 99
+	tgt, err := GetRepTarget(id2)
+	if err != nil {
+		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, id2)
+	}
+	if tgt != nil {
+		t.Errorf("There should not be a target with id: %d", id2)
+	}
+	tgt, err = GetRepTarget(id)
+	if err != nil {
+		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, id)
+	}
+	if tgt == nil {
+		t.Errorf("Unable to find a target with id: %d", id)
+	}
+	if tgt.URL != "127.0.0.1:5000" {
+		t.Errorf("Unexpected url in target: %s, expected 127.0.0.1:5000", tgt.URL)
+	}
+	if tgt.Username != "admin" {
+		t.Errorf("Unexpected username in target: %s, expected admin", tgt.Username)
+	}
+}
+
+func TestAddRepPolicy(t *testing.T) {
+	policy := models.RepPolicy{
+		ProjectID:   1,
+		Enabled:     1,
+		TargetID:    targetID,
+		Description: "whatever",
+		Name:        "mypolicy",
+	}
+	id, err := AddRepPolicy(policy)
+	t.Logf("added policy, id: %d", id)
+	if err != nil {
+		t.Errorf("Error occurred in AddRepPolicy: %v", err)
+	} else {
+		policyID = id
+	}
+	p, err := GetRepPolicy(id)
+	if err != nil {
+		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, id)
+	}
+	if p == nil {
+		t.Errorf("Unable to find a policy with id: %d", id)
+	}
+
+	if p.Name != "mypolicy" || p.TargetID != targetID || p.Enabled != 1 || p.Description != "whatever" {
+		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Enabled: 1, Description: whatever;\n result: Name: %s, TargetID: %d, Enabled: %d, Description: %s",
+			targetID, p.Name, p.TargetID, p.Enabled, p.Description)
+	}
+	var tm = time.Now().AddDate(0, 0, -1)
+	if !p.StartTime.After(tm) {
+		t.Errorf("Unexpected start_time: %v", p.StartTime)
+	}
+
+}
+
+func TestDisableRepPolicy(t *testing.T) {
+	err := DisableRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Failed to disable policy, id: %d", policyID)
+	}
+	p, err := GetRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
+	}
+	if p == nil {
+		t.Errorf("Unable to find a policy with id: %d", policyID)
+	}
+	if p.Enabled == 1 {
+		t.Errorf("The Enabled value of replication policy is still 1 after disabled, id: %d", policyID)
+	}
+}
+
+func TestEnableRepPolicy(t *testing.T) {
+	err := EnableRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Failed to disable policy, id: %d", policyID)
+	}
+	p, err := GetRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
+	}
+	if p == nil {
+		t.Errorf("Unable to find a policy with id: %d", policyID)
+	}
+	if p.Enabled == 0 {
+		t.Errorf("The Enabled value of replication policy is still 0 after disabled, id: %d", policyID)
+	}
+}
+
+func TestAddRepPolicy2(t *testing.T) {
+	policy2 := models.RepPolicy{
+		ProjectID:   3,
+		Enabled:     0,
+		TargetID:    3,
+		Description: "whatever",
+		Name:        "mypolicy",
+	}
+	policyID2, err := AddRepPolicy(policy2)
+	t.Logf("added policy, id: %d", policyID2)
+	if err != nil {
+		t.Errorf("Error occurred in AddRepPolicy: %v", err)
+	}
+	p, err := GetRepPolicy(policyID2)
+	if err != nil {
+		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID2)
+	}
+	if p == nil {
+		t.Errorf("Unable to find a policy with id: %d", policyID2)
+	}
+	var tm time.Time
+	if p.StartTime.After(tm) {
+		t.Errorf("Unexpected start_time: %v", p.StartTime)
+	}
+}
+
+func TestAddRepJob(t *testing.T) {
+	job := models.RepJob{
+		Repository: "library/ubuntu",
+		PolicyID:   policyID,
+		Operation:  "transfer",
+		TagList:    []string{"12.01", "14.04", "latest"},
+	}
+	id, err := AddRepJob(job)
+	if err != nil {
+		t.Errorf("Error occurred in AddRepJob: %v", err)
+		return
+	}
+	jobID = id
+
+	j, err := GetRepJob(id)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepJob: %v, id: %d", err, id)
+		return
+	}
+	if j == nil {
+		t.Errorf("Unable to find a job with id: %d", id)
+		return
+	}
+	if j.Status != models.JobPending || j.Repository != "library/ubuntu" || j.PolicyID != policyID || j.Operation != "transfer" || len(j.TagList) != 3 {
+		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, PolicyID: %d, Operation: transfer, taglist length 3"+
+			"but in returned data:, Status: %s, Repository: %s, Operation: %s, PolicyID: %d, TagList: %v", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID, j.TagList)
+		return
+	}
+}
+
+func TestUpdateRepJobStatus(t *testing.T) {
+	err := UpdateRepJobStatus(jobID, models.JobFinished)
+	if err != nil {
+		t.Errorf("Error occured in UpdateRepJobStatus, error: %v, id: %d", err, jobID)
+		return
+	}
+	j, err := GetRepJob(jobID)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepJob: %v, id: %d", err, jobID)
+	}
+	if j == nil {
+		t.Errorf("Unable to find a job with id: %d", jobID)
+	}
+	if j.Status != models.JobFinished {
+		t.Errorf("Job's status: %s, expected: %s, id: %d", j.Status, models.JobFinished, jobID)
+	}
+	err = UpdateRepJobStatus(jobID, models.JobPending)
+	if err != nil {
+		t.Errorf("Error occured in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
+		return
+	}
+}
+
+func TestGetRepPolicyByProject(t *testing.T) {
+	p1, err := GetRepPolicyByProject(99)
+	if err != nil {
+		t.Errorf("Error occured in GetRepPolicyByProject:%v, project ID: %d", err, 99)
+		return
+	}
+	if len(p1) > 0 {
+		t.Errorf("Unexpected length of policy list, expected: 0, in fact: %d, project id: %d", len(p1), 99)
+		return
+	}
+
+	p2, err := GetRepPolicyByProject(1)
+	if err != nil {
+		t.Errorf("Error occuered in GetRepPolicyByProject:%v, project ID: %d", err, 2)
+		return
+	}
+	if len(p2) != 1 {
+		t.Errorf("Unexpected length of policy list, expected: 1, in fact: %d, project id: %d", len(p2), 1)
+		return
+	}
+	if p2[0].ID != policyID {
+		t.Errorf("Unexpecred policy id in result, expected: %d, in fact: %d", policyID, p2[0].ID)
+		return
+	}
+}
+
+func TestGetRepJobByPolicy(t *testing.T) {
+	jobs, err := GetRepJobByPolicy(999)
+	if err != nil {
+		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
+		return
+	}
+	if len(jobs) > 0 {
+		log.Errorf("Unexpected length of jobs, expected: 0, in fact: %d", len(jobs))
+		return
+	}
+	jobs, err = GetRepJobByPolicy(policyID)
+	if err != nil {
+		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
+		return
+	}
+	if len(jobs) != 1 {
+		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		return
+	}
+	if jobs[0].ID != jobID {
+		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
+	}
+}
+
+func TestGetRepoJobToStop(t *testing.T) {
+	jobs := [...]models.RepJob{
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobRunning,
+		},
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobFinished,
+		},
+		models.RepJob{
+			Repository: "library/ubuntu",
+			PolicyID:   policyID,
+			Operation:  "transfer",
+			Status:     models.JobCanceled,
+		},
+	}
+	var err error
+	for _, j := range jobs {
+		_, err = AddRepJob(j)
+		if err != nil {
+			log.Errorf("Failed to add Job: %+v, error: %v", j, err)
+			return
+		}
+	}
+	res, err := GetRepJobToStop(policyID)
+	if err != nil {
+		log.Errorf("Failed to Get Jobs, error: %v", err)
+		return
+	}
+	//time.Sleep(15 * time.Second)
+	if len(res) != 2 {
+		log.Errorf("Expected length of stoppable jobs, expected:2, in fact: %d", len(res))
+		return
+	}
+}
+
+func TestDeleteRepTarget(t *testing.T) {
+	err := DeleteRepTarget(targetID)
+	if err != nil {
+		t.Errorf("Error occured in DeleteRepTarget: %v, id: %d", err, targetID)
+		return
+	}
+	t.Logf("deleted target, id: %d", targetID)
+	tgt, err := GetRepTarget(targetID)
+	if err != nil {
+		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, targetID)
+	}
+	if tgt != nil {
+		t.Errorf("Able to find target after deletion, id: %d", targetID)
+	}
+}
+
+func TestDeleteRepPolicy(t *testing.T) {
+	err := DeleteRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Error occured in DeleteRepPolicy: %v, id: %d", err, policyID)
+		return
+	}
+	t.Logf("delete rep policy, id: %d", policyID)
+	p, err := GetRepPolicy(policyID)
+	if err != nil {
+		t.Errorf("Error occured in GetRepPolicy:%v", err)
+	}
+	if p != nil {
+		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
+	}
+}
+
+func TestDeleteRepJob(t *testing.T) {
+	err := DeleteRepJob(jobID)
+	if err != nil {
+		t.Errorf("Error occured in DeleteRepJob: %v, id: %d", err, jobID)
+		return
+	}
+	t.Logf("deleted rep job, id: %d", jobID)
+	j, err := GetRepJob(jobID)
+	if err != nil {
+		t.Errorf("Error occured in GetRepJob:%v", err)
+	}
+	if j != nil {
+		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
 	}
 }
 

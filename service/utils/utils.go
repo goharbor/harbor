@@ -13,28 +13,21 @@
    limitations under the License.
 */
 
+// Package utils contains methods to support security, cache, and webhook functions.
 package utils
 
 import (
-	"crypto/sha1"
-	"encoding/base64"
-	"fmt"
-
-	"golang.org/x/crypto/pbkdf2"
+	"github.com/vmware/harbor/utils/log"
+	"net/http"
+	"os"
 )
 
-// Encrypt encrypts the content with salt
-func Encrypt(content string, salt string) string {
-	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, sha1.New))
-}
-
-// ReversibleEncrypt encrypts the str with base64
-func ReversibleEncrypt(str string) string {
-	return base64.StdEncoding.EncodeToString([]byte(str))
-}
-
-// ReversibleDecrypt decrypts the str with base64
-func ReversibleDecrypt(str string) (string, error) {
-	b, err := base64.StdEncoding.DecodeString(str)
-	return string(b), err
+// VerifySecret verifies the UI_SECRET cookie in a http request.
+func VerifySecret(r *http.Request) bool {
+	secret := os.Getenv("UI_SECRET")
+	c, err := r.Cookie("uisecret")
+	if err != nil {
+		log.Errorf("Failed to get secret cookie, error: %v", err)
+	}
+	return c != nil && c.Value == secret
 }

@@ -1,0 +1,9 @@
+MYSQL_HOST=mysql
+MYSQL_PORT=3306
+MYSQL_USR=root
+MYSQL_PWD=$db_password
+UI_SECRET=$ui_secret
+HARBOR_URL=$ui_url
+MAX_JOB_WORKERS=10
+LOG_LEVEL=debug
+GODEBUG=netdns=cgo

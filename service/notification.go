@@ -20,10 +20,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
 
 	"github.com/astaxie/beego"
 )
@@ -54,7 +56,8 @@ func (n *NotificationHandler) Post() {
 			log.Errorf("Failed to match the media type against pattern, error: %v", err)
 			matched = false
 		}
-		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
+		if matched && (strings.HasPrefix(e.Request.UserAgent, "docker") ||
+			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == strings.ToLower(registry.UserAgent)) {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository
@@ -67,14 +70,21 @@ func (n *NotificationHandler) Post() {
 			if username == "" {
 				username = "anonymous"
 			}
+
+			if action == "pull" && username == "job-service-user" {
+				return
+			}
+
 			go dao.AccessLog(username, project, repo, repoTag, action)
 			if action == "push" {
 				go func() {
-					err2 := svc_utils.RefreshCatalogCache()
+					err2 := cache.RefreshCatalogCache()
 					if err2 != nil {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}
 				}()
+
+				go api.TriggerReplicationByRepository(repo, []string{repoTag}, models.RepOpTransfer)
 			}
 		}
 	}
