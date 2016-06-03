@@ -111,11 +111,7 @@ func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 	req, err := _sling.Request()
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
 
-	client := &http.Client{}
-
-	httpResponse, err := client.Do(req)
-
-	defer httpResponse.Body.Close()
+	httpResponse, err := HarborClientDo(req)
 
 	return httpResponse.StatusCode, err
 }
