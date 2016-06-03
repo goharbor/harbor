@@ -23,12 +23,12 @@ This module is for those machine running Harbor's old version, such as 0.1.0. If
 - step 2: create backup file in `/path/to/backup`
 
     ```
-    docker run -ti -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool backup
+    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool backup
     ```
 
 - step 3: perform database schema upgrade
 
-    ```docker run -ti -v /data/database:/var/lib/mysql migrate-tool up head```
+    ```docker run -ti --rm -v /data/database:/var/lib/mysql migrate-tool up head```
 
 
 
@@ -47,10 +47,10 @@ You may change `/data/database` to the mysql volumes path you set in docker-comp
     
 - You can use `test` to test mysql connection in harbor-migration
 
-    ```docker run -v /data/database:/var/lib/mysql migrate-tool test```
+    ```docker run --rm -v /data/database:/var/lib/mysql migrate-tool test```
 
 - You can restore from backup file in `/path/to/backup`
 
     ```
-    docker run -ti -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool restore
+    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool restore
     ```
