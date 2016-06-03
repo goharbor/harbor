@@ -27,8 +27,9 @@ branch_labels = None
 depends_on = None
 
 from alembic import op
-from datetime import datetime
 from db_meta import *
+
+from sqlalchemy.dialects import mysql
 
 Session = sessionmaker()
 
@@ -44,12 +45,9 @@ def upgrade():
     session.add(Properties(k='schema_version', v='0.1.1'))
 
     #add column to table user
-    op.add_column('user', sa.Column('creation_time', sa.DateTime(), nullable=True))
+    op.add_column('user', sa.Column('creation_time', mysql.TIMESTAMP, nullable=True))
     op.add_column('user', sa.Column('sysadmin_flag', sa.Integer(), nullable=True))
-    op.add_column('user', sa.Column('update_time', sa.DateTime(), nullable=True))
-
-    #fill update_time data into table user
-    session.query(User).update({User.update_time: datetime.now()})
+    op.add_column('user', sa.Column('update_time', mysql.TIMESTAMP, nullable=True))
 
     #init all sysadmin_flag = 0
     session.query(User).update({User.sysadmin_flag: 0})
@@ -88,11 +86,6 @@ def upgrade():
     session.delete(acc)
     session.query(Access).update({Access.access_id: Access.access_id - 1})
 
-    #add column to table project
-    op.add_column('project', sa.Column('update_time', sa.DateTime(), nullable=True))
-
-    #fill update_time data into table project
-    session.query(Project).update({Project.update_time: datetime.now()})
     session.commit()
 
 def downgrade():
