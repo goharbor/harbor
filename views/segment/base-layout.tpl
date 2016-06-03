@@ -14,15 +14,15 @@
 -->
 <!DOCTYPE html>
 <html>
-	<head>
-		{{.HeaderInc}}
-		<title>{{.PageTitle}}</title>
-	</head>
-	<body>	
-	    {{.HeaderContent}}
-		{{.BodyContent}}
-		{{.FooterInc}}		
-		{{.ModalDialog}}
-		{{.FootContent}}
-	</body>
+<head>
+	{{.HeaderInc}}
+	<title>{{.PageTitle}}</title>
+</head>
+<body>	
+	{{.HeaderContent}}
+	{{.BodyContent}}
+	{{.FooterInc}}		
+	{{.ModalDialog}}
+	{{.FootContent}}
+</body>
 </html>
