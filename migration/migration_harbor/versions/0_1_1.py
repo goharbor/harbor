@@ -60,7 +60,7 @@ def upgrade():
     for result in join_result:
         session.add(ProjectMember(project_id=result.project_role.project_id, \
             user_id=result.user_id, role=result.project_role.role_id, \
-            creation_time=datetime.now(), update_time=datetime.now()))
+            creation_time=None, update_time=None))
 
     #update sysadmin_flag
     sys_admin_result = session.query(UserProjectRole).\
@@ -85,6 +85,9 @@ def upgrade():
     acc = session.query(Access).filter_by(access_id=1).first()
     session.delete(acc)
     session.query(Access).update({Access.access_id: Access.access_id - 1})
+
+    #add column to table project        
+    op.add_column('project', sa.Column('update_time', mysql.TIMESTAMP, nullable=True))
 
     session.commit()
 
