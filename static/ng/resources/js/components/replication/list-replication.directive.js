@@ -6,10 +6,12 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['ListReplicationPolicyService', 'ListReplicationJobService'];
+  ListReplicationController.$inject = ['getParameterByName', '$location', 'ListReplicationPolicyService', 'ListReplicationJobService'];
   
-  function ListReplicationController(ListReplicationPolicyService, ListReplicationJobService) {
+  function ListReplicationController(getParameterByName, $location, ListReplicationPolicyService, ListReplicationJobService) {
     var vm = this;
+    
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
     
     vm.addReplication = addReplication;
     vm.retrievePolicy = retrievePolicy;
@@ -19,13 +21,15 @@
     vm.retrievePolicy();
    
     function retrievePolicy() {
-      ListReplicationPolicyService()
-        .then(listReplicationPolicySuccess, listReplicationPolicyFailed);
+      ListReplicationPolicyService(vm.projectId, vm.replicationName)
+        .success(listReplicationPolicySuccess)
+        .error(listReplicationPolicyFailed);
     }
     
     function retrieveJob(policyId) {
-      ListReplicationJobService(policyId)
-        .then(listReplicationJobSuccess, listReplicationJobFailed);
+      ListReplicationJobService(policyId, vm.replicationJobName)
+        .success(listReplicationJobSuccess)
+        .error(listReplicationJobFailed);
     }
 
     function listReplicationPolicySuccess(data, status) {
@@ -46,7 +50,6 @@
 
     function addReplication() {
       vm.modalTitle = 'Create New Policy';
-      vm.modalMessage = '';
     }
     
   }

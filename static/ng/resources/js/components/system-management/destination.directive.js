@@ -11,12 +11,29 @@
   function DestinationController(ListDestinationService) {
     var vm = this;
     
-    ListDestinationService()
-      .then(function(data) {
-        vm.destinations = data; 
-      }, function() {
-                
-      });
+    vm.retrieve = retrieve;
+    vm.search = search;
+    vm.retrieve();
+    
+    function retrieve() {
+      ListDestinationService()
+        .success(listDestinationSuccess)
+        .error(listDestinationFailed);
+    }
+    
+    function search() {
+      vm.retrieve();
+    }
+    
+    function listDestinationSuccess(data, status) {
+      vm.destinations = data;
+    }
+    
+    function listDestinationFailed(data, status) {
+      console.log('Failed list destination:' + data);
+    }
+    
+    
   }
   
   function destination() {

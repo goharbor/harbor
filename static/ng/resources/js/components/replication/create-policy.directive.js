@@ -8,6 +8,12 @@
   
   function CreatePolicyController() {
     var vm = this;
+    vm.enabled = true;    
+    vm.save = save;
+    
+    function save(policy) {
+      console.log(angular.toJson(policy));
+    }
   }
   
   function createPolicy() {

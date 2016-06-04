@@ -6,12 +6,18 @@
     .module('harbor.services.destination')
     .factory('CreateDestinationService', CreateDestinationService);
     
-  CreateDestinationService.$inject = ['$http', '$q', '$timeout'];
+  CreateDestinationService.$inject = ['$http'];
   
-  function CreateDestinationService($http, $q, $timeout) {
+  function CreateDestinationService($http) {
     return createDestination;
-    function createDestination() {
-      
+    function createDestination(name, endpoint, username, password) {
+      return $http
+        .post('/api/targets', {
+          'name': name,
+          'url': endpoint,
+          'username': username,
+          'password': password
+        });
     }
   }
   
