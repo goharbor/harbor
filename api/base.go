@@ -71,8 +71,8 @@ func (b *BaseAPI) Validate(v interface{}) {
 	}
 }
 
-// DecodeJsonReqAndValidate does both decoding and validation
-func (b *BaseAPI) DecodeJsonReqAndValidate(v interface{}) {
+// DecodeJSONReqAndValidate does both decoding and validation
+func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) {
 	b.DecodeJSONReq(v)
 	b.Validate(v)
 }
