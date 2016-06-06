@@ -3,6 +3,6 @@ package HarborAPI
 import ()
 
 type Search struct {
-	Projects     []Project    `json:"project,omitempty"`
-	Repositories []Repository `json:"repositorie,omitempty"`
+	Projects     []Project4Search    `json:"project,omitempty"`
+	Repositories []Repository4Search `json:"repository,omitempty"`
 }

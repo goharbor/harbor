@@ -4,7 +4,7 @@ package HarborAPI
 
 import (
 	"encoding/json"
-	//"fmt"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -46,10 +46,11 @@ type UsrInfo struct {
 //The response includes the project and repository list in a proper display order.
 //@param q Search parameter for project and repository name.
 //@return []Search
-//func (a HarborAPI) SearchGet (q string) ([]Search, error) {
+//func (a HarborAPI) SearchGet (q string) (Search, error) {
 func (a HarborAPI) SearchGet(q string) (Search, error) {
 
-	_sling := sling.New().Get(a.basePath)
+	fmt.Println("dsada\n")
+        _sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
 	path := "/api/search"
@@ -59,6 +60,7 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	type QueryParams struct {
 		Query string `url:"q"`
 	}
+
 	_sling = _sling.QueryStruct(&QueryParams{q})
 
 	// accept header
