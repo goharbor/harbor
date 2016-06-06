@@ -70,6 +70,8 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	}
 
 	req, err := _sling.Request()
+        fmt.Printf("%+v\n", req)
+
 
 	httpResponse, err := HarborClientDo(req)
 
