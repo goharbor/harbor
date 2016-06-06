@@ -147,23 +147,35 @@ func (ua *UserAPI) Put() {
 			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
 		}
 	}
+	userQuery := models.User{UserID: ua.userID}
+	u, err := dao.GetUser(userQuery)
+	if err != nil {
+		log.Errorf("Error occurred in GetUser, error: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if u == nil {
+		log.Errorf("User with Id: %d does not exist", ua.userID)
+		ua.CustomAbort(http.StatusNotFound, "")
+	}
 	user := models.User{UserID: ua.userID}
 	ua.DecodeJSONReq(&user)
-	err := commonValidate(user)
+	err = commonValidate(user)
 	if err != nil {
 		log.Warning("Bad request in change user profile: %v", err)
 		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
 		return
 	}
-	emailExist, err := dao.UserExists(user, "email")
-	if err != nil {
-		log.Errorf("Error occurred in change user profile: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if emailExist {
-		log.Warning("email has already been used!")
-		ua.RenderError(http.StatusConflict, "email has already been used!")
-		return
+	if u.Email != user.Email {
+		emailExist, err := dao.UserExists(user, "email")
+		if err != nil {
+			log.Errorf("Error occurred in change user profile: %v", err)
+			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		if emailExist {
+			log.Warning("email has already been used!")
+			ua.RenderError(http.StatusConflict, "email has already been used!")
+			return
+		}
 	}
 	if err := dao.ChangeUserProfile(user); err != nil {
 		log.Errorf("Failed to update user profile, error: %v", err)
@@ -289,11 +301,12 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 	}
 	userQuery := models.User{UserID: ua.userID}
 	ua.DecodeJSONReq(&userQuery)
-	if err := dao.ToggleUserAdminRole(userQuery.UserID,userQuery.HasAdminRole); err != nil {
+	if err := dao.ToggleUserAdminRole(userQuery.UserID, userQuery.HasAdminRole); err != nil {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 }
+
 // validate only validate when user register
 func validate(user models.User) error {
 
