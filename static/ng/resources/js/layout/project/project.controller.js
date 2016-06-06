@@ -22,6 +22,7 @@
     vm.togglePublicity = togglePublicity;
     vm.user = currentUser.get();  
     vm.retrieve();
+    vm.getProjectRole = getProjectRole;
     
     function retrieve() {       
        
@@ -31,13 +32,12 @@
     }
     
     function listProjectSuccess(data, status) {
-      data.forEach(function(data){
-        var currentRole = getRole({'key': 'roleId', 'value': data.role_id}); 
-        data.role_name = currentRole.name;
-      });
-      
       vm.projects = data || [];
-
+    }
+    
+    function getProjectRole(roleId) {
+      var role = getRole({'key': 'roleId', 'value': roleId});
+      return role.name;
     }
     
     function listProjectFailed(e) {

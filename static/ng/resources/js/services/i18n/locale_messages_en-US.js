@@ -45,7 +45,6 @@ var locale_messages = {
   'comments': 'Comments',
   'comment_is_too_long': 'Comment is too long. (maximum 20 characters)',
   'forgot_password_description': 'Please input the Email used when you signed up, a reset password Email will be sent to you.',
-  'email_does_not_exist': 'Email does not exist',
   'reset_password': 'Reset Password',
   'summary': 'Summary',
   'projects': 'Projects',

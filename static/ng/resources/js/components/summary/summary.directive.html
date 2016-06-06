@@ -1,15 +1,4 @@
 <h4 class="page-header title-color underlined">// 'summary' | tr //</h4>  
-  <dl class="page-content dl-horizontal" ng-if="vm.isAdmin">
-      <dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['my_project_count']//</dd>
-      <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_project_count']//</dd>
-      <dt>// 'total_projects' | tr //:</dt><dd>//vm.statProjects['total_project_count']//</dd>
-      <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['my_repo_count']//</dd>
-      <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repo_count']//</dd>
-      <dt>// 'total_repositories' | tr //:</dt><dd>//vm.statProjects['total_repo_count']//</dd>
-  </dl>
-  <dl class="page-content dl-horizontal" ng-if="!vm.isAdmin">
-      <dt>// 'projects' | tr //:</dt><dd>//vm.statProjects['my_project_count']//</dd>
-      <dt>// 'public_projects' | tr //:</dt><dd>//vm.statProjects['public_project_count']//</dd>
-      <dt>// 'repositories' | tr //:</dt><dd>//vm.statProjects['my_repo_count']//</dd>
-      <dt>// 'public_repositories' | tr //:</dt><dd>//vm.statProjects['public_repo_count']//</dd>
+  <dl class="page-content dl-horizontal" ng-repeat="(key, value) in vm.statProjects">
+      <dt>// vm.getSummaryName(key) | tr //:</dt><dd>//value//</dd>
   </dl>

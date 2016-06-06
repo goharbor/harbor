@@ -6,10 +6,11 @@
       .module('harbor.summary')
       .directive('projectSummary', projectSummary);
       
-    ProjectSummaryController.$inject = ['StatProjectService'];
+    ProjectSummaryController.$inject = ['StatProjectService', 'getStatisticsName'];
     
-    function ProjectSummaryController(StatProjectService) {
+    function ProjectSummaryController(StatProjectService, getStatisticsName) {
         var vm = this;
+        vm.getSummaryName = getSummaryName;
         
         StatProjectService()
           .success(statProjectSuccess)
@@ -17,16 +18,16 @@
           
         function statProjectSuccess(data, status) {
             vm.statProjects = data;
-            if(vm.statProjects.hasOwnProperty("total_project_count")) {
-                vm.isAdmin = true;
-            }else {
-                vm.isAdmin = false;
-            }
         }
         
         function statProjectFailed(status) {
             console.log('Failed stat project:' + status);
-        }           
+        }
+        
+        function getSummaryName(payloadName) {
+           var statisticsName =  getStatisticsName({'key': 'payloadName', 'value': payloadName}); 
+           return statisticsName.name;
+       }           
     }
     
     function projectSummary() {

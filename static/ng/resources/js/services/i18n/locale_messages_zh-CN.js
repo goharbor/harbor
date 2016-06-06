@@ -45,7 +45,6 @@ var locale_messages = {
   'comments': '备注',
   'comment_is_too_long' : '备注长度超出限制。（最长为20个字符）',
   'forgot_password_description': '重置邮件将发送到此邮箱。',
-  'email_does_not_exist': '邮箱不存在。',
   'reset_password': '重置密码',
   'summary': '摘要',
   'projects': '项目',
