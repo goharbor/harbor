@@ -49,7 +49,6 @@ type UsrInfo struct {
 //func (a HarborAPI) SearchGet (q string) (Search, error) {
 func (a HarborAPI) SearchGet(q string) (Search, error) {
 
-	fmt.Println("dsada\n")
         _sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
@@ -78,7 +77,7 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	if err != nil {
 		// handle error
 	}
-
+        fmt.Printf("%+v\n", body)
 	var successPayload = new(Search)
 
 	err = json.Unmarshal(body, &successPayload)
