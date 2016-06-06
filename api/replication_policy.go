@@ -70,7 +70,7 @@ func (pa *RepPolicyAPI) Get() {
 // Post creates a policy, and if it is enbled, the replication will be triggered right now.
 func (pa *RepPolicyAPI) Post() {
 	policy := &models.RepPolicy{}
-	pa.DecodeJsonReqAndValidate(policy)
+	pa.DecodeJSONReqAndValidate(policy)
 
 	po, err := dao.GetRepPolicyByName(policy.Name)
 	if err != nil {

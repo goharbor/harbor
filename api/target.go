@@ -164,7 +164,7 @@ func (t *TargetAPI) Get() {
 // Post ...
 func (t *TargetAPI) Post() {
 	target := &models.RepTarget{}
-	t.DecodeJsonReqAndValidate(target)
+	t.DecodeJSONReqAndValidate(target)
 
 	ta, err := dao.GetRepTargetByName(target.Name)
 	if err != nil {
@@ -197,7 +197,7 @@ func (t *TargetAPI) Put() {
 	}
 
 	target := &models.RepTarget{}
-	t.DecodeJsonReqAndValidate(target)
+	t.DecodeJSONReqAndValidate(target)
 
 	originTarget, err := dao.GetRepTarget(id)
 	if err != nil {
