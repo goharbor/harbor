@@ -147,6 +147,14 @@ func (ua *UserAPI) Put() {
 			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
 		}
 	}
+	user := models.User{UserID: ua.userID}
+	ua.DecodeJSONReq(&user)
+	err = commonValidate(user)
+	if err != nil {
+		log.Warning("Bad request in change user profile: %v", err)
+		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
+		return
+	}
 	userQuery := models.User{UserID: ua.userID}
 	u, err := dao.GetUser(userQuery)
 	if err != nil {
@@ -156,14 +164,6 @@ func (ua *UserAPI) Put() {
 	if u == nil {
 		log.Errorf("User with Id: %d does not exist", ua.userID)
 		ua.CustomAbort(http.StatusNotFound, "")
-	}
-	user := models.User{UserID: ua.userID}
-	ua.DecodeJSONReq(&user)
-	err = commonValidate(user)
-	if err != nil {
-		log.Warning("Bad request in change user profile: %v", err)
-		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
-		return
 	}
 	if u.Email != user.Email {
 		emailExist, err := dao.UserExists(user, "email")
