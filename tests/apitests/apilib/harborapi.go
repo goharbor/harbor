@@ -4,7 +4,7 @@ package HarborAPI
 
 import (
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -26,20 +26,6 @@ func NewHarborAPIWithBasePath(basePath string) *HarborAPI {
 		basePath: basePath,
 	}
 }
-
-/*func HarborClientDo(req *http.Request) (*http.Response, error) {
-	client := &http.Client{}
-	httpResponse, err := client.Do(req)
-	defer httpResponse.Body.Close()
-        fmt.Printf("aaaashttpResponse.Body:%+v\n", httpResponse.Body)
-
-         body, err := ioutil.ReadAll(httpResponse.Body)
-          if err != nil {
-                  // handle error
-          }
-          fmt.Printf("body:aaa%+v\n", &body)
-        return httpResponse, err
-}*/
 
 type UsrInfo struct {
 	Name   string
@@ -77,30 +63,17 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	}
 
 	req, err := _sling.Request()
-        fmt.Printf("%+v\n", req)
-	//httpResponse1, err := HarborClientDo(req)
-        //fmt.Printf("httpResponse1.Body:%+v\n", httpResponse1.Body)
-	//fmt.Println("err:", err)
-        //body1, err := ioutil.ReadAll(httpResponse1.Body)
-        //fmt.Println("err:", err)
-        //fmt.Printf("body1:%+v\n", body1)
         client := &http.Client{}
-
 	httpResponse, err := client.Do(req)
-
 	defer httpResponse.Body.Close()
-
-       // fmt.Printf("httpResponse.Body:%+v\n", httpResponse.Body)
-       // fmt.Println(err)
-	body, err := ioutil.ReadAll(httpResponse.Body)
+	
+        body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		// handle error
 	}
-        fmt.Printf("body:%+v\n", body)
-	var successPayload = new(Search)
-
+	
+        var successPayload = new(Search)
 	err = json.Unmarshal(body, &successPayload)
-        fmt.Println(err)
 	return *successPayload, err
 }
 
@@ -132,12 +105,8 @@ func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 	req, err := _sling.Request()
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
 
-	//httpResponse, err := HarborClientDo(req)
-        
         client := &http.Client{}
- 
         httpResponse, err := client.Do(req)
-  
         defer httpResponse.Body.Close()
 
 	return httpResponse.StatusCode, err
