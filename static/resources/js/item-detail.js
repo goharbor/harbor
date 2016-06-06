@@ -62,7 +62,7 @@ jQuery(function(){
 							return;
 						}
 						$.each(data, function(i, e){						
-							var targetId = e.replace(/\//g, "------");						
+							var targetId = e.replace(/\//g, "------").replace(/\./g, "---");						
 							var row = '<div class="panel panel-default"  targetId="' + targetId + '">' +
 								'<div class="panel-heading" role="tab" id="heading' + i + '"+ >' + 
 							      '<h4 class="panel-title">' +
@@ -105,7 +105,7 @@ jQuery(function(){
 		$('#accordionRepo').on('show.bs.collapse', function (e) {
 			$('#accordionRepo .in').collapse('hide');
 			var targetId = $(e.target).attr("targetId");
-			var repoName = targetId.replace(/------/g, "/");
+			var repoName = targetId.replace(/[-]{6}/g, "/").replace(/[-]{3}/g, '.');
 			new AjaxUtil({
 			  url: "/api/repositories/tags?repo_name=" + repoName,
 			  type: "get",
@@ -113,8 +113,8 @@ jQuery(function(){
 					$('#' + targetId +' table tbody tr').remove();
 					var row = [];
 					for(var i in data){
-						var tagName = data[i]
-						row.push('<tr><td><a href="#" imageId="' + tagName + '" repoName="' + repoName + '">' + tagName + '</a></td><td><input type="text" style="width:100%" readonly value="  docker pull '+ $("#harborRegUrl").val() +'/'+ repoName + ':' + tagName +'"></td></tr>');							
+						var tagName = data[i];
+						row.push('<tr><td><a href="#" imageId="' + tagName + '" repoName="' + repoName + '">' + tagName + '</a></td><td><input type="text" style="width:100%" readonly value="  docker pull '+ $("#harborRegUrl").val() +'/'+ repoName + ':' + tagName +'"></td></tr>');	            						
 					}
 					$('#' + targetId +' table tbody').append(row.join(""));
 					$('#' + targetId +' table tbody tr a').on("click", function(e){
