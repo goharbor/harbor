@@ -44,7 +44,7 @@ type RepPolicy struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-// Validate ...
+// Valid ...
 func (r *RepPolicy) Valid(v *validation.Validation) {
 	if len(r.Name) == 0 {
 		v.SetError("name", "can not be empty")
@@ -123,16 +123,16 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 }
 
 //TableName is required by by beego orm to map RepTarget to table replication_target
-func (rt *RepTarget) TableName() string {
+func (r *RepTarget) TableName() string {
 	return "replication_target"
 }
 
 //TableName is required by by beego orm to map RepJob to table replication_job
-func (rj *RepJob) TableName() string {
+func (r *RepJob) TableName() string {
 	return "replication_job"
 }
 
 //TableName is required by by beego orm to map RepPolicy to table replication_policy
-func (rp *RepPolicy) TableName() string {
+func (r *RepPolicy) TableName() string {
 	return "replication_policy"
 }
