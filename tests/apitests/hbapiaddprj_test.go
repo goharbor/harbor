@@ -8,7 +8,8 @@ import (
 )
 
 func TestAddProject(t *testing.T) {
-
+        
+        fmt.Println("Test for Project Add (ProjectsPost) API\n")
 	assert := assert.New(t)
 
 	apiTest := HarborAPI.NewHarborAPI()

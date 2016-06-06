@@ -67,8 +67,8 @@ script:
   - go run tests/startuptest.go http://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
+
   # test for API
-  #- docker pull swaggerapi/swagger-generator
-  #- docker run -d -p 8000:8080 swaggerapi/swagger-generator -v /var:/var -
+  - ./tests/testprepare.sh
   - docker ps
   - go test -v ./tests/apitests
