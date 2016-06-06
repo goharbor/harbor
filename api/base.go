@@ -17,8 +17,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/astaxie/beego/validation"
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -49,6 +51,30 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 		log.Errorf("Error while decoding the json request, error: %v", err)
 		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
 	}
+}
+
+// Validate validates v if it implements interface validation.ValidFormer
+func (b *BaseAPI) Validate(v interface{}) {
+	validator := validation.Validation{}
+	isValid, err := validator.Valid(v)
+	if err != nil {
+		log.Errorf("failed to validate: %v", err)
+		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if !isValid {
+		message := ""
+		for _, e := range validator.Errors {
+			message += fmt.Sprintf("%s %s \n", e.Field, e.Message)
+		}
+		b.CustomAbort(http.StatusBadRequest, message)
+	}
+}
+
+// DecodeJsonReqAndValidate does both decoding and validation
+func (b *BaseAPI) DecodeJsonReqAndValidate(v interface{}) {
+	b.DecodeJSONReq(v)
+	b.Validate(v)
 }
 
 // ValidateUser checks if the request triggered by a valid user

@@ -164,10 +164,16 @@ func (t *TargetAPI) Get() {
 // Post ...
 func (t *TargetAPI) Post() {
 	target := &models.RepTarget{}
-	t.DecodeJSONReq(target)
+	t.DecodeJsonReqAndValidate(target)
 
-	if len(target.Name) == 0 || len(target.URL) == 0 {
-		t.CustomAbort(http.StatusBadRequest, "name or URL is nil")
+	ta, err := dao.GetRepTargetByName(target.Name)
+	if err != nil {
+		log.Errorf("failed to get target %s: %v", target.Name, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if ta != nil {
+		t.CustomAbort(http.StatusConflict, "name is already used")
 	}
 
 	if len(target.Password) != 0 {
@@ -187,15 +193,31 @@ func (t *TargetAPI) Post() {
 func (t *TargetAPI) Put() {
 	id := t.getIDFromURL()
 	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		t.CustomAbort(http.StatusBadRequest, "id can not be empty or 0")
 	}
 
 	target := &models.RepTarget{}
-	t.DecodeJSONReq(target)
+	t.DecodeJsonReqAndValidate(target)
 
-	if target.ID == 0 {
-		target.ID = id
+	originTarget, err := dao.GetRepTarget(id)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+
+	if target.Name != originTarget.Name {
+		ta, err := dao.GetRepTargetByName(target.Name)
+		if err != nil {
+			log.Errorf("failed to get target %s: %v", target.Name, err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if ta != nil {
+			t.CustomAbort(http.StatusConflict, "name is already used")
+		}
+	}
+
+	target.ID = id
 
 	if len(target.Password) != 0 {
 		target.Password = utils.ReversibleEncrypt(target.Password)

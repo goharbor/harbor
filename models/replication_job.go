@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/astaxie/beego/validation"
 )
 
 const (
@@ -42,6 +44,33 @@ type RepPolicy struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+// Validate ...
+func (r *RepPolicy) Valid(v *validation.Validation) {
+	if len(r.Name) == 0 {
+		v.SetError("name", "can not be empty")
+	}
+
+	if len(r.Name) > 256 {
+		v.SetError("name", "max length is 256")
+	}
+
+	if r.ProjectID <= 0 {
+		v.SetError("project_id", "invalid")
+	}
+
+	if r.TargetID <= 0 {
+		v.SetError("target_id", "invalid")
+	}
+
+	if r.Enabled != 0 && r.Enabled != 1 {
+		v.SetError("enabled", "must be 0 or 1")
+	}
+
+	if len(r.CronStr) > 256 {
+		v.SetError("cron_str", "max length is 256")
+	}
+}
+
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove
 // a repository to/from a remote registry instance.
 type RepJob struct {
@@ -66,6 +95,31 @@ type RepTarget struct {
 	Password     string    `orm:"column(password)" json:"password"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// Valid ...
+func (r *RepTarget) Valid(v *validation.Validation) {
+	if len(r.Name) == 0 {
+		v.SetError("name", "can not be empty")
+	}
+
+	if len(r.Name) > 64 {
+		v.SetError("name", "max length is 64")
+	}
+
+	if len(r.URL) == 0 {
+		v.SetError("endpoint", "can not be empty")
+	}
+
+	if len(r.URL) > 64 {
+		v.SetError("endpoint", "max length is 64")
+	}
+
+	// password is encoded using base64, the length of this field
+	// in DB is 64, so the max length in request is 48
+	if len(r.Password) > 48 {
+		v.SetError("password", "max length is 48")
+	}
 }
 
 //TableName is required by by beego orm to map RepTarget to table replication_target

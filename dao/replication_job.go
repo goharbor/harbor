@@ -26,6 +26,17 @@ func GetRepTarget(id int64) (*models.RepTarget, error) {
 	return &t, err
 }
 
+// GetRepTargetByName ...
+func GetRepTargetByName(name string) (*models.RepTarget, error) {
+	o := orm.NewOrm()
+	t := models.RepTarget{Name: name}
+	err := o.Read(&t, "Name")
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
+	return &t, err
+}
+
 // DeleteRepTarget ...
 func DeleteRepTarget(id int64) error {
 	o := orm.NewOrm()
@@ -81,6 +92,17 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	o := orm.NewOrm()
 	p := models.RepPolicy{ID: id}
 	err := o.Read(&p)
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
+	return &p, err
+}
+
+// GetRepPolicyByName ...
+func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
+	o := orm.NewOrm()
+	p := models.RepPolicy{Name: name}
+	err := o.Read(&p, "Name")
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
