@@ -149,7 +149,7 @@ func (ua *UserAPI) Put() {
 	}
 	user := models.User{UserID: ua.userID}
 	ua.DecodeJSONReq(&user)
-	err = commonValidate(user)
+	err := commonValidate(user)
 	if err != nil {
 		log.Warning("Bad request in change user profile: %v", err)
 		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
