@@ -69,6 +69,9 @@ script:
 
 
   # test for API
+  - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+  - echo $IP
+  - docker logout $IP
   - ./tests/testprepare.sh
   - docker ps
   - go test -v ./tests/apitests
