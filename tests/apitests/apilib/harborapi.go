@@ -63,7 +63,7 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	_sling = _sling.QueryStruct(&QueryParams{q})
 
 	// accept header
-	accepts := []string{"application/json", "text/plain"}
+	accepts := []string{"application/json"}
 	for key := range accepts {
 		_sling = _sling.Set("Accept", accepts[key])
 		break // only use the first Accept
