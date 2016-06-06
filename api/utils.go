@@ -167,26 +167,64 @@ func TriggerReplicationByRepository(repository string, tags []string, operation 
 	}
 }
 
+func postReplicationAction(policyID int64, acton string) error {
+	data := struct {
+		PolicyID int64  `json:"policy_id"`
+		Action   string `json:"action"`
+	}{
+		PolicyID: policyID,
+		Action:   acton,
+	}
+
+	b, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+
+	url := buildReplicationActionURL()
+
+	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+}
+
 func buildReplicationURL() string {
 	url := getJobServiceURL()
-	url = strings.TrimSpace(url)
-	url = strings.TrimRight(url, "/")
-
 	return fmt.Sprintf("%s/api/jobs/replication", url)
 }
 
 func buildJobLogURL(jobID string) string {
 	url := getJobServiceURL()
-	url = strings.TrimSpace(url)
-	url = strings.TrimRight(url, "/")
-
 	return fmt.Sprintf("%s/api/jobs/replication/%s/log", url, jobID)
+}
+
+func buildReplicationActionURL() string {
+	url := getJobServiceURL()
+	return fmt.Sprintf("%s/api/jobs/replication/actions", url)
 }
 
 func getJobServiceURL() string {
 	url := os.Getenv("JOB_SERVICE_URL")
+	url = strings.TrimSpace(url)
+	url = strings.TrimRight(url, "/")
+
 	if len(url) == 0 {
 		url = "http://jobservice"
 	}
+
 	return url
 }
