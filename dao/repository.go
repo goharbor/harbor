@@ -28,6 +28,7 @@ func AddRepository(repo models.RepoRecord) error {
 	sql := "insert into repository (owner_id, project_id, name, description, pull_count, star_count, creation_time, update_time) " +
 		"select (select user_id as owner_id from user where username=?), " +
 		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, NOW(), NULL "
+
 	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
 	return err
 }
