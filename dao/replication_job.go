@@ -11,13 +11,13 @@ import (
 
 // AddRepTarget ...
 func AddRepTarget(target models.RepTarget) (int64, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	return o.Insert(&target)
 }
 
 // GetRepTarget ...
 func GetRepTarget(id int64) (*models.RepTarget, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	t := models.RepTarget{ID: id}
 	err := o.Read(&t)
 	if err == orm.ErrNoRows {
@@ -26,28 +26,34 @@ func GetRepTarget(id int64) (*models.RepTarget, error) {
 	return &t, err
 }
 
+// GetRepTargetByName ...
+func GetRepTargetByName(name string) (*models.RepTarget, error) {
+	o := GetOrmer()
+	t := models.RepTarget{Name: name}
+	err := o.Read(&t, "Name")
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
+	return &t, err
+}
+
 // DeleteRepTarget ...
 func DeleteRepTarget(id int64) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Delete(&models.RepTarget{ID: id})
 	return err
 }
 
 // UpdateRepTarget ...
 func UpdateRepTarget(target models.RepTarget) error {
-	o := orm.NewOrm()
-	if len(target.Password) != 0 {
-		_, err := o.Update(&target)
-		return err
-	}
-
-	_, err := o.Update(&target, "URL", "Name", "Username")
+	o := GetOrmer()
+	_, err := o.Update(&target, "URL", "Name", "Username", "Password")
 	return err
 }
 
 // GetAllRepTargets ...
 func GetAllRepTargets() ([]*models.RepTarget, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	qs := o.QueryTable(&models.RepTarget{})
 	var targets []*models.RepTarget
 	_, err := qs.All(&targets)
@@ -56,7 +62,7 @@ func GetAllRepTargets() ([]*models.RepTarget, error) {
 
 // AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sqlTpl := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, %s, NOW(), NOW())`
 	var sql string
 	if policy.Enabled == 1 {
@@ -78,9 +84,20 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 
 // GetRepPolicy ...
 func GetRepPolicy(id int64) (*models.RepPolicy, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	p := models.RepPolicy{ID: id}
 	err := o.Read(&p)
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
+	return &p, err
+}
+
+// GetRepPolicyByName ...
+func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
+	o := GetOrmer()
+	p := models.RepPolicy{Name: name}
+	err := o.Read(&p, "Name")
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
@@ -90,21 +107,21 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 // GetRepPolicyByProject ...
 func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	var res []*models.RepPolicy
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.QueryTable("replication_policy").Filter("project_id", projectID).All(&res)
 	return res, err
 }
 
 // DeleteRepPolicy ...
 func DeleteRepPolicy(id int64) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Delete(&models.RepPolicy{ID: id})
 	return err
 }
 
 // UpdateRepPolicyEnablement ...
 func UpdateRepPolicyEnablement(id int64, enabled int) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	p := models.RepPolicy{
 		ID:      id,
 		Enabled: enabled}
@@ -125,7 +142,7 @@ func DisableRepPolicy(id int64) error {
 
 // AddRepJob ...
 func AddRepJob(job models.RepJob) (int64, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	if len(job.Status) == 0 {
 		job.Status = models.JobPending
 	}
@@ -137,7 +154,7 @@ func AddRepJob(job models.RepJob) (int64, error) {
 
 // GetRepJob ...
 func GetRepJob(id int64) (*models.RepJob, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	j := models.RepJob{ID: id}
 	err := o.Read(&j)
 	if err == orm.ErrNoRows {
@@ -164,20 +181,20 @@ func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 }
 
 func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	return o.QueryTable("replication_job").Filter("policy_id", policyID)
 }
 
 // DeleteRepJob ...
 func DeleteRepJob(id int64) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Delete(&models.RepJob{ID: id})
 	return err
 }
 
 // UpdateRepJobStatus ...
 func UpdateRepJobStatus(id int64, status string) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	j := models.RepJob{
 		ID:     id,
 		Status: status,
