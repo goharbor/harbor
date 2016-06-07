@@ -48,7 +48,6 @@ install:
   - sudo mv docker-compose /usr/local/bin
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
-  - go get github.com/yhua123/harbor/tests/apitests/apilib
   
 before_script:
   # create tables and load data
@@ -62,16 +61,9 @@ script:
   - docker-compose -f Deploy/docker-compose.yml up -d
   
   - docker ps
-  - docker version
-  - docker-compose version
   - go run tests/startuptest.go http://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
 
   # test for API
-  - #IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
-  - #echo $IP
-  - #docker login -u admin -p Harbor12345 $IP
-  - #./tests/testprepare.sh
-  - docker ps
   - go test -v ./tests/apitests
