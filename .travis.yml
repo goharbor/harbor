@@ -48,7 +48,6 @@ install:
   - sudo mv docker-compose /usr/local/bin
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
-  - go get github.com/vmware/harbor/tests/apitests/apilib
   
 before_script:
   # create tables and load data
