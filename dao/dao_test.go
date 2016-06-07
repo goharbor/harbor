@@ -799,6 +799,78 @@ func TestAddRepTarget(t *testing.T) {
 	}
 }
 
+func TestGetRepTargetByName(t *testing.T) {
+	target, err := GetRepTarget(targetID)
+	if err != nil {
+		t.Fatalf("failed to get target %d: %v", targetID, err)
+	}
+
+	target2, err := GetRepTargetByName(target.Name)
+	if err != nil {
+		t.Fatalf("failed to get target %s: %v", target.Name, err)
+	}
+
+	if target.Name != target2.Name {
+		t.Errorf("unexpected target name: %s, expected: %s", target2.Name, target.Name)
+	}
+}
+
+func TestUpdateRepTarget(t *testing.T) {
+	target := &models.RepTarget{
+		Name:     "name",
+		URL:      "http://url",
+		Username: "username",
+		Password: "password",
+	}
+
+	id, err := AddRepTarget(*target)
+	if err != nil {
+		t.Fatalf("failed to add target: %v", err)
+	}
+	defer func() {
+		if err := DeleteRepTarget(id); err != nil {
+			t.Logf("failed to delete target %d: %v", id, err)
+		}
+	}()
+
+	target.ID = id
+	target.Name = "new_name"
+	target.URL = "http://new_url"
+	target.Username = "new_username"
+	target.Password = "new_password"
+
+	if err = UpdateRepTarget(*target); err != nil {
+		t.Fatalf("failed to update target: %v", err)
+	}
+
+	target, err = GetRepTarget(id)
+	if err != nil {
+		t.Fatalf("failed to get target %d: %v", id, err)
+	}
+
+	if target.Name != "new_name" {
+		t.Errorf("unexpected name: %s, expected: %s", target.Name, "new_name")
+	}
+
+	if target.URL != "http://new_url" {
+		t.Errorf("unexpected url: %s, expected: %s", target.URL, "http://new_url")
+	}
+
+	if target.Username != "new_username" {
+		t.Errorf("unexpected username: %s, expected: %s", target.Username, "new_username")
+	}
+
+	if target.Password != "new_password" {
+		t.Errorf("unexpected password: %s, expected: %s", target.Password, "new_password")
+	}
+}
+
+func TestGetAllRepTargets(t *testing.T) {
+	if _, err := GetAllRepTargets(); err != nil {
+		t.Fatalf("failed to get all targets: %v", err)
+	}
+}
+
 func TestAddRepPolicy(t *testing.T) {
 	policy := models.RepPolicy{
 		ProjectID:   1,
@@ -829,6 +901,23 @@ func TestAddRepPolicy(t *testing.T) {
 	var tm = time.Now().AddDate(0, 0, -1)
 	if !p.StartTime.After(tm) {
 		t.Errorf("Unexpected start_time: %v", p.StartTime)
+	}
+
+}
+
+func TestGetRepPolicyByName(t *testing.T) {
+	policy, err := GetRepPolicy(policyID)
+	if err != nil {
+		t.Fatalf("failed to get policy %d: %v", policyID, err)
+	}
+
+	policy2, err := GetRepPolicyByName(policy.Name)
+	if err != nil {
+		t.Fatalf("failed to get policy %s: %v", policy.Name, err)
+	}
+
+	if policy.Name != policy2.Name {
+		t.Errorf("unexpected name: %s, expected: %s", policy2.Name, policy.Name)
 	}
 
 }
