@@ -6,11 +6,10 @@
       .module('harbor.summary')
       .directive('projectSummary', projectSummary);
       
-    ProjectSummaryController.$inject = ['StatProjectService', 'getStatisticsName'];
+    ProjectSummaryController.$inject = ['StatProjectService'];
     
-    function ProjectSummaryController(StatProjectService, getStatisticsName) {
+    function ProjectSummaryController(StatProjectService) {
         var vm = this;
-        vm.getSummaryName = getSummaryName;
         
         StatProjectService()
           .success(statProjectSuccess)
@@ -23,11 +22,6 @@
         function statProjectFailed(status) {
             console.log('Failed stat project:' + status);
         }
-        
-        function getSummaryName(payloadName) {
-           var statisticsName =  getStatisticsName({'key': 'payloadName', 'value': payloadName}); 
-           return statisticsName.name;
-       }           
     }
     
     function projectSummary() {
