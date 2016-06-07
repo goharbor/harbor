@@ -119,8 +119,8 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/publicity:
-    post:
+  /projects/{project_id}:
+    put:
       summary: Update properties for a selected project.
       description: |
         This endpoint is aimed to toggle a project publicity status.
@@ -353,34 +353,30 @@ paths:
         404:
           description: Project ID does not exist.
         500:
-          description: Unexpected internal errors. 
+          description: Unexpected internal errors.
   /statistics:
-  	get:
-	  summary: Get projects and repositories
-	  description: |
-	    This endpoint is aimed to list all of the projects and repositories relevant with the loggined user, also the public projects and repositories 
-	  parameters: 
-		- null
-	  tags:
-		-Products
-	  reponses:
-	    200:
-		  description: Get the projects and repositories relevant with the user successfully.
-		  schema:
-		    type: map
-			items:
-			  - my_project_count----integer
-			  - my_repo_count----integer
-			  - public_project_count----integer
-			  - public_repo_count----integer
-			  - total_project_count----integer (if user is admin)
-			  - total_repo_count----integer (if user is admin)
-		400:
+    get:
+      summary: Get projects and repositories relevant to the user
+      description: |
+        This endpoint is aimed to list all of the projects and repositories relevant with the loggined user, also the public projects and repositories. If the user is admin, he can also get total projects and total repositories.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get the projects and repositories relevant with the user successfully. Return a              map showing below, 
+                         - my_project_count----integer
+                         - my_repo_count----integer       
+                         - public_project_count----integer
+                         - public_repo_count----integer 
+                         - total_project_count----integer (if user is admin)
+                         - total_repo_count----integer (if user is admin)
+        400:
           description: Invalid user ID.
         401:
           description: User need to log in first.
         500:
           description: Unexpected internal errors.
+
   /users:
     get:
       summary: Get registered users of Harbor.
@@ -436,7 +432,7 @@ paths:
     put:
       summary: Update a registered user to change his profile.
       description: |
-        This endpoint let a registered user change his profile
+       This endpoint let a registered user change his profile.
       parameters:
         - name: user_id
           in: path
@@ -444,29 +440,17 @@ paths:
           format: int32
           required: true
           description: Registered user ID
-        - name: email
+        - name: profile
           in: body
-          type: string
-          format: string
-          required: false
-          description: Email of the user
-        - name: realname
-          in: body
-          type: string
-          format: string
+          description: Only email, realname and comment can be modified.
           required: true
-          description: Realname of the user
-        - name: comment
-          in: body
-          type: string
-          format: string
-          required: false
-          description: Comment of the user
+          schema:
+            $ref: '#/definitions/User' 
       tags:
         - Products
       responses:
         200:
-          description: Updated user's profile successfully.
+          description: Updated user's admin role successfully.
         400:
           description: Invalid user ID.
         401:
@@ -535,8 +519,8 @@ paths:
           description: Guests can only change their own account.
         500:
           description: Unexpected internal errors.
-   /users/{user_id}/sysadmin:
-     post:
+  /users/{user_id}/sysadmin:
+     put:
       summary: Update a registered user to change to be an administrator of Harbor.
       description: |
         This endpoint let a registered user change to be an administrator
@@ -669,11 +653,34 @@ paths:
           description: Retrieved manifests from a relevant repository successfully.
         500:
           description: Unexpected internal errors.
+  /repositories/top:
+    get:
+      summary: Get public repositories which are accessed most.
+      description: |
+        This endpoint aims to let users see the most popular public repositories
+      parameters:
+        - name: count
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The number of the requested public repositories.
+      tags:
+       - Products
+      responses:
+        200:
+          description: Retrieved top repositories successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TopRepo'
+        500:
+          description: Unexpected internal errors.
   /logs:
     get:
-      summary: Get recent logs relevant to the user in Harbor
+      summary: Get recent logs of the projects which the user is a member of
       description: |
-        This endpoint let user see his recent operation logs in Harbor
+        This endpoint let user see the recent operation logs of the projects which he is member of 
       parameters:
         - name: lines
           in: query
@@ -683,16 +690,16 @@ paths:
           description: The number of logs to be shown
         - name: start_time
           in: query
-          type: string
-          format: date
+          type: integer
+          format: int64
           required: false
-          description: The start time of the logs to be shown
-		- name: end_time
+          description: The start time of logs to be shown in unix timestap
+        - name: end_time
           in: query
-          type: string
-          format: date
+          type: integer
+          format: int64
           required: false
-          description: The end time of the logs to be shown
+          description: The end time of logs to be shown in unix timestap
       tags:
         - Products
       responses:
@@ -853,3 +860,13 @@ definitions:
       user_name:
         type: string
         description: Username relevant to a project role member.
+  TopRepo:
+    type: object
+    properties:
+      repo_name: 
+        type: string
+        description: The name of the repo 
+      access_count: 
+        type: integer
+        format: int
+        description: The access count of the repo
