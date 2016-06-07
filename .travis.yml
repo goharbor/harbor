@@ -33,6 +33,7 @@ before_install:
    - cd Deploy
    - ./prepare
    - cd ..
+   - cat /etc/default/docker
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
