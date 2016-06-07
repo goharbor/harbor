@@ -8,10 +8,12 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// SignInController handles requests to /ng/sign_in
 type SignInController struct {
 	BaseController
 }
 
+//Get renders sign_in page
 func (sic *SignInController) Get() {
 	sessionUserID := sic.GetSession("userId")
 	var hasLoggedIn bool

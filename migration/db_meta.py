@@ -4,6 +4,7 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.dialects import mysql
 
 Base = declarative_base()
 
@@ -20,8 +21,8 @@ class User(Base):
     reset_uuid = sa.Column(sa.String(40))
     salt = sa.Column(sa.String(40))
     sysadmin_flag = sa.Column(sa.Integer)
-    creation_time = sa.Column(sa.DateTime)
-    update_time = sa.Column(sa.DateTime)
+    creation_time = sa.Column(mysql.TIMESTAMP)
+    update_time = sa.Column(mysql.TIMESTAMP)
 
 class Properties(Base):
     __tablename__ = 'properties'
@@ -35,8 +36,8 @@ class ProjectMember(Base):
     project_id = sa.Column(sa.Integer(), primary_key = True)
     user_id = sa.Column(sa.Integer(), primary_key = True)
     role = sa.Column(sa.Integer(), nullable = False)
-    creation_time = sa.Column(sa.DateTime(), nullable = True)
-    update_time = sa.Column(sa.DateTime(), nullable = True)
+    creation_time = sa.Column(mysql.TIMESTAMP, nullable = True)
+    update_time = sa.Column(mysql.TIMESTAMP, nullable = True)
     sa.ForeignKeyConstraint(['project_id'], [u'project.project_id'], ),
     sa.ForeignKeyConstraint(['role'], [u'role.role_id'], ),
     sa.ForeignKeyConstraint(['user_id'], [u'user.user_id'], ),
@@ -79,8 +80,8 @@ class Project(Base):
     project_id = sa.Column(sa.Integer, primary_key=True)
     owner_id = sa.Column(sa.ForeignKey(u'user.user_id'), nullable=False, index=True)
     name = sa.Column(sa.String(30), nullable=False, unique=True)
-    creation_time = sa.Column(sa.DateTime)
-    update_time = sa.Column(sa.DateTime)
+    creation_time = sa.Column(mysql.TIMESTAMP)
+    update_time = sa.Column(mysql.TIMESTAMP)
     deleted = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     public = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     owner = relationship(u'User')

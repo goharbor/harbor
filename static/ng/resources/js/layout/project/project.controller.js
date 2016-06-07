@@ -6,9 +6,9 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser', 'getRole']; 
 
-  function ProjectController($scope, ListProjectService, $timeout, currentUser) {
+  function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole) {
     var vm = this;
     
     vm.isOpen = false;
@@ -22,6 +22,7 @@
     vm.togglePublicity = togglePublicity;
     vm.user = currentUser.get();  
     vm.retrieve();
+    vm.getProjectRole = getProjectRole;
     
     function retrieve() {       
        
@@ -32,6 +33,11 @@
     
     function listProjectSuccess(data, status) {
       vm.projects = data || [];
+    }
+    
+    function getProjectRole(roleId) {
+      var role = getRole({'key': 'roleId', 'value': roleId});
+      return role.name;
     }
     
     function listProjectFailed(e) {
