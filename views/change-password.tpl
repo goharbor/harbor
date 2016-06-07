@@ -16,32 +16,32 @@
 	<div class="col-sm-4"></div>
 	<div class="col-sm-4">
 		<div class="page-header">
-				<h1>{{i18n .Lang "title_change_password"}}</h1>
+			<h1>{{i18n .Lang "title_change_password"}}</h1>
 		</div>
 		<form class="form">
- 		  <div class="alert alert-danger" role="alert" id="divErrMsg"></div>
-		  <div class="form-group has-feedback">
-		    <label for="OldPassword" class="control-label">{{i18n .Lang "old_password"}}</label>
-		    <input type="password" class="form-control" id="OldPassword">
-			<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-		  </div>
-		  <div class="form-group has-feedback">
-		    <label for="Password" class="control-label">{{i18n .Lang "new_password"}}</label>
-		    <input type="password" class="form-control" id="Password">
-			<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-			<h6>{{i18n .Lang "password_description"}}</h6> 
-		  </div>
-		  <div class="form-group has-feedback">
-		    <label for="ConfirmedPassword" class="control-label">{{i18n .Lang "confirm_password"}}</label>
-		    <input type="password" class="form-control" id="ConfirmedPassword">
-			<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-			<h6>{{i18n .Lang "password_description"}}</h6> 
-		  </div>
-		  <div class="form-group has-feedback">
-		    <div class="text-center">
-		      <button type="button" class="btn btn-default" id="btnSubmit">{{i18n .Lang "button_submit"}}</button>
-		    </div>
-		  </div>
+			<div class="alert alert-danger" role="alert" id="divErrMsg"></div>
+			<div class="form-group has-feedback">
+				<label for="OldPassword" class="control-label">{{i18n .Lang "old_password"}}</label>
+				<input type="password" class="form-control" id="OldPassword">
+				<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+			</div>
+			<div class="form-group has-feedback">
+				<label for="Password" class="control-label">{{i18n .Lang "new_password"}}</label>
+				<input type="password" class="form-control" id="Password">
+				<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+				<h6>{{i18n .Lang "password_description"}}</h6> 
+			</div>
+			<div class="form-group has-feedback">
+				<label for="ConfirmedPassword" class="control-label">{{i18n .Lang "confirm_password"}}</label>
+				<input type="password" class="form-control" id="ConfirmedPassword">
+				<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+				<h6>{{i18n .Lang "password_description"}}</h6> 
+			</div>
+			<div class="form-group has-feedback">
+				<div class="text-center">
+					<button type="button" class="btn btn-default" id="btnSubmit">{{i18n .Lang "button_submit"}}</button>
+				</div>
+			</div>
 		</form>
 	</div>
 	<div class="col-sm-4"></div>

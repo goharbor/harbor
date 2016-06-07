@@ -26,18 +26,18 @@ var validateOptions = {
 	"Username" :{
 		"Required": { "value" : true, "errMsg" : i18n.getMessage("username_is_required")},
 		"CheckExist": { "value" : function(value){
-				var result = true;
-				$.ajax({
-					 url: "/userExists",
-					data: {"target": "username", "value" : value},
+			var result = true;
+			$.ajax({
+				url: "/userExists",
+				data: {"target": "username", "value" : value},
 				dataType: "json",
-					type: "post",
-					async: false,
-		  		 success: function(data){
-						result = data;
-					}
-				});
-				return result;
+				type: "post",
+				async: false,
+				success: function(data){
+					result = data;
+				}
+			});
+			return result;
 		}, "errMsg" : i18n.getMessage("username_has_been_taken")},
 		"MaxLength": {"value" : 20, "errMsg" : i18n.getMessage("username_is_too_long")},
 		"IllegalChar": {"value": [",","~","#", "$", "%"] , "errMsg": i18n.getMessage("username_contains_illegal_chars")}
@@ -45,40 +45,40 @@ var validateOptions = {
 	"Email" :{
 		"Required": { "value" : true, "errMsg" : i18n.getMessage("email_is_required")},
 		"RegExp": {"value": /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 
-				   "errMsg": i18n.getMessage("email_contains_illegal_chars")},
+		"errMsg": i18n.getMessage("email_contains_illegal_chars")},
 		"CheckExist": { "value" : function(value){
-					var result = true;
-					$.ajax({
-						 url: "/userExists",
-						data: {"target": "email", "value": value},
-					dataType: "json",
-						type: "post",
-						async: false,
-			  		 success: function(data){
-							result = data;
-						}
-					});
-					return result;
-			}, "errMsg" : i18n.getMessage("email_has_been_taken")}
+			var result = true;
+			$.ajax({
+				url: "/userExists",
+				data: {"target": "email", "value": value},
+				dataType: "json",
+				type: "post",
+				async: false,
+				success: function(data){
+					result = data;
+				}
+			});
+			return result;
+		}, "errMsg" : i18n.getMessage("email_has_been_taken")}
 	},
 	"EmailF" :{
 		"Required": { "value" : true, "errMsg" : i18n.getMessage("email_is_required")},
 		"RegExp": {"value": /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 
-				   "errMsg": i18n.getMessage("email_content_illegal")},
+		"errMsg": i18n.getMessage("email_content_illegal")},
 		"CheckIfNotExist": { "value" : function(value){
-					var result = true;
-					$.ajax({
-						 url: "/userExists",
-						data: {"target": "email", "value": value},
-					dataType: "json",
-						type: "post",
-						async: false,
-			  		 success: function(data){
-							result = data;
-						}
-					});
-					return result;
-			}, "errMsg" : i18n.getMessage("email_does_not_exist")}
+			var result = true;
+			$.ajax({
+				url: "/userExists",
+				data: {"target": "email", "value": value},
+				dataType: "json",
+				type: "post",
+				async: false,
+				success: function(data){
+					result = data;
+				}
+			});
+			return result;
+		}, "errMsg" : i18n.getMessage("email_does_not_exist")}
 	},
 	"Realname" :{
 		"Required": { "value" : true, "errMsg" : i18n.getMessage("realname_is_required")},
@@ -119,7 +119,7 @@ function validateCallback(target){
 	var currentId  = $(target).attr("id");
 	var validateItem = validateOptions[currentId];
 	
-    var errMsg = "";
+	var errMsg = "";
 
 	for(var checkTitle in validateItem){
 
