@@ -6,27 +6,27 @@
     .module('harbor.layout.navigation')
     .directive('navigationDetails', navigationDetails);
   
-  NavigationDetailsController.$inject = ['$window', '$location', '$scope', '$route'];
+  NavigationDetailsController.$inject = ['$window', '$location', '$scope', 'getParameterByName'];
   
-  function NavigationDetailsController($window, $location, $scope, $route) {
+  function NavigationDetailsController($window, $location, $scope, getParameterByName) {
     var vm = this;    
-    
-    $scope.$watch('vm.selectedProject', function(current, origin) {
-      if(current) {
-        vm.projectId = current.ProjectId;
-      }
+     
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
+
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
     });
-    
-    vm.url = $location.url();
+   
+    vm.path = $location.path();
   }
   
   function navigationDetails() {
     var directive = {
       restrict: 'E',
-      templateUrl: '/static/ng/resources/js/layout/navigation/navigation-details.directive.html',
+      templateUrl: '/ng/navigation_detail',
       link: link,
       scope: {
-        'selectedProject': '='
+        'target': '='
       },
       replace: true,
       controller: NavigationDetailsController,
@@ -37,27 +37,25 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-      
-      var visited = ctrl.url.substring(1);  
+                 
+      var visited = ctrl.path.substring(1);  
       if(visited.indexOf('?') >= 0) {
         visited = ctrl.url.substring(1, ctrl.url.indexOf('?'));
       }
-      scope.$watch('vm.selectedProject', function(current) {
-        if(current) {
-          element.find('a').removeClass('active');
-          if(visited) {
-            element.find('a[tag="' + visited + '"]').addClass('active');
-          }else{
-            element.find('a:first').addClass('active');
-          }
-        }
-      });
       
+      if(visited) {
+        element.find('a[tag="' + visited + '"]').addClass('active');
+      }else{
+        element.find('a:first').addClass('active');
+      }
+
       element.find('a').on('click', click);
             
       function click(event) {
         element.find('a').removeClass('active');
         $(event.target).addClass('active');
+        ctrl.target = $(this).attr('tag');
+        scope.$apply();
       }
      
     }

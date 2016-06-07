@@ -28,8 +28,6 @@
 
 .switch-pane-tabs {
   width: 265px;
-  min-width: 265px;
-  float: right;
   list-style-type: none;
 }
 
@@ -41,6 +39,7 @@
 
 .switch-pane-tabs li .active { 
   border-bottom: 2px solid rgb(0, 84, 190);
+  font-weight: bold;
 }
 
 .switch-pane-drop-down {

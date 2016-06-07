@@ -12,14 +12,17 @@
     		    <div class="switch-pane">
               <switch-pane-projects is-open="vm.isOpen" selected-project="vm.selectedProject"></switch-pane-projects>
               <span> 
-                <navigation-details selected-project="vm.selectedProject" ng-show="vm.isProjectMember"></navigation-details>
+                <navigation-details target="vm.target" ng-show="vm.isProjectMember"></navigation-details>
               </span>
     		    </div>
             <retrieve-projects is-open="vm.isOpen" selected-project="vm.selectedProject" is-project-member="vm.isProjectMember" publicity="vm.publicity"></retrieve-projects>
             <!-- Tab panes -->
     		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
-            <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
-            <ng-view></ng-view>
+              <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
+              <list-repository ng-if="vm.target === 'repositories'"></list-repository>
+              <list-replication ng-if="vm.target === 'replication'"></list-replication>
+              <list-project-member ng-if="vm.target === 'users'"></list-project-member>
+              <list-log ng-if="vm.target === 'logs'"></list-log>
           </div>
         </div>
       </div>

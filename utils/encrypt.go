@@ -17,6 +17,7 @@ package utils
 
 import (
 	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -25,4 +26,15 @@ import (
 // Encrypt encrypts the content with salt
 func Encrypt(content string, salt string) string {
 	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, sha1.New))
+}
+
+// ReversibleEncrypt encrypts the str with base64
+func ReversibleEncrypt(str string) string {
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
+// ReversibleDecrypt decrypts the str with base64
+func ReversibleDecrypt(str string) (string, error) {
+	b, err := base64.StdEncoding.DecodeString(str)
+	return string(b), err
 }

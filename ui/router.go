@@ -52,17 +52,22 @@ func initRouters() {
 
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})
-	beego.Router("/api/projects/:pid/members/?:mid", &api.ProjectMemberAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")
 	beego.Router("/api/projects/?:id", &api.ProjectAPI{})
 	beego.Router("/api/statistics", &api.StatisticAPI{})
-	beego.Router("/api/projects/:id/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
-	beego.Router("/api/users", &api.UserAPI{})
+	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/users/?:id", &api.UserAPI{})
-	beego.Router("/api/users/:id/password", &api.UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/jobs/replication/?:id([0-9]+)", &api.RepJobAPI{})
+	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
+	beego.Router("/api/policies/replication", &api.RepPolicyAPI{})
+	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
+	beego.Router("/api/targets/?:id([0-9]+)", &api.TargetAPI{})
+	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})

@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package utils
+package cache
 
 import (
 	"os"

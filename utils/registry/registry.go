@@ -25,7 +25,12 @@ import (
 
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
+)
+
+const (
+	// UserAgent is used to decorate the request so it can be identified by webhook.
+	UserAgent string = "registry-client"
 )
 
 // Registry holds information of a registry entity
@@ -78,6 +83,36 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 	return registry, nil
 }
 
+// NewRegistryWithCredential returns a Registry instance which associate to a crendential.
+// And Credential is essentially a decorator for client to docorate the request before sending it to the registry.
+func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := newClient(endpoint, "", credential, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	registry := &Registry{
+		Endpoint: u,
+		client:   client,
+	}
+
+	log.Debugf("initialized a registry client with credential: %s", endpoint)
+
+	return registry, nil
+}
+
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
@@ -89,11 +124,7 @@ func (r *Registry) Catalog() ([]string, error) {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return repos, e
-		}
-		return repos, err
+		return repos, parseError(err)
 	}
 
 	defer resp.Body.Close()
@@ -117,10 +148,48 @@ func (r *Registry) Catalog() ([]string, error) {
 		return repos, nil
 	}
 
-	return repos, errors.Error{
+	return repos, &registry_error.Error{
 		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
+		Detail:     string(b),
+	}
+}
+
+// Ping ...
+func (r *Registry) Ping() error {
+	req, err := http.NewRequest("GET", buildPingURL(r.Endpoint.String()), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		//		if urlErr, ok := err.(*url.Error); ok {
+		//			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+		//				return &registry_error.Error{
+		//					StatusCode: regErr.StatusCode,
+		//					Detail:     regErr.Detail,
+		//				}
+		//			}
+		//			return urlErr.Err
+		//		}
+
+		return parseError(err)
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return &registry_error.Error{
+		StatusCode: resp.StatusCode,
+		Detail:     string(b),
 	}
 }
 
@@ -149,8 +218,9 @@ func newClient(endpoint, username string, credential auth.Credential,
 
 	challenges := auth.ParseChallengeFromResponse(resp)
 	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
+	headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
 
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer})
+	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer, headerModifier})
 	return &http.Client{
 		Transport: transport,
 	}, nil

@@ -6,31 +6,30 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'CurrentProjectMemberService', 'ListProjectService', '$routeParams', '$route', '$location'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, CurrentProjectMemberService, ListProjectService, $routeParams, $route, $location) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService) {
     var vm = this;
     
     vm.projectName = '';
     vm.isOpen = false;
     
-    if($route.current.params.is_public) {
-      vm.isPublic = $route.current.params.is_public === 'true' ? 1 : 0;
+    if(getParameterByName('is_public', $location.absUrl())) {
+      vm.isPublic = getParameterByName('is_public', $location.absUrl()) === 'true' ? 1 : 0;
       vm.publicity = (vm.isPublic === 1) ? true : false;
     }
 
     vm.retrieve = retrieve;
-    vm.checkProjectMember = checkProjectMember;
-    
+    vm.filterInput = "";
+    vm.selectItem = selectItem;  
+    vm.checkProjectMember = checkProjectMember;  
+       
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
         vm.selectedId = current.ProjectId;
       }
     });
-    
-    vm.filterInput = "";
-    vm.selectItem = selectItem;  
-    
+       
     $scope.$watch('vm.publicity', function(current, origin) { 
       vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
@@ -56,15 +55,17 @@
       
       vm.selectedProject = vm.projects[0];
       
-      if($routeParams.project_id){
+      if(getParameterByName('project_id', $location.absUrl())){
         angular.forEach(vm.projects, function(value, index) {
-          if(value['ProjectId'] === Number($routeParams.project_id)) {
+          if(value['ProjectId'] === Number(getParameterByName('project_id', $location.absUrl()))) {
             vm.selectedProject = value;
           }
         }); 
       }
-      vm.checkProjectMember(vm.selectedProject.ProjectId);
+     
       $location.search('project_id', vm.selectedProject.ProjectId);
+      vm.checkProjectMember(vm.selectedProject.ProjectId);
+      
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  
@@ -75,6 +76,17 @@
     function getProjectFailed(response) {
       console.log('Failed to list projects:' + response);
     }
+      
+    function selectItem(item) {
+      vm.selectedProject = item;
+      $location.search('project_id', vm.selectedProject.ProjectId);
+    }       
+  
+    $scope.$on('$locationChangeSuccess', function(e) {
+      var projectId = getParameterByName('project_id', $location.absUrl());
+      vm.checkProjectMember(projectId);
+      vm.isOpen = false;   
+    });
     
     function checkProjectMember(projectId) {
       CurrentProjectMemberService(projectId)
@@ -88,17 +100,9 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      console.log('Failed get current project member:' + status);
+      console.log('Use has no member for current project:' + status);
       vm.isProjectMember = false;
     }
-  
-    function selectItem(item) {
-      vm.selectedId = item.ProjectId;
-      vm.selectedProject = item;
-      vm.checkProjectMember(vm.selectedProject.ProjectId);
-      vm.isOpen = false;
-      $location.search('project_id', vm.selectedProject.ProjectId);
-    }       
     
   }
   
@@ -113,7 +117,6 @@
         'isProjectMember': '='
       },
       link: link,
-      replace: true,
       controller: RetrieveProjectsController,
       bindToController: true,
       controllerAs: 'vm'
@@ -126,10 +129,10 @@
     
       function clickHandler(e) {
         $('[data-toggle="popover"]').each(function () {          
-          //the 'is' for buttons that trigger popups
-          //the 'has' for icons within a button that triggers a popup
-          if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-            $(this).parent().popover('hide');
+          if (!$(this).is(e.target) && 
+               $(this).has(e.target).length === 0 &&
+               $('.popover').has(e.target).length === 0) {
+             $(this).parent().popover('hide');
           }
         });
         var targetId = $(e.target).attr('id');

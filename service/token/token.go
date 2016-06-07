@@ -21,7 +21,7 @@ import (
 
 	"github.com/vmware/harbor/auth"
 	"github.com/vmware/harbor/models"
-	//svc_utils "github.com/vmware/harbor/service/utils"
+	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
@@ -38,20 +38,27 @@ type Handler struct {
 // checkes the permission agains local DB and generates jwt token.
 func (h *Handler) Get() {
 
+	var username, password string
 	request := h.Ctx.Request
-	log.Infof("request url: %v", request.URL.String())
-	username, password, _ := request.BasicAuth()
-	authenticated := authenticate(username, password)
 	service := h.GetString("service")
 	scopes := h.GetStrings("scope")
-
-	if len(scopes) == 0 && !authenticated {
-		log.Info("login request with invalid credentials")
-		h.CustomAbort(http.StatusUnauthorized, "")
-	}
 	access := GetResourceActions(scopes)
-	for _, a := range access {
-		FilterAccess(username, authenticated, a)
+	log.Infof("request url: %v", request.URL.String())
+
+	if svc_utils.VerifySecret(request) {
+		log.Debugf("Will grant all access as this request is from job service with legal secret.")
+		username = "job-service-user"
+	} else {
+		username, password, _ = request.BasicAuth()
+		authenticated := authenticate(username, password)
+
+		if len(scopes) == 0 && !authenticated {
+			log.Info("login request with invalid credentials")
+			h.CustomAbort(http.StatusUnauthorized, "")
+		}
+		for _, a := range access {
+			FilterAccess(username, authenticated, a)
+		}
 	}
 	h.serveToken(username, service, access)
 }

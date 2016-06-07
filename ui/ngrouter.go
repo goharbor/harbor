@@ -25,5 +25,6 @@ func initNgRouters() {
 
 	beego.Router("/ng/optional_menu", &ng.OptionalMenuController{})
 	beego.Router("/ng/navigation_header", &ng.NavigationHeaderController{})
+	beego.Router("/ng/navigation_detail", &ng.NavigationDetailController{})
 	beego.Router("/ng/sign_in", &ng.SignInController{})
 }
