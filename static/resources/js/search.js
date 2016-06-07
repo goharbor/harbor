@@ -60,12 +60,12 @@ jQuery(function(){
 		$.each(data, function(i, e){
 			var project, description, repoName;
 			switch(discriminator){
-			case "project":
+				case "project":
 				project = new Project(e.id, e.name, e.public);
 				description = project.name;
 				repoName = "";
 				break;
-			case "repository":
+				case "repository":
 				project = new Project(e.project_id, e.project_name, e.project_public);
 				description = e.repository_name;
 				repoName = e.repository_name.substring(e.repository_name.lastIndexOf("/") + 1);

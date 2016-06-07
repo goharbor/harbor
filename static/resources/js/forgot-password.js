@@ -13,26 +13,26 @@
     limitations under the License.
 */
 jQuery(function(){
-		
+	
 	$("#divErrMsg").css({"display": "none"});
 	
 	validateOptions.Items = ["#EmailF"];
 	function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
-			  e.preventDefault();
-			  if($("#txtCommonSearch").is(":focus")){
-				document.location = "/search?q=" + $("#txtCommonSearch").val();
-			  }else{
-			    $("#btnSubmit").trigger("click");	
-			  }
+				e.preventDefault();
+				if($("#txtCommonSearch").is(":focus")){
+					document.location = "/search?q=" + $("#txtCommonSearch").val();
+				}else{
+					$("#btnSubmit").trigger("click");	
+				}
 			}
 		});
 	}
 	function unbindEnterKey(){
 		$(document).off("keydown");
 	}
-    bindEnterKey();
+	bindEnterKey();
 	var spinner = new Spinner({scale:1}).spin();
 
 	$("#btnSubmit").on("click", function(){
@@ -44,20 +44,20 @@ jQuery(function(){
 				"type": "get",
 				"data": {"username": username, "email": email},
 				"beforeSend": function(e){
-				   unbindEnterKey();
-				   $("h1").append(spinner.el);
-				   $("#btnSubmit").prop("disabled", true);	
+					unbindEnterKey();
+					$("h1").append(spinner.el);
+					$("#btnSubmit").prop("disabled", true);	
 				},
 				"success": function(data, status, xhr){
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_forgot_password"), 
-								"content": i18n.getMessage("email_has_been_sent"), 
-								"callback": function(){
-									document.location="/";
-								}
-							});
+						.dialogModal({
+							"title": i18n.getMessage("title_forgot_password"), 
+							"content": i18n.getMessage("email_has_been_sent"), 
+							"callback": function(){
+								document.location="/";
+							}
+						});
 					}
 					
 				},
@@ -68,14 +68,14 @@ jQuery(function(){
 				"error": function(jqXhr, status, error){
 					if(jqXhr){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_forgot_password"), 
-								"content": i18n.getMessage(jqXhr.responseText), 
-								"callback": function(){
-									bindEnterKey();
-									return;
-								}
-							});	
+						.dialogModal({
+							"title": i18n.getMessage("title_forgot_password"), 
+							"content": i18n.getMessage(jqXhr.responseText), 
+							"callback": function(){
+								bindEnterKey();
+								return;
+							}
+						});	
 					}
 				}
 			});
