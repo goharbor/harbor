@@ -50,20 +50,20 @@ jQuery(function(){
 				
 				$("#divErrMsg").hide();
 
-			new AjaxUtil({
-			  url: "/api/repositories?project_id=" + $("#projectId").val() + "&q=" + repoName,
-			  type: "get",
-			  success: function(data, status, xhr){
-				  if(xhr && xhr.status == 200){
-						$("#accordionRepo").children().remove();
-						if(data == null){
-							$("#divErrMsg").show();
-							$("#divErrMsg center").html(i18n.getMessage("no_repo_exists"));
-							return;
-						}
-						$.each(data, function(i, e){						
-							var targetId = e.replace(/\//g, "------").replace(/\./g, "---");						
-							var row = '<div class="panel panel-default"  targetId="' + targetId + '">' +
+				new AjaxUtil({
+					url: "/api/repositories?project_id=" + $("#projectId").val() + "&q=" + repoName,
+					type: "get",
+					success: function(data, status, xhr){
+						if(xhr && xhr.status == 200){
+							$("#accordionRepo").children().remove();
+							if(data == null){
+								$("#divErrMsg").show();
+								$("#divErrMsg center").html(i18n.getMessage("no_repo_exists"));
+								return;
+							}
+							$.each(data, function(i, e){						
+								var targetId = e.replace(/\//g, "------");						
+								var row = '<div class="panel panel-default"  targetId="' + targetId + '">' +
 								'<div class="panel-heading" role="tab" id="heading' + i + '"+ >' + 
 								'<h4 class="panel-title">' +
 								'<a data-toggle="collapse" data-parent="#accordion" href="#collapse'+ i + '" aria-expanded="true" aria-controls="collapse' + i + '">' +
@@ -89,14 +89,15 @@ jQuery(function(){
 								'</div>' +
 								'</div>';					
 								$("#accordionRepo").append(row);
-						});
-						if(repoName != ""){
-							$("#txtRepoName").val(repoName);
-							$("#accordionRepo #heading0 a").trigger("click");
+							});
+							if(repoName != ""){
+								$("#txtRepoName").val(repoName);
+								$("#accordionRepo #heading0 a").trigger("click");
+							}
 						}
-         }
-				}
-			}).exec();
+					}
+				}).exec();
+			}
 			$("#btnSearchRepo").on("click", function(){
 				listRepo($.trim($("#txtRepoName").val()));
 			});
@@ -131,41 +132,6 @@ jQuery(function(){
 										}								
 										data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");
 										$("#dlgModal").dialogModal({"title": i18n.getMessage("image_details"), "content": data});		
-=======
-				}
-			}).exec();
-		}
-		$("#btnSearchRepo").on("click", function(){
-			listRepo($.trim($("#txtRepoName").val()));
-		});
-		
-		$('#accordionRepo').on('show.bs.collapse', function (e) {
-			$('#accordionRepo .in').collapse('hide');
-			var targetId = $(e.target).attr("targetId");
-			var repoName = targetId.replace(/[-]{6}/g, "/").replace(/[-]{3}/g, '.');
-			new AjaxUtil({
-			  url: "/api/repositories/tags?repo_name=" + repoName,
-			  type: "get",
-			  success: function(data, status, xhr){
-					$('#' + targetId +' table tbody tr').remove();
-					var row = [];
-					for(var i in data){
-						var tagName = data[i];
-						row.push('<tr><td><a href="#" imageId="' + tagName + '" repoName="' + repoName + '">' + tagName + '</a></td><td><input type="text" style="width:100%" readonly value="  docker pull '+ $("#harborRegUrl").val() +'/'+ repoName + ':' + tagName +'"></td></tr>');	            						
-					}
-					$('#' + targetId +' table tbody').append(row.join(""));
-					$('#' + targetId +' table tbody tr a').on("click", function(e){
-						var imageId = $(this).attr("imageId");
-						var repoName = $(this).attr("repoName");
-						new AjaxUtil({
-						  url: "/api/repositories/manifests?repo_name=" + repoName + "&tag=" + imageId,
-						  type: "get",
-						  success: function(data, status, xhr){
-							  if(data){	
-							     for(var i in data){
-									if(data[i] == ""){
-										data[i] = "N/A";
->>>>>>> upstream/master
 									}
 								}
 							}).exec();
