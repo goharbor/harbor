@@ -69,9 +69,40 @@ func (pa *RepPolicyAPI) Get() {
 
 // Post creates a policy, and if it is enbled, the replication will be triggered right now.
 func (pa *RepPolicyAPI) Post() {
-	policy := models.RepPolicy{}
-	pa.DecodeJSONReq(&policy)
-	pid, err := dao.AddRepPolicy(policy)
+	policy := &models.RepPolicy{}
+	pa.DecodeJSONReqAndValidate(policy)
+
+	po, err := dao.GetRepPolicyByName(policy.Name)
+	if err != nil {
+		log.Errorf("failed to get policy %s: %v", policy.Name, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if po != nil {
+		pa.CustomAbort(http.StatusConflict, "name is already used")
+	}
+
+	project, err := dao.GetProjectByID(policy.ProjectID)
+	if err != nil {
+		log.Errorf("failed to get project %d: %v", policy.ProjectID, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if project == nil {
+		pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("project %d does not exist", policy.ProjectID))
+	}
+
+	target, err := dao.GetRepTarget(policy.TargetID)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", policy.TargetID, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if target == nil {
+		pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
+	}
+
+	pid, err := dao.AddRepPolicy(*policy)
 	if err != nil {
 		log.Errorf("Failed to add policy to DB, error: %v", err)
 		pa.RenderError(http.StatusInternalServerError, "Internal Error")
