@@ -25,6 +25,7 @@
       'harbor.services.replication.policy',
       'harbor.services.replication.job',
       'harbor.services.destination',
+      'harbor.summary',
       'harbor.optional.menu',
       'harbor.modal.dialog',
       'harbor.sign.in',
