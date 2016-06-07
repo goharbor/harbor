@@ -1,0 +1,67 @@
+.create-policy {
+  height: 535px; 
+  overflow-y: auto;
+}
+
+.form-group-custom {
+  margin-top: 10px;
+}
+
+.h4-custom {
+  margin-top: 20px;
+}
+
+.h4-custom-down {
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.hr-line {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.form-control-custom {
+  width: 100% !important;
+}
+
+.pane-split {
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
+}
+
+#upon-pane {
+  margin-top: 10px;
+  height: 270px;
+  min-height: 100px;
+  max-height: 270px;
+}
+
+#upon-pane table>tbody>tr {
+  cursor: all-scroll;
+}
+#down-pane {
+  height: 80px;
+  min-height: 80px;
+}
+
+.sub-pane-split {
+  margin: 15px;
+  height: auto;
+  min-height: 50px;
+  width: 100%;
+}
+
+.well-split {
+  margin-bottom: 0;
+}
+
+.split-handle {
+  margin-left: auto;
+  margin-right: auto; 
+  width: 1em;
+  height: 1em;
+  cursor: ns-resize;
+  color: #C0C0C0;
+}

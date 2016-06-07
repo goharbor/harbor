@@ -1,0 +1,10 @@
+<div class="switch-pane">
+  <span> 
+    <navigation-admin-options target="vm.target"></navigation-admin-options>
+  </span>
+</div>
+<div class="pane project-pane">  
+ <destination ng-if="vm.target === 'destinations'"></destination>
+ <replication ng-if="vm.target === 'replication'"></replication>
+ <configuration ng-if="vm.target === 'configuration'"></configuration>
+</div>
