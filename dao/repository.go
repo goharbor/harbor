@@ -24,7 +24,7 @@ import (
 
 // AddRepository adds a repo to the database.
 func AddRepository(repo models.RepoRecord) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := "insert into repository (owner_id, project_id, name, description, pull_count, star_count, creation_time, update_time) " +
 		"select (select user_id as owner_id from user where username=?), " +
 		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, NOW(), NULL "
@@ -35,7 +35,7 @@ func AddRepository(repo models.RepoRecord) error {
 
 // GetRepositoryByName ...
 func GetRepositoryByName(name string) (*models.RepoRecord, error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	r := models.RepoRecord{Name: name}
 	err := o.Read(&r)
 	if err == orm.ErrNoRows {
@@ -46,21 +46,21 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 
 // DeleteRepository ...
 func DeleteRepository(name string) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Delete(&models.RepoRecord{Name: name})
 	return err
 }
 
 // UpdateRepository ...
 func UpdateRepository(repo models.RepoRecord) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	_, err := o.Update(&repo)
 	return err
 }
 
 // IncreasePullCount ...
 func IncreasePullCount(name string) (err error) {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	num, err := o.QueryTable("repository").Filter("name", name).Update(
 		orm.Params{
 			"pull_count": orm.ColValue(orm.ColAdd, 1),
@@ -73,6 +73,6 @@ func IncreasePullCount(name string) (err error) {
 
 //RepositoryExists returns whether the repository exists according to its name.
 func RepositoryExists(name string) bool {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	return o.QueryTable("repository").Filter("name", name).Exist()
 }
