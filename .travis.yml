@@ -1,3 +1,5 @@
+sudo: true
+
 language: go
 
 go: 
@@ -5,10 +7,32 @@ go:
 
 go_import_path: github.com/vmware/harbor
 
-service: 
-  - mysql
+services: 
+  - docker
+  - mysql 
 
-env: DB_HOST=127.0.0.1 DB_PORT=3306 DB_USR=root DB_PWD=
+dist: trusty
+addons:
+  apt:
+    packages:
+    - mysql-server-5.6
+    - mysql-client-core-5.6
+    - mysql-client-5.6
+
+env:
+  DB_HOST: 127.0.0.1
+  DB_PORT: 3306 
+  DB_USR: root 
+  DB_PWD:
+  DOCKER_COMPOSE_VERSION: 1.7.1
+  HARBOR_ADMIN: admin
+  HARBOR_ADMIN_PASSWD: Harbor12345 
+
+before_install:
+   - ./tests/hostcfg.sh
+   - cd Deploy
+   - ./prepare
+   - cd ..
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
@@ -17,12 +41,37 @@ install:
   - go get -d github.com/go-sql-driver/mysql
   - go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
-
+  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - go get github.com/dghubble/sling
+  - go get github.com/stretchr/testify
+  - go get github.com/yhua123/harbor/tests/apitests/apilib
+  
 before_script:
   # create tables and load data
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
 script: 
-  - go list ./... | grep -v /vendor/ | xargs -L1 fgt golint
-  - go list ./... | grep -v 'vendor' | xargs -L1 go vet
-  - go list ./... | grep -v 'vendor' | xargs -L1 go test -v
+  - go list ./... | grep -v 'tests' | grep -v /vendor/ | xargs -L1 fgt golint
+  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go vet
+  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go test -v
+
+  - docker-compose -f Deploy/docker-compose.yml up -d
+  
+  - docker ps
+  - docker version
+  - docker-compose version
+  - go run tests/startuptest.go http://localhost/
+  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+
+
+  # test for API
+  - #IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+  - #echo $IP
+  - #docker login -u admin -p Harbor12345 $IP:80
+  - #./tests/testprepare.sh
+  - docker ps
+  - go test -v ./tests/apitests
