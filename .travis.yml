@@ -71,7 +71,7 @@ script:
   # test for API
   - #IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
   - #echo $IP
-  - #docker login -u admin -p Harbor12345 $IP:80
+  - #docker login -u admin -p Harbor12345 $IP
   - #./tests/testprepare.sh
   - docker ps
   - go test -v ./tests/apitests
