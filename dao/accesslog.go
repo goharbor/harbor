@@ -20,13 +20,11 @@ import (
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-
-	"github.com/astaxie/beego/orm"
 )
 
 // AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	p, err := o.Raw(`insert into access_log
 		 (user_id, project_id, repo_name, repo_tag, guid, operation, op_time)
 		 values (?, ?, ?, ?, ?, ?, now())`).Prepare()
@@ -43,7 +41,7 @@ func AddAccessLog(accessLog models.AccessLog) error {
 //GetAccessLogs gets access logs according to different conditions
 func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := `select a.log_id, u.username, a.repo_name, a.repo_tag, a.operation, a.op_time
 		from access_log a left join user u on a.user_id = u.user_id
 		where a.project_id = ? `
@@ -106,7 +104,7 @@ func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
 
 // AccessLog ...
 func AccessLog(username, projectName, repoName, repoTag, action string) error {
-	o := orm.NewOrm()
+	o := GetOrmer()
 	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +
 		"select (select user_id as user_id from user where username=?), " +
 		"(select project_id as project_id from project where name=?), ?, ?, ?, now() "

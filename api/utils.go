@@ -22,20 +22,52 @@ import (
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
-	exist, err := dao.IsAdminRole(userID)
+	roles, err := listRoles(userID, projectID)
 	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, error: %v", err)
+		log.Errorf("error occurred in getProjectPermission: %v", err)
 		return false
 	}
-	if exist {
-		return true
-	}
-	roleList, err := dao.GetUserProjectRoles(userID, projectID)
+	return len(roles) > 0
+}
+
+func hasProjectAdminRole(userID int, projectID int64) bool {
+	roles, err := listRoles(userID, projectID)
 	if err != nil {
-		log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
+		log.Errorf("error occurred in getProjectPermission: %v", err)
 		return false
 	}
-	return len(roleList) > 0
+
+	for _, role := range roles {
+		if role.RoleID == models.PROJECTADMIN {
+			return true
+		}
+	}
+
+	return false
+}
+
+//sysadmin has all privileges to all projects
+func listRoles(userID int, projectID int64) ([]models.Role, error) {
+	roles := make([]models.Role, 0, 1)
+	isSysAdmin, err := dao.IsAdminRole(userID)
+	if err != nil {
+		return roles, err
+	}
+	if isSysAdmin {
+		role, err := dao.GetRoleByID(models.PROJECTADMIN)
+		if err != nil {
+			return roles, err
+		}
+		roles = append(roles, *role)
+		return roles, nil
+	}
+
+	rs, err := dao.GetUserProjectRoles(userID, projectID)
+	if err != nil {
+		return roles, err
+	}
+	roles = append(roles, rs...)
+	return roles, nil
 }
 
 func checkUserExists(name string) int {
