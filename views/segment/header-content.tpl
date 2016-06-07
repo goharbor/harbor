@@ -28,20 +28,22 @@
 		<form class="navbar-form navbar-right">
 			<div class="form-group">
 				<div class="input-group">
-					<ul class="nav navbar-nav">
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-								<span class="glyphicon glyphicon-globe"></span>
-								{{i18n .Lang "language"}}
-								<span class="caret"></span></a>
-								<ul class="dropdown-menu">
-									<li><a href="/language?lang=en-US">{{i18n .Lang "language_en-US"}}</a></li>						
-									<li><a href="/language?lang=zh-CN">{{i18n .Lang "language_zh-CN"}}</a></li>
-									<li><a href="/language?lang=de-DE">{{i18n .Lang "language_de-DE"}}</a></li>
-									<li><a href="/language?lang=ru-RU">{{i18n .Lang "language_ru-RU"}}</a></li>
-								</ul>
-							</li>
-						</ul>
+
+				    <ul class="nav navbar-nav">
+					    <li class="dropdown">
+						  	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							   <span class="glyphicon glyphicon-globe"></span>
+							     {{i18n .Lang "language"}}						   
+							<span class="caret"></span></a>
+					        <ul class="dropdown-menu">
+							  <li><a href="/language?lang=en-US">{{i18n .Lang "language_en-US"}}</a></li>						
+							  <li><a href="/language?lang=zh-CN">{{i18n .Lang "language_zh-CN"}}</a></li>
+							  <li><a href="/language?lang=de-DE">{{i18n .Lang "language_de-DE"}}</a></li>
+							  <li><a href="/language?lang=ru-RU">{{i18n .Lang "language_ru-RU"}}</a></li>
+							  <li><a href="/language?lang=ja-JP">{{i18n .Lang "language_ja-JP"}}</a></li>
+							</ul>
+						</li>
+					</ul>
 					</div>
 
 					<div class="input-group" >

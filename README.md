@@ -13,7 +13,7 @@ Project Harbor is an enterprise-class registry server, which extends the open so
 * **Graphical user portal**: User can easily browse, search Docker repositories, manage projects/namespaces.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
-* **Internationalization**: Already localized for English, Chinese, German and Russian. More languages can be added.
+* **Internationalization**: Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.
 * **RESTful API**: RESTful APIs for most administrative operations, easing intergration with external management platforms.
 
 ### Getting Started
@@ -67,7 +67,7 @@ Harbor is available under the [Apache 2 license](LICENSE).
 &nbsp; &nbsp; <a href="https://www.caicloud.io" border="0"><img alt="CaiCloud" src="docs/img/caicloudLogoWeb.png"></a>
 
 ### Users
-<a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a>
+<a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a> <a href="https://www.dianrong.com/" border="0" target="_blank"><img alt="Dianrong" src="docs/img/dianrong.png"></a>
 
 ### Supporting Technologies
 <img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>, an open source framework to build and develop applications in the Go way.

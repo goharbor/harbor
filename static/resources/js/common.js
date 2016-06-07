@@ -71,7 +71,8 @@ var SUPPORT_LANGUAGES = {
 	"en-US": "English",
 	"zh-CN": "Chinese",
 	"de-DE": "German",
-	"ru-RU": "Russian"
+	"ru-RU": "Russian",
+	"ja-JP": "Japanese"
 };
 
 var DEFAULT_LANGUAGE = "en-US";
