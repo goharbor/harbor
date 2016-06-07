@@ -75,6 +75,7 @@ type blobSumItem struct {
 	BlobSum string `json:"blobSum"`
 }
 
+//TableName is required by by beego orm to map RepoRecord to table repository
 func (rp *RepoRecord) TableName() string {
 	return "repository"
 }
