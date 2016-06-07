@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
-        "github.com/yhua123/harbor/tests/apitests/apilib"
+        "github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 func TestAddProject(t *testing.T) {
