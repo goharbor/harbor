@@ -356,20 +356,18 @@ paths:
           description: Unexpected internal errors.
   /statistics:
     get:
-      summary: Get projects numbers and repositories numbers relevant to the user
+      summary: Get projects number and repositories number relevant to the user
       description: |
-        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the loggined user, also the public projects number and repositories numbers. If the user is admin, he can also get total projects number and total repositories number.
+        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the logined user, also the public projects number and repositories number. If the user is admin, he can also get total projects number and total repositories number.
       tags:
         - Products
       responses:
         200:
-          description: Get the projects and repositories relevant with the user successfully. Return a              map showing below, 
-                         - my_project_count----integer
-                         - my_repo_count----integer       
-                         - public_project_count----integer
-                         - public_repo_count----integer 
-                         - total_project_count----integer (if user is admin)
-                         - total_repo_count----integer (if user is admin)
+          description: Get the projects number and repositories number relevant to the user successfully.
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/StatisticMap'
         401:
           description: User need to log in first.
         500:
@@ -872,3 +870,35 @@ definitions:
         type: integer
         format: int
         description: The access count of the repo
+  StatisticMap:
+    type: object
+    properties:
+      my_project_count: 
+        type: integer
+        format: int32
+        description: The count of the projects which the user is a member of.
+      my_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the repositories belonging to the projects which the user is a member of.
+      public_project_count: 
+        type: integer
+        format: int32
+        description: The count of the public projects.
+      public_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the public repositories belonging to the public projects which the user is a member of.
+      total_project_count: 
+        type: integer
+        format: int32
+        description: The count of the total projects, only be seen when the is admin.
+      total_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the total repositories, only be seen when the user is admin.
+        
+        
+        
+        
+        
