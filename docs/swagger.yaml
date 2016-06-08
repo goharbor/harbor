@@ -365,9 +365,7 @@ paths:
         200:
           description: Get the projects number and repositories number relevant to the user successfully.
           schema:
-            type: object
-            items:
-              $ref: '#/definitions/StatisticMap'
+            $ref: '#/definitions/StatisticMap'
         401:
           description: User need to log in first.
         500:
