@@ -44,6 +44,15 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	return &r, err
 }
 
+// GetAllRepositories ...
+func GetAllRepositories() ([]*models.RepoRecord, error) {
+	o := GetOrmer()
+	qs := o.QueryTable(&models.RepoRecord{})
+	var repos []*models.RepoRecord
+	_, err := qs.All(&repos)
+	return repos, err
+}
+
 // DeleteRepository ...
 func DeleteRepository(name string) error {
 	o := GetOrmer()
