@@ -31,6 +31,7 @@ package openldap
 #include <stdlib.h>
 #include <ctype.h>
 #include <ldap.h>
+#include <utmpx.h>
 
 int _berval_get_len(struct berval **ber, int i){
 	return ber[i]->bv_len;

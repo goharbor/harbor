@@ -1,10 +1,11 @@
-FROM golang:1.5.1
+FROM golang:1.6.2-alpine
 
 MAINTAINER jiangd@vmware.com
 
-RUN apt-get update \
-    && apt-get install -y libldap2-dev \
-    && rm -r /var/lib/apt/lists/*
+RUN apk add --update git \
+	&& apk add gcc \
+	&& apk add musl-dev \
+	&& apk add openldap-dev
 
 COPY . /go/src/github.com/vmware/harbor
 #golang.org is blocked in China
@@ -15,6 +16,7 @@ ENV GO15VENDOREXPERIMENT 1
 RUN go get -d github.com/docker/distribution \
     && go get -d github.com/docker/libtrust \
     && go get -d github.com/go-sql-driver/mysql \
+	&& go get -d github.com/astaxie/beego \
     && go build -v -a -o /go/bin/harbor_ui
 
 ENV MYSQL_USR root \
@@ -25,9 +27,9 @@ COPY views /go/bin/views
 COPY static /go/bin/static
 COPY favicon.ico /go/bin/favicon.ico
 
-RUN chmod u+x /go/bin/harbor_ui \
-    && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
-    && sed -i '$a\TLS_REQCERT allow' /etc/ldap/ldap.conf
+#RUN chmod u+x /go/bin/harbor_ui \
+#    && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
+#    && sed -i '$a\TLS_REQCERT allow' /etc/ldap/ldap.conf
 
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_ui"]

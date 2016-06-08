@@ -5,7 +5,8 @@ services:
     volumes:
       - /var/log/harbor/:/var/log/docker/
     ports:
-      - 1514:514
+      - 1514:514/udp
+      - 2514:10514
   registry:
     image: library/registry:2.3.0
     volumes:
@@ -20,7 +21,7 @@ services:
     logging:
       driver: "syslog"
       options:  
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "udp://127.0.0.1:1514"
         syslog-tag: "registry"
   mysql:
     build: ./db/
@@ -33,7 +34,7 @@ services:
     logging:
       driver: "syslog"
       options:  
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "udp://127.0.0.1:1514"
         syslog-tag: "mysql"
   ui:
     build:
@@ -49,10 +50,10 @@ services:
     logging:
       driver: "syslog"
       options:  
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "udp://127.0.0.1:1514"
         syslog-tag: "ui"
   proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.9.15-alpine
     volumes:
       - ./config/nginx:/etc/nginx
     ports:
@@ -66,5 +67,5 @@ services:
     logging:
       driver: "syslog"
       options:  
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "udp://127.0.0.1:1514"
         syslog-tag: "proxy"
