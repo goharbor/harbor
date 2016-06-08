@@ -356,9 +356,9 @@ paths:
           description: Unexpected internal errors.
   /statistics:
     get:
-      summary: Get projects and repositories relevant to the user
+      summary: Get projects numbers and repositories numbers relevant to the user
       description: |
-        This endpoint is aimed to list all of the projects and repositories relevant with the loggined user, also the public projects and repositories. If the user is admin, he can also get total projects and total repositories.
+        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the loggined user, also the public projects number and repositories numbers. If the user is admin, he can also get total projects number and total repositories number.
       tags:
         - Products
       responses:
@@ -370,8 +370,6 @@ paths:
                          - public_repo_count----integer 
                          - total_project_count----integer (if user is admin)
                          - total_repo_count----integer (if user is admin)
-        400:
-          description: Invalid user ID.
         401:
           description: User need to log in first.
         500:
@@ -664,7 +662,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The number of the requested public repositories.
+          description: The number of the requested public repositories, default is 10 if not provided.
       tags:
        - Products
       responses:
@@ -674,6 +672,8 @@ paths:
             type: array
             items:
               $ref: '#/definitions/TopRepo'
+        400:
+          description: Bad request because of invalid count.
         500:
           description: Unexpected internal errors.
   /logs:
@@ -687,7 +687,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The number of logs to be shown
+          description: The number of logs to be shown, default is 10 if lines, start_time, end_time are not provided.
         - name: start_time
           in: query
           type: integer
@@ -709,8 +709,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AccessLog'
+        400:
+          description: Bad request because of invalid parameter of lines or start_time or end_time.
         401:
-          description: Invalid user ID.
+          description: User need to login first.
         500:
           description: Unexpected internal errors.
 definitions:
