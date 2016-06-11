@@ -18,7 +18,6 @@ package dao
 import (
 	"github.com/vmware/harbor/models"
 
-	"errors"
 	"fmt"
 	"time"
 
@@ -30,15 +29,7 @@ import (
 // AddProject adds a project to the database along with project roles information and access log records.
 func AddProject(project models.Project) (int64, error) {
 
-	if isIllegalLength(project.Name, 4, 30) {
-		return 0, errors.New("project name is illegal in length. (greater than 4 or less than 30)")
-	}
-	if isContainIllegalChar(project.Name, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
-		return 0, errors.New("project name contains illegal characters")
-	}
-
 	o := GetOrmer()
-
 	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err

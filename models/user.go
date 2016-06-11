@@ -21,7 +21,7 @@ import (
 
 // User holds the details of a user.
 type User struct {
-	UserID       int    `orm:"column(user_id)" json:"UserId"`
+	UserID       int    `orm:"pk;column(user_id)" json:"UserId"`
 	Username     string `orm:"column(username)" json:"username"`
 	Email        string `orm:"column(email)" json:"email"`
 	Password     string `orm:"column(password)" json:"password"`
@@ -29,11 +29,11 @@ type User struct {
 	Comment      string `orm:"column(comment)" json:"comment"`
 	Deleted      int    `orm:"column(deleted)"`
 	Rolename     string
-	RoleID       int `json:"RoleId"`
-	RoleList     []Role
-	HasAdminRole int    `orm:"column(sysadmin_flag)"`
-	ResetUUID    string `orm:"column(reset_uuid)" json:"ResetUuid"`
-	Salt         string `orm:"column(salt)"`
+	RoleID       int     `json:"RoleId"`
+	RoleList     []*Role `orm:"rel(m2m)"`
+	HasAdminRole int     `orm:"column(sysadmin_flag)"`
+	ResetUUID    string  `orm:"column(reset_uuid)" json:"ResetUuid"`
+	Salt         string  `orm:"column(salt)"`
 
 	CreationTime time.Time `orm:"creation_time" json:"creation_time"`
 	UpdateTime   time.Time `orm:"update_time" json:"update_time"`

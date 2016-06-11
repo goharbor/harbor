@@ -353,7 +353,24 @@ paths:
         404:
           description: Project ID does not exist.
         500:
-          description: Unexpected internal errors.   
+          description: Unexpected internal errors.
+  /statistics:
+    get:
+      summary: Get projects number and repositories number relevant to the user
+      description: |
+        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the logined user, also the public projects number and repositories number. If the user is admin, he can also get total projects number and total repositories number.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get the projects number and repositories number relevant to the user successfully.
+          schema:
+            $ref: '#/definitions/StatisticMap'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+
   /users:
     get:
       summary: Get registered users of Harbor.
@@ -407,10 +424,9 @@ paths:
           description: Unexpected internal errors.
   /users/{user_id}:
     put:
-      summary: Update a registered user to change to be an administrator of Harbor.
+      summary: Update a registered user to change his profile.
       description: |
-        This endpoint let a registered user change to be an administrator
-        of Harbor.
+       This endpoint let a registered user change his profile.
       parameters:
         - name: user_id
           in: path
@@ -418,6 +434,12 @@ paths:
           format: int32
           required: true
           description: Registered user ID
+        - name: profile
+          in: body
+          description: Only email, realname and comment can be modified.
+          required: true
+          schema:
+            $ref: '#/definitions/User' 
       tags:
         - Products
       responses:
@@ -490,7 +512,35 @@ paths:
         403:
           description: Guests can only change their own account.
         500:
-          description: Unexpected internal errors.	
+          description: Unexpected internal errors.
+  /users/{user_id}/sysadmin:
+     put:
+      summary: Update a registered user to change to be an administrator of Harbor.
+      description: |
+        This endpoint let a registered user change to be an administrator
+        of Harbor.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
@@ -595,6 +645,70 @@ paths:
       responses:
         200:
           description: Retrieved manifests from a relevant repository successfully.
+        500:
+          description: Unexpected internal errors.
+  /repositories/top:
+    get:
+      summary: Get public repositories which are accessed most.
+      description: |
+        This endpoint aims to let users see the most popular public repositories
+      parameters:
+        - name: count
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The number of the requested public repositories, default is 10 if not provided.
+      tags:
+       - Products
+      responses:
+        200:
+          description: Retrieved top repositories successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TopRepo'
+        400:
+          description: Bad request because of invalid count.
+        500:
+          description: Unexpected internal errors.
+  /logs:
+    get:
+      summary: Get recent logs of the projects which the user is a member of
+      description: |
+        This endpoint let user see the recent operation logs of the projects which he is member of 
+      parameters:
+        - name: lines
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The number of logs to be shown, default is 10 if lines, start_time, end_time are not provided.
+        - name: start_time
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: The start time of logs to be shown in unix timestap
+        - name: end_time
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: The end time of logs to be shown in unix timestap
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get the required logs successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AccessLog'
+        400:
+          description: Bad request because of invalid parameter of lines or start_time or end_time.
+        401:
+          description: User need to login first.
         500:
           description: Unexpected internal errors.
 definitions:
@@ -744,3 +858,45 @@ definitions:
       user_name:
         type: string
         description: Username relevant to a project role member.
+  TopRepo:
+    type: object
+    properties:
+      repo_name: 
+        type: string
+        description: The name of the repo 
+      access_count: 
+        type: integer
+        format: int
+        description: The access count of the repo
+  StatisticMap:
+    type: object
+    properties:
+      my_project_count: 
+        type: integer
+        format: int32
+        description: The count of the projects which the user is a member of.
+      my_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the repositories belonging to the projects which the user is a member of.
+      public_project_count: 
+        type: integer
+        format: int32
+        description: The count of the public projects.
+      public_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the public repositories belonging to the public projects which the user is a member of.
+      total_project_count: 
+        type: integer
+        format: int32
+        description: The count of the total projects, only be seen when the is admin.
+      total_repo_count: 
+        type: integer
+        format: int32
+        description: The count of the total repositories, only be seen when the user is admin.
+        
+        
+        
+        
+        
