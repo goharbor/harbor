@@ -14,7 +14,7 @@
       return $http
         .post('/api/targets', {
           'name': name,
-          'url': endpoint,
+          'endpoint': endpoint,
           'username': username,
           'password': password
         });

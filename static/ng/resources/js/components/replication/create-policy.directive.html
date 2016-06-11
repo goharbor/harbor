@@ -15,7 +15,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="name" class="col-md-3 control-label">Name:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" ng-model-options="{ debounce: 500 }"  name="uName" required>                 
+                <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" name="uName" required>                 
                 <div ng-messages="form.$submitted && form.uName.$error">
                   <span ng-message="required">Name is required.</span>
                 </div>
@@ -24,7 +24,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="description" class="col-md-3 control-label">Description:</label>
               <div class="col-md-9">
-                <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" ng-model-options="{ updateOn: 'blur' }" ng-value="description" name="uDescription" required ></textarea>                 
+                <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" name="uDescription" required></textarea>                 
                 <div ng-messages="form.$submitted && form.uDescription.$error">
                   <span ng-message="required">Description is required.</span>
                 </div>
@@ -33,7 +33,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="enable" class="col-md-3 control-label">Enable:</label>
               <div class="col-md-9">
-                <input type="checkbox" class="form-control" style="margin-top: 10px; height: auto;" ng-model="replication.policy.enabled" ng-model-options="{ updateOn: 'blur' }" ng-checked="enabled">
+                <input type="checkbox" class="form-control" style="margin-top: 10px; height: auto;" ng-model="replication.policy.enabled">
               </div>
             </div>
             <div class="col-md-12">
@@ -43,13 +43,13 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="destinationName" class="col-md-3 control-label">Name:</label>
               <div class="col-md-7">
-                <select class="form-control form-control-custom" id="destinationName" ng-model="replication.destinations" ng-options="d as d.name for d in vm.destinations track by d.id" ng-click="vm.selectDestination()"></select>
+                <select class="form-control form-control-custom" id="destinationName" ng-model="replication.destination" ng-options="d as d.name for d in vm.destinations track by d.id" ng-click="vm.selectDestination()"></select>
               </div>
             </div>  
             <div class="form-group col-md-12 form-group-custom">
               <label for="endpoint" class="col-md-3 control-label">Endpoint:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" ng-model-options="{ updateOn: 'blur' }" ng-value="endpoint" name="uEndpoint" required>                 
+                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" ng-value="endpoint" name="uEndpoint" required>                 
                 <div ng-messages="form.$submitted && form.uEndpoint.$error">
                   <span ng-message="required">Endpoint is required.</span>
                 </div>
@@ -58,7 +58,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="username" class="col-md-3 control-label">Username:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" ng-model-options="{ updateOn: 'blur' }" ng-value="username" name="uUsername" required>                 
+                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" ng-value="username" name="uUsername" required>                 
                 <div ng-messages="form.$submitted && form.uUsername.$error">
                   <span ng-message="required">Username is required.</span>
                 </div>
@@ -67,7 +67,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="password" class="col-md-3 control-label">Password:</label>
               <div class="col-md-9">
-                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" ng-model-options="{ updateOn: 'blur' }" ng-value="password" name="uPassword" required>                 
+                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" ng-value="password" name="uPassword" required>                 
                 <div ng-messages="form.$submitted && form.uPassword.$error">
                   <span ng-message="required">Password is required.</span>
                 </div>
@@ -79,11 +79,10 @@
               <button class="btn btn-default" ng-click="vm.testConnection()">Test Connection</button>
               </div>
             </div>
-          
         </div>
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary" id="btnOk">// 'ok' | tr //</button>
+        <button type="submit" class="btn btn-primary" id="btnOk" ng-click="form.$valid && vm.save(replication)">// 'ok' | tr //</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
       </div>
     </form>

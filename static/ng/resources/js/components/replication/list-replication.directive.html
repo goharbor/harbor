@@ -8,7 +8,7 @@
         </span>
       </div>
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>New Replication</button>
-      <create-policy></create-policy>
+      <create-policy reload="vm.retrievePolicy()"></create-policy>
     </div>
     <div class="pane-split" id="upon-pane"> 	           
       <div class="sub-pane-split">
@@ -26,7 +26,7 @@
             <tr ng-if="vm.replicationPolicies.length == 0">
               <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">No replication policies, add new replication policy.</h3></td>
             </tr>
-            <tr policy_id="//r.policy_id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
+            <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
               <td>//r.name//</td>
               <td>//r.description//</td>
               <td>//r.destination//</td>

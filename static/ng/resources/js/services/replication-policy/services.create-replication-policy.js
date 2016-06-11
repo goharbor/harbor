@@ -9,7 +9,7 @@
   CreateReplicationPolicyService.$inject = ['$http'];
   
   function CreateReplicationPolicyService($http) {
-    return createReplicaitonPolicy;
+    return createReplicationPolicy;
     
     function createReplicationPolicy(policy) {
       return $http      
