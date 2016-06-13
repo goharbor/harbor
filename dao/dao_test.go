@@ -764,6 +764,7 @@ var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestAddRepTarget(t *testing.T) {
 	target := models.RepTarget{
+		Name:     "test",
 		URL:      "127.0.0.1:5000",
 		Username: "admin",
 		Password: "admin",
@@ -865,9 +866,14 @@ func TestUpdateRepTarget(t *testing.T) {
 	}
 }
 
-func TestGetAllRepTargets(t *testing.T) {
-	if _, err := GetAllRepTargets(); err != nil {
+func TestFilterRepTargets(t *testing.T) {
+	targets, err := FilterRepTargets("test")
+	if err != nil {
 		t.Fatalf("failed to get all targets: %v", err)
+	}
+
+	if len(targets) == 0 {
+		t.Errorf("unexpected num of targets: %d, expected: %d", len(targets), 1)
 	}
 }
 
@@ -1143,6 +1149,23 @@ func TestDeleteRepTarget(t *testing.T) {
 	}
 }
 
+func TestFilterRepPolicies(t *testing.T) {
+	_, err := FilterRepPolicies("name", 0)
+	if err != nil {
+		t.Fatalf("failed to filter policy")
+	}
+}
+
+func TestUpdateRepPolicy(t *testing.T) {
+	policy := &models.RepPolicy{
+		ID:   policyID,
+		Name: "new_policy_name",
+	}
+	if err := UpdateRepPolicy(policy); err != nil {
+		t.Fatalf("failed to update policy")
+	}
+}
+
 func TestDeleteRepPolicy(t *testing.T) {
 	err := DeleteRepPolicy(policyID)
 	if err != nil {
@@ -1151,7 +1174,7 @@ func TestDeleteRepPolicy(t *testing.T) {
 	}
 	t.Logf("delete rep policy, id: %d", policyID)
 	p, err := GetRepPolicy(policyID)
-	if err != nil {
+	if err != nil && err != orm.ErrNoRows {
 		t.Errorf("Error occured in GetRepPolicy:%v", err)
 	}
 	if p != nil {
