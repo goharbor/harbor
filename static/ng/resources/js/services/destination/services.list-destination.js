@@ -10,9 +10,9 @@
   
   function ListDestinationService($http) {    
     return listDestination;
-    function listDestination(name) {
+    function listDestination(targetId, name) {
       return $http
-        .get('/api/targets', {
+        .get('/api/targets/' + targetId, {
           'params': {
             'name': name
           }

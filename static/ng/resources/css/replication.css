@@ -65,3 +65,15 @@
   cursor: ns-resize;
   color: #C0C0C0;
 }
+
+.color-success {
+  color: #5cb85c;
+}
+
+.color-danger {
+  color: #d9534f
+}
+
+.color-warning {
+  color: #f0ad4e;
+}

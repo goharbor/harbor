@@ -6,22 +6,26 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['getParameterByName', '$location', 'ListReplicationPolicyService', 'ListReplicationJobService'];
+  ListReplicationController.$inject = ['getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService'];
   
-  function ListReplicationController(getParameterByName, $location, ListReplicationPolicyService, ListReplicationJobService) {
+  function ListReplicationController(getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService) {
     var vm = this;
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     
     vm.addReplication = addReplication;
+    vm.editReplication = editReplication;
+    
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
-    vm.last = false;
+    vm.togglePolicy = togglePolicy;
     
+    vm.last = false;
     vm.retrievePolicy();
+    
    
     function retrievePolicy() {
-      ListReplicationPolicyService(vm.projectId, vm.replicationName)
+      ListReplicationPolicyService('', vm.projectId, vm.replicationName)
         .success(listReplicationPolicySuccess)
         .error(listReplicationPolicyFailed);
     }
@@ -50,8 +54,30 @@
 
     function addReplication() {
       vm.modalTitle = 'Create New Policy';
+      vm.action = 'ADD_NEW';
     }
     
+    function editReplication(policyId) {
+      vm.policyId = policyId;
+      vm.modalTitle = 'Edit Policy';
+      vm.action = 'EDIT';
+      console.log('Selected policy ID:' + vm.policyId);
+    }
+        
+    function togglePolicy(policyId, enabled) {
+      ToggleReplicationPolicyService(policyId, enabled)
+        .success(toggleReplicationPolicySuccess)
+        .error(toggleReplicationPolicyFailed);
+    }
+    
+    function toggleReplicationPolicySuccess(data, status) {
+      console.log('Successful toggle replication policy.');
+      vm.retrievePolicy();
+    }
+    
+    function toggleReplicationPolicyFailed(data, status) {
+      console.log('Failed toggle replication policy.');
+    }
   }
   
   function listReplication($timeout) {
@@ -93,25 +119,37 @@
         $(document).off('mousedown');
         $(document).off('mousemove');
       }
+
+      ctrl.lastPolicyId = -1;          
       
       scope.$watch('vm.replicationPolicies', function(current) { 
         $timeout(function(){
           if(current && current.length > 0) {
             element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
-            element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');
+            if(ctrl.lastPolicyId === -1) {
+              element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');  
+            }else{
+              element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
+            }
           }
         });
       });
-      
+            
       function trClickHandler(e) {
         element
           .find('#upon-pane table>tbody>tr')  
           .css({'background-color': '#FFFFFF'})
           .css({'color': '#000'});
+        element
+          .find('#upon-pane table>tbody>tr a')
+          .css({'color': '#337ab7'});          
         $(this)
           .css({'background-color': '#057ac9'})
           .css({'color': '#fff'});
+        $('a', this)
+          .css({'color': '#fff'});
         ctrl.retrieveJob($(this).attr('policy_id'));
+        ctrl.lastPolicyId = $(this).attr('policy_id');
       }
     }
   }

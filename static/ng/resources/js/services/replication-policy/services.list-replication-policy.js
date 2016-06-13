@@ -12,9 +12,9 @@
        
     return listReplicationPolicy;
     
-    function listReplicationPolicy(projectId, name) {
+    function listReplicationPolicy(policyId, projectId, name) {
       return $http
-        .get('/api/policies/replication', {
+        .get('/api/policies/replication/' + policyId, {
           'params': {
             'project_id': projectId,
             'name': name

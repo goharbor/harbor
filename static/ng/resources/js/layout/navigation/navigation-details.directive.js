@@ -49,6 +49,7 @@
         element.find('a:first').addClass('active');
       }
 
+      ctrl.target = visited;
       element.find('a').on('click', click);
             
       function click(event) {
