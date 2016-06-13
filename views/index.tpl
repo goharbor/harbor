@@ -13,25 +13,25 @@
     limitations under the License.
 -->
 <!-- Main jumbotron for a primary marketing message or call to action -->
- <div class="jumbotron">
-   <div class="container">
-     <img class="pull-left" src="static/resources/image/Harbor_Logo_rec.png" alt="Harbor's Logo" height="180" width="360"/>
-	 <p class="pull-left" style="margin-top: 85px; color: #245580; font-size: 30pt; text-align: center; width: 60%;">{{i18n .Lang "index_title"}}</p>
-   </div>
- </div>
+<div class="jumbotron">
+	<div class="container">
+		<img class="pull-left" src="static/resources/image/Harbor_Logo_rec.png" alt="Harbor's Logo" height="180" width="360"/>
+		<p class="pull-left" style="margin-top: 85px; color: #245580; font-size: 30pt; text-align: center; width: 60%;">{{i18n .Lang "index_title"}}</p>
+	</div>
+</div>
 
- <div class="container">
-   <!-- Example row of columns -->
-   <div class="row">
-     <div class="col-md-12">
-       <p>{{i18n .Lang "index_desc"}}</p>
-	   <p>{{i18n .Lang "index_desc_0"}}</p>
-	   <p>{{i18n .Lang "index_desc_1"}}</p>
-	   <p>{{i18n .Lang "index_desc_2"}}</p>
-	   <p>{{i18n .Lang "index_desc_3"}}</p>
-	   <p>{{i18n .Lang "index_desc_4"}}</p>
-	   <p>{{i18n .Lang "index_desc_5"}}</p>
-     </div>
-   </div>
- </div> <!-- /container -->  
+<div class="container">
+	<!-- Example row of columns -->
+	<div class="row">
+		<div class="col-md-12">
+			<p>{{i18n .Lang "index_desc"}}</p>
+			<p>{{i18n .Lang "index_desc_0"}}</p>
+			<p>{{i18n .Lang "index_desc_1"}}</p>
+			<p>{{i18n .Lang "index_desc_2"}}</p>
+			<p>{{i18n .Lang "index_desc_3"}}</p>
+			<p>{{i18n .Lang "index_desc_4"}}</p>
+			<p>{{i18n .Lang "index_desc_5"}}</p>
+		</div>
+	</div>
+</div> <!-- /container -->  
 <script src="static/resources/js/login.js"></script>

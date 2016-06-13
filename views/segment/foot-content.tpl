@@ -13,11 +13,11 @@
     limitations under the License.
 -->
 <footer class="footer">
-  <div class="container">
-    <div class="row">
-	  <div class="col-md-5 col-md-offset-4">
-	    <p class="text-muted">{{i18n .Lang "copyright"}} © 2015-2016 VMware, Inc. {{i18n .Lang "all_rights_reserved"}}</p>
-	  </div>
-    </div>
-  </div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-5 col-md-offset-4">
+				<p class="text-muted">{{i18n .Lang "copyright"}} © 2015-2016 VMware, Inc. {{i18n .Lang "all_rights_reserved"}}</p>
+			</div>
+		</div>
+	</div>
 </footer>

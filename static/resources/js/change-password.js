@@ -24,7 +24,7 @@ jQuery(function(){
 		error: function(jqXhr){
 			if(jqXhr && jqXhr.status == 401){
 				document.location = "/signIn";				
-		    }
+			}
 		}
 	}).exec();
 	
@@ -36,12 +36,12 @@ jQuery(function(){
 	function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
-			  e.preventDefault();
-			  if($("#txtCommonSearch").is(":focus")){
-				document.location = "/search?q=" + $("#txtCommonSearch").val();
-			  }else{
-			    $("#btnSubmit").trigger("click");	
-			  }
+				e.preventDefault();
+				if($("#txtCommonSearch").is(":focus")){
+					document.location = "/search?q=" + $("#txtCommonSearch").val();
+				}else{
+					$("#btnSubmit").trigger("click");	
+				}
 			}
 		});
 	}
@@ -61,35 +61,35 @@ jQuery(function(){
 				type: "put",
 				data: {"old_password": oldPassword, "new_password" : password},
 				beforeSend: function(e){
-				   unbindEnterKey();
-				   $("h1").append(spinner.el);
-				   $("#btnSubmit").prop("disabled", true);	
+					unbindEnterKey();
+					$("h1").append(spinner.el);
+					$("#btnSubmit").prop("disabled", true);	
 				},
 				complete: function(xhr, status){
 					spinner.stop();
 					$("#btnSubmit").prop("disabled", false);	
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_change_password"), 
-								"content": i18n.getMessage("change_password_successfully"),
-								"callback": function(){ 								
-									window.close();
-								}
-							});
+						.dialogModal({
+							"title": i18n.getMessage("title_change_password"), 
+							"content": i18n.getMessage("change_password_successfully"),
+							"callback": function(){ 								
+								window.close();
+							}
+						});
 					}
 				},
 				error: function(jqXhr, status, error){
 					if(jqXhr && jqXhr.responseText.length){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_change_password"), 
-								"content": i18n.getMessage(jqXhr.responseText), 
-								"callback": function(){ 
-									bindEnterKey();
-									return;
-								}
-							});
+						.dialogModal({
+							"title": i18n.getMessage("title_change_password"), 
+							"content": i18n.getMessage(jqXhr.responseText), 
+							"callback": function(){ 
+								bindEnterKey();
+								return;
+							}
+						});
 					}
 				}
 			}).exec();
