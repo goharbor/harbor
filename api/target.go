@@ -206,18 +206,19 @@ func (t *TargetAPI) Post() {
 // Put ...
 func (t *TargetAPI) Put() {
 	id := t.getIDFromURL()
-	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, "id can not be empty or 0")
-	}
-
-	target := &models.RepTarget{}
-	t.DecodeJSONReqAndValidate(target)
 
 	originTarget, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+
+	if originTarget == nil {
+		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	target := &models.RepTarget{}
+	t.DecodeJSONReqAndValidate(target)
 
 	if target.Name != originTarget.Name {
 		ta, err := dao.GetRepTargetByName(target.Name)
@@ -246,9 +247,6 @@ func (t *TargetAPI) Put() {
 // Delete ...
 func (t *TargetAPI) Delete() {
 	id := t.getIDFromURL()
-	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -269,12 +267,12 @@ func (t *TargetAPI) Delete() {
 func (t *TargetAPI) getIDFromURL() int64 {
 	idStr := t.Ctx.Input.Param(":id")
 	if len(idStr) == 0 {
-		return 0
+		t.CustomAbort(http.StatusBadRequest, "invalid target ID")
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		t.CustomAbort(http.StatusBadRequest, "invalid ID in request URL")
+	if err != nil || id <= 0 {
+		t.CustomAbort(http.StatusBadRequest, "invalid target ID")
 	}
 
 	return id
