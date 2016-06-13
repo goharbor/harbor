@@ -68,10 +68,13 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 	}
 
 	o := GetOrmer()
+	var args []string
+	args = append(args, "%"+name+"%")
 
 	var targets []*models.RepTarget
+
 	sql := "select * from replication_target where name like ?"
-	if _, err := o.Raw(sql, "%"+name+"%").QueryRows(targets); err != nil {
+	if _, err := o.Raw(sql, args).QueryRows(targets); err != nil {
 		return nil, err
 	}
 
