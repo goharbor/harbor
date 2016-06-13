@@ -207,20 +207,20 @@ func (t *TargetAPI) Post() {
 func (t *TargetAPI) Put() {
 	id := t.GetIDFromURL()
 
-	originTarget, err := dao.GetRepTarget(id)
+	originalTarget, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if originTarget == nil {
+	if originalTarget == nil {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
 	target := &models.RepTarget{}
 	t.DecodeJSONReqAndValidate(target)
 
-	if target.Name != originTarget.Name {
+	if target.Name != originalTarget.Name {
 		ta, err := dao.GetRepTargetByName(target.Name)
 		if err != nil {
 			log.Errorf("failed to get target %s: %v", target.Name, err)
