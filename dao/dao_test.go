@@ -866,12 +866,6 @@ func TestUpdateRepTarget(t *testing.T) {
 	}
 }
 
-func TestGetAllRepTargets(t *testing.T) {
-	if _, err := GetAllRepTargets(); err != nil {
-		t.Fatalf("failed to get all targets: %v", err)
-	}
-}
-
 func TestFilterRepTargets(t *testing.T) {
 	targets, err := FilterRepTargets("test")
 	if err != nil {
@@ -1163,7 +1157,7 @@ func TestDeleteRepPolicy(t *testing.T) {
 	}
 	t.Logf("delete rep policy, id: %d", policyID)
 	p, err := GetRepPolicy(policyID)
-	if err != nil {
+	if err != nil && err != orm.ErrNoRows {
 		t.Errorf("Error occured in GetRepPolicy:%v", err)
 	}
 	if p != nil {

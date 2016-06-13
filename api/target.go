@@ -120,7 +120,7 @@ func (t *TargetAPI) Ping() {
 
 // Get ...
 func (t *TargetAPI) Get() {
-	id := t.getIDFromURL()
+	id := t.GetIDFromURL()
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -205,7 +205,7 @@ func (t *TargetAPI) Post() {
 
 // Put ...
 func (t *TargetAPI) Put() {
-	id := t.getIDFromURL()
+	id := t.GetIDFromURL()
 
 	originTarget, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -246,7 +246,7 @@ func (t *TargetAPI) Put() {
 
 // Delete ...
 func (t *TargetAPI) Delete() {
-	id := t.getIDFromURL()
+	id := t.GetIDFromURL()
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -262,18 +262,4 @@ func (t *TargetAPI) Delete() {
 		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-}
-
-func (t *TargetAPI) getIDFromURL() int64 {
-	idStr := t.Ctx.Input.Param(":id")
-	if len(idStr) == 0 {
-		t.CustomAbort(http.StatusBadRequest, "invalid target ID")
-	}
-
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil || id <= 0 {
-		t.CustomAbort(http.StatusBadRequest, "invalid target ID")
-	}
-
-	return id
 }
