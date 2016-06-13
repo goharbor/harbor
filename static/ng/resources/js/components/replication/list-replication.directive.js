@@ -94,9 +94,9 @@
         $(document).off('mousemove');
       }
       
-      scope.$watch('vm.last', function(current) { 
+      scope.$watch('vm.replicationPolicies', function(current) { 
         $timeout(function(){
-          if(current) {
+          if(current && current.length > 0) {
             element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
             element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');
           }
