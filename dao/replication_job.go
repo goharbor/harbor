@@ -171,6 +171,13 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
+// UpdateRepPolicy ...
+func UpdateRepPolicy(policy *models.RepPolicy) error {
+	o := GetOrmer()
+	_, err := o.Update(policy, "Name", "Enabled", "Description", "CronStr")
+	return err
+}
+
 // DeleteRepPolicy ...
 func DeleteRepPolicy(id int64) error {
 	o := GetOrmer()

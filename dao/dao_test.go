@@ -1149,6 +1149,23 @@ func TestDeleteRepTarget(t *testing.T) {
 	}
 }
 
+func TestFilterRepPolicies(t *testing.T) {
+	_, err := FilterRepPolicies("name", 0)
+	if err != nil {
+		t.Fatalf("failed to filter policy")
+	}
+}
+
+func TestUpdateRepPolicy(t *testing.T) {
+	policy := &models.RepPolicy{
+		ID:   policyID,
+		Name: "new_policy_name",
+	}
+	if err := UpdateRepPolicy(policy); err != nil {
+		t.Fatalf("failed to update policy")
+	}
+}
+
 func TestDeleteRepPolicy(t *testing.T) {
 	err := DeleteRepPolicy(policyID)
 	if err != nil {

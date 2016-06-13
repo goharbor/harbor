@@ -19,7 +19,6 @@ type RepPolicyAPI struct {
 }
 
 // Prepare validates whether the user has system admin role
-// and parsed the policy ID if it exists
 func (pa *RepPolicyAPI) Prepare() {
 	uid := pa.ValidateUser()
 	var err error
@@ -129,12 +128,85 @@ func (pa *RepPolicyAPI) Post() {
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(pid, 10))
 }
 
+// Put modifies name and description of policy
+func (pa *RepPolicyAPI) Put() {
+	id := pa.GetIDFromURL()
+	originalPolicy, err := dao.GetRepPolicy(id)
+	if err != nil {
+		log.Errorf("failed to get policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if originalPolicy == nil {
+		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	var policy *models.RepPolicy
+	pa.DecodeJSONReq(policy)
+	policy.ProjectID = originalPolicy.ProjectID
+	policy.TargetID = originalPolicy.TargetID
+	pa.Validate(policy)
+
+	if policy.Name != originalPolicy.Name {
+		po, err := dao.GetRepPolicyByName(policy.Name)
+		if err != nil {
+			log.Errorf("failed to get policy %s: %v", policy.Name, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if po != nil {
+			pa.CustomAbort(http.StatusConflict, "name is already used")
+		}
+	}
+
+	policy.ID = id
+
+	if err = dao.UpdateRepPolicy(policy); err != nil {
+		log.Errorf("failed to update policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if policy.Enabled == originalPolicy.Enabled {
+		return
+	}
+
+	//enablement has been modified
+	if policy.Enabled == 1 {
+		go func() {
+			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
+				log.Errorf("failed to trigger replication of %d: %v", id, err)
+			} else {
+				log.Infof("replication of %d triggered", id)
+			}
+		}()
+	} else {
+		go func() {
+			if err := postReplicationAction(id, "stop"); err != nil {
+				log.Errorf("failed to stop replication of %d: %v", id, err)
+			} else {
+				log.Infof("try to stop replication of %d", id)
+			}
+		}()
+	}
+}
+
 type enablementReq struct {
 	Enabled int `json:"enabled"`
 }
 
 // UpdateEnablement changes the enablement of the policy
 func (pa *RepPolicyAPI) UpdateEnablement() {
+	id := pa.GetIDFromURL()
+	policy, err := dao.GetRepPolicy(id)
+	if err != nil {
+		log.Errorf("failed to get policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if policy == nil {
+		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
 	e := enablementReq{}
 	pa.DecodeJSONReq(&e)
 	if e.Enabled != 0 && e.Enabled != 1 {
