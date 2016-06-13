@@ -66,7 +66,8 @@ func initRouters() {
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
-	beego.Router("/api/targets/?:id([0-9]+)", &api.TargetAPI{})
+	beego.Router("/api/targets/", &api.TargetAPI{}, "get:List")
+	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 
 	//external service that hosted on harbor process:

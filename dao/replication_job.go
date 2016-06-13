@@ -54,10 +54,28 @@ func UpdateRepTarget(target models.RepTarget) error {
 // GetAllRepTargets ...
 func GetAllRepTargets() ([]*models.RepTarget, error) {
 	o := GetOrmer()
+
 	qs := o.QueryTable(&models.RepTarget{})
 	var targets []*models.RepTarget
 	_, err := qs.All(&targets)
 	return targets, err
+}
+
+// FilterRepTargets filters targets by name
+func FilterRepTargets(name string) ([]*models.RepTarget, error) {
+	if len(name) == 0 {
+		return GetAllRepTargets()
+	}
+
+	o := GetOrmer()
+
+	var targets []*models.RepTarget
+	sql := "select * from replication_target where name like ?"
+	if _, err := o.Raw(sql, "%"+name+"%").QueryRows(targets); err != nil {
+		return nil, err
+	}
+
+	return targets, nil
 }
 
 // AddRepPolicy ...

@@ -121,22 +121,6 @@ func (t *TargetAPI) Ping() {
 // Get ...
 func (t *TargetAPI) Get() {
 	id := t.getIDFromURL()
-	// list targets
-	if id == 0 {
-		targets, err := dao.GetAllRepTargets()
-		if err != nil {
-			log.Errorf("failed to get all targets: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		for _, target := range targets {
-			target.Password = ""
-		}
-
-		t.Data["json"] = targets
-		t.ServeJSON()
-		return
-	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -148,6 +132,8 @@ func (t *TargetAPI) Get() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
+	// the reason why the password is returned is that when user just wants to
+	// modify other fields of target he does not need to input the password again
 	if len(target.Password) != 0 {
 		pwd, err := utils.ReversibleDecrypt(target.Password)
 		if err != nil {
@@ -159,6 +145,33 @@ func (t *TargetAPI) Get() {
 
 	t.Data["json"] = target
 	t.ServeJSON()
+}
+
+// List ...
+func (t *TargetAPI) List() {
+	name := t.GetString("name")
+	targets, err := dao.FilterRepTargets(name)
+	if err != nil {
+		log.Errorf("failed to filter targets %s: %v", name, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	for _, target := range targets {
+		if len(target.Password) == 0 {
+			continue
+		}
+
+		str, err := utils.ReversibleDecrypt(target.Password)
+		if err != nil {
+			log.Errorf("failed to decrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		target.Password = str
+	}
+
+	t.Data["json"] = targets
+	t.ServeJSON()
+	return
 }
 
 // Post ...
