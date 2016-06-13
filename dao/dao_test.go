@@ -764,6 +764,7 @@ var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestAddRepTarget(t *testing.T) {
 	target := models.RepTarget{
+		Name:     "test",
 		URL:      "127.0.0.1:5000",
 		Username: "admin",
 		Password: "admin",
@@ -868,6 +869,17 @@ func TestUpdateRepTarget(t *testing.T) {
 func TestGetAllRepTargets(t *testing.T) {
 	if _, err := GetAllRepTargets(); err != nil {
 		t.Fatalf("failed to get all targets: %v", err)
+	}
+}
+
+func TestFilterRepTargets(t *testing.T) {
+	targets, err := FilterRepTargets("test")
+	if err != nil {
+		t.Fatalf("failed to get all targets: %v", err)
+	}
+
+	if len(targets) == 0 {
+		t.Errorf("unexpected num of targets: %d, expected: %d", len(targets), 1)
 	}
 }
 
