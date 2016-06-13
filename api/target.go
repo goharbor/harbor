@@ -132,8 +132,9 @@ func (t *TargetAPI) Get() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	// the reason why the password is returned is that when user just wants to
-	// modify other fields of target he does not need to input the password again
+	// The reason why the password is returned is that when user just wants to
+	// modify other fields of target he does not need to input the password again.
+	// The security issue can be fixed by enable https.
 	if len(target.Password) != 0 {
 		pwd, err := utils.ReversibleDecrypt(target.Password)
 		if err != nil {
