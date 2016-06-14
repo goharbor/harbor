@@ -6,13 +6,17 @@
     .module('harbor.system.management')
     .directive('destination', destination);
     
-  DestinationController.$inject = ['ListDestinationService'];
+  DestinationController.$inject = ['$scope', 'ListDestinationService', 'DeleteDestinationService'];
   
-  function DestinationController(ListDestinationService) {
+  function DestinationController($scope, ListDestinationService, DeleteDestinationService) {
     var vm = this;
     
     vm.retrieve = retrieve;
     vm.search = search;
+    vm.addDestination = addDestination;
+    vm.editDestination = editDestination;
+    vm.deleteDestination = deleteDestination;
+    
     vm.retrieve();
     
     function retrieve() {
@@ -25,6 +29,23 @@
       vm.retrieve();
     }
     
+    function addDestination() {
+      vm.action = 'ADD_NEW';
+      console.log('Action for destination:' + vm.action);
+    }
+    
+    function editDestination(targetId) {
+      vm.action = 'EDIT';
+      vm.targetId = targetId;
+      console.log('Action for destination:' + vm.action + ', target ID:' + vm.targetId);
+    }
+    
+    function deleteDestination(targetId) {
+      DeleteDestinationService(targetId)
+        .success(deleteDestinationSuccess)
+        .error(deleteDestinationFailed);
+    }
+    
     function listDestinationSuccess(data, status) {
       vm.destinations = data;
     }
@@ -33,7 +54,14 @@
       console.log('Failed list destination:' + data);
     }
     
+    function deleteDestinationSuccess(data, status) {
+      console.log('Successful delete destination.');
+      vm.retrieve();
+    }
     
+    function deleteDestinationFailed(data, status) {
+      console.log('Failed delete destination.');
+    }   
   }
   
   function destination() {

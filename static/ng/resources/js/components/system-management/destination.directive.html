@@ -8,7 +8,7 @@
         </span>
       </div>
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addDestination()" data-toggle="modal" data-target="#createDestinationModal"><span class="glyphicon glyphicon-plus"></span>New Destination</button>
-      <create-destination></create-destination>
+      <create-destination action="//vm.action//" target-id="//vm.targetId//" reload="vm.retrieve()"></create-destination>
     </div>
     <div class="pane"> 	           
       <div class="sub-pane">
@@ -27,7 +27,11 @@
               <td>//r.name//</td>
               <td>//r.endpoint//</td>
               <td>//r.creation_time//</td>
-              <td></td>
+              <td>
+                <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a href="javascript:void(0);" ng-click="vm.deleteDestination(r.id)"><span class="glyphicon glyphicon-trash"></span></a>
+              </td>
             </tr>
           </tbody>
     		</table>

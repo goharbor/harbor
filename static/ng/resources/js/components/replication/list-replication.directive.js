@@ -19,7 +19,7 @@
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
     vm.togglePolicy = togglePolicy;
-    
+      
     vm.last = false;
     vm.retrievePolicy();
     
@@ -61,9 +61,10 @@
       vm.policyId = policyId;
       vm.modalTitle = 'Edit Policy';
       vm.action = 'EDIT';
+      
       console.log('Selected policy ID:' + vm.policyId);
     }
-        
+     
     function togglePolicy(policyId, enabled) {
       ToggleReplicationPolicyService(policyId, enabled)
         .success(toggleReplicationPolicySuccess)
@@ -78,6 +79,7 @@
     function toggleReplicationPolicyFailed(data, status) {
       console.log('Failed toggle replication policy.');
     }
+    
   }
   
   function listReplication($timeout) {
