@@ -33,7 +33,7 @@ type ProjectMemberAPI struct {
 }
 
 type memberReq struct {
-	Username string `json:"user_name"`
+	Username string `json:"username"`
 	UserID   int    `json:"user_id"`
 	Roles    []int  `json:"roles"`
 }
@@ -104,7 +104,7 @@ func (pma *ProjectMemberAPI) Get() {
 			log.Errorf("Error occurred in GetUser, error: %v", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
-		result["user_name"] = user.Username
+		result["username"] = user.Username
 		result["user_id"] = pma.memberID
 		result["roles"] = roleList
 		pma.Data["json"] = result
