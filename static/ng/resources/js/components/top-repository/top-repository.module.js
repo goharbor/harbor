@@ -3,8 +3,8 @@
   'use strict';
   
   angular
-    .module('harbor.layout.dashboard', [
+    .module('harbor.top.repository', [
       'harbor.services.repository'
     ]);
-  
+      
 })();

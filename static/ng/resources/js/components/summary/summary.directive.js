@@ -15,7 +15,7 @@
           .success(statProjectSuccess)
           .error(statProjectFailed);
           
-        function statProjectSuccess(data, status) {
+        function statProjectSuccess(data) {
             vm.statProjects = data;
         }
         

@@ -10,19 +10,7 @@
       </div>
       <div class="col-xs-8 col-md-8">
 	      <div class="up-section">	
-		      <h4 class="page-header title-color underlined">// 'top_10_repositories' | tr //</h4>
-		      <div class="col-xs-4 col-md-12 up-table-pane">
-		        <table class="table">
-        			  <thead>
-        			    <th>// 'repository_name' | tr //</th><th>// 'size' | tr //</th><th>// 'creator' | tr //</th>
-        			  </thead>
-        			  <tbody>
-        			    <tr ng-repeat="t in vm.top10Repositories">
-        				    <td>//t.repo_name//</td><td>//t.image_size//MB</td><td>//t.creator//</td>
-        				  </tr>
-        			  </tbody>
-      			  </table>
-		      </div>  
+            <top-Repository></top-Repository>
 		    </div>
 	    </div>
     </div>
@@ -31,18 +19,7 @@
     <div class="row row-custom">
       <div class="col-xs-12 col-md-12">
 	      <div class="down-section">
-    	    		<h4 class="page-header title-color underlined">// 'logs' | tr //</h4>
-    	    		 <div style="padding: 15px;">
-      			 <table class="table">
-      			  <thead>
-      			    <th>// 'task_name' | tr //</th><th>// 'details' | tr //</th><th>// 'user' | tr //</th><th>// 'creation_time' | tr //</th>
-      			  </thead>
-      			  <tbody>
-      			    <tr ng-repeat="t in vm.integratedLogs">
-      				    <td>//t.task_name//</td><td>//t.details//</td><td>//t.user//</td><td>//t.creation_time//</td>
-      				  </tr>
-      			  </tbody>
-    			  </table>		
+	          <user-Log></user-Log>
           </div>
         </div>						
 	    </div>
