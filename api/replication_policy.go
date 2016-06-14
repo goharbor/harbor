@@ -139,7 +139,7 @@ func (pa *RepPolicyAPI) Put() {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	var policy *models.RepPolicy
+	policy := &models.RepPolicy{}
 	pa.DecodeJSONReq(policy)
 	policy.ProjectID = originalPolicy.ProjectID
 	policy.TargetID = originalPolicy.TargetID

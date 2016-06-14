@@ -77,7 +77,7 @@ func (p *ProjectAPI) Post() {
 	err := validateProjectReq(req)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
-		p.RenderError(http.StatusBadRequest, "Invalid request for creating project")
+		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
 		return
 	}
 	projectName := req.ProjectName
