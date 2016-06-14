@@ -27,11 +27,14 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/cache"
 	svc_utils "github.com/vmware/harbor/service/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
+
+	registry_error "github.com/vmware/harbor/utils/registry/error"
+
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -62,7 +65,13 @@ func (ra *RepositoryAPI) Get() {
 	}
 
 	if p.Public == 0 {
-		userID := ra.ValidateUser()
+		var userID int
+
+		if svc_utils.VerifySecret(ra.Ctx.Request) {
+			userID = 1
+		} else {
+			userID = ra.ValidateUser()
+		}
 
 		if !checkProjectPermission(userID, projectID) {
 			ra.RenderError(http.StatusForbidden, "")
@@ -70,7 +79,7 @@ func (ra *RepositoryAPI) Get() {
 		}
 	}
 
-	repoList, err := svc_utils.GetRepoFromCache()
+	repoList, err := cache.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		ra.RenderError(http.StatusInternalServerError, "internal sever error")
@@ -117,15 +126,19 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
-			e, ok := errors.ParseError(err)
-			if ok {
-				log.Info(e)
-				ra.CustomAbort(e.StatusCode, e.Message)
-			} else {
-				log.Error(err)
-				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
+
+			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
+
+		// TODO remove the logic if the bug of registry is fixed
+		if len(tagList) == 0 {
+			ra.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		}
+
 		tags = append(tags, tagList...)
 	} else {
 		tags = append(tags, tag)
@@ -133,20 +146,21 @@ func (ra *RepositoryAPI) Delete() {
 
 	for _, t := range tags {
 		if err := rc.DeleteTag(t); err != nil {
-			e, ok := errors.ParseError(err)
-			if ok {
-				ra.CustomAbort(e.StatusCode, e.Message)
-			} else {
-				log.Error(err)
-				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
+
+			log.Errorf("error occurred while deleting tags of %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s %s", repoName, t)
+		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
+
 	}
 
 	go func() {
 		log.Debug("refreshing catalog cache")
-		if err := svc_utils.RefreshCatalogCache(); err != nil {
+		if err := cache.RefreshCatalogCache(); err != nil {
 			log.Errorf("error occurred while refresh catalog cache: %v", err)
 		}
 	}()
@@ -175,13 +189,12 @@ func (ra *RepositoryAPI) GetTags() {
 
 	ts, err := rc.ListTag()
 	if err != nil {
-		e, ok := errors.ParseError(err)
-		if ok {
-			ra.CustomAbort(e.StatusCode, e.Message)
-		} else {
-			log.Error(err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		if regErr, ok := err.(*registry_error.Error); ok {
+			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
+
+		log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
 	tags = append(tags, ts...)
@@ -212,13 +225,12 @@ func (ra *RepositoryAPI) GetManifests() {
 	mediaTypes := []string{schema1.MediaTypeManifest}
 	_, _, payload, err := rc.PullManifest(tag, mediaTypes)
 	if err != nil {
-		e, ok := errors.ParseError(err)
-		if ok {
-			ra.CustomAbort(e.StatusCode, e.Message)
-		} else {
-			log.Error(err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		if regErr, ok := err.(*registry_error.Error); ok {
+			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
+
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	mani := models.Manifest{}
 	err = json.Unmarshal(payload, &mani)
@@ -287,4 +299,31 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	}
 
 	return "", nil
+}
+
+//GetTopRepos handles request GET /api/repositories/top
+func (ra *RepositoryAPI) GetTopRepos() {
+	var err error
+	var countNum int
+	count := ra.GetString("count")
+	if len(count) == 0 {
+		countNum = 10
+	} else {
+		countNum, err = strconv.Atoi(count)
+		if err != nil {
+			log.Errorf("Get parameters error--count, err: %v", err)
+			ra.CustomAbort(http.StatusBadRequest, "bad request of count")
+		}
+		if countNum <= 0 {
+			log.Warning("count must be a positive integer")
+			ra.CustomAbort(http.StatusBadRequest, "count is 0 or negative")
+		}
+	}
+	repos, err := dao.GetTopRepos(countNum)
+	if err != nil {
+		log.Errorf("error occured in get top 10 repos: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
+	}
+	ra.Data["json"] = repos
+	ra.ServeJSON()
 }
