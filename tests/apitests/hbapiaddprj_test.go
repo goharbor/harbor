@@ -21,7 +21,7 @@ func TestAddProject(t *testing.T) {
 	prjUsr := &HarborAPI.UsrInfo{"unknown", "unknown"}
 
 	var project HarborAPI.Project
-	project.ProjectName = "testProject"
+	project.ProjectName = "testproject"
 	project.Public = true
 
 	//case 1: admin login fail, expect project creation fail.
