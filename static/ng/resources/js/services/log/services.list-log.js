@@ -21,10 +21,10 @@
       
       return $http
         .post('/api/projects/' + projectId + '/logs/filter', {
-          'beginTimestamp' : beginTimestamp,
-          'endTimestamp'   : endTimestamp,
+          'begin_timestamp' : beginTimestamp,
+          'end_timestamp'   : endTimestamp,
           'keywords' : keywords,
-          'project_id': projectId,
+          'project_id': Number(projectId),
           'username' : username
         });
     }

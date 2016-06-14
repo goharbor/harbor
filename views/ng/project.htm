@@ -34,10 +34,10 @@
                   <td colspan="5" height="320px" class="empty-hint" ng-if="vm.projects.length === 0"><h3 class="text-muted">// 'no_projects_add_new_project' | tr //</h3></td>
                   </tr>
                   <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
-                    <td><a href="/ng/repository#/repositories?project_id=//p.ProjectId//&is_public=//p.Public//">//p.Name//</a></td>
+                    <td><a href="/ng/repository#/repositories?project_id=//p.ProjectId//&is_public=//p.Public//">//p.name//</a></td>
                     <td>//p.repo_count//</td>
-                    <td>//vm.getProjectRole(p.role_id)//</td>
-                    <td>//p.CreationTime | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                    <td>//vm.getProjectRole(p.current_user_role_id)//</td>
+                    <td>//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                     <td><publicity-button is-public="p.Public" owned="p.OwnerId == vm.user.UserId" project-id="p.ProjectId"></publicity-button></td>
                   </tr>
                 </tbody>

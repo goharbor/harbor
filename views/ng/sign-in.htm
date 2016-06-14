@@ -9,7 +9,7 @@
 <form name="form" class="form-horizontal css-form" novalidate>
   <div class="form-group"> 
     <div class="col-sm-offset-1 col-sm-10">
-      <input id="username"  type="text" class="form-control" placeholder="// 'username_email' | tr //" name="uPrincipal" ng-change="vm.reset()" ng-model="user.principal" ng-model-options="{ debounce: { default: 500, blur: 0 } }" required>
+      <input id="username"  type="text" class="form-control" placeholder="// 'username_email' | tr //" name="uPrincipal" ng-change="vm.reset()" ng-model="user.principal" required>
       <div class="error-message">
         <div ng-messages="form.$submitted && form.uPrincipal.$error">
           <span ng-message="required">// 'username_is_required' | tr //</span>
@@ -19,7 +19,7 @@
   </div>
   <div class="form-group">
     <div class="col-sm-offset-1 col-sm-10">
-      <input type="password" class="form-control" placeholder="// 'password' | tr //" name="uPassword" ng-change="vm.reset()"  ng-model-options="{ debounce: { default: 500, blur: 0 } }" ng-model="user.password" required>
+      <input type="password" class="form-control" placeholder="// 'password' | tr //" name="uPassword" ng-change="vm.reset()" ng-model="user.password" required>
       <div class="error-message">
         <div ng-messages="form.$submitted && form.uPassword.$error">
           <span ng-message="required">// 'password_is_required' | tr //</span>
