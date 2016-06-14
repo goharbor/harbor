@@ -56,7 +56,7 @@ jQuery(function(){
 			success: function(jqXhr, status){
 				var lastUri = location.search;
 				if(lastUri != "" && lastUri.indexOf("=") > 0){
-				    document.location = decodeURIComponent(lastUri.split("=")[1]);
+					document.location = decodeURIComponent(lastUri.split("=")[1]);
 				}else{
 					document.location = "/registry/project";						
 				}
@@ -69,10 +69,10 @@ jQuery(function(){
 					i18nKey = "check_your_username_or_password"
 				}
 				$("#dlgModal")
-					.dialogModal({
-						"title": i18n.getMessage("title_login_failed"),
-						"content": i18n.getMessage(i18nKey)
-					});
+				.dialogModal({
+					"title": i18n.getMessage("title_login_failed"),
+					"content": i18n.getMessage(i18nKey)
+				});
 			}
 		});
 	});

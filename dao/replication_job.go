@@ -51,27 +51,22 @@ func UpdateRepTarget(target models.RepTarget) error {
 	return err
 }
 
-// GetAllRepTargets ...
-func GetAllRepTargets() ([]*models.RepTarget, error) {
-	o := GetOrmer()
-
-	qs := o.QueryTable(&models.RepTarget{})
-	var targets []*models.RepTarget
-	_, err := qs.All(&targets)
-	return targets, err
-}
-
 // FilterRepTargets filters targets by name
 func FilterRepTargets(name string) ([]*models.RepTarget, error) {
-	if len(name) == 0 {
-		return GetAllRepTargets()
-	}
-
 	o := GetOrmer()
+
+	var args []interface{}
+
+	sql := `select * from replication_target `
+	if len(name) != 0 {
+		sql += `where name like ? `
+		args = append(args, "%"+name+"%")
+	}
+	sql += `order by creation_time`
+
 	var targets []*models.RepTarget
 
-	sql := "select * from replication_target where name like ?"
-	if _, err := o.Raw(sql, "%"+name+"%").QueryRows(&targets); err != nil {
+	if _, err := o.Raw(sql, args).QueryRows(&targets); err != nil {
 		return nil, err
 	}
 
@@ -103,31 +98,84 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 // GetRepPolicy ...
 func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	o := GetOrmer()
-	p := models.RepPolicy{ID: id}
-	err := o.Read(&p)
-	if err == orm.ErrNoRows {
-		return nil, nil
+	sql := `select * from replication_policy where id = ?`
+
+	var policy models.RepPolicy
+
+	if err := o.Raw(sql, id).QueryRow(&policy); err != nil {
+		return nil, err
 	}
-	return &p, err
+
+	return &policy, nil
+}
+
+// FilterRepPolicies filters policies by name and project ID
+func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error) {
+	o := GetOrmer()
+
+	var args []interface{}
+
+	sql := `select rp.id, rp.project_id, p.name as project_name, rp.target_id, 
+				rt.name as target_name, rp.name, rp.enabled, rp.description,
+				rp.cron_str, rp.start_time, rp.creation_time, rp.update_time  
+			from replication_policy rp 
+			join project p on rp.project_id=p.project_id 
+			join replication_target rt on rp.target_id=rt.id `
+
+	if len(name) != 0 && projectID != 0 {
+		sql += `where rp.name like ? and rp.project_id = ? `
+		args = append(args, "%"+name+"%")
+		args = append(args, projectID)
+	} else if len(name) != 0 {
+		sql += `where rp.name like ? `
+		args = append(args, "%"+name+"%")
+	} else if projectID != 0 {
+		sql += `where rp.project_id = ? `
+		args = append(args, projectID)
+	}
+
+	sql += `order by rp.creation_time`
+
+	var policies []*models.RepPolicy
+	if _, err := o.Raw(sql, args).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+	return policies, nil
 }
 
 // GetRepPolicyByName ...
 func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 	o := GetOrmer()
-	p := models.RepPolicy{Name: name}
-	err := o.Read(&p, "Name")
-	if err == orm.ErrNoRows {
-		return nil, nil
+	sql := `select * from replication_policy where name = ?`
+
+	var policy models.RepPolicy
+
+	if err := o.Raw(sql, name).QueryRow(&policy); err != nil {
+		return nil, err
 	}
-	return &p, err
+
+	return &policy, nil
 }
 
 // GetRepPolicyByProject ...
 func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
-	var res []*models.RepPolicy
 	o := GetOrmer()
-	_, err := o.QueryTable("replication_policy").Filter("project_id", projectID).All(&res)
-	return res, err
+	sql := `select * from replication_policy where project_id = ?`
+
+	var policies []*models.RepPolicy
+
+	if _, err := o.Raw(sql, projectID).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
+// UpdateRepPolicy ...
+func UpdateRepPolicy(policy *models.RepPolicy) error {
+	o := GetOrmer()
+	_, err := o.Update(policy, "Name", "Enabled", "Description", "CronStr")
+	return err
 }
 
 // DeleteRepPolicy ...

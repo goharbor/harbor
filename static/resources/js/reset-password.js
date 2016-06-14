@@ -17,11 +17,11 @@ jQuery(function(){
 	
 	$("#Password,#ConfirmedPassword").on("blur", validateCallback);
 	validateOptions.Items = ["#Password", "#ConfirmedPassword"];
-    function bindEnterKey(){
+	function bindEnterKey(){
 		$(document).on("keydown", function(e){
 			if(e.keyCode == 13){
-			  e.preventDefault();
-			  $("#btnSubmit").trigger("click");				  
+				e.preventDefault();
+				$("#btnSubmit").trigger("click");				  
 			}
 		});
 	}
@@ -29,7 +29,6 @@ jQuery(function(){
 		$(document).off("keydown");
 	}
 	bindEnterKey();
-	
 	
 	var spinner = new Spinner({scale:1}).spin();
 	
@@ -42,20 +41,20 @@ jQuery(function(){
 				"type": "post",
 				"data": {"reset_uuid": resetUuid, "password": password},
 				"beforeSend": function(e){
-				   unbindEnterKey();
-				   $("h1").append(spinner.el);
-				   $("#btnSubmit").prop("disabled", true);	
+					unbindEnterKey();
+					$("h1").append(spinner.el);
+					$("#btnSubmit").prop("disabled", true);	
 				},
 				"success": function(data, status, xhr){					
 					if(xhr && xhr.status == 200){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_reset_password"), 
-								"content": i18n.getMessage("reset_password_successfully"),
-							    "callback": function(){ 
-									document.location="/signIn";
-								}
-							});
+						.dialogModal({
+							"title": i18n.getMessage("title_reset_password"), 
+							"content": i18n.getMessage("reset_password_successfully"),
+							"callback": function(){ 
+								document.location="/signIn";
+							}
+						});
 					}	
 					
 				},
@@ -66,14 +65,14 @@ jQuery(function(){
 				"error": function(jqXhr, status, error){
 					if(jqXhr){
 						$("#dlgModal")
-							.dialogModal({
-								"title": i18n.getMessage("title_reset_password"), 
-								"content": i18n.getMessage(jqXhr.responseText),
-							    "callback": function(){ 
-									bindEnterKey();
-									return;
-								}
-							});
+						.dialogModal({
+							"title": i18n.getMessage("title_reset_password"), 
+							"content": i18n.getMessage(jqXhr.responseText),
+							"callback": function(){ 
+								bindEnterKey();
+								return;
+							}
+						});
 					}
 				}
 			});

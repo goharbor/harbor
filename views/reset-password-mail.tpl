@@ -14,8 +14,8 @@
 -->
 <!DOCTYPE html>
 <html>
-  <body>
-    <p>{{.Hint}}:</p>
-    <a href="{{.URL}}/resetPassword?reset_uuid={{.UUID}}">{{.URL}}/resetPassword?reset_uuid={{.UUID}}</a>
-  </body>
+<body>
+	<p>{{.Hint}}:</p>
+	<a href="{{.URL}}/resetPassword?reset_uuid={{.UUID}}">{{.URL}}/resetPassword?reset_uuid={{.UUID}}</a>
+</body>
 </html>

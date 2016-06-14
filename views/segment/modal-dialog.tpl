@@ -13,26 +13,26 @@
     limitations under the License.
 -->
 <style>
-.center {
-    margin-left: auto;
-    margin-right: auto;
-    top: 10%;
-}
+	.center {
+		margin-left: auto;
+		margin-right: auto;
+		top: 10%;
+	}
 </style>
 <!-- Modal -->
 <div class="center modal fade" id="dlgModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="dlgLabel"></h4>
-      </div>
-      <div class="modal-body" id="dlgBody">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="dlgConfirm" data-dismiss="modal">{{i18n .Lang "dlg_button_ok"}}</button>
-		<button type="button" class="btn btn-primary" id="dlgCancel" data-dismiss="modal" style="display: none;">{{i18n .Lang "dlg_button_cancel"}}</button>
-      </div>
-    </div>
-  </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="dlgLabel"></h4>
+			</div>
+			<div class="modal-body" id="dlgBody">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" id="dlgConfirm" data-dismiss="modal">{{i18n .Lang "dlg_button_ok"}}</button>
+				<button type="button" class="btn btn-primary" id="dlgCancel" data-dismiss="modal" style="display: none;">{{i18n .Lang "dlg_button_cancel"}}</button>
+			</div>
+		</div>
+	</div>
 </div>

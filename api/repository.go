@@ -133,6 +133,12 @@ func (ra *RepositoryAPI) Delete() {
 			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
+
+		// TODO remove the logic if the bug of registry is fixed
+		if len(tagList) == 0 {
+			ra.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		}
+
 		tags = append(tags, tagList...)
 	} else {
 		tags = append(tags, tag)

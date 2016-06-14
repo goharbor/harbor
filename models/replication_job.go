@@ -31,10 +31,12 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID        int64  `orm:"column(id)" json:"id"`
-	ProjectID int64  `orm:"column(project_id)" json:"project_id"`
-	TargetID  int64  `orm:"column(target_id)" json:"target_id"`
-	Name      string `orm:"column(name)" json:"name"`
+	ID          int64  `orm:"column(id)" json:"id"`
+	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
+	ProjectName string `json:"project_name,omitempty"`
+	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
+	TargetName  string `json:"target_name,omitempty"`
+	Name        string `orm:"column(name)" json:"name"`
 	//	Target       RepTarget `orm:"-" json:"target"`
 	Enabled      int       `orm:"column(enabled)" json:"enabled"`
 	Description  string    `orm:"column(description)" json:"description"`
