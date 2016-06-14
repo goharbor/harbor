@@ -119,7 +119,7 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/pulicity:
+  /projects/{project_id}/publicity:
     put:
       summary: Update properties for a selected project.
       description: |
