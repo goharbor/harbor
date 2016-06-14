@@ -14,8 +14,6 @@ import (
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
 type RepPolicyAPI struct {
 	BaseAPI
-	policyID int64
-	policy   *models.RepPolicy
 }
 
 // Prepare validates whether the user has system admin role
@@ -214,11 +212,11 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 		return
 	}
 
-	if pa.policy.Enabled == e.Enabled {
+	if policy.Enabled == e.Enabled {
 		return
 	}
 
-	if err := dao.UpdateRepPolicyEnablement(pa.policyID, e.Enabled); err != nil {
+	if err := dao.UpdateRepPolicyEnablement(id, e.Enabled); err != nil {
 		log.Errorf("Failed to update policy enablement in DB, error: %v", err)
 		pa.RenderError(http.StatusInternalServerError, "Internal Error")
 		return
@@ -226,18 +224,18 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 
 	if e.Enabled == 1 {
 		go func() {
-			if err := TriggerReplication(pa.policyID, "", nil, models.RepOpTransfer); err != nil {
-				log.Errorf("failed to trigger replication of %d: %v", pa.policyID, err)
+			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
+				log.Errorf("failed to trigger replication of %d: %v", id, err)
 			} else {
-				log.Infof("replication of %d triggered", pa.policyID)
+				log.Infof("replication of %d triggered", id)
 			}
 		}()
 	} else {
 		go func() {
-			if err := postReplicationAction(pa.policyID, "stop"); err != nil {
-				log.Errorf("failed to stop replication of %d: %v", pa.policyID, err)
+			if err := postReplicationAction(id, "stop"); err != nil {
+				log.Errorf("failed to stop replication of %d: %v", id, err)
 			} else {
-				log.Infof("try to stop replication of %d", pa.policyID)
+				log.Infof("try to stop replication of %d", id)
 			}
 		}()
 	}
