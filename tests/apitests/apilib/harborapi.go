@@ -42,7 +42,7 @@ type UsrInfo struct {
 //func (a HarborAPI) SearchGet (q string) (Search, error) {
 func (a HarborAPI) SearchGet(q string) (Search, error) {
 
-        _sling := sling.New().Get(a.basePath)
+	_sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
 	path := "/api/search"
@@ -50,10 +50,10 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		Query string `url:"q"`
+		Query string `url:"q,omitempty"`
 	}
 
-	_sling = _sling.QueryStruct(&QueryParams{q})
+	_sling = _sling.QueryStruct(&QueryParams{Query: q})
 
 	// accept header
 	accepts := []string{"application/json", "text/plain"}
@@ -63,16 +63,17 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	}
 
 	req, err := _sling.Request()
-        client := &http.Client{}
+
+	client := &http.Client{}
 	httpResponse, err := client.Do(req)
 	defer httpResponse.Body.Close()
-	
-        body, err := ioutil.ReadAll(httpResponse.Body)
+
+	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		// handle error
 	}
-	
-        var successPayload = new(Search)
+
+	var successPayload = new(Search)
 	err = json.Unmarshal(body, &successPayload)
 	return *successPayload, err
 }
@@ -105,9 +106,119 @@ func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 	req, err := _sling.Request()
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
 
-        client := &http.Client{}
-        httpResponse, err := client.Do(req)
-        defer httpResponse.Body.Close()
+	client := &http.Client{}
+	httpResponse, err := client.Do(req)
+	defer httpResponse.Body.Close()
 
 	return httpResponse.StatusCode, err
 }
+
+//Delete a repository or a tag in a repository.
+//Delete a repository or a tag in a repository.
+//This endpoint let user delete repositories and tags with repo name and tag.\n
+//@param repoName The name of repository which will be deleted.
+//@param tag Tag of a repository.
+//@return void
+//func (a HarborAPI) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+func (a HarborAPI) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+
+	// create path and map variables
+	path := "/api/repositories"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		RepoName string `url:"repo_name,omitempty"`
+		Tag      string `url:"tag,omitempty"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName, Tag: tag})
+	// accept header
+	accepts := []string{"application/json", "text/plain"}
+	for key := range accepts {
+		_sling = _sling.Set("Accept", accepts[key])
+		break // only use the first Accept
+	}
+
+	req, err := _sling.Request()
+	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
+	//fmt.Printf("request %+v", req)
+
+	client := &http.Client{}
+	httpResponse, err := client.Do(req)
+	defer httpResponse.Body.Close()
+
+	if err != nil {
+		// handle error
+	}
+	return httpResponse.StatusCode, err
+}
+
+//Return projects created by Harbor
+//func (a HarborApi) ProjectsGet (projectName string, isPublic int32) ([]Project, error) {
+//    }
+
+//Check if the project name user provided already exists.
+//func (a HarborApi) ProjectsHead (projectName string) (error) {
+//}
+
+//Get access logs accompany with a relevant project.
+//func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectId int32, accessLog AccessLog) ([]AccessLog, error) {
+//}
+
+//Return a project&#39;s relevant role members.
+//func (a HarborApi) ProjectsProjectIdMembersGet (projectId int32) ([]Role, error) {
+//}
+
+//Add project role member accompany with relevant project and user.
+//func (a HarborApi) ProjectsProjectIdMembersPost (projectId int32, roles RoleParam) (error) {
+//}
+
+//Delete project role members accompany with relevant project and user.
+//func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectId int32, userId int32) (error) {
+//}
+
+//Return role members accompany with relevant project and user.
+//func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectId int32, userId int32) ([]Role, error) {
+//}
+
+//Update project role members accompany with relevant project and user.
+//func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectId int32, userId int32, roles RoleParam) (error) {
+//}
+
+//Update properties for a selected project.
+//func (a HarborApi) ProjectsProjectIdPut (projectId int32, project Project) (error) {
+//}
+
+//Get repositories accompany with relevant project and repo name.
+//func (a HarborApi) RepositoriesGet (projectId int32, q string) ([]Repository, error) {
+//}
+
+//Get manifests of a relevant repository.
+//func (a HarborApi) RepositoriesManifestGet (repoName string, tag string) (error) {
+//}
+
+//Get tags of a relevant repository.
+//func (a HarborApi) RepositoriesTagsGet (repoName string) (error) {
+//}
+
+//Get registered users of Harbor.
+//func (a HarborApi) UsersGet (userName string) ([]User, error) {
+//}
+
+//Creates a new user account.
+//func (a HarborApi) UsersPost (user User) (error) {
+//}
+
+//Mark a registered user as be removed.
+//func (a HarborApi) UsersUserIdDelete (userId int32) (error) {
+//}
+
+//Change the password on a user that already exists.
+//func (a HarborApi) UsersUserIdPasswordPut (userId int32, password Password) (error) {
+//}
+
+//Update a registered user to change to be an administrator of Harbor.
+//func (a HarborApi) UsersUserIdPut (userId int32) (error) {
+//}
