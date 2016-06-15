@@ -6,9 +6,9 @@
     .module('harbor.project')
     .directive('publicityButton', publicityButton);
   
-  PublicityButtonController.$inject = ['EditProjectService'];
+  PublicityButtonController.$inject = ['ToggleProjectPublicityService'];
   
-  function PublicityButtonController(EditProjectService) {
+  function PublicityButtonController(ToggleProjectPublicityService) {
     var vm = this;
     vm.toggle = toggle;
     
@@ -26,17 +26,17 @@
         vm.isPublic = true;
       }
       
-      EditProjectService(vm.projectId, vm.isPublic)
-        .success(editProjectSuccess)
-        .error(editProjectFailed);
+      ToggleProjectPublicityService(vm.projectId, vm.isPublic)
+        .success(toggleProjectPublicitySuccess)
+        .error(toggleProjectPublicityFailed);
     }
     
-    function editProjectSuccess(data, status) {
-      console.log('edit project successfully:' + status);
+    function toggleProjectPublicitySuccess(data, status) {
+      console.log('Successful toggle project publicity.');
     }
     
-    function editProjectFailed(e) {
-      console.log('edit project failed:' + e);
+    function toggleProjectPublicityFailed(e) {
+      console.log('Failed toggle project publicity:' + e);
     }
   }
 

@@ -38,7 +38,7 @@
                     <td>//p.repo_count//</td>
                     <td>//vm.getProjectRole(p.current_user_role_id)//</td>
                     <td>//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                    <td><publicity-button is-public="p.public" owned="p.OwnerId == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
+                    <td><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
                   </tr>
                 </tbody>
               </table>             
