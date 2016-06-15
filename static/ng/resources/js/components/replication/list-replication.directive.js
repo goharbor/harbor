@@ -6,15 +6,20 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService'];
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService'];
   
-  function ListReplicationController(getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService) {
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService) {
     var vm = this;
     
-    vm.projectId = getParameterByName('project_id', $location.absUrl());
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.retrievePolicy();
+    });
     
     vm.addReplication = addReplication;
     vm.editReplication = editReplication;
+    
+    vm.search = search;
     
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
@@ -23,9 +28,12 @@
     vm.last = false;
     vm.retrievePolicy();
     
-   
+    function search() {
+      vm.retrievePolicy();
+    }   
+    
     function retrievePolicy() {
-      ListReplicationPolicyService('', vm.projectId, vm.replicationName)
+      ListReplicationPolicyService('', vm.projectId, vm.replicationPolicyName)
         .success(listReplicationPolicySuccess)
         .error(listReplicationPolicyFailed);
     }
@@ -126,12 +134,19 @@
       
       scope.$watch('vm.replicationPolicies', function(current) { 
         $timeout(function(){
-          if(current && current.length > 0) {
-            element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
-            if(ctrl.lastPolicyId === -1) {
-              element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');  
+          if(current) {
+            if(current.length > 0) {
+              element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
+              if(ctrl.lastPolicyId === -1) {
+                element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');  
+              }else{
+                element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
+              }
             }else{
-              element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
+             element
+              .find('#upon-pane table>tbody>tr')  
+              .css({'background-color': '#FFFFFF'})
+              .css({'color': '#000'});
             }
           }
         });

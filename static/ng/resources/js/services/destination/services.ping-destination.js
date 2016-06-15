@@ -10,7 +10,19 @@
   
   function PingDestinationService($http) {
     return pingDestination;
-    function pingDestination(targetId) {
+    function pingDestination(target) {
+      var payload = {};
+      if(target['id']) {
+        payload = {'id': target['id']};
+      }else {
+        payload = {
+          'name': target['name'],
+          'endpoint': target['endpoint'],
+          'username': target['username'],
+          'password': target['password']
+        };
+      }
+      
       return $http({
            'method': 'POST',
               'url': '/api/targets/ping',
@@ -22,7 +34,7 @@
               }
               return str.join("&");
           },
-          'data': {'id': targetId}
+          'data': payload
         });
     }
   }

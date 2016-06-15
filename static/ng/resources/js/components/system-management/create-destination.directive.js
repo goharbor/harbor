@@ -6,9 +6,9 @@
     .module('harbor.system.management')
     .directive('createDestination', createDestination);
     
-  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService'];
+  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService'];
   
-  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService) {
+  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService) {
     var vm = this;
     
     $scope.destination = {};
@@ -18,6 +18,7 @@
     vm.edit = edit;
     vm.create = create;
     vm.update = update;
+    vm.pingDestination = pingDestination;
     
     $scope.$watch('vm.action + "," + vm.targetId', function(current) {
       if(current) {
@@ -26,9 +27,11 @@
         vm.targetId = parts[1];
         switch(vm.action) {
         case 'ADD_NEW':
+          vm.modalTitle = 'Create destination';
           vm.addNew();
           break;
         case 'EDIT':
+          vm.modalTitle = 'Edit destination';
           vm.edit(vm.targetId);
           break;
         }
@@ -92,6 +95,25 @@
     function getDestinationFailed(data, status) {
       console.log('Failed get destination.');
     }
+    
+    function pingDestination() {
+      var target = {
+        'name': vm0.name,
+        'endpoint': vm0.endpoint,
+        'username': vm0.username,
+        'password': vm0.password
+      };
+      console.log('Ping target:' + angular.toJson(target));
+      PingDestinationService(target)
+        .success(pingDestinationSuccess)
+        .error(pingDestinationFailed);
+    }
+    function pingDestinationSuccess(data, status) {
+      alert('Successful ping target.');
+    }
+    function pingDestinationFailed(data, status) {
+      alert('Failed ping target:' + data);
+    }
   }
   
   function createDestination() {
@@ -111,6 +133,10 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
+      
+      element.find('#createDestinationModal').on('hidden.bs.modal', function() {
+         scope.form.$setPristine();
+      });
       
       ctrl.save = save;
       

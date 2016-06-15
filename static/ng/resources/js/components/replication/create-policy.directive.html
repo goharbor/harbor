@@ -49,7 +49,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="endpoint" class="col-md-3 control-label">Endpoint:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" required>                 
+                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" ng-value="vm.endpoint" required>                 
                 <div ng-messages="form.$submitted && form.uEndpoint.$error">
                   <span ng-message="required">Endpoint is required.</span>
                 </div>
@@ -58,7 +58,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="username" class="col-md-3 control-label">Username:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" required>                 
+                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" required>                 
                 <div ng-messages="form.$submitted && form.uUsername.$error">
                   <span ng-message="required">Username is required.</span>
                 </div>
@@ -67,7 +67,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="password" class="col-md-3 control-label">Password:</label>
               <div class="col-md-9">
-                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" required>                 
+                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" required>                 
                 <div ng-messages="form.$submitted && form.uPassword.$error">
                   <span ng-message="required">Password is required.</span>
                 </div>

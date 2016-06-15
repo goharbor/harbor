@@ -15,7 +15,8 @@
         .put('/api/policies/replication/' + policyId, {
           'name': policy.name,
           'description': policy.description,
-          'enabled': policy.enabled
+          'enabled': policy.enabled,
+          'target_id': policy.targetId
         });
     }
   } 

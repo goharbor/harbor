@@ -20,7 +20,7 @@
     vm.retrieve();
     
     function retrieve() {
-      ListDestinationService('')
+      ListDestinationService('', vm.destinationName)
         .success(listDestinationSuccess)
         .error(listDestinationFailed);
     }

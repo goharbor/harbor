@@ -26,7 +26,7 @@
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
               <td>//r.name//</td>
               <td>//r.endpoint//</td>
-              <td>//r.creation_time//</td>
+              <td>//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
               <td>
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;

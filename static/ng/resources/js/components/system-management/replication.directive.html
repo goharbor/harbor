@@ -7,17 +7,17 @@
           <button class="btn btn-primary" type="button" ng-click="vm.search()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
+      <create-policy reload="vm.retrieve()" action="vm.action" modal-title="//vm.modalTitle//" policy-id="//vm.policyId//"></create-policy>
     </div>
     <div class="pane"> 	           
       <div class="sub-pane">
         <table class="table table-pane">
     			 <thead>
-            <th width="12%">Name</th>
-            <th width="14%">Description</th>
-            <th width="12%">Project</th>
-            <th width="14%">Destination</th>
-            <th width="12%">Start Time</th>
-            <th width="12%">Status</th>
+            <th width="14%">Name</th>
+            <th width="18%">Description</th>
+            <th width="14%">Project</th>
+            <th width="12%">Destination</th>
+            <th width="18%">Start Time</th>
             <th width="12%">Activation</th>
             <th width="12%">Actions</th>
     			 </thead>
@@ -28,12 +28,20 @@
             <tr ng-if="vm.replications.length > 0" ng-repeat="r in vm.replications"> 
               <td>//r.name//</td>
               <td>//r.description//</td>
-              <td>//r.project//</td>
-              <td>//r.destination//</td>
-              <td>//r.start_time//</td>
-              <td>//r.status//</td>
-              <td>//r.activation//</td>
-              <td></td>
+              <td>//r.project_name//</td>
+              <td>//r.target_name//</td>
+              <td>//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+              <td>//r.enabled == 1 ? 'Enabled' : 'Disabled'//</td>
+              <td>
+                <div class="display-inline-block" ng-switch on="//r.enabled//">
+                 <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)"><span ng-switch-when="1" class="glyphicon glyphicon-play color-success"></span></a>
+                 <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)"><span ng-switch-when="0" class="glyphicon glyphicon-stop color-danger"></span></a>
+                </div>
+                &nbsp;
+                <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a>
+              </td>
             </tr>
           </tbody>
     		</table>

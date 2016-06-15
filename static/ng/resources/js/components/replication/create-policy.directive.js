@@ -6,9 +6,9 @@
     .module('harbor.replication')
     .directive('createPolicy', createPolicy);
   
-  CreatePolicyController.$inject = ['$scope', 'ListReplicationPolicyService', 'ListDestinationService', 'PingDestinationService', 'CreateReplicationPolicyService', 'UpdateReplicationPolicyService', '$location', 'getParameterByName'];
+  CreatePolicyController.$inject = ['$scope', 'ListReplicationPolicyService', 'ListDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'CreateReplicationPolicyService', 'UpdateReplicationPolicyService', '$location', 'getParameterByName'];
   
-  function CreatePolicyController($scope, ListReplicationPolicyService, ListDestinationService, PingDestinationService, CreateReplicationPolicyService, UpdateReplicationPolicyService, $location, getParameterByName) {
+  function CreatePolicyController($scope, ListReplicationPolicyService, ListDestinationService, UpdateDestinationService, PingDestinationService, CreateReplicationPolicyService, UpdateReplicationPolicyService, $location, getParameterByName) {
     var vm = this;
     
     //Since can not set value for textarea by using vm
@@ -25,6 +25,7 @@
     
     vm.addNew = addNew;
     vm.edit = edit;
+    vm.prepareDestination = prepareDestination;
     vm.createPolicy = createPolicy;
     vm.updatePolicy = updatePolicy;
     vm.pingDestination = pingDestination;
@@ -38,9 +39,7 @@
         vm1.password = vm1.selection.password;
       }
     });
-    
-    prepareDestination();
-       
+               
     $scope.$watch('vm.action+","+vm.policyId', function(current) {
       if(current) {
         console.log('Current action for replication policy:' + current);
@@ -93,12 +92,28 @@
       UpdateReplicationPolicyService(vm.policyId, policy)
         .success(updateReplicationPolicySuccess)
         .error(updateReplicationPolicyFailed);
+        
+      var targetId = vm1.selection.id;
+      console.log('Update target ID:' + targetId);
+      var target = {
+        'name': vm1.selection.name,
+        'endpoint': vm1.endpoint,
+        'username': vm1.username,
+        'password': vm1.password
+      };
+      UpdateDestinationService(targetId, target)
+        .success(updateDestinationSuccess)
+        .error(updateDestinationFailed);
     }
     
     function pingDestination() {
-      var targetId = vm1.selection.id;
-      console.log('Ping target ID:' + targetId);
-      PingDestinationService(targetId)
+      var target = {
+        'name': vm1.selection.name,
+        'endpoint': vm1.endpoint,
+        'username': vm1.username,
+        'password': vm1.password
+      };
+      PingDestinationService(target)
         .success(pingDestinationSuccess)
         .error(pingDestinationFailed);
     }
@@ -128,14 +143,18 @@
     }
     function updateReplicationPolicySuccess(data, status) {
       console.log('Successful update replication policy.');
-      vm.clearUp();
     }
     function updateReplicationPolicyFailed(data, status) {
       console.log('Failed update replication policy.');
     }
-    
+    function updateDestinationSuccess(data, status) {
+      console.log('Successful update destination.');
+    }
+    function updateDestinationFailed(data, status) {
+      console.log('Failed update destination.');
+    }
     function pingDestinationSuccess(data, status) {
-      alert('Successful ping target:' + data);
+      alert('Successful ping target.');
     }
     function pingDestinationFailed(data, status) {
       alert('Failed ping target:' + data);
@@ -160,8 +179,13 @@
     return directive;
     
     function link(scope, element, attr, ctrl) {
+            
+      element.find('#createPolicyModal').on('shown.bs.modal', function() {
+        ctrl.prepareDestination();
+        scope.form.$setPristine();
+      });      
       ctrl.save = save;
-
+    
       function save(form) {
         console.log(angular.toJson(form));
         var postPayload = {

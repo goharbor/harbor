@@ -28,7 +28,7 @@
             <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
               <td>//r.name//</td>
               <td>//r.description//</td>
-              <td>//r.destination//</td>
+              <td>//r.target_name//</td>
               <td>//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
               <td ng-switch on="//r.enabled//">
                 <span ng-switch-when="1">Enabled</span>
@@ -75,9 +75,9 @@
                 <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">No replication jobs.</h3></td>
               </tr>
               <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
-                <td>//r.name//</td>
+                <td>//r.tags != null ? r.tags.join(',') : 'N/A'//</td>
                 <td>//r.operation//</td>
-                <td>//r.start_time//</td>
+                <td>//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                 <td>//r.status//</td>
               </tr>
             </tbody>
