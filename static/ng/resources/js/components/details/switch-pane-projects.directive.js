@@ -13,7 +13,7 @@
  
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current){
-        vm.projectName = current.Name;
+        vm.projectName = current.name;
         vm.selectedProject = current;
       }
     });

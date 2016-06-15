@@ -79,7 +79,7 @@
       console.log('listLogFailed:' + e);
     }
     
-    	function toUTCSeconds(date, hour, min, sec) {
+    function toUTCSeconds(date, hour, min, sec) {
       if(date === "") {
         return 0;
       }

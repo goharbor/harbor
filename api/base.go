@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/vmware/harbor/auth"
@@ -119,4 +120,19 @@ func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	resoucreURI := requestURI + "/" + resouceID
 
 	b.Ctx.Redirect(statusCode, resoucreURI)
+}
+
+// GetIDFromURL checks the ID in request URL
+func (b *BaseAPI) GetIDFromURL() int64 {
+	idStr := b.Ctx.Input.Param(":id")
+	if len(idStr) == 0 {
+		b.CustomAbort(http.StatusBadRequest, "invalid ID in URL")
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil || id <= 0 {
+		b.CustomAbort(http.StatusBadRequest, "invalid ID in URL")
+	}
+
+	return id
 }

@@ -26,7 +26,7 @@
        
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current) {        
-        vm.selectedId = current.ProjectId;
+        vm.selectedId = current.project_id;
       }
     });
        
@@ -57,14 +57,14 @@
       
       if(getParameterByName('project_id', $location.absUrl())){
         angular.forEach(vm.projects, function(value, index) {
-          if(value['ProjectId'] === Number(getParameterByName('project_id', $location.absUrl()))) {
+          if(value['project_id'] === Number(getParameterByName('project_id', $location.absUrl()))) {
             vm.selectedProject = value;
           }
         }); 
       }
      
-      $location.search('project_id', vm.selectedProject.ProjectId);
-      vm.checkProjectMember(vm.selectedProject.ProjectId);
+      $location.search('project_id', vm.selectedProject.project_id);
+      vm.checkProjectMember(vm.selectedProject.project_id);
       
       vm.resultCount = vm.projects.length;
     
@@ -79,7 +79,7 @@
       
     function selectItem(item) {
       vm.selectedProject = item;
-      $location.search('project_id', vm.selectedProject.ProjectId);
+      $location.search('project_id', vm.selectedProject.project_id);
     }       
   
     $scope.$on('$locationChangeSuccess', function(e) {
