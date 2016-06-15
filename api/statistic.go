@@ -21,7 +21,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -88,7 +88,7 @@ func (s *StatisticAPI) Get() {
 
 //getReposByProject returns repo numbers of specified project
 func getRepoCountByProject(projectName string) int {
-	repoList, err := svc_utils.GetRepoFromCache()
+	repoList, err := cache.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		return 0
@@ -107,7 +107,7 @@ func getRepoCountByProject(projectName string) int {
 
 //getTotalRepoCount returns total repo count
 func getTotalRepoCount() int {
-	repoList, err := svc_utils.GetRepoFromCache()
+	repoList, err := cache.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("Failed to get repo from cache, error: %v", err)
 		return 0

@@ -109,12 +109,13 @@ func ListUsers(query models.User) ([]models.User, error) {
 }
 
 // ToggleUserAdminRole gives a user admin role.
-func ToggleUserAdminRole(u models.User) error {
+func ToggleUserAdminRole(userID, hasAdmin int) error {
 	o := GetOrmer()
-
-	sql := `update user set sysadmin_flag =not sysadmin_flag where user_id = ?`
-
-	r, err := o.Raw(sql, u.UserID).Exec()
+        queryParams := make([]interface{}, 1)
+	sql := `update user set sysadmin_flag = ? where user_id = ?`
+	queryParams = append(queryParams, hasAdmin)
+	queryParams = append(queryParams, userID)
+	r, err := o.Raw(sql, queryParams).Exec()
 	if err != nil {
 		return err
 	}
@@ -228,4 +229,14 @@ func DeleteUser(userID int) error {
 	o := GetOrmer()
 	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
 	return err
+}
+
+// ChangeUserProfile ...
+func ChangeUserProfile(user models.User) error {
+	o := GetOrmer()
+	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
+		log.Errorf("update user failed, error: %v", err)
+		return err
+	}
+	return nil
 }

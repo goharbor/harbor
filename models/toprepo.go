@@ -13,27 +13,10 @@
    limitations under the License.
 */
 
-package errors
+package models
 
-import (
-	"fmt"
-)
-
-// Error : if response's status code is not 200 or does not meet requirement,
-// an Error instance will be returned
-type Error struct {
-	StatusCode int
-	StatusText string
-	Message    string
-}
-
-// Error ...
-func (e Error) Error() string {
-	return fmt.Sprintf("%d %s %s", e.StatusCode, e.StatusText, e.Message)
-}
-
-// ParseError parses err, if err is type Error, convert it to Error
-func ParseError(err error) (Error, bool) {
-	e, ok := err.(Error)
-	return e, ok
+// TopRepo holds information about repository that accessed most
+type TopRepo struct {
+	RepoName    string `json:"name"`
+	AccessCount int64  `json:"count"`
 }

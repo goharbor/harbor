@@ -58,7 +58,7 @@ func DeleteProjectMember(projectID int64, userID int) error {
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
 	o := GetOrmer()
 	u := []models.User{}
-	sql := `select u.user_id, u.username, r.name rolename, r.role_id
+	sql := `select u.user_id, u.username, r.name rolename, r.role_id as role
 		from user u 
 		join project_member pm 
 		on pm.project_id = ? and u.user_id = pm.user_id 

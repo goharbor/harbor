@@ -3,6 +3,6 @@ Deploy/config/registry/config.yml
 Deploy/config/ui/env
 Deploy/config/ui/app.conf
 Deploy/config/db/env
-Deploy/harbor.cfg
+Deploy/config/jobservice/env
 ui/ui
 *.pyc

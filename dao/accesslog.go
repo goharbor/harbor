@@ -115,3 +115,49 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	}
 	return err
 }
+
+//GetRecentLogs returns recent logs according to parameters
+func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
+	var recentLogList []models.AccessLog
+	queryParam := make([]interface{}, 1)
+
+	sql := "select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username from access_log left join  user on access_log.user_id=user.user_id where project_id in (select distinct project_id from project_member where user_id = ?)"
+	queryParam = append(queryParam, userID)
+	if startTime != "" {
+		sql += " and op_time >= ?"
+		queryParam = append(queryParam, startTime)
+	}
+
+	if endTime != "" {
+		sql += " and op_time <= ?"
+		queryParam = append(queryParam, endTime)
+	}
+
+	sql += " order by op_time desc"
+	if linesNum != 0 {
+		sql += " limit ?"
+		queryParam = append(queryParam, linesNum)
+	}
+	o := GetOrmer()
+	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
+	if err != nil {
+		return nil, err
+	}
+	return recentLogList, nil
+}
+
+//GetTopRepos return top  accessed public repos
+func GetTopRepos(countNum int) ([]models.TopRepo, error) {
+
+	o := GetOrmer()
+
+	sql := "select repo_name, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where project.public = 1 and access_log.operation = 'pull' group by repo_name order by access_count desc limit ? "
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, countNum)
+	var lists []models.TopRepo
+	_, err := o.Raw(sql, queryParam).QueryRows(&lists)
+	if err != nil {
+		return nil, err
+	}
+	return lists, nil
+}
