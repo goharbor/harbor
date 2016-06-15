@@ -29,9 +29,9 @@ env:
   HARBOR_ADMIN_PASSWD: Harbor12345 
 
 before_install:
-   - ./tests/hostcfg.sh
+   - sudo ./tests/hostcfg.sh
    - cd Deploy
-   - ./prepare
+   - sudo ./prepare
    - cd ..
 
 install: 
