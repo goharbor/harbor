@@ -59,11 +59,13 @@ func listRoles(userID int, projectID int64) ([]models.Role, error) {
 	roles := make([]models.Role, 0, 1)
 	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
+		log.Errorf("failed to determine whether the user %d is system admin: %v", userID, err)
 		return roles, err
 	}
 	if isSysAdmin {
 		role, err := dao.GetRoleByID(models.PROJECTADMIN)
 		if err != nil {
+			log.Errorf("failed to get role %d: %v", models.PROJECTADMIN, err)
 			return roles, err
 		}
 		roles = append(roles, *role)
@@ -72,6 +74,7 @@ func listRoles(userID int, projectID int64) ([]models.Role, error) {
 
 	rs, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {
+		log.Errorf("failed to get user %d 's roles for project %d: %v", userID, projectID, err)
 		return roles, err
 	}
 	roles = append(roles, rs...)

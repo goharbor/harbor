@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"unicode"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
