@@ -159,5 +159,21 @@ func GetTopRepos(countNum int) ([]models.TopRepo, error) {
 	if err != nil {
 		return nil, err
 	}
+	var repoString string
+	for _, v := range lists {
+		repoString += v.RepoName + ","
+	}
+	repoString = repoString[0 : len(repoString)-1]
+	var usrnameList []models.TopRepo
+	sql = "select username as creator from user left join access_log on user.user_id = access_log.user_id where access_log.operation = 'push' and access_log.repo_name in (?)"
+	queryParam = nil
+	queryParam = append(queryParam, repoString)
+	_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(lists); i++ {
+		lists[i].Creator = usrnameList[i].Creator
+	}
 	return lists, nil
 }
