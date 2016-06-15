@@ -18,6 +18,7 @@ package dao
 import (
 	"fmt"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
 )
 
@@ -83,6 +84,9 @@ func GetRoleByID(id int) (*models.Role, error) {
 
 	var role models.Role
 	if err := o.Raw(sql, id).QueryRow(&role); err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &role, nil

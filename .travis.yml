@@ -29,9 +29,9 @@ env:
   HARBOR_ADMIN_PASSWD: Harbor12345 
 
 before_install:
-   - ./tests/hostcfg.sh
+   - sudo ./tests/hostcfg.sh
    - cd Deploy
-   - ./prepare
+   - sudo ./prepare
    - cd ..
 
 install: 
@@ -58,6 +58,8 @@ install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - sudo sed -i '$a DOCKER_OPTS=\"$DOCKER_OPTS --insecure-registry 127.0.0.1\"' /etc/default/docker
+  - sudo service docker restart
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
   
@@ -78,4 +80,5 @@ script:
 
 
   # test for API
+  - sudo ./tests/testprepare.sh
   - go test -v ./tests/apitests

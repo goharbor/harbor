@@ -103,6 +103,9 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	var policy models.RepPolicy
 
 	if err := o.Raw(sql, id).QueryRow(&policy); err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -151,6 +154,9 @@ func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 	var policy models.RepPolicy
 
 	if err := o.Raw(sql, name).QueryRow(&policy); err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
