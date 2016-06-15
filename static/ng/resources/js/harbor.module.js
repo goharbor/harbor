@@ -26,6 +26,8 @@
       'harbor.services.replication.job',
       'harbor.services.destination',
       'harbor.summary',
+      'harbor.user.log',
+      'harbor.top.repository',
       'harbor.optional.menu',
       'harbor.modal.dialog',
       'harbor.sign.in',

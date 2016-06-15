@@ -1,0 +1,16 @@
+<h4 class="page-header title-color underlined">// 'logs' | tr //</h4>
+<div style="padding: 15px;">
+   <table class="table">
+      <thead>
+        <th>// 'task_name' | tr //</th><th>// 'details' | tr //</th><th>// 'user' | tr //</th><th>// 'creation_time' | tr //</th>
+      </thead>
+      <tbody>
+       <tr>
+         <td colspan="5" height="120px" class="empty-hint" ng-if="vm.integratedLogs.length === 0"><h3 class="text-muted">// 'no_user_logs' | tr //</h3></td>
+       </tr>
+        <tr ng-if="vm.integratedLogs.length > 0" ng-repeat="t in vm.integratedLogs">
+      		<td>//t.Operation//</td><td>//t.RepoName//</td><td>//t.Username//</td><td>//t.OpTime | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+      	 </tr>
+      </tbody>
+     </table>	
+</div>
