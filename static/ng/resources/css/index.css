@@ -81,7 +81,7 @@ body {
 
 .down-table-pane {
   overflow-y: auto;
-  height: auto;
+  height: 260px;
   padding-left: 10px;
   padding-right: 10px;
 }

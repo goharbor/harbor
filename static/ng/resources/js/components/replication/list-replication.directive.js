@@ -143,10 +143,10 @@
                 element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
               }
             }else{
-             element
-              .find('#upon-pane table>tbody>tr')  
-              .css({'background-color': '#FFFFFF'})
-              .css({'color': '#000'});
+               element
+                .find('#upon-pane table>tbody>tr')  
+                .css({'background-color': '#FFFFFF'})
+                .css({'color': '#000'});
             }
           }
         });
