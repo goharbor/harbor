@@ -911,6 +911,21 @@ func TestAddRepPolicy(t *testing.T) {
 
 }
 
+func TestGetRepPolicyByTarget(t *testing.T) {
+	policies, err := GetRepPolicyByTarget(targetID)
+	if err != nil {
+		t.Fatalf("failed to get policy according target %d: %v", targetID, err)
+	}
+
+	if len(policies) == 0 {
+		t.Fatal("unexpected length of policies 0, expected is >0")
+	}
+
+	if policies[0].ID != policyID {
+		t.Fatalf("unexpected policy: %d, expected: %d", policies[0].ID, policyID)
+	}
+}
+
 func TestGetRepPolicyByName(t *testing.T) {
 	policy, err := GetRepPolicy(policyID)
 	if err != nil {

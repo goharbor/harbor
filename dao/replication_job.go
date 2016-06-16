@@ -177,10 +177,24 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
+// GetRepPolicyByTarget ...
+func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
+	o := GetOrmer()
+	sql := `select * from replication_policy where target_id = ?`
+
+	var policies []*models.RepPolicy
+
+	if _, err := o.Raw(sql, targetID).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
-	_, err := o.Update(policy, "Name", "Enabled", "Description", "CronStr")
+	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr")
 	return err
 }
 
