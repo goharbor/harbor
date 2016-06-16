@@ -1,12 +1,11 @@
 .container-custom {
   position: relative;
-  height: 680px;
+  height: 100%;
 }
 
 .extend-height {
   height: 100%;
   min-height: 1px;
-  max-height: 680px;
   min-width: 1024px;
   overflow: hidden;
 }
@@ -16,10 +15,10 @@
   padding: 15px;
   margin-top: 20px;
   background-color: #FFFFFF;
-  height: 660px;
+  height: 100%;
   width: 100%;
   min-height: 1px;
-  max-height: 660px;
+  max-height: 100%;
 }
 
 .search-pane {
