@@ -1,0 +1,27 @@
+<div class="tab-pane" id="users">
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="" ng-model="vm.username" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.search({projectId: vm.projectId, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+      <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+    </div>
+    <div class="pane"> 	           
+      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+      <div class="sub-pane">
+        <table class="table table-pane" >
+    			 <thead>
+    			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>
+    			 </thead>
+    			 <tbody>
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
+          </tbody>
+    		</table>
+      </div>
+    </div>
+  </div>              
+</div>

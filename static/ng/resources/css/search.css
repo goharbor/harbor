@@ -1,0 +1,9 @@
+.search-result {
+  min-height: 200px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result li {
+  margin-bottom: 15px;
+}

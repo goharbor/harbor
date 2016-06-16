@@ -1,0 +1,30 @@
+<div class="tab-pane" id="logs">
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="" ng-model="vm.username" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.search({op: vm.op, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+        <span class="input-group-btn">
+          <button class="btn btn-link" type="button" ng-click="vm.showAdvancedSearch()">// 'advanced_search' | tr //</button>
+        </span>
+      </div>
+    </div>
+    <div class="pane">
+      <advanced-search ng-show="vm.isOpen" is-open="vm.isOpen" op="vm.op" others="vm.others" search='vm.search({op: vm.op, username: vm.username})' from-date="vm.fromDate" to-date="vm.toDate"></advanced-search>
+      <div class="sub-pane">
+        <table class="table table-pane">
+      	    <thead>
+      		    <th>// 'username' | tr //</th><th>// 'repository_name' | tr //</th><th>// 'operation' | tr //</th><th>// 'timestamp' | tr //</th>
+      		  </thead>
+      		  <tbody>
+      		    <tr ng-repeat="log in vm.logs">
+        	    	  <td>//log.username//</td><td>//log.repo_name//</td><td>//log.operation//</td><td>//log.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+          		</tr>
+      		  </tbody>
+    		  </table>
+      </div>
+    </div>
+  </div>
+</div>

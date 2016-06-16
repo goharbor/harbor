@@ -1,0 +1,21 @@
+<div id="retrievePane" class="switch-pane-drop-down" ng-show="vm.isOpen">
+  <div class="row">
+    <div class="col-xs-12 col-md-12">
+      <div class="panel panel-default">
+        <div class="form-inline search-projects">
+          <div class="input-group">
+            <input type="text" id="retrieveFilter" class="form-control search-icon" placeholder="" ng-model="vm.filterInput" size="30">
+          </div>
+        </div>			
+        <h5 class="page-header">//vm.projectType | tr//: <span class="badge">//vm.resultCount//</span></h5>
+        <div class="project-list pane-container">
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="item in vm.projects | name: vm.filterInput: 'Name'" ng-click="vm.selectItem(item)">
+    			    <span ng-show="item.ProjectId == vm.selectedId" class="glyphicon glyphicon-ok project-selected"></span> <a href="#/repositories?project_id=//item.project_id//">//item.name//</a>
+    			  </li>	
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

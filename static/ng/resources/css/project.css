@@ -1,0 +1,64 @@
+.container-custom {
+  position: relative;
+  height: 680px;
+}
+
+.extend-height {
+  height: 100%;
+  min-height: 1px;
+  max-height: 680px;
+  min-width: 1024px;
+  overflow: hidden;
+}
+
+.section {
+  position: relative;
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #FFFFFF;
+  height: 660px;
+  width: 100%;
+  min-height: 1px;
+  max-height: 660px;
+}
+
+.search-pane {
+  margin: 0 10px 0 10px;
+  height: 3em;
+}
+
+
+.table>tbody>tr>td, .table>tbody>tr>th {
+  vertical-align: middle;
+}
+
+.gutter {
+  margin: 0 1em 0 1em;
+}
+
+.project-pane {
+  margin: 0 10px 0 10px;
+}
+
+.pane {
+  height: auto;
+  min-height: 1px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.sub-pane {
+  margin: 15px;
+  height: 380px;
+  overflow-y: auto;
+}
+
+.well-custom {
+  position: relative;
+  width: 100%;
+}
+
+.empty-hint {
+  text-align: center;
+  vertical-align: middle;
+}
