@@ -1,3 +1,18 @@
+/*
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package api
 
 import (
@@ -126,7 +141,7 @@ func (pa *RepPolicyAPI) Post() {
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(pid, 10))
 }
 
-// Put modifies name and description of policy
+// Put modifies name, description, target and enablement of policy
 func (pa *RepPolicyAPI) Put() {
 	id := pa.GetIDFromURL()
 	originalPolicy, err := dao.GetRepPolicy(id)
@@ -142,7 +157,6 @@ func (pa *RepPolicyAPI) Put() {
 	policy := &models.RepPolicy{}
 	pa.DecodeJSONReq(policy)
 	policy.ProjectID = originalPolicy.ProjectID
-	policy.TargetID = originalPolicy.TargetID
 	pa.Validate(policy)
 
 	if policy.Name != originalPolicy.Name {
@@ -157,32 +171,82 @@ func (pa *RepPolicyAPI) Put() {
 		}
 	}
 
+	if policy.TargetID != originalPolicy.TargetID {
+		target, err := dao.GetRepTarget(policy.TargetID)
+		if err != nil {
+			log.Errorf("failed to get target %d: %v", policy.TargetID, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if target == nil {
+			pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
+		}
+	}
+
 	policy.ID = id
+
+	isTargetChanged := !(policy.TargetID == originalPolicy.TargetID)
+	isEnablementChanged := !(policy.Enabled == policy.Enabled)
+
+	var shouldStop, shouldTrigger bool
+
+	// if target and enablement are not changed, do nothing
+	if !isTargetChanged && !isEnablementChanged {
+		shouldStop = false
+		shouldTrigger = false
+	} else if !isTargetChanged && isEnablementChanged {
+		// target is not changed, but enablement is changed
+		if policy.Enabled == 0 {
+			shouldStop = true
+			shouldTrigger = false
+		} else {
+			shouldStop = false
+			shouldTrigger = true
+		}
+	} else if isTargetChanged && !isEnablementChanged {
+		// target is changed, but enablement is not changed
+		if policy.Enabled == 0 {
+			// enablement is 0, do nothing
+			shouldStop = false
+			shouldTrigger = false
+		} else {
+			// enablement is 1, so stop original target's jobs
+			// and trigger new target's jobs
+			shouldStop = true
+			shouldTrigger = true
+		}
+	} else {
+		// both target and enablement are changed
+
+		// enablement: 1 -> 0
+		if policy.Enabled == 0 {
+			shouldStop = true
+			shouldTrigger = false
+		} else {
+			shouldStop = false
+			shouldTrigger = true
+		}
+	}
+
+	if shouldStop {
+		if err := postReplicationAction(id, "stop"); err != nil {
+			log.Errorf("failed to stop replication of %d: %v", id, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		log.Infof("replication of %d has been stopped", id)
+	}
 
 	if err = dao.UpdateRepPolicy(policy); err != nil {
 		log.Errorf("failed to update policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if policy.Enabled == originalPolicy.Enabled {
-		return
-	}
-
-	//enablement has been modified
-	if policy.Enabled == 1 {
+	if shouldTrigger {
 		go func() {
 			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
 				log.Errorf("failed to trigger replication of %d: %v", id, err)
 			} else {
 				log.Infof("replication of %d triggered", id)
-			}
-		}()
-	} else {
-		go func() {
-			if err := postReplicationAction(id, "stop"); err != nil {
-				log.Errorf("failed to stop replication of %d: %v", id, err)
-			} else {
-				log.Infof("try to stop replication of %d", id)
 			}
 		}()
 	}

@@ -1,3 +1,18 @@
+/*
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package dao
 
 import (
@@ -177,10 +192,24 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
+// GetRepPolicyByTarget ...
+func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
+	o := GetOrmer()
+	sql := `select * from replication_policy where target_id = ?`
+
+	var policies []*models.RepPolicy
+
+	if _, err := o.Raw(sql, targetID).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
-	_, err := o.Update(policy, "Name", "Enabled", "Description", "CronStr")
+	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr")
 	return err
 }
 
