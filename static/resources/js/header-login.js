@@ -13,20 +13,20 @@
     limitations under the License.
 */
 jQuery(function(){
-    $("#btnSignUp").css({"visibility": "visible"});
+	$("#btnSignUp").css({"visibility": "visible"});
 	
 	$(document).on("keydown", function(e){
 		if(e.keyCode == 13){
 			e.preventDefault();
 			if($("#txtCommonSearch").is(":focus")){
-			  document.location = "/search?q=" + $("#txtCommonSearch").val();
+				document.location = "/search?q=" + $("#txtCommonSearch").val();
 			}
 		}
 	});
 	$("#btnSignIn").on("click", function(){
 		document.location = "/signIn";
 	});
-    $("#btnSignUp").on("click", function(){
+	$("#btnSignUp").on("click", function(){
 		document.location = "/register";
 	});	
 });

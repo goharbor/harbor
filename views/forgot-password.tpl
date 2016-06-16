@@ -19,19 +19,19 @@
 			<h1>{{i18n .Lang "title_forgot_password"}}</h1>
 		</div>
 		<form class="form">
-		<div id="waiting1" class="waiting-nonfluid"></div>
- 		  <div class="alert alert-danger" role="alert" id="divErrMsg"></div>
-		  <div class="form-group has-feedback">
-		    <label for="EmailF" class="control-label">{{i18n .Lang "email"}}</label>
-		    <input type="email" class="form-control" id="EmailF">
-			<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-			<h6>{{i18n .Lang "forgot_password_description"}}</h6>
-		  </div>
-		  <div class="form-group has-feedback">
-		    <div class="text-center">
-		      <button type="button" class="btn btn-default" id="btnSubmit">{{i18n .Lang "button_submit"}}</button>
-		    </div>			
-		  </div>
+			<div id="waiting1" class="waiting-nonfluid"></div>
+			<div class="alert alert-danger" role="alert" id="divErrMsg"></div>
+			<div class="form-group has-feedback">
+				<label for="EmailF" class="control-label">{{i18n .Lang "email"}}</label>
+				<input type="email" class="form-control" id="EmailF">
+				<span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+				<h6>{{i18n .Lang "forgot_password_description"}}</h6>
+			</div>
+			<div class="form-group has-feedback">
+				<div class="text-center">
+					<button type="button" class="btn btn-default" id="btnSubmit">{{i18n .Lang "button_submit"}}</button>
+				</div>			
+			</div>
 		</form>
 	</div>
 	<div class="col-sm-4"></div>

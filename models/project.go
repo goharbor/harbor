@@ -21,19 +21,19 @@ import (
 
 // Project holds the details of a project.
 type Project struct {
-	ProjectID       int64     `orm:"column(project_id)" json:"ProjectId"`
-	OwnerID         int       `orm:"column(owner_id)" json:"OwnerId"`
-	Name            string    `orm:"column(name)"`
-	CreationTime    time.Time `orm:"column(creation_time)"`
-	CreationTimeStr string
-	Deleted         int `orm:"column(deleted)"`
-	UserID          int `json:"UserId"`
-	OwnerName       string
-	Public          int `orm:"column(public)"`
+	ProjectID       int64     `orm:"pk;column(project_id)" json:"project_id"`
+	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
+	Name            string    `orm:"column(name)" json:"name"`
+	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
+	CreationTimeStr string    `json:"creation_time_str"`
+	Deleted         int       `orm:"column(deleted)" json:"deleted"`
+	//UserID          int `json:"UserId"`
+	OwnerName string `json:"owner_name"`
+	Public    int    `orm:"column(public)" json:"public"`
 	//This field does not have correspondent column in DB, this is just for UI to disable button
 	Togglable bool
 
 	UpdateTime time.Time `orm:"update_time" json:"update_time"`
-	Role       int       `json:"role_id"`
+	Role       int       `json:"current_user_role_id"`
 	RepoCount  int       `json:"repo_count"`
 }

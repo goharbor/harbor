@@ -120,23 +120,7 @@ func (t *TargetAPI) Ping() {
 
 // Get ...
 func (t *TargetAPI) Get() {
-	id := t.getIDFromURL()
-	// list targets
-	if id == 0 {
-		targets, err := dao.GetAllRepTargets()
-		if err != nil {
-			log.Errorf("failed to get all targets: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		for _, target := range targets {
-			target.Password = ""
-		}
-
-		t.Data["json"] = targets
-		t.ServeJSON()
-		return
-	}
+	id := t.GetIDFromURL()
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -148,6 +132,9 @@ func (t *TargetAPI) Get() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
+	// The reason why the password is returned is that when user just wants to
+	// modify other fields of target he does not need to input the password again.
+	// The security issue can be fixed by enable https.
 	if len(target.Password) != 0 {
 		pwd, err := utils.ReversibleDecrypt(target.Password)
 		if err != nil {
@@ -161,13 +148,46 @@ func (t *TargetAPI) Get() {
 	t.ServeJSON()
 }
 
+// List ...
+func (t *TargetAPI) List() {
+	name := t.GetString("name")
+	targets, err := dao.FilterRepTargets(name)
+	if err != nil {
+		log.Errorf("failed to filter targets %s: %v", name, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	for _, target := range targets {
+		if len(target.Password) == 0 {
+			continue
+		}
+
+		str, err := utils.ReversibleDecrypt(target.Password)
+		if err != nil {
+			log.Errorf("failed to decrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		target.Password = str
+	}
+
+	t.Data["json"] = targets
+	t.ServeJSON()
+	return
+}
+
 // Post ...
 func (t *TargetAPI) Post() {
 	target := &models.RepTarget{}
-	t.DecodeJSONReq(target)
+	t.DecodeJSONReqAndValidate(target)
 
-	if len(target.Name) == 0 || len(target.URL) == 0 {
-		t.CustomAbort(http.StatusBadRequest, "name or URL is nil")
+	ta, err := dao.GetRepTargetByName(target.Name)
+	if err != nil {
+		log.Errorf("failed to get target %s: %v", target.Name, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if ta != nil {
+		t.CustomAbort(http.StatusConflict, "name is already used")
 	}
 
 	if len(target.Password) != 0 {
@@ -185,17 +205,34 @@ func (t *TargetAPI) Post() {
 
 // Put ...
 func (t *TargetAPI) Put() {
-	id := t.getIDFromURL()
-	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	id := t.GetIDFromURL()
+
+	originalTarget, err := dao.GetRepTarget(id)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if originalTarget == nil {
+		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
 	target := &models.RepTarget{}
-	t.DecodeJSONReq(target)
+	t.DecodeJSONReqAndValidate(target)
 
-	if target.ID == 0 {
-		target.ID = id
+	if target.Name != originalTarget.Name {
+		ta, err := dao.GetRepTargetByName(target.Name)
+		if err != nil {
+			log.Errorf("failed to get target %s: %v", target.Name, err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if ta != nil {
+			t.CustomAbort(http.StatusConflict, "name is already used")
+		}
 	}
+
+	target.ID = id
 
 	if len(target.Password) != 0 {
 		target.Password = utils.ReversibleEncrypt(target.Password)
@@ -209,10 +246,7 @@ func (t *TargetAPI) Put() {
 
 // Delete ...
 func (t *TargetAPI) Delete() {
-	id := t.getIDFromURL()
-	if id == 0 {
-		t.CustomAbort(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
+	id := t.GetIDFromURL()
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
@@ -228,18 +262,4 @@ func (t *TargetAPI) Delete() {
 		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-}
-
-func (t *TargetAPI) getIDFromURL() int64 {
-	idStr := t.Ctx.Input.Param(":id")
-	if len(idStr) == 0 {
-		return 0
-	}
-
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		t.CustomAbort(http.StatusBadRequest, "invalid ID in request URL")
-	}
-
-	return id
 }

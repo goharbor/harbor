@@ -12,8 +12,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+
 var AjaxUtil = function(params){
-		
+	
 	this.url = params.url;
 	this.data = params.data;
 	this.dataRaw = params.dataRaw;
@@ -31,46 +32,47 @@ AjaxUtil.prototype.exec = function(){
 	var self = this;
 	
 	return $.ajax({
-      url: self.url,
-	  contentType: (self.dataRaw ? "application/x-www-form-urlencoded; charset=UTF-8" : "application/json; charset=utf-8"),
-      data: JSON.stringify(self.data) || self.dataRaw,
-      type: self.type,
-	  dataType: "json",
-	  success: function(data, status, xhr){
-		if(self.success != null){
-		  self.success(data, status, xhr);
-		}
-	  },
-      complete: function(jqXhr, status) {
-		if(self.complete != null){
-	 	  self.complete(jqXhr, status);				
-		}
-      },
-      error: function(jqXhr){
-	    if(self.error != null){
-			self.error(jqXhr);
-		}else{
-			var errorMessage = self.errors[jqXhr.status] || jqXhr.responseText;
-			if(jqXhr.status == 401){				
-				var lastUri = location.pathname + location.search;
-				if(lastUri != ""){
-				    document.location = "/signIn?uri=" + encodeURIComponent(lastUri);
-				}else{
-					document.location = "/signIn";						
+		url: self.url,
+		contentType: (self.dataRaw ? "application/x-www-form-urlencoded; charset=UTF-8" : "application/json; charset=utf-8"),
+		data: JSON.stringify(self.data) || self.dataRaw,
+		type: self.type,
+		dataType: "json",
+		success: function(data, status, xhr){
+			if(self.success != null){
+				self.success(data, status, xhr);
+			}
+		},
+		complete: function(jqXhr, status) {
+			if(self.complete != null){
+				self.complete(jqXhr, status);				
+			}
+		},
+		error: function(jqXhr){
+			if(self.error != null){
+				self.error(jqXhr);
+			}else{
+				var errorMessage = self.errors[jqXhr.status] || jqXhr.responseText;
+				if(jqXhr.status == 401){				
+					var lastUri = location.pathname + location.search;
+					if(lastUri != ""){
+						document.location = "/signIn?uri=" + encodeURIComponent(lastUri);
+					}else{
+						document.location = "/signIn";						
+					}
+				}else if($.trim(errorMessage).length > 0){
+					$("#dlgModal").dialogModal({"title": i18n.getMessage("operation_failed"), "content": errorMessage});
 				}
-			}else if($.trim(errorMessage).length > 0){
-			    $("#dlgModal").dialogModal({"title": i18n.getMessage("operation_failed"), "content": errorMessage});
 			}
 		}
-	  }
-    });
+	});
 };
 
 var SUPPORT_LANGUAGES = {
 	"en-US": "English",
 	"zh-CN": "Chinese",
 	"de-DE": "German",
-	"ru-RU": "Russian"
+	"ru-RU": "Russian",
+	"ja-JP": "Japanese"
 };
 
 var DEFAULT_LANGUAGE = "en-US";
@@ -133,7 +135,7 @@ jQuery(function(){
 		
 		var self = this;
 		$("#dlgLabel", self).text(settings.title);
-				
+		
 		if(options.text){
 			$("#dlgBody", self).html(settings.content);
 		}else if(typeof settings.content == "object"){
@@ -141,9 +143,9 @@ jQuery(function(){
 			var lines = ['<form class="form-horizontal">'];
 			for(var item in settings.content){
 				lines.push('<div class="form-group">'+
-				      '<label class="col-sm-2 control-label">'+ item +'</label>' +
-				      	'<div class="col-sm-10"><p class="form-control-static">' + settings.content[item] + '</p></div>' +
-			          '</div>');
+					'<label class="col-sm-2 control-label">'+ item +'</label>' +
+					'<div class="col-sm-10"><p class="form-control-static">' + settings.content[item] + '</p></div>' +
+					'</div>');
 			}
 			lines.push('</form>');
 			$("#dlgBody", self).html(lines.join(""));
@@ -153,8 +155,13 @@ jQuery(function(){
 		}
 		
 		if(settings.callback != null){
-			$("#dlgConfirm").on("click", function(){
-			   settings.callback();
+			var hasEntered = false;
+			$("#dlgConfirm").on("click", function(e){
+				if(!hasEntered) {
+					hasEntered = true;
+					settings.callback();
+					
+				}
 			});
 		}
 		$(self).modal('show');

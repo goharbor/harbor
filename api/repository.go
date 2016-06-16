@@ -133,6 +133,12 @@ func (ra *RepositoryAPI) Delete() {
 			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
+
+		// TODO remove the logic if the bug of registry is fixed
+		if len(tagList) == 0 {
+			ra.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		}
+
 		tags = append(tags, tagList...)
 	} else {
 		tags = append(tags, tag)
@@ -293,4 +299,31 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	}
 
 	return "", nil
+}
+
+//GetTopRepos handles request GET /api/repositories/top
+func (ra *RepositoryAPI) GetTopRepos() {
+	var err error
+	var countNum int
+	count := ra.GetString("count")
+	if len(count) == 0 {
+		countNum = 10
+	} else {
+		countNum, err = strconv.Atoi(count)
+		if err != nil {
+			log.Errorf("Get parameters error--count, err: %v", err)
+			ra.CustomAbort(http.StatusBadRequest, "bad request of count")
+		}
+		if countNum <= 0 {
+			log.Warning("count must be a positive integer")
+			ra.CustomAbort(http.StatusBadRequest, "count is 0 or negative")
+		}
+	}
+	repos, err := dao.GetTopRepos(countNum)
+	if err != nil {
+		log.Errorf("error occured in get top 10 repos: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
+	}
+	ra.Data["json"] = repos
+	ra.ServeJSON()
 }

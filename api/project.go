@@ -18,6 +18,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -40,6 +41,7 @@ type projectReq struct {
 }
 
 const projectNameMaxLen int = 30
+const projectNameMinLen int = 4
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -75,7 +77,7 @@ func (p *ProjectAPI) Post() {
 	err := validateProjectReq(req)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
-		p.RenderError(http.StatusBadRequest, "Invalid request for creating project")
+		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
 		return
 	}
 	projectName := req.ProjectName
@@ -197,10 +199,9 @@ func (p *ProjectAPI) List() {
 	p.ServeJSON()
 }
 
-// Put ...
-func (p *ProjectAPI) Put() {
+// ToggleProjectPublic ...
+func (p *ProjectAPI) ToggleProjectPublic() {
 	p.userID = p.ValidateUser()
-
 	var req projectReq
 	var public int
 
@@ -287,8 +288,16 @@ func validateProjectReq(req projectReq) error {
 	if len(pn) == 0 {
 		return fmt.Errorf("Project name can not be empty")
 	}
-	if len(pn) > projectNameMaxLen {
-		return fmt.Errorf("Project name is too long")
+	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
+		return fmt.Errorf("project name is illegal in length. (greater than 4 or less than 30)")
 	}
+	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
+		return fmt.Errorf("project name contains illegal characters")
+	}
+
+	if pn != strings.ToLower(pn) {
+		return fmt.Errorf("project name must be in lower case")
+	}
+
 	return nil
 }

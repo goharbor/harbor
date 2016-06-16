@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/astaxie/beego/validation"
 )
 
 const (
@@ -29,10 +31,12 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID        int64  `orm:"column(id)" json:"id"`
-	ProjectID int64  `orm:"column(project_id)" json:"project_id"`
-	TargetID  int64  `orm:"column(target_id)" json:"target_id"`
-	Name      string `orm:"column(name)" json:"name"`
+	ID          int64  `orm:"column(id)" json:"id"`
+	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
+	ProjectName string `json:"project_name,omitempty"`
+	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
+	TargetName  string `json:"target_name,omitempty"`
+	Name        string `orm:"column(name)" json:"name"`
 	//	Target       RepTarget `orm:"-" json:"target"`
 	Enabled      int       `orm:"column(enabled)" json:"enabled"`
 	Description  string    `orm:"column(description)" json:"description"`
@@ -40,6 +44,33 @@ type RepPolicy struct {
 	StartTime    time.Time `orm:"column(start_time)" json:"start_time"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// Valid ...
+func (r *RepPolicy) Valid(v *validation.Validation) {
+	if len(r.Name) == 0 {
+		v.SetError("name", "can not be empty")
+	}
+
+	if len(r.Name) > 256 {
+		v.SetError("name", "max length is 256")
+	}
+
+	if r.ProjectID <= 0 {
+		v.SetError("project_id", "invalid")
+	}
+
+	if r.TargetID <= 0 {
+		v.SetError("target_id", "invalid")
+	}
+
+	if r.Enabled != 0 && r.Enabled != 1 {
+		v.SetError("enabled", "must be 0 or 1")
+	}
+
+	if len(r.CronStr) > 256 {
+		v.SetError("cron_str", "max length is 256")
+	}
 }
 
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove
@@ -60,7 +91,7 @@ type RepJob struct {
 // RepTarget is the model for a replication targe, i.e. destination, which wraps the endpoint URL and username/password of a remote registry.
 type RepTarget struct {
 	ID           int64     `orm:"column(id)" json:"id"`
-	URL          string    `orm:"column(url)" json:"url"`
+	URL          string    `orm:"column(url)" json:"endpoint"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Username     string    `orm:"column(username)" json:"username"`
 	Password     string    `orm:"column(password)" json:"password"`
@@ -68,17 +99,42 @@ type RepTarget struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+// Valid ...
+func (r *RepTarget) Valid(v *validation.Validation) {
+	if len(r.Name) == 0 {
+		v.SetError("name", "can not be empty")
+	}
+
+	if len(r.Name) > 64 {
+		v.SetError("name", "max length is 64")
+	}
+
+	if len(r.URL) == 0 {
+		v.SetError("endpoint", "can not be empty")
+	}
+
+	if len(r.URL) > 64 {
+		v.SetError("endpoint", "max length is 64")
+	}
+
+	// password is encoded using base64, the length of this field
+	// in DB is 64, so the max length in request is 48
+	if len(r.Password) > 48 {
+		v.SetError("password", "max length is 48")
+	}
+}
+
 //TableName is required by by beego orm to map RepTarget to table replication_target
-func (rt *RepTarget) TableName() string {
+func (r *RepTarget) TableName() string {
 	return "replication_target"
 }
 
 //TableName is required by by beego orm to map RepJob to table replication_job
-func (rj *RepJob) TableName() string {
+func (r *RepJob) TableName() string {
 	return "replication_job"
 }
 
 //TableName is required by by beego orm to map RepPolicy to table replication_policy
-func (rp *RepPolicy) TableName() string {
+func (r *RepPolicy) TableName() string {
 	return "replication_policy"
 }
