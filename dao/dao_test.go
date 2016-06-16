@@ -922,7 +922,7 @@ func TestGetRepPolicyByTarget(t *testing.T) {
 	}
 
 	if policies[0].ID != policyID {
-		t.Fatal("unexpected policy: %d, expected: %d", policies[0].ID, policyID)
+		t.Fatalf("unexpected policy: %d, expected: %d", policies[0].ID, policyID)
 	}
 }
 
