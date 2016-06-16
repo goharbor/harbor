@@ -6,9 +6,9 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService'];
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window'];
   
-  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService) {
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window) {
     var vm = this;
     
     $scope.$on('$locationChangeSuccess', function() {
@@ -19,19 +19,30 @@
     vm.addReplication = addReplication;
     vm.editReplication = editReplication;
     
-    vm.search = search;
+    vm.searchReplicationPolicy = searchReplicationPolicy;
+    vm.searchReplicationJob = searchReplicationJob;
     
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
     vm.togglePolicy = togglePolicy;
+    
+    vm.downloadLog = downloadLog;
       
     vm.last = false;
+    
+    vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrievePolicy();
     
-    function search() {
+    function searchReplicationPolicy() {
       vm.retrievePolicy();
     }   
     
+    function searchReplicationJob() {
+      if(vm.lastPolicyId !== -1) {
+        vm.retrieveJob(vm.lastPolicyId);
+      }
+    }            
+   
     function retrievePolicy() {
       ListReplicationPolicyService('', vm.projectId, vm.replicationPolicyName)
         .success(listReplicationPolicySuccess)
@@ -88,6 +99,9 @@
       console.log('Failed toggle replication policy.');
     }
     
+    function downloadLog(policyId) {
+      $window.open('/api/jobs/replication/' + policyId + '/log', '_blank');
+    }
   }
   
   function listReplication($timeout) {
@@ -151,7 +165,7 @@
           }
         });
       });
-            
+         
       function trClickHandler(e) {
         element
           .find('#upon-pane table>tbody>tr')  

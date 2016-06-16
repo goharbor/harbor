@@ -4,7 +4,7 @@
       <div class="input-group">
         <input type="text" class="form-control" placeholder="" ng-model="vm.replicationPolicyName" size="30">
         <span class="input-group-btn">
-          <button class="btn btn-primary" type="button" ng-click="vm.search()"><span class="glyphicon glyphicon-search"></span></button>
+          <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationPolicy()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>New Replication</button>
@@ -55,9 +55,9 @@
     <hr class="hr-line"/>
     <div class="form-inline">
       <div class="input-group">
-        <input type="text" class="form-control" placeholder="" ng-model="vm.replicationJobnName" size="30">
+        <input type="text" class="form-control" placeholder="" ng-model="vm.replicationJobName" size="30">
         <span class="input-group-btn">
-          <button class="btn btn-primary" type="button" ng-click="vm.search()"><span class="glyphicon glyphicon-search"></span></button>
+          <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
     </div> 
@@ -67,18 +67,20 @@
       			 <thead>
               <th width="20%">Name</th>
               <th width="25%">Operation</th>
-              <th width="40%">Start Time</th>
+              <th width="25%">Start Time</th>
               <th width="15%">Status</th>
+              <th width="15%">Logs</th>
       			 </thead>
       			 <tbody>
               <tr ng-if="vm.replicationJobs.length == 0">
                 <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">No replication jobs.</h3></td>
               </tr>
               <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
-                <td>//r.tags != null ? r.tags.join(',') : 'N/A'//</td>
+                <td>//r.repository//</td>
                 <td>//r.operation//</td>
                 <td>//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                 <td>//r.status//</td>
+                <td><a href="javascript:void(0);" ng-click="vm.downloadLog(r.id)"><span style="margin-left: 10px;" class="glyphicon glyphicon-file"></span></a></td>
               </tr>
             </tbody>
       		</table>
