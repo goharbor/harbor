@@ -1,0 +1,24 @@
+<nav class="navbar navbar-default navbar-custom" ng-controller="HeaderController as vm">
+  <div class="container container-custom">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-harbor-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/main"><img class="img-responsive" src="/static/resources/img/Harbor_Logo_rec.png" alt="Harbor's Logo"/></a>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-harbor-navbar-collapse-1">
+		  <optional-menu current="vm.current"></optional-menu>     
+	    <ul class="nav navbar-nav navbar-right">
+		    <li>
+		      <navigation-header></navigation-header>
+		    </li>
+	      <li>
+	        <search-input search-input='vm.searchInput'></search-input>
+		    </li>
+	    </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>

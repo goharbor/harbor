@@ -26,29 +26,32 @@ import (
 
 func initRouters() {
 
-	beego.SetStaticPath("registry/static/i18n", "static/i18n")
-	beego.SetStaticPath("registry/static/resources", "static/resources")
-	beego.SetStaticPath("registry/static/vendors", "static/vendors")
+	beego.SetStaticPath("static/resources", "static/resources")
+	beego.SetStaticPath("static/vendors", "static/vendors")
+
+	//Page Controllers:
+	beego.Router("/", &controllers.IndexController{})
+	beego.Router("/dashboard", &controllers.DashboardController{})
+	beego.Router("/project", &controllers.ProjectController{})
+	beego.Router("/repository", &controllers.RepositoryController{})
+	beego.Router("/sign_up", &controllers.SignUpController{})
+	beego.Router("/account_setting", &controllers.AccountSettingController{})
+	beego.Router("/admin_option", &controllers.AdminOptionController{})
+	beego.Router("/forgot_password", &controllers.ForgotPasswordController{})
+	beego.Router("/reset_password", &controllers.ResetPasswordController{})
+	beego.Router("/search", &controllers.SearchController{})
 
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
-	beego.Router("/logout", &controllers.CommonController{}, "get:Logout")
-	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
-	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
+	beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
+	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
+	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
 
-	beego.Router("/", &controllers.IndexController{})
-	beego.Router("/signIn", &controllers.SignInController{})
-	beego.Router("/register", &controllers.RegisterController{})
-	beego.Router("/addUser", &controllers.AddUserController{})
-	beego.Router("/forgotPassword", &controllers.ForgotPasswordController{})
-	beego.Router("/resetPassword", &controllers.ResetPasswordController{})
-	beego.Router("/changePassword", &controllers.ChangePasswordController{})
-
-	beego.Router("/registry/project", &controllers.ProjectController{})
-	beego.Router("/registry/detail", &controllers.ItemDetailController{})
-
-	beego.Router("/search", &controllers.SearchController{})
+	beego.Router("/optional_menu", &controllers.OptionalMenuController{})
+	beego.Router("/navigation_header", &controllers.NavigationHeaderController{})
+	beego.Router("/navigation_detail", &controllers.NavigationDetailController{})
+	beego.Router("/sign_in", &controllers.SignInController{})
 
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})

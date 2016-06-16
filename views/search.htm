@@ -1,0 +1,24 @@
+<div class="container-fluid container-fluid-custom" ng-controller="SearchController as vm">
+  <div class="container container-custom">
+    <div class="row extend-height">
+	    <div class="section">
+        <div class="row">
+          <div class="col-md-12 col-md-offset-2 main-content">
+            <h4 class="page-header title-color underlined">Projects&nbsp;&nbsp;<span class="badge">//vm.project.length//</span></h4>  
+            <div class="search-result">
+              <ul>
+        			  <li ng-repeat="p in vm.project"><a href="/repository#/repositories?project_id=//p.id//&is_public=//p.public === 1//">//p.name//</a></li>
+        		  </ul>
+            </div>
+            <h4 class="page-header title-color underlined">Repositories&nbsp;&nbsp;<span class="badge">//vm.repository.length//</span></h4>  
+            <div class="search-result">
+              <ul>
+        			  <li  ng-repeat="r in vm.repository"><a href="/repository#/repositories?project_id=//r.project_id//&is_public=//r.project_public === 1//#//r.repository_name//">//r.repository_name//</a></li>
+        			</ul>
+            </div>
+          </div>
+        </div>            
+      </div>
+    </div>
+  </div>
+</div>
