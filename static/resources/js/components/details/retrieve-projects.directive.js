@@ -69,7 +69,7 @@
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  
-        vm.resultCount = $filter('name')(vm.projects, vm.filterInput, 'Name').length;
+        vm.resultCount = $filter('name')(vm.projects, vm.filterInput, 'name').length;
       });
     }
     
