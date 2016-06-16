@@ -16,6 +16,7 @@
   clear: both;
   background-color: #A8A8A8;
   height: 44px;
+  z-index: 10;
 }
 .footer p {
   padding-top: 8px;
