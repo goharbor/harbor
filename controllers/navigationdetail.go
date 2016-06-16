@@ -8,7 +8,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
-// NavigationHeaderController handles requests to /navigation_detail
+// NavigationDetailController handles requests to /navigation_detail
 type NavigationDetailController struct {
 	BaseController
 }

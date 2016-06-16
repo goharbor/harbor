@@ -114,9 +114,9 @@ func (cc *CommonController) Render() error {
 }
 
 // Login handles login request from UI.
-func (c *CommonController) Login() {
-	principal := c.GetString("principal")
-	password := c.GetString("password")
+func (cc *CommonController) Login() {
+	principal := cc.GetString("principal")
+	password := cc.GetString("password")
 
 	user, err := auth.Login(models.AuthModel{
 		Principal: principal,
@@ -124,15 +124,15 @@ func (c *CommonController) Login() {
 	})
 	if err != nil {
 		log.Errorf("Error occurred in UserLogin: %v", err)
-		c.CustomAbort(http.StatusUnauthorized, "")
+		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
 
 	if user == nil {
-		c.CustomAbort(http.StatusUnauthorized, "")
+		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
 
-	c.SetSession("userId", user.UserID)
-	c.SetSession("username", user.Username)
+	cc.SetSession("userId", user.UserID)
+	cc.SetSession("username", user.Username)
 }
 
 // LogOut Habor UI
