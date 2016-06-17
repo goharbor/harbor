@@ -40,13 +40,12 @@
     }
     
     function addProjectFailed(data, status) {
-      if(status === 409) {
-        vm.hasError = true;
-        vm.errorMessage = 'project_already_exist';
+      vm.hasError = true;
+      if(status == 400) {
+        vm.errorMessage = 'project_name_is_invalid';        
       }
-      if(status === 500) {
-        vm.hasError = true;
-        vm.errorMessage = 'project_name_is_invalid';
+      if(status === 409) {
+        vm.errorMessage = 'project_already_exist';
       }
       console.log('Failed to add project:' + status);
     }
