@@ -14,7 +14,6 @@
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrievePolicy();
-      vm.retrieveJob();
     });
     
     vm.addReplication = addReplication;
@@ -57,6 +56,7 @@
     }
 
     function listReplicationPolicySuccess(data, status) {
+      vm.replicationJobs = [];
       vm.replicationPolicies = data || [];
     }
     
