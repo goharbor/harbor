@@ -18,6 +18,7 @@ package replication
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -41,6 +42,10 @@ const (
 	StateTransferBlob = "transfer_blob"
 	// StatePushManifest ...
 	StatePushManifest = "push_manifest"
+)
+
+var (
+	ErrConflict = errors.New("conflict")
 )
 
 // BaseHandler holds informations shared by other state handlers
@@ -136,15 +141,24 @@ type Checker struct {
 // Enter check existence of project, if it does not exist, create it,
 // if it exists, check whether the user has write privilege to it.
 func (c *Checker) Enter() (string, error) {
+enter:
 	exist, canWrite, err := c.projectExist()
 	if err != nil {
 		c.logger.Errorf("an error occurred while checking existence of project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
 		return "", err
 	}
 	if !exist {
-		if err := c.createProject(); err != nil {
-			c.logger.Errorf("an error occurred while creating project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
-			return "", err
+		err := c.createProject()
+		if err != nil {
+			// other job may be also doing the same thing when the current job
+			// is creating project, so when the response code is 409, re-check
+			// the existence of project
+			if err == ErrConflict {
+				goto enter
+			} else {
+				c.logger.Errorf("an error occurred while creating project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
+				return "", err
+			}
 		}
 		c.logger.Infof("project %s is created on %s with user %s", c.project, c.dstURL, c.dstUsr)
 		return StatePullManifest, nil
@@ -246,6 +260,10 @@ func (c *Checker) createProject() error {
 	}
 
 	if resp.StatusCode != http.StatusCreated {
+		if resp.StatusCode == http.StatusConflict {
+			return ErrConflict
+		}
+
 		defer resp.Body.Close()
 		message, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
