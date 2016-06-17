@@ -1092,6 +1092,22 @@ func TestGetRepJobByPolicy(t *testing.T) {
 	}
 }
 
+func TestDeleteRepJob(t *testing.T) {
+	err := DeleteRepJob(jobID)
+	if err != nil {
+		t.Errorf("Error occured in DeleteRepJob: %v, id: %d", err, jobID)
+		return
+	}
+	t.Logf("deleted rep job, id: %d", jobID)
+	j, err := GetRepJob(jobID)
+	if err != nil {
+		t.Errorf("Error occured in GetRepJob:%v", err)
+	}
+	if j != nil {
+		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
+	}
+}
+
 func TestGetRepoJobToStop(t *testing.T) {
 	jobs := [...]models.RepJob{
 		models.RepJob{
@@ -1114,8 +1130,11 @@ func TestGetRepoJobToStop(t *testing.T) {
 		},
 	}
 	var err error
+	var i int64
+	ids := make([]int64, 0)
 	for _, j := range jobs {
-		_, err = AddRepJob(j)
+		i, err = AddRepJob(j)
+		ids = append(ids, i)
 		if err != nil {
 			log.Errorf("Failed to add Job: %+v, error: %v", j, err)
 			return
@@ -1127,9 +1146,16 @@ func TestGetRepoJobToStop(t *testing.T) {
 		return
 	}
 	//time.Sleep(15 * time.Second)
-	if len(res) != 2 {
-		log.Errorf("Expected length of stoppable jobs, expected:2, in fact: %d", len(res))
+	if len(res) != 1 {
+		log.Errorf("Expected length of stoppable jobs, expected:1, in fact: %d", len(res))
 		return
+	}
+	for _, id := range ids {
+		err = DeleteRepJob(id)
+		if err != nil {
+			log.Errorf("Failed to delete job, id: %d, error: %v", id, err)
+			return
+		}
 	}
 }
 
@@ -1182,19 +1208,74 @@ func TestDeleteRepPolicy(t *testing.T) {
 	}
 }
 
-func TestDeleteRepJob(t *testing.T) {
-	err := DeleteRepJob(jobID)
+func TestResetRepJobs(t *testing.T) {
+
+	job1 := models.RepJob{
+		Repository: "library/ubuntua",
+		PolicyID:   policyID,
+		Operation:  "transfer",
+		Status:     models.JobRunning,
+	}
+	job2 := models.RepJob{
+		Repository: "library/ubuntub",
+		PolicyID:   policyID,
+		Operation:  "transfer",
+		Status:     models.JobCanceled,
+	}
+	id1, err := AddRepJob(job1)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepJob: %v, id: %d", err, jobID)
+		t.Errorf("Failed to add job: %+v, error: %v", job1, err)
 		return
 	}
-	t.Logf("deleted rep job, id: %d", jobID)
-	j, err := GetRepJob(jobID)
+	id2, err := AddRepJob(job2)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJob:%v", err)
+		t.Errorf("Failed to add job: %+v, error: %v", job2, err)
+		return
 	}
-	if j != nil {
-		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
+	err = ResetRunningJobs()
+	if err != nil {
+		t.Errorf("Failed to reset running jobs, error: %v", err)
+	}
+	j1, err := GetRepJob(id1)
+	if err != nil {
+		t.Errorf("Failed to get rep job, id: %d, error: %v", id1, err)
+		return
+	}
+	if j1.Status != models.JobPending {
+		t.Errorf("The rep job: %d, status should be Pending, but infact: %s", id1, j1.Status)
+		return
+	}
+	j2, err := GetRepJob(id2)
+	if err != nil {
+		t.Errorf("Failed to get rep job, id: %d, error: %v", id2, err)
+		return
+	}
+	if j2.Status == models.JobPending {
+		t.Errorf("The rep job: %d, status should be Canceled, but infact: %s", id2, j2.Status)
+		return
+	}
+}
+
+func TestGetJobByStatus(t *testing.T) {
+	r1, err := GetRepJobByStatus(models.JobPending, models.JobRunning)
+	if err != nil {
+		t.Errorf("Failed to run GetRepJobByStatus, error: %v", err)
+	}
+	if len(r1) != 1 {
+		t.Errorf("Unexpected length of result, expected 1, but in fact:%d", len(r1))
+		return
+	}
+
+	r2, err := GetRepJobByStatus(models.JobPending, models.JobCanceled)
+	if err != nil {
+		t.Errorf("Failed to run GetRepJobByStatus, error: %v", err)
+	}
+	if len(r2) != 2 {
+		t.Errorf("Unexpected length of result, expected 2, but in fact:%d", len(r2))
+		return
+	}
+	for _, j := range r2 {
+		DeleteRepJob(j.ID)
 	}
 }
 

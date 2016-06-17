@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 package dao
@@ -267,9 +267,13 @@ func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 	return res, err
 }
 
-func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
+func repJobQs() orm.QuerySeter {
 	o := GetOrmer()
-	return o.QueryTable("replication_job").Filter("policy_id", policyID)
+	return o.QueryTable("replication_job")
+}
+
+func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
+	return repJobQs().Filter("policy_id", policyID)
 }
 
 // DeleteRepJob ...
@@ -291,6 +295,26 @@ func UpdateRepJobStatus(id int64, status string) error {
 		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
 	}
 	return err
+}
+
+// ResetRunningJobs update all running jobs status to pending
+func ResetRunningJobs() error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("update replication_job set status = '%s' where status = '%s'", models.JobPending, models.JobRunning)
+	_, err := o.Raw(sql).Exec()
+	return err
+}
+
+// GetRepJobsByStatus get jobs of certain statuses
+func GetRepJobByStatus(status ...string) ([]*models.RepJob, error) {
+	var res []*models.RepJob
+	t := make([]interface{}, 0)
+	for _, s := range status {
+		t = append(t, interface{}(s))
+	}
+	_, err := repJobQs().Filter("status__in", t...).All(&res)
+	genTagListForJob(res...)
+	return res, err
 }
 
 func genTagListForJob(jobs ...*models.RepJob) {
