@@ -1,0 +1,47 @@
+{{ if eq .HasLoggedIn true }}
+<div class="has-logged-in">
+  <h4>// 'welcome' | tr // <strong>{{ .Username }}</strong> // 'to_harbor' | tr //</h4>
+  <!--p class="text-muted last-logged-in-time">Last login time: //vm.lastLoggedInTime//</p-->
+  <p class="control-button"><input type="button" class="btn btn-default pull-right" value="// 'continue' | tr //" ng-click="vm.doContinue()"></p>
+  <p class="control-button"><input type="button" class="btn btn-link pull-right" value="// 'log_out' | tr //" ng-click="vm.doLogOut()"></p>
+</div>
+{{ else }}
+<form name="form" class="form-horizontal css-form" novalidate>
+  <div class="form-group"> 
+    <div class="col-sm-offset-1 col-sm-10">
+      <input id="username"  type="text" class="form-control" placeholder="// 'username_email' | tr //" name="uPrincipal" ng-change="vm.reset()" ng-model="user.principal" required>
+      <div class="error-message">
+        <div ng-messages="form.$submitted && form.uPrincipal.$error">
+          <span ng-message="required">// 'username_is_required' | tr //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <input type="password" class="form-control" placeholder="// 'password' | tr //" name="uPassword" ng-change="vm.reset()" ng-model="user.password" required>
+      <div class="error-message">
+        <div ng-messages="form.$submitted && form.uPassword.$error">
+          <span ng-message="required">// 'password_is_required' | tr //</span>
+        </div>
+        <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-default" ng-click="vm.doSignIn(user)">// 'sign_in' | tr //</button>
+        <button type="button" class="btn btn-success" ng-click="vm.doSignUp()">// 'sign_up' | tr //</button>   
+      </div>
+    </div>	
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <div class="pull-right">
+        <a href="javascript:void(0)" ng-click="vm.doForgotPassword()">// 'forgot_password' | tr //</a>
+      </div>
+    </div>
+  </div>
+</form>
+{{ end }}

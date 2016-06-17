@@ -258,6 +258,16 @@ func (t *TargetAPI) Delete() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
+	policies, err := dao.GetRepPolicyByTarget(id)
+	if err != nil {
+		log.Errorf("failed to get policies according target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if len(policies) > 0 {
+		t.CustomAbort(http.StatusBadRequest, "the target is used by policies, can not be deleted")
+	}
+
 	if err = dao.DeleteRepTarget(id); err != nil {
 		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

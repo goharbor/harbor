@@ -192,10 +192,24 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	return policies, nil
 }
 
+// GetRepPolicyByTarget ...
+func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
+	o := GetOrmer()
+	sql := `select * from replication_policy where target_id = ?`
+
+	var policies []*models.RepPolicy
+
+	if _, err := o.Raw(sql, targetID).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
-	_, err := o.Update(policy, "Name", "Enabled", "Description", "CronStr")
+	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr")
 	return err
 }
 
@@ -257,6 +271,38 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	_, err := repJobPolicyIDQs(policyID).All(&res)
 	genTagListForJob(res...)
 	return res, err
+}
+
+// FilterRepJobs filters jobs by repo and policy ID
+func FilterRepJobs(repo string, policyID int64) ([]*models.RepJob, error) {
+	o := GetOrmer()
+
+	var args []interface{}
+
+	sql := `select * from replication_job `
+
+	if len(repo) != 0 && policyID != 0 {
+		sql += `where repository like ? and policy_id = ? `
+		args = append(args, "%"+repo+"%")
+		args = append(args, policyID)
+	} else if len(repo) != 0 {
+		sql += `where repository like ? `
+		args = append(args, "%"+repo+"%")
+	} else if policyID != 0 {
+		sql += `where policy_id = ? `
+		args = append(args, policyID)
+	}
+
+	sql += `order by creation_time`
+
+	var jobs []*models.RepJob
+	if _, err := o.Raw(sql, args).QueryRows(&jobs); err != nil {
+		return nil, err
+	}
+
+	genTagListForJob(jobs...)
+
+	return jobs, nil
 }
 
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.

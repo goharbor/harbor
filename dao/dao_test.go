@@ -911,6 +911,21 @@ func TestAddRepPolicy(t *testing.T) {
 
 }
 
+func TestGetRepPolicyByTarget(t *testing.T) {
+	policies, err := GetRepPolicyByTarget(targetID)
+	if err != nil {
+		t.Fatalf("failed to get policy according target %d: %v", targetID, err)
+	}
+
+	if len(policies) == 0 {
+		t.Fatal("unexpected length of policies 0, expected is >0")
+	}
+
+	if policies[0].ID != policyID {
+		t.Fatalf("unexpected policy: %d, expected: %d", policies[0].ID, policyID)
+	}
+}
+
 func TestGetRepPolicyByName(t *testing.T) {
 	policy, err := GetRepPolicy(policyID)
 	if err != nil {
@@ -1102,9 +1117,27 @@ func TestDeleteRepJob(t *testing.T) {
 	j, err := GetRepJob(jobID)
 	if err != nil {
 		t.Errorf("Error occured in GetRepJob:%v", err)
+		return
 	}
 	if j != nil {
 		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
+		return
+	}
+}
+
+func TestFilterRepJobs(t *testing.T) {
+	jobs, err := FilterRepJobs("", policyID)
+	if err != nil {
+		log.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
+		return
+	}
+	if len(jobs) != 1 {
+		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		return
+	}
+	if jobs[0].ID != jobID {
+		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
 	}
 }
 

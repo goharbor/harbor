@@ -1,0 +1,27 @@
+.footer-absolute {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-static {
+  position: static;
+  
+}
+
+.footer{
+  width: 100%;
+  clear: both;
+  background-color: #A8A8A8;
+  height: 44px;
+  z-index: 10;
+}
+.footer p {
+  padding-top: 8px;
+  color: #FFFFFF;
+  margin-left: auto;
+  margin-right: auto;
+  width: 385px;
+}
