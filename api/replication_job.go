@@ -55,7 +55,7 @@ func (ra *RepJobAPI) Prepare() {
 
 }
 
-// Filter filters jobs according to the policy and repository
+// List filters jobs according to the policy and repository
 func (ra *RepJobAPI) List() {
 	var policyID int64
 	var repository string
