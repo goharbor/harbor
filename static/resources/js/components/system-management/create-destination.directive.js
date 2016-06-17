@@ -20,7 +20,7 @@
     vm.update = update;
     vm.pingDestination = pingDestination;
     
-    $scope.$watch('vm.action + "," + vm.targetId', function(current) {
+    $scope.$watch('vm.action+","+vm.targetId', function(current) {
       if(current) {
         var parts = current.split(',');
         vm.action = parts[0];
@@ -62,6 +62,9 @@
     }
     
     function createDestinationFailed(data, status) {
+      if(status === 409) {
+        alert('Destination already exists.');
+      }
       console.log('Failed create destination:' + data);
     }
     
@@ -105,7 +108,6 @@
         'username': vm0.username,
         'password': vm0.password
       };
-      console.log('Ping target:' + angular.toJson(target));
       PingDestinationService(target)
         .success(pingDestinationSuccess)
         .error(pingDestinationFailed);
@@ -136,24 +138,24 @@
     
     function link(scope, element, attrs, ctrl) {
       
-      element.find('#createDestinationModal').on('hidden.bs.modal', function() {
-         scope.form.$setPristine();
+      element.find('#createDestinationModal').on('show.bs.modal', function() {
+        scope.form.$setPristine();
+        scope.form.$setUntouched();
       });
       
       ctrl.save = save;
       
       function save(destination) {
-        if(destination) {
-          console.log('destination:' + angular.toJson(destination));
+        if(destination) {          
           switch(ctrl.action) {
           case 'ADD_NEW':
             ctrl.create(destination);
             break;
           case 'EDIT':
             ctrl.update(destination);
+            break;
           }
           element.find('#createDestinationModal').modal('hide');
-          ctrl.reload();
         }
       }
     }

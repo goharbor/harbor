@@ -19,27 +19,30 @@
     
     var vm0 = $scope.replication.policy;
     var vm1 = $scope.replication.destination;
-        
+            
     vm.selectDestination = selectDestination;
     vm.projectId = getParameterByName('project_id', $location.absUrl());
+    
+    $scope.$on('$locationChangeSuccess', function() {
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+    });
     
     vm.addNew = addNew;
     vm.edit = edit;
     vm.prepareDestination = prepareDestination;
-    vm.createPolicy = createPolicy;
-    vm.updatePolicy = updatePolicy;
+    vm.create = create;
+    vm.update = update;
     vm.pingDestination = pingDestination;
         
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
-        console.log('destination:' + angular.toJson(current));
         vm1.selection = current[0]; 
         vm1.endpoint = vm1.selection.endpoint;
         vm1.username = vm1.selection.username;
         vm1.password = vm1.selection.password;
       }
     });
-               
+                             
     $scope.$watch('vm.action+","+vm.policyId', function(current) {
       if(current) {
         console.log('Current action for replication policy:' + current);
@@ -48,9 +51,11 @@
         vm.policyId = Number(parts[1]);
         switch(parts[0]) {
         case 'ADD_NEW':
-          vm.addNew(); break;
+          vm.addNew(); 
+          break;
         case 'EDIT':
-          vm.edit(vm.policyId); break;
+          vm.edit(vm.policyId); 
+          break;
         }    
       }
     });
@@ -68,7 +73,7 @@
         .error(listDestinationFailed);
     }
 
-    function addNew() { 
+    function addNew() {       
       vm0.name = '';
       vm0.description = '';
       vm0.enabled = true;
@@ -81,13 +86,13 @@
         .error(listReplicationPolicyFailed);
     }
     
-    function createPolicy(policy) {
+    function create(policy) {
       CreateReplicationPolicyService(policy)
         .success(createReplicationPolicySuccess)
         .error(createReplicationPolicyFailed);
     }
     
-    function updatePolicy(policy) {
+    function update(policy) {
       console.log('Update policy ID:' + vm.policyId);
       UpdateReplicationPolicyService(vm.policyId, policy)
         .success(updateReplicationPolicySuccess)
@@ -119,7 +124,7 @@
     }
     
     function listDestinationSuccess(data, status) {
-      vm.destinations = data;
+      vm.destinations = data || [];
     }
     function listDestinationFailed(data, status) {
       console.log('Failed list destination:' + data);
@@ -136,12 +141,17 @@
     }
     function createReplicationPolicySuccess(data, status) {
       console.log('Successful create replication policy.');
+      vm.reload();
     }
     function createReplicationPolicyFailed(data, status) {
+      if(status === 409) {
+        alert('Policy name already exists.');
+      }
       console.log('Failed create replication policy.');
     }
     function updateReplicationPolicySuccess(data, status) {
       console.log('Successful update replication policy.');
+      vm.reload();
     }
     function updateReplicationPolicyFailed(data, status) {
       console.log('Failed update replication policy.');
@@ -177,16 +187,17 @@
     };
     return directive;
     
-    function link(scope, element, attr, ctrl) {
-            
-      element.find('#createPolicyModal').on('shown.bs.modal', function() {
+    function link(scope, element, attr, ctrl) {  
+      
+      element.find('#createPolicyModal').on('show.bs.modal', function() {    
         ctrl.prepareDestination();
         scope.form.$setPristine();
-      });      
+        scope.form.$setUntouched();
+      });  
+            
       ctrl.save = save;
     
       function save(form) {
-        console.log(angular.toJson(form));
         var postPayload = {
           'projectId': Number(ctrl.projectId),
           'targetId': form.destination.selection.id,
@@ -198,14 +209,14 @@
         };
         switch(ctrl.action) {
         case 'ADD_NEW':
-          ctrl.createPolicy(postPayload); break;
+          ctrl.create(postPayload);
+          break;
         case 'EDIT':
-          ctrl.updatePolicy(postPayload); break;
+          ctrl.update(postPayload);
+          break;
         }
         element.find('#createPolicyModal').modal('hide');
-        ctrl.reload();
       }
-     
     }
   }
   
