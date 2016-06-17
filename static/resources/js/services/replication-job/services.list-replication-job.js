@@ -12,12 +12,12 @@
     
     return listReplicationJob;
     
-    function listReplicationJob(policyId, name) {
+    function listReplicationJob(policyId, repository) {
       return $http
         .get('/api/jobs/replication/', {
           'params': {
             'policy_id': policyId,
-            'name': name
+            'repository': repository
           }
         });
     }
