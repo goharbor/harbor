@@ -12,9 +12,11 @@
     
     return toggleAdmin;
     
-    function toggleAdmin(userId) {
+    function toggleAdmin(userId, enabled) {
       return $http
-        .put('/api/users/' + userId);
+        .put('/api/users/' + userId + '/sysadmin', {
+          'has_admin_role' : enabled
+        });
     }
     
   }

@@ -36,8 +36,11 @@
     }
     
     function getProjectRole(roleId) {
-      var role = getRole({'key': 'roleId', 'value': roleId});
-      return role.name;
+      if(roleId !== 0) {
+        var role = getRole({'key': 'roleId', 'value': roleId});
+        return role.name;
+      }
+      return '';
     }
     
     function listProjectFailed(e) {

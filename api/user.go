@@ -292,7 +292,7 @@ func (ua *UserAPI) ChangePassword() {
 	}
 }
 
-// ToggleUserAdminRole handles PUT api/users/{}/toggleadmin
+// ToggleUserAdminRole handles PUT api/users/{}/sysadmin
 func (ua *UserAPI) ToggleUserAdminRole() {
 	if !ua.IsAdmin {
 		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)

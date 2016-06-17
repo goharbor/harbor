@@ -16,7 +16,7 @@
       return $http
         .post('/api/projects/' + projectId + '/members/', {
           'roles': [ Number(roles) ],
-          'user_name': username
+          'username': username
         });
     }
     

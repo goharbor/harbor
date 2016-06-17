@@ -12,10 +12,11 @@
     var vm = this;
     
     vm.isAdmin = (vm.hasAdminRole == 1) ? true : false;
+    vm.enabled = vm.isAdmin ? 0 : 1;
     vm.toggle = toggle;
     
     function toggle() {
-      ToggleAdminService(vm.userId)
+      ToggleAdminService(vm.userId, vm.enabled)
         .success(toggleAdminSuccess)
         .error(toggleAdminFailed);        
     }    

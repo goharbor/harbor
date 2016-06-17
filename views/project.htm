@@ -27,7 +27,7 @@
             <div class="sub-pane">
       		    <table class="table">
                 <thead>
-                  <th>// 'project_name' | tr //</th><th>// 'repositories' | tr //</th><th>// 'role' | tr //</th><th>// 'creation_time' | tr //</th><th>// 'publicity' | tr //</th>
+                  <th>// 'project_name' | tr //</th><th>// 'repositories' | tr //</th><th ng-if="!vm.publicity">// 'role' | tr //</th><th>// 'creation_time' | tr //</th><th>// 'publicity' | tr //</th>
                 </thead>
                 <tbody>
                   <tr>
@@ -36,7 +36,7 @@
                   <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
                     <td><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
                     <td>//p.repo_count//</td>
-                    <td>//vm.getProjectRole(p.current_user_role_id)//</td>
+                    <td ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id)//</td>
                     <td>//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                     <td><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
                   </tr>

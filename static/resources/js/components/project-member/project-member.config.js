@@ -9,7 +9,6 @@
     
   function roles() {
     return [
-      {'id': '0', 'name': 'N/A', 'roleName': 'n/a'},
       {'id': '1', 'name': 'Project Admin', 'roleName': 'projectAdmin'},
       {'id': '2', 'name': 'Developer', 'roleName': 'developer'},
       {'id': '3', 'name': 'Guest', 'roleName': 'guest'}

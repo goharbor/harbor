@@ -12,17 +12,16 @@
   <div class="sub-pane">     
     <table class="table">
       <thead>
-        <th>// 'username' | tr //</th><th>// 'role' | tr //</th><th>// 'email' | tr //</th><th>// 'registration_time' | tr //</th><th>// 'operation' | tr //</th>
+        <th>// 'username' | tr //</th><th>// 'email' | tr //</th><th>// 'registration_time' | tr //</th><th>// 'operation' | tr //</th>
       </thead>
       <tbody>
         <tr ng-repeat="u in vm.users">
           <td>//u.username//</td>
-          <td>N/A</td>
           <td>//u.email//</td>
           <td>//u.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
           <td>
-            <toggle-admin has-admin-role="u.HasAdminRole == 1" user-id="//u.UserId//"></toggle-admin>&nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.deleteUser(u.UserId)"><span class="glyphicon glyphicon-trash"></span></a>
+            <toggle-admin has-admin-role="u.has_admin_role == 1" user-id="//u.user_id//"></toggle-admin>&nbsp;&nbsp;
+            &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.deleteUser(u.user_id)"><span class="glyphicon glyphicon-trash"></span></a>
           </td>
         	</tr>
       </tbody>
