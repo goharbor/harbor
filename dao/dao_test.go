@@ -1107,6 +1107,22 @@ func TestGetRepJobByPolicy(t *testing.T) {
 	}
 }
 
+func TestFilterRepJobs(t *testing.T) {
+	jobs, err := FilterRepJobs("", policyID)
+	if err != nil {
+		log.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
+		return
+	}
+	if len(jobs) != 1 {
+		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		return
+	}
+	if jobs[0].ID != jobID {
+		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
+	}
+}
+
 func TestGetRepoJobToStop(t *testing.T) {
 	jobs := [...]models.RepJob{
 		models.RepJob{

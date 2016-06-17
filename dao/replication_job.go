@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 package dao
@@ -271,6 +271,38 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	_, err := repJobPolicyIDQs(policyID).All(&res)
 	genTagListForJob(res...)
 	return res, err
+}
+
+// FilterRepJobs filters jobs by repo and policy ID
+func FilterRepJobs(repo string, policyID int64) ([]*models.RepJob, error) {
+	o := GetOrmer()
+
+	var args []interface{}
+
+	sql := `select * from replication_job `
+
+	if len(repo) != 0 && policyID != 0 {
+		sql += `where repository like ? and policy_id = ? `
+		args = append(args, "%"+repo+"%")
+		args = append(args, policyID)
+	} else if len(repo) != 0 {
+		sql += `where repository like ? `
+		args = append(args, "%"+repo+"%")
+	} else if policyID != 0 {
+		sql += `where policy_id = ? `
+		args = append(args, policyID)
+	}
+
+	sql += `order by creation_time`
+
+	var jobs []*models.RepJob
+	if _, err := o.Raw(sql, args).QueryRows(&jobs); err != nil {
+		return nil, err
+	}
+
+	genTagListForJob(jobs...)
+
+	return jobs, nil
 }
 
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
