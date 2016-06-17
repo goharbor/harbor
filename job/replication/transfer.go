@@ -45,6 +45,7 @@ const (
 )
 
 var (
+	// ErrConflict represents http 409 error
 	ErrConflict = errors.New("conflict")
 )
 
