@@ -57,7 +57,8 @@
     }
         
     function createDestinationSuccess(data, status) {
-      alert('Successful created destination.');
+      console.log('Successful created destination.');
+      vm.reload();
     }
     
     function createDestinationFailed(data, status) {
@@ -72,6 +73,7 @@
     
     function updateDestinationSuccess(data, status) {
       console.log('Successful update destination.');
+      vm.reload();
     }
     
     function updateDestinationFailed(data, status) {

@@ -136,7 +136,6 @@
     }
     function createReplicationPolicySuccess(data, status) {
       console.log('Successful create replication policy.');
-      vm.clearUp();
     }
     function createReplicationPolicyFailed(data, status) {
       console.log('Failed create replication policy.');
