@@ -9,7 +9,7 @@ import (
 )
 
 func TestRepositoryDelete(t *testing.T) {
-	fmt.Println("Test for Project Delete (ProjectDelete) API\n")
+	fmt.Println("Test for Project Delete (ProjectDelete) API")
 	assert := assert.New(t)
 
 	//prepare for test
@@ -17,7 +17,7 @@ func TestRepositoryDelete(t *testing.T) {
 	admin := &HarborAPI.UsrInfo{"admin", "Harbor12345"}
 	prjUsr := &HarborAPI.UsrInfo{"unknown", "unknown"}
 
-	fmt.Println("Checking repository status...\n")
+	fmt.Println("Checking repository status...")
 	apiTest := HarborAPI.NewHarborAPI()
 	var searchResault HarborAPI.Search
 	searchResault, err := apiTest.SearchGet("library")
@@ -32,14 +32,14 @@ func TestRepositoryDelete(t *testing.T) {
 			t.Error("fail to find repo 'library/docker'", err.Error())
 			t.Log(err)
 		} else {
-			fmt.Println("repo 'library/docker' exit\n")
+			fmt.Println("repo 'library/docker' exit")
 		}
 		//assert.Equal(searchResault.Repositories[1].RepoName, "library/hello-world", "2nd repo name should be")
 		if !assert.Equal(searchResault.Repositories[1].RepoName, "library/hello-world", "2nd repo name should be") {
 			t.Error("fail to find repo 'library/hello-world'", err.Error())
 			t.Log(err)
 		} else {
-			fmt.Println("repo 'library/hello-world' exit\n")
+			fmt.Println("repo 'library/hello-world' exit")
 		}
 
 		//t.Log(resault)
