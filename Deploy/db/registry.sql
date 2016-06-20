@@ -123,6 +123,12 @@ create table replication_target (
  url varchar(64),
  username varchar(40),
  password varchar(40),
+ /*
+ target_type indicates the type of target registry,
+ 0 means it's a harbor instance,
+ 1 means it's a regulart registry
+ */
+ target_type tinyint(1) NOT NULL DEFAULT 0,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
