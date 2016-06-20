@@ -23,7 +23,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
@@ -41,51 +40,6 @@ type Registry struct {
 
 // NewRegistry returns an instance of registry
 func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
-	endpoint = strings.TrimRight(endpoint, "/")
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	registry := &Registry{
-		Endpoint: u,
-		client:   client,
-	}
-
-	log.Debugf("initialized a registry client: %s", endpoint)
-
-	return registry, nil
-}
-
-// NewRegistryWithUsername returns a Registry instance which will authorize the request
-// according to the privileges of user
-func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
-	endpoint = strings.TrimRight(endpoint, "/")
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := newClient(endpoint, username, nil, "registry", "catalog", "*")
-	if err != nil {
-		return nil, err
-	}
-
-	registry := &Registry{
-		Endpoint: u,
-		client:   client,
-	}
-
-	log.Debugf("initialized a registry client with username: %s %s", endpoint, username)
-
-	return registry, nil
-}
-
-// NewRegistryWithCredential returns a Registry instance which associate to a crendential.
-// And Credential is essentially a decorator for client to docorate the request before sending it to the registry.
-func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
 	endpoint = strings.TrimSpace(endpoint)
 	endpoint = strings.TrimRight(endpoint, "/")
 	if !strings.HasPrefix(endpoint, "http://") &&
@@ -98,19 +52,35 @@ func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Re
 		return nil, err
 	}
 
-	client, err := newClient(endpoint, "", credential, "", "", "")
-	if err != nil {
-		return nil, err
-	}
-
 	registry := &Registry{
 		Endpoint: u,
 		client:   client,
 	}
 
-	log.Debugf("initialized a registry client with credential: %s", endpoint)
-
 	return registry, nil
+}
+
+// NewRegistryWithUsername returns a Registry instance which will authorize the request
+// according to the privileges of user
+func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
+
+	client, err := newClient(endpoint, username, nil, true, "registry", "catalog", "*")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewRegistry(endpoint, client)
+}
+
+// NewRegistryWithCredential returns a Registry instance which associate to a crendential.
+// And Credential is essentially a decorator for client to docorate the request before sending it to the registry.
+func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
+	client, err := newClient(endpoint, "", credential, true, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewRegistry(endpoint, client)
 }
 
 // Catalog ...
@@ -198,9 +168,15 @@ func buildCatalogURL(endpoint string) string {
 }
 
 func newClient(endpoint, username string, credential auth.Credential,
-	scopeType, scopeName string, scopeActions ...string) (*http.Client, error) {
+	addUserAgent bool, scopeType, scopeName string, scopeActions ...string) (*http.Client, error) {
 
+	endpoint = strings.TrimSpace(endpoint)
 	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
 	resp, err := http.Get(buildPingURL(endpoint))
 	if err != nil {
 		return nil, err
@@ -218,9 +194,15 @@ func newClient(endpoint, username string, credential auth.Credential,
 
 	challenges := auth.ParseChallengeFromResponse(resp)
 	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
-	headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
 
-	transport := NewTransport(http.DefaultTransport, []RequestModifier{authorizer, headerModifier})
+	rm := []RequestModifier{}
+	rm = append(rm, authorizer)
+	if addUserAgent {
+		headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
+		rm = append(rm, headerModifier)
+	}
+
+	transport := NewTransport(http.DefaultTransport, rm)
 	return &http.Client{
 		Transport: transport,
 	}, nil

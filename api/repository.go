@@ -259,7 +259,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
 		credential := auth.NewBasicAuthCredential(username, password)
-		return registry.NewRepositoryWithCredential(repoName, endpoint, credential)
+		return registry.NewRepositoryWithCredentialForUI(repoName, endpoint, credential)
 	}
 
 	username, err = ra.getUsername()
@@ -267,7 +267,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
+	return registry.NewRepositoryWithUsernameForUI(repoName, endpoint, username)
 }
 
 func (ra *RepositoryAPI) getUsername() (string, error) {
