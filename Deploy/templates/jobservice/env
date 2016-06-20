@@ -4,6 +4,6 @@ MYSQL_USR=root
 MYSQL_PWD=$db_password
 UI_SECRET=$ui_secret
 HARBOR_URL=$ui_url
-MAX_JOB_WORKERS=10
+MAX_JOB_WORKERS=$max_job_workers
 LOG_LEVEL=debug
 GODEBUG=netdns=cgo
