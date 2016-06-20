@@ -31,6 +31,9 @@
     
     function link(scope, element, attrs, ctrl) {
       
+      if(!angular.isDefined(ctrl.contentType)) {
+        ctrl.contentType = 'text/plain';  
+      }
       console.log('Received contentType in modal:' + ctrl.contentType);
                   
       scope.$watch('vm.message', function(current) {

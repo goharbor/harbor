@@ -9,6 +9,7 @@
   </div> 
 </div>
 <div class="pane project-pane">
+  <modal-dialog title="// 'confirm_to_delete_user_title' | tr //" message="// 'confirm_to_delete_user' | tr //" action="vm.deleteUser()"></modal-dialog>
   <div class="sub-pane">     
     <table class="table">
       <thead>
@@ -21,7 +22,7 @@
           <td>//u.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
           <td>
             <toggle-admin has-admin-role="u.has_admin_role == 1" user-id="//u.user_id//"></toggle-admin>&nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.deleteUser(u.user_id)"><span class="glyphicon glyphicon-trash"></span></a>
+            &nbsp;&nbsp;<a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.confirmToDelete(u.user_id)"><span class="glyphicon glyphicon-trash"></span></a>
           </td>
         	</tr>
       </tbody>

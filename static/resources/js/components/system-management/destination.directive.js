@@ -15,6 +15,7 @@
     vm.search = search;
     vm.addDestination = addDestination;
     vm.editDestination = editDestination;
+    vm.confirmToDelete = confirmToDelete;
     vm.deleteDestination = deleteDestination;
     
     vm.retrieve();
@@ -40,8 +41,12 @@
       console.log('Action for destination:' + vm.action + ', target ID:' + vm.targetId);
     }
     
-    function deleteDestination(targetId) {
-      DeleteDestinationService(targetId)
+    function confirmToDelete(targetId) {
+      vm.selectedTargetId = targetId;
+    }
+    
+    function deleteDestination() {
+      DeleteDestinationService(vm.selectedTargetId)
         .success(deleteDestinationSuccess)
         .error(deleteDestinationFailed);
     }

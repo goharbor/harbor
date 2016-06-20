@@ -130,5 +130,9 @@ var locale_messages = {
   'no_projects_add_new_project': 'No projects, add new project now.',
   'no_repositories': 'No repositories found, please use "docker push" to upload images.',
   'confirm_to_delete_member_title': 'Delete project member',
-  'confirm_to_delete_member': 'Are you sure to delete the current project member?'
+  'confirm_to_delete_member': 'Are you sure to delete the current project member?',
+  'confirm_to_delete_user_title': 'Delete user',
+  'confirm_to_delete_user': 'Are you sure to delete the current user?',
+  'confirm_to_delete_destination_title': 'Delete destination',
+  'confirm_to_delete_destination': 'Are you sure to delete the current destination?'
 };

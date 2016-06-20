@@ -14,6 +14,7 @@
     vm.username = '';
     vm.searchUser = searchUser;
     vm.deleteUser = deleteUser;
+    vm.confirmToDelete = confirmToDelete;
     vm.retrieve = retrieve;
     
     vm.retrieve();
@@ -22,10 +23,14 @@
       vm.retrieve();
     }
     
-    function deleteUser(userId) {
-      DeleteUserService(userId)
+    function deleteUser() {
+      DeleteUserService(vm.selectedUserId)
         .success(deleteUserSuccess)
         .error(deleteUserFailed);
+    }
+    
+    function confirmToDelete(userId) {
+      vm.selectedUserId = userId;
     }
     
     function retrieve() {
