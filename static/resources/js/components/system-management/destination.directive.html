@@ -7,7 +7,7 @@
           <button class="btn btn-primary" type="button" ng-click="vm.search()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addDestination()" data-toggle="modal" data-target="#createDestinationModal"><span class="glyphicon glyphicon-plus"></span>New Destination</button>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addDestination()" data-toggle="modal" data-target="#createDestinationModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_destination' | tr //</button>
       <create-destination action="//vm.action//" target-id="//vm.targetId//" reload="vm.retrieve()"></create-destination>
     </div>
     <div class="pane"> 
@@ -15,14 +15,14 @@
       <div class="sub-pane">
         <table class="table table-pane">
     			 <thead>
-            <th width="20%">Name</th>
-            <th width="40%">Endpoint</th>
-            <th width="20%">Creation Time</th>
-            <th width="20%">Action</th>
+            <th width="20%">// 'name' | tr //</th>
+            <th width="40%">// 'endpoint' | tr //</th>
+            <th width="20%">// 'creation_time' | tr //</th>
+            <th width="20%">// 'actions' | tr //</th>
     			 </thead>
     			 <tbody>
             <tr ng-if="vm.destinations.length == 0">
-              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">No destinations, add new destination.</h3></td>
+              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
             </tr>
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
               <td>//r.name//</td>

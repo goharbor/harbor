@@ -7,23 +7,23 @@
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationPolicy()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>New Replication</button>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_replication' | tr //</button>
       <create-policy reload="vm.retrievePolicy()" action="vm.action" modal-title="//vm.modalTitle//" policy-id="//vm.policyId//"></create-policy>
     </div>
     <div class="pane-split" id="upon-pane"> 	           
       <div class="sub-pane-split">
         <table class="table table-pane">
     			 <thead>
-            <th width="10%">Name</th>
-            <th width="18%">Description</th>
-            <th width="18%">Destination</th>
-            <th width="18%">Start Time</th>
-            <th width="14%">Activation</th>
-            <th width="15%">Actions</th>
+            <th width="10%">// 'name' | tr //</th>
+            <th width="18%">// 'description' | tr //</th>
+            <th width="18%">// 'destination' | tr //</th>
+            <th width="18%">// 'start_time' | tr //</th>
+            <th width="14%">// 'activation' | tr// </th>
+            <th width="15%">// 'actions' | tr //</th>
     			 </thead>
     			 <tbody>
             <tr ng-if="vm.replicationPolicies.length == 0">
-              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">No replication policies, add new replication policy.</h3></td>
+              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies' | tr //</h3></td>
             </tr>
             <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
               <td>//r.name//</td>
@@ -31,8 +31,8 @@
               <td>//r.target_name//</td>
               <td>//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
               <td ng-switch on="//r.enabled//">
-                <span ng-switch-when="1">Enabled</span>
-                <span ng-switch-when="0">Disabled</span>
+                <span ng-switch-when="1">// 'enabled' | tr //</span>
+                <span ng-switch-when="0">// 'disabled' | tr //</span>
               </td>
               <td>
                 <div class="display-inline-block" ng-switch on="//r.enabled//">
@@ -51,7 +51,7 @@
     </div>
     <div class="col-xs-4 col-md-12 well well-sm well-custom well-split"><div class="col-md-offset-10">//vm.replicationPolicies ? vm.replicationPolicies.length : 0// // 'items' | tr //</div></div>  
     <p class="split-handle"><span class="glyphicon glyphicon-align-justify"></span></p>
-    <h4 class="h4-custom-down">Replication Jobs</h4>
+    <h4 class="h4-custom-down">// 'replication_jobs' | tr //</h4>
     <hr class="hr-line"/>
     <div class="form-inline">
       <div class="input-group">
@@ -65,15 +65,15 @@
       <div class="sub-pane-split">
           <table class="table table-pane" width="98%">
       			 <thead>
-              <th width="20%">Name</th>
-              <th width="25%">Operation</th>
-              <th width="25%">Start Time</th>
-              <th width="15%">Status</th>
-              <th width="15%">Logs</th>
+              <th width="20%">// 'name' | tr //</th>
+              <th width="25%">// 'operation' | tr //</th>
+              <th width="25%">// 'start_time' | tr //</th>
+              <th width="15%">// 'status' | tr //</th>
+              <th width="15%">// 'logs' | tr //</th>
       			 </thead>
       			 <tbody>
               <tr ng-if="vm.replicationJobs.length == 0">
-                <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">No replication jobs.</h3></td>
+                <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_jobs' | tr //</h3></td>
               </tr>
               <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
                 <td>//r.repository//</td>

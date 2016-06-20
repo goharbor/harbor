@@ -28,7 +28,8 @@
    
     function link(scope, element, attrs, ctrl) {     
       var visited = ctrl.url;
-      if (visited !== "") {
+      console.log('visited:' + visited);
+      if (visited !== '' && visited !== '/') {
          element.find('a[href*="' + visited + '"]').addClass('active'); 
       }      
       element.find('a').on('click', click);

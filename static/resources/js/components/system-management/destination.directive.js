@@ -52,7 +52,7 @@
     }
     
     function listDestinationSuccess(data, status) {
-      vm.destinations = data;
+      vm.destinations = data || [];
     }
     
     function listDestinationFailed(data, status) {
