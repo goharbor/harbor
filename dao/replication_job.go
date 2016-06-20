@@ -313,9 +313,13 @@ func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 	return res, err
 }
 
-func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
+func repJobQs() orm.QuerySeter {
 	o := GetOrmer()
-	return o.QueryTable("replication_job").Filter("policy_id", policyID)
+	return o.QueryTable("replication_job")
+}
+
+func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
+	return repJobQs().Filter("policy_id", policyID)
 }
 
 // DeleteRepJob ...
@@ -337,6 +341,26 @@ func UpdateRepJobStatus(id int64, status string) error {
 		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
 	}
 	return err
+}
+
+// ResetRunningJobs update all running jobs status to pending
+func ResetRunningJobs() error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("update replication_job set status = '%s' where status = '%s'", models.JobPending, models.JobRunning)
+	_, err := o.Raw(sql).Exec()
+	return err
+}
+
+// GetRepJobByStatus get jobs of certain statuses
+func GetRepJobByStatus(status ...string) ([]*models.RepJob, error) {
+	var res []*models.RepJob
+	var t []interface{}
+	for _, s := range status {
+		t = append(t, interface{}(s))
+	}
+	_, err := repJobQs().Filter("status__in", t...).All(&res)
+	genTagListForJob(res...)
+	return res, err
 }
 
 func genTagListForJob(jobs ...*models.RepJob) {
