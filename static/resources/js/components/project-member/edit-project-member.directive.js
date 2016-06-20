@@ -6,9 +6,9 @@
     .module('harbor.project.member')
     .directive('editProjectMember', editProjectMember);
       
-  EditProjectMemberController.$inject = ['$scope', 'roles', 'getRole','EditProjectMemberService', 'DeleteProjectMemberService'];
+  EditProjectMemberController.$inject = ['$scope', 'roles', 'getRole','EditProjectMemberService'];
   
-  function EditProjectMemberController($scope, roles, getRole, EditProjectMemberService, DeleteProjectMemberService) {
+  function EditProjectMemberController($scope, roles, getRole, EditProjectMemberService) {
     var vm = this;
         
     vm.roles = roles();
@@ -37,10 +37,8 @@
       } 
     }
     
-    function deleteProjectMember(e) {
-      DeleteProjectMemberService(e.projectId, e.userId)
-        .success(editProjectMemberComplete)
-        .error(editProjectMemberFailed);
+    function deleteProjectMember() {
+      vm.delete();
     }
     
     function editProjectMemberComplete(data, status, headers) {
@@ -71,6 +69,7 @@
         'currentUserId': '=',
         'roleName': '=',
         'projectId': '=',
+        'delete': '&',
         'reload': '&'
       },
       'controller': EditProjectMemberController,

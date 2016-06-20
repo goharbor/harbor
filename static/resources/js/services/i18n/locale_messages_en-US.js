@@ -128,5 +128,7 @@ var locale_messages = {
   'to_harbor': ' to Harbor!',
   'continue' : 'Continue',
   'no_projects_add_new_project': 'No projects, add new project now.',
-  'no_repositories': 'No repositories found, please use "docker push" to upload images.'
+  'no_repositories': 'No repositories found, please use "docker push" to upload images.',
+  'confirm_to_delete_member_title': 'Delete project member',
+  'confirm_to_delete_member': 'Are you sure to delete the current project member?'
 };

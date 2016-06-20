@@ -18,7 +18,7 @@
     };
     var isSupportLanguage = function(language) {
       for (var i in supportLanguages) {
-        if(language === i) {
+        if(language === String(i)) {
           return true;
         }
       }
@@ -46,6 +46,9 @@
             language = defaultLanguage;
           }
           return supportLanguages[language];    
+        },
+        'getSupportLanguages': function() {
+          return supportLanguages;
         },
         'unset': function(){
           $cookies.put('language', defaultLanguage, cookieOptions);

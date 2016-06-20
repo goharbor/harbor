@@ -35,6 +35,7 @@ const (
 )
 
 var supportLanguages map[string]langType
+var mappingLangNames map[string]string
 
 // Prepare extracts the language information from request and populate data for rendering templates.
 func (b *BaseController) Prepare() {
@@ -49,35 +50,22 @@ func (b *BaseController) Prepare() {
 		}
 	}
 
-	if _, exist := supportLanguages[lang]; exist == false { //Check if support the request language.
-		lang = defaultLang //Set default language if not supported.
-	}
-
 	sessionLang := b.GetSession("lang")
 	if sessionLang != nil {
 		b.SetSession("Lang", lang)
 		lang = sessionLang.(string)
 	}
 
+	if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
+		lang = defaultLang //Set default language if not supported.
+	}
+
 	curLang := langType{
 		Lang: lang,
 	}
 
-	restLangs := make([]*langType, 0, len(langTypes)-1)
-	for _, v := range langTypes {
-		if lang != v.Lang {
-			restLangs = append(restLangs, v)
-		} else {
-			curLang.Name = v.Name
-		}
-	}
-
 	// Set language properties.
-	b.Lang = lang
 	b.Data["Lang"] = curLang.Lang
-	b.Data["CurLang"] = curLang.Name
-	b.Data["RestLangs"] = restLangs
-	b.Data["SupportLanguages"] = supportLanguages
 
 	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
 	if authMode == "" {
@@ -143,10 +131,11 @@ func (cc *CommonController) LogOut() {
 // SwitchLanguage User can swith to prefered language
 func (cc *CommonController) SwitchLanguage() {
 	lang := cc.GetString("lang")
-	if _, exist := supportLanguages[lang]; exist {
-		cc.SetSession("lang", lang)
-		cc.Data["Lang"] = lang
+	if _, exist := supportLanguages[lang]; !exist {
+		lang = defaultLang
 	}
+	cc.SetSession("lang", lang)
+	cc.Data["Lang"] = lang
 	cc.Redirect(cc.Ctx.Request.Header.Get("Referer"), http.StatusFound)
 }
 
@@ -183,8 +172,6 @@ func init() {
 			log.Warningf("Failed to parse config file: %s, error: %v", configPath, err)
 		}
 	}
-
-	beego.AddFuncMap("i18n", i18n.Tr)
 
 	langs := strings.Split(beego.AppConfig.String("lang::types"), "|")
 	names := strings.Split(beego.AppConfig.String("lang::names"), "|")

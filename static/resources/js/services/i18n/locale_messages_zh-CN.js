@@ -126,5 +126,7 @@ var locale_messages = {
   'to_harbor': ' 使用Harbor!',
   'continue' : '继续',
   'no_projects_add_new_project': '当前没有项目，请新增项目。',
-  'no_repositories': '未发现镜像，请用"docker push"命令上传镜像。'
+  'no_repositories': '未发现镜像，请用"docker push"命令上传镜像。',
+  'confirm_to_delete_member_title': '删除项目成员',
+  'confirm_to_delete_member': '确认删除当前项目成员吗？'
 };

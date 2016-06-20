@@ -14,8 +14,9 @@
     vm.currentLanguage = I18nService().getCurrentLanguage();
     vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
     
-    console.log('current language:' + I18nService().getCurrentLanguage());
-    
+    console.log('current language:' + vm.languageName);
+
+    vm.supportLanguages = I18nService().getSupportLanguages(); 
     vm.user = currentUser.get();
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;

@@ -8,9 +8,7 @@
     <li class="dropdown-submenu">
       <a tabindex="-1" href="#"><span class="glyphicon glyphicon-globe"></span> //vm.languageName//</a>
       <ul class="dropdown-menu">
-        {{ range $key, $value := .SupportLanguages }}
-        <li><a href="javascript:void(0);" ng-click="vm.setLanguage('{{ $key }}')">{{ $value.Name }}</a></li>						
-        {{ end }}
+        <li ng-repeat="(key, value) in vm.supportLanguages"><a href="javascript:void(0);" ng-click="vm.setLanguage(key)">// value //</a></li>						
       </ul>
     </li>
     <li class="divider"></li>
@@ -23,9 +21,7 @@
       <span class="glyphicon glyphicon-globe"></span> //vm.languageName//
   </a>
   <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
-     {{ range $key, $value := .SupportLanguages }}
-     <li><a href="javascript:void(0);" ng-click="vm.setLanguage('{{ $key }}')">{{ $value.Name }}</a></li>						
-     {{ end }}
+     <li ng-repeat="(key, value) in vm.supportLanguages"><a href="javascript:void(0);" ng-click="vm.setLanguage(key)">// value //</a></li>						
   </ul>
 </div>
 {{ end }}
