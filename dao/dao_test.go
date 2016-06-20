@@ -1164,7 +1164,7 @@ func TestGetRepoJobToStop(t *testing.T) {
 	}
 	var err error
 	var i int64
-	ids := make([]int64, 0)
+	var ids []int64
 	for _, j := range jobs {
 		i, err = AddRepJob(j)
 		ids = append(ids, i)

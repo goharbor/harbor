@@ -351,10 +351,10 @@ func ResetRunningJobs() error {
 	return err
 }
 
-// GetRepJobsByStatus get jobs of certain statuses
+// GetRepJobByStatus get jobs of certain statuses
 func GetRepJobByStatus(status ...string) ([]*models.RepJob, error) {
 	var res []*models.RepJob
-	t := make([]interface{}, 0)
+	var t []interface{}
 	for _, s := range status {
 		t = append(t, interface{}(s))
 	}
