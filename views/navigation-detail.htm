@@ -1,0 +1,8 @@
+<ul class="switch-pane-tabs pull-right" {{ if eq .IsAdmin 1 }} style="width: 365px" {{ end }} role="tablist">
+  <li><a tag="repositories" href="#/repositories?project_id=//vm.projectId//">// 'repositories' | tr //</a><span class="gutter">|</span></li>
+  {{ if eq .IsAdmin 1 }}
+  <li><a tag="replication" href="#/replication?project_id=//vm.projectId//">// 'replication' | tr //</a><span class="gutter">|</span></li>
+  {{ end }}
+  <li><a tag="users" href="#/users?project_id=//vm.projectId//">// 'users' | tr //</a><span class="gutter">|</span></li>
+  <li><a tag="logs"  href="#/logs?project_id=//vm.projectId//">// 'logs' | tr //</a></li>
+</ul>

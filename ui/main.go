@@ -20,12 +20,12 @@ import (
 
 	log "github.com/vmware/harbor/utils/log"
 
+	"os"
+
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-
-	"os"
 
 	"github.com/astaxie/beego"
 )
@@ -66,6 +66,7 @@ func updateInitPassword(userID int, password string) error {
 func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	beego.AddTemplateExt("htm")
 	dao.InitDB()
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
 		log.Error(err)
