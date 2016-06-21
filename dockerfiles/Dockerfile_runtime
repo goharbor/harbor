@@ -1,14 +1,9 @@
 FROM demoregistry.dataman-inc.com/library/centos7-base:20160602202509
 MAINTAINER zwli zwli@dataman-inc.com
 
-COPY omega-billing/omega-billing /
-COPY omega-billing/sql /sql
-ENTRYPOINT ["./omega-billing"]
-
 COPY harbor/views /views
 COPY harbor/static /static
 COPY harbor/CATEGORIES /CATEGORIES
-
 COPY harbor/Deploy/Omega/ui/ /etc/ui
 COPY harbor/sql/ /sql
 COPY harbor/harbor /
