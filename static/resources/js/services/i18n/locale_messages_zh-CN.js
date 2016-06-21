@@ -164,5 +164,6 @@ var locale_messages = {
   'change_profile': '修改个人信息',
   'confirm_to_change_profile': '确认要修改个人信息吗？',
   'form_is_invalid': '表单内容无效',
-  'form_is_invalid_message': '表单内容无效，请填写必填字段。'
+  'form_is_invalid_message': '表单内容无效，请填写必填字段。',
+  'administrator': '管理员'
 };

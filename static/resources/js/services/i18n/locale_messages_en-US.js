@@ -165,5 +165,6 @@ var locale_messages = {
   'change_profile': 'Change Profile',
   'confirm_to_change_profile': 'Are you sure to change your profile?',
   'form_is_invalid': 'Form content is invalid',
-  'form_is_invalid_message': 'Form content is invalid, please fill the required fields.'
+  'form_is_invalid_message': 'Form content is invalid, please fill the required fields.',
+  'administrator': 'Administrator'
 };
