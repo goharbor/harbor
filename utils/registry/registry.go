@@ -16,20 +16,15 @@
 package registry
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 
-	"github.com/vmware/harbor/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
-)
-
-const (
-	// UserAgent is used to decorate the request so it can be identified by webhook.
-	UserAgent string = "registry-client"
+	"github.com/vmware/harbor/utils/registry/utils"
 )
 
 // Registry holds information of a registry entity
@@ -40,14 +35,7 @@ type Registry struct {
 
 // NewRegistry returns an instance of registry
 func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
-	endpoint = strings.TrimSpace(endpoint)
-	endpoint = strings.TrimRight(endpoint, "/")
-	if !strings.HasPrefix(endpoint, "http://") &&
-		!strings.HasPrefix(endpoint, "https://") {
-		endpoint = "http://" + endpoint
-	}
-
-	u, err := url.Parse(endpoint)
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -60,27 +48,27 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 	return registry, nil
 }
 
-// NewRegistryWithUsername returns a Registry instance which will authorize the request
-// according to the privileges of user
-func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
-
-	client, err := newClient(endpoint, username, nil, true, "registry", "catalog", "*")
+// NewRegistryWithModifiers returns an instance of Registry according to the modifiers
+func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modifier) (*Registry, error) {
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewRegistry(endpoint, client)
-}
-
-// NewRegistryWithCredential returns a Registry instance which associate to a crendential.
-// And Credential is essentially a decorator for client to docorate the request before sending it to the registry.
-func NewRegistryWithCredential(endpoint string, credential auth.Credential) (*Registry, error) {
-	client, err := newClient(endpoint, "", credential, true, "", "", "")
-	if err != nil {
-		return nil, err
+	t := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: insecure,
+		},
 	}
 
-	return NewRegistry(endpoint, client)
+	transport := NewTransport(t, modifiers...)
+
+	return &Registry{
+		Endpoint: u,
+		client: &http.Client{
+			Transport: transport,
+		},
+	}, nil
 }
 
 // Catalog ...
@@ -133,16 +121,6 @@ func (r *Registry) Ping() error {
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		//		if urlErr, ok := err.(*url.Error); ok {
-		//			if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
-		//				return &registry_error.Error{
-		//					StatusCode: regErr.StatusCode,
-		//					Detail:     regErr.Detail,
-		//				}
-		//			}
-		//			return urlErr.Err
-		//		}
-
 		return parseError(err)
 	}
 
@@ -165,45 +143,4 @@ func (r *Registry) Ping() error {
 
 func buildCatalogURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/_catalog", endpoint)
-}
-
-func newClient(endpoint, username string, credential auth.Credential,
-	addUserAgent bool, scopeType, scopeName string, scopeActions ...string) (*http.Client, error) {
-
-	endpoint = strings.TrimSpace(endpoint)
-	endpoint = strings.TrimRight(endpoint, "/")
-	if !strings.HasPrefix(endpoint, "http://") &&
-		!strings.HasPrefix(endpoint, "https://") {
-		endpoint = "http://" + endpoint
-	}
-
-	resp, err := http.Get(buildPingURL(endpoint))
-	if err != nil {
-		return nil, err
-	}
-
-	var handlers []auth.Handler
-	var handler auth.Handler
-	if credential != nil {
-		handler = auth.NewStandardTokenHandler(credential, scopeType, scopeName, scopeActions...)
-	} else {
-		handler = auth.NewUsernameTokenHandler(username, scopeType, scopeName, scopeActions...)
-	}
-
-	handlers = append(handlers, handler)
-
-	challenges := auth.ParseChallengeFromResponse(resp)
-	authorizer := auth.NewRequestAuthorizer(handlers, challenges)
-
-	rm := []RequestModifier{}
-	rm = append(rm, authorizer)
-	if addUserAgent {
-		headerModifier := NewHeaderModifier(map[string]string{http.CanonicalHeaderKey("User-Agent"): UserAgent})
-		rm = append(rm, headerModifier)
-	}
-
-	transport := NewTransport(http.DefaultTransport, rm)
-	return &http.Client{
-		Transport: transport,
-	}, nil
 }

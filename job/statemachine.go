@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 package job
@@ -258,9 +258,12 @@ func (sm *SM) Reset(jid int64) error {
 }
 
 func addImgTransferTransition(sm *SM) error {
+	// TODO read variable from config file
+	insecure := true
+
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		sm.Parms.Tags, sm.Logger)
+		insecure, sm.Parms.Tags, sm.Logger)
 	if err != nil {
 		return err
 	}
@@ -274,8 +277,10 @@ func addImgTransferTransition(sm *SM) error {
 }
 
 func addImgDeleteTransition(sm *SM) error {
+	// TODO read variable from config file
+	insecure := true
 	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
-		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
+		sm.Parms.TargetUsername, sm.Parms.TargetPassword, insecure, sm.Logger)
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
 	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})

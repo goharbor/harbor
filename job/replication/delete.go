@@ -16,6 +16,7 @@
 package replication
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -39,17 +40,20 @@ type Deleter struct {
 	dstUsr string // username ...
 	dstPwd string // username ...
 
+	insecure bool
+
 	logger *log.Logger
 }
 
 // NewDeleter returns a Deleter
-func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, logger *log.Logger) *Deleter {
+func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, insecure bool, logger *log.Logger) *Deleter {
 	deleter := &Deleter{
 		repository: repository,
 		tags:       tags,
 		dstURL:     dstURL,
 		dstUsr:     dstUsr,
 		dstPwd:     dstPwd,
+		insecure:   insecure,
 		logger:     logger,
 	}
 	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, destination user: %s",
@@ -69,7 +73,7 @@ func (d *Deleter) Enter() (string, error) {
 	// delete repository
 	if len(d.tags) == 0 {
 		u := url + "?repo_name=" + d.repository
-		if err := del(u, d.dstUsr, d.dstPwd); err != nil {
+		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
 			d.logger.Errorf("an error occurred while deleting repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
 			return "", err
 		}
@@ -82,7 +86,7 @@ func (d *Deleter) Enter() (string, error) {
 	// delele tags
 	for _, tag := range d.tags {
 		u := url + "?repo_name=" + d.repository + "&tag=" + tag
-		if err := del(u, d.dstUsr, d.dstPwd); err != nil {
+		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
 			d.logger.Errorf("an error occurred while deleting repository %s:%s on %s with user %s: %v", d.repository, tag, d.dstURL, d.dstUsr, err)
 			return "", err
 		}
@@ -93,14 +97,23 @@ func (d *Deleter) Enter() (string, error) {
 	return models.JobFinished, nil
 }
 
-func del(url, username, password string) error {
+func del(url, username, password string, insecure bool) error {
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	req.SetBasicAuth(username, password)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

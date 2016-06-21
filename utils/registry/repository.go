@@ -17,6 +17,7 @@ package registry
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,8 +29,9 @@ import (
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/utils/registry/auth"
+
 	registry_error "github.com/vmware/harbor/utils/registry/error"
+	"github.com/vmware/harbor/utils/registry/utils"
 )
 
 // Repository holds information of a repository entity
@@ -39,20 +41,11 @@ type Repository struct {
 	client   *http.Client
 }
 
-// TODO add agent to header of request, notifications need it
-
 // NewRepository returns an instance of Repository
 func NewRepository(name, endpoint string, client *http.Client) (*Repository, error) {
 	name = strings.TrimSpace(name)
 
-	endpoint = strings.TrimSpace(endpoint)
-	endpoint = strings.TrimRight(endpoint, "/")
-	if !strings.HasPrefix(endpoint, "http://") &&
-		!strings.HasPrefix(endpoint, "https://") {
-		endpoint = "http://" + endpoint
-	}
-
-	u, err := url.Parse(endpoint)
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -66,48 +59,30 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 	return repository, nil
 }
 
-// NewRepositoryWithCredential returns a Repository instance which will authorize the request
-// according to the credenttial
-func NewRepositoryWithCredential(name, endpoint string, credential auth.Credential) (*Repository, error) {
-	client, err := newClient(endpoint, "", credential, true, "repository", name, "pull", "push")
+// NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
+func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
+	name = strings.TrimSpace(name)
+
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewRepository(name, endpoint, client)
-}
-
-// NewRepositoryWithCredentialForUI returns a Repository instance for UI
-// The "user-agent" header of this instance does not been set
-func NewRepositoryWithCredentialForUI(name, endpoint string, credential auth.Credential) (*Repository, error) {
-	client, err := newClient(endpoint, "", credential, false, "repository", name, "pull", "push")
-	if err != nil {
-		return nil, err
+	t := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: insecure,
+		},
 	}
 
-	return NewRepository(name, endpoint, client)
-}
+	transport := NewTransport(t, modifiers...)
 
-// NewRepositoryWithUsername returns a Repository instance which will authorize the request
-// according to the privileges of user
-func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, error) {
-	client, err := newClient(endpoint, username, nil, true, "repository", name, "pull", "push")
-	if err != nil {
-		return nil, err
-	}
-
-	return NewRepository(name, endpoint, client)
-}
-
-// NewRepositoryWithUsernameForUI returns a Repository instance for UI
-// The "user-agent" header of this instance does not been set
-func NewRepositoryWithUsernameForUI(name, endpoint, username string) (*Repository, error) {
-	client, err := newClient(endpoint, username, nil, false, "repository", name, "pull", "push")
-	if err != nil {
-		return nil, err
-	}
-
-	return NewRepository(name, endpoint, client)
+	return &Repository{
+		Name:     name,
+		Endpoint: u,
+		client: &http.Client{
+			Transport: transport,
+		},
+	}, nil
 }
 
 func parseError(err error) error {

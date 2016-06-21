@@ -159,7 +159,7 @@ func (p *ProjectAPI) List() {
 	if len(isPublic) > 0 {
 		public, err = strconv.Atoi(isPublic)
 		if err != nil {
-			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
+			log.Errorf("Error parsing public property: %v, error: %v", isPublic, err)
 			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		}
 	}
