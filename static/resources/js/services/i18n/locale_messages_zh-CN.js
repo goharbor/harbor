@@ -159,5 +159,10 @@ var locale_messages = {
   'endpoint': '终端URL',
   'endpoint_is_required': '终端URL为必填项。',
   'test_connection': '测试连接',
-  'add_new_destination': '新建目标'
+  'add_new_destination': '新建目标',
+  'confirm_to_change_password': '确认要修改密码吗？',
+  'change_profile': '修改个人信息',
+  'confirm_to_change_profile': '确认要修改个人信息吗？',
+  'form_is_invalid': '表单内容无效',
+  'form_is_invalid_message': '表单内容无效，请填写必填字段。'
 };

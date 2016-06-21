@@ -160,5 +160,10 @@ var locale_messages = {
   'destination_setting': 'Destination Setting',
   'endpoint': 'Endpoint',
   'test_connection': 'Test connection',
-  'add_new_destination': 'New Destination'
+  'add_new_destination': 'New Destination',
+  'confirm_to_change_password': 'Are you sure to change your password?',
+  'change_profile': 'Change Profile',
+  'confirm_to_change_profile': 'Are you sure to change your profile?',
+  'form_is_invalid': 'Form content is invalid',
+  'form_is_invalid_message': 'Form content is invalid, please fill the required fields.'
 };
