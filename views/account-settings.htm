@@ -4,7 +4,7 @@
 	    <div class="section">
 		    <h1 class="col-md-12 col-md-offset-2 main-title title-color">// 'account_setting' | tr //</h1>
         <div class="col-md-12 col-md-offset-2 main-content">
-          <modal-dialog title="//vm.modalTitle//" message="//vm.modalMessage//" action="vm.updateUser()"></modal-dialog>
+          <modal-dialog title="//vm.modalTitle//" message="//vm.modalMessage//" action="vm.confirm()" confirm-only="true"></modal-dialog>
           <form name="form" class="css-form form-horizontal" novalidate>              
             <div class="form-group">
               <label for="username" class="col-sm-3 control-label">// 'username' | tr //:</label>
@@ -102,7 +102,7 @@
             </div>
             <div class="form-group">
               <div class="col-md-offset-7 col-md-10">
-                <input type="submit" class="btn btn-primary" ng-click="vm.confirmToUpdate(user)" data-toggle="modal" data-target="#myModal" value="// 'save' | tr //">                    
+                <input type="submit" class="btn btn-primary" ng-click="vm.updateUser(user)" value="// 'save' | tr //">                    
                 <input type="button" class="btn btn-default" ng-click="vm.cancel(form)" value="// 'cancel' | tr //">
               </div>
             </div>  

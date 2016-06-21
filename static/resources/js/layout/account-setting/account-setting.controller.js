@@ -17,7 +17,7 @@
     
     vm.reset = reset;    
     vm.toggleChangePassword = toggleChangePassword;
-    vm.confirmToUpdate = confirmToUpdate;
+    vm.confirm = confirm;
     vm.updateUser = updateUser;
     vm.cancel = cancel;
     
@@ -39,43 +39,32 @@
       }     
     }
     
-    function confirmToUpdate(user) {     
-      vm.user = user;
-      if(vm.isOpen) {
-        if(vm.user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
-          vm.modalTitle = $filter('tr')('change_password', []);
-          vm.modalMessage = $filte('tr')('confirm_to_change_password', []);
-          return true;
-        }
-      }else{
-        if(vm.user && angular.isDefined(vm.user.username) && angular.isDefined(vm.user.password) && 
-            angular.isDefined(vm.user.realname)) {
-          vm.modalTitle = $filter('tr')('change_profile', []);
-          vm.modalMessage = $filter('tr')('confirm_to_change_profile', []);
-          return true;
-        }
-      }
-      
-      vm.modalTitle = $filter('tr')('form_is_invalid');
-      vm.modalMessage = $filter('tr')('form_is_invalid_message', []);
-      return false;
+    function confirm() {     
+      $window.location.href = '/dashboard';
     }    
                 
-    function updateUser() {
+    function updateUser(user) {
       if(vm.isOpen){
-        ChangePasswordService(userId, vm.user.oldPassword, vm.user.password)
-          .success(changePasswordSuccess)
-          .error(changePasswordFailed);
+        if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
+          ChangePasswordService(userId, user.oldPassword, user.password)
+            .success(changePasswordSuccess)
+            .error(changePasswordFailed);
+        }
       }else{
-        UpdateUserService(userId, vm.user)
-          .success(updateUserSuccess)
-          .error(updateUserFailed); 
-        currentUser.set(vm.user);        
+        if(user && angular.isDefined(user.username) && angular.isDefined(user.password) && 
+            angular.isDefined(user.realname)) {
+          UpdateUserService(userId, user)
+            .success(updateUserSuccess)
+            .error(updateUserFailed); 
+          currentUser.set(user);        
+        }
       }
     }
     
     function changePasswordSuccess(data, status) {
-      $window.location.href = '/dashboard';
+      vm.modalTitle = $filter('tr')('change_password', []);
+      vm.modalMessage = $filter('tr')('successful_changed_password', []);
+      $scope.$broadcast('showDialog', true);
     }
     
     function changePasswordFailed(data, status) {
@@ -87,7 +76,9 @@
     }
     
     function updateUserSuccess(data, status) {
-      $window.location.href = '/dashboard';
+      vm.modalTitle = $filter('tr')('change_profile', []);
+      vm.modalMessage = $filter('tr')('successful_changed_profile', []);
+      $scope.$broadcast('showDialog', true);
     }
     
     function updateUserFailed(data, status) {

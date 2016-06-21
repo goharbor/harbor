@@ -19,6 +19,9 @@
     function getCurrentUserComplete(response) {
       if(angular.isDefined(response)) {
         currentUser.set(response.data);  
+        if(location.pathname === '/') {
+          $window.location.href = '/dashboard';
+        }
       }   
     }
     
