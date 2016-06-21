@@ -16,6 +16,7 @@
 package cache
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -27,11 +28,10 @@ import (
 
 var (
 	// Cache is the global cache in system.
-	Cache             cache.Cache
-	endpoint          string
-	username          string
-	registryClient    *registry.Registry
-	repositoryClients map[string]*registry.Repository
+	Cache          cache.Cache
+	endpoint       string
+	username       string
+	registryClient *registry.Registry
 )
 
 const catalogKey string = "catalog"
@@ -45,7 +45,12 @@ func init() {
 
 	endpoint = os.Getenv("REGISTRY_URL")
 	username = "admin"
-	repositoryClients = make(map[string]*registry.Repository, 10)
+
+	registryClient, err = registry.NewRegistryWithUsername(endpoint, username)
+	if err != nil {
+		log.Errorf("error occurred while initializing registry client used by cache: %v", err)
+		return
+	}
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
@@ -53,12 +58,7 @@ func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
 
 	if registryClient == nil {
-		var err error
-		registryClient, err = registry.NewRegistryWithUsername(endpoint, username)
-		if err != nil {
-			log.Errorf("error occurred while initializing registry client used by cache: %v", err)
-			return err
-		}
+		return errors.New("registry client is nil")
 	}
 
 	var err error
@@ -70,15 +70,12 @@ func RefreshCatalogCache() error {
 	repos := []string{}
 
 	for _, repo := range rs {
-		rc, ok := repositoryClients[repo]
-		if !ok {
-			rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
-			if err != nil {
-				log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
-				continue
-			}
-			repositoryClients[repo] = rc
+		rc, err := registry.NewRepositoryWithUsername(repo, endpoint, username)
+		if err != nil {
+			log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
+			continue
 		}
+
 		tags, err := rc.ListTag()
 		if err != nil {
 			log.Errorf("error occurred while list tag for %s: %v", repo, err)
