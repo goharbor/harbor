@@ -19,6 +19,5 @@ package models
 type TopRepo struct {
 	RepoName    string `json:"name"`
 	AccessCount int64  `json:"count"`
-	Size        int64  `json:"size"`
 	Creator     string `json:"creator"`
 }

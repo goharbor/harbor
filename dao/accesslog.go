@@ -152,28 +152,43 @@ func GetTopRepos(countNum int) ([]models.TopRepo, error) {
 	o := GetOrmer()
 
 	sql := "select repo_name, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where project.public = 1 and access_log.operation = 'pull' group by repo_name order by access_count desc limit ? "
-	queryParam := make([]interface{}, 1)
+	queryParam := []interface{}{}
 	queryParam = append(queryParam, countNum)
-	var lists []models.TopRepo
-	_, err := o.Raw(sql, queryParam).QueryRows(&lists)
+	var list []models.TopRepo
+	_, err := o.Raw(sql, queryParam).QueryRows(&list)
 	if err != nil {
 		return nil, err
 	}
-	var repoString string
-	for _, v := range lists {
-		repoString += v.RepoName + ","
+	if len(list) == 0 {
+		return list, nil
+	} else {
+		place_holder := make([]string, len(list))
+		repos := make([]string, len(list))
+		for i, v := range list {
+			repos[i] = v.RepoName
+			place_holder[i] = "?"
+		}
+		place_holder_str := strings.Join(place_holder, ",")
+		queryParam = nil
+		queryParam = append(queryParam, repos)
+		var usrnameList []models.TopRepo
+		sql = `select a.username as creator, a.repo_name from (select access_log.repo_name, user.username,
+		access_log.op_time from user left join access_log on user.user_id = access_log.user_id where 
+		access_log.operation = 'push' and access_log.repo_name in (######) order by access_log.repo_name,
+		access_log.op_time ASC) a group by a.repo_name`
+		sql = strings.Replace(sql, "######", place_holder_str, 1)
+		_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
+		if err != nil {
+			return nil, err
+		}
+		for i := 0; i < len(list); i++ {
+			for _, v := range usrnameList {
+				if v.RepoName == list[i].RepoName {
+					list[i].Creator = v.Creator
+					break
+				}
+			}
+		}
+		return list, nil
 	}
-	repoString = repoString[0 : len(repoString)-1]
-	var usrnameList []models.TopRepo
-	sql = "select username as creator from user left join access_log on user.user_id = access_log.user_id where access_log.operation = 'push' and access_log.repo_name in (?)"
-	queryParam = nil
-	queryParam = append(queryParam, repoString)
-	_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
-	if err != nil {
-		return nil, err
-	}
-	for i := 0; i < len(lists); i++ {
-		lists[i].Creator = usrnameList[i].Creator
-	}
-	return lists, nil
 }
