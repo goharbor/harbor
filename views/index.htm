@@ -39,8 +39,9 @@
       <div class="col-md-4">
     	    <div class="row">
     	      <div class="down-section">
-    	      		<h4 class="page-header underlined">// 'why_use_harbor' | tr //</h4>
-        			<p class="page-content text-justify">
+              <modal-dialog title="// 'harbor_intro_title' | tr //" message='// vm.message //' content-type="text/html"></modal-dialog>
+    	        <h4 class="page-header underlined">// 'why_use_harbor' | tr //</h4>
+              <p class="page-content text-justify">
       			  // 'index_desc' | tr //
         			</p>
     		      <ul>
@@ -51,15 +52,14 @@
         			  <li class="long-line">▪︎ // 'index_desc_5' | tr //</li>
         			</ul>
     		      <div class="page-content pull-right">
-    		        <a href="#"><span class="glyphicon glyphicon-triangle-right"></span> // 'learn_more' | tr //</a>
+    		        <a href="javascript:void(0);" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-triangle-right"></span> // 'view_all' | tr //</a>
     		      </div>
           </div>						
     	    </div>
       </div>
       <div class="col-md-8">
     	    <div class="down-section">
-      		  <h4 class="page-header title-color underlined">// 'repositories' | tr //</h4>
-      		  <search filter-by="repository"></search>
+      		  <top-repository></top-repository>
     	    </div>
     	  </div>
     </div>

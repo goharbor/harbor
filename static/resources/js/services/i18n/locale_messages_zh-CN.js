@@ -14,7 +14,7 @@ var locale_messages = {
   'index_desc_3': '访问控制: 提供基于角色的访问控制，可集成企业目前拥有的用户管理系统（如:AD/LDAP）。',
   'index_desc_4': '审计: 所有访问Registry服务的操作均被记录，便于日后审计。',
   'index_desc_5': '管理界面: 具有友好易用图形管理界面。',
-  'learn_more': '更多...',
+  'view_all': '显示全部...',
   'repositories': '镜像仓库',
   'project_repo_name': '项目/镜像仓库名称',
   'creation_time': '创建时间',
@@ -51,8 +51,8 @@ var locale_messages = {
   'public_projects': '公开项目',
   'public': '公开',
   'public_repositories': '公开镜像仓库',
-  'my_project_count': '项目',
-  'my_repo_count': '镜像仓库',
+  'my_project_count': '我的项目',
+  'my_repo_count': '我的镜像仓库',
   'public_project_count': '公开项目',
   'public_repo_count': '公开镜像仓库',
   'total_project_count': '全部项目',
@@ -165,5 +165,7 @@ var locale_messages = {
   'confirm_to_change_profile': '确认要修改个人信息吗？',
   'form_is_invalid': '表单内容无效',
   'form_is_invalid_message': '表单内容无效，请填写必填字段。',
-  'administrator': '管理员'
+  'administrator': '管理员',
+  'popular_repositories': '热门镜像仓库',
+  'harbor_intro_title': '关于 Harbor'
 };
