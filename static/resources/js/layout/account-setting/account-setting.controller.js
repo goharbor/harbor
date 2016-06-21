@@ -6,26 +6,27 @@
     .module('harbor.layout.account.setting')
     .controller('AccountSettingController', AccountSettingController);
   
-  AccountSettingController.$inject = ['ChangePasswordService', '$scope', '$window', 'currentUser'];
+  AccountSettingController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
   
-  function AccountSettingController(ChangePasswordService, $scope, $window, currentUser) {
+  function AccountSettingController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
     var vm = this;
     vm.isOpen = false;
-    vm.user = {};
-    
+ 
     vm.hasError = false;
     vm.errorMessage = '';
     
     vm.reset = reset;    
     vm.toggleChangePassword = toggleChangePassword;
-    vm.changeProfile = changeProfile;
-    vm.changePassword= changePassword;
+    vm.confirmToUpdate = confirmToUpdate;
+    vm.updateUser = updateUser;
     vm.cancel = cancel;
     
-   
-    vm.user = currentUser.get();
-    
+    $scope.user = currentUser.get();
+    var userId = $scope.user.user_id;
+        
     function reset() {
+      $scope.form.$setUntouched();
+      $scope.form.$setPristine();
       vm.hasError = false;
       vm.errorMessage = '';
     }
@@ -37,25 +38,44 @@
         vm.isOpen = true;
       }     
     }
-        
-    function getCurrentUserFailed(data) {
-      console.log('Failed get current user:' + data);
-    }
     
-    function changeProfile(user) {
-      console.log(user);
-    }
-    
-    function changePassword(user) {
-      if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
-        ChangePasswordService(vm.user.user_id, user.oldPassword, user.password)
+    function confirmToUpdate(user) {     
+      vm.user = user;
+      if(vm.isOpen) {
+        if(vm.user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
+          vm.modalTitle = $filter('tr')('change_password', []);
+          vm.modalMessage = $filte('tr')('confirm_to_change_password', []);
+          return true;
+        }
+      }else{
+        if(vm.user && angular.isDefined(vm.user.username) && angular.isDefined(vm.user.password) && 
+            angular.isDefined(vm.user.realname)) {
+          vm.modalTitle = $filter('tr')('change_profile', []);
+          vm.modalMessage = $filter('tr')('confirm_to_change_profile', []);
+          return true;
+        }
+      }
+      
+      vm.modalTitle = $filter('tr')('form_is_invalid');
+      vm.modalMessage = $filter('tr')('form_is_invalid_message', []);
+      return false;
+    }    
+                
+    function updateUser() {
+      if(vm.isOpen){
+        ChangePasswordService(userId, vm.user.oldPassword, vm.user.password)
           .success(changePasswordSuccess)
           .error(changePasswordFailed);
+      }else{
+        UpdateUserService(userId, vm.user)
+          .success(updateUserSuccess)
+          .error(updateUserFailed); 
+        currentUser.set(vm.user);        
       }
     }
     
     function changePasswordSuccess(data, status) {
-      $window.location.href = '/project';
+      $window.location.href = '/dashboard';
     }
     
     function changePasswordFailed(data, status) {
@@ -66,11 +86,16 @@
       }
     }
     
+    function updateUserSuccess(data, status) {
+      $window.location.href = '/dashboard';
+    }
+    
+    function updateUserFailed(data, status) {
+      console.log('Failed update user.');
+    }
+    
     function cancel(form) {
-      if(form) {
-        form.$setPristine();
-      }
-      $window.location.href = '/project';
+      $window.location.href = '/dashboard';
     }
     
   }
