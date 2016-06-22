@@ -9,7 +9,9 @@
   I18nService.$inject = ['$cookies', '$window'];
   
   function I18nService($cookies, $window) {
+    
     var cookieOptions = {'path': '/'};
+       
     var messages = $.extend(true, {}, eval('locale_messages'));    
     var defaultLanguage = navigator.language || 'en-US';
     var supportLanguages = {
@@ -24,6 +26,7 @@
       }
       return false;
     };
+    
         
     return tr;
     function tr() {
@@ -33,9 +36,11 @@
           if(!angular.isDefined(language) || !isSupportLanguage(language)) {
             language = defaultLanguage;
           }
+          $cookies.remove('language', cookieOptions);
           $cookies.put('language', language, cookieOptions);
         },
         'setDefaultLanguage': function() {
+          $cookies.remove('language', cookieOptions);
           $cookies.put('language', defaultLanguage, cookieOptions);
         },
         'getCurrentLanguage': function() {
