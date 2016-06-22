@@ -4,6 +4,9 @@
       <span class="glyphicon glyphicon-user"></span> {{ .Username }}
   </a>
   <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+    {{ if eq .AddNew true }}
+    <li><a href="/add_new"><span class="glyphicon glyphicon-plus"></span> // 'add_new_title' | tr //</a></li>
+    {{ end }}
     <li><a href="/account_setting"><span class="glyphicon glyphicon-pencil"></span> // 'account_setting' | tr //</a></li>
     <li class="dropdown-submenu">
       <a tabindex="-1" href="#"><span class="glyphicon glyphicon-globe"></span> //vm.languageName//</a>

@@ -39,7 +39,12 @@
     }
     
     function confirm() {
-      $window.location.href = '/';
+      if(location.pathname === '/add_new') {
+        $window.location.href = '/dashboard';  
+      }else{
+        $window.location.href = '/';  
+      }
+      
     }
     
   }

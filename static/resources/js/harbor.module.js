@@ -9,6 +9,7 @@
       'harbor.layout.header',
       'harbor.layout.navigation',
       'harbor.layout.sign.up',
+      'harbor.layout.add.new',
       'harbor.layout.account.setting',
       'harbor.layout.forgot.password',
       'harbor.layout.reset.password',

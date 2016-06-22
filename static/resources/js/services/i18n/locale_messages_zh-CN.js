@@ -162,7 +162,7 @@ var locale_messages = {
   'successful_changed_password': '修改密码操作成功。',
   'change_profile': '修改个人信息',
   'successful_changed_profile': '修改个人信息操作成功。',
-  'form_is_invalid': '表单内容无效',
+  'form_is_invalid': '表单内容无sign_up效',
   'form_is_invalid_message': '表单内容无效，请填写必填字段。',
   'administrator': '管理员',
   'popular_repositories': '热门镜像仓库',
@@ -171,5 +171,8 @@ var locale_messages = {
   'send': '发送',
   'successful_signed_up': '注册成功。',
   'add_new_policy': '新增策略',
-  'edit_policy': '修改策略'
+  'edit_policy': '修改策略',
+  'add_new_title': '新增用户',
+  'add_new': '新增',
+  'successful_added': '新增用户成功。'
 };

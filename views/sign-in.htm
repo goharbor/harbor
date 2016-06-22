@@ -32,10 +32,13 @@
     <div class="col-sm-offset-1 col-sm-10">
       <div class="pull-right">
         <button type="submit" class="btn btn-default" ng-click="vm.doSignIn(user)">// 'sign_in' | tr //</button>
+        {{ if eq .AuthMode "db_auth" }}
         <button type="button" class="btn btn-success" ng-click="vm.doSignUp()">// 'sign_up' | tr //</button>   
+        {{ end }}
       </div>
     </div>	
   </div>
+  {{ if eq .AuthMode "db_auth" }}
   <div class="form-group">
     <div class="col-sm-offset-1 col-sm-10">
       <div class="pull-right">
@@ -43,5 +46,6 @@
       </div>
     </div>
   </div>
+  {{ end }}
 </form>
 {{ end }}

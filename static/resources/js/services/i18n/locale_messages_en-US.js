@@ -172,5 +172,8 @@ var locale_messages = {
   'send': 'Send',
   'successful_signed_up': 'Signed up successfully.',
   'add_new_policy': 'Add New Policy',
-  'edit_policy': 'Edit Policy'
+  'edit_policy': 'Edit Policy',
+  'add_new_title': 'Add User',
+  'add_new': 'Add',
+  'successful_added': 'Added new user successfully.'
 };
