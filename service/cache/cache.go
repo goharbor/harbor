@@ -120,7 +120,7 @@ func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scop
 	scopeActions ...string) (*registry.Registry, error) {
 	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
 
-	store, err := auth.NewAuthorizerStore(endpoint, authorizer)
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func NewRepositoryClient(endpoint string, insecure bool, username, repository, s
 
 	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
 
-	store, err := auth.NewAuthorizerStore(endpoint, authorizer)
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
 		return nil, err
 	}

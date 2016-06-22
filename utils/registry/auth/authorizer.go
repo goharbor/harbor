@@ -16,6 +16,7 @@
 package auth
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -39,10 +40,18 @@ type AuthorizerStore struct {
 }
 
 // NewAuthorizerStore ...
-func NewAuthorizerStore(endpoint string, authorizers ...Authorizer) (*AuthorizerStore, error) {
+func NewAuthorizerStore(endpoint string, insecure bool, authorizers ...Authorizer) (*AuthorizerStore, error) {
 	endpoint = utils.FormatEndpoint(endpoint)
 
-	resp, err := http.Get(buildPingURL(endpoint))
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecure,
+			},
+		},
+	}
+
+	resp, err := client.Get(buildPingURL(endpoint))
 	if err != nil {
 		return nil, err
 	}

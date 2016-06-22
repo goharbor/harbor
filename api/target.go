@@ -276,12 +276,16 @@ func (t *TargetAPI) Delete() {
 	}
 }
 
+func ListPolicies(){
+	dao
+}
+
 func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	credential := auth.NewBasicAuthCredential(username, password)
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
 
-	store, err := auth.NewAuthorizerStore(endpoint, authorizer)
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
 		return nil, err
 	}

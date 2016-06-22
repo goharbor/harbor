@@ -426,7 +426,7 @@ func newRepositoryClient(endpoint string, insecure bool, credential auth.Credent
 
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
 
-	store, err := auth.NewAuthorizerStore(endpoint, authorizer)
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
 		return nil, err
 	}
