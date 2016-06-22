@@ -20,8 +20,8 @@
       'link': link,
       'scope': {
         'contentType': '@',
-        'title': '@',
-        'message': '@',
+        'modalTitle': '@',
+        'modalMessage': '@',
         'action': '&',
         'confirmOnly': '@'
       },
@@ -38,7 +38,7 @@
       }
       console.log('Received contentType in modal:' + ctrl.contentType);
                   
-      scope.$watch('vm.message', function(current) {
+      scope.$watch('vm.modalMessage', function(current) {
         if(current) {
           switch(ctrl.contentType) {
           case 'text/html':

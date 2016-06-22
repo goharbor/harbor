@@ -136,7 +136,6 @@ var locale_messages = {
   'confirm_to_delete_destination_title': 'Delete destination',
   'confirm_to_delete_destination': 'Are you sure to delete the current destination?',
   'replication': 'Replication',
-  'add_new_replication': 'New Replication',
   'name': 'Name',
   'description': 'Description',
   'destination': 'Destination',
@@ -171,5 +170,7 @@ var locale_messages = {
   'harbor_intro_title': 'About Harbor',
   'mail_has_been_sent': 'Resetting Email has been sent.',
   'send': 'Send',
-  'successful_signed_up': 'Signed up successfully.'
+  'successful_signed_up': 'Signed up successfully.',
+  'add_new_policy': 'Add New Policy',
+  'edit_policy': 'Edit Policy'
 };

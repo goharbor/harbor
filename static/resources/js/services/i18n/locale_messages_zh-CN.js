@@ -134,7 +134,6 @@ var locale_messages = {
   'confirm_to_delete_destination_title': '删除目标',
   'confirm_to_delete_destination': '确认删除当前目标吗？',
   'replication': '复制',
-  'add_new_replication': '新增复制',
   'name': '名称',
   'description': '描述',
   'destination': '目标',
@@ -170,5 +169,7 @@ var locale_messages = {
   'harbor_intro_title': '关于 Harbor',
   'mail_has_been_sent': '重置密码邮件已发送。',
   'send': '发送',
-  'successful_signed_up': '注册成功。'
+  'successful_signed_up': '注册成功。',
+  'add_new_policy': '新增策略',
+  'edit_policy': '修改策略'
 };
