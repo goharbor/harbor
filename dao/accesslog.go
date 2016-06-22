@@ -161,34 +161,33 @@ func GetTopRepos(countNum int) ([]models.TopRepo, error) {
 	}
 	if len(list) == 0 {
 		return list, nil
-	} else {
-		place_holder := make([]string, len(list))
-		repos := make([]string, len(list))
-		for i, v := range list {
-			repos[i] = v.RepoName
-			place_holder[i] = "?"
-		}
-		place_holder_str := strings.Join(place_holder, ",")
-		queryParam = nil
-		queryParam = append(queryParam, repos)
-		var usrnameList []models.TopRepo
-		sql = `select a.username as creator, a.repo_name from (select access_log.repo_name, user.username,
-		access_log.op_time from user left join access_log on user.user_id = access_log.user_id where 
-		access_log.operation = 'push' and access_log.repo_name in (######) order by access_log.repo_name,
-		access_log.op_time ASC) a group by a.repo_name`
-		sql = strings.Replace(sql, "######", place_holder_str, 1)
-		_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
-		if err != nil {
-			return nil, err
-		}
-		for i := 0; i < len(list); i++ {
-			for _, v := range usrnameList {
-				if v.RepoName == list[i].RepoName {
-					list[i].Creator = v.Creator
-					break
-				}
+	}
+	placeHolder := make([]string, len(list))
+	repos := make([]string, len(list))
+	for i, v := range list {
+		repos[i] = v.RepoName
+		placeHolder[i] = "?"
+	}
+	placeHolderStr := strings.Join(placeHolder, ",")
+	queryParam = nil
+	queryParam = append(queryParam, repos)
+	var usrnameList []models.TopRepo
+	sql = `select a.username as creator, a.repo_name from (select access_log.repo_name, user.username,
+	access_log.op_time from user left join access_log on user.user_id = access_log.user_id where 
+	access_log.operation = 'push' and access_log.repo_name in (######) order by access_log.repo_name,
+	access_log.op_time ASC) a group by a.repo_name`
+	sql = strings.Replace(sql, "######", placeHolderStr, 1)
+	_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(list); i++ {
+		for _, v := range usrnameList {
+			if v.RepoName == list[i].RepoName {
+				list[i].Creator = v.Creator
+				break
 			}
 		}
-		return list, nil
 	}
+	return list, nil
 }
