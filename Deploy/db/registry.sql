@@ -93,8 +93,8 @@ create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,
  project_id int NOT NULL,
- repo_name varchar (40), 
- repo_tag varchar (20),
+ repo_name varchar (256), 
+ repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
  op_time timestamp,
@@ -159,4 +159,4 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('0.1.1');
+insert into alembic_version values ('0.2.0');
