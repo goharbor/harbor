@@ -7,6 +7,7 @@
       'ngCookies',
       'harbor.session',
       'harbor.layout.header',
+      'harbor.layout.footer',
       'harbor.layout.navigation',
       'harbor.layout.sign.up',
       'harbor.layout.add.new',

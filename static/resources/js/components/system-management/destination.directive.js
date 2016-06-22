@@ -6,9 +6,9 @@
     .module('harbor.system.management')
     .directive('destination', destination);
     
-  DestinationController.$inject = ['$scope', 'ListDestinationService', 'DeleteDestinationService'];
+  DestinationController.$inject = ['$scope', 'ListDestinationService', 'DeleteDestinationService', '$filter', 'trFilter'];
   
-  function DestinationController($scope, ListDestinationService, DeleteDestinationService) {
+  function DestinationController($scope, ListDestinationService, DeleteDestinationService, $filter, trFilter) {
     var vm = this;
     
     vm.retrieve = retrieve;
@@ -66,6 +66,7 @@
     
     function deleteDestinationFailed(data, status) {
       console.log('Failed delete destination.');
+      alert($filter('tr')('failed_delete_destination', []) + ':' + data);
     }   
   }
   

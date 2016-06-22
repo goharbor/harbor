@@ -159,6 +159,7 @@ var locale_messages = {
   'endpoint_is_required': '终端URL为必填项。',
   'test_connection': '测试连接',
   'add_new_destination': '新建目标',
+  'edit_destination': '编辑目标',  
   'successful_changed_password': '修改密码操作成功。',
   'change_profile': '修改个人信息',
   'successful_changed_profile': '修改个人信息操作成功。',
@@ -174,5 +175,12 @@ var locale_messages = {
   'edit_policy': '修改策略',
   'add_new_title': '新增用户',
   'add_new': '新增',
-  'successful_added': '新增用户成功。'
+  'successful_added': '新增用户成功。',
+  'copyright': '版权所有',
+  'all_rights_reserved': '保留所有权利。',
+  'successful_ping_target': 'Ping 目标成功。',
+  'failed_ping_target': 'Ping 目标失败：',
+  'policy_already_exists': '策略已存在。',
+  'destination_already_exists': '目标已存在。',
+  'failed_delete_destination': '删除目标失败：'
 };
