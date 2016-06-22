@@ -7,10 +7,12 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
+// AddNewController handles requests to /add_new
 type AddNewController struct {
 	BaseController
 }
 
+// Get renders the add new page
 func (anc *AddNewController) Get() {
 	sessionUserID := anc.GetSession("userId")
 	anc.Data["AddNew"] = false
