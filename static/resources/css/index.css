@@ -33,8 +33,10 @@ body {
   background-color: #EFEFEF;
   max-height: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  width: 100%;
+  min-width: 1px;
+  overflow: auto;
+  min-height: 1px;
 }
 
 .up-section {
@@ -109,4 +111,5 @@ body {
 .page-content {
   margin: 0 20px 0 20px;
   text-align: left;
+  overflow-y: hidden;
 }
