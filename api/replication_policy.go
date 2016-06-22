@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 package api
@@ -121,6 +121,16 @@ func (pa *RepPolicyAPI) Post() {
 		pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
 	}
 
+	policies, err := dao.GetRepPolicyByProjectAndTarget(policy.ProjectID, policy.TargetID)
+	if err != nil {
+		log.Errorf("failed to get policy [project ID: %d,targetID: %d]: %v", policy.ProjectID, policy.TargetID, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if len(policies) > 0 {
+		pa.CustomAbort(http.StatusConflict, "policy already exists with the same project and target")
+	}
+
 	pid, err := dao.AddRepPolicy(*policy)
 	if err != nil {
 		log.Errorf("Failed to add policy to DB, error: %v", err)
@@ -159,6 +169,7 @@ func (pa *RepPolicyAPI) Put() {
 	policy.ProjectID = originalPolicy.ProjectID
 	pa.Validate(policy)
 
+	// check duplicate name
 	if policy.Name != originalPolicy.Name {
 		po, err := dao.GetRepPolicyByName(policy.Name)
 		if err != nil {
@@ -172,6 +183,12 @@ func (pa *RepPolicyAPI) Put() {
 	}
 
 	if policy.TargetID != originalPolicy.TargetID {
+		//target of policy can not be modified when the policy is enabled
+		if originalPolicy.Enabled == 1 {
+			pa.CustomAbort(http.StatusBadRequest, "target of policy can not be modified when the policy is enabled")
+		}
+
+		// check the existance of target
 		target, err := dao.GetRepTarget(policy.TargetID)
 		if err != nil {
 			log.Errorf("failed to get target %d: %v", policy.TargetID, err)
@@ -181,67 +198,90 @@ func (pa *RepPolicyAPI) Put() {
 		if target == nil {
 			pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
 		}
+
+		// check duplicate policy with the same project and target
+		policies, err := dao.GetRepPolicyByProjectAndTarget(policy.ProjectID, policy.TargetID)
+		if err != nil {
+			log.Errorf("failed to get policy [project ID: %d,targetID: %d]: %v", policy.ProjectID, policy.TargetID, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if len(policies) > 0 {
+			pa.CustomAbort(http.StatusConflict, "policy already exists with the same project and target")
+		}
 	}
 
 	policy.ID = id
 
-	isTargetChanged := !(policy.TargetID == originalPolicy.TargetID)
-	isEnablementChanged := !(policy.Enabled == policy.Enabled)
+	/*
+		isTargetChanged := !(policy.TargetID == originalPolicy.TargetID)
+		isEnablementChanged := !(policy.Enabled == policy.Enabled)
 
-	var shouldStop, shouldTrigger bool
+		var shouldStop, shouldTrigger bool
 
-	// if target and enablement are not changed, do nothing
-	if !isTargetChanged && !isEnablementChanged {
-		shouldStop = false
-		shouldTrigger = false
-	} else if !isTargetChanged && isEnablementChanged {
-		// target is not changed, but enablement is changed
-		if policy.Enabled == 0 {
-			shouldStop = true
-			shouldTrigger = false
-		} else {
-			shouldStop = false
-			shouldTrigger = true
-		}
-	} else if isTargetChanged && !isEnablementChanged {
-		// target is changed, but enablement is not changed
-		if policy.Enabled == 0 {
-			// enablement is 0, do nothing
+		// if target and enablement are not changed, do nothing
+		if !isTargetChanged && !isEnablementChanged {
 			shouldStop = false
 			shouldTrigger = false
+		} else if !isTargetChanged && isEnablementChanged {
+			// target is not changed, but enablement is changed
+			if policy.Enabled == 0 {
+				shouldStop = true
+				shouldTrigger = false
+			} else {
+				shouldStop = false
+				shouldTrigger = true
+			}
+		} else if isTargetChanged && !isEnablementChanged {
+			// target is changed, but enablement is not changed
+			if policy.Enabled == 0 {
+				// enablement is 0, do nothing
+				shouldStop = false
+				shouldTrigger = false
+			} else {
+				// enablement is 1, so stop original target's jobs
+				// and trigger new target's jobs
+				shouldStop = true
+				shouldTrigger = true
+			}
 		} else {
-			// enablement is 1, so stop original target's jobs
-			// and trigger new target's jobs
-			shouldStop = true
-			shouldTrigger = true
-		}
-	} else {
-		// both target and enablement are changed
+			// both target and enablement are changed
 
-		// enablement: 1 -> 0
-		if policy.Enabled == 0 {
-			shouldStop = true
-			shouldTrigger = false
-		} else {
-			shouldStop = false
-			shouldTrigger = true
+			// enablement: 1 -> 0
+			if policy.Enabled == 0 {
+				shouldStop = true
+				shouldTrigger = false
+			} else {
+				shouldStop = false
+				shouldTrigger = true
+			}
 		}
-	}
 
-	if shouldStop {
-		if err := postReplicationAction(id, "stop"); err != nil {
-			log.Errorf("failed to stop replication of %d: %v", id, err)
+		if shouldStop {
+			if err := postReplicationAction(id, "stop"); err != nil {
+				log.Errorf("failed to stop replication of %d: %v", id, err)
+				pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
+			log.Infof("replication of %d has been stopped", id)
+		}
+
+		if err = dao.UpdateRepPolicy(policy); err != nil {
+			log.Errorf("failed to update policy %d: %v", id, err)
 			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		log.Infof("replication of %d has been stopped", id)
-	}
 
-	if err = dao.UpdateRepPolicy(policy); err != nil {
-		log.Errorf("failed to update policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+		if shouldTrigger {
+			go func() {
+				if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
+					log.Errorf("failed to trigger replication of %d: %v", id, err)
+				} else {
+					log.Infof("replication of %d triggered", id)
+				}
+			}()
+		}
+	*/
 
-	if shouldTrigger {
+	if policy.Enabled != originalPolicy.Enabled && policy.Enabled == 1 {
 		go func() {
 			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
 				log.Errorf("failed to trigger replication of %d: %v", id, err)
