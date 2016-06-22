@@ -13,7 +13,7 @@
     var cookieOptions = {'path': '/'};
        
     var messages = $.extend(true, {}, eval('locale_messages'));    
-    var defaultLanguage = navigator.language || 'en-US';
+    var defaultLanguage = 'en-US';
     var supportLanguages = {
       'en-US': 'English',
       'zh-CN': '中文'
@@ -36,11 +36,9 @@
           if(!angular.isDefined(language) || !isSupportLanguage(language)) {
             language = defaultLanguage;
           }
-          $cookies.remove('language', cookieOptions);
           $cookies.put('language', language, cookieOptions);
         },
         'setDefaultLanguage': function() {
-          $cookies.remove('language', cookieOptions);
           $cookies.put('language', defaultLanguage, cookieOptions);
         },
         'getCurrentLanguage': function() {
@@ -50,6 +48,7 @@
           if(!angular.isDefined(language) || !isSupportLanguage(language)) {
             language = defaultLanguage;
           }
+          $cookies.put('language', language, cookieOptions);
           return supportLanguages[language];    
         },
         'getSupportLanguages': function() {

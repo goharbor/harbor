@@ -14,13 +14,15 @@
     vm.currentLanguage = I18nService().getCurrentLanguage();
     vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
     
+    I18nService().setCurrentLanguage(vm.currentLanguage);        
+    
     console.log('current language:' + vm.languageName);
 
     vm.supportLanguages = I18nService().getSupportLanguages(); 
     vm.user = currentUser.get();
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
-    
+        
     function setLanguage(language) {
       I18nService().setCurrentLanguage(language);
       $window.location.href = '/language?lang=' + language;    
