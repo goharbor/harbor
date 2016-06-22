@@ -76,6 +76,7 @@ func initRouters() {
 	beego.Router("/api/targets/", &api.TargetAPI{}, "get:List")
 	beego.Router("/api/targets/", &api.TargetAPI{}, "post:Post")
 	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})
+	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
