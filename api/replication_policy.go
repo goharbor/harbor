@@ -281,6 +281,11 @@ func (pa *RepPolicyAPI) Put() {
 		}
 	*/
 
+	if err = dao.UpdateRepPolicy(policy); err != nil {
+		log.Errorf("failed to update policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	if policy.Enabled != originalPolicy.Enabled && policy.Enabled == 1 {
 		go func() {
 			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
