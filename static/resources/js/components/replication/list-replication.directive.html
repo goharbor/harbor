@@ -7,7 +7,7 @@
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationPolicy()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_replication' | tr //</button>
+      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_policy' | tr //</button>
       <create-policy reload="vm.retrievePolicy()" action="vm.action" modal-title="//vm.modalTitle//" policy-id="//vm.policyId//"></create-policy>
     </div>
     <div class="pane-split" id="upon-pane"> 	           
@@ -42,7 +42,7 @@
                 &nbsp;
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;
-                <a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a>
+                <!--a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a -->
               </td>
             </tr>
           </tbody>

@@ -6,9 +6,9 @@
     .module('harbor.replication')
     .directive('listReplication', listReplication);
     
-  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window'];
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter'];
   
-  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window) {
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter) {
     var vm = this;
     
     $scope.$on('$locationChangeSuccess', function() {
@@ -73,13 +73,13 @@
     }
 
     function addReplication() {
-      vm.modalTitle = 'Create New Policy';
+      vm.modalTitle = $filter('tr')('add_new_policy', []);
       vm.action = 'ADD_NEW';
     }
     
     function editReplication(policyId) {
       vm.policyId = policyId;
-      vm.modalTitle = 'Edit Policy';
+      vm.modalTitle = $filter('tr')('edit_policy', []);
       vm.action = 'EDIT';
       
       console.log('Selected policy ID:' + vm.policyId);

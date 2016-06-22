@@ -6,16 +6,19 @@
     .module('harbor.layout.forgot.password')
     .controller('ForgotPasswordController', ForgotPasswordController);
   
-  ForgotPasswordController.$inject = ['SendMailService', '$window'];
+  ForgotPasswordController.$inject = ['SendMailService', '$window', '$scope'];
   
-  function ForgotPasswordController(SendMailService, $window) {
+  function ForgotPasswordController(SendMailService, $window, $scope) {
     var vm = this;
     
     vm.hasError = false;
+    vm.show = false;
     vm.errorMessage = '';
     
     vm.reset = reset;
     vm.sendMail = sendMail;
+    
+    vm.confirm = confirm;
     
     function reset(){
       vm.hasError = false;
@@ -31,7 +34,7 @@
     }
     
     function sendMailSuccess(data, status) {
-      $window.location.href = '/';
+      $scope.$broadcast('showDialog', true);
     }
     
     function sendMailFailed(data) {
@@ -39,6 +42,12 @@
       vm.errorMessage = data;
       console.log('Failed send mail:' + data);
     }
+    
+    function confirm() {
+      $window.location.href = '/';
+    }
+   
+    
   }
   
 })();

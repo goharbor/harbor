@@ -12,7 +12,7 @@
     </div>
     <div class="pane"> 	           
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
-      <modal-dialog title="// 'confirm_to_delete_member_title' | tr //" message="// 'confirm_to_delete_member' | tr //" action="vm.deleteProjectMember()"></modal-dialog>
+      <modal-dialog modal-title="// 'confirm_to_delete_member_title' | tr //" modal-message="// 'confirm_to_delete_member' | tr //" action="vm.deleteProjectMember()"></modal-dialog>
       <div class="sub-pane">
         <table class="table table-pane" >
     			 <thead>
