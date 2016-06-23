@@ -17,6 +17,7 @@ package replication
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -190,7 +191,16 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -259,12 +269,23 @@ func (c *Checker) createProject() error {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	// version 0.1.1's reponse code is 200
+	if resp.StatusCode != http.StatusCreated ||
+		resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusConflict {
 			return ErrConflict
 		}
