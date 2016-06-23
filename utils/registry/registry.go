@@ -80,7 +80,7 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
-	suffix := "/v2/_catalog"
+	suffix := "/v2/_catalog?n=1000"
 	var url string
 
 	for len(suffix) > 0 {
