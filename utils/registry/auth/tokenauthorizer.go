@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -162,6 +163,8 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType,
 }
 
 func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	realm = tokenURL(realm)
+
 	u, err := url.Parse(realm)
 	if err != nil {
 		return
@@ -221,6 +224,22 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 	}
 
 	return
+}
+
+// when the registry client is used inside Harbor, the token request
+// can be posted to token service directly rather than going through nginx.
+// this solution can resolve two problems:
+// 1. performance issue
+// 2. the realm field returned by registry is an IP which can not reachable
+// inside Harbor
+func tokenURL(realm string) string {
+	extEndpoint := os.Getenv("EXT_ENDPOINT")
+	tokenURL := os.Getenv("TOKEN_URL")
+	if len(extEndpoint) != 0 && len(tokenURL) != 0 &&
+		strings.Contains(realm, extEndpoint) {
+		realm = strings.TrimRight(tokenURL, "/") + "/service/token"
+	}
+	return realm
 }
 
 // Implements interface Handler

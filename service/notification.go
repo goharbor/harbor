@@ -56,7 +56,7 @@ func (n *NotificationHandler) Post() {
 			matched = false
 		}
 		if matched && (strings.HasPrefix(e.Request.UserAgent, "docker") ||
-			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == "registry-client") {
+			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == "harbor-registry-client") {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository

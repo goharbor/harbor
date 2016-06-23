@@ -432,7 +432,7 @@ func newRepositoryClient(endpoint string, insecure bool, credential auth.Credent
 	}
 
 	uam := &userAgentModifier{
-		userAgent: "registry-client",
+		userAgent: "harbor-registry-client",
 	}
 
 	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store, uam)

@@ -16,14 +16,10 @@
 package replication
 
 import (
-	"crypto/tls"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry/auth"
 )
 
 const (
@@ -42,11 +38,20 @@ type Deleter struct {
 
 	insecure bool
 
+	dstClient *registry.Repository
+
 	logger *log.Logger
 }
 
 // NewDeleter returns a Deleter
-func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, insecure bool, logger *log.Logger) *Deleter {
+func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, insecure bool, logger *log.Logger) (*Deleter, error) {
+	dstCred := auth.NewBasicAuthCredential(dstUsr, dstPwd)
+	dstClient, err := newRepositoryClient(dstURL, insecure, dstCred,
+		repository, "repository", repository, "pull", "push", "*")
+	if err != nil {
+		return nil, err
+	}
+
 	deleter := &Deleter{
 		repository: repository,
 		tags:       tags,
@@ -54,11 +59,12 @@ func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string,
 		dstUsr:     dstUsr,
 		dstPwd:     dstPwd,
 		insecure:   insecure,
+		dstClient:  dstClient,
 		logger:     logger,
 	}
 	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, destination user: %s",
 		deleter.repository, deleter.tags, deleter.dstURL, deleter.dstUsr)
-	return deleter
+	return deleter, nil
 }
 
 // Exit ...
@@ -68,25 +74,22 @@ func (d *Deleter) Exit() error {
 
 // Enter deletes repository or tags
 func (d *Deleter) Enter() (string, error) {
-	url := strings.TrimRight(d.dstURL, "/") + "/api/repositories/"
 
-	// delete repository
 	if len(d.tags) == 0 {
-		u := url + "?repo_name=" + d.repository
-		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
-			d.logger.Errorf("an error occurred while deleting repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
+		tags, err := d.dstClient.ListTag()
+		if err != nil {
+			d.logger.Errorf("an error occurred while listing tags of repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
 			return "", err
 		}
 
-		d.logger.Infof("repository %s on %s has been deleted", d.repository, d.dstURL)
-
-		return models.JobFinished, nil
+		d.tags = append(d.tags, tags...)
 	}
 
-	// delele tags
+	d.logger.Infof("tags %v will be deleted", d.tags)
+
 	for _, tag := range d.tags {
-		u := url + "?repo_name=" + d.repository + "&tag=" + tag
-		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
+
+		if err := d.dstClient.DeleteTag(tag); err != nil {
 			d.logger.Errorf("an error occurred while deleting repository %s:%s on %s with user %s: %v", d.repository, tag, d.dstURL, d.dstUsr, err)
 			return "", err
 		}
@@ -95,38 +98,4 @@ func (d *Deleter) Enter() (string, error) {
 	}
 
 	return models.JobFinished, nil
-}
-
-func del(url, username, password string, insecure bool) error {
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	req.SetBasicAuth(username, password)
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: insecure,
-			},
-		},
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
 }
