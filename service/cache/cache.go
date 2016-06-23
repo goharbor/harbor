@@ -16,7 +16,6 @@
 package cache
 
 import (
-	"errors"
 	"os"
 	"time"
 
@@ -46,26 +45,23 @@ func init() {
 	}
 
 	endpoint = os.Getenv("REGISTRY_URL")
-	// TODO read variable from config file
-	insecure = true
-	username = "admin"
-	registryClient, err = NewRegistryClient(endpoint, insecure, username,
-		"registry", "catalog", "*")
-	if err != nil {
-		log.Errorf("failed to create registry client: %v", err)
-		return
-	}
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
 
+	var err error
+
 	if registryClient == nil {
-		return errors.New("registry client is nil")
+
+		registryClient, err = NewRegistryClient(endpoint, true, username,
+			"registry", "catalog", "*")
+		if err != nil {
+			return err
+		}
 	}
 
-	var err error
 	rs, err := registryClient.Catalog()
 	if err != nil {
 		return err
