@@ -2,7 +2,18 @@
   <div class="container container-custom">
     <div class="row extend-height">
 	    <div class="section">
-		    <h1 class="col-md-12 col-md-offset-2 main-title title-color">// 'sign_up' | tr //</h1>
+        {{ if eq .AddNew true }}
+        <modal-dialog modal-title="// 'add_new_title' | tr //" modal-message="// 'successful_added' | tr //" confirm-only="true" action="vm.confirm()"></modal-dialog>
+        {{ else }}
+        <modal-dialog modal-title="// 'sign_up' | tr //" modal-message="// 'successful_signed_up' | tr //" confirm-only="true" action="vm.confirm()"></modal-dialog>
+        {{ end }}
+		    <h1 class="col-md-12 col-md-offset-2 main-title title-color">
+        {{ if eq .AddNew true }}
+          // 'add_new_title' | tr //
+        {{ else }}
+          // 'sign_up' | tr //
+        {{ end }}
+        </h1>
         <div class="row">
           <div class="col-md-12 col-md-offset-2 main-content">
             <form name="form" class="form-horizontal css-form" ng-submit="form.$valid">              
@@ -89,7 +100,11 @@
               </div>
               <div class="form-group">
                 <div class="col-md-offset-8 col-md-10">
-                  <input type="submit" class="btn btn-success" ng-disabled="form.$invalid" ng-click="vm.signUp(user)" value="Sign Up">                    
+                  {{ if eq .AddNew true }}
+                    <input type="submit" class="btn btn-success" ng-disabled="form.$invalid" ng-click="vm.signUp(user)" value="// 'add_new' | tr //">                    
+                  {{ else }}
+                    <input type="submit" class="btn btn-success" ng-disabled="form.$invalid" ng-click="vm.signUp(user)" value="// 'sign_up' | tr //">                    
+                  {{ end }}
                 </div>
               </div>  
             </form>

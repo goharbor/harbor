@@ -6,9 +6,9 @@
     .module('harbor.system.management')
     .directive('createDestination', createDestination);
     
-  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService'];
+  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'ListDestinationPolicyService', '$filter', 'trFilter'];
   
-  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService) {
+  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService, ListDestinationPolicyService, $filter, trFilter) {
     var vm = this;
     
     $scope.destination = {};
@@ -20,25 +20,11 @@
     vm.update = update;
     vm.pingDestination = pingDestination;
     
-    $scope.$watch('vm.action+","+vm.targetId', function(current) {
-      if(current) {
-        var parts = current.split(',');
-        vm.action = parts[0];
-        vm.targetId = parts[1];
-        switch(vm.action) {
-        case 'ADD_NEW':
-          vm.modalTitle = 'Create destination';
-          vm.addNew();
-          break;
-        case 'EDIT':
-          vm.modalTitle = 'Edit destination';
-          vm.edit(vm.targetId);
-          break;
-        }
-      }      
-    });
-    
+    vm.editable = true;
+        
     function addNew() {
+      vm.editable = true;
+      vm.modalTitle = $filter('tr')('add_new_destination', []);
       vm0.name = '';
       vm0.endpoint = '';
       vm0.username = '';
@@ -46,7 +32,11 @@
     }
     
     function edit(targetId) {
-      getDestination(targetId);
+      vm.editable = true;
+      vm.modalTitle = $filter('tr')('edit_destination', []);
+      ListDestinationService(targetId)
+        .success(getDestinationSuccess)
+        .error(getDestinationFailed);
     }
     
     function create(destination) {
@@ -63,7 +53,7 @@
     
     function createDestinationFailed(data, status) {
       if(status === 409) {
-        alert('Destination already exists.');
+        alert($filter('tr')('destination_already_exists', []));
       }
       console.log('Failed create destination:' + data);
     }
@@ -83,11 +73,6 @@
       console.log('Failed update destination.');
     }
     
-    function getDestination(targetId) {
-      ListDestinationService(targetId)
-        .success(getDestinationSuccess)
-        .error(getDestinationFailed);
-    }
     
     function getDestinationSuccess(data, status) {
       var destination = data;
@@ -95,10 +80,27 @@
       vm0.endpoint = destination.endpoint;
       vm0.username = destination.username;
       vm0.password = destination.password;
+      
+      ListDestinationPolicyService(destination.id)
+        .success(listDestinationPolicySuccess)
+        .error(listDestinationPolicyFailed);
     }
     
     function getDestinationFailed(data, status) {
       console.log('Failed get destination.');
+    }
+    
+    function listDestinationPolicySuccess(data, status) {
+      for(var i in data) {
+        if(data[i].enabled === 1) {
+          vm.editable = false;
+          break;
+        }
+      }
+    }
+    
+    function listDestinationPolicyFailed(data, status) {
+      console.log('Failed list destination policy:' + data);
     }
     
     function pingDestination() {
@@ -113,10 +115,10 @@
         .error(pingDestinationFailed);
     }
     function pingDestinationSuccess(data, status) {
-      alert('Successful ping target.');
+      alert($filter('tr')('successful_ping_target', []));
     }
     function pingDestinationFailed(data, status) {
-      alert('Failed ping target:' + data);
+      alert($filter('tr')('failed_ping_target', []) + ':' + data);
     }
   }
   
@@ -139,8 +141,19 @@
     function link(scope, element, attrs, ctrl) {
       
       element.find('#createDestinationModal').on('show.bs.modal', function() {
+        
         scope.form.$setPristine();
         scope.form.$setUntouched();
+        
+        switch(ctrl.action) {
+        case 'ADD_NEW':
+          ctrl.addNew();
+          break;
+        case 'EDIT':
+          ctrl.edit(ctrl.targetId);
+          break;
+        }
+        scope.$apply();
       });
       
       ctrl.save = save;

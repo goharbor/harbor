@@ -10,6 +10,7 @@
   
   function ModalDialogController($scope) {
     var vm = this;
+    vm.confirmOnly = false;
   }
   
   function modalDialog() {
@@ -19,9 +20,10 @@
       'link': link,
       'scope': {
         'contentType': '@',
-        'title': '@',
-        'message': '@',
-        'action': '&'
+        'modalTitle': '@',
+        'modalMessage': '@',
+        'action': '&',
+        'confirmOnly': '@'
       },
       'controller': ModalDialogController,
       'controllerAs': 'vm',
@@ -36,7 +38,7 @@
       }
       console.log('Received contentType in modal:' + ctrl.contentType);
                   
-      scope.$watch('vm.message', function(current) {
+      scope.$watch('vm.modalMessage', function(current) {
         if(current) {
           switch(ctrl.contentType) {
           case 'text/html':
@@ -49,11 +51,22 @@
         }
       });
       
+      scope.$on('showDialog', function(e, val) {
+        console.log('modal-dialog show:' + ctrl.show);
+        if(val) {
+          element.find('#myModal').modal('show');
+        }else{
+          element.find('#myModal').modal('hide');
+        }
+        
+      });
+      
       element.find('#btnOk').on('click', clickHandler);
 
       function clickHandler(e) {
         ctrl.action();
         element.find('#myModal').modal('hide');
+        ctrl.show = false;
       }
     }
   }

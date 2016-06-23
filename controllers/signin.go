@@ -32,6 +32,7 @@ func (sic *SignInController) Get() {
 		}
 		username = u.Username
 	}
+	sic.Data["AuthMode"] = sic.AuthMode
 	sic.Data["Username"] = username
 	sic.Data["HasLoggedIn"] = hasLoggedIn
 	sic.TplName = "sign-in.htm"

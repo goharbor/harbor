@@ -38,6 +38,7 @@ type RepJobParm struct {
 	Tags           []string
 	Enabled        int
 	Operation      string
+	Insecure       bool
 }
 
 // SM is the state machine to handle job, it handles one job at a time.
@@ -205,11 +206,12 @@ func (sm *SM) Reset(jid int64) error {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: config.LocalHarborURL(),
+		LocalRegURL: config.LocalRegURL(),
 		Repository:  job.Repository,
 		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
+		Insecure:    !config.VerifyRemoteCert(),
 	}
 	if policy.Enabled == 0 {
 		//worker will cancel this job
