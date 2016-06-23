@@ -13,17 +13,32 @@
    limitations under the License.
 */
 
-package auth
+package utils
 
 import (
-	"net/http"
-
-	au "github.com/docker/distribution/registry/client/auth"
+	"net/url"
+	"strings"
 )
 
-// ParseChallengeFromResponse ...
-func ParseChallengeFromResponse(resp *http.Response) []au.Challenge {
-	challenges := au.ResponseChallenges(resp)
+// FormatEndpoint formats endpoint
+func FormatEndpoint(endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
 
-	return challenges
+	return endpoint
+}
+
+// ParseEndpoint parses endpoint to a URL
+func ParseEndpoint(endpoint string) (*url.URL, error) {
+	endpoint = FormatEndpoint(endpoint)
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }

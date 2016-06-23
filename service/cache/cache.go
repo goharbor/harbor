@@ -16,22 +16,24 @@
 package cache
 
 import (
+	"errors"
 	"os"
 	"time"
 
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry/auth"
 
 	"github.com/astaxie/beego/cache"
 )
 
 var (
 	// Cache is the global cache in system.
-	Cache             cache.Cache
-	endpoint          string
-	username          string
-	registryClient    *registry.Registry
-	repositoryClients map[string]*registry.Repository
+	Cache          cache.Cache
+	endpoint       string
+	insecure       bool
+	username       string
+	registryClient *registry.Registry
 )
 
 const catalogKey string = "catalog"
@@ -44,8 +46,15 @@ func init() {
 	}
 
 	endpoint = os.Getenv("REGISTRY_URL")
+	// TODO read variable from config file
+	insecure = true
 	username = "admin"
-	repositoryClients = make(map[string]*registry.Repository, 10)
+	registryClient, err = NewRegistryClient(endpoint, insecure, username,
+		"registry", "catalog", "*")
+	if err != nil {
+		log.Errorf("failed to create registry client: %v", err)
+		return
+	}
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
@@ -53,12 +62,7 @@ func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
 
 	if registryClient == nil {
-		var err error
-		registryClient, err = registry.NewRegistryWithUsername(endpoint, username)
-		if err != nil {
-			log.Errorf("error occurred while initializing registry client used by cache: %v", err)
-			return err
-		}
+		return errors.New("registry client is nil")
 	}
 
 	var err error
@@ -70,15 +74,13 @@ func RefreshCatalogCache() error {
 	repos := []string{}
 
 	for _, repo := range rs {
-		rc, ok := repositoryClients[repo]
-		if !ok {
-			rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
-			if err != nil {
-				log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
-				continue
-			}
-			repositoryClients[repo] = rc
+		rc, err := NewRepositoryClient(endpoint, insecure, username,
+			repo, "repository", repo, "pull", "push", "*")
+		if err != nil {
+			log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
+			continue
 		}
+
 		tags, err := rc.ListTag()
 		if err != nil {
 			log.Errorf("error occurred while list tag for %s: %v", repo, err)
@@ -111,4 +113,39 @@ func GetRepoFromCache() ([]string, error) {
 		return nil, nil
 	}
 	return result.([]string), nil
+}
+
+// NewRegistryClient ...
+func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Registry, error) {
+	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// NewRepositoryClient ...
+func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

@@ -26,7 +26,7 @@ import (
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
-	registry_util "github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
@@ -92,8 +92,10 @@ func (t *TargetAPI) Ping() {
 		password = t.GetString("password")
 	}
 
-	credential := auth.NewBasicAuthCredential(username, password)
-	registry, err := registry_util.NewRegistryWithCredential(endpoint, credential)
+	// TODO read variable from config file
+	insecure := true
+	registry, err := newRegistryClient(endpoint, insecure, username, password,
+		"", "", "")
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.
 		if urlErr, ok := err.(*url.Error); ok {
@@ -312,6 +314,23 @@ func (t *TargetAPI) Delete() {
 		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+}
+
+func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Registry, error) {
+	credential := auth.NewBasicAuthCredential(username, password)
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
 
 // ListPolicies ...

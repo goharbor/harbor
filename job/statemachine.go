@@ -262,7 +262,7 @@ func (sm *SM) Reset(jid int64) error {
 func addImgTransferTransition(sm *SM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		sm.Parms.Tags, sm.Logger)
+		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
 	if err != nil {
 		return err
 	}
@@ -276,8 +276,11 @@ func addImgTransferTransition(sm *SM) error {
 }
 
 func addImgDeleteTransition(sm *SM) error {
-	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
-		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
+	deleter, err := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
+		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Parms.Insecure, sm.Logger)
+	if err != nil {
+		return err
+	}
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
 	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})

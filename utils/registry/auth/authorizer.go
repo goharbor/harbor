@@ -16,40 +16,63 @@
 package auth
 
 import (
+	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	au "github.com/docker/distribution/registry/client/auth"
+	"github.com/vmware/harbor/utils/registry/utils"
 )
 
-// Handler authorizes requests according to the schema
-type Handler interface {
+// Authorizer authorizes requests according to the schema
+type Authorizer interface {
 	// Scheme : basic, bearer
 	Scheme() string
-	//AuthorizeRequest adds basic auth or token auth to the header of request
-	AuthorizeRequest(req *http.Request, params map[string]string) error
+	//Authorize adds basic auth or token auth to the header of request
+	Authorize(req *http.Request, params map[string]string) error
 }
 
-// RequestAuthorizer holds a handler list, which will authorize request.
-// Implements interface RequestModifier
-type RequestAuthorizer struct {
-	handlers   []Handler
-	challenges []au.Challenge
+// AuthorizerStore holds a authorizer list, which will authorize request.
+// And it implements interface Modifier
+type AuthorizerStore struct {
+	authorizers []Authorizer
+	challenges  []au.Challenge
 }
 
-// NewRequestAuthorizer ...
-func NewRequestAuthorizer(handlers []Handler, challenges []au.Challenge) *RequestAuthorizer {
-	return &RequestAuthorizer{
-		handlers:   handlers,
-		challenges: challenges,
+// NewAuthorizerStore ...
+func NewAuthorizerStore(endpoint string, insecure bool, authorizers ...Authorizer) (*AuthorizerStore, error) {
+	endpoint = utils.FormatEndpoint(endpoint)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecure,
+			},
+		},
 	}
+
+	resp, err := client.Get(buildPingURL(endpoint))
+	if err != nil {
+		return nil, err
+	}
+
+	challenges := ParseChallengeFromResponse(resp)
+	return &AuthorizerStore{
+		authorizers: authorizers,
+		challenges:  challenges,
+	}, nil
 }
 
-// ModifyRequest adds authorization to the request
-func (r *RequestAuthorizer) ModifyRequest(req *http.Request) error {
-	for _, challenge := range r.challenges {
-		for _, handler := range r.handlers {
-			if handler.Scheme() == challenge.Scheme {
-				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
+func buildPingURL(endpoint string) string {
+	return fmt.Sprintf("%s/v2/", endpoint)
+}
+
+// Modify adds authorization to the request
+func (a *AuthorizerStore) Modify(req *http.Request) error {
+	for _, challenge := range a.challenges {
+		for _, authorizer := range a.authorizers {
+			if authorizer.Scheme() == challenge.Scheme {
+				if err := authorizer.Authorize(req, challenge.Parameters); err != nil {
 					return err
 				}
 			}
