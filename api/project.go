@@ -291,7 +291,7 @@ func validateProjectReq(req projectReq) error {
 	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
 		return fmt.Errorf("project name is illegal in length. (greater than 4 or less than 30)")
 	}
-	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@"}) {
+	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@", " "}) {
 		return fmt.Errorf("project name contains illegal characters")
 	}
 

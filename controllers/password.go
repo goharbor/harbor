@@ -59,7 +59,7 @@ func (cc *CommonController) SendEmail() {
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		err = messageTemplate.Execute(message, messageDetail{
-			Hint: cc.Tr("reset_email_hint"),
+			Hint: cc.Tr("Warning: You're receiving this because you're requesting for changing password in Harbor, if it is not your operation, please ignore; otherwise, please click the link below"),
 			URL:  harborURL,
 			UUID: uuid,
 		})
