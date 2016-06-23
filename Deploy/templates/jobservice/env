@@ -3,7 +3,10 @@ MYSQL_PORT=3306
 MYSQL_USR=root
 MYSQL_PWD=$db_password
 UI_SECRET=$ui_secret
-HARBOR_URL=$ui_url
+REGISTRY_URL=http://registry:5000
+VERIFY_REMOTE_CERT=$verify_remote_cert
 MAX_JOB_WORKERS=$max_job_workers
 LOG_LEVEL=debug
 GODEBUG=netdns=cgo
+EXT_ENDPOINT=$ui_url
+TOKEN_URL=http://ui
