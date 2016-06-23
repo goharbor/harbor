@@ -301,8 +301,6 @@ func (c *Checker) createProject() error {
 
 	return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
 		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
-
-	return nil
 }
 
 // ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,
