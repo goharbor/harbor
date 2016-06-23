@@ -92,7 +92,7 @@ func MaxJobWorkers() int {
 	return maxJobWorkers
 }
 
-// LocaUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
+// LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
 func LocalUIURL() string {
 	return localUIURL
 }
