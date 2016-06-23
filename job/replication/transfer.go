@@ -284,21 +284,23 @@ func (c *Checker) createProject() error {
 	}
 
 	// version 0.1.1's reponse code is 200
-	if resp.StatusCode != http.StatusCreated ||
-		resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusConflict {
-			return ErrConflict
-		}
-
-		defer resp.Body.Close()
-		message, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			c.logger.Errorf("an error occurred while reading message from response: %v", err)
-		}
-
-		return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
-			c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
+	if resp.StatusCode == http.StatusCreated ||
+		resp.StatusCode == http.StatusOK {
+		return nil
 	}
+
+	if resp.StatusCode == http.StatusConflict {
+		return ErrConflict
+	}
+
+	defer resp.Body.Close()
+	message, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Errorf("an error occurred while reading message from response: %v", err)
+	}
+
+	return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
+		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
 
 	return nil
 }
