@@ -28,11 +28,9 @@ import (
 
 var (
 	// Cache is the global cache in system.
-	Cache          cache.Cache
-	endpoint       string
-	insecure       bool
-	username       string
-	registryClient *registry.Registry
+	Cache    cache.Cache
+	endpoint string
+	username string
 )
 
 const catalogKey string = "catalog"
@@ -45,21 +43,17 @@ func init() {
 	}
 
 	endpoint = os.Getenv("REGISTRY_URL")
+	username = "admin"
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
 
-	var err error
-
-	if registryClient == nil {
-
-		registryClient, err = NewRegistryClient(endpoint, true, username,
-			"registry", "catalog", "*")
-		if err != nil {
-			return err
-		}
+	registryClient, err := NewRegistryClient(endpoint, true, username,
+		"registry", "catalog", "*")
+	if err != nil {
+		return err
 	}
 
 	rs, err := registryClient.Catalog()
@@ -70,7 +64,7 @@ func RefreshCatalogCache() error {
 	repos := []string{}
 
 	for _, repo := range rs {
-		rc, err := NewRepositoryClient(endpoint, insecure, username,
+		rc, err := NewRepositoryClient(endpoint, true, username,
 			repo, "repository", repo, "pull", "push", "*")
 		if err != nil {
 			log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
