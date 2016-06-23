@@ -17,7 +17,6 @@ package registry
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -81,51 +80,57 @@ func NewRegistryWithUsername(endpoint, username string) (*Registry, error) {
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
+	suffix := "/v2/_catalog"
+	var url string
 
-	req, err := http.NewRequest("GET", buildCatalogURL(r.Endpoint.String()), nil)
-	if err != nil {
-		return repos, err
-	}
+	for len(suffix) > 0 {
+		url = r.Endpoint.String() + suffix
 
-	resp, err := r.client.Do(req)
-	if err != nil {
-		ok, e := isUnauthorizedError(err)
-		if ok {
-			return repos, e
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return repos, err
 		}
-		return repos, err
-	}
-
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return repos, err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		catalogResp := struct {
-			Repositories []string `json:"repositories"`
-		}{}
-
-		if err := json.Unmarshal(b, &catalogResp); err != nil {
+		resp, err := r.client.Do(req)
+		if err != nil {
+			ok, e := isUnauthorizedError(err)
+			if ok {
+				return repos, e
+			}
 			return repos, err
 		}
 
-		repos = catalogResp.Repositories
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return repos, err
+		}
 
-		return repos, nil
+		if resp.StatusCode == http.StatusOK {
+			catalogResp := struct {
+				Repositories []string `json:"repositories"`
+			}{}
+
+			if err := json.Unmarshal(b, &catalogResp); err != nil {
+				return repos, err
+			}
+
+			repos = append(repos, catalogResp.Repositories...)
+			//Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			link := resp.Header.Get("Link")
+			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
+				suffix = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
+			} else {
+				suffix = ""
+			}
+		} else {
+			return repos, errors.Error{
+				StatusCode: resp.StatusCode,
+				StatusText: resp.Status,
+				Message:    string(b),
+			}
+		}
 	}
-
-	return repos, errors.Error{
-		StatusCode: resp.StatusCode,
-		StatusText: resp.Status,
-		Message:    string(b),
-	}
-}
-
-func buildCatalogURL(endpoint string) string {
-	return fmt.Sprintf("%s/v2/_catalog", endpoint)
+	return repos, nil
 }
 
 func newClient(endpoint, username string, credential auth.Credential,
