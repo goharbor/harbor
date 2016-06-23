@@ -13,17 +13,13 @@
    limitations under the License.
 */
 
-package auth
+package registry
 
 import (
 	"net/http"
-
-	au "github.com/docker/distribution/registry/client/auth"
 )
 
-// ParseChallengeFromResponse ...
-func ParseChallengeFromResponse(resp *http.Response) []au.Challenge {
-	challenges := au.ResponseChallenges(resp)
-
-	return challenges
+// Modifier modifies request
+type Modifier interface {
+	Modify(*http.Request) error
 }

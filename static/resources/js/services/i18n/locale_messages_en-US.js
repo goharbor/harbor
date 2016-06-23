@@ -160,6 +160,7 @@ var locale_messages = {
   'endpoint': 'Endpoint',
   'test_connection': 'Test connection',
   'add_new_destination': 'New Destination',
+  'edit_destination': 'Edit Destination',
   'successful_changed_password': 'Password has been changed successfully.',
   'change_profile': 'Change Profile',
   'successful_changed_profile': 'User profile has been changed successfully.',
@@ -172,5 +173,15 @@ var locale_messages = {
   'send': 'Send',
   'successful_signed_up': 'Signed up successfully.',
   'add_new_policy': 'Add New Policy',
-  'edit_policy': 'Edit Policy'
+  'edit_policy': 'Edit Policy',
+  'add_new_title': 'Add User',
+  'add_new': 'Add',
+  'successful_added': 'Added new user successfully.',
+  'copyright': 'Copyright',
+  'all_rights_reserved': 'All Rights Reserved.',
+  'successful_ping_target': 'Pinged target successfully.',
+  'failed_ping_target': 'Pinged target failed：',
+  'policy_already_exists': 'Policy alreay exists.',
+  'destination_already_exists': 'Destination already exists.',
+  'failed_delete_destination': 'Delete destination failed:'
 };

@@ -26,7 +26,7 @@ import (
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
-	registry_util "github.com/vmware/harbor/utils/registry"
+	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
@@ -92,8 +92,10 @@ func (t *TargetAPI) Ping() {
 		password = t.GetString("password")
 	}
 
-	credential := auth.NewBasicAuthCredential(username, password)
-	registry, err := registry_util.NewRegistryWithCredential(endpoint, credential)
+	// TODO read variable from config file
+	insecure := true
+	registry, err := newRegistryClient(endpoint, insecure, username, password,
+		"", "", "")
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.
 		if urlErr, ok := err.(*url.Error); ok {
@@ -190,6 +192,16 @@ func (t *TargetAPI) Post() {
 		t.CustomAbort(http.StatusConflict, "name is already used")
 	}
 
+	ta, err = dao.GetRepTargetByConnInfo(target.URL, target.Username)
+	if err != nil {
+		log.Errorf("failed to get target [ %s %s ]: %v", target.URL, target.Username, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if ta != nil {
+		t.CustomAbort(http.StatusConflict, "the connection information[ endpoint, username ] is conflict with other target")
+	}
+
 	if len(target.Password) != 0 {
 		target.Password = utils.ReversibleEncrypt(target.Password)
 	}
@@ -217,6 +229,24 @@ func (t *TargetAPI) Put() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
+	policies, err := dao.GetRepPolicyByTarget(id)
+	if err != nil {
+		log.Errorf("failed to get policies according target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	hasEnabledPolicy := false
+	for _, policy := range policies {
+		if policy.Enabled == 1 {
+			hasEnabledPolicy = true
+			break
+		}
+	}
+
+	if hasEnabledPolicy {
+		t.CustomAbort(http.StatusBadRequest, "the target is associated with policy which is enabled")
+	}
+
 	target := &models.RepTarget{}
 	t.DecodeJSONReqAndValidate(target)
 
@@ -229,6 +259,18 @@ func (t *TargetAPI) Put() {
 
 		if ta != nil {
 			t.CustomAbort(http.StatusConflict, "name is already used")
+		}
+	}
+
+	if target.URL != originalTarget.URL || target.Username != originalTarget.Username {
+		ta, err := dao.GetRepTargetByConnInfo(target.URL, target.Username)
+		if err != nil {
+			log.Errorf("failed to get target [ %s %s ]: %v", target.URL, target.Username, err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		if ta != nil {
+			t.CustomAbort(http.StatusConflict, "the connection information[ endpoint, username ] is conflict with other target")
 		}
 	}
 
@@ -272,4 +314,45 @@ func (t *TargetAPI) Delete() {
 		log.Errorf("failed to delete target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+}
+
+func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Registry, error) {
+	credential := auth.NewBasicAuthCredential(username, password)
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// ListPolicies ...
+func (t *TargetAPI) ListPolicies() {
+	id := t.GetIDFromURL()
+
+	target, err := dao.GetRepTarget(id)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if target == nil {
+		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	policies, err := dao.GetRepPolicyByTarget(id)
+	if err != nil {
+		log.Errorf("failed to get policies according target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	t.Data["json"] = policies
+	t.ServeJSON()
 }

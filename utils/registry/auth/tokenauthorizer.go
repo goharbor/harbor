@@ -16,11 +16,13 @@
 package auth
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -42,8 +44,8 @@ func (s *scope) string() string {
 
 type tokenGenerator func(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error)
 
-// Implements interface Handler
-type tokenHandler struct {
+// Implements interface Authorizer
+type tokenAuthorizer struct {
 	scope     *scope
 	tg        tokenGenerator
 	cache     string     // cached token
@@ -53,12 +55,12 @@ type tokenHandler struct {
 }
 
 // Scheme returns the scheme that the handler can handle
-func (t *tokenHandler) Scheme() string {
+func (t *tokenAuthorizer) Scheme() string {
 	return "bearer"
 }
 
 // AuthorizeRequest will add authorization header which contains a token before the request is sent
-func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]string) error {
+func (t *tokenAuthorizer) Authorize(req *http.Request, params map[string]string) error {
 	var scopes []*scope
 	var token string
 
@@ -100,26 +102,23 @@ func (t *tokenHandler) AuthorizeRequest(req *http.Request, params map[string]str
 
 		if !hasFrom {
 			t.updateCachedToken(to, expiresIn, issuedAt)
-			log.Debug("add token to cache")
 		}
 	} else {
 		token = cachedToken
-		log.Debug("get token from cache")
 	}
 
 	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token))
-	log.Debugf("add token to request: %s %s", req.Method, req.URL.String())
 
 	return nil
 }
 
-func (t *tokenHandler) getCachedToken() (string, int, *time.Time) {
+func (t *tokenAuthorizer) getCachedToken() (string, int, *time.Time) {
 	t.Lock()
 	defer t.Unlock()
 	return t.cache, t.expiresIn, t.issuedAt
 }
 
-func (t *tokenHandler) updateCachedToken(token string, expiresIn int, issuedAt *time.Time) {
+func (t *tokenAuthorizer) updateCachedToken(token string, expiresIn int, issuedAt *time.Time) {
 	t.Lock()
 	defer t.Unlock()
 	t.cache = token
@@ -127,38 +126,45 @@ func (t *tokenHandler) updateCachedToken(token string, expiresIn int, issuedAt *
 	t.issuedAt = issuedAt
 }
 
-// Implements interface Handler
-type standardTokenHandler struct {
-	tokenHandler
+// Implements interface Authorizer
+type standardTokenAuthorizer struct {
+	tokenAuthorizer
 	client     *http.Client
 	credential Credential
 }
 
-// NewStandardTokenHandler returns a standard token handler. The handler will request a token
+// NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
-// TODO deal with https
-func NewStandardTokenHandler(credential Credential, scopeType, scopeName string, scopeActions ...string) Handler {
-	handler := &standardTokenHandler{
+func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	t := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: insecure,
+		},
+	}
+
+	authorizer := &standardTokenAuthorizer{
 		client: &http.Client{
-			Transport: http.DefaultTransport,
+			Transport: t,
 		},
 		credential: credential,
 	}
 
 	if len(scopeType) != 0 || len(scopeName) != 0 {
-		handler.scope = &scope{
+		authorizer.scope = &scope{
 			Type:    scopeType,
 			Name:    scopeName,
 			Actions: scopeActions,
 		}
 	}
 
-	handler.tg = handler.generateToken
+	authorizer.tg = authorizer.generateToken
 
-	return handler
+	return authorizer
 }
 
-func (s *standardTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	realm = tokenURL(realm)
+
 	u, err := url.Parse(realm)
 	if err != nil {
 		return
@@ -217,37 +223,50 @@ func (s *standardTokenHandler) generateToken(realm, service string, scopes []str
 		}
 	}
 
-	log.Debug("get token from token server")
-
 	return
 }
 
+// when the registry client is used inside Harbor, the token request
+// can be posted to token service directly rather than going through nginx.
+// this solution can resolve two problems:
+// 1. performance issue
+// 2. the realm field returned by registry is an IP which can not reachable
+// inside Harbor
+func tokenURL(realm string) string {
+	extEndpoint := os.Getenv("EXT_ENDPOINT")
+	tokenURL := os.Getenv("TOKEN_URL")
+	if len(extEndpoint) != 0 && len(tokenURL) != 0 &&
+		strings.Contains(realm, extEndpoint) {
+		realm = strings.TrimRight(tokenURL, "/") + "/service/token"
+	}
+	return realm
+}
+
 // Implements interface Handler
-type usernameTokenHandler struct {
-	tokenHandler
+type usernameTokenAuthorizer struct {
+	tokenAuthorizer
 	username string
 }
 
-// NewUsernameTokenHandler returns a handler which will generate a token according to
+// NewUsernameTokenAuthorizer returns a authorizer which will generate a token according to
 // the user's privileges
-func NewUsernameTokenHandler(username string, scopeType, scopeName string, scopeActions ...string) Handler {
-	handler := &usernameTokenHandler{
+func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	authorizer := &usernameTokenAuthorizer{
 		username: username,
 	}
 
-	handler.scope = &scope{
+	authorizer.scope = &scope{
 		Type:    scopeType,
 		Name:    scopeName,
 		Actions: scopeActions,
 	}
 
-	handler.tg = handler.generateToken
+	authorizer.tg = authorizer.generateToken
 
-	return handler
+	return authorizer
 }
 
-func (u *usernameTokenHandler) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+func (u *usernameTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
-	log.Debug("get token by calling GenTokenForUI directly")
 	return
 }

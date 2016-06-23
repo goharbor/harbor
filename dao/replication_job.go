@@ -52,6 +52,20 @@ func GetRepTargetByName(name string) (*models.RepTarget, error) {
 	return &t, err
 }
 
+// GetRepTargetByConnInfo ...
+func GetRepTargetByConnInfo(endpoint, username string) (*models.RepTarget, error) {
+	o := GetOrmer()
+	t := models.RepTarget{
+		URL:      endpoint,
+		Username: username,
+	}
+	err := o.Read(&t, "URL", "Username")
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
+	return &t, err
+}
+
 // DeleteRepTarget ...
 func DeleteRepTarget(id int64) error {
 	o := GetOrmer()
@@ -200,6 +214,20 @@ func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
 	var policies []*models.RepPolicy
 
 	if _, err := o.Raw(sql, targetID).QueryRows(&policies); err != nil {
+		return nil, err
+	}
+
+	return policies, nil
+}
+
+// GetRepPolicyByProjectAndTarget ...
+func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPolicy, error) {
+	o := GetOrmer()
+	sql := `select * from replication_policy where project_id = ? and target_id = ?`
+
+	var policies []*models.RepPolicy
+
+	if _, err := o.Raw(sql, projectID, targetID).QueryRows(&policies); err != nil {
 		return nil, err
 	}
 

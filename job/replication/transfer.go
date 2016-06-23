@@ -61,6 +61,8 @@ type BaseHandler struct {
 	dstUsr string // username ...
 	dstPwd string // password ...
 
+	insecure bool // whether skip secure check when using https
+
 	srcClient *registry.Repository
 	dstClient *registry.Repository
 
@@ -75,7 +77,7 @@ type BaseHandler struct {
 // InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
 // listing tags of the repository if parameter tags is nil.
 func InitBaseHandler(repository, srcURL, srcSecret,
-	dstURL, dstUsr, dstPwd string, tags []string, logger *log.Logger) (*BaseHandler, error) {
+	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
 	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
 		repository, tags, srcURL, dstURL, dstUsr)
@@ -96,14 +98,16 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	c := &http.Cookie{Name: models.UISecretCookie, Value: srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	//	srcCred := auth.NewBasicAuthCredential("admin", "Harbor12345")
-	srcClient, err := registry.NewRepositoryWithCredential(base.repository, base.srcURL, srcCred)
+	srcClient, err := newRepositoryClient(base.srcURL, base.insecure, srcCred,
+		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
 		return nil, err
 	}
 	base.srcClient = srcClient
 
 	dstCred := auth.NewBasicAuthCredential(base.dstUsr, base.dstPwd)
-	dstClient, err := registry.NewRepositoryWithCredential(base.repository, base.dstURL, dstCred)
+	dstClient, err := newRepositoryClient(base.dstURL, base.insecure, dstCred,
+		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
 		return nil, err
 	}
@@ -415,4 +419,35 @@ func (m *ManifestPusher) Enter() (string, error) {
 	m.blobs = nil
 
 	return StatePullManifest, nil
+}
+
+func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	uam := &userAgentModifier{
+		userAgent: "harbor-registry-client",
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store, uam)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+type userAgentModifier struct {
+	userAgent string
+}
+
+// Modify adds user-agent header to the request
+func (u *userAgentModifier) Modify(req *http.Request) error {
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
+	return nil
 }
