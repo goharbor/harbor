@@ -10,7 +10,7 @@
   
   function ModalDialogController($scope) {
     var vm = this;
-    vm.confirmOnly = false;
+    
   }
   
   function modalDialog() {
@@ -36,6 +36,10 @@
       if(!angular.isDefined(ctrl.contentType)) {
         ctrl.contentType = 'text/plain';  
       }
+      if(!angular.isDefined(ctrl.confirmOnly)) {
+        ctrl.confirmOnly = false;
+      }
+      
       console.log('Received contentType in modal:' + ctrl.contentType);
                   
       scope.$watch('vm.modalMessage', function(current) {
@@ -52,7 +56,6 @@
       });
       
       scope.$on('showDialog', function(e, val) {
-        console.log('modal-dialog show:' + ctrl.show);
         if(val) {
           element.find('#myModal').modal('show');
         }else{
@@ -66,7 +69,6 @@
       function clickHandler(e) {
         ctrl.action();
         element.find('#myModal').modal('hide');
-        ctrl.show = false;
       }
     }
   }

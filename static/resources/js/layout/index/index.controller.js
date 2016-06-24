@@ -19,15 +19,15 @@
     var indexDesc5 = $filter('tr')('index_desc_5', []);
     
     vm.message = '<p class="page-content text-justify">' +
-              indexDesc + 
-        			'</p>' +
-    		      '<ul>' +
-        			 '<li class="long-line">▪︎ ' + indexDesc1 + '</li>' +
-        			 '<li class="long-line">▪︎ ' + indexDesc2 + '</li>' +
-        			 '<li class="long-line">▪︎ ' + indexDesc3 + '</li>' +
-        			 '<li class="long-line">▪︎ ' + indexDesc4 + '</li>' +
-        			 '<li class="long-line">▪︎ ' + indexDesc5 + '</li>' +
-        			'</ul>';
+        indexDesc + 
+			'</p>' +
+      '<ul>' +
+			 '<li class="long-line">▪︎ ' + indexDesc1 + '</li>' +
+			 '<li class="long-line">▪︎ ' + indexDesc2 + '</li>' +
+			 '<li class="long-line">▪︎ ' + indexDesc3 + '</li>' +
+			 '<li class="long-line">▪︎ ' + indexDesc4 + '</li>' +
+			 '<li class="long-line">▪︎ ' + indexDesc5 + '</li>' +
+			'</ul>';
     
   }  
       

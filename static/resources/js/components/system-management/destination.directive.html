@@ -1,3 +1,4 @@
+<modal-dialog modal-title="// vm.modalDialogTitle //" modal-message="// vm.modalDialogMessage //" action="vm.deleteDestination()"></modal-dialog>
 <div class="tab-pane">
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
@@ -11,7 +12,6 @@
       <create-destination action="//vm.action//" target-id="//vm.targetId//" reload="vm.retrieve()"></create-destination>
     </div>
     <div class="pane"> 
-      <modal-dialog modal-title="// 'confirm_to_delete_destination_title' | tr //" modal-message="// 'confirm_to_delete_destination' | tr //" action="vm.deleteDestination()"></modal-dialog>
       <div class="sub-pane">
         <table class="table table-pane">
     			 <thead>
@@ -31,7 +31,7 @@
               <td>
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;
-                <a href="javascript:void(0);" data-toggle="modal" data-target="#myModal" ng-click="vm.confirmToDelete(r.id)"><span class="glyphicon glyphicon-trash"></span></a>
+                <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id)"><span class="glyphicon glyphicon-trash"></span></a>
               </td>
             </tr>
           </tbody>

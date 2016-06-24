@@ -35,7 +35,9 @@
     return filter;
     
     function filter(input, pattern) {
-      return moment(new Date(input || '')).format(pattern);
+      var d = new Date(input || '');
+      if(d.getTime() <= 0) return 'N/A';
+      return moment(d).format(pattern);
     }
   }
   

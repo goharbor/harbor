@@ -181,6 +181,9 @@ var locale_messages = {
   'successful_ping_target': 'Ping 目标成功。',
   'failed_ping_target': 'Ping 目标失败：',
   'policy_already_exists': '策略已存在。',
+  'failed_update_policy': '修改策略失败：',
   'destination_already_exists': '目标已存在。',
-  'failed_delete_destination': '删除目标失败：'
+  'failed_delete_destination': '删除目标失败：',
+  'failed_create_destination': '创建目标失败：',
+  'failed_update_destination': '修改目标失败：'
 };

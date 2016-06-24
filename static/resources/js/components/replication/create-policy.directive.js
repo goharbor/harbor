@@ -6,9 +6,9 @@
     .module('harbor.replication')
     .directive('createPolicy', createPolicy);
   
-  CreatePolicyController.$inject = ['$scope', 'ListReplicationPolicyService', 'ListDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'CreateReplicationPolicyService', 'UpdateReplicationPolicyService', 'ListDestinationPolicyService','$location', 'getParameterByName', '$filter', 'trFilter'];
+  CreatePolicyController.$inject = ['$scope', 'ListReplicationPolicyService', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'CreateReplicationPolicyService', 'UpdateReplicationPolicyService', 'ListDestinationPolicyService','$location', 'getParameterByName', '$filter', 'trFilter', '$q', '$timeout'];
   
-  function CreatePolicyController($scope, ListReplicationPolicyService, ListDestinationService, UpdateDestinationService, PingDestinationService, CreateReplicationPolicyService, UpdateReplicationPolicyService, ListDestinationPolicyService, $location, getParameterByName, $filter, trFilter) {
+  function CreatePolicyController($scope, ListReplicationPolicyService, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService, CreateReplicationPolicyService, UpdateReplicationPolicyService, ListDestinationPolicyService, $location, getParameterByName, $filter, trFilter, $q, $timeout) {
     var vm = this;
     
     //Since can not set value for textarea by using vm
@@ -33,23 +33,44 @@
     vm.create = create;
     vm.update = update;
     vm.pingDestination = pingDestination;
-    
+    vm.checkDestinationPolicyStatus = checkDestinationPolicyStatus;
+  
     vm.targetEditable = true;
-        
+    vm.checkedAddTarget = false;
+           
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
-        vm1.selection = current[0]; 
+        if(!angular.isArray(current) || current.length === 0) {
+          return;
+        }
+        if(!angular.isDefined(vm1.selection)) {
+          vm1.selection = current[0];
+        }
+        vm.targetId = vm1.selection.id;
         vm1.endpoint = vm1.selection.endpoint;
         vm1.username = vm1.selection.username;
         vm1.password = vm1.selection.password;
       }
     });
-                                     
+    
+    $scope.$watch('vm.checkedAddTarget', function(current) {
+      if(current) {
+        vm.targetEditable = true;
+        vm1.name = '';
+        vm1.endpoint = '';
+        vm1.username = '';
+        vm1.password = '';
+      }        
+    });    
+                                         
     function selectDestination(item) {
       vm1.selection = item;
-      vm1.endpoint = item.endpoint;
-      vm1.username = item.username;
-      vm1.password = item.password;
+      if(angular.isDefined(item)) {        
+        vm.targetId = item.id;
+        vm1.endpoint = item.endpoint;
+        vm1.username = item.username;
+        vm1.password = item.password;
+      }
     }
     
     function prepareDestination() {
@@ -59,7 +80,6 @@
     }
 
     function addNew() {       
-      vm.targetEditable = true;
       $filter('tr')('add_new_policy', []);
       vm0.name = '';
       vm0.description = '';
@@ -67,52 +87,87 @@
     }
     
     function edit(policyId) {
+    
       console.log('Edit policy ID:' + policyId);
       vm.policyId = policyId;
-      vm.targetEditable = true;
+    
       $filter('tr')('edit_policy', []);
+
       ListReplicationPolicyService(policyId)
         .success(listReplicationPolicySuccess)
-        .error(listReplicationPolicyFailed);
+        .error(listReplicationPolicyFailed);      
     }
     
     function create(policy) {
-      CreateReplicationPolicyService(policy)
-        .success(createReplicationPolicySuccess)
-        .error(createReplicationPolicyFailed);
+      vm.policy = policy;
+      saveOrUpdateDestination();
+    }
+    
+    function saveOrUpdateDestination() {
+      
+      var target = {
+        'endpoint': vm1.endpoint,
+        'username': vm1.username,
+        'password': vm1.password
+      };
+      if(vm.checkedAddTarget) {
+        target.name = vm1.name;
+        CreateDestinationService(target.name, target.endpoint, target.username, target.password)
+          .success(createDestinationSuccess)
+          .error(createDestinationFailed);
+      }else{
+        target.name = vm1.selection.name;
+        console.log('Update target ID:' + vm.targetId);
+        UpdateDestinationService(vm.targetId, target)
+          .success(updateDestinationSuccess)
+          .error(updateDestinationFailed);
+      }
+    }
+    
+    function saveOrUpdatePolicy() {
+      switch(vm.action) {
+      case 'ADD_NEW':
+        CreateReplicationPolicyService(vm.policy)
+          .success(createReplicationPolicySuccess)
+          .error(createReplicationPolicyFailed);
+        break;
+      case 'EDIT':
+        UpdateReplicationPolicyService(vm.policyId, vm.policy)
+          .success(updateReplicationPolicySuccess)
+          .error(updateReplicationPolicyFailed);
+        break;
+      }
     }
     
     function update(policy) {
-      console.log('Update policy ID:' + vm.policyId);
-      UpdateReplicationPolicyService(vm.policyId, policy)
-        .success(updateReplicationPolicySuccess)
-        .error(updateReplicationPolicyFailed);
+      vm.policy = policy;        
+      saveOrUpdateDestination();   
+    }endpoint
         
-      var targetId = vm1.selection.id;
-      console.log('Update target ID:' + targetId);
-      var target = {
-        'name': vm1.selection.name,
-        'endpoint': vm1.endpoint,
-        'username': vm1.username,
-        'password': vm1.password
-      };
-      UpdateDestinationService(targetId, target)
-        .success(updateDestinationSuccess)
-        .error(updateDestinationFailed);
-    }
-    
     function pingDestination() {
       var target = {
-        'name': vm1.selection.name,
         'endpoint': vm1.endpoint,
         'username': vm1.username,
         'password': vm1.password
       };
+      
+      if(vm.checkedAddTarget) {
+        target.name = vm1.name;
+      }else{
+        target.name = vm1.selection.name;
+      }
+      
       PingDestinationService(target)
         .success(pingDestinationSuccess)
         .error(pingDestinationFailed);
     }
     
+    function checkDestinationPolicyStatus() {
+      ListDestinationPolicyService(vm.targetId)
+        .success(listDestinationPolicySuccess)
+        .error(listDestinationPolicyFailed);
+    }
+        
     function listDestinationSuccess(data, status) {
       vm.destinations = data || [];
     }
@@ -121,7 +176,6 @@
     }
     
     function listDestinationPolicySuccess(data, status) {
-      vm.targetEditable = true;
       for(var i in data) {
         if(data[i].enabled === 1) {
           vm.targetEditable = false;
@@ -136,20 +190,16 @@
     }
     
     function listReplicationPolicySuccess(data, status) {
-      console.log(data);
+
       var replicationPolicy = data;
+      
+      vm.targetId = replicationPolicy.target_id;
+      
       vm0.name = replicationPolicy.name;
       vm0.description = replicationPolicy.description;
-      vm0.enabled = replicationPolicy.enabled == 1;
-      vm.targetId = replicationPolicy.target_id;
-     
-      if(vm0.enabled) {
-        vm.targetEditable = false;
-      }else{
-        ListDestinationPolicyService(vm.targetId)
-         .success(listDestinationPolicySuccess)
-         .error(listDestinationPolicyFailed);
-      }
+      vm0.enabled = (replicationPolicy.enabled == 1);
+      
+      vm.checkDestinationPolicyStatus();
     }
     function listReplicationPolicyFailed(data, status) {
       console.log('Failed list replication policy:' + data);
@@ -160,7 +210,8 @@
     }
     function createReplicationPolicyFailed(data, status) {
       if(status === 409) {
-        alert($filter('tr')('policy_already_exists', []));
+        vm.modalMessage = $filter('tr')('policy_already_exists', []);
+        $scope.$broadcast('showDialog', true);
       }
       console.log('Failed create replication policy.');
     }
@@ -169,19 +220,36 @@
       vm.reload();
     }
     function updateReplicationPolicyFailed(data, status) {
+      vm.modalMessage = $filter('tr')('failed_update_policy', []) + data;
+      $scope.$broadcast('showDialog', true);
       console.log('Failed update replication policy.');
+    }
+    function createDestinationSuccess(data, status, headers) {
+      var content = headers('Location');
+      vm.policy.targetId = Number(content.substr(content.lastIndexOf('/') + 1));
+      console.log('Successful create destination, targetId:' + vm.policy.targetId);
+      saveOrUpdatePolicy();
+    }
+    function createDestinationFailed(data, status) {
+      vm.modalMessage = $filter('tr')('failed_create_destination', []) + data;
+      $scope.$broadcast('showDialog', true);
+      console.log('Failed create destination.');
     }
     function updateDestinationSuccess(data, status) {
       console.log('Successful update destination.');
+      vm.policy.targetId = vm1.selection.id;
+      saveOrUpdatePolicy();
     }
     function updateDestinationFailed(data, status) {
+      vm.modalMessage = $filter('tr')('failed_update_destination', []) + data;
+      $scope.$broadcast('showDialog', true);
       console.log('Failed update destination.');
     }
     function pingDestinationSuccess(data, status) {
       alert($filter('tr')('successful_ping_target', []));
     }
     function pingDestinationFailed(data, status) {
-      alert($filter('tr')('failed_ping_target', []) + ':' + data);
+      alert($filter('tr')('failed_ping_target', []) + data);
     }
   }
   
@@ -205,28 +273,54 @@
     function link(scope, element, attr, ctrl) {  
       
       element.find('#createPolicyModal').on('show.bs.modal', function() {    
-        
-        scope.form.$setPristine();
-        scope.form.$setUntouched();
-        
-        ctrl.prepareDestination();
-        switch(ctrl.action) {
-        case 'ADD_NEW':
-          ctrl.addNew(); 
-          break;
-        case 'EDIT':
-          ctrl.edit(ctrl.policyId); 
-          break;
-        }  
-        scope.$apply();
-      });  
-                  
+        scope.$apply(function() {
+          scope.form.$setPristine();
+          scope.form.$setUntouched();
+          
+          scope.$watch('vm.checkedAddTarget', function(current, origin) {
+            if(origin) {
+              var d = scope.replication.destination;
+              if(angular.isDefined(d) && angular.isDefined(d.selection)) {
+                d.endpoint = d.selection.endpoint;
+                d.username = d.selection.username;
+                d.password = d.selection.password;
+                ctrl.checkDestinationPolicyStatus();
+              }
+            }
+          }); 
+                    
+          ctrl.checkedAddTarget = false;
+          ctrl.targetEditable = true;
+          
+          ctrl.prepareDestination();
+          
+          switch(ctrl.action) {
+          case 'ADD_NEW':
+            ctrl.addNew(); 
+            break;
+          case 'EDIT':
+            ctrl.edit(ctrl.policyId); 
+            break;
+          }  
+        });
+      });               
+                
+      scope.$watch('vm.targetId', function(current) {
+        if(current) {          
+          var d = scope.replication.destination;
+          if(angular.isDefined(d) && angular.isDefined(d.selection)) {
+            scope.replication.destination.selection.id = current; 
+            d.endpoint = d.selection.endpoint;
+            d.username = d.selection.username;
+            d.password = d.selection.password;
+          }
+        }
+      });                  
       ctrl.save = save;
     
       function save(form) {
         var postPayload = {
           'projectId': Number(ctrl.projectId),
-          'targetId': form.destination.selection.id,
           'name': form.policy.name,
           'enabled': form.policy.enabled ? 1 : 0,
           'description': form.policy.description,

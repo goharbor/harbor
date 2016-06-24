@@ -1,3 +1,4 @@
+<modal-dialog modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="true"></modal-dialog>
 <div class="modal fade" id="createPolicyModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
     <form name="form" class="form-horizontal css-form" novalidate>
@@ -38,13 +39,20 @@
               </div>
             </div>
             <div class="col-md-12">
-              <h4 class="h4-custom">// 'destination_setting' | tr //</h4>
+              <div class="row">
+                <div class="col-md-8" style="padding-left: 0;">
+                  <h4 class="h4-custom">// 'destination_setting' | tr //</h4>
+                </div>
+                <div class="col-md-4 h4-custom pull-right"><input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget"> // 'add_new_destination' | tr //</div>
+              </div>
               <hr class="hr-line"/>
+              
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="destinationName" class="col-md-3 control-label">// 'name' | tr //:</label>
-              <div class="col-md-7">
-                <select class="form-control form-control-custom" id="destinationName" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-click="vm.selectDestination(replication.destination.selection)" ng-disabled="!vm.targetEditable"></select>
+              <div class="col-md-7">  
+                <input type="text" ng-if="vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.name">
+                <select ng-if="!vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-click="vm.selectDestination(replication.destination.selection)" ng-disabled="!vm.targetEditable"></select>
               </div>
             </div>  
             <div class="form-group col-md-12 form-group-custom">

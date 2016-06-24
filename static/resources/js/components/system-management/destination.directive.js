@@ -43,6 +43,9 @@
     
     function confirmToDelete(targetId) {
       vm.selectedTargetId = targetId;
+      vm.modalDialogTitle = $filter('tr')('confirm_to_delete_destination_title');
+      vm.modalDialogMessage = $filter('tr')('confirm_to_delete_destination');
+      $scope.$broadcast('showDialog', true);
     }
     
     function deleteDestination() {
@@ -66,7 +69,7 @@
     
     function deleteDestinationFailed(data, status) {
       console.log('Failed delete destination.');
-      alert($filter('tr')('failed_delete_destination', []) + ':' + data);
+      alert($filter('tr')('failed_delete_destination', []) + data);
     }   
   }
   

@@ -179,9 +179,12 @@ var locale_messages = {
   'successful_added': 'Added new user successfully.',
   'copyright': 'Copyright',
   'all_rights_reserved': 'All Rights Reserved.',
-  'successful_ping_target': 'Pinged target successfully.',
-  'failed_ping_target': 'Pinged target failed：',
+  'successful_ping_target': 'Successful Ping target.',
+  'failed_ping_target': 'Failed Ping target:',
   'policy_already_exists': 'Policy alreay exists.',
+  'failed_update_policy': 'Failed update policy:',
   'destination_already_exists': 'Destination already exists.',
-  'failed_delete_destination': 'Delete destination failed:'
+  'failed_delete_destination': 'Delete destination failed:',
+  'failed_create_destination': 'Create destination failed:',
+  'failed_update_destination': 'Failed update destination:'
 };
