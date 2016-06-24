@@ -17,6 +17,7 @@ package registry
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,9 +29,9 @@ import (
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry/auth"
+
 	registry_error "github.com/vmware/harbor/utils/registry/error"
+	"github.com/vmware/harbor/utils/registry/utils"
 )
 
 // Repository holds information of a repository entity
@@ -40,14 +41,11 @@ type Repository struct {
 	client   *http.Client
 }
 
-// TODO add agent to header of request, notifications need it
-
 // NewRepository returns an instance of Repository
 func NewRepository(name, endpoint string, client *http.Client) (*Repository, error) {
 	name = strings.TrimSpace(name)
-	endpoint = strings.TrimRight(endpoint, "/")
 
-	u, err := url.Parse(endpoint)
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -61,55 +59,30 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 	return repository, nil
 }
 
-// NewRepositoryWithCredential returns a Repository instance which will authorize the request
-// according to the credenttial
-func NewRepositoryWithCredential(name, endpoint string, credential auth.Credential) (*Repository, error) {
+// NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
+func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
 	name = strings.TrimSpace(name)
-	endpoint = strings.TrimRight(endpoint, "/")
 
-	u, err := url.Parse(endpoint)
+	u, err := utils.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := newClient(endpoint, "", credential, "repository", name, "pull", "push")
-	if err != nil {
-		return nil, err
+	t := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: insecure,
+		},
 	}
 
-	repository := &Repository{
+	transport := NewTransport(t, modifiers...)
+
+	return &Repository{
 		Name:     name,
 		Endpoint: u,
-		client:   client,
-	}
-
-	log.Debugf("initialized a repository client with credential: %s %s", endpoint, name)
-
-	return repository, nil
-}
-
-// NewRepositoryWithUsername returns a Repository instance which will authorize the request
-// according to the privileges of user
-func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, error) {
-	name = strings.TrimSpace(name)
-	endpoint = strings.TrimRight(endpoint, "/")
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := newClient(endpoint, username, nil, "repository", name, "pull", "push")
-
-	repository := &Repository{
-		Name:     name,
-		Endpoint: u,
-		client:   client,
-	}
-
-	log.Debugf("initialized a repository client with username: %s %s %s", endpoint, name, username)
-
-	return repository, nil
+		client: &http.Client{
+			Transport: transport,
+		},
+	}, nil
 }
 
 func parseError(err error) error {

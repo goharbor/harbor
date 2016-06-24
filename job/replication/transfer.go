@@ -17,6 +17,7 @@ package replication
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -61,6 +62,8 @@ type BaseHandler struct {
 	dstUsr string // username ...
 	dstPwd string // password ...
 
+	insecure bool // whether skip secure check when using https
+
 	srcClient *registry.Repository
 	dstClient *registry.Repository
 
@@ -75,10 +78,10 @@ type BaseHandler struct {
 // InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
 // listing tags of the repository if parameter tags is nil.
 func InitBaseHandler(repository, srcURL, srcSecret,
-	dstURL, dstUsr, dstPwd string, tags []string, logger *log.Logger) (*BaseHandler, error) {
+	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
-	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		repository, tags, srcURL, dstURL, dstUsr)
+	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		repository, tags, srcURL, dstURL, insecure, dstUsr)
 
 	base := &BaseHandler{
 		repository:     repository,
@@ -87,6 +90,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		dstURL:         dstURL,
 		dstUsr:         dstUsr,
 		dstPwd:         dstPwd,
+		insecure:       insecure,
 		blobsExistence: make(map[string]bool, 10),
 		logger:         logger,
 	}
@@ -96,15 +100,19 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	c := &http.Cookie{Name: models.UISecretCookie, Value: srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	//	srcCred := auth.NewBasicAuthCredential("admin", "Harbor12345")
-	srcClient, err := registry.NewRepositoryWithCredential(base.repository, base.srcURL, srcCred)
+	srcClient, err := newRepositoryClient(base.srcURL, base.insecure, srcCred,
+		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return nil, err
 	}
 	base.srcClient = srcClient
 
 	dstCred := auth.NewBasicAuthCredential(base.dstUsr, base.dstPwd)
-	dstClient, err := registry.NewRepositoryWithCredential(base.repository, base.dstURL, dstCred)
+	dstClient, err := newRepositoryClient(base.dstURL, base.insecure, dstCred,
+		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return nil, err
 	}
 	base.dstClient = dstClient
@@ -112,13 +120,14 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	if len(base.tags) == 0 {
 		tags, err := base.srcClient.ListTag()
 		if err != nil {
+			base.logger.Errorf("an error occurred while listing tags for source repository: %v", err)
 			return nil, err
 		}
 		base.tags = tags
 	}
 
-	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.dstUsr)
+	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.insecure, base.dstUsr)
 
 	return base, nil
 }
@@ -186,7 +195,16 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -255,27 +273,38 @@ func (c *Checker) createProject() error {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		if resp.StatusCode == http.StatusConflict {
-			return ErrConflict
-		}
-
-		defer resp.Body.Close()
-		message, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			c.logger.Errorf("an error occurred while reading message from response: %v", err)
-		}
-
-		return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
-			c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
+	// version 0.1.1's reponse code is 200
+	if resp.StatusCode == http.StatusCreated ||
+		resp.StatusCode == http.StatusOK {
+		return nil
 	}
 
-	return nil
+	if resp.StatusCode == http.StatusConflict {
+		return ErrConflict
+	}
+
+	defer resp.Body.Close()
+	message, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Errorf("an error occurred while reading message from response: %v", err)
+	}
+
+	return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
+		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
 }
 
 // ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,
@@ -415,4 +444,35 @@ func (m *ManifestPusher) Enter() (string, error) {
 	m.blobs = nil
 
 	return StatePullManifest, nil
+}
+
+func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	uam := &userAgentModifier{
+		userAgent: "harbor-registry-client",
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store, uam)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+type userAgentModifier struct {
+	userAgent string
+}
+
+// Modify adds user-agent header to the request
+func (u *userAgentModifier) Modify(req *http.Request) error {
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
+	return nil
 }

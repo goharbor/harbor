@@ -25,7 +25,6 @@ import (
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry"
 
 	"github.com/astaxie/beego"
 )
@@ -57,7 +56,7 @@ func (n *NotificationHandler) Post() {
 			matched = false
 		}
 		if matched && (strings.HasPrefix(e.Request.UserAgent, "docker") ||
-			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == strings.ToLower(registry.UserAgent)) {
+			strings.ToLower(strings.TrimSpace(e.Request.UserAgent)) == "harbor-registry-client") {
 			username = e.Actor.Name
 			action = e.Action
 			repo = e.Target.Repository

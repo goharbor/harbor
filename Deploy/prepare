@@ -47,6 +47,7 @@ crt_organizationalunit = rcp.get("configuration", "crt_organizationalunit")
 crt_commonname = rcp.get("configuration", "crt_commonname")
 crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
+verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -122,7 +123,8 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         db_password=db_password,
         ui_secret=ui_secret,
         max_job_workers=max_job_workers,
-        ui_url=ui_url)
+        ui_url=ui_url,
+        verify_remote_cert=verify_remote_cert)
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \

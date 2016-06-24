@@ -1,16 +1,16 @@
 /*
-    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-        
-        http://www.apache.org/licenses/LICENSE-2.0
-        
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 package job
@@ -38,6 +38,7 @@ type RepJobParm struct {
 	Tags           []string
 	Enabled        int
 	Operation      string
+	Insecure       bool
 }
 
 // SM is the state machine to handle job, it handles one job at a time.
@@ -205,11 +206,12 @@ func (sm *SM) Reset(jid int64) error {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: config.LocalHarborURL(),
+		LocalRegURL: config.LocalRegURL(),
 		Repository:  job.Repository,
 		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
+		Insecure:    !config.VerifyRemoteCert(),
 	}
 	if policy.Enabled == 0 {
 		//worker will cancel this job
@@ -260,7 +262,7 @@ func (sm *SM) Reset(jid int64) error {
 func addImgTransferTransition(sm *SM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		sm.Parms.Tags, sm.Logger)
+		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
 	if err != nil {
 		return err
 	}
@@ -274,8 +276,11 @@ func addImgTransferTransition(sm *SM) error {
 }
 
 func addImgDeleteTransition(sm *SM) error {
-	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
-		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Logger)
+	deleter, err := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
+		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Parms.Insecure, sm.Logger)
+	if err != nil {
+		return err
+	}
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
 	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})

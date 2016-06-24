@@ -29,19 +29,13 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="username" class="col-md-3 control-label">// 'username' | tr //:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control" id="username" ng-model="destination.username" name="uUsername" required ng-disabled="!vm.editable">                 
-                <div ng-messages="form.$submitted && form.uUsername.$error">
-                  <span ng-message="required">// 'username_is_required' | tr //</span>
-                </div>
+                <input type="text" class="form-control" id="username" ng-model="destination.username" name="uUsername" ng-disabled="!vm.editable">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="password" class="col-md-3 control-label">// 'password' | tr //:</label>
               <div class="col-md-9">
-                <input type="password" class="form-control" id="password" ng-model="destination.password" name="uPassword" required ng-disabled="!vm.editable">                 
-                <div ng-messages="form.$submitted && form.uPassword.$error">
-                  <span ng-message="required">// 'password_is_required' | tr //</span>
-                </div>
+                <input type="password" class="form-control" id="password" ng-model="destination.password" name="uPassword" ng-disabled="!vm.editable">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">

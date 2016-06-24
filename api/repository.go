@@ -255,11 +255,13 @@ func (ra *RepositoryAPI) GetManifests() {
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
 	endpoint := os.Getenv("REGISTRY_URL")
+	// TODO read variable from config file
+	insecure := true
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		credential := auth.NewBasicAuthCredential(username, password)
-		return registry.NewRepositoryWithCredential(repoName, endpoint, credential)
+		return newRepositoryClient(endpoint, insecure, username, password,
+			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
 	username, err = ra.getUsername()
@@ -267,7 +269,8 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return registry.NewRepositoryWithUsername(repoName, endpoint, username)
+	return cache.NewRepositoryClient(endpoint, insecure, username, repoName,
+		"repository", repoName, "pull", "push", "*")
 }
 
 func (ra *RepositoryAPI) getUsername() (string, error) {
@@ -326,4 +329,22 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	}
 	ra.Data["json"] = repos
 	ra.ServeJSON()
+}
+
+func newRepositoryClient(endpoint string, insecure bool, username, password, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	credential := auth.NewBasicAuthCredential(username, password)
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

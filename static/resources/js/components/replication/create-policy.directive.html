@@ -67,19 +67,13 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="username" class="col-md-3 control-label">// 'username' | tr //:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" required ng-disabled="!vm.targetEditable">                 
-                <div ng-messages="form.$submitted && form.uUsername.$error">
-                  <span ng-message="required">// 'username_is_required' | tr //</span>
-                </div>
+                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" ng-disabled="!vm.targetEditable">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="password" class="col-md-3 control-label">// 'password' | tr //:</label>
               <div class="col-md-9">
-                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" required ng-disabled="!vm.targetEditable">                 
-                <div ng-messages="form.$submitted && form.uPassword.$error">
-                  <span ng-message="required">// 'password_is_required' | tr //</span>
-                </div>
+                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" ng-disabled="!vm.targetEditable">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">
