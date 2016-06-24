@@ -18,7 +18,7 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -285,19 +285,13 @@ func isProjectAdmin(userID int, pid int64) bool {
 
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
-	if len(pn) == 0 {
-		return fmt.Errorf("Project name can not be empty")
-	}
 	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("project name is illegal in length. (greater than 4 or less than 30)")
+		return fmt.Errorf("Project name is illegal in length. (greater than 4 or less than 30)")
 	}
-	if isContainIllegalChar(req.ProjectName, []string{"~", "-", "$", "\\", "[", "]", "{", "}", "(", ")", "&", "^", "%", "*", "<", ">", "\"", "'", "/", "?", "@", " "}) {
-		return fmt.Errorf("project name contains illegal characters")
+	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
+	legal := validProjectName.MatchString(pn)
+	if !legal {
+		return fmt.Errorf("Project name is not in lower case or contains illegal characters!")
 	}
-
-	if pn != strings.ToLower(pn) {
-		return fmt.Errorf("project name must be in lower case")
-	}
-
 	return nil
 }
