@@ -37,19 +37,17 @@
   
     vm.targetEditable = true;
     vm.checkedAddTarget = false;
+    vm.notAvailable = false;
            
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
         if(!angular.isArray(current) || current.length === 0) {
+          vm.notAvailable = true;
           return;
         }
         if(!angular.isDefined(vm1.selection)) {
           vm1.selection = current[0];
         }
-        vm.targetId = vm1.selection.id;
-        vm1.endpoint = vm1.selection.endpoint;
-        vm1.username = vm1.selection.username;
-        vm1.password = vm1.selection.password;
       }
     });
     
@@ -61,11 +59,19 @@
         vm1.username = '';
         vm1.password = '';
       }        
-    });    
+    });
+        
+    $scope.$watch('replication.destination.endpoint', function(current) {
+      if(current) {
+        vm.notAvailable = false;
+      }else{
+        vm.notAvailable = true; 
+      }
+    });
                                          
     function selectDestination(item) {
       vm1.selection = item;
-      if(angular.isDefined(item)) {        
+      if(angular.isDefined(item)) {
         vm.targetId = item.id;
         vm1.endpoint = item.endpoint;
         vm1.username = item.username;
@@ -81,16 +87,17 @@
 
     function addNew() {       
       $filter('tr')('add_new_policy', []);
+      vm.targetEditable = true;
       vm0.name = '';
       vm0.description = '';
-      vm0.enabled = true;
+      vm0.enabled = true;      
     }
     
     function edit(policyId) {
     
       console.log('Edit policy ID:' + policyId);
       vm.policyId = policyId;
-    
+      vm.targetEditable = true;
       $filter('tr')('edit_policy', []);
 
       ListReplicationPolicyService(policyId)
@@ -142,9 +149,10 @@
     function update(policy) {
       vm.policy = policy;        
       saveOrUpdateDestination();   
-    }endpoint
+    }
         
     function pingDestination() {
+            
       var target = {
         'endpoint': vm1.endpoint,
         'username': vm1.username,
@@ -169,17 +177,20 @@
     }
         
     function listDestinationSuccess(data, status) {
-      vm.destinations = data || [];
+      vm.destinations = data || [];     
     }
     function listDestinationFailed(data, status) {
       console.log('Failed list destination:' + data);
     }
     
     function listDestinationPolicySuccess(data, status) {
-      for(var i in data) {
-        if(data[i].enabled === 1) {
-          vm.targetEditable = false;
-          break;
+      if(vm.action === 'EDIT') {
+        vm.targetEditable = true;
+        for(var i in data) {
+          if(data[i].enabled === 1) {
+            vm.targetEditable = false;
+            break;
+          }
         }
       }
       console.log('current target editable:' + vm.targetEditable + ', policy ID:' + vm.policyId);
@@ -198,6 +209,14 @@
       vm0.name = replicationPolicy.name;
       vm0.description = replicationPolicy.description;
       vm0.enabled = (replicationPolicy.enabled == 1);
+      
+      angular.forEach(vm.destinations, function(item) {
+        if(item.id === vm.targetId) {
+          vm1.endpoint = item.endpoint;
+          vm1.username = item.username;
+          vm1.password = item.password;
+        }
+      });
       
       vm.checkDestinationPolicyStatus();
     }
@@ -288,10 +307,10 @@
               }
             }
           }); 
-                    
+            
           ctrl.checkedAddTarget = false;
           ctrl.targetEditable = true;
-          
+          ctrl.notAvailable = false;
           ctrl.prepareDestination();
           
           switch(ctrl.action) {
@@ -302,20 +321,16 @@
             ctrl.edit(ctrl.policyId); 
             break;
           }  
+          
+          scope.$watch('vm.targetId', function(current) {
+            if(current) {          
+              scope.replication.destination.selection.id = current; 
+            }
+          }); 
         });
       });               
                 
-      scope.$watch('vm.targetId', function(current) {
-        if(current) {          
-          var d = scope.replication.destination;
-          if(angular.isDefined(d) && angular.isDefined(d.selection)) {
-            scope.replication.destination.selection.id = current; 
-            d.endpoint = d.selection.endpoint;
-            d.username = d.selection.username;
-            d.password = d.selection.password;
-          }
-        }
-      });                  
+                       
       ctrl.save = save;
     
       function save(form) {
