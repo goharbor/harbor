@@ -80,8 +80,8 @@ type BaseHandler struct {
 func InitBaseHandler(repository, srcURL, srcSecret,
 	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
-	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		repository, tags, srcURL, dstURL, dstUsr)
+	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		repository, tags, srcURL, dstURL, insecure, dstUsr)
 
 	base := &BaseHandler{
 		repository:     repository,
@@ -90,6 +90,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		dstURL:         dstURL,
 		dstUsr:         dstUsr,
 		dstPwd:         dstPwd,
+		insecure:       insecure,
 		blobsExistence: make(map[string]bool, 10),
 		logger:         logger,
 	}
@@ -102,6 +103,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	srcClient, err := newRepositoryClient(base.srcURL, base.insecure, srcCred,
 		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return nil, err
 	}
 	base.srcClient = srcClient
@@ -110,6 +112,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	dstClient, err := newRepositoryClient(base.dstURL, base.insecure, dstCred,
 		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return nil, err
 	}
 	base.dstClient = dstClient
@@ -117,13 +120,14 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	if len(base.tags) == 0 {
 		tags, err := base.srcClient.ListTag()
 		if err != nil {
+			base.logger.Errorf("an error occurred while listing tags for source repository: %v", err)
 			return nil, err
 		}
 		base.tags = tags
 	}
 
-	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.dstUsr)
+	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.insecure, base.dstUsr)
 
 	return base, nil
 }

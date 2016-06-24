@@ -62,8 +62,8 @@ func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string,
 		dstClient:  dstClient,
 		logger:     logger,
 	}
-	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, destination user: %s",
-		deleter.repository, deleter.tags, deleter.dstURL, deleter.dstUsr)
+	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, insecure: %v, destination user: %s",
+		deleter.repository, deleter.tags, deleter.dstURL, deleter.insecure, deleter.dstUsr)
 	return deleter, nil
 }
 
