@@ -80,8 +80,8 @@ type BaseHandler struct {
 func InitBaseHandler(repository, srcURL, srcSecret,
 	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) (*BaseHandler, error) {
 
-	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		repository, tags, srcURL, dstURL, dstUsr)
+	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		repository, tags, srcURL, dstURL, insecure, dstUsr)
 
 	base := &BaseHandler{
 		repository:     repository,
@@ -125,8 +125,8 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		base.tags = tags
 	}
 
-	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, destination user: %s",
-		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.dstUsr)
+	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.insecure, base.dstUsr)
 
 	return base, nil
 }
