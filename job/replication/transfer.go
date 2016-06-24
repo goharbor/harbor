@@ -90,6 +90,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		dstURL:         dstURL,
 		dstUsr:         dstUsr,
 		dstPwd:         dstPwd,
+		insecure:       insecure,
 		blobsExistence: make(map[string]bool, 10),
 		logger:         logger,
 	}
