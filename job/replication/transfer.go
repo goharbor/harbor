@@ -102,6 +102,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	srcClient, err := newRepositoryClient(base.srcURL, base.insecure, srcCred,
 		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return nil, err
 	}
 	base.srcClient = srcClient
@@ -110,6 +111,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	dstClient, err := newRepositoryClient(base.dstURL, base.insecure, dstCred,
 		base.repository, "repository", base.repository, "pull", "push", "*")
 	if err != nil {
+		base.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return nil, err
 	}
 	base.dstClient = dstClient
@@ -117,6 +119,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 	if len(base.tags) == 0 {
 		tags, err := base.srcClient.ListTag()
 		if err != nil {
+			base.logger.Errorf("an error occurred while listing tags for source repository: %v", err)
 			return nil, err
 		}
 		base.tags = tags
