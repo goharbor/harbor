@@ -17,6 +17,7 @@ package replication
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -190,7 +191,16 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -259,27 +269,38 @@ func (c *Checker) createProject() error {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: c.insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		if resp.StatusCode == http.StatusConflict {
-			return ErrConflict
-		}
-
-		defer resp.Body.Close()
-		message, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			c.logger.Errorf("an error occurred while reading message from response: %v", err)
-		}
-
-		return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
-			c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
+	// version 0.1.1's reponse code is 200
+	if resp.StatusCode == http.StatusCreated ||
+		resp.StatusCode == http.StatusOK {
+		return nil
 	}
 
-	return nil
+	if resp.StatusCode == http.StatusConflict {
+		return ErrConflict
+	}
+
+	defer resp.Body.Close()
+	message, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Errorf("an error occurred while reading message from response: %v", err)
+	}
+
+	return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
+		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
 }
 
 // ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,
