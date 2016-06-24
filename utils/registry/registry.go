@@ -3,9 +3,7 @@
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,10 +16,10 @@ package registry
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 	"github.com/vmware/harbor/utils/registry/utils"
@@ -74,42 +72,52 @@ func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modif
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
+	suffix := "/v2/_catalog?n=1000"
+	var url string
 
-	req, err := http.NewRequest("GET", buildCatalogURL(r.Endpoint.String()), nil)
-	if err != nil {
-		return repos, err
-	}
+	for len(suffix) > 0 {
+		url = r.Endpoint.String() + suffix
 
-	resp, err := r.client.Do(req)
-	if err != nil {
-		return repos, parseError(err)
-	}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return repos, err
+		}
+		resp, err := r.client.Do(req)
+		if err != nil {
+			return nil, parseError(err)
+		}
 
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return repos, err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		catalogResp := struct {
-			Repositories []string `json:"repositories"`
-		}{}
-
-		if err := json.Unmarshal(b, &catalogResp); err != nil {
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
 			return repos, err
 		}
 
-		repos = catalogResp.Repositories
+		if resp.StatusCode == http.StatusOK {
+			catalogResp := struct {
+				Repositories []string `json:"repositories"`
+			}{}
 
-		return repos, nil
-	}
+			if err := json.Unmarshal(b, &catalogResp); err != nil {
+				return repos, err
+			}
 
-	return repos, &registry_error.Error{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+			repos = append(repos, catalogResp.Repositories...)
+			//Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			link := resp.Header.Get("Link")
+			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
+				suffix = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
+			} else {
+				suffix = ""
+			}
+		} else {
+			return repos, &registry_error.Error{
+				StatusCode: resp.StatusCode,
+				Detail:     string(b),
+			}
+		}
 	}
+	return repos, nil
 }
 
 // Ping ...
@@ -139,8 +147,4 @@ func (r *Registry) Ping() error {
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
-}
-
-func buildCatalogURL(endpoint string) string {
-	return fmt.Sprintf("%s/v2/_catalog", endpoint)
 }
