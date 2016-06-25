@@ -6,16 +6,15 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', 'DeleteProjectMemberService', 'getParameterByName', '$location', 'currentUser'];
+  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', 'DeleteProjectMemberService', 'getParameterByName', '$location', 'currentUser', '$filter', 'trFilter'];
     
-  function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser) {
+  function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser, $filter, trFilter) {
     var vm = this;
     
     vm.isOpen = false;      
     vm.search = search; 
     vm.addProjectMember = addProjectMember;
     vm.deleteProjectMember = deleteProjectMember;
-    vm.deleteMember = deleteMember
     vm.retrieve = retrieve;
     vm.username = '';
      
@@ -41,27 +40,21 @@
       }
     }
     
-    function deleteProjectMember() {
-      DeleteProjectMemberService(vm.selectedProjectId, vm.selectedUserId)
+    function deleteProjectMember(e) {
+      DeleteProjectMemberService(e.projectId, e.userId)
         .success(deleteProjectMemberSuccess)
         .error(deleteProjectMemberFailed);
     }
-    
-    function deleteMember(e) {
-      vm.selectedProjectId = e.projectId;
-      vm.selectedUserId = e.userId;
-      
-      vm.modalTitle = 'Delete project member';
-      vm.modalMessage = 'Are you sure to delete the current member?';
-      
-    }
-    
+        
     function deleteProjectMemberSuccess(data, status) {
       console.log('Successful delete project member complete.');
       vm.retrieve();      
     }
     
     function deleteProjectMemberFailed(e) {
+      vm.modalTitle = $filter('tr')('confirm_to_delete_member_title');
+      vm.modalMessage = $filter('tr')('failed_to_delete_member');
+      $scope.$broadcast('showDialog', true);
       console.log('Failed to edit project member:' + e);
     }
   

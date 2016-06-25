@@ -12,14 +12,14 @@
     </div>
     <div class="pane"> 	           
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
-      <modal-dialog modal-title="// 'confirm_to_delete_member_title' | tr //" modal-message="// 'confirm_to_delete_member' | tr //" action="vm.deleteProjectMember()"></modal-dialog>
+      <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="true"></modal-dialog>
       <div class="sub-pane">
         <table class="table table-pane" >
     			 <thead>
     			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>
     			 </thead>
     			 <tbody>
-            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
+            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
           </tbody>
     		</table>
       </div>

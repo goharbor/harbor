@@ -1,33 +1,29 @@
 <div class="well panel-group">
   <div class="row">
-    <div class="col-xs-10 col-md-10">
-      <form name="form" novalidate ng-submit="form.$valid">  
+    <form name="form" class="css-form" novalidate>  
+      <div class="col-xs-10 col-md-10">  
         <div class="form-group col-md-6">               
           <input type="text" class="form-control" id="addUsername" placeholder="// 'username' | tr //" ng-model="pm.username"  name="uUsername" ng-model-options="{ debounce: 250 }" ng-change="vm.reset()" required>
           <div class="error-message">
-            <div ng-messages="form.$dirty && form.uUsername.$error">
+            <div ng-messages="form.$submitted && form.uUsername.$error">
               <span ng-message="required">// 'username_is_required' | tr //</span>
             </div>
             <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
           </div>
         </div>
-      </form>
-      <form class="form-inline clearfix">
         <div class="form-group">
           <label for="roleIdList">// 'role' | tr //:</label>&nbsp;&nbsp;
           <span ng-repeat="role in vm.roles">
             <input type="radio" name="role" ng-model="vm.optRole" value="//role.id//">&nbsp;//role.name//&nbsp;&nbsp;
           </span>
         </div>
-      </form>
-    </div>
-    <div class="col-xs-2 col-md-2"> 
-      <form>                        
+      </div>
+      <div class="col-xs-2 col-md-2">                         
         <div class="form-group">               
-          <button type="button" class="btn btn-primary" id="btnSave" ng-disabled="form.$invalid" ng-click="vm.save(pm)">// 'save' | tr //</button>     
+          <button type="submit" class="btn btn-primary" id="btnSave" ng-click="vm.save(pm)">// 'save' | tr //</button>     
           <button type="button" class="btn btn-default" id="btnCancel" ng-click="vm.cancel(form)">// 'cancel' | tr //</button>
         </div>
-      </form>
+      </div>
     </div>
-  </div>
+  </form>
 </div>

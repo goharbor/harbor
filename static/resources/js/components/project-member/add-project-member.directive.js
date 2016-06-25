@@ -10,37 +10,41 @@
  
   function AddProjectMemberController($scope, roles, AddProjectMemberService) {
     var vm = this;
-    vm.username = '';
+    
+    $scope.pm = {};
+    
+    var pm = $scope.pm;
+    
     vm.roles = roles();
     vm.optRole = 1;
-    
-    vm.reset = reset;
+   
     vm.save = save;
     vm.cancel = cancel;
 
+    vm.reset = reset;
+
     vm.hasError = false;
     vm.errorMessage = '';
-    
-    function reset() {
-      vm.hasError = false;
-      vm.errorMessage = '';
-    }
     
     function save(pm) {     
       if(pm && angular.isDefined(pm.username)) {
         AddProjectMemberService(vm.projectId, vm.optRole, pm.username)
           .success(addProjectMemberComplete)
-          .error(addProjectMemberFailed);
+          .error(addProjectMemberFailed);        
       }
     }    
    
     function cancel(form) {
-      if(form) {
-        form.$setPristine();
-      }
+      
+      form.$setPristine();
+      form.$setUntouched();
+      
       vm.isOpen = false;  
-      vm.username = '';
+      pm.username = '';
       vm.optRole = 1;
+      
+      vm.hasError = false;
+      vm.errorMessage = '';
     }
     
     function addProjectMemberComplete(data, status, header) {
@@ -49,7 +53,7 @@
     }
     
     function addProjectMemberFailed(data, status, headers) {
-      if(status === 409) {
+      if(status === 409 && pm.username != '') {
         vm.hasError = true;
         vm.errorMessage = 'username_already_exist';
       }
@@ -58,6 +62,11 @@
         vm.errorMessage = 'username_does_not_exist';
       }
       console.log('addProjectMemberFailed: status:' + status + ', data:' + data);
+    }
+    
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
     }
     
   }
@@ -71,12 +80,18 @@
         'isOpen': '=',
         'reload': '&'
       },
+      'link': link,
       'controller': AddProjectMemberController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      scope.form.$setPristine();
+      scope.form.$setUntouched();
+    }
   }
   
 })();

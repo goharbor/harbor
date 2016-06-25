@@ -10,21 +10,20 @@
   
   function AddProjectController(AddProjectService, $scope) {
     var vm = this;
-    vm.projectName = "";
+    
+    $scope.p = {};
+    var vm0 = $scope.p;
+    vm0.projectName = '';
     vm.isPublic = false;
     
-    vm.reset = reset;
     vm.addProject = addProject;
     vm.cancel = cancel;
     
+    vm.reset = reset;
+    
     vm.hasError = false;
     vm.errorMessage = '';
-    
-    function reset() {
-      vm.hasError = false;
-      vm.errorMessage = '';
-    }
-    
+        
     function addProject(p) {
       if(p && angular.isDefined(p.projectName)) {
         AddProjectService(p.projectName, vm.isPublic)
@@ -34,17 +33,20 @@
     }
     
     function addProjectSuccess(data, status) {
-      vm.projectName = "";
-      vm.isPublic = false;     
       $scope.$emit('addedSuccess', true);
+      vm.hasError = false;
+      vm.errorMessage = '';
     }
     
     function addProjectFailed(data, status) {
       vm.hasError = true;
-      if(status == 400) {
-        vm.errorMessage = 'project_name_is_invalid';        
+      if(status === 400 && vm0.projectName!= '' && vm0.projectName.length < 4) {
+        vm.errorMessage = 'project_name_is_too_short';
       }
-      if(status === 409) {
+      if(status === 400 && vm0.projectName.length > 30) {
+        vm.errorMessage = 'project_name_is_too_long';
+      }
+      if(status === 409 && vm0.projectName != '') {
         vm.errorMessage = 'project_already_exist';
       }
       console.log('Failed to add project:' + status);
@@ -53,10 +55,19 @@
     function cancel(form){
       if(form) {
         form.$setPristine();
+        form.$setUntouched();
       }
       vm.isOpen = false;
-      vm.projectName = '';
+      vm0.projectName = '';
       vm.isPublic = false;
+    
+      vm.hasError = false;
+      vm.errorMessage = '';
+    }
+    
+    function reset() {
+      vm.hasError = false;
+      vm.errorMessage = '';
     }
   }
   
@@ -75,7 +86,8 @@
     return directive;
 
     function link(scope, element, attrs, ctrl) {
-      
+      scope.form.$setPristine();
+      scope.form.$setUntouched();
     }
   }
    

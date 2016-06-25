@@ -6,9 +6,9 @@
     .module('harbor.project.member')
     .directive('editProjectMember', editProjectMember);
       
-  EditProjectMemberController.$inject = ['$scope', 'roles', 'getRole','EditProjectMemberService'];
+  EditProjectMemberController.$inject = ['$scope', 'roles', 'getRole','EditProjectMemberService', '$filter', 'trFilter'];
   
-  function EditProjectMemberController($scope, roles, getRole, EditProjectMemberService) {
+  function EditProjectMemberController($scope, roles, getRole, EditProjectMemberService, $filter, trFilter) {
     var vm = this;
         
     vm.roles = roles();
@@ -49,6 +49,7 @@
     }
     
     function editProjectMemberFailed(e) {
+      alert($filter('tr')('failed_to_change_member'));
       console.log('Failed to edit project member:' + e);
     }
     
