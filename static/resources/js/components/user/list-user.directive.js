@@ -6,11 +6,11 @@
     .module('harbor.user')
     .directive('listUser', listUser);
     
-  ListUserController.$inject = ['ListUserService', 'DeleteUserService'];
+  ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService'];
   
-  function ListUserController(ListUserService, DeleteUserService) {
+  function ListUserController($scope, ListUserService, DeleteUserService) {
     var vm = this;
-    
+        
     vm.username = '';
     vm.searchUser = searchUser;
     vm.deleteUser = deleteUser;
@@ -61,12 +61,16 @@
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/user/list-user.directive.html',
-      'scope': true,
+      'link': link,
       'controller': ListUserController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs) {
+      
+    }
   }
   
 })();

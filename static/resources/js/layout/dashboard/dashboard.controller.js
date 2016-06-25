@@ -6,8 +6,10 @@
     .module('harbor.layout.dashboard')
     .controller('DashboardController', DashboardController);
   
-  function DashboardController() {
+  DashboardController.$inject = ['$scope'];
   
+  function DashboardController($scope) {
+
   }
   
 })();

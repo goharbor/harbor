@@ -10,7 +10,7 @@
 
   function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole) {
     var vm = this;
-    
+ 
     vm.isOpen = false;
     vm.projectName = '';
     vm.publicity = 0;
@@ -53,9 +53,9 @@
     
     function showAddProject() {
       if(vm.isOpen){
-        vm.isOpen = false;
+        vm.isOpen = false;        
       }else{
-        vm.isOpen = true;
+        vm.isOpen = true;        
       }
     }
     

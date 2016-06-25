@@ -6,6 +6,7 @@
       'ngMessages',
       'ngCookies',
       'harbor.session',
+      'harbor.layout.element.height',
       'harbor.layout.header',
       'harbor.layout.footer',
       'harbor.layout.navigation',

@@ -1,24 +1,20 @@
 .container-custom {
   position: relative;
-  height: 100%;
+  min-height: 1px;
 }
 
 .extend-height {
   height: 100%;
   min-height: 1px;
   min-width: 1024px;
-  overflow: hidden;
 }
 
 .section {
-  position: relative;
   padding: 15px;
   margin-top: 20px;
   background-color: #FFFFFF;
-  height: 100%;
   width: 100%;
-  min-height: 1px;
-  max-height: 100%;
+  min-height: 490px;
 }
 
 .search-pane {
@@ -42,19 +38,25 @@
 .pane {
   height: auto;
   min-height: 1px;
-  max-height: 600px;
-  overflow-y: auto;
 }
 
 .sub-pane {
   margin: 15px;
-  height: 380px;
+  min-height: 300px;
   overflow-y: auto;
 }
 
 .well-custom {
-  position: relative;
-  width: 100%;
+  position: absolute;
+  width: 1064px;
+  background-color: #f5f5f5;
+  background-image: none;
+  margin: 0 10px;
+  z-index: 10;
+}
+
+.form-custom {
+  margin-top: 1em;
 }
 
 .empty-hint {

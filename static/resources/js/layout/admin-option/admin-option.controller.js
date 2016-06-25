@@ -6,9 +6,11 @@
     .module('harbor.layout.admin.option')
     .controller('AdminOptionController', AdminOptionController);
   
-  AdminOptionController.$inject = [];
+  AdminOptionController.$inject = ['$scope'];
   
-  function AdminOptionController() {
+  function AdminOptionController($scope) {
+    
+    $scope.subsSubPane = 276;   
     var vm = this;
     vm.toggle = false;
     vm.toggleAdminOption = toggleAdminOption;

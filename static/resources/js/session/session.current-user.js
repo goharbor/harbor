@@ -6,12 +6,12 @@
     .module('harbor.session')
     .controller('CurrentUserController', CurrentUserController);
  
-  CurrentUserController.$inject = ['CurrentUserService', 'currentUser', '$window'];
+  CurrentUserController.$inject = ['$scope', 'CurrentUserService', 'currentUser', '$window', '$document'];
   
-  function CurrentUserController(CurrentUserService, currentUser, $window) {
+  function CurrentUserController($scope, CurrentUserService, currentUser, $window, $document) {
     
     var vm = this;
-    
+         
     CurrentUserService()
       .then(getCurrentUserComplete)
       .catch(getCurrentUserFailed);

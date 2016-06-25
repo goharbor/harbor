@@ -6,9 +6,11 @@
     .module('harbor.details')
     .controller('DetailsController', DetailsController);
 
-  function DetailsController() {
+  DetailsController.$inject = ['$scope'];
+
+  function DetailsController($scope) {
     var vm = this;
-   
+          
     vm.publicity = false;
     vm.isProjectMember = false;
     

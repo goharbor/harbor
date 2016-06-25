@@ -1,4 +1,4 @@
-<div class="container-fluid container-fluid-custom" ng-controller="ProjectController as vm">
+<div class="container-fluid container-fluid-custom" element-height ng-controller="ProjectController as vm">
   <div class="container container-custom">
     <div class="row extend-height">
       <div class="col-xs-12 col-md-12 extend-height">
@@ -21,8 +21,7 @@
               <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>
               <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>               
     		    </div>    
-          </div>
-          <div class="pane project-pane">  
+          </div> 
             <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
             <div class="sub-pane">
       		    <table class="table">
@@ -43,7 +42,6 @@
                 </tbody>
               </table>
             </div>
-          </div>
           <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>               
   	    </div>
       </div>

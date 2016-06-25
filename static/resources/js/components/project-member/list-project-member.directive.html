@@ -11,9 +11,9 @@
       <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
     </div>
     <div class="pane"> 	           
-      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
       <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="true"></modal-dialog>
-      <div class="sub-pane">
+      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+      <div class="sub-pane">  
         <table class="table table-pane" >
     			 <thead>
     			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>

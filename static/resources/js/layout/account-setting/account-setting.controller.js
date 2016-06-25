@@ -9,6 +9,7 @@
   AccountSettingController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
   
   function AccountSettingController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
+
     var vm = this;
     vm.isOpen = false;
  
