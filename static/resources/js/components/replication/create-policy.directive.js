@@ -61,6 +61,12 @@
       }        
     });
         
+    $scope.$watch('vm.targetId', function(current) {
+      if(current) {          
+        vm1.selection.id = current;
+      }
+    });    
+        
     $scope.$watch('replication.destination.endpoint', function(current) {
       if(current) {
         vm.notAvailable = false;
@@ -320,13 +326,7 @@
           case 'EDIT':
             ctrl.edit(ctrl.policyId); 
             break;
-          }  
-          
-          scope.$watch('vm.targetId', function(current) {
-            if(current) {          
-              scope.replication.destination.selection.id = current; 
-            }
-          }); 
+          }   
         });
       });               
                 

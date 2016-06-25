@@ -185,5 +185,6 @@ var locale_messages = {
   'destination_already_exists': '目标已存在。',
   'failed_delete_destination': '删除目标失败：',
   'failed_create_destination': '创建目标失败：',
-  'failed_update_destination': '修改目标失败：'
+  'failed_update_destination': '修改目标失败：',
+  'refresh': '刷新'
 };

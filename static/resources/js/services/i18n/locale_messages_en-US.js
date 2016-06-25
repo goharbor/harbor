@@ -186,5 +186,6 @@ var locale_messages = {
   'destination_already_exists': 'Destination already exists.',
   'failed_delete_destination': 'Delete destination failed:',
   'failed_create_destination': 'Create destination failed:',
-  'failed_update_destination': 'Failed update destination:'
+  'failed_update_destination': 'Failed update destination:',
+  'refresh': 'Refresh'
 };
