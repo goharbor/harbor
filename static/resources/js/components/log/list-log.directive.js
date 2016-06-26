@@ -9,6 +9,9 @@
   ListLogController.$inject  = ['$scope','ListLogService', 'getParameterByName', '$location'];
   
   function ListLogController($scope, ListLogService, getParameterByName, $location) {
+    
+    $scope.subsTabPane = 20;
+    
     var vm = this;
     vm.isOpen = false;
        

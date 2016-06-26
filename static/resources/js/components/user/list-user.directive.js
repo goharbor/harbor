@@ -9,6 +9,9 @@
   ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService'];
   
   function ListUserController($scope, ListUserService, DeleteUserService) {
+
+    $scope.subsSubPane = 226;
+        
     var vm = this;
         
     vm.username = '';

@@ -9,6 +9,9 @@
   DestinationController.$inject = ['$scope', 'ListDestinationService', 'DeleteDestinationService', '$filter', 'trFilter'];
   
   function DestinationController($scope, ListDestinationService, DeleteDestinationService, $filter, trFilter) {
+    
+    $scope.subsSubPane = 276;
+    
     var vm = this;
     
     vm.retrieve = retrieve;

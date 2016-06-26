@@ -10,7 +10,8 @@
   
   function AdminOptionController($scope) {
     
-    $scope.subsSubPane = 276;   
+    $scope.subsSubPane = 296;   
+    
     var vm = this;
     vm.toggle = false;
     vm.toggleAdminOption = toggleAdminOption;

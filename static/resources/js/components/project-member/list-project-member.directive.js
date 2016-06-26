@@ -9,6 +9,9 @@
   ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', 'DeleteProjectMemberService', 'getParameterByName', '$location', 'currentUser', '$filter', 'trFilter'];
     
   function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser, $filter, trFilter) {
+    
+    $scope.subsTabPane = 110;
+    
     var vm = this;
     
     vm.isOpen = false;      

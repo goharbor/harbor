@@ -6,9 +6,12 @@
     .module('harbor.system.management')
     .directive('replication', replication);
   
-  ReplicationController.$inject = ['ListReplicationPolicyService', 'ToggleReplicationPolicyService'];
+  ReplicationController.$inject = ['$scope', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService'];
   
-  function ReplicationController(ListReplicationPolicyService, ToggleReplicationPolicyService) {
+  function ReplicationController($scope, ListReplicationPolicyService, ToggleReplicationPolicyService) {
+    
+    $scope.subsSubPane = 276;
+    
     var vm = this;
     vm.retrieve = retrieve;
     vm.search = search;

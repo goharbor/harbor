@@ -42,7 +42,7 @@
 
 .sub-pane {
   margin: 15px;
-  min-height: 300px;
+  min-height: 1px;
   overflow-y: auto;
 }
 
