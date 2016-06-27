@@ -302,29 +302,24 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 }
 
 // FilterRepJobs filters jobs by repo and policy ID
-func FilterRepJobs(repo string, policyID int64) ([]*models.RepJob, error) {
+func FilterRepJobs(policyID int64, repository, status string) ([]*models.RepJob, error) {
 	o := GetOrmer()
 
-	var args []interface{}
-
-	sql := `select * from replication_job `
-
-	if len(repo) != 0 && policyID != 0 {
-		sql += `where repository like ? and policy_id = ? `
-		args = append(args, "%"+repo+"%")
-		args = append(args, policyID)
-	} else if len(repo) != 0 {
-		sql += `where repository like ? `
-		args = append(args, "%"+repo+"%")
-	} else if policyID != 0 {
-		sql += `where policy_id = ? `
-		args = append(args, policyID)
+	qs := o.QueryTable(new(models.RepJob))
+	if policyID != 0 {
+		qs = qs.Filter("PolicyID", policyID)
 	}
-
-	sql += `order by creation_time`
+	if len(repository) != 0 {
+		qs = qs.Filter("Repository__icontains", repository)
+	}
+	if len(status) != 0 {
+		qs = qs.Filter("Status__icontains", status)
+	}
+	qs = qs.OrderBy("CreationTime")
 
 	var jobs []*models.RepJob
-	if _, err := o.Raw(sql, args).QueryRows(&jobs); err != nil {
+	_, err := qs.All(&jobs)
+	if err != nil {
 		return nil, err
 	}
 

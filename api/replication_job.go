@@ -58,7 +58,7 @@ func (ra *RepJobAPI) Prepare() {
 // List filters jobs according to the policy and repository
 func (ra *RepJobAPI) List() {
 	var policyID int64
-	var repository string
+	var repository, status string
 	var err error
 
 	policyIDStr := ra.GetString("policy_id")
@@ -70,10 +70,11 @@ func (ra *RepJobAPI) List() {
 	}
 
 	repository = ra.GetString("repository")
+	status = ra.GetString("status")
 
-	jobs, err := dao.FilterRepJobs(repository, policyID)
+	jobs, err := dao.FilterRepJobs(policyID, repository, status)
 	if err != nil {
-		log.Errorf("failed to filter jobs according policy ID %d and repository %s: %v", policyID, repository, err)
+		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s: %v", policyID, repository, status, err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to query job")
 		return
 	}
