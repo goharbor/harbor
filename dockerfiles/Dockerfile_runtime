@@ -8,7 +8,7 @@ COPY harbor/Deploy/Omega/ui/ /etc/ui
 COPY harbor/sql/ /sql
 COPY harbor/harbor /
 
-RUN chmod u+x /go/bin/harbor
+RUN chmod u+x /harbor
 
 ENTRYPOINT ["/harbor"]
 
