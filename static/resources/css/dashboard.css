@@ -1,5 +1,5 @@
 .up-section .up-table-pane {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 180px;
     margin-top: -10px;
 }
