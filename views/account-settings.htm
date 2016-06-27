@@ -9,15 +9,7 @@
             <div class="form-group">
               <label for="username" class="col-sm-3 control-label">// 'username' | tr //:</label>
               <div class="col-sm-7">
-                <input type="text" class="form-control" id="username" ng-model="user.username" name="uUsername" ng-disabled="vm.isOpen" required maxlength="20" invalid-chars>                 
-                <div ng-messages="form.$submitted && form.uUsername.$error">
-                  <span ng-message="required">// 'username_is_required' | tr //</span>
-                  <span ng-message="maxlength">// 'username_is_too_long' | tr //</span>
-                  <span ng-message="invalidChars">// 'username_contains_illegal_chars' | tr //</span>
-                </div>
-              </div>
-              <div class="col-sm-2">
-                <span class="asterisk">*</span>
+                <input type="text" class="form-control" id="username" ng-model="user.username" name="uUsername" ng-disabled="true">                 
               </div>
             </div>
             <div class="form-group">
