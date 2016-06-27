@@ -9,10 +9,10 @@ code_compile_image=${code_compile_image#*#}
 cat > /data/build/compile.sh << EOF
 #!/bin/bash
 export GOPATH="/usr/local/go"
-mkdir -p /usr/local/go/src/github.com/vmware/harbor
-rm -rf /usr/local/go/src/github.com/vmware/harbor/$SERVICE
-cp -r $SERVICE /usr/local/go/src/github.com/vmware/harbor
-cd /usr/local/go/src/github.com/vmware/harbor/$SERVICE
+mkdir -p /usr/local/go/src/github.com/vmware
+rm -rf /usr/local/go/src/github.com/vmware/$SERVICE
+cp -r $SERVICE /usr/local/go/src/github.com/vmware
+cd /usr/local/go/src/github.com/vmware/$SERVICE
 make localbuild 
 # 将编译完成的二进制文件放到/data/build/$SERVICE/目录, 作为运行时的镜像dockerfile ADD 使用
 cp $SERVICE /data/build/$SERVICE/
