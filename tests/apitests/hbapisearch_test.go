@@ -8,7 +8,7 @@ import (
 )
 
 func TestSearch(t *testing.T) {
-        fmt.Println("Test for Search (SearchGet) API\n")
+        fmt.Println("Test for Search (SearchGet) API")
 	assert := assert.New(t)
 
 	apiTest := HarborAPI.NewHarborAPI()

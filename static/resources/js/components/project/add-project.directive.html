@@ -1,0 +1,27 @@
+<div class="well well-custom">
+  <form name="form" class="css-form form-custom" novalidate>
+    <div class="row"> 
+      <div class="col-xs-10 col-md-10">  
+        <div class="form-group col-md-7">               
+          <input type="text" class="form-control" placeholder="// 'project_name' | tr //" ng-model="p.projectName" name="uProjectName" ng-change="vm.reset()" ng-model-options="{ debounce: 250 }" project-name required> 
+          <div class="error-message">
+            <div ng-messages="form.$submitted && form.uProjectName.$error">
+              <span ng-message="required">// 'project_name_is_required' | tr //</span>
+              <span ng-message="projectName">// 'project_name_is_invalid' | tr //</span>
+            </div>
+            <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" ng-model="vm.isPublic">&nbsp;// 'public' | tr //                     
+        </div>
+      </div>
+      <div class="col-xs-2 col-md-2">                        
+        <div class="form-group">               
+          <button type="submit" class="btn btn-primary" ng-click="vm.addProject(p)">// 'save' | tr //</button>     
+          <button type="button" class="btn btn-default" ng-click="vm.cancel(form)">// 'cancel' | tr //</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

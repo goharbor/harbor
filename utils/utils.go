@@ -16,9 +16,8 @@
 package utils
 
 import (
+	"net/url"
 	"strings"
-
-	"github.com/vmware/harbor/models"
 )
 
 // Repository holds information about repository
@@ -34,22 +33,25 @@ func (r *Repository) GetProject() string {
 	return r.Name[0:strings.LastIndex(r.Name, "/")]
 }
 
-// ProjectSorter holds an array of projects
-type ProjectSorter struct {
-	Projects []models.Project
+// FormatEndpoint formats endpoint
+func FormatEndpoint(endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
+	return endpoint
 }
 
-// Len returns the length of array in ProjectSorter
-func (ps *ProjectSorter) Len() int {
-	return len(ps.Projects)
-}
+// ParseEndpoint parses endpoint to a URL
+func ParseEndpoint(endpoint string) (*url.URL, error) {
+	endpoint = FormatEndpoint(endpoint)
 
-// Less defines the comparison rules of project
-func (ps *ProjectSorter) Less(i, j int) bool {
-	return ps.Projects[i].Name < ps.Projects[j].Name
-}
-
-// Swap swaps the position of i and j
-func (ps *ProjectSorter) Swap(i, j int) {
-	ps.Projects[i], ps.Projects[j] = ps.Projects[j], ps.Projects[i]
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }

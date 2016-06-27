@@ -21,19 +21,14 @@ import (
 	"github.com/vmware/harbor/utils/log"
 )
 
-// RequestModifier modifies request
-type RequestModifier interface {
-	ModifyRequest(*http.Request) error
-}
-
 // Transport holds information about base transport and modifiers
 type Transport struct {
 	transport http.RoundTripper
-	modifiers []RequestModifier
+	modifiers []Modifier
 }
 
 // NewTransport ...
-func NewTransport(transport http.RoundTripper, modifiers []RequestModifier) *Transport {
+func NewTransport(transport http.RoundTripper, modifiers ...Modifier) *Transport {
 	return &Transport{
 		transport: transport,
 		modifiers: modifiers,
@@ -43,7 +38,7 @@ func NewTransport(transport http.RoundTripper, modifiers []RequestModifier) *Tra
 // RoundTrip ...
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for _, modifier := range t.modifiers {
-		if err := modifier.ModifyRequest(req); err != nil {
+		if err := modifier.Modify(req); err != nil {
 			return nil, err
 		}
 	}

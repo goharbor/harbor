@@ -19,14 +19,11 @@ import (
 	"net/http"
 
 	au "github.com/docker/distribution/registry/client/auth"
-	"github.com/vmware/harbor/utils/log"
 )
 
 // ParseChallengeFromResponse ...
 func ParseChallengeFromResponse(resp *http.Response) []au.Challenge {
 	challenges := au.ResponseChallenges(resp)
-
-	log.Debugf("challenges: %v", challenges)
 
 	return challenges
 }

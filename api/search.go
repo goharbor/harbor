@@ -22,7 +22,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -68,7 +68,7 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	projectSorter := &utils.ProjectSorter{Projects: projects}
+	projectSorter := &models.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
 	projectResult := []map[string]interface{}{}
 	for _, p := range projects {
@@ -85,7 +85,7 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	repositories, err2 := svc_utils.GetRepoFromCache()
+	repositories, err2 := cache.GetRepoFromCache()
 	if err2 != nil {
 		log.Errorf("Failed to get repos from cache, error: %v", err2)
 		s.CustomAbort(http.StatusInternalServerError, "Failed to get repositories search result")

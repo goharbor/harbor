@@ -1,0 +1,17 @@
+.switch-pane-admin-options {
+  display: inline;
+  width: 245px;
+  float: right;
+  list-style-type: none;
+}
+
+.switch-pane-admin-options a, .switch-pane-admin-options span {
+  display: inline-block;
+  text-decoration: none;
+  float: left;
+}
+
+.switch-pane-admin-options li .active {
+  border-bottom: 2px solid rgb(0, 84, 190);
+  font-weight: bold;
+}

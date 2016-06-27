@@ -1,0 +1,30 @@
+{{if eq .HasLoggedIn true }}
+<div class="dropdown">
+  <a role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
+      <span class="glyphicon glyphicon-user"></span> {{ .Username }}
+  </a>
+  <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+    {{ if eq .AddNew true }}
+    <li><a href="/add_new"><span class="glyphicon glyphicon-plus"></span> // 'add_new_title' | tr //</a></li>
+    {{ end }}
+    <li><a href="/account_setting"><span class="glyphicon glyphicon-pencil"></span> // 'account_setting' | tr //</a></li>
+    <li class="dropdown-submenu">
+      <a tabindex="-1" href="#"><span class="glyphicon glyphicon-globe"></span> //vm.languageName//</a>
+      <ul class="dropdown-menu">
+        <li ng-repeat="(key, value) in vm.supportLanguages"><a href="javascript:void(0);" ng-click="vm.setLanguage(key)">// value //</a></li>						
+      </ul>
+    </li>
+    <li class="divider"></li>
+    <li><a href="javascript:void(0)" ng-click="vm.logOut()"><span class="glyphicon glyphicon-log-out"></span> // 'log_out' | tr //</a></li>
+  </ul>
+</div>
+{{ else }}
+<div class="dropdown">
+  <a role="button" data-toggle="dropdown" class="btn btn-link" data-target="#" href="">
+      <span class="glyphicon glyphicon-globe"></span> //vm.languageName//
+  </a>
+  <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+     <li ng-repeat="(key, value) in vm.supportLanguages"><a href="javascript:void(0);" ng-click="vm.setLanguage(key)">// value //</a></li>						
+  </ul>
+</div>
+{{ end }}
