@@ -21,8 +21,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/vmware/harbor/utils"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
-	"github.com/vmware/harbor/utils/registry/utils"
 )
 
 // Registry holds information of a registry entity
