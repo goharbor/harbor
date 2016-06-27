@@ -13,7 +13,7 @@ mkdir -p /usr/local/go/src/github.com/vmware/harbor
 rm -rf /usr/local/go/src/github.com/vmware/harbor/$SERVICE
 cp -r $SERVICE /usr/local/go/src/github.com/vmware/harbor
 cd /usr/local/go/src/github.com/vmware/harbor/$SERVICE
-build localbuild 
+make localbuild 
 # 将编译完成的二进制文件放到/data/build/$SERVICE/目录, 作为运行时的镜像dockerfile ADD 使用
 cp $SERVICE /data/build/$SERVICE/
 EOF
