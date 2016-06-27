@@ -23,15 +23,13 @@
       if(!angular.isDefined(scope.subsHeight))  scope.subsHeight = 110;
       if(!angular.isDefined(scope.subsSection))  scope.subsSection = 32;
       if(!angular.isDefined(scope.subsSubPane)) scope.subsSubPane = 226;
-      if(!angular.isDefined(scope.subsTabPane)) scope.subsTabPane = 66;
      
       scope.$watch(scope.getDimension, function(current) {
         if(current) {
-          var h = current.h;
-          element.css({'height' : (h - scope.subsHeight) + 'px'});             
+          var h = current.h;      
           element.find('.section').css({'height': (h - scope.subsHeight - scope.subsSection) + 'px'});        
           element.find('.sub-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});
-          element.find('.tab-pane').css({'height': (h - scope.subsHeight - scope.subsTabPane) + 'px'});            
+          element.find('.tab-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});            
         }
       }, true);
      
