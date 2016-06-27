@@ -40,6 +40,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // RFC5424 log message levels.
@@ -68,7 +69,7 @@ type loggerType func() Logger
 // Logger defines the behavior of a log provider.
 type Logger interface {
 	Init(config string) error
-	WriteMsg(msg string, level int) error
+	WriteMsg(when time.Time, msg string, level int) error
 	Destroy()
 	Flush()
 }
@@ -97,6 +98,8 @@ type BeeLogger struct {
 	loggerFuncCallDepth int
 	asynchronous        bool
 	msgChan             chan *logMsg
+	signalChan          chan string
+	wg                  sync.WaitGroup
 	outputs             []*nameLogger
 }
 
@@ -108,6 +111,7 @@ type nameLogger struct {
 type logMsg struct {
 	level int
 	msg   string
+	when  time.Time
 }
 
 var logMsgPool *sync.Pool
@@ -120,6 +124,7 @@ func NewLogger(channelLen int64) *BeeLogger {
 	bl.level = LevelDebug
 	bl.loggerFuncCallDepth = 2
 	bl.msgChan = make(chan *logMsg, channelLen)
+	bl.signalChan = make(chan string, 1)
 	return bl
 }
 
@@ -131,6 +136,7 @@ func (bl *BeeLogger) Async() *BeeLogger {
 			return &logMsg{}
 		},
 	}
+	bl.wg.Add(1)
 	go bl.startLogger()
 	return bl
 }
@@ -140,17 +146,25 @@ func (bl *BeeLogger) Async() *BeeLogger {
 func (bl *BeeLogger) SetLogger(adapterName string, config string) error {
 	bl.lock.Lock()
 	defer bl.lock.Unlock()
-	if log, ok := adapters[adapterName]; ok {
-		lg := log()
-		err := lg.Init(config)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "logs.BeeLogger.SetLogger: "+err.Error())
-			return err
+
+	for _, l := range bl.outputs {
+		if l.name == adapterName {
+			return fmt.Errorf("logs: duplicate adaptername %q (you have set this logger before)", adapterName)
 		}
-		bl.outputs = append(bl.outputs, &nameLogger{name: adapterName, Logger: lg})
-	} else {
+	}
+	
+	log, ok := adapters[adapterName]
+	if !ok {
 		return fmt.Errorf("logs: unknown adaptername %q (forgotten Register?)", adapterName)
 	}
+
+	lg := log()
+	err := lg.Init(config)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "logs.BeeLogger.SetLogger: "+err.Error())
+		return err
+	}
+	bl.outputs = append(bl.outputs, &nameLogger{name: adapterName, Logger: lg})
 	return nil
 }
 
@@ -173,9 +187,9 @@ func (bl *BeeLogger) DelLogger(adapterName string) error {
 	return nil
 }
 
-func (bl *BeeLogger) writeToLoggers(msg string, level int) {
+func (bl *BeeLogger) writeToLoggers(when time.Time, msg string, level int) {
 	for _, l := range bl.outputs {
-		err := l.WriteMsg(msg, level)
+		err := l.WriteMsg(when, msg, level)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "unable to WriteMsg to adapter:%v,error:%v\n", l.name, err)
 		}
@@ -183,6 +197,7 @@ func (bl *BeeLogger) writeToLoggers(msg string, level int) {
 }
 
 func (bl *BeeLogger) writeMsg(logLevel int, msg string) error {
+	when := time.Now()
 	if bl.enableFuncCallDepth {
 		_, file, line, ok := runtime.Caller(bl.loggerFuncCallDepth)
 		if !ok {
@@ -196,9 +211,10 @@ func (bl *BeeLogger) writeMsg(logLevel int, msg string) error {
 		lm := logMsgPool.Get().(*logMsg)
 		lm.level = logLevel
 		lm.msg = msg
+		lm.when = when
 		bl.msgChan <- lm
 	} else {
-		bl.writeToLoggers(msg, logLevel)
+		bl.writeToLoggers(when, msg, logLevel)
 	}
 	return nil
 }
@@ -228,11 +244,26 @@ func (bl *BeeLogger) EnableFuncCallDepth(b bool) {
 // start logger chan reading.
 // when chan is not empty, write logs.
 func (bl *BeeLogger) startLogger() {
+	gameOver := false
 	for {
 		select {
 		case bm := <-bl.msgChan:
-			bl.writeToLoggers(bm.msg, bm.level)
+			bl.writeToLoggers(bm.when, bm.msg, bm.level)
 			logMsgPool.Put(bm)
+		case sg := <-bl.signalChan:
+			// Now should only send "flush" or "close" to bl.signalChan
+			bl.flush()
+			if sg == "close" {
+				for _, l := range bl.outputs {
+					l.Destroy()
+				}
+				bl.outputs = nil
+				gameOver = true
+			}
+			bl.wg.Done()
+		}
+		if gameOver {
+			break
 		}
 	}
 }
@@ -341,17 +372,45 @@ func (bl *BeeLogger) Trace(format string, v ...interface{}) {
 
 // Flush flush all chan data.
 func (bl *BeeLogger) Flush() {
-	for _, l := range bl.outputs {
-		l.Flush()
+	if bl.asynchronous {
+		bl.signalChan <- "flush"
+		bl.wg.Wait()
+		bl.wg.Add(1)
+		return
 	}
+	bl.flush()
 }
 
 // Close close logger, flush all chan data and destroy all adapters in BeeLogger.
 func (bl *BeeLogger) Close() {
+	if bl.asynchronous {
+		bl.signalChan <- "close"
+		bl.wg.Wait()
+	} else {
+		bl.flush()
+		for _, l := range bl.outputs {
+			l.Destroy()
+		}
+		bl.outputs = nil
+	}
+	close(bl.msgChan)
+	close(bl.signalChan)
+}
+
+// Reset close all outputs, and set bl.outputs to nil
+func (bl *BeeLogger) Reset() {
+	bl.Flush()
+	for _, l := range bl.outputs {
+		l.Destroy()
+	}
+	bl.outputs = nil
+}
+
+func (bl *BeeLogger) flush() {
 	for {
 		if len(bl.msgChan) > 0 {
 			bm := <-bl.msgChan
-			bl.writeToLoggers(bm.msg, bm.level)
+			bl.writeToLoggers(bm.when, bm.msg, bm.level)
 			logMsgPool.Put(bm)
 			continue
 		}
@@ -359,6 +418,5 @@ func (bl *BeeLogger) Close() {
 	}
 	for _, l := range bl.outputs {
 		l.Flush()
-		l.Destroy()
 	}
 }
