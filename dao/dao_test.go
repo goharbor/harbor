@@ -746,6 +746,45 @@ func TestGetRecentLogs(t *testing.T) {
 	}
 }
 
+func TestGetTopRepos(t *testing.T) {
+
+	err := ToggleProjectPublicity(currentProject.ProjectID, publicityOn)
+	if err != nil {
+		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "push")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	topRepos, err := GetTopRepos(10)
+	if err != nil {
+		t.Errorf("error occured in getting top repos, error: %v", err)
+	}
+	if topRepos[0].RepoName != currentProject.Name+"/ubuntu" {
+		t.Errorf("error occured in get top reop's name, expected: %v, actual: %v", currentProject.Name+"/ubuntu", topRepos[0].RepoName)
+	}
+	if topRepos[0].AccessCount != 1 {
+		t.Errorf("error occured in get top reop's access count, expected: %v, actual: %v", 1, topRepos[0].AccessCount)
+	}
+	if topRepos[0].Creator != currentUser.Username {
+		t.Errorf("error occured in get top reop's creator, expected: %v, actual: %v", currentUser.Username, topRepos[0].Creator)
+	}
+	err = ToggleProjectPublicity(currentProject.ProjectID, publicityOff)
+	if err != nil {
+		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
+	}
+	o := GetOrmer()
+	_, err = o.QueryTable("access_log").Filter("operation__in", "push,pull").Delete()
+	if err != nil {
+		t.Errorf("error occurred in deleting access logs, %v", err)
+	}
+
+}
+
 func TestDeleteUser(t *testing.T) {
 	err := DeleteUser(currentUser.UserID)
 	if err != nil {
