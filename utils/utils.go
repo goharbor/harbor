@@ -16,6 +16,7 @@
 package utils
 
 import (
+	"net/url"
 	"strings"
 
 	"github.com/vmware/harbor/models"
@@ -52,4 +53,27 @@ func (ps *ProjectSorter) Less(i, j int) bool {
 // Swap swaps the position of i and j
 func (ps *ProjectSorter) Swap(i, j int) {
 	ps.Projects[i], ps.Projects[j] = ps.Projects[j], ps.Projects[i]
+}
+
+// FormatEndpoint formats endpoint
+func FormatEndpoint(endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+	endpoint = strings.TrimRight(endpoint, "/")
+	if !strings.HasPrefix(endpoint, "http://") &&
+		!strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+
+	return endpoint
+}
+
+// ParseEndpoint parses endpoint to a URL
+func ParseEndpoint(endpoint string) (*url.URL, error) {
+	endpoint = FormatEndpoint(endpoint)
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }

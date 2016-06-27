@@ -30,8 +30,8 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 
+	"github.com/vmware/harbor/utils"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
-	"github.com/vmware/harbor/utils/registry/utils"
 )
 
 // Repository holds information of a repository entity

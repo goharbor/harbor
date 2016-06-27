@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	au "github.com/docker/distribution/registry/client/auth"
-	"github.com/vmware/harbor/utils/registry/utils"
+	"github.com/vmware/harbor/utils"
 )
 
 // Authorizer authorizes requests according to the schema
