@@ -138,7 +138,7 @@
         }else{
           element.find('#down-pane').css({'height' : (maxDownPaneHeight) + 'px'});
           $(document).off('mousemove');
-        }
+        }	
       }
       function mouseupHandler(e) {
         $(document).off('mousedown');
@@ -171,7 +171,8 @@
         element
           .find('#upon-pane table>tbody>tr')  
           .css({'background-color': '#FFFFFF'})
-          .css({'color': '#000'});
+          .css({'color': '#000'})
+          .css({'cursor': 'default'});
         element
           .find('#upon-pane table>tbody>tr a')
           .css({'color': '#337ab7'});          

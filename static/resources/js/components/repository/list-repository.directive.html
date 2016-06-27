@@ -1,4 +1,4 @@
-<div class="tab-pane active" id="repositories" >
+<div class="tab-pane active" id="repositories" element-height>
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
       <div class="input-group">
@@ -11,6 +11,7 @@
     <div ng-if="vm.repositories.length === 0" class="empty-hint">
       <h3 style="margin-top: 200px;" class="text-muted">// 'no_repositories' | tr //</h3>
     </div>
+    <div class="sub-pane">
     <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
       <modal-dialog action="vm.deleteImage()" content-type="text/html" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//"></modal-dialog>
       <div class="panel panel-default" ng-repeat="repo in vm.repositories">
@@ -24,6 +25,7 @@
         </div>
         <list-tag associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount"></list-tag>
       </div>
+    </div>
     </div>
   </div>
 </div>

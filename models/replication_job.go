@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/validation"
+	"github.com/vmware/harbor/utils"
 )
 
 const (
@@ -128,6 +129,8 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 	if len(r.URL) == 0 {
 		v.SetError("endpoint", "can not be empty")
 	}
+
+	r.URL = utils.FormatEndpoint(r.URL)
 
 	if len(r.URL) > 64 {
 		v.SetError("endpoint", "max length is 64")

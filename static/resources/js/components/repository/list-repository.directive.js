@@ -8,6 +8,9 @@
   ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$filter', 'trFilter', '$location', 'getParameterByName'];
   
   function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $filter, trFilter, $location, getParameterByName) {
+    
+    $scope.subsTabPane = 30;
+    
     var vm = this;
   
     vm.filterInput = '';
