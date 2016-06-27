@@ -81,8 +81,7 @@ func initRouters() {
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("api/logs", &api.LogAPI{})
-
+	beego.Router("/api/logs", &api.LogAPI{})
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
