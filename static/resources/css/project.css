@@ -14,7 +14,7 @@
   margin-top: 20px;
   background-color: #FFFFFF;
   width: 100%;
-  min-height: 490px;
+  min-height: 579px;
 }
 
 .search-pane {
@@ -25,6 +25,15 @@
 
 .table>tbody>tr>td, .table>tbody>tr>th {
   vertical-align: middle;
+}
+
+.table-header {
+  margin-bottom: 0;
+}
+
+.table-body-full-width {
+  overflow-y: auto;
+  width: 1075px;
 }
 
 .gutter {
@@ -42,7 +51,7 @@
 
 .sub-pane {
   margin: 15px;
-  min-height: 1px;
+  min-height: 380px;
   overflow-y: auto;
 }
 

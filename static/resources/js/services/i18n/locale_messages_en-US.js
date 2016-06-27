@@ -144,6 +144,7 @@ var locale_messages = {
   'description': 'Description',
   'destination': 'Destination',
   'start_time': 'Start Time',
+  'end_time': 'End Time',
   'activation': 'Activation',
   'replication_jobs': 'Replication Jobs',
   'actions': 'Actions',

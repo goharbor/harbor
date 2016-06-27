@@ -21,7 +21,7 @@
         'email': user.email,
         'password': user.password,
         'realname': user.fullName,
-        'comment': user.comments
+        'comment': user.comment
       };
       SignUpService(userObject)
         .success(signUpSuccess)

@@ -47,6 +47,9 @@
         }
         if(!angular.isDefined(vm1.selection)) {
           vm1.selection = current[0];
+          vm1.endpoint = current[0].endpoint;
+          vm1.username = current[0].username;
+          vm1.password = current[0].password;
         }
       }
     });
@@ -96,7 +99,7 @@
       vm.targetEditable = true;
       vm0.name = '';
       vm0.description = '';
-      vm0.enabled = true;      
+      vm0.enabled = true;
     }
     
     function edit(policyId) {

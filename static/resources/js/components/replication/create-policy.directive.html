@@ -16,7 +16,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="name" class="col-md-3 control-label">// 'name' | tr //:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" name="uName" required maxlength="20">                 
+                <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" name="uName" required maxlength="20" ng-disabled="!vm.targetEditable">                 
                 <div ng-messages="form.$submitted && form.uName.$error">
                   <span ng-message="required">// 'name_is_required' | tr //</span>
                   <span ng-message="maxlength">// 'name_is_too_long' | tr //</span>
@@ -26,7 +26,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="description" class="col-md-3 control-label">// 'description' | tr //:</label>
               <div class="col-md-9">
-                <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" name="uDescription" maxlength="20"></textarea>                 
+                <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" name="uDescription" ng-disabled="!vm.targetEditable"></textarea>                 
                 <div ng-messages="form.$submitted && form.uDescription.$error">
                   <span ng-message="maxlength">// 'description_is_too_long' | tr //</span>
                 </div>
@@ -35,7 +35,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="enable" class="col-md-3 control-label">// 'enable' | tr //:</label>
               <div class="col-md-9">
-                <input type="checkbox" class="form-control" style="margin-top: 10px; height: auto;" ng-model="replication.policy.enabled">
+                <input type="checkbox" class="form-control" style="margin-top: 10px; height: auto;" ng-model="replication.policy.enabled" ng-disabled="!vm.targetEditable">
               </div>
             </div>
             <div class="col-md-12">
@@ -43,16 +43,17 @@
                 <div class="col-md-8" style="padding-left: 0;">
                   <h4 class="h4-custom">// 'destination_setting' | tr //</h4>
                 </div>
-                <div class="col-md-4 h4-custom pull-right"><input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget"> // 'add_new_destination' | tr //</div>
+           
               </div>
               <hr class="hr-line"/>
               
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="destinationName" class="col-md-3 control-label">// 'name' | tr //:</label>
-              <div class="col-md-7">  
-                <input type="text" ng-if="vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.name">
-                <select ng-if="!vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-click="vm.selectDestination(replication.destination.selection)" ng-disabled="!vm.targetEditable"></select>
+              <div class="col-md-7">
+                <input type="text" ng-if="vm.checkedAddTarget" class="form-control form-control-custom" style="width: 50% !important;" ng-model="replication.destination.name">
+                <select ng-if="!vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-change="vm.selectDestination(replication.destination.selection)" style="width: 50% !important;" ng-disabled="!vm.targetEditable"></select>               
+                <div class="display-inline-block" ng-show="vm.targetEditable">&nbsp;&nbsp;<input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget">// 'add_new_destination' | tr //</div>
               </div>
             </div>  
             <div class="form-group col-md-12 form-group-custom">

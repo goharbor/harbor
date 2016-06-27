@@ -142,6 +142,7 @@ var locale_messages = {
   'description': '描述',
   'destination': '目标',
   'start_time': '起始时间',
+  'end_time': '结束时间',
   'activation': '活动状态',
   'replication_jobs': '复制任务',
   'actions': '操作',

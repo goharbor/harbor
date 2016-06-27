@@ -78,6 +78,10 @@ body {
   width: 100%;
 }
 
+.long-line-margin-right {
+  margin-right: 30px;
+}
+
 .down-table-pane {
   overflow-y: auto;
   height: 260px;

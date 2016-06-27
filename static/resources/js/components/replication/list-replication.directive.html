@@ -12,7 +12,7 @@
     </div>
     <div class="pane-split" id="upon-pane"> 	           
       <div class="sub-pane-split">
-        <table class="table table-pane">
+        <table class="table table-pane table-header">
     			 <thead>
             <th width="10%">// 'name' | tr //</th>
             <th width="18%">// 'description' | tr //</th>
@@ -21,32 +21,36 @@
             <th width="14%">// 'activation' | tr// </th>
             <th width="15%">// 'actions' | tr //</th>
     			 </thead>
-    			 <tbody>
-            <tr ng-if="vm.replicationPolicies.length == 0">
-              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies' | tr //</h3></td>
-            </tr>
-            <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
-              <td>//r.name//</td>
-              <td>//r.description//</td>
-              <td>//r.target_name//</td>
-              <td>//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-              <td ng-switch on="//r.enabled//">
-                <span ng-switch-when="1">// 'enabled' | tr //</span>
-                <span ng-switch-when="0">// 'disabled' | tr //</span>
-              </td>
-              <td>
-                <div class="display-inline-block" ng-switch on="//r.enabled//">
-                 <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)"><span ng-switch-when="1" class="glyphicon glyphicon-play color-success"></span></a>
-                 <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)"><span ng-switch-when="0" class="glyphicon glyphicon-stop color-danger"></span></a>
-                </div>
-                &nbsp;
-                <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
-                &nbsp;
-                <!--a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a -->
-              </td>
-            </tr>
-          </tbody>
-    		</table>
+        </table>
+        <div class="table-body-full-width" style="height: 200px;">
+          <table class="table table-pane">
+      			 <tbody>
+              <tr ng-if="vm.replicationPolicies.length == 0">
+                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies' | tr //</h3></td>
+              </tr>
+              <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
+                <td width="10%">//r.name//</td>
+                <td width="18%">//r.description//</td>
+                <td width="18%">//r.target_name//</td>
+                <td width="18%">//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                <td width="14%" ng-switch on="//r.enabled//">
+                  <span ng-switch-when="1">// 'enabled' | tr //</span>
+                  <span ng-switch-when="0">// 'disabled' | tr //</span>
+                </td>
+                <td width="15%">
+                  <div class="display-inline-block" ng-switch on="//r.enabled//">
+                   <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
+                   <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
+                  </div>
+                  &nbsp;
+                  <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+                  &nbsp;
+                  <!--a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a -->
+                </td>
+              </tr>
+            </tbody>
+      		</table>
+        </div>
       </div>
     </div>
     <div class="col-xs-4 col-md-12 well well-sm well-custom well-split"><div class="col-md-offset-10">//vm.replicationPolicies ? vm.replicationPolicies.length : 0// // 'items' | tr //</div></div>  
@@ -60,33 +64,39 @@
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <div class="input-group pull-right">
-        <a class="btn btn-link" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-refresh"></span>&nbsp;&nbsp;// 'refresh' | tr //</a>
+      <div class="input-group">
+        <button class="btn btn-success" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-refresh"></span></button>
       </div>
     </div> 
     <div class="pane-split" id="down-pane">   
       <div class="sub-pane-split">
-          <table class="table table-pane" width="98%">
+          <table class="table table-pane table-header">
       			 <thead>
               <th width="20%">// 'name' | tr //</th>
-              <th width="25%">// 'operation' | tr //</th>
-              <th width="25%">// 'start_time' | tr //</th>
+              <th width="15%">// 'operation' | tr //</th>
+              <th width="20%">// 'start_time' | tr //</th>
+              <th width="20%">// 'end_time' | tr //</th>
               <th width="15%">// 'status' | tr //</th>
-              <th width="15%">// 'logs' | tr //</th>
+              <th width="10%">// 'logs' | tr //</th>
       			 </thead>
-      			 <tbody>
-              <tr ng-if="vm.replicationJobs.length == 0">
-                <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_jobs' | tr //</h3></td>
-              </tr>
-              <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
-                <td>//r.repository//</td>
-                <td>//r.operation//</td>
-                <td>//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                <td>//r.status//</td>
-                <td><a href="javascript:void(0);" ng-click="vm.downloadLog(r.id)"><span style="margin-left: 10px;" class="glyphicon glyphicon-file"></span></a></td>
-              </tr>
-            </tbody>
-      		</table>
+          </table>
+          <div class="table-body-full-width" style="height: 200px;">
+            <table class="table table-pane">
+        			 <tbody>
+                <tr ng-if="vm.replicationJobs.length == 0">
+                  <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_jobs' | tr //</h3></td>
+                </tr>
+                <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
+                  <td width="20%">//r.repository//</td>
+                  <td width="15%">//r.operation//</td>
+                  <td width="20%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="20%">//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="15%">//r.status//</td>
+                  <td width="10%"><a href="javascript:void(0);" ng-click="vm.downloadLog(r.id)"><span style="margin-left: 10px;" class="glyphicon glyphicon-file"></span></a></td>
+                </tr>
+              </tbody>
+        		</table>
+          </div>
         </div>
       </div>  
     </div>  

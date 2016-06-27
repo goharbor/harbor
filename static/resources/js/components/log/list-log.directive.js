@@ -10,7 +10,7 @@
   
   function ListLogController($scope, ListLogService, getParameterByName, $location) {
     
-    $scope.subsTabPane = 20;
+    $scope.subsTabPane = 30;
     
     var vm = this;
     vm.isOpen = false;
