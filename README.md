@@ -82,6 +82,7 @@ features added to facility Shurenyun internal usage.
 	Links       []*Link     `json:"links" yaml:"links,omitempty"`
 
 
+
 # marathon_config 包含参数包括
 
 	Cpu          float32     `json:"cpu" yaml:"cpu"`
