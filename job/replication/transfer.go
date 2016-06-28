@@ -68,6 +68,7 @@ type BaseHandler struct {
 	dstClient *registry.Repository
 
 	manifest distribution.Manifest // manifest of tags[0]
+	digest   string                //digest of tags[0]'s manifest
 	blobs    []string              // blobs need to be transferred for tags[0]
 
 	blobsExistence map[string]bool //key: digest of blob, value: existence
@@ -329,6 +330,7 @@ func (m *ManifestPuller) Enter() (string, error) {
 		m.logger.Errorf("an error occurred while pulling manifest of %s:%s from %s: %v", name, tag, m.srcURL, err)
 		return "", err
 	}
+	m.digest = digest
 	m.logger.Infof("manifest of %s:%s pulled successfully from %s: %s", name, tag, m.srcURL, digest)
 
 	if strings.Contains(mediaType, "application/json") {
@@ -426,6 +428,19 @@ func (m *ManifestPusher) Enter() (string, error) {
 		m.logger.Infof("manifest of %s:%s does not exist on source registry %s, cancel manifest pushing", name, tag, m.srcURL)
 	} else {
 		m.logger.Infof("manifest of %s:%s exists on source registry %s, continue manifest pushing", name, tag, m.srcURL)
+
+		_, manifestExist, err := m.dstClient.ManifestExist(m.digest)
+		if manifestExist {
+			m.logger.Infof("manifest of %s:%s exists on destination registry %s, skip manifest pushing", name, tag, m.dstURL)
+
+			m.tags = m.tags[1:]
+			m.manifest = nil
+			m.digest = ""
+			m.blobs = nil
+
+			return StatePullManifest, nil
+		}
+
 		mediaType, data, err := m.manifest.Payload()
 		if err != nil {
 			m.logger.Errorf("an error occurred while getting payload of manifest for %s:%s : %v", name, tag, err)
@@ -441,6 +456,7 @@ func (m *ManifestPusher) Enter() (string, error) {
 
 	m.tags = m.tags[1:]
 	m.manifest = nil
+	m.digest = ""
 	m.blobs = nil
 
 	return StatePullManifest, nil
