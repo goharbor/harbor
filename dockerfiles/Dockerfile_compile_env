@@ -1,0 +1,17 @@
+FROM demoregistry.dataman-inc.com/library/centos7-base:20160602202509
+MAINTAINER yqguo yqguo@dataman-inc.com
+
+ENV GOROOT /usr/local/share/go
+ENV GOPATH /data/tools/go
+ENV GODEBUG cgocheck 0
+ENV PATH $GOROOT/bin:$PATH
+ENV GO15VENDOREXPERIMENT 1
+
+#ADD go1.5.4.linux-amd64.tar.gz /usr/local/share/
+ADD http://www.golangtc.com/static/go/1.5.4/go1.5.4.linux-amd64.tar.gz  /usr/local/share/
+RUN cd /usr/local/share && \
+    tar zxvf go1.5.4.linux-amd64.tar.gz && \
+    rm go1.5.4.linux-amd64.tar.gz && \
+    yum -y install make
+
+#demoregistry.dataman-inc.com/library/centos7-go1.5.4:v0.1.061500
