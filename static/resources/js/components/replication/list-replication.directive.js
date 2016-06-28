@@ -34,8 +34,10 @@
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrievePolicy();
+    vm.refreshPending = false;
     
     function searchReplicationPolicy() {
+      vm.refreshPending = true;
       vm.retrievePolicy();
     }   
     
@@ -63,15 +65,17 @@
     }
     
     function listReplicationPolicyFailed(data, status) {
-      console.log('Failed list replication policy:' + data);
+      console.log('Failed list replication policy:' + data);      
     }
 
     function listReplicationJobSuccess(data, status) {
       vm.replicationJobs = data || [];
+      vm.refreshPending = false;
     }
     
     function listReplicationJobFailed(data, status) {
       console.log('Failed list replication job:' + data);
+      vm.refreshPending = false;
     }
 
     function addReplication() {

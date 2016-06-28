@@ -7,5 +7,5 @@ type DashboardController struct {
 
 // Get renders the dashboard  page
 func (dc *DashboardController) Get() {
-	dc.Forward("Dashboard", "dashboard.htm")
+	dc.Forward("page_title_dashboard", "dashboard.htm")
 }

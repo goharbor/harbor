@@ -33,6 +33,12 @@
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve(); 
     
+    $scope.$on('$locationChangeStart', function() {
+      console.log('triggered locationChangeStart....');
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.retrieve();    
+    });
+    
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrieve();    

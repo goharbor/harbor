@@ -54,7 +54,6 @@
     
     function editReplication(policyId) {
       vm.action = 'EDIT';
-      vm.modalTitle = 'Edit policy';
       vm.policyId = policyId;
     }
   }

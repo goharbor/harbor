@@ -1,5 +1,5 @@
 <modal-dialog modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="true"></modal-dialog>
-<div class="modal fade" id="createPolicyModal" tabindex="-1"  role="dialog">
+<div class="modal fade" data-backdrop="static" id="createPolicyModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
     <form name="form" class="form-horizontal css-form" novalidate>
     <div class="modal-content">
@@ -59,7 +59,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="endpoint" class="col-md-3 control-label">// 'endpoint' | tr //:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" ng-value="vm.endpoint" required ng-disabled="!vm.targetEditable">                 
+                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" ng-value="vm.endpoint" required ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
                 <div ng-messages="form.$submitted && form.uEndpoint.$error">
                   <span ng-message="required">// 'endpoint_is_required' | tr //</span>
                 </div>
@@ -68,19 +68,25 @@
             <div class="form-group col-md-12 form-group-custom">
               <label for="username" class="col-md-3 control-label">// 'username' | tr //:</label>
               <div class="col-md-9">
-                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" ng-disabled="!vm.targetEditable">                 
+                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="password" class="col-md-3 control-label">// 'password' | tr //:</label>
               <div class="col-md-9">
-                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" ng-disabled="!vm.targetEditable">                 
+                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
               </div> 
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-              <button type="button" class="btn btn-default" ng-click="vm.pingDestination()" ng-disabled="vm.notAvailable">// 'test_connection' | tr //</button>
+                <button type="button" class="btn btn-default" ng-click="vm.pingDestination()" ng-disabled="vm.notAvailable || !vm.pingAvailable">// 'test_connection' | tr //</button>
+              </div>
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+                <span>// vm.pingMessage //</span>
               </div>
             </div>
         </div>

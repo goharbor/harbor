@@ -7,5 +7,5 @@ type SearchController struct {
 
 // Get rendlers search bar
 func (sc *SearchController) Get() {
-	sc.Forward("Search", "search.htm")
+	sc.Forward("page_title_search", "search.htm")
 }

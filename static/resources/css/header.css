@@ -30,7 +30,7 @@ nav .container-custom {
 }
 
 .search-icon {
-    background: url("/static/ng/resources/img/magnitude-glass.jpg") no-repeat 97% 6px;
+    background: url("/static/resources/img/magnitude-glass.jpg") no-repeat 97% 6px;
     background-size: 1.5em;
     background-color: #FFFFFF;
 }

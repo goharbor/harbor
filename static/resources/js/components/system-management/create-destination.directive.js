@@ -21,6 +21,17 @@
     vm.pingDestination = pingDestination;
     
     vm.editable = true;
+    vm.notAvailable = true;
+    vm.pingAvailable = true;
+    vm.pingMessage = '';
+        
+    $scope.$watch('destination.endpoint', function(current) {
+      if(current) {
+        vm.notAvailable = false;
+      }else{
+        vm.notAvailable = true;
+      }
+    });
         
     function addNew() {
       vm.editable = true;
@@ -104,6 +115,8 @@
     }
     
     function pingDestination() {
+      vm.pingAvailable = false;
+      
       var target = {
         'name': vm0.name,
         'endpoint': vm0.endpoint,
@@ -115,10 +128,12 @@
         .error(pingDestinationFailed);
     }
     function pingDestinationSuccess(data, status) {
-      alert($filter('tr')('successful_ping_target', []));
+      vm.pingAvailable = true;
+      vm.pingMessage = $filter('tr')('successful_ping_target', []);
     }
     function pingDestinationFailed(data, status) {
-      alert($filter('tr')('failed_ping_target', []) + ':' + data);
+      vm.pingAvailable = true;
+      vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
     }
   }
   
@@ -144,6 +159,10 @@
         
         scope.form.$setPristine();
         scope.form.$setUntouched();
+        
+        ctrl.notAvailble = true;
+        ctrl.pingAvailable = true;
+        ctrl.pingMessage = '';
         
         switch(ctrl.action) {
         case 'ADD_NEW':

@@ -7,5 +7,5 @@ type ProjectController struct {
 
 // Get renders project page
 func (pc *ProjectController) Get() {
-	pc.Forward("My Projects", "project.htm")
+	pc.Forward("page_title_project", "project.htm")
 }

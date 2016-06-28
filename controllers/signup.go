@@ -15,5 +15,5 @@ func (suc *SignUpController) Get() {
 		suc.CustomAbort(http.StatusUnauthorized, "Status unauthorized.")
 	}
 	suc.Data["AddNew"] = false
-	suc.Forward("Sign Up", "sign-up.htm")
+	suc.Forward("page_title_sign_up", "sign-up.htm")
 }

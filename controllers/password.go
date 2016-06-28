@@ -59,7 +59,7 @@ func (cc *CommonController) SendEmail() {
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		err = messageTemplate.Execute(message, messageDetail{
-			Hint: cc.Tr("Warning: You're receiving this because you're requesting for changing password in Harbor, if it is not your operation, please ignore; otherwise, please click the link below"),
+			Hint: cc.Tr("reset_email_hint"),
 			URL:  harborURL,
 			UUID: uuid,
 		})
@@ -102,7 +102,7 @@ type ForgotPasswordController struct {
 
 // Get renders forgot password page
 func (fpc *ForgotPasswordController) Get() {
-	fpc.Forward("Forgot Password", "forgot-password.htm")
+	fpc.Forward("page_title_forgot_password", "forgot-password.htm")
 }
 
 // ResetPasswordController handles request to /resetPassword
@@ -129,7 +129,7 @@ func (rpc *ResetPasswordController) Get() {
 
 	if user != nil {
 		rpc.Data["ResetUuid"] = user.ResetUUID
-		rpc.Forward("Reset Password", "reset-password.htm")
+		rpc.Forward("page_title_reset_password", "reset-password.htm")
 	} else {
 		rpc.Redirect("/", http.StatusFound)
 	}

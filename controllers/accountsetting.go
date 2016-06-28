@@ -7,5 +7,5 @@ type AccountSettingController struct {
 
 // Get renders the account settings page
 func (asc *AccountSettingController) Get() {
-	asc.Forward("Account Settings", "account-settings.htm")
+	asc.Forward("page_title_account_setting", "account-settings.htm")
 }

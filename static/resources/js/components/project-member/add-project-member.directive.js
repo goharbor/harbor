@@ -52,6 +52,10 @@
     }
     
     function addProjectMemberFailed(data, status, headers) {
+      if(status === 403) {
+        vm.hasError = true;
+        vm.errorMessage = 'failed_to_add_member';
+      }
       if(status === 409 && pm.username != '') {
         vm.hasError = true;
         vm.errorMessage = 'username_already_exist';

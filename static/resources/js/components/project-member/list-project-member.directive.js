@@ -6,9 +6,9 @@
     .module('harbor.project.member')
     .directive('listProjectMember', listProjectMember);
     
-  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', 'DeleteProjectMemberService', 'getParameterByName', '$location', 'currentUser', '$filter', 'trFilter'];
+  ListProjectMemberController.$inject = ['$scope', 'ListProjectMemberService', 'DeleteProjectMemberService', 'getParameterByName', '$location', 'currentUser', '$filter', 'trFilter', '$window'];
     
-  function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser, $filter, trFilter) {
+  function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser, $filter, trFilter, $window) {
     
     $scope.subsTabPane = 30;
     
@@ -71,11 +71,13 @@
     
     function getProjectMemberComplete(response) {  
       vm.user = currentUser.get();
-      vm.projectMembers = response.data;  
+      vm.projectMembers = response.data || [];  
     } 
            
     function getProjectMemberFailed(response) {
       console.log('Failed get project members:' + response);
+      vm.projectMembers = [];
+      $location.url('repositories').search('project_id', vm.projectId);
     }
     
   }

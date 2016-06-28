@@ -6,9 +6,9 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService', '$window'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService, $window) {
     var vm = this;
     
     vm.projectName = '';
@@ -100,7 +100,7 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      console.log('Use has no member for current project:' + status);
+      console.log('Use has no member for current project:' + status +  ', location.url:' + $location.url());
       vm.isProjectMember = false;
     }
     

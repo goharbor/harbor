@@ -7,5 +7,5 @@ type IndexController struct {
 
 // Get renders the index page
 func (ic *IndexController) Get() {
-	ic.Forward("Index", "index.htm")
+	ic.Forward("page_title_index", "index.htm")
 }

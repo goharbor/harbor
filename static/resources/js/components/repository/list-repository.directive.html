@@ -20,7 +20,7 @@
             <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">
               <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
             </a>
-            <a class="pull-right" style="margin-right: 78px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)"><span class="glyphicon glyphicon-trash"></span></a>          
+            <a class="pull-right" style="margin-right: 78px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //"><span class="glyphicon glyphicon-trash"></span></a>          
           </h4>
         </div>
         <list-tag associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount"></list-tag>

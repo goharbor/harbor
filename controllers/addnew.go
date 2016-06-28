@@ -24,7 +24,7 @@ func (anc *AddNewController) Get() {
 		}
 		if isAdmin && anc.AuthMode == "db_auth" {
 			anc.Data["AddNew"] = true
-			anc.Forward("Add User", "sign-up.htm")
+			anc.Forward("page_title_add_new", "sign-up.htm")
 			return
 		}
 	}

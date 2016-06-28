@@ -25,7 +25,8 @@
         
     function setLanguage(language) {
       I18nService().setCurrentLanguage(language);
-      $window.location.href = '/language?lang=' + language;    
+      var hash = $window.location.hash;
+      $window.location.href = '/language?lang=' + language + '&hash=' + encodeURIComponent(hash);    
     }
     function logOut() {
       LogOutService()

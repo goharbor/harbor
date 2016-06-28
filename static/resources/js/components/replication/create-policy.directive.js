@@ -38,6 +38,8 @@
     vm.targetEditable = true;
     vm.checkedAddTarget = false;
     vm.notAvailable = false;
+    vm.pingAvailable = true;
+    vm.pingMessage = '';
            
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
@@ -61,6 +63,7 @@
         vm1.endpoint = '';
         vm1.username = '';
         vm1.password = '';
+        vm.pingMessage = '';
       }        
     });
         
@@ -95,7 +98,7 @@
     }
 
     function addNew() {       
-      $filter('tr')('add_new_policy', []);
+      vm.modalTitle = $filter('tr')('add_new_policy', []);
       vm.targetEditable = true;
       vm0.name = '';
       vm0.description = '';
@@ -107,7 +110,7 @@
       console.log('Edit policy ID:' + policyId);
       vm.policyId = policyId;
       vm.targetEditable = true;
-      $filter('tr')('edit_policy', []);
+      vm.modalTitle = $filter('tr')('edit_policy', []);
 
       ListReplicationPolicyService(policyId)
         .success(listReplicationPolicySuccess)
@@ -131,12 +134,6 @@
         CreateDestinationService(target.name, target.endpoint, target.username, target.password)
           .success(createDestinationSuccess)
           .error(createDestinationFailed);
-      }else{
-        target.name = vm1.selection.name;
-        console.log('Update target ID:' + vm.targetId);
-        UpdateDestinationService(vm.targetId, target)
-          .success(updateDestinationSuccess)
-          .error(updateDestinationFailed);
       }
     }
     
@@ -170,9 +167,9 @@
       
       if(vm.checkedAddTarget) {
         target.name = vm1.name;
-      }else{
-        target.name = vm1.selection.name;
       }
+      
+      vm.pingAvailable = false;
       
       PingDestinationService(target)
         .success(pingDestinationSuccess)
@@ -274,10 +271,12 @@
       console.log('Failed update destination.');
     }
     function pingDestinationSuccess(data, status) {
-      alert($filter('tr')('successful_ping_target', []));
+      vm.pingAvailable = true;
+      vm.pingMessage = $filter('tr')('successful_ping_target', []);
     }
     function pingDestinationFailed(data, status) {
-      alert($filter('tr')('failed_ping_target', []) + data);
+      vm.pingAvailable = true;
+      vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
     }
   }
   
@@ -320,6 +319,8 @@
           ctrl.checkedAddTarget = false;
           ctrl.targetEditable = true;
           ctrl.notAvailable = false;
+          ctrl.pingMessage = '';
+          ctrl.pingAvailable = true;
           ctrl.prepareDestination();
           
           switch(ctrl.action) {

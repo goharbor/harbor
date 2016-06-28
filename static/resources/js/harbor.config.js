@@ -36,7 +36,7 @@
     
     function filter(input, pattern) {
       var d = new Date(input || '');
-      if(d.getTime() <= 0) return 'N/A';
+      if(d.getTime() <= 0) return '-';
       return moment(d).format(pattern);
     }
   }

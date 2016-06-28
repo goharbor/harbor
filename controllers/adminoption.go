@@ -7,5 +7,5 @@ type AdminOptionController struct {
 
 // Get renders the admin options  page
 func (aoc *AdminOptionController) Get() {
-	aoc.Forward("Admin Options", "admin-options.htm")
+	aoc.Forward("page_title_admin_option", "admin-options.htm")
 }

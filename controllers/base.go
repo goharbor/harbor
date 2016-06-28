@@ -50,11 +50,24 @@ func (b *BaseController) Prepare() {
 		}
 	}
 
-	sessionLang := b.GetSession("lang")
-	if sessionLang != nil {
-		b.SetSession("Lang", lang)
-		lang = sessionLang.(string)
+	langCookie, err := b.Ctx.Request.Cookie("language")
+	if err != nil {
+		log.Errorf("Error occurred in Request.Cookie: %v", err)
 	}
+	if langCookie != nil {
+		lang = langCookie.Value
+	}
+	if len(lang) == 0 {
+		sessionLang := b.GetSession("lang")
+		if sessionLang != nil {
+			b.SetSession("Lang", lang)
+			lang = sessionLang.(string)
+		} else {
+			lang = defaultLang
+		}
+	}
+
+	b.SetSession("Lang", lang)
 
 	if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
 		lang = defaultLang //Set default language if not supported.
@@ -64,8 +77,20 @@ func (b *BaseController) Prepare() {
 		Lang: lang,
 	}
 
+	restLangs := make([]*langType, 0, len(langTypes)-1)
+	for _, v := range langTypes {
+		if lang != v.Lang {
+			restLangs = append(restLangs, v)
+		} else {
+			curLang.Name = v.Name
+		}
+	}
+
 	// Set language properties.
+	b.Lang = lang
 	b.Data["Lang"] = curLang.Lang
+	b.Data["CurLang"] = curLang.Name
+	b.Data["RestLangs"] = restLangs
 
 	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
 	if authMode == "" {
@@ -80,7 +105,7 @@ func (b *BaseController) Prepare() {
 func (b *BaseController) Forward(title, templateName string) {
 	b.Layout = filepath.Join(prefixNg, "layout.htm")
 	b.TplName = filepath.Join(prefixNg, templateName)
-	b.Data["Title"] = title
+	b.Data["Title"] = b.Tr(title)
 	b.LayoutSections = make(map[string]string)
 	b.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
 	b.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
@@ -131,12 +156,13 @@ func (cc *CommonController) LogOut() {
 // SwitchLanguage User can swith to prefered language
 func (cc *CommonController) SwitchLanguage() {
 	lang := cc.GetString("lang")
+	hash := cc.GetString("hash")
 	if _, exist := supportLanguages[lang]; !exist {
 		lang = defaultLang
 	}
 	cc.SetSession("lang", lang)
 	cc.Data["Lang"] = lang
-	cc.Redirect(cc.Ctx.Request.Header.Get("Referer"), http.StatusFound)
+	cc.Redirect(cc.Ctx.Request.Header.Get("Referer")+hash, http.StatusFound)
 }
 
 // UserExists checks if user exists when user input value in sign in form.
@@ -170,19 +196,25 @@ func init() {
 		beego.LoadAppConfig("ini", configPath)
 	}
 
+	beego.AddFuncMap("i18n", i18n.Tr)
+
 	langs := strings.Split(beego.AppConfig.String("lang::types"), "|")
 	names := strings.Split(beego.AppConfig.String("lang::names"), "|")
 
 	supportLanguages = make(map[string]langType)
 
 	langTypes = make([]*langType, 0, len(langs))
-	for i, v := range langs {
+
+	for i, lang := range langs {
 		t := langType{
-			Lang: v,
+			Lang: lang,
 			Name: names[i],
 		}
 		langTypes = append(langTypes, &t)
-		supportLanguages[v] = t
+		supportLanguages[lang] = t
+		if err := i18n.SetMessage(lang, "static/i18n/"+"locale_"+lang+".ini"); err != nil {
+			log.Errorf("Fail to set message file: %s", err.Error())
+		}
 	}
 
 }

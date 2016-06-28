@@ -1,4 +1,4 @@
-<div class="modal fade" id="createDestinationModal" tabindex="-1"  role="dialog">
+<div class="modal fade" data-backdrop="static" id="createDestinationModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
     <form name="form" class="form-horizontal css-form" novalidate>     
       <div class="modal-content">
@@ -41,7 +41,13 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-              <button type="submit" class="btn btn-default" ng-click="form.$valid && vm.pingDestination()">// 'test_connection' | tr //</button>
+              <button type="submit" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="form.$valid && vm.pingDestination()">// 'test_connection' | tr //</button>
+              </div>
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+                <span>// vm.pingMessage //</span>
               </div>
             </div>
           </div>
