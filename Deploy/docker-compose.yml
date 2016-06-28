@@ -61,6 +61,8 @@ services:
       dockerfile: Dockerfile.job
     env_file:
       - ./config/jobservice/env
+    volumes:
+      - /data/job_logs:/var/log/jobs
     depends_on:
       - ui
     logging:

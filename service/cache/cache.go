@@ -60,30 +60,33 @@ func RefreshCatalogCache() error {
 	if err != nil {
 		return err
 	}
+	/*
+		repos := []string{}
 
-	repos := []string{}
+		for _, repo := range rs {
+			rc, ok := repositoryClients[repo]
+			if !ok {
+				rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
+				if err != nil {
+					log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
+					continue
+				}
+				repositoryClients[repo] = rc
+			}
+			tags, err := rc.ListTag()
+			if err != nil {
+				log.Errorf("error occurred while list tag for %s: %v", repo, err)
+				continue
+			}
 
-	for _, repo := range rs {
-		rc, err := NewRepositoryClient(endpoint, true, username,
-			repo, "repository", repo, "pull", "push", "*")
-		if err != nil {
-			log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
-			continue
+			if len(tags) != 0 {
+				repos = append(repos, repo)
+				log.Debugf("add %s to catalog cache", repo)
+			}
 		}
+	*/
 
-		tags, err := rc.ListTag()
-		if err != nil {
-			log.Errorf("error occurred while list tag for %s: %v", repo, err)
-			continue
-		}
-
-		if len(tags) != 0 {
-			repos = append(repos, repo)
-			log.Debugf("add %s to catalog cache", repo)
-		}
-	}
-
-	Cache.Put(catalogKey, repos, 600*time.Second)
+	Cache.Put(catalogKey, rs, 600*time.Second)
 	return nil
 }
 
