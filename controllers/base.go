@@ -167,10 +167,7 @@ func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		beego.AppConfigPath = configPath
-		if err := beego.ParseConfig(); err != nil {
-			log.Warningf("Failed to parse config file: %s, error: %v", configPath, err)
-		}
+		beego.LoadAppConfig("ini", configPath)
 	}
 
 	langs := strings.Split(beego.AppConfig.String("lang::types"), "|")

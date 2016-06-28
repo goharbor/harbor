@@ -38,8 +38,13 @@ def upgrade():
     #alter column user.email, alter column access_log.repo_name, and add column access_log.repo_tag
     op.alter_column('user', 'email', type_=sa.String(128), existing_type=sa.String(30))
     op.alter_column('access_log', 'repo_name', type_=sa.String(256), existing_type=sa.String(40))
-    op.add_column('access_log', sa.Column('repo_tag', sa.String(128)))
-
+    try:
+    	op.add_column('access_log', sa.Column('repo_tag', sa.String(128)))
+    except Exception as e:
+        if str(e).find("Duplicate column") >=0:
+            print "ignore dup column error for repo_tag"
+        else:
+            raise e
     #create tables: replication_policy, replication_target, replication_job
     ReplicationPolicy.__table__.create(bind)
     ReplicationTarget.__table__.create(bind)

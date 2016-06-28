@@ -68,7 +68,7 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	projectSorter := &utils.ProjectSorter{Projects: projects}
+	projectSorter := &models.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
 	projectResult := []map[string]interface{}{}
 	for _, p := range projects {
