@@ -10,9 +10,11 @@
     
   function ListProjectMemberController($scope, ListProjectMemberService, DeleteProjectMemberService, getParameterByName, $location, currentUser, $filter, trFilter) {
     
-    $scope.subsTabPane = 110;
+    $scope.subsTabPane = 30;
     
     var vm = this;
+
+    vm.sectionHeight = {'min-height': '579px'};
     
     vm.isOpen = false;      
     vm.search = search; 
