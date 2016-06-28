@@ -7,11 +7,13 @@ This module is for those machine running Harbor's old version, such as 0.1.0. If
 
 ###Installation
 - step 1: 
+
     ```
     cd migration
     ```
 - step 2: change `db_username`, `db_password`, `db_port`, `db_name` in migration.cfg
 - step 3: build image from dockerfile
+
     ```
     docker build -t migrate-tool .
     ```
