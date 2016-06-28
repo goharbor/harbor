@@ -80,12 +80,14 @@
   
   function listProjectMember() {
     var directive = {
-      restrict: 'E',
-      templateUrl: '/static/resources/js/components/project-member/list-project-member.directive.html',
-      scope: true,
-      controller: ListProjectMemberController,
-      controllerAs: 'vm',
-      bindToController: true
+      'restrict': 'E',
+      'templateUrl': '/static/resources/js/components/project-member/list-project-member.directive.html',
+      'scope': {
+        'sectionHeight': '='
+      },
+      'controller': ListProjectMemberController,
+      'controllerAs': 'vm',
+      'bindToController': true
     };
        
     return directive;

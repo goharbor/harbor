@@ -13,6 +13,9 @@
     $scope.subsTabPane = 30;
     
     var vm = this;
+    
+    vm.sectionHeight = {'min-height': '579px'};
+    
     vm.isOpen = false;
        
     vm.beginTimestamp = 0;
@@ -106,7 +109,9 @@
     var directive = {
       restrict: 'E',
       templateUrl: '/static/resources/js/components/log/list-log.directive.html',
-      scope: true,
+      scope: {
+        'sectionHeight': '='
+      },
       controller: ListLogController,
       controllerAs: 'vm',
       bindToController: true

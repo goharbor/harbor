@@ -11,6 +11,8 @@
   function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter) {
     var vm = this;
     
+    vm.sectionHeight = {'min-height': '1200px'};
+    
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrievePolicy();
@@ -109,7 +111,9 @@
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/replication/list-replication.directive.html',
-      'scope': true,
+      'scope': {
+        'sectionHeight': '='
+      },
       'link': link,
       'controller': ListReplicationController,
       'controllerAs': 'vm',
@@ -118,6 +122,7 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
+      /*     
       var uponPaneHeight = element.find('#upon-pane').height();
       var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top + element.find('.well').height() - 24;
       
@@ -144,7 +149,7 @@
         $(document).off('mousedown');
         $(document).off('mousemove');
       }
-
+      */
       ctrl.lastPolicyId = -1;          
       
       scope.$watch('vm.replicationPolicies', function(current) { 

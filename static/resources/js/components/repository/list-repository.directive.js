@@ -13,6 +13,8 @@
     
     var vm = this;
   
+    vm.sectionHeight = {'min-height': '579px'};
+  
     vm.filterInput = '';
 
     var hashValue = $location.hash();
@@ -107,11 +109,14 @@
   
   function listRepository() {
     var directive = {
-      restrict: 'E',
-      templateUrl: '/static/resources/js/components/repository/list-repository.directive.html',
-      controller: ListRepositoryController,
-      controllerAs: 'vm',
-      bindToController: true
+      'restrict': 'E',
+      'templateUrl': '/static/resources/js/components/repository/list-repository.directive.html',
+      'scope': {
+        'sectionHeight': '='
+      },
+      'controller': ListRepositoryController,
+      'controllerAs': 'vm',
+      'bindToController': true
     };
     
     return directive;

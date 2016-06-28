@@ -18,8 +18,7 @@
     
     vm.addProject = addProject;
     vm.cancel = cancel;
-    vm.close = close;
-    
+        
     vm.reset = reset;
     
     vm.hasError = false;
@@ -62,14 +61,10 @@
       vm0.projectName = '';
       vm.isPublic = false;
     
-      vm.hasError = false;
+      vm.hasError = false; vm.close = close;
       vm.errorMessage = '';
     }
-    
-    function close() {
-      vm.isOpen = false;
-    }
-    
+   
     function reset() {
       vm.hasError = false;
       vm.errorMessage = '';

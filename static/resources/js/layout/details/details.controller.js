@@ -17,6 +17,8 @@
     vm.togglePublicity = togglePublicity;
     vm.target = 'repositories';
     
+    vm.sectionDefaultHeight = {'min-height': '579px'};
+    
     function togglePublicity(e) {
       vm.publicity = e.publicity;
     }

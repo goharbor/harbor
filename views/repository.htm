@@ -2,7 +2,7 @@
   <div class="container container-custom">
     <div class="row extend-height">
     	  <div class="col-xs-12 col-md-12 extend-height">
-    	    <div class="section"> 
+    	    <div class="section" ng-style="vm.sectionHeight"> 
     		    <h4 class="page-header">
             <span ng-show="!vm.publicity">// 'my_projects' | tr //</span>
             <a ng-show="vm.publicity" href="#/repositories?project_id=//vm.selectedProject.project_id//" class="title-color" ng-click="vm.togglePublicity({publicity: false})">// 'my_projects' | tr //</a>
@@ -19,10 +19,10 @@
             <!-- Tab panes -->
     		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
               <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
-              <list-repository ng-if="vm.target === 'repositories'"></list-repository>
-              <list-replication ng-if="vm.target === 'replication'"></list-replication>
-              <list-project-member ng-if="vm.target === 'users'"></list-project-member>
-              <list-log ng-if="vm.target === 'logs'"></list-log>
+              <list-repository ng-if="vm.target === 'repositories'"  section-height="vm.sectionHeight"></list-repository>
+              <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
+              <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight"></list-project-member>
+              <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight"></list-log>
             </div>
           </div>
         </div>

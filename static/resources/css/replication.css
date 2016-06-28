@@ -33,17 +33,14 @@
 
 #upon-pane {
   margin-top: 10px;
-  height: 270px;
-  min-height: 100px;
-  max-height: 270px;
+  height: 320px;
 }
 
 #upon-pane table>tbody>tr {
   cursor: all-scroll;
 }
 #down-pane {
-  height: 100%;
-  min-height: 80px;
+  height: 450px;
 }
 
 .sub-pane-split {
