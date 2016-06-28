@@ -17,6 +17,7 @@ package dao
 
 import (
 	"fmt"
+	"time"
 
 	"strings"
 
@@ -253,8 +254,16 @@ func UpdateRepPolicyEnablement(id int64, enabled int) error {
 	o := GetOrmer()
 	p := models.RepPolicy{
 		ID:      id,
-		Enabled: enabled}
-	_, err := o.Update(&p, "Enabled")
+		Enabled: enabled,
+	}
+
+	var err error
+	if enabled == 1 {
+		p.StartTime = time.Now()
+		_, err = o.Update(&p, "Enabled", "StartTime")
+	} else {
+		_, err = o.Update(&p, "Enabled")
+	}
 
 	return err
 }
@@ -315,7 +324,7 @@ func FilterRepJobs(policyID int64, repository, status string) ([]*models.RepJob,
 	if len(status) != 0 {
 		qs = qs.Filter("Status__icontains", status)
 	}
-	qs = qs.OrderBy("CreationTime")
+	qs = qs.OrderBy("-CreationTime")
 
 	var jobs []*models.RepJob
 	_, err := qs.All(&jobs)

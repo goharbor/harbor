@@ -117,11 +117,8 @@ func (ra *RepJobAPI) GetLog() {
 	}
 
 	if resp.StatusCode == http.StatusOK {
-		for key, values := range resp.Header {
-			for _, value := range values {
-				ra.Ctx.ResponseWriter.Header().Set(key, value)
-			}
-		}
+		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
+		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 
 		if _, err = io.Copy(ra.Ctx.ResponseWriter, resp.Body); err != nil {
 			log.Errorf("failed to write log to response; %v", err)
