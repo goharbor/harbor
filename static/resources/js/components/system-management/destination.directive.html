@@ -11,18 +11,24 @@
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addDestination()" data-toggle="modal" data-target="#createDestinationModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_destination' | tr //</button>
       <create-destination action="//vm.action//" target-id="//vm.targetId//" reload="vm.retrieve()"></create-destination>
     </div>
-    <div class="pane"> 
-      <div class="sub-pane">
-        <table class="table table-pane">
-    			 <thead>
+  </div>
+  <div class="pane-split" id="down-pane">   
+    <div class="sub-pane-split">
+      <div class="table-head-container">
+        <table class="table table-pane table-header">
+          <thead>
             <th width="20%">// 'name' | tr //</th>
             <th width="40%">// 'endpoint' | tr //</th>
             <th width="20%">// 'creation_time' | tr //</th>
             <th width="20%">// 'actions' | tr //</th>
-    			 </thead>
-    			 <tbody>
+          </thead>
+        </table>
+      </div>
+      <div class="table-body-container" style="height: 200px;">
+        <table class="table table-pane">
+          <tbody>
             <tr ng-if="vm.destinations.length == 0">
-              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
+                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
             </tr>
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
               <td>//r.name//</td>
@@ -35,9 +41,11 @@
               </td>
             </tr>
           </tbody>
-    		</table>
+        </table>
       </div>
     </div>
-    <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.destinations ? vm.destinations.length : 0// // 'items' | tr //</div></div>  
-  </div>          
-</div>
+  </div> 
+
+  <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.destinations ? vm.destinations.length : 0// // 'items' | tr //</div>
+  </div>  
+</div>          
