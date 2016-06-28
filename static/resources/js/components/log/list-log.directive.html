@@ -14,16 +14,25 @@
     <advanced-search ng-show="vm.isOpen" is-open="vm.isOpen" op="vm.op" others="vm.others" search='vm.search({op: vm.op, username: vm.username})' from-date="vm.fromDate" to-date="vm.toDate"></advanced-search>
     <div class="pane">
       <div class="sub-pane">
-        <table class="table table-pane">
-      	    <thead>
-      		    <th>// 'username' | tr //</th><th>// 'repository_name' | tr //</th><th>// 'operation' | tr //</th><th>// 'timestamp' | tr //</th>
-      		  </thead>
-      		  <tbody>
-      		    <tr ng-repeat="log in vm.logs">
-        	    	<td>//log.username//</td><td>//log.repo_name//</td><td>//log.operation//</td><td>//log.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-          		</tr>
-      		  </tbody>
-    		  </table>
+        <div class="table-head-container">
+          <table class="table table-pane table-header">
+            <thead>
+              <th width="14%">// 'username' | tr //</th>
+              <th width="32%">// 'repository_name' | tr //</th>
+              <th width="14%">// 'operation' | tr //</th>
+              <th width="40%">// 'timestamp' | tr //</th>
+            </thead>
+          </table>
+        </div>
+        <div class="table-body-container" style="height: 300px;">
+          <table class="table table-pane">
+            <tbody>
+              <tr ng-repeat="log in vm.logs">
+                <td>//log.username//</td><td>//log.repo_name//</td><td>//log.operation//</td><td>//log.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

@@ -13,15 +13,21 @@
     <div class="pane"> 	           
       <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="true"></modal-dialog>
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
-      <div class="sub-pane">  
-        <table class="table table-pane" >
-    			 <thead>
-    			   <th width="30%">// 'username' | tr //</th><th width="40%">// 'role' | tr //</th><th width="30%">// 'operation' | tr //</th>
-    			 </thead>
-    			 <tbody>
-            <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
-          </tbody>
-    		</table>
+      <div class="sub-pane">   
+          <div class="table-head-container">
+            <table class="table table-pane table-header">
+              <thead>
+                <th width="30%">// 'username' | tr //</th><th width="45%">// 'role' | tr //</th><th width="25%">// 'operation' | tr //</th>
+              </thead>
+            </table>
+          </div>
+          <div class="table-body-container" style="height: 300px;">
+            <table class="table table-pane">
+              <tbody>
+                <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
+              </tbody>
+            </table>
+          </div>
       </div>
     </div>
   </div>              
