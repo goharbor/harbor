@@ -4,9 +4,14 @@ This guide takes you through the fundamentals of using Harbor. You'll learn how 
 
 * Manage your projects.
 * Manage members of a project.
+* Replicate projects to a remote registry.
 * Search projects and repositories.
-* Manage Harbor system if you are the system administrator.
+* Manage Harbor system if you are the system administrator:
+ + Manage users.
+ + Manage targets.
+ + Manage policies.
 * Pull and push images using Docker client.
+* Delete repositories.
 
 
 ##Role Based Access Control
@@ -60,6 +65,9 @@ You can update or remove a member by clicking the icon on the right.
 
 ![browse project](img/remove_update_member.png)
 
+##Replicating images
+If you are a system administrator, you can replicate images to a remote registry. 
+
 ##Searching projects and repositories
 Entering a keyword in the search field at the top lists all matching projects and repos. The search result includes public repos and private repos you have access privilege to.  
 
@@ -70,6 +78,9 @@ Entering a keyword in the search field at the top lists all matching projects an
 Administrator can add "SysAdmin" role to an ordinary user by toggling the switch under "System Admin". To delete a user, click on the recycle bin icon.  
 
 ![browse project](img/set_admin_remove_user.png)
+
+###Image replication
+
 
 ##Pulling and pushing images using Docker client
 
@@ -120,3 +131,20 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 ```  
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.**
+
+##Deleting repositories
+
+Repositories deletion runs in two steps.  
+First, delete repositories in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it.  
+
+**Note: If both tag A and tag B reference the same image, after deleting tag A, B will also disappear.**  
+
+Second, delete the real data using registry's garbage colliection(GC). 
+
+```sh
+$ docker run -it --name gc -v /harbor_deploy_path/harbor/Deploy/config/registry/:/etc/registry/ -v /data/registry/:/storage/ registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
+```  
+Replace "/harbor_deploy_path" with path where your Harbor is deployed. And if your images are not storaged in "/data/registry", replace it too.  
+Option "--dry-run" will print the progress without removing any data.
+
+About the details of GC, please see [GC](https://github.com/docker/distribution/blob/master/docs/garbage-collection.md)  
