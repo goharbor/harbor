@@ -69,7 +69,11 @@ func (n *NotificationHandler) Post() {
 			user = "anonymous"
 		}
 
-		go dao.AccessLog(user, project, repository, tag, action)
+		go func() {
+			if err := dao.AccessLog(user, project, repository, tag, action); err != nil {
+				log.Errorf("failed to add access log: %v", err)
+			}
+		}()
 		if action == "push" || action == "delete" {
 			go func() {
 				if err := cache.RefreshCatalogCache(); err != nil {
