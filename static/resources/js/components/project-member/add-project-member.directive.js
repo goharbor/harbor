@@ -20,7 +20,7 @@
    
     vm.save = save;
     vm.cancel = cancel;
-
+    vm.close = close;
     vm.reset = reset;
 
     vm.hasError = false;
@@ -45,6 +45,10 @@
       
       vm.hasError = false;
       vm.errorMessage = '';
+    }
+    
+    function close() {
+      vm.isOpen = false;
     }
     
     function addProjectMemberComplete(data, status, header) {

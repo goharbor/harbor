@@ -18,6 +18,7 @@
     
     vm.addProject = addProject;
     vm.cancel = cancel;
+    vm.close = close;
     
     vm.reset = reset;
     
@@ -63,6 +64,10 @@
     
       vm.hasError = false;
       vm.errorMessage = '';
+    }
+    
+    function close() {
+      vm.isOpen = false;
     }
     
     function reset() {

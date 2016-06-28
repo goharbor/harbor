@@ -12,6 +12,7 @@
     var vm = this;
    
     vm.checkOperation = checkOperation;
+    vm.close = close;
     
     vm.opAll = true;
     vm.opCreate = true;
@@ -67,6 +68,9 @@
       $scope.$apply();
     }
     
+    function close() {
+      vm.isOpen = false;
+    }
   }
   
   function advancedSearch() {
