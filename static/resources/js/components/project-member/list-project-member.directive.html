@@ -13,8 +13,7 @@
     <div class="pane"> 	           
       <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="true"></modal-dialog>
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
-      <div class="pane-split" id="down-pane">   
-        <div class="sub-pane-split">
+      <div class="sub-pane">   
           <div class="table-head-container">
             <table class="table table-pane table-header">
               <thead>
@@ -29,7 +28,6 @@
               </tbody>
             </table>
           </div>
-        </div>  
       </div>
     </div>
   </div>              
