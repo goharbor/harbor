@@ -1,28 +1,24 @@
 <h4 class="page-header title-color underlined">// 'popular_repositories' | tr //</h4>
-<div class="col-xs-4 col-md-12">
-  <div class="pane-split" id="up-pane">  
-    <div class="sub-pane-split">
-      <div class="table-head-container" style="width: 690px">
-        <table class="table table-pane table-header">
-          <thead>
-            <th width="65%">// 'repository_name' | tr //</th>
-            <th width="10%">// 'count' | tr //</th>
-            <th width="25%">// 'creator' | tr //</th>
-          </thead>
-        </table>
-      </div>
-      <div class="table-body-container" style="height: 150px; width: 690px">
-        <table class="table table-pane">
-          <tbody>
-            <tr>
-              <td colspan="5" height="120px" class="empty-hint" ng-if="vm.top10Repositories.length === 0"><h3 class="text-muted">// 'no_top_repositories' | tr //</h3></td>
-            </tr>
-            <tr ng-if="vm.top10Repositories.length > 0" ng-repeat="t in vm.top10Repositories">
-              <td>//t.name//</td><td>//t.count//</td><td>//t.creator === '' ? 'N/A' : t.creator //</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+<div class="col-xs-4 col-md-12 up-table-pane">
+  <div class="table-head-container" style="width: 650px">
+    <table class="table table-pane table-header">
+      <thead>
+        <th width="60%">// 'repository_name' | tr //</th>
+        <th width="15%">// 'count' | tr //</th>
+        <th width="25%">// 'creator' | tr //</th>
+      </thead>
+    </table>
+  </div>
+  <div class="table-body-container" style="height: 120px; width: 650px">
+    <table class="table table-pane">
+      <tbody>
+        <tr>
+          <td colspan="5" height="120px" class="empty-hint" ng-if="vm.top10Repositories.length === 0"><h3 class="text-muted">// 'no_top_repositories' | tr //</h3></td>
+        </tr>
+        <tr ng-if="vm.top10Repositories.length > 0" ng-repeat="t in vm.top10Repositories">
+          <td>//t.name//</td><td>//t.count//</td><td>//t.creator === '' ? 'N/A' : t.creator //</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
