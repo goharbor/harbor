@@ -17,7 +17,7 @@ curl -v -X POST $MARATHON_API_URL/v2/apps -H Content-Type:application/json -d \
                                      "forcePullImage": '$FORCEPULLIMAGE',
                                      "privileged": '$PRIVILEGED',
                                      "portMappings": [
-                                             { "containerPort": 80, "hostPort": 0, "protocol": "tcp"}
+                                             { "containerPort": 5005, "hostPort": 0, "protocol": "tcp"}
                                      ]
                                 }
                    },
