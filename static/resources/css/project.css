@@ -31,9 +31,13 @@
   margin-bottom: 0;
 }
 
-.table-body-full-width {
+.table-head-container {
+  width: 98%;
+}
+
+.table-body-container {
   overflow-y: auto;
-  width: 1075px;
+  width: 98%;
 }
 
 .gutter {

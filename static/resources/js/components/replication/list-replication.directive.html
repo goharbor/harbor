@@ -12,6 +12,7 @@
     </div>
     <div class="pane-split" id="upon-pane"> 	           
       <div class="sub-pane-split">
+        <div class="table-head-container">
         <table class="table table-pane table-header">
     			 <thead>
             <th width="10%">// 'name' | tr //</th>
@@ -22,7 +23,8 @@
             <th width="15%">// 'actions' | tr //</th>
     			 </thead>
         </table>
-        <div class="table-body-full-width" style="height: 200px;">
+        </div>
+        <div class="table-body-container" style="height: 200px;">
           <table class="table table-pane">
       			 <tbody>
               <tr ng-if="vm.replicationPolicies.length == 0">
@@ -70,6 +72,7 @@
     </div> 
     <div class="pane-split" id="down-pane">   
       <div class="sub-pane-split">
+        <div class="table-head-container">
           <table class="table table-pane table-header">
       			 <thead>
               <th width="20%">// 'name' | tr //</th>
@@ -80,7 +83,8 @@
               <th width="10%">// 'logs' | tr //</th>
       			 </thead>
           </table>
-          <div class="table-body-full-width" style="height: 200px;">
+         </div>
+          <div class="table-body-container" style="height: 200px;">
             <table class="table table-pane">
         			 <tbody>
                 <tr ng-if="vm.replicationJobs.length == 0">
