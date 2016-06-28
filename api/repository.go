@@ -154,17 +154,7 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s %s", repoName, t)
-		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
-
 	}
-
-	go func() {
-		log.Debug("refreshing catalog cache")
-		if err := cache.RefreshCatalogCache(); err != nil {
-			log.Errorf("error occurred while refresh catalog cache: %v", err)
-		}
-	}()
-
 }
 
 type tag struct {
