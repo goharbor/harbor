@@ -39,7 +39,6 @@ const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	log.Infof("request body in string: %s", string(n.Ctx.Input.CopyBody(1<<32)))
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
