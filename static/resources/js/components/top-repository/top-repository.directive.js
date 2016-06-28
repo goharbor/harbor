@@ -11,7 +11,7 @@
     function TopRepositoryController(ListTopRepositoryService) {
         var vm = this;
         
-        ListTopRepositoryService(10)
+        ListTopRepositoryService(5)
           .success(listTopRepositorySuccess)
           .error(listTopRepositoryFailed);
           
