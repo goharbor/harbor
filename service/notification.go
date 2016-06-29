@@ -73,7 +73,7 @@ func (n *NotificationHandler) Post() {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}()
-		if action == "push" || action == "delete" {
+		if action == "push" {
 			go func() {
 				if err := cache.RefreshCatalogCache(); err != nil {
 					log.Errorf("failed to refresh cache: %v", err)
@@ -83,8 +83,6 @@ func (n *NotificationHandler) Post() {
 			operation := ""
 			if action == "push" {
 				operation = models.RepOpTransfer
-			} else {
-				operation = models.RepOpDelete
 			}
 
 			go api.TriggerReplicationByRepository(repository, []string{tag}, operation)
@@ -96,14 +94,6 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
 	for _, event := range notification.Events {
-
-		//delete
-		// TODO add tag field
-		if event.Action == "delete" {
-			events = append(events, &event)
-			continue
-		}
-
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
 		if err != nil {
 			log.Errorf("failed to match the media type against pattern: %v", err)
