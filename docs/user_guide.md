@@ -42,15 +42,15 @@ A project in Harbor contains all repositories of an application. RBAC is applied
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public project" checkbox will make this project public.  
+You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
 
 ![create project](img/new_create_project.png)  
 
-After the project is created, you can browse repositories, users and access logs using the navigation column on the left.  
+After the project is created, you can browse repositories, users and logs using the navigation tab.  
 
 ![browse project](img/new_browse_project.png)  
 
-All access logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
+All logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
 
 ![browse project](img/new_project_log.png)  
 
@@ -77,13 +77,13 @@ Click a policy, jobs which belong to this policy will be listed. A job represent
 ![browse project](img/new_policy_list.png)
 
 ##Searching projects and repositories
-Entering a keyword in the search field at the top lists all matching projects and repos. The search result includes public repos and private repos you have access privilege to.  
+Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access privilege to.  
 
 ![browse project](img/new_search.png)
 
 ##Administrator options
 ###Managing user
-Administrator can add "SysAdmin" role to an ordinary user by toggling the switch under "System Admin". To delete a user, click on the recycle bin icon.  
+Administrator can add "administrator" role to an ordinary user by toggling the switch under "Administrator". To delete a user, click on the recycle bin icon.  
 
 ![browse project](img/new_set_admin_remove_user.png)
 
