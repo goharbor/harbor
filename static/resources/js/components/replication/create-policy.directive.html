@@ -92,7 +92,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary" id="btnOk" ng-click="form.$valid && vm.save(replication)">// 'ok' | tr //</button>
+        <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="vm.save(replication)">// 'ok' | tr //</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
       </div>
     </form>

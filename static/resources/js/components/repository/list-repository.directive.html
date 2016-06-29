@@ -1,4 +1,4 @@
-<div class="tab-pane active" id="repositories" element-height>
+<div class="tab-pane" id="repositories" element-height>
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
       <div class="input-group">
@@ -8,24 +8,26 @@
         </span>
       </div>
     </div>
-    <div ng-if="vm.repositories.length === 0" class="empty-hint">
-      <h3 style="margin-top: 200px;" class="text-muted">// 'no_repositories' | tr //</h3>
-    </div>
-    <div class="sub-pane">
-    <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-      <modal-dialog action="vm.deleteImage()" content-type="text/html" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//"></modal-dialog>
-      <div class="panel panel-default" ng-repeat="repo in vm.repositories" ng-show="vm.tagCount[repo] > 0">
-        <div class="panel-heading" role="tab" id="heading//$index + 1//">
-          <h4 class="panel-title">
-            <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">
-              <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
-            </a>
-            <a class="pull-right" style="margin-right: 78px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //"><span class="glyphicon glyphicon-trash"></span></a>          
-          </h4>
+    <div class="pane">
+      <div class="sub-pane">
+        <div ng-if="vm.repositories.length === 0" class="empty-hint">
+          <h3 style="margin-top: 120px;" class="text-muted">// 'no_repositories' | tr //</h3>
         </div>
-        <list-tag associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount"></list-tag>
+        <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+          <modal-dialog action="vm.deleteImage()" content-type="text/html" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//"></modal-dialog>
+          <div class="panel panel-default" ng-repeat="repo in vm.repositories" ng-show="vm.tagCount[repo] > 0">
+            <div class="panel-heading" role="tab" id="heading//$index + 1//">
+              <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">
+                  <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
+                </a>
+                <a class="pull-right" style="margin-right: 78px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //"><span class="glyphicon glyphicon-trash"></span></a>          
+              </h4>
+            </div>
+            <list-tag associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount"></list-tag>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   </div>
 </div>
