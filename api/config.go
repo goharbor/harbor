@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	// Insecure represents whether verify cert if connecting to a https server.
 	Insecure bool
 )
 
