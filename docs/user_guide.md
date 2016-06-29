@@ -156,10 +156,15 @@ First, delete repositories in Harbor's UI. This is soft deletion. You can delete
 
 **Note: If both tag A and tag B reference the same image, after deleting tag A, B will also disappear.**  
 
-Second, delete the real data using registry's garbage colliection(GC). 
+Second, delete the real data using registry's garbage colliection(GC).  
+Make sure that no one is pushing images or Harbor is not running at all before you do GC. If someone were to push an image while GC is running, there is the risk that the image's layers will be mistakenly deleted, leading to a corrupted image. So before running GC, A preferred approach is to stop Harbor first.  
+
+Run the command on the host which harbor is deployed on. 
 
 ```sh
-$ docker run -it --name gc -v /harbor_deploy_path/harbor/Deploy/config/registry/:/etc/registry/ -v /data/registry/:/storage/ registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
+$ docker-compose stop
+$ docker run -it --name gc --rm -v /harbor_deploy_path/harbor/Deploy/config/registry/:/etc/registry/ -v /data/registry/:/storage/ registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
+$ docker-compose start
 ```  
 Replace "/harbor_deploy_path" with path where your Harbor is deployed. And if your images are not storaged in "/data/registry", replace it too.  
 Option "--dry-run" will print the progress without removing any data.
