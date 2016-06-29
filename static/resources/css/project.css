@@ -33,12 +33,11 @@
 }
 
 .table-head-container {
-  width: 96%;
+  
 }
 
 .table-body-container {
   overflow-y: auto;
-  width: 98%;
 }
 
 .gutter {

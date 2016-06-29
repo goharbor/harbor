@@ -24,7 +24,7 @@
             </thead>
           </table>
         </div>
-        <div class="table-body-container" style="height: 200px;">
+        <div class="table-body-container">
           <table class="table table-pane">
             <tbody>
               <tr ng-if="vm.replications.length == 0">
@@ -48,7 +48,7 @@
                   &nbsp;
                   <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
                   &nbsp;
-                    <!--a  href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a-->
+                  <!--a  href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a-->
                 </td>
               </tr>     
             </tbody>
@@ -56,7 +56,8 @@
         </div>
       </div>
     </div>  
-  </div>  
-  <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.replications ? vm.replications.length : 0// // 'items' | tr //</div></div>  
-  </div>          
+    <div class="col-xs-4 col-md-12 well well-sm well-custom">
+      <div class="col-md-offset-10">//vm.replications ? vm.replications.length : 0// // 'items' | tr //</div>
+    </div>  
+  </div>
 </div>

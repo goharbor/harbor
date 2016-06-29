@@ -35,7 +35,6 @@
     }
     function logOutSuccess(data, status) {
       currentUser.unset();
-      I18nService().unset();
       $window.location.href= '/';
     }
     function logOutFailed(data, status) {

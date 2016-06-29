@@ -23,11 +23,11 @@
           </thead>
         </table>
       </div>
-      <div class="table-body-container" style="height: 200px;">
+      <div class="table-body-container">
         <table class="table table-pane">
           <tbody>
             <tr ng-if="vm.destinations.length == 0">
-                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
+              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
             </tr>
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
               <td>//r.name//</td>
@@ -43,8 +43,8 @@
         </table>
       </div>
     </div>
+    <div class="col-xs-4 col-md-12 well well-sm well-custom">
+      <div class="col-md-offset-10">//vm.destinations ? vm.destinations.length : 0// // 'items' | tr //</div>
+    </div>   
   </div> 
-
-  <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.destinations ? vm.destinations.length : 0// // 'items' | tr //</div></div>
-  </div>  
 </div>          

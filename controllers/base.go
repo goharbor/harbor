@@ -41,14 +41,6 @@ var mappingLangNames map[string]string
 func (b *BaseController) Prepare() {
 
 	var lang string
-	al := b.Ctx.Request.Header.Get("Accept-Language")
-
-	if len(al) > 4 {
-		al = al[:5] // Only compare first 5 letters.
-		if i18n.IsExist(al) {
-			lang = al
-		}
-	}
 
 	langCookie, err := b.Ctx.Request.Cookie("language")
 	if err != nil {

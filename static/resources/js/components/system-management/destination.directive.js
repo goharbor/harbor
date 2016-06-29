@@ -11,7 +11,7 @@
   function DestinationController($scope, ListDestinationService, DeleteDestinationService, $filter, trFilter) {
     
     $scope.subsSubPane = 276;
-    
+    $scope.subsTblBody = 40;
     var vm = this;
     
     vm.retrieve = retrieve;
