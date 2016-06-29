@@ -1180,7 +1180,7 @@ func TestDeleteRepJob(t *testing.T) {
 }
 
 func TestFilterRepJobs(t *testing.T) {
-	jobs, err := FilterRepJobs(policyID, "", "")
+	jobs, err := FilterRepJobs(policyID, "", "", nil, nil, 1000)
 	if err != nil {
 		log.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return
