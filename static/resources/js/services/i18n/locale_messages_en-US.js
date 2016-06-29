@@ -200,5 +200,13 @@ var locale_messages = {
   'delete_repo': 'Delete Repo',
   'download_log': 'Download Logs',
   'edit': 'Edit',
-  'delete': 'Delete'
+  'delete': 'Delete',
+  'transfer': 'Transfer',
+  'all': 'All',
+  'pending': 'Pending',
+  'running': 'Running',
+  'finished': 'Finished',
+  'canceled': 'Canceled',
+  'stopped': 'Stopped',
+  'error': 'Error'
 };

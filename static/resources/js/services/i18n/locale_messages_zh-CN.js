@@ -200,5 +200,13 @@ var locale_messages = {
   'delete_repo': '删除镜像仓库',
   'download_log': '下载日志',
   'edit': '修改',
-  'delete': '删除'
+  'delete': '删除',
+  'all': '全部',
+  'transfer': '传输',
+  'pending': '挂起',
+  'running': '进行中',
+  'finished': '已完成',
+  'canceled': '取消',
+  'stopped': '停止',
+  'error': '错误'
 };
