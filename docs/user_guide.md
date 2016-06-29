@@ -157,7 +157,7 @@ First, delete repositories in Harbor's UI. This is soft deletion. You can delete
 **Note: If both tag A and tag B reference the same image, after deleting tag A, B will also disappear.**  
 
 Second, delete the real data using registry's garbage colliection(GC).  
-Make sure that no one is pushing images or Harbor is not running at all before you do GC. If someone were to push an image while GC is running, there is the risk that the image's layers will be mistakenly deleted, leading to a corrupted image. So before running GC, A preferred approach is to stop Harbor first.  
+Make sure that no one is pushing images or Harbor is not running at all before you do GC. If someone were to push an image while GC is running, there is the risk that the image's layers will be mistakenly deleted, leading to a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
 
 Run the command on the host which harbor is deployed on. 
 
