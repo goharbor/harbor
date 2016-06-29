@@ -144,6 +144,18 @@ func (ra *RepositoryAPI) Delete() {
 		tags = append(tags, tag)
 	}
 
+	project := ""
+	if strings.Contains(repoName, "/") {
+		project = repoName[0:strings.LastIndex(repoName, "/")]
+	}
+	user, _, ok := ra.Ctx.Request.BasicAuth()
+	if !ok {
+		user, err = ra.getUsername()
+		if err != nil {
+			log.Errorf("failed to get user: %v", err)
+		}
+	}
+
 	for _, t := range tags {
 		if err := rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*registry_error.Error); ok {
@@ -156,6 +168,11 @@ func (ra *RepositoryAPI) Delete() {
 		log.Infof("delete tag: %s %s", repoName, t)
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
+		go func(tag string) {
+			if err := dao.AccessLog(user, project, repoName, tag, "delete"); err != nil {
+				log.Errorf("failed to add access log: %v", err)
+			}
+		}(t)
 	}
 
 	go func() {
@@ -164,7 +181,6 @@ func (ra *RepositoryAPI) Delete() {
 			log.Errorf("error occurred while refresh catalog cache: %v", err)
 		}
 	}()
-
 }
 
 type tag struct {
@@ -255,12 +271,10 @@ func (ra *RepositoryAPI) GetManifests() {
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
 	endpoint := os.Getenv("REGISTRY_URL")
-	// TODO read variable from config file
-	insecure := true
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, insecure, username, password,
+		return newRepositoryClient(endpoint, getIsInsecure(), username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -269,7 +283,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, insecure, username, repoName,
+	return cache.NewRepositoryClient(endpoint, getIsInsecure(), username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 
