@@ -92,9 +92,7 @@ func (t *TargetAPI) Ping() {
 		password = t.GetString("password")
 	}
 
-	// TODO read variable from config file
-	insecure := true
-	registry, err := newRegistryClient(endpoint, insecure, username, password,
+	registry, err := newRegistryClient(endpoint, getIsInsecure(), username, password,
 		"", "", "")
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.

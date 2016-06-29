@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
@@ -135,4 +136,15 @@ func (b *BaseAPI) GetIDFromURL() int64 {
 	}
 
 	return id
+}
+
+func getIsInsecure() bool {
+	insecure := false
+
+	verifyRemoteCert := os.Getenv("VERIFY_REMOTE_CERT")
+	if verifyRemoteCert == "off" {
+		insecure = true
+	}
+
+	return insecure
 }
