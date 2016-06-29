@@ -152,6 +152,8 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 Repositories deletion runs in two steps.  
 First, delete repositories in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it.  
 
+![browse project](img/new_delete_repository.png)
+
 **Note: If both tag A and tag B reference the same image, after deleting tag A, B will also disappear.**  
 
 Second, delete the real data using registry's garbage colliection(GC). 
