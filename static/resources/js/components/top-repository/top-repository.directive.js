@@ -30,7 +30,9 @@
           'restrict': 'E',
           'templateUrl': '/static/resources/js/components/top-repository/top-repository.directive.html',
           'controller': TopRepositoryController,
-          'scope' : true,
+          'scope' : {
+            'customBodyHeight': '='
+          },
           'controllerAs': 'vm',
           'bindToController': true
         };

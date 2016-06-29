@@ -14,8 +14,11 @@
     $scope.subsSection = 32;
     $scope.subsSubPane = 226;
     
+    
     var vm = this;
-        
+       
+    vm.customBodyHeight = {'height': '180px'};
+    
     var indexDesc = $filter('tr')('index_desc', []);
     var indexDesc1 = $filter('tr')('index_desc_1', []);
     var indexDesc2 = $filter('tr')('index_desc_2', []);
