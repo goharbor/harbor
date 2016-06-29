@@ -44,49 +44,58 @@ A project in Harbor contains all repositories of an application. RBAC is applied
 
 You can create a project after you signed in. Enabling the "Public project" checkbox will make this project public.  
 
-![create project](img/create_project.png)  
+![create project](img/new_create_project.png)  
 
 After the project is created, you can browse repositories, users and access logs using the navigation column on the left.  
 
-![browse project](img/browse_project.png)  
+![browse project](img/new_browse_project.png)  
 
 All access logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
 
-![browse project](img/project_log.png)  
+![browse project](img/new_project_log.png)  
 
 ##Managing members of a project 
 ###Adding members
 You can add members with different roles to an existing project.  
 
-![browse project](img/add_member.png)
+![browse project](img/new_add_member.png)
 
 ###Updating and removing members
 You can update or remove a member by clicking the icon on the right.  
 
-![browse project](img/remove_update_member.png)
+![browse project](img/new_remove_update_member.png)
 
 ##Replicating images
 If you are a system administrator, you can replicate images to a remote registry, which is called destination in Harbor. Only Harbor instance is supported as a destination for now.  
 Click "Add New Policy" on the "Replication" tab, fill the necessary fields and click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately, and when a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination.  
+
+![browse project](img/new_create_policy.png)
+
 You can enable or disable a policy in the policy list view, and only the policies which are disbled can be edited.  
 Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.
+
+![browse project](img/new_policy_list.png)
 
 ##Searching projects and repositories
 Entering a keyword in the search field at the top lists all matching projects and repos. The search result includes public repos and private repos you have access privilege to.  
 
-![browse project](img/search.png)
+![browse project](img/new_search.png)
 
 ##Administrator options
 ###Managing user
 Administrator can add "SysAdmin" role to an ordinary user by toggling the switch under "System Admin". To delete a user, click on the recycle bin icon.  
 
-![browse project](img/set_admin_remove_user.png)
+![browse project](img/new_set_admin_remove_user.png)
 
 ###Managing destination
 You can list, add, edit and delete destinations in the "Destination" tab. Only destinations which are not referenced by any policies can be edited.  
 
+![browse project](img/new_manage_destination.png)
+
 ###Managing replication
 You can list, edit, enable and disable policies in the "Replication" tab. Make sure the policy is disabled before you edit it.  
+
+![browse project](img/new_manage_replication.png)
 
 ##Pulling and pushing images using Docker client
 
@@ -153,4 +162,4 @@ $ docker run -it --name gc -v /harbor_deploy_path/harbor/Deploy/config/registry/
 Replace "/harbor_deploy_path" with path where your Harbor is deployed. And if your images are not storaged in "/data/registry", replace it too.  
 Option "--dry-run" will print the progress without removing any data.
 
-About the details of GC, please see [GC](https://github.com/docker/distribution/blob/master/docs/garbage-collection.md)  
+About the details of GC, please see [GC](https://github.com/docker/distribution/blob/master/docs/garbage-collection.md).  
