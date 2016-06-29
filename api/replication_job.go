@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -59,6 +60,7 @@ func (ra *RepJobAPI) Prepare() {
 func (ra *RepJobAPI) List() {
 	var policyID int64
 	var repository, status string
+	var startTime, endTime *time.Time
 	var err error
 
 	policyIDStr := ra.GetString("policy_id")
@@ -69,10 +71,36 @@ func (ra *RepJobAPI) List() {
 		}
 	}
 
+	endTimeStr := ra.GetString("end_time")
+	if len(endTimeStr) != 0 {
+		i, err := strconv.ParseInt(endTimeStr, 10, 64)
+		if err != nil {
+			ra.CustomAbort(http.StatusBadRequest, "invalid end_time")
+		}
+		t := time.Unix(i, 0)
+		endTime = &t
+	}
+
+	startTimeStr := ra.GetString("start_time")
+	if len(startTimeStr) != 0 {
+		i, err := strconv.ParseInt(startTimeStr, 10, 64)
+		if err != nil {
+			ra.CustomAbort(http.StatusBadRequest, "invalid start_time")
+		}
+		t := time.Unix(i, 0)
+		startTime = &t
+	}
+
+	if startTime == nil && endTime == nil {
+		// if start_time and end_time are both null, list jobs of last 10 days
+		t := time.Now().UTC().AddDate(0, 0, -10)
+		startTime = &t
+	}
+
 	repository = ra.GetString("repository")
 	status = ra.GetString("status")
 
-	jobs, err := dao.FilterRepJobs(policyID, repository, status)
+	jobs, err := dao.FilterRepJobs(policyID, repository, status, startTime, endTime, 1000)
 	if err != nil {
 		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s: %v", policyID, repository, status, err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to query job")
