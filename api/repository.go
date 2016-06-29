@@ -255,12 +255,10 @@ func (ra *RepositoryAPI) GetManifests() {
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
 	endpoint := os.Getenv("REGISTRY_URL")
-	// TODO read variable from config file
-	insecure := true
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, insecure, username, password,
+		return newRepositoryClient(endpoint, Insecure, username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -269,7 +267,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, insecure, username, repoName,
+	return cache.NewRepositoryClient(endpoint, Insecure, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 
