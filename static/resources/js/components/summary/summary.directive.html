@@ -1,4 +1,7 @@
-<h4 class="page-header title-color underlined">// 'summary' | tr //</h4>  
+<h4 class="page-header title-color underlined">// 'summary' | tr //</h4>
 <dl class="page-content dl-horizontal" ng-repeat="(key, value) in vm.statProjects">
-  <dt>// key | tr //:</dt><dd>//value//<dd>
+  <dt ng-if="$index==0"><a href="/project">// key | tr //</a>:</dt><dd ng-if="$index==0">//value//<dd>
+  <dt ng-if="$index==1">// key | tr //:</dt><dd ng-if="$index==1">//value//<dd>                      
+  <dt ng-if="$index==2"><a href="/search?q=">// key | tr //</a>:</dt><dd ng-if="$index==2">//value//<dd>
+  <dt ng-if="$index>2">// key | tr //:</dt><dd ng-if="$index>2">//value//<dd>
 </dl>
