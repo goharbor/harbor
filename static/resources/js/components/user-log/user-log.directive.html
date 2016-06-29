@@ -1,15 +1,24 @@
 <div class="col-xs-4 col-md-12 down-table-pane">
-  <table class="table">
-    <thead>
-      <th>// 'task_name' | tr //</th><th>// 'details' | tr //</th><th>// 'user' | tr //</th><th>// 'creation_time' | tr //</th>
-    </thead>
-    <tbody>
-     <tr>
-       <td colspan="5" height="120px" class="empty-hint" ng-if="vm.integratedLogs.length === 0"><h3 class="text-muted">// 'no_user_logs' | tr //</h3></td>
-     </tr>
-      <tr ng-if="vm.integratedLogs.length > 0" ng-repeat="t in vm.integratedLogs">
-    		<td>//t.operation//</td><td>//t.repo_name//</td><td>//t.username//</td><td>//t.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-    	 </tr>
-    </tbody>
-  </table>	
+  <div class="table-head-container">
+    <table class="table table-pane table-header">
+      <thead>
+        <th>// 'task_name' | tr //</th>
+        <th>// 'details' | tr //</th>
+        <th>// 'user' | tr //</th>
+        <th>// 'creation_time' | tr //</th>
+      </thead>
+    </table>
+  </div>
+  <div class="table-body-container">
+    <table class="table table-pane">
+      <tbody>
+        <tr>
+          <td colspan="5" height="120px" class="empty-hint" ng-if="vm.integratedLogs.length === 0"><h3 class="text-muted">// 'no_user_logs' | tr //</h3></td>
+        </tr>
+        <tr ng-if="vm.integratedLogs.length > 0" ng-repeat="t in vm.integratedLogs">
+          <td>//t.operation//</td><td>//t.repo_name//</td><td>//t.username//</td><td>//t.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
