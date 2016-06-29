@@ -10,29 +10,36 @@
     </div> 
     <modal-dialog modal-title="// 'confirm_to_delete_user_title' | tr //" modal-message="// 'confirm_to_delete_user' | tr //" action="vm.deleteUser()"></modal-dialog>
     <div class="pane"> 
-      <div class="sub-pane">     
-        <table class="table table-pane">
-          <thead>
-            <th>// 'username' | tr //</th>
-            <th>// 'email' | tr //</th>
-            <th>// 'registration_time' | tr //</th>
-            <th>// 'administrator' | tr //</th>
-            <th>// 'operation' | tr //</th>
-          </thead>
-          <tbody>
-            <tr ng-repeat="u in vm.users">
-              <td>//u.username//</td>
-              <td>//u.email//</td>
-              <td>//u.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-              <td>
-                <toggle-admin has-admin-role="u.has_admin_role == 1" user-id="//u.user_id//"></toggle-admin>
-              </td>
-              <td>
-                &nbsp;&nbsp;<a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.confirmToDelete(u.user_id)"><span class="glyphicon glyphicon-trash"></span></a>
-              </td>
-            	</tr>
-          </tbody>
-        </table>
+      <div class="sub-pane">  
+        <div class="table-head-container">
+          <table class="table table-pane table-header">
+            <thead>
+              <th width="15%">// 'username' | tr //</th>
+              <th width="20%">// 'email' | tr //</th>
+              <th width="35%">// 'registration_time' | tr //</th>
+              <th width="15%">// 'administrator' | tr //</th>
+              <th width="20%">// 'operation' | tr //</th>
+            </thead>
+          </table>
+        </div>
+      
+        <div class="table-body-container">
+          <table class="table table-pane">
+            <tbody>
+              <tr ng-repeat="u in vm.users">
+                <td>//u.username//</td>
+                <td>//u.email//</td>
+                <td>//u.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                <td>
+                  <toggle-admin has-admin-role="u.has_admin_role == 1" user-id="//u.user_id//"></toggle-admin>
+                </td>
+                <td>
+                  &nbsp;&nbsp;<a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.confirmToDelete(u.user_id)"><span class="glyphicon glyphicon-trash"></span></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <div class="col-xs-4 col-md-12 well well-sm well-custom">
         <div class="col-md-offset-10">//vm.users ? vm.users.length : 0// items</div>
