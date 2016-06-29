@@ -144,6 +144,18 @@ func (ra *RepositoryAPI) Delete() {
 		tags = append(tags, tag)
 	}
 
+	project := ""
+	if strings.Contains(repoName, "/") {
+		project = repoName[0:strings.LastIndex(repoName, "/")]
+	}
+	user, _, ok := ra.Ctx.Request.BasicAuth()
+	if !ok {
+		user, err = ra.getUsername()
+		if err != nil {
+			log.Errorf("failed to get user: %v", err)
+		}
+	}
+
 	for _, t := range tags {
 		if err := rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*registry_error.Error); ok {
@@ -155,6 +167,13 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		log.Infof("delete tag: %s %s", repoName, t)
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
+
+		go func() {
+
+			if err := dao.AccessLog(user, project, repoName, t, "delete"); err != nil {
+				log.Errorf("failed to add access log: %v", err)
+			}
+		}()
 	}
 
 	go func() {
