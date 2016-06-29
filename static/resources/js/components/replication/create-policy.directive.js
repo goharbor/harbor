@@ -69,7 +69,7 @@
         
     $scope.$watch('vm.targetId', function(current) {
       if(current) {          
-        vm1.selection.id = current;
+        vm1.selection.id = current || vm.destinations[0].id;
       }
     });    
         
@@ -125,15 +125,19 @@
     function saveOrUpdateDestination() {
       
       var target = {
+        'name'    : vm1.name,
         'endpoint': vm1.endpoint,
         'username': vm1.username,
         'password': vm1.password
       };
-      if(vm.checkedAddTarget) {
-        target.name = vm1.name;
+     
+      if(vm.checkedAddTarget){
         CreateDestinationService(target.name, target.endpoint, target.username, target.password)
           .success(createDestinationSuccess)
           .error(createDestinationFailed);
+      }else{
+        vm.policy.targetId = vm1.selection.id;
+        saveOrUpdatePolicy();
       }
     }
     
@@ -154,7 +158,10 @@
     
     function update(policy) {
       vm.policy = policy;        
-      saveOrUpdateDestination();   
+      if(vm.targetEditable) {
+        vm.policy.targetId = vm1.selection.id;
+        saveOrUpdatePolicy();
+      }
     }
         
     function pingDestination() {
