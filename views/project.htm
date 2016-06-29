@@ -24,23 +24,33 @@
           </div> 
             <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
             <div class="sub-pane">
-      		    <table class="table">
-                <thead>
-                  <th>// 'project_name' | tr //</th><th>// 'repositories' | tr //</th><th ng-if="!vm.publicity">// 'role' | tr //</th><th>// 'creation_time' | tr //</th><th>// 'publicity' | tr //</th>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="5" height="320px" class="empty-hint" ng-if="vm.projects.length === 0"><h3 class="text-muted">// 'no_projects_add_new_project' | tr //</h3></td>
-                  </tr>
-                  <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
-                    <td><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
-                    <td>//p.repo_count//</td>
-                    <td ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id)//</td>
-                    <td>//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                    <td><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="table-head-container">
+                <table class="table table-pane table-header">
+                  <thead>
+                    <th>// 'project_name' | tr //</th>
+                    <th>// 'repositories' | tr //</th>
+                    <th ng-if="!vm.publicity">// 'role' | tr //</th>
+                    <th>// 'creation_time' | tr //</th>
+                    <th>// 'publicity' | tr //</th>
+                  </thead>
+                </table>
+              </div>
+              <div class="table-body-container">
+                <table class="table table-pane">
+                  <tbody>
+                    <tr>
+                      <td colspan="5" height="320px" class="empty-hint" ng-if="vm.projects.length === 0"><h3 class="text-muted">// 'no_projects_add_new_project' | tr //</h3></td>
+                    </tr>
+                    <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
+                      <td><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
+                      <td>//p.repo_count//</td>
+                      <td ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id)//</td>
+                      <td>//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                      <td><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>               
   	    </div>
