@@ -8,8 +8,8 @@ This guide takes you through the fundamentals of using Harbor. You'll learn how 
 * Search projects and repositories.
 * Manage Harbor system if you are the system administrator:
  + Manage users.
- + Manage targets.
- + Manage policies.
+ + Manage destinations.
+ + Manage replication policies.
 * Pull and push images using Docker client.
 * Delete repositories.
 
@@ -66,7 +66,10 @@ You can update or remove a member by clicking the icon on the right.
 ![browse project](img/remove_update_member.png)
 
 ##Replicating images
-If you are a system administrator, you can replicate images to a remote registry. 
+If you are a system administrator, you can replicate images to a remote registry, which is called destination in Harbor. Only Harbor instance is supported as a destination for now.  
+Click "Add New Policy" on the "Replication" tab, fill the necessary fields and click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately, and when a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination.  
+You can enable or disable a policy in the policy list view, and only the policies which are disbled can be edited.  
+Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.
 
 ##Searching projects and repositories
 Entering a keyword in the search field at the top lists all matching projects and repos. The search result includes public repos and private repos you have access privilege to.  
@@ -74,13 +77,16 @@ Entering a keyword in the search field at the top lists all matching projects an
 ![browse project](img/search.png)
 
 ##Administrator options
-###Setting administrator and deleting user
+###Managing user
 Administrator can add "SysAdmin" role to an ordinary user by toggling the switch under "System Admin". To delete a user, click on the recycle bin icon.  
 
 ![browse project](img/set_admin_remove_user.png)
 
-###Image replication
+###Managing destination
+You can list, add, edit and delete destinations in the "Destination" tab. Only destinations which are not referenced by any policies can be edited.  
 
+###Managing replication
+You can list, edit, enable and disable policies in the "Replication" tab. Make sure the policy is disabled before you edit it.  
 
 ##Pulling and pushing images using Docker client
 
