@@ -49,6 +49,7 @@
     function addProjectMemberComplete(data, status, header) {
       console.log('addProjectMemberComplete: status:' + status + ', data:' + data);
       vm.reload();
+      vm.isOpen = false;
     }
     
     function addProjectMemberFailed(data, status, headers) {
