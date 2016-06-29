@@ -168,12 +168,11 @@ func (ra *RepositoryAPI) Delete() {
 		log.Infof("delete tag: %s %s", repoName, t)
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
-		go func() {
-
-			if err := dao.AccessLog(user, project, repoName, t, "delete"); err != nil {
+		go func(tag string) {
+			if err := dao.AccessLog(user, project, repoName, tag, "delete"); err != nil {
 				log.Errorf("failed to add access log: %v", err)
 			}
-		}()
+		}(t)
 	}
 
 	go func() {
