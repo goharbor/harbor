@@ -12,17 +12,28 @@
     var vm = this;
     
     vm.tags = [];
+    vm.retrieve = retrieve;
     
     $scope.$watch('vm.repoName', function(current, origin) {    
       if(current) {
         console.log('vm.repoName in tags:' + current);
-        ListTagService(current)
-          .then(getTagComplete)
-          .catch(getTagFailed);
+        vm.retrieve();
+      }
+    });
+    
+    $scope.$on('refreshTags', function(e, val) {
+      if(val) {
+        vm.retrieve();
       }
     });
     
     vm.deleteByTag = deleteByTag;
+    
+    function retrieve() {
+      ListTagService(vm.repoName)
+        .then(getTagComplete)
+        .catch(getTagFailed);
+    }
     
     function getTagComplete(response) {
       vm.tags = response.data;
@@ -45,7 +56,6 @@
       }else {
         message = $filter('tr')('alert_delete_tag', [e.tag]);
       }
-      
       $scope.$emit('modalMessage', message);
     }
     
@@ -71,8 +81,6 @@
     function link(scope, element, attrs, ctrl) {
       
     }
-    
-    
   }
   
 })();

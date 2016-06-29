@@ -14,7 +14,7 @@
     <div class="sub-pane">
     <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
       <modal-dialog action="vm.deleteImage()" content-type="text/html" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//"></modal-dialog>
-      <div class="panel panel-default" ng-repeat="repo in vm.repositories">
+      <div class="panel panel-default" ng-repeat="repo in vm.repositories" ng-show="vm.tagCount[repo] > 0">
         <div class="panel-heading" role="tab" id="heading//$index + 1//">
           <h4 class="panel-title">
             <a role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//" aria-expanded="true" aria-controls="collapse//$index+1//">

@@ -32,13 +32,7 @@
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve(); 
-    
-    $scope.$on('$locationChangeStart', function() {
-      console.log('triggered locationChangeStart....');
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.retrieve();    
-    });
-    
+        
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrieve();    
@@ -82,6 +76,7 @@
    
     function getRepositoryComplete(data, status) {
       vm.repositories = data || [];
+      $scope.$broadcast('refreshTags', true);
     }
     
     function getRepositoryFailed(response) {
