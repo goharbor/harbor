@@ -63,6 +63,7 @@ services:
       - ./config/jobservice/env
     volumes:
       - /data/job_logs:/var/log/jobs
+      - ./config/jobservice/app.conf:/etc/jobservice/app.conf
     depends_on:
       - ui
     logging:

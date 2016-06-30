@@ -20,6 +20,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -77,6 +78,12 @@ func init() {
 	verifyRemoteCert = os.Getenv("VERIFY_REMOTE_CERT")
 	if len(verifyRemoteCert) == 0 {
 		verifyRemoteCert = "on"
+	}
+
+	configPath := os.Getenv("CONFIG_PATH")
+	if len(configPath) != 0 {
+		log.Infof("Config path: %s", configPath)
+		beego.LoadAppConfig("ini", configPath)
 	}
 
 	log.Debugf("config: maxJobWorkers: %d", maxJobWorkers)

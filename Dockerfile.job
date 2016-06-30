@@ -14,6 +14,5 @@ RUN go get -d github.com/docker/distribution \
     && go get -d github.com/go-sql-driver/mysql \
     && go build -v -a -o /go/bin/harbor_jobservice \
     && chmod u+x /go/bin/harbor_jobservice 
-ADD ./jobservice/conf /go/bin/conf
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_jobservice"]
