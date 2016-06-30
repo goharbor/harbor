@@ -6,3 +6,9 @@ Deploy/config/db/env
 Deploy/config/jobservice/env
 ui/ui
 *.pyc
+jobservice/*.sql
+jobservice/*.sh
+jobservice/*.json
+jobservice/jobservice
+
+
