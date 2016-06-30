@@ -99,6 +99,9 @@ func NewRepositoryWithUsername(name, endpoint, username string) (*Repository, er
 	}
 
 	client, err := newClient(endpoint, username, nil, "repository", name, "pull", "push")
+	if err != nil {
+		return nil, err
+	}
 
 	repository := &Repository{
 		Name:     name,
