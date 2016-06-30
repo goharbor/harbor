@@ -163,10 +163,10 @@ Run the command on the host which harbor is deployed on.
 
 ```sh
 $ docker-compose stop
-$ docker run -it --name gc --rm -v /harbor_deploy_path/harbor/Deploy/config/registry/:/etc/registry/ --volumes-from deploy_registry_1 registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
 $ docker-compose start
 ```  
-Replace "/harbor_deploy_path" with path where your Harbor is deployed.   
-Option "--dry-run" will print the progress without removing any data.
+
+Option "--dry-run" will print the progress without removing any data.  
 
 About the details of GC, please see [GC](https://github.com/docker/distribution/blob/master/docs/garbage-collection.md).  
