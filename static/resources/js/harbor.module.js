@@ -43,6 +43,7 @@
       'harbor.log',
       'harbor.validator',
       'harbor.replication',
-      'harbor.system.management'
+      'harbor.system.management',
+      'harbor.loading.progress'
     ]);
 })();

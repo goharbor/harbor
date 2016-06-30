@@ -50,13 +50,11 @@
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrievePolicy();
-    vm.refreshPending = false;
-    
+       
     vm.jobStatus = jobStatus;
     vm.currentStatus = vm.jobStatus()[0];
    
     function searchReplicationPolicy() {
-      vm.refreshPending = true;
       vm.retrievePolicy();
     }   
     
@@ -102,7 +100,6 @@
           }
         }
       });
-      vm.refreshPending = false;
     }
     
     function listReplicationJobFailed(data, status) {

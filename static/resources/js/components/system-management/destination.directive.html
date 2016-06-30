@@ -30,10 +30,10 @@
               <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
             </tr>
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
-              <td>//r.name//</td>
-              <td>//r.endpoint//</td>
-              <td>//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-              <td>
+              <td width="20%">//r.name//</td>
+              <td width="30%">//r.endpoint//</td>
+              <td width="35%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+              <td width="15%">
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;
                 <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id)"><span class="glyphicon glyphicon-trash"></span></a>

@@ -186,6 +186,7 @@ var locale_messages = {
   'successful_added': '新增用户成功。',
   'copyright': '版权所有',
   'all_rights_reserved': '保留所有权利。',
+  'pinging_target': '正在测试连接中，请稍候……',
   'successful_ping_target': '测试连接目标成功。',
   'failed_ping_target': '测试连接目标失败',
   'policy_already_exists': '策略已存在。',

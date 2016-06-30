@@ -37,6 +37,9 @@
     
     function getTagComplete(response) {
       vm.tags = response.data;
+      angular.forEach(vm.tags, function(item) {
+        vm.toggleInProgress[vm.repoName + '|' + item] = false;
+      });
       vm.tagCount[vm.repoName] = vm.tags.length;
       $scope.$emit('tagCount', vm.tagCount);
     }
@@ -68,7 +71,8 @@
       'scope': {
         'tagCount': '=',
         'associateId': '=',
-        'repoName': '='
+        'repoName': '=',
+        'toggleInProgress': '='
       },
       'replace': true,
       'link': link,

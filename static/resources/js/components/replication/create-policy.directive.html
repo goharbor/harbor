@@ -43,10 +43,8 @@
                 <div class="col-md-8" style="padding-left: 0;">
                   <h4 class="h4-custom">// 'destination_setting' | tr //</h4>
                 </div>
-           
               </div>
-              <hr class="hr-line"/>
-              
+              <hr class="hr-line"/>              
             </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="destinationName" class="col-md-3 control-label">// 'name' | tr //:</label>
@@ -80,7 +78,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <button type="button" class="btn btn-default" ng-click="vm.pingDestination()" ng-disabled="vm.notAvailable || !vm.pingAvailable">// 'test_connection' | tr //</button>
+                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="vm.hideTarget" toggle-in-progress="vm.toggleInProgress0">// 'test_connection' | tr //</button>
               </div>
             </div>
             <div class="form-group col-md-12 form-group-custom">
@@ -92,7 +90,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="vm.save(replication)">// 'ok' | tr //</button>
+        <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="form.$valid && vm.save(replication)" loading-progress hide-target="vm.hideTarget" toggle-in-progress="vm.toggleInProgress1">// 'ok' | tr //</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
       </div>
     </form>

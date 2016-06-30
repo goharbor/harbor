@@ -33,8 +33,8 @@
           element.find('.section').css({'height': (h - scope.subsHeight - scope.subsSection) + 'px'});        
           element.find('.sub-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});
           element.find('.tab-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});
-          var subPaneHeight = element.find('.sub-pane').height();
-          element.find('.table-body-container').css({'height': (subPaneHeight - scope.subsTblBody) + 'px'});
+//          var subPaneHeight = element.find('.sub-pane').height();
+//          element.find('.table-body-container').css({'height': (subPaneHeight - scope.subsTblBody) + 'px'});
         }
       }, true);
       

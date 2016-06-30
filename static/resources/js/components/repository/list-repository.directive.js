@@ -16,6 +16,7 @@
     vm.sectionHeight = {'min-height': '579px'};
   
     vm.filterInput = '';
+    vm.toggleInProgress = [];
 
     var hashValue = $location.hash();
     if(hashValue) {
@@ -44,7 +45,7 @@
         vm.repositories = current || [];
       }
     });
-
+    
     $scope.$on('repoName', function(e, val) {
       vm.repoName = val;
     });
@@ -56,7 +57,7 @@
     $scope.$on('tagCount', function(e, val) {
       vm.tagCount = val;
     });
-    
+        
     $scope.$on('modalTitle', function(e, val) {
       vm.modalTitle = val;
     });
@@ -83,7 +84,6 @@
       console.log('Failed list repositories:' + response);      
     }
    
-  
     function deleteByRepo(repoName) {
       vm.repoName = repoName;
       vm.tag = '';      
@@ -93,16 +93,19 @@
   
     function deleteImage() {
       console.log('repoName:' + vm.repoName + ', tag:' + vm.tag);
+      vm.toggleInProgress[vm.repoName + '|' + vm.tag] = true;
       DeleteRepositoryService(vm.repoName, vm.tag)
         .success(deleteRepositorySuccess)
         .error(deleteRepositoryFailed);
     }
     
     function deleteRepositorySuccess(data, status) {
+      vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
       vm.retrieve();
     }
     
     function deleteRepositoryFailed(data, status) {
+      vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
       console.log('Failed delete repository:' + data);
     }
     
@@ -115,12 +118,17 @@
       'scope': {
         'sectionHeight': '='
       },
+      'link': link,
       'controller': ListRepositoryController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     
     return directive;
+    
+    function link(scope, element, attr, ctrl) {
+      
+    }
   
   }
   

@@ -40,6 +40,9 @@
     vm.notAvailable = false;
     vm.pingAvailable = true;
     vm.pingMessage = '';
+    
+    vm.toggleInProgress0 = false;
+    vm.toggleInProgress1 = false;
            
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
@@ -142,6 +145,8 @@
     }
     
     function saveOrUpdatePolicy() {
+      vm.toggleInProgress1 = true;
+      
       switch(vm.action) {
       case 'ADD_NEW':
         CreateReplicationPolicyService(vm.policy)
@@ -153,6 +158,8 @@
           .success(updateReplicationPolicySuccess)
           .error(updateReplicationPolicyFailed);
         break;
+      default:
+        vm.toggleInProgress = false;
       }
     }
     
@@ -177,6 +184,8 @@
       }
       
       vm.pingAvailable = false;
+      vm.pingMessage = $filter('tr')('pinging_target');
+      vm.toggleInProgress0 = true;
       
       PingDestinationService(target)
         .success(pingDestinationSuccess)
@@ -237,10 +246,12 @@
       console.log('Failed list replication policy:' + data);
     }
     function createReplicationPolicySuccess(data, status) {
+      vm.toggleInProgress1 = false;
       console.log('Successful create replication policy.');
       vm.reload();
     }
     function createReplicationPolicyFailed(data, status) {
+      vm.toggleInProgress1 = false;
       if(status === 409) {
         vm.modalMessage = $filter('tr')('policy_already_exists', []);
         $scope.$broadcast('showDialog', true);
@@ -248,10 +259,12 @@
       console.log('Failed create replication policy.');
     }
     function updateReplicationPolicySuccess(data, status) {
+      vm.toggleInProgress1 = false;
       console.log('Successful update replication policy.');
       vm.reload();
     }
     function updateReplicationPolicyFailed(data, status) {
+      vm.toggleInProgress1 = false;
       vm.modalMessage = $filter('tr')('failed_update_policy', []) + data;
       $scope.$broadcast('showDialog', true);
       console.log('Failed update replication policy.');
@@ -280,11 +293,14 @@
     function pingDestinationSuccess(data, status) {
       vm.pingAvailable = true;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
+      vm.toggleInProgress0 = false;
     }
     function pingDestinationFailed(data, status) {
       vm.pingAvailable = true;
       vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
+      vm.toggleInProgress0 = false;
     }
+    vm.hideTarget = true;
   }
   
   function createPolicy() {

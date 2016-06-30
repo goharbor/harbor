@@ -19,6 +19,7 @@
     vm.sendMail = sendMail;
     
     vm.confirm = confirm;
+    vm.toggleInProgress = false;
     
     function reset(){
       vm.hasError = false;
@@ -27,6 +28,7 @@
     
     function sendMail(user) {
       if(user && angular.isDefined(user.email)) { 
+        vm.toggleInProgress = true;
         SendMailService(user.email)
           .success(sendMailSuccess)
           .error(sendMailFailed);
@@ -34,10 +36,12 @@
     }
     
     function sendMailSuccess(data, status) {
+      vm.toggleInProgress = false;
       $scope.$broadcast('showDialog', true);
     }
     
     function sendMailFailed(data) {
+      vm.toggleInProgress = false;
       vm.hasError = true;
       vm.errorMessage = data;
       console.log('Failed send mail:' + data);

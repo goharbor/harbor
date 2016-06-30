@@ -186,6 +186,7 @@ var locale_messages = {
   'successful_added': 'Added new user successfully.',
   'copyright': 'Copyright',
   'all_rights_reserved': 'All Rights Reserved.',
+  'pinging_target': 'Testing connection, please wait...',
   'successful_ping_target': 'Test connection successfully.',
   'failed_ping_target': 'Faild to connect target',
   'policy_already_exists': 'Policy alreay exists.',

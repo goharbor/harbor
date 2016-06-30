@@ -34,6 +34,7 @@
               }
               return str.join("&");
           },
+          'timeout': 30000,
           'data': payload
         });
     }

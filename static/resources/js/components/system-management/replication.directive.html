@@ -31,16 +31,16 @@
                 <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies' | tr //</h3></td>
               </tr>
               <tr ng-if="vm.replications.length > 0" ng-repeat="r in vm.replications"> 
-                <td><a href="repository#/replication?project_id=//r.project_id//">//r.name//</a></td>
-                <td>//r.description//</td>
-                <td>//r.project_name//</td>
-                <td>//r.target_name//</td>
-                <td>//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                <td ng-switch on="//r.enabled//">
+                <td width="14%"><a href="repository#/replication?project_id=//r.project_id//">//r.name//</a></td>
+                <td width="18%">//r.description//</td>
+                <td width="14%">//r.project_name//</td>
+                <td width="12%">//r.target_name//</td>
+                <td width="18%">//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                <td width="12%" ng-switch on="//r.enabled//">
                   <span ng-switch-when="1">// 'enabled' | tr //</span>
                   <span ng-switch-when="0">// 'disabled' | tr //</span>
                 </td>
-                <td>
+                <td width="12%">
                   <div class="display-inline-block" ng-switch on="//r.enabled//">
                     <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
                     <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>

@@ -2,10 +2,10 @@
   <div class="table-head-container">
     <table class="table table-pane table-header">
       <thead>
-        <th>// 'task_name' | tr //</th>
-        <th>// 'details' | tr //</th>
-        <th>// 'user' | tr //</th>
-        <th>// 'creation_time' | tr //</th>
+        <th width="25%">// 'task_name' | tr //</th>
+        <th width="25%">// 'details' | tr //</th>
+        <th width="25%">// 'user' | tr //</th>
+        <th width="25%">// 'creation_time' | tr //</th>
       </thead>
     </table>
   </div>
@@ -16,7 +16,7 @@
           <td colspan="5" height="120px" class="empty-hint" ng-if="vm.integratedLogs.length === 0"><h3 class="text-muted">// 'no_user_logs' | tr //</h3></td>
         </tr>
         <tr ng-if="vm.integratedLogs.length > 0" ng-repeat="t in vm.integratedLogs">
-          <td>//t.operation//</td><td>//t.repo_name//</td><td>//t.username//</td><td>//t.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+          <td width="25%">//t.operation//</td><td width="25%">//t.repo_name//</td><td width="25%">//t.username//</td><td width="25%">//t.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
         </tr>
       </tbody>
     </table>
