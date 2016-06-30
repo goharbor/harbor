@@ -53,7 +53,11 @@
         console.log('vm.projects is undefined, load public projects.');
       }
       
-      vm.selectedProject = vm.projects[0];
+      if(angular.isArray(vm.projects) && vm.projects.length > 0) {
+        vm.selectedProject = vm.projects[0];    
+      }else{
+        $window.location.href = '/project';        
+      }
       
       if(getParameterByName('project_id', $location.absUrl())){
         angular.forEach(vm.projects, function(value, index) {
@@ -64,8 +68,8 @@
       }
      
       $location.search('project_id', vm.selectedProject.project_id);
-      vm.checkProjectMember(vm.selectedProject.project_id);
       
+      vm.checkProjectMember(vm.selectedProject.project_id);      
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  

@@ -4,11 +4,27 @@
   
   angular
     .module('harbor.replication')
-    .directive('listReplication', listReplication);
-    
-  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter'];
+    .directive('listReplication', listReplication)
+    .factory('jobStatus', jobStatus);
+
+  jobStatus.inject = ['$filter', 'trFilter'];
+  function jobStatus($filter, trFilter) {
+    return function() {      
+      return [
+        {'key': 'all'    , 'value': $filter('tr')('all')},
+        {'key': 'pending', 'value': $filter('tr')('pending')},
+        {'key': 'running', 'value': $filter('tr')('running')},
+        {'key': 'error'  , 'value': $filter('tr')('error')},
+        {'key': 'stopped', 'value': $filter('tr')('stopped')}, 
+        {'key': 'finished', 'value':$filter('tr')('finished')},
+        {'key': 'canceled', 'value': $filter('tr')('canceled')}
+      ];
+    }
+  }
   
-  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter) {
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
+  
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
     var vm = this;
     
     vm.sectionHeight = {'min-height': '1200px'};
@@ -36,6 +52,9 @@
     vm.retrievePolicy();
     vm.refreshPending = false;
     
+    vm.jobStatus = jobStatus;
+    vm.currentStatus = vm.jobStatus()[0];
+   
     function searchReplicationPolicy() {
       vm.refreshPending = true;
       vm.retrievePolicy();
@@ -54,7 +73,8 @@
     }
     
     function retrieveJob(policyId) {
-      ListReplicationJobService(policyId, vm.replicationJobName)
+      var status = (vm.currentStatus.key === 'all' ? '' : vm.currentStatus.key);
+      ListReplicationJobService(policyId, vm.replicationJobName, status)
         .success(listReplicationJobSuccess)
         .error(listReplicationJobFailed);
     }
@@ -70,6 +90,18 @@
 
     function listReplicationJobSuccess(data, status) {
       vm.replicationJobs = data || [];
+      angular.forEach(vm.replicationJobs, function(item) {
+        for(var key in item) {          
+          var value = item[key]
+          switch(key) {
+          case 'operation':            
+          case 'status':
+            item[key] = $filter('tr')(value);
+          default:
+            break;
+          }
+        }
+      });
       vm.refreshPending = false;
     }
     
@@ -193,6 +225,19 @@
         ctrl.retrieveJob($(this).attr('policy_id'));
         ctrl.lastPolicyId = $(this).attr('policy_id');
       }
+      
+      element.find('.datetimepicker').datetimepicker({
+				locale: 'en-US',
+				ignoreReadonly: true,
+				format: 'L',
+				showClear: true
+		  });      
+      element.find('#fromDatePicker').on('blur', function(){
+        ctrl.pickUp({'key': 'fromDate', 'value': $(this).val()});
+      });
+      element.find('#toDatePicker').on('blur', function(){
+        ctrl.pickUp({'key': 'toDate', 'value': $(this).val()});
+      });
     }
   }
   

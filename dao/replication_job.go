@@ -311,7 +311,8 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 }
 
 // FilterRepJobs filters jobs by repo and policy ID
-func FilterRepJobs(policyID int64, repository, status string) ([]*models.RepJob, error) {
+func FilterRepJobs(policyID int64, repository, status string, startTime,
+	endTime *time.Time, limit int) ([]*models.RepJob, error) {
 	o := GetOrmer()
 
 	qs := o.QueryTable(new(models.RepJob))
@@ -324,6 +325,21 @@ func FilterRepJobs(policyID int64, repository, status string) ([]*models.RepJob,
 	if len(status) != 0 {
 		qs = qs.Filter("Status__icontains", status)
 	}
+
+	if startTime != nil {
+		fmt.Printf("%v\n", startTime)
+		qs = qs.Filter("CreationTime__gte", startTime)
+	}
+
+	if endTime != nil {
+		fmt.Printf("%v\n", endTime)
+		qs = qs.Filter("CreationTime__lte", endTime)
+	}
+
+	if limit != 0 {
+		qs = qs.Limit(limit)
+	}
+
 	qs = qs.OrderBy("-CreationTime")
 
 	var jobs []*models.RepJob

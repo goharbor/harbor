@@ -55,15 +55,22 @@ func (b *BaseController) Prepare() {
 			b.SetSession("Lang", lang)
 			lang = sessionLang.(string)
 		} else {
-			lang = defaultLang
+			al := b.Ctx.Request.Header.Get("Accept-Language")
+			if len(al) > 4 {
+				al = al[:5] // Only compare first 5 letters.
+				if i18n.IsExist(al) {
+					lang = al
+				}
+			}
 		}
 	}
-
-	b.SetSession("Lang", lang)
 
 	if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
 		lang = defaultLang //Set default language if not supported.
 	}
+
+	b.Ctx.SetCookie("language", lang, 0, "/")
+	b.SetSession("Lang", lang)
 
 	curLang := langType{
 		Lang: lang,

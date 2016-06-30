@@ -36,6 +36,7 @@
       $scope.$emit('addedSuccess', true);
       vm.hasError = false;
       vm.errorMessage = '';
+      vm.isOpen = false;
     }
     
     function addProjectFailed(data, status) {

@@ -28,18 +28,18 @@
           <table class="table table-pane">
       			 <tbody>
               <tr ng-if="vm.replicationPolicies.length == 0">
-                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies' | tr //</h3></td>
+                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies_add_new' | tr //</h3></td>
               </tr>
               <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
                 <td width="10%">//r.name//</td>
-                <td width="18%">//r.description//</td>
-                <td width="18%">//r.target_name//</td>
-                <td width="18%">//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                <td width="14%" ng-switch on="//r.enabled//">
+                <td width="18%" style="padding-left: 10px;">//r.description//</td>
+                <td width="18%" style="padding-left: 15px;">//r.target_name//</td>
+                <td width="18%" style="padding-left: 18px;">//r.start_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                <td width="14%"  style="padding-left: 18px;" ng-switch on="//r.enabled//">
                   <span ng-switch-when="1">// 'enabled' | tr //</span>
                   <span ng-switch-when="0">// 'disabled' | tr //</span>
                 </td>
-                <td width="15%">
+                <td width="15%" style="padding-left: 20px;">
                   <div class="display-inline-block" ng-switch on="//r.enabled//">
                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)" title="// 'disabled' | tr //"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)" title="// 'enabled' | tr //"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
@@ -66,6 +66,30 @@
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()" ng-disabled="vm.refreshPending"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
+      <div class="input-group">
+        <label for="selStatus" class="control-label label-custom">// 'status' | tr //:</label>
+        <div class="input-group">
+          <select class="form-control" id="selStatus" ng-options="st.value for st in vm.jobStatus() track by st.key" ng-model="vm.currentStatus" ng-change="vm.searchReplicationJob()"></select>
+        </div> 
+      </div>
+      <div class="input-group">
+        <label for="fromDatePicker" class="control-label label-custom">// 'from' | tr //:</label>
+        <div class="input-group datetimepicker">
+          <input id="fromDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.fromDate" ng-change="vm.pickUp({key:'fromDate', value: vm.fromDate})" size="10">
+          <span class="input-group-addon">
+            <a href="javascript:void(0);"><span class="glyphicon glyphicon-calendar"></span></a>
+          </span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="toDatePicker" class="control-label label-custom">// 'to' | tr //:</label>
+	      <div class="input-group datetimepicker">
+          <input id="toDatePicker" class="form-control" type="text" readonly="readonly" ng-model="vm.toDate" ng-change="vm.pickUp({key:'toDate', value: vm.toDate})" size="10">
+          <span class="input-group-addon">
+            <a href="javascript:void(0);"><span class="glyphicon glyphicon-calendar"></span></a>
+          </span>
+        </div>
+      </div>		
       <div class="input-group">
         <button type="button" class="btn btn-success" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-refresh"></span></button>
       </div>
@@ -94,11 +118,13 @@
                 <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
                   <td width="15%">//r.repository//</td>
                   <td width="12%">//r.operation//</td>
-                  <td width="18%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                  <td width="18%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                  <td width="18%">//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                  <td width="9%">//r.status//</td>
-                  <td width="10%" align="left"><a href="javascript:void(0);" ng-click="vm.downloadLog(r.id)" title="// 'download_log' | tr //"><span style="margin-left: 10px;" class="glyphicon glyphicon-file"></span></a></td>
+                  <td width="18%" style="padding-left: 15px;">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="18%" style="padding-left: 15px;">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="18%" style="padding-left: 18px;">//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="9%"  style="padding-left: 20px;">//r.status//</td>
+                  <td width="10%" align="left">
+                    <a ng-show="r.status != 'canceled' && r.status != 'pending'" href="javascript:void(0);" ng-click="vm.downloadLog(r.id)" title="// 'download_log' | tr //"><span style="margin-left: 10px;" class="glyphicon glyphicon-file"></span></a>
+                  </td>
                 </tr>
               </tbody>
         		</table>

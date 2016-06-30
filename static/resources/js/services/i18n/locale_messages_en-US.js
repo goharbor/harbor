@@ -154,8 +154,8 @@ var locale_messages = {
   'logs' : 'Logs',
   'enabled': 'Enabled',
   'disabled': 'Disabled',
-  'no_replication_policies': 'No replication policies, add new replication policy.',
-  'no_replications': 'No replications.',
+  'no_replication_policies_add_new': 'No replication policies, add new replication policy.',
+  'no_replication_policies': 'No replication policies.',
   'no_replication_jobs': 'No replication jobs.',
   'no_destinations': 'No destinations, add new destination.',
   'name_is_required': 'Name is required.',
@@ -200,5 +200,13 @@ var locale_messages = {
   'delete_repo': 'Delete Repo',
   'download_log': 'Download Logs',
   'edit': 'Edit',
-  'delete': 'Delete'
+  'delete': 'Delete',
+  'transfer': 'Transfer',
+  'all': 'All',
+  'pending': 'Pending',
+  'running': 'Running',
+  'finished': 'Finished',
+  'canceled': 'Canceled',
+  'stopped': 'Stopped',
+  'error': 'Error'
 };

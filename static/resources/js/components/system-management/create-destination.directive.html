@@ -53,7 +53,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" id="btnOk" ng-click="form.$valid && vm.save(destination)">// 'ok' | tr //</button>
+          <button ng-show="vm.editable" type="submit" class="btn btn-primary" id="btnOk" ng-click="vm.save(destination)">// 'ok' | tr //</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
         </div>
       </div><!-- /.modal-content -->

@@ -152,7 +152,8 @@ var locale_messages = {
   'logs': '日志',
   'enabled': '启用',
   'disabled': '停用',
-  'no_replication_policies': '没有复制策略，请新增复制策略。',
+  'no_replication_policies_add_new': '没有复制策略，请新增复制策略。',
+  'no_replication_policies': '没有复制策略。',
   'no_replications': '没有复制策略。',
   'no_replication_jobs': '没有复制任务。',
   'no_destinations': '没有目标设置，请新增目标。',
@@ -199,5 +200,13 @@ var locale_messages = {
   'delete_repo': '删除镜像仓库',
   'download_log': '下载日志',
   'edit': '修改',
-  'delete': '删除'
+  'delete': '删除',
+  'all': '全部',
+  'transfer': '传输',
+  'pending': '挂起',
+  'running': '进行中',
+  'finished': '已完成',
+  'canceled': '取消',
+  'stopped': '停止',
+  'error': '错误'
 };
