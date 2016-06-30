@@ -37,6 +37,20 @@ type RepoItem struct {
 	//Size           int       `json:"Size"`
 }
 
+// RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
+type RepoRecord struct {
+	Name         string    `orm:"column(name);pk" json:"name"`
+	OwnerName    string    `orm:"-"`
+	OwnerID      int64     `orm:"column(owner_id)"  json:"owner_id"`
+	ProjectName  string    `orm:"-"`
+	ProjectID    int64     `orm:"column(project_id)"  json:"project_id"`
+	Description  string    `orm:"column(description)" json:"description"`
+	PullCount    int       `orm:"column(pull_count)" json:"pull_count"`
+	StarCount    int       `orm:"column(star_count)" json:"star_count"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
 // Tag holds information about a tag.
 type Tag struct {
 	Version string `json:"version"`
@@ -59,4 +73,9 @@ type histroyItem struct {
 
 type blobSumItem struct {
 	BlobSum string `json:"blobSum"`
+}
+
+//TableName is required by by beego orm to map RepoRecord to table repository
+func (rp *RepoRecord) TableName() string {
+	return "repository"
 }

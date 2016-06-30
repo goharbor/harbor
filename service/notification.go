@@ -75,6 +75,28 @@ func (n *NotificationHandler) Post() {
 						log.Errorf("Error happens when refreshing cache: %v", err2)
 					}
 				}()
+				go func() {
+					exist := dao.RepositoryExists(repo)
+					if exist {
+						return
+					}
+					log.Debugf("Add repository %s into DB.", repo)
+					repoItem := models.RepoRecord{Name: repo, OwnerName: username, ProjectName: project}
+					err4AddRepository := dao.AddRepository(repoItem)
+					if err4AddRepository != nil {
+						log.Errorf("Error happens when adding repository: %v", err4AddRepository)
+					}
+				}()
+
+			}
+			if action == "pull" {
+				go func() {
+					log.Debugf("Increase the repository %s pull count.", repo)
+					err4IncreasePullCount := dao.IncreasePullCount(repo)
+					if err4IncreasePullCount != nil {
+						log.Errorf("Error happens when increasing pull count: %v", err4IncreasePullCount)
+					}
+				}()
 			}
 		}
 	}
