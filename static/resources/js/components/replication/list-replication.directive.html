@@ -100,12 +100,11 @@
           <table class="table table-pane table-header">
       			 <thead>
               <th width="15%">// 'name' | tr //</th>
-              <th width="12%">// 'operation' | tr //</th>
-              <th width="18%">// 'creation_time' | tr //</th>
-              <th width="18%">// 'start_time' | tr //</th>
-              <th width="18%">// 'end_time' | tr //</th>
+              <th width="15%">// 'operation' | tr //</th>
+              <th width="24%">// 'creation_time' | tr //</th>
+              <th width="24%">// 'end_time' | tr //</th>
               <th width="10%">// 'status' | tr //</th>
-              <th width="9%">// 'logs' | tr //</th>
+              <th width="12%">// 'logs' | tr //</th>
       			 </thead>
           </table>
          </div>
@@ -117,12 +116,11 @@
                 </tr>
                 <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
                   <td width="15%">//r.repository//</td>
-                  <td width="12%">//r.operation//</td>
-                  <td width="18%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                  <td width="18%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                  <td width="18%">//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="15%">//r.operation//</td>
+                  <td width="24%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                  <td width="24%">//r.update_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                   <td width="10%">//r.status//</td>
-                  <td width="9%">
+                  <td width="12%">
                     <a style="margin-left: 20px;" ng-show="r.status != 'canceled' && r.status != 'pending'" href="javascript:void(0);" ng-click="vm.downloadLog(r.id)" title="// 'download_log' | tr //"><span class="glyphicon glyphicon-file"></span></a>
                   </td>
                 </tr>

@@ -54,6 +54,8 @@
     vm.jobStatus = jobStatus;
     vm.currentStatus = vm.jobStatus()[0];
    
+    vm.pickUp = pickUp;
+    
     function searchReplicationPolicy() {
       vm.retrievePolicy();
     }   
@@ -72,7 +74,7 @@
     
     function retrieveJob(policyId) {
       var status = (vm.currentStatus.key === 'all' ? '' : vm.currentStatus.key);
-      ListReplicationJobService(policyId, vm.replicationJobName, status)
+      ListReplicationJobService(policyId, vm.replicationJobName, status, toUTCSeconds(vm.fromDate, 0, 0, 0), toUTCSeconds(vm.toDate, 23, 59, 59))
         .success(listReplicationJobSuccess)
         .error(listReplicationJobFailed);
     }
@@ -138,6 +140,37 @@
     function downloadLog(policyId) {
       $window.open('/api/jobs/replication/' + policyId + '/log', '_blank');
     }
+    
+    function pickUp(e) {
+      switch(e.key){
+      case 'fromDate':
+        vm.fromDate = e.value;  
+        break;
+      case 'toDate':
+        vm.toDate = e.value;
+        break;
+      }
+      $scope.$apply();
+    }
+    
+    function toUTCSeconds(date, hour, min, sec) {
+      if(!angular.isDefined(date) || date === '') {
+        return '';
+      }
+      
+			var t = new Date(date);
+			t.setHours(hour);
+			t.setMinutes(min);
+			t.setSeconds(sec);
+			var utcTime = new Date(t.getUTCFullYear(),
+				t.getUTCMonth(), 
+				t.getUTCDate(),
+				t.getUTCHours(),
+				t.getUTCMinutes(),
+		    	t.getUTCSeconds());
+			return utcTime.getTime() / 1000;
+		}
+  
   }
   
   function listReplication($timeout) {

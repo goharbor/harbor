@@ -86,7 +86,7 @@
     }
     
     function toUTCSeconds(date, hour, min, sec) {
-      if(date === "") {
+      if(!angular.isDefined(date) || date === '') {
         return 0;
       }
       
