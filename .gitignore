@@ -6,3 +6,4 @@ Deploy/config/db/env
 Deploy/harbor.cfg
 ui/ui
 *.pyc
+.idea/
