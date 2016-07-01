@@ -44,7 +44,7 @@ type RepoItem struct {
 
 // Tag holds information about a tag.
 type Tag struct {
-	Version string `json:"veRepoMetarsion"`
+	Version string `json:"version"`
 	ImageID string `json:"image_id"`
 }
 
