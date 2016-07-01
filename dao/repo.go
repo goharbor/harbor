@@ -7,7 +7,7 @@ import (
 func AddLabel(repoLabel models.RepoLabel) (int64, error) {
 	o := GetOrmer()
 
-	sql := `insert into repolabel(repoName, label) values(?,?)`
+	sql := `insert into repo_label(repoName, label) values(?,?)`
 
 
 	p,_ := o.Raw(sql).Prepare()
@@ -23,7 +23,7 @@ func AddLabel(repoLabel models.RepoLabel) (int64, error) {
 func DeletelLabel(repoLabel models.RepoLabel) (int64, error) {
 	o := GetOrmer()
 
-	sql := `delete from repolabel where repoName=? and label=?`
+	sql := `delete from repo_label where repoName=? and label=?`
 
 
 	p,_ := o.Raw(sql).Prepare()
@@ -39,7 +39,7 @@ func DeletelLabel(repoLabel models.RepoLabel) (int64, error) {
 func GetRepoLabels(repoName string) ([]string, error){
 	o := GetOrmer()
 
-	sql := `select lable from repolabel where repoName=?`
+	sql := `select lable from repo_label where repoName=?`
 
 	var labels []string
 
@@ -54,7 +54,7 @@ func GetRepoLabels(repoName string) ([]string, error){
 func GetRepoNames(label string) ([]string, error){
 	o := GetOrmer()
 
-	sql := `select repoName from repolabel where lable=?`
+	sql := `select repoName from repo_label where lable=?`
 
 	var repoNames []string
 

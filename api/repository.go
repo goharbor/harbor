@@ -84,6 +84,12 @@ func (ra *RepositoryAPI) Get() {
 			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], q) && r[0:strings.LastIndex(r, "/")] == projectName {
 				resp = append(resp, r)
 			}
+			labelList,_ := dao.GetRepoLabels(r)
+			for _, label := range labelList{
+				if strings.Contains(label, q) {
+					resp = append(resp, label)
+				}
+			}
 		}
 		ra.Data["json"] = resp
 	} else if len(projectName) > 0 {
