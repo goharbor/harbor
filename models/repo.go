@@ -24,6 +24,11 @@ type Repo struct {
 	Repositories []string `json:"repositories"`
 }
 
+type RepoLabel struct {
+	RepoName string `orm:"column(repoName)" json:"RepoName"`
+	Label string `orm:"column(label)" json:"Label"`
+}
+
 // RepoItem holds manifest of an image.
 type RepoItem struct {
 	ID            string    `json:"Id"`
@@ -39,7 +44,7 @@ type RepoItem struct {
 
 // Tag holds information about a tag.
 type Tag struct {
-	Version string `json:"version"`
+	Version string `json:"veRepoMetarsion"`
 	ImageID string `json:"image_id"`
 }
 

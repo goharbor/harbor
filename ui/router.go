@@ -62,6 +62,11 @@ func initRouters() {
 	beego.Router("/api/users/:id/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/labels", &api.RepositoryAPI{}, "post:AddLabel")
+	beego.Router("/api/repositories/labels/label", &api.RepositoryAPI{}, "get:GetLabels")
+	beego.Router("/api/repositories/labels/repo", &api.RepositoryAPI{}, "get:GetRepoNames")
+	beego.Router("/api/repositories/labels", &api.RepositoryAPI{}, "delete:DeleteLabel")
+
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
 
 	//external service that hosted on harbor process:
