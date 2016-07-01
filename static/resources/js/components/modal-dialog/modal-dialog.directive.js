@@ -23,7 +23,7 @@
         'modalTitle': '@',
         'modalMessage': '@',
         'action': '&',
-        'confirmOnly': '@'
+        'confirmOnly': '='
       },
       'controller': ModalDialogController,
       'controllerAs': 'vm',
@@ -32,16 +32,18 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-      
-      if(!angular.isDefined(ctrl.contentType)) {
-        ctrl.contentType = 'text/plain';  
-      }
-      if(!angular.isDefined(ctrl.confirmOnly)) {
-        ctrl.confirmOnly = false;
-      }
-      
-      console.log('Received contentType in modal:' + ctrl.contentType);
-                  
+           
+      scope.$watch('contentType', function(current) {
+        if(current) {
+          ctrl.contentType = current;  
+        }
+      })
+      scope.$watch('confirmOnly', function(current) {
+        if(current) {
+          ctrl.confirmOnly = current;
+        }
+      })
+                        
       scope.$watch('vm.modalMessage', function(current) {
         if(current) {
           switch(ctrl.contentType) {
@@ -54,21 +56,19 @@
           }
         }
       });
-      
+        
       scope.$on('showDialog', function(e, val) {
         if(val) {
           element.find('#myModal').modal('show');
         }else{
           element.find('#myModal').modal('hide');
         }
-        
       });
-      
-      element.find('#btnOk').on('click', clickHandler);
+        
+      element.find('#btnOk').on('click', clickHandler);        
 
       function clickHandler(e) {
-        ctrl.action();
-        element.find('#myModal').modal('hide');
+        ctrl.action();  
       }
     }
   }

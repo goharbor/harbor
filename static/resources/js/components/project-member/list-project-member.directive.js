@@ -30,7 +30,26 @@
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrieve();
     });
-           
+    
+    //Error message dialog handler for project members.
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+       
+    $scope.$on('raiseError', function(e, val) {
+      if(val) {   
+        vm.action = function() {
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.confirmOnly = true;      
+        $scope.$broadcast('showDialog', true);
+      }
+    });  
+          
     function search(e) {
       vm.projectId = e.projectId;
       vm.username = e.username;
@@ -52,14 +71,14 @@
     }
         
     function deleteProjectMemberSuccess(data, status) {
-      console.log('Successful delete project member complete.');
+      console.log('Successful delete project member.');
       vm.retrieve();      
     }
     
     function deleteProjectMemberFailed(e) {
-      vm.modalTitle = $filter('tr')('confirm_to_delete_member_title');
-      vm.modalMessage = $filter('tr')('failed_to_delete_member');
-      $scope.$broadcast('showDialog', true);
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_member'));
+      $scope.$emit('raiseError', true);
       console.log('Failed to edit project member:' + e);
     }
   
@@ -77,6 +96,11 @@
     function getProjectMemberFailed(response) {
       console.log('Failed get project members:' + response);
       vm.projectMembers = [];
+      
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_project_member'));
+      $scope.$emit('raiseError', true);
+            
       $location.url('repositories').search('project_id', vm.projectId);
     }
     

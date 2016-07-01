@@ -49,7 +49,9 @@
     }
     
     function editProjectMemberFailed(e) {
-      alert($filter('tr')('failed_to_change_member'));
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_change_member'));
+      $scope.$emit('raiseError', true);
       console.log('Failed to edit project member:' + e);
     }
     

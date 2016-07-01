@@ -1,4 +1,5 @@
 <div class="container-fluid container-fluid-custom" element-height ng-controller="ProjectController as vm">
+  <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
   <div class="container container-custom">
     <div class="row extend-height">
       <div class="col-xs-12 col-md-12 extend-height">
@@ -28,8 +29,8 @@
                 <table class="table table-pane table-header">
                   <thead>
                     <th width="15%">// 'project_name' | tr //</th>
-                    <th width="10%">// 'repositories' | tr //</th>
-                    <th width="25%" ng-if="!vm.publicity">// 'role' | tr //</th>
+                    <th width="20%">// 'repositories' | tr //</th>
+                    <th width="15%" ng-if="!vm.publicity">// 'role' | tr //</th>
                     <th width="30%">// 'creation_time' | tr //</th>
                     <th width="15%">// 'publicity' | tr //</th>
                   </thead>
@@ -43,8 +44,8 @@
                     </tr>
                     <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
                       <td width="15%"><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
-                      <td width="10%">//p.repo_count//</td>
-                      <td width="25%" ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id)//</td>
+                      <td width="20%">//p.repo_count//</td>
+                      <td width="15%" ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id)//</td>
                       <td width="30%">//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
                       <td width="15%"><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
                     </tr>

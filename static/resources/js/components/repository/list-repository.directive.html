@@ -1,3 +1,4 @@
+<modal-dialog action="vm.action()" content-type="//vm.contentType//" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="vm.confirmOnly"></modal-dialog>
 <div class="tab-pane" id="repositories" element-height>
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
@@ -14,7 +15,6 @@
           <h3 style="margin-top: 120px;" class="text-muted">// 'no_repositories' | tr //</h3>
         </div>
         <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-          <modal-dialog action="vm.deleteImage()" content-type="text/html" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//"></modal-dialog>
           <div class="panel panel-default" ng-repeat="repo in vm.repositories">
             <div class="panel-heading" role="tab" id="heading//$index + 1//">
               <h4 class="panel-title">
@@ -27,7 +27,7 @@
                 <a ng-show="vm.tagCount[repo] > 0" class="pull-right" style="margin-right: 75px;" href="javascript:void(0)" data-toggle="modal" data-target="#myModal" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[repo + '|']"><span class="glyphicon glyphicon-trash"></span></a>          
               </h4>
             </div>
-            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress"></list-tag>
+            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress" delete-by-tag="vm.deleteByTag()"></list-tag>
           </div>
         </div>
       </div>

@@ -24,6 +24,26 @@
     
     $scope.user = currentUser.get();
     var userId = $scope.user.user_id;
+
+    //Error message dialog handler for account setting.
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+       
+    $scope.$on('raiseError', function(e, val) {
+      if(val) {   
+        vm.action = function() {
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = 'text/plain';    
+        vm.confirmOnly = true;  
+        $scope.$broadcast('showDialog', true);
+      }
+    });
         
     function reset() {
       $scope.form.$setUntouched();
@@ -45,6 +65,8 @@
     }    
                 
     function updateUser(user) {
+      vm.confirmOnly = true;
+      vm.action = vm.confirm;
       if(vm.isOpen){
         if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
           ChangePasswordService(userId, user.oldPassword, user.password)
@@ -83,6 +105,15 @@
     }
     
     function updateUserFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      var message;
+      if(status === 409) {
+        message = $filter('tr')('email_has_been_taken');
+      }else{
+        message = $filter('tr')('failed_update_user') + data;
+      }
+      $scope.$emit('modalMessage', message);
+      $scope.$emit('raiseError', true);
       console.log('Failed update user.');
     }
     

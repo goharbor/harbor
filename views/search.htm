@@ -1,7 +1,9 @@
 <div class="container-fluid container-fluid-custom" element-height ng-controller="SearchController as vm">
+  <modal-dialog modal-title="// vm.modalTitle //" modal-message='// vm.modalMessage //' confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
   <div class="container container-custom">
     <div class="row extend-height">
 	    <div class="section">
+        <h1 class="col-md-12 col-md-offset-2 main-title title-color">// 'search_result' | tr //</h1>
         <div class="row">
           <div class="col-md-12 col-md-offset-2 main-content">
             <h4 class="page-header title-color underlined">Projects&nbsp;&nbsp;<span class="badge">//vm.project.length//</span></h4>  

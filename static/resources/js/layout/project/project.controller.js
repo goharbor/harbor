@@ -6,9 +6,9 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser', 'getRole']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser', 'getRole', '$filter', 'trFilter']; 
 
-  function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole) {
+  function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole, $filter, trFilter) {
     var vm = this;
  
     vm.isOpen = false;
@@ -24,8 +24,29 @@
     vm.retrieve();
     vm.getProjectRole = getProjectRole;
     
-    function retrieve() {       
+    
+    //Error message dialog handler for project.
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
        
+    $scope.$on('raiseError', function(e, val) {
+      if(val) {   
+        vm.action = function() {
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = 'text/plain';
+        vm.confirmOnly = true;      
+        $scope.$broadcast('showDialog', true);
+      }
+    });
+    
+    
+    function retrieve() {       
       ListProjectService(vm.projectName, vm.publicity)
         .success(listProjectSuccess)
         .error(listProjectFailed);
@@ -43,8 +64,11 @@
       return '';
     }
     
-    function listProjectFailed(e) {
-      console.log('Failed to list Project:' + e);
+    function listProjectFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_project') + data);
+      $scope.$emit('raiseError', true);
+      console.log('Failed get Project:' + data);
     }
           
     $scope.$on('addedSuccess', function(e, val) {

@@ -6,9 +6,9 @@
     .module('harbor.log')
     .directive('listLog', listLog);
     
-  ListLogController.$inject  = ['$scope','ListLogService', 'getParameterByName', '$location'];
+  ListLogController.$inject  = ['$scope','ListLogService', 'getParameterByName', '$location', '$filter', 'trFilter'];
   
-  function ListLogController($scope, ListLogService, getParameterByName, $location) {
+  function ListLogController($scope, ListLogService, getParameterByName, $location, $filter, trFilter) {
     
     $scope.subsTabPane = 30;
     
@@ -49,7 +49,26 @@
       };
       retrieve(vm.queryParams);
     });
-     
+    
+    //Error message dialog handler for logs.
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+       
+    $scope.$on('raiseError', function(e, val) {
+      if(val) {   
+        vm.action = function() {
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.confirmOnly = true;      
+        $scope.$broadcast('showDialog', true);
+      }
+    });
+    
     function search(e) {
       if(e.op[0] === 'all') {
         vm.queryParams.keywords = '';
@@ -81,8 +100,11 @@
     function listLogComplete(response) {
       vm.logs = response.data;
     }
-    function listLogFailed(e){
-      console.log('listLogFailed:' + e);
+    function listLogFailed(response){
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_log') + response);
+      $scope.$emit('raiseError', true);
+      console.log('Failed get log:' + response);
     }
     
     function toUTCSeconds(date, hour, min, sec) {
@@ -99,7 +121,7 @@
 				t.getUTCDate(),
 				t.getUTCHours(),
 				t.getUTCMinutes(),
-		    	t.getUTCSeconds());
+		    t.getUTCSeconds());
 			return utcTime.getTime() / 1000;
 		}
     

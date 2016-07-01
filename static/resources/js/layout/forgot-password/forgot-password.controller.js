@@ -6,9 +6,9 @@
     .module('harbor.layout.forgot.password')
     .controller('ForgotPasswordController', ForgotPasswordController);
   
-  ForgotPasswordController.$inject = ['SendMailService', '$window', '$scope'];
+  ForgotPasswordController.$inject = ['SendMailService', '$window', '$scope', '$filter', 'trFilter'];
   
-  function ForgotPasswordController(SendMailService, $window, $scope) {
+  function ForgotPasswordController(SendMailService, $window, $scope, $filter, trFilter) {
     var vm = this;
     
     vm.hasError = false;
@@ -20,6 +20,26 @@
     
     vm.confirm = confirm;
     vm.toggleInProgress = false;
+        
+    //Error message dialog handler for forgotting password.
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+       
+    $scope.$on('raiseError', function(e, val) {
+      if(val) {   
+        vm.action = function() {
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = 'text/plain';
+        vm.confirmOnly = true;      
+        $scope.$broadcast('showDialog', true);
+      }
+    });
     
     function reset(){
       vm.hasError = false;
@@ -28,6 +48,9 @@
     
     function sendMail(user) {
       if(user && angular.isDefined(user.email)) { 
+        
+        vm.action = vm.confirm;
+        
         vm.toggleInProgress = true;
         SendMailService(user.email)
           .success(sendMailSuccess)
@@ -37,13 +60,22 @@
     
     function sendMailSuccess(data, status) {
       vm.toggleInProgress = false;
+      vm.modalTitle = $filter('tr')('forgot_password');
+      vm.modalMessage = $filter('tr')('mail_has_been_sent');
+      vm.confirmOnly = true;
       $scope.$broadcast('showDialog', true);
     }
     
-    function sendMailFailed(data) {
+    function sendMailFailed(data, status) {
       vm.toggleInProgress = false;
       vm.hasError = true;
       vm.errorMessage = data;
+      
+      if(status === 500) {
+        $scope.$emit('modalTitle', $filter('tr')('error'));
+        $scope.$emit('modalMessage', $filter('tr')('failed_send_mail'));        
+        $scope.$emit('raiseError', true);
+      }
       console.log('Failed send mail:' + data);
     }
     

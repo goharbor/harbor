@@ -1,3 +1,4 @@
+<modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
 <div class="tab-pane" id="users">
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
@@ -11,7 +12,6 @@
       <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
     </div>
     <div class="pane"> 	           
-      <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="true"></modal-dialog>
       <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
       <div class="sub-pane">   
           <div class="table-head-container">

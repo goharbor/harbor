@@ -27,7 +27,7 @@
       }
     });
     
-    vm.deleteByTag = deleteByTag;
+    vm.deleteTag = deleteTag;
     
     function retrieve() {
       ListTagService(vm.repoName)
@@ -37,29 +37,26 @@
     
     function getTagComplete(response) {
       vm.tags = response.data;
+      $scope.$emit('tags', vm.tags);
+      vm.tagCount[vm.repoName] = vm.tags.length;
+      $scope.$emit('tagCount', vm.tagCount);
+      
       angular.forEach(vm.tags, function(item) {
         vm.toggleInProgress[vm.repoName + '|' + item] = false;
       });
-      vm.tagCount[vm.repoName] = vm.tags.length;
-      $scope.$emit('tagCount', vm.tagCount);
     }
       
     function getTagFailed(response) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_tag') + response);
+      $scope.$emit('raiseError', true);
       console.log('Failed get tag:' + response);
     }
     
-    function deleteByTag(e) {
+    function deleteTag(e) {
+      $scope.$emit('repoName', e.repoName); 
       $scope.$emit('tag', e.tag);
-      $scope.$emit('repoName', e.repoName);
-      $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [e.tag]));
-      
-      var message;
-      if(vm.tags.length === 1) {
-        message = $filter('tr')('alert_delete_last_tag', [e.tag]);
-      }else {
-        message = $filter('tr')('alert_delete_tag', [e.tag]);
-      }
-      $scope.$emit('modalMessage', message);
+      vm.deleteByTag();
     }
     
   }
@@ -72,19 +69,16 @@
         'tagCount': '=',
         'associateId': '=',
         'repoName': '=',
-        'toggleInProgress': '='
+        'toggleInProgress': '=',
+        'deleteByTag': '&'
       },
       'replace': true,
-      'link': link,
       'controller': ListTagController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
-    
-    function link(scope, element, attrs, ctrl) {
-      
-    }
+
   }
   
 })();

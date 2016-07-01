@@ -1,4 +1,5 @@
 <div class="container-fluid container-fluid-custom" element-height ng-controller="IndexController as vm">
+  <modal-dialog modal-title="// vm.modalTitle //" modal-message='// vm.modalMessage //' content-type="// vm.contentType //" confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
   <div class="container">
     <div class="row">
       <div class="col-md-4">
@@ -39,13 +40,12 @@
       <div class="col-md-4">
     	    <div class="row">
     	      <div class="down-section">
-              <modal-dialog modal-title="// 'harbor_intro_title' | tr //" modal-message='// vm.message //' content-type="text/html" confirm-only="true"></modal-dialog>
     	        <h4 class="page-header underlined">// 'why_use_harbor' | tr //</h4>
               <p class="page-content text-justify" style="line-height: 2em; height: 70%;">
       			  // 'index_desc' | tr //
         			</p>
     		      <div class="page-content pull-right">
-    		        <a href="javascript:void(0);" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-triangle-right"></span> // 'view_all' | tr //</a>
+    		        <a href="javascript:void(0);" ng-click="vm.viewAll()"><span class="glyphicon glyphicon-triangle-right"></span> // 'view_all' | tr //</a>
     		      </div>
             </div>						
     	    </div>

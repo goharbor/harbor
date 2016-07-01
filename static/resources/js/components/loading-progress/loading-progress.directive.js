@@ -31,10 +31,9 @@
         .css({'vertical-align': 'middle'});  
       
       scope.$watch('toggleInProgress', function(current) {
-        console.log('toggleInProgress:' + scope.toggleInProgress);
         if(scope.toggleInProgress) {
           element.append(spinner);
-          element.parent().attr('disabled', 'disabled');
+          element.attr('disabled', 'disabled');
           if(scope.hideTarget) {
             element.append(spinner);
             element.hide();     

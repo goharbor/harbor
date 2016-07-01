@@ -32,7 +32,8 @@
         '/forgot_password', 
         '/sign_up', 
         '/reset_password',
-        '/search'
+        '/search',
+        '/repository'
       ];
       for(var i = 0; i < exclusions.length; i++) {
         if(exclusions[i]===url) {

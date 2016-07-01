@@ -1,12 +1,8 @@
 <div class="container-fluid container-fluid-custom" element-height ng-controller="SignUpController as vm">
-  <div class="container container-custom">
+  <modal-dialog modal-title="// vm.modalTitle //" modal-message="// vm.modalMessage //" confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
+  <div class="container container-custom" ng-init="vm.targetType = {{.AddNew}}">
     <div class="row extend-height">
 	    <div class="section">
-        {{ if eq .AddNew true }}
-        <modal-dialog modal-title="// 'add_new_title' | tr //" modal-message="// 'successful_added' | tr //" confirm-only="true" action="vm.confirm()"></modal-dialog>
-        {{ else }}
-        <modal-dialog modal-title="// 'sign_up' | tr //" modal-message="// 'successful_signed_up' | tr //" confirm-only="true" action="vm.confirm()"></modal-dialog>
-        {{ end }}
 		    <h1 class="col-md-12 col-md-offset-2 main-title title-color">
         {{ if eq .AddNew true }}
           // 'add_new_title' | tr //
