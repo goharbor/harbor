@@ -16,7 +16,8 @@ func AddLabel(repoLabel models.RepoLabel) (int64, error) {
 
 	r, err := p.Exec(repoLabel.RepoName, repoLabel.Label)
 
-	return r.LastInsertId(), err
+	insertId,_ := r.LastInsertId()
+	return insertId, err
 }
 
 
@@ -32,7 +33,9 @@ func DeletelLabel(repoLabel models.RepoLabel) (int64, error) {
 
 	r, err := p.Exec(repoLabel.RepoName, repoLabel.Label)
 
-	return r.RowsAffected(), err
+	affectedRows, _ := r.RowsAffected()
+
+	return affectedRows, err
 }
 
 
