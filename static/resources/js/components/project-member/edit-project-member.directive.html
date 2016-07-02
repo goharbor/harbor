@@ -5,7 +5,7 @@
     <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil" title="// 'edit' | tr //"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok" title="Confirm">
   </a>
   <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.cancelUpdate()" title="// 'cancel' | tr //">
-    <span ng-if="vm.editMode" class="glyphicon glyphicon-repeat"></span>
+    <span ng-if="vm.editMode" class="glyphicon glyphicon-remove"></span>
   </a>
   <a ng-show="vm.userId != vm.currentUserId && !vm.editMode" href="javascript:void(0);" ng-click="vm.deleteProjectMember()" title="// 'delete' | tr //"><span class="glyphicon glyphicon-trash"></span></a>
 </td>

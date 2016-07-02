@@ -6,9 +6,9 @@
     .module('harbor.system.management')
     .directive('createDestination', createDestination);
     
-  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'ListDestinationPolicyService', '$filter', 'trFilter'];
+  CreateDestinationController.$inject = ['$scope', 'ListDestinationService', 'CreateDestinationService', 'UpdateDestinationService', 'PingDestinationService', 'ListDestinationPolicyService', '$filter', 'trFilter', '$timeout'];
   
-  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService, ListDestinationPolicyService, $filter, trFilter) {
+  function CreateDestinationController($scope, ListDestinationService, CreateDestinationService, UpdateDestinationService, PingDestinationService, ListDestinationPolicyService, $filter, trFilter, $timeout) {
     var vm = this;
     
     $scope.destination = {};
@@ -24,6 +24,10 @@
     vm.notAvailable = true;
     vm.pingAvailable = true;
     vm.pingMessage = '';
+        
+    vm.closeError = closeError;
+    vm.toggleErrorMessage = false;
+    vm.errorMessages = [];            
         
     $scope.$watch('destination.endpoint', function(current) {
       if(current) {
@@ -64,7 +68,9 @@
     
     function createDestinationFailed(data, status) {
       if(status === 409) {
-        alert($filter('tr')('destination_already_exists', []));
+        vm.errorMessages.push($filter('tr')('destination_already_exists'));
+      }else{
+        vm.errorMessages.push($filter('tr')('failed_create_destination') + data);
       }
       console.log('Failed create destination:' + data);
     }
@@ -81,6 +87,7 @@
     }
     
     function updateDestinationFailed(data, status) {
+      vm.errorMessages.push($filter('tr')('failed_update_destination') + data);
       console.log('Failed update destination.');
     }
     
@@ -98,6 +105,7 @@
     }
     
     function getDestinationFailed(data, status) {
+      vm.errorMessages.push($filter('tr')('failed_get_destination'));
       console.log('Failed get destination.');
     }
     
@@ -111,6 +119,7 @@
     }
     
     function listDestinationPolicyFailed(data, status) {
+      vm.errorMessages.push($filter('tr')('failed_get_destination_policies'));
       console.log('Failed list destination policy:' + data);
     }
     
@@ -127,6 +136,11 @@
         .success(pingDestinationSuccess)
         .error(pingDestinationFailed);
     }
+    
+    function closeError() {
+      vm.toggleErrorMessage = false;
+    }
+    
     function pingDestinationSuccess(data, status) {
       vm.pingAvailable = true;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
@@ -137,7 +151,7 @@
     }
   }
   
-  function createDestination() {
+  function createDestination($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/system-management/create-destination.directive.html',
@@ -164,6 +178,9 @@
         ctrl.pingAvailable = true;
         ctrl.pingMessage = '';
         
+        ctrl.toggleErrorMessage = false;
+        ctrl.errorMessages = [];
+        
         switch(ctrl.action) {
         case 'ADD_NEW':
           ctrl.addNew();
@@ -172,6 +189,13 @@
           ctrl.edit(ctrl.targetId);
           break;
         }
+        
+        scope.$watch('vm.errorMessages', function(current) {
+          if(current && current.length > 0) {
+            ctrl.toggleErrorMessage = true;
+          }
+        }, true);
+        
         scope.$apply();
       });
       
@@ -179,6 +203,9 @@
       
       function save(destination) {
         if(destination) {          
+          ctrl.toggleErrorMessage = false;
+          ctrl.errorMessages = [];
+          
           switch(ctrl.action) {
           case 'ADD_NEW':
             ctrl.create(destination);
@@ -187,7 +214,12 @@
             ctrl.update(destination);
             break;
           }
-          element.find('#createDestinationModal').modal('hide');
+          
+          $timeout(function() {
+            if(!ctrl.toggleErrorMessage) {
+              element.find('#createDestinationModal').modal('hide');
+            }
+          }, 50);
         }
       }
     }

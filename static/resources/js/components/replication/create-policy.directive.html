@@ -1,14 +1,21 @@
-<modal-dialog modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="true"></modal-dialog>
 <div class="modal fade" data-backdrop="static" id="createPolicyModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
     <form name="form" class="form-horizontal css-form" novalidate>
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;//vm.modalTitle//</h4>
-      </div>
-      <div class="modal-body">
-        <div class="create-policy">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;//vm.modalTitle//</h4>
+        </div>
+        <div class="modal-body">
+          <div class="create-policy">
+            <div class="col-md-12"  ng-show="vm.toggleErrorMessage">
+              <div class="pull-right clearfix" style="padding: 5px 10px;"><a href="javascript:void(0);" ng-click="vm.closeError()"><span class="glyphicon glyphicon-remove"></span></a></div>
+              <div class="bg-danger dialog-message">
+                <ul class="list-unstyled" style="color: red; margin: 0;" ng-repeat="msg in vm.errorMessages">
+                  <li>// msg //</li>
+                </ul>
+              </div>
+            </div>
             <div class="col-md-12">
               <h4>// 'general_setting' | tr //</h4>
               <hr class="hr-line"/>
@@ -78,7 +85,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="vm.hideTarget" toggle-in-progress="vm.toggleInProgress0">// 'test_connection' | tr //</button>
+                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="false" toggle-in-progress="vm.toggleInProgress0">// 'test_connection' | tr //</button>
               </div>
             </div>
             <div class="form-group col-md-12 form-group-custom">
@@ -87,13 +94,13 @@
                 <span>// vm.pingMessage //</span>
               </div>
             </div>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="form.$valid && vm.save(replication)" loading-progress hide-target="vm.hideTarget" toggle-in-progress="vm.toggleInProgress1">// 'ok' | tr //</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
-      </div>
-    </form>
+        <div class="modal-footer">
+          <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="form.$valid && vm.save(replication)" loading-progress hide-target="false" toggle-in-progress="vm.toggleInProgress1">// 'ok' | tr //</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
+        </div>
+      </form>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->

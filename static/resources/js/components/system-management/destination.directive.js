@@ -83,7 +83,7 @@
     
     function deleteDestinationFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_delete_destination'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_delete_destination') + data);
       $scope.$emit('raiseError', true);
       console.log('Failed delete destination.');
     }   

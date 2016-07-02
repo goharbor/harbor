@@ -192,11 +192,7 @@ var locale_messages = {
   'successful_ping_target': 'Test connection successfully.',
   'failed_ping_target': 'Faild to connect target',
   'policy_already_exists': 'Policy alreay exists.',
-  'failed_update_policy': 'Failed update policy:',
   'destination_already_exists': 'Destination already exists.',
-  'failed_delete_destination': 'Delete destination failed:',
-  'failed_create_destination': 'Create destination failed:',
-  'failed_update_destination': 'Failed update destination:',
   'refresh': 'Refresh',
   'select_all': 'Select All',
   'delete_tag': 'Delete Tag',
@@ -232,5 +228,14 @@ var locale_messages = {
   'failed_toggle_admin': 'Failed toggle admin user.',
   'failed_list_destination': 'Failed list destinations.',
   'failed_list_replication': 'Failed list replication policies.',
-  'failed_toggle_policy': 'Failed toggle replication policy.'
+  'failed_toggle_policy': 'Failed toggle replication policy.',
+  'failed_create_replication_policy': 'Failed create replication policy.',
+  'failed_get_destination': 'Failed get destination.',
+  'failed_get_destination_policies': 'Failed get destination policies.',
+  'failed_get_replication_policy': 'Failed get replication policy.',
+  'failed_update_replication_policy': 'Failed update replication policy.',
+  'failed_delete_destination': 'Delete destination failed:',
+  'failed_create_destination': 'Create destination failed:',
+  'failed_update_destination': 'Failed update destination:',
+  
 };

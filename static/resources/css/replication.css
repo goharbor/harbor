@@ -1,5 +1,5 @@
 .create-policy {
-  height: 535px; 
+  height: 565px; 
   overflow-y: auto;
 }
 
@@ -77,4 +77,8 @@
 
 .label-custom {
   margin: 0 5px 0 10px;
+}
+
+.dialog-message {
+  padding: 15px;
 }

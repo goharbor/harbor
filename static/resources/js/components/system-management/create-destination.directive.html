@@ -8,6 +8,14 @@
         </div>
         <div class="modal-body">
           <div class="create-destination">
+            <div class="col-md-12"  ng-show="vm.toggleErrorMessage">
+              <div class="pull-right clearfix" style="padding: 5px 10px;"><a href="javascript:void(0);" ng-click="vm.closeError()"><span class="glyphicon glyphicon-remove"></span></a></div>
+              <div class="bg-danger dialog-message">
+                <ul class="list-unstyled" style="color: red; margin: 0;" ng-repeat="msg in vm.errorMessages">
+                  <li>// msg //</li>
+                </ul>
+              </div>
+            </div>
             <div class="form-group col-md-12 form-group-custom">
               <label for="name" class="col-md-3 control-label">// 'name' | tr //:</label>
               <div class="col-md-9">

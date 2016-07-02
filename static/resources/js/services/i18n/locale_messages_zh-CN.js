@@ -192,11 +192,7 @@ var locale_messages = {
   'successful_ping_target': '测试连接目标成功。',
   'failed_ping_target': '测试连接目标失败',
   'policy_already_exists': '策略已存在。',
-  'failed_update_policy': '修改策略失败：',
   'destination_already_exists': '目标已存在。',
-  'failed_delete_destination': '删除目标失败：',
-  'failed_create_destination': '创建目标失败：',
-  'failed_update_destination': '修改目标失败：',
   'refresh': '刷新',
   'select_all': '全选',
   'delete_tag': '删除镜像标签',
@@ -232,5 +228,13 @@ var locale_messages = {
   'failed_toggle_admin': '切换管理员用户失败。',
   'failed_list_destination': '获取目标数据失败。',
   'failed_list_replication': '获取复制策略数据失败。',
-  'failed_toggle_policy': '切换复制策略状态失败。'
+  'failed_toggle_policy': '切换复制策略状态失败。',
+  'failed_create_replication_policy': '创建复制策略失败。',
+  'failed_get_destination': '获取目标失败。',
+  'failed_get_destination_policies': '获取目标关联策略数据失败。',
+  'failed_get_replication_policy': '获取复制策略失败。',
+  'failed_update_replication_policy': '修改复制策略失败。',
+  'failed_delete_destination': '删除目标失败：',
+  'failed_create_destination': '创建目标失败：',
+  'failed_update_destination': '修改目标失败：'
 };

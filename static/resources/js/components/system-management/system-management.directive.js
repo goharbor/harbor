@@ -9,11 +9,20 @@
   SystemManagementController.$inject = ['$scope', '$location'];
     
   function SystemManagementController($scope, $location) {
-    var vm = this;
-    vm.target = 'destinations';
-    $scope.$on('$locationChangeSuccess', function(e) {
-      vm.target = $location.path().substring(1);
-    });
+    var vm = this;    
+    var currentTarget = $location.path().substring(1);
+   
+    switch(currentTarget) {
+    case 'destinations':
+    case 'replication':
+      $location.path('/' + currentTarget);
+      vm.target = currentTarget;
+      break;
+    default:
+      $location.path('/destinations');
+      vm.target = 'destinations';
+    }
+    
   }
   
   function systemManagement() {

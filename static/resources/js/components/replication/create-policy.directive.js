@@ -37,13 +37,18 @@
   
     vm.targetEditable = true;
     vm.checkedAddTarget = false;
+    
     vm.notAvailable = false;
     vm.pingAvailable = true;
     vm.pingMessage = '';
     
     vm.toggleInProgress0 = false;
     vm.toggleInProgress1 = false;
-           
+    
+    vm.closeError = closeError;
+    vm.toggleErrorMessage = false;
+    vm.errorMessages = [];
+              
     $scope.$watch('vm.destinations', function(current) {
       if(current) {
         if(!angular.isArray(current) || current.length === 0) {
@@ -72,7 +77,7 @@
         
     $scope.$watch('vm.targetId', function(current) {
       if(current) {          
-        vm1.selection.id = current || vm.destinations[0].id;
+        vm1.selection.id = current;
       }
     });    
         
@@ -83,7 +88,7 @@
         vm.notAvailable = true; 
       }
     });
-                                         
+                                             
     function selectDestination(item) {
       vm1.selection = item;
       if(angular.isDefined(item)) {
@@ -102,17 +107,16 @@
 
     function addNew() {       
       vm.modalTitle = $filter('tr')('add_new_policy', []);
-      vm.targetEditable = true;
+     
       vm0.name = '';
       vm0.description = '';
       vm0.enabled = true;
     }
     
     function edit(policyId) {
-    
       console.log('Edit policy ID:' + policyId);
       vm.policyId = policyId;
-      vm.targetEditable = true;
+      
       vm.modalTitle = $filter('tr')('edit_policy', []);
 
       ListReplicationPolicyService(policyId)
@@ -122,10 +126,10 @@
     
     function create(policy) {
       vm.policy = policy;
-      saveOrUpdateDestination();
+      saveDestination();
     }
     
-    function saveOrUpdateDestination() {
+    function saveDestination() {
       
       var target = {
         'name'    : vm1.name,
@@ -139,7 +143,7 @@
           .success(createDestinationSuccess)
           .error(createDestinationFailed);
       }else{
-        vm.policy.targetId = vm1.selection.id;
+        vm.policy.targetId = vm1.selection.id || vm.destinations[0].id;
         saveOrUpdatePolicy();
       }
     }
@@ -197,12 +201,17 @@
         .success(listDestinationPolicySuccess)
         .error(listDestinationPolicyFailed);
     }
+    
+    function closeError() {
+      vm.toggleErrorMessage = false;
+    }
         
     function listDestinationSuccess(data, status) {
       vm.destinations = data || [];     
     }
     function listDestinationFailed(data, status) {
-      console.log('Failed list destination:' + data);
+      vm.errorMessages.push($filter('tr')('failed_get_destination'));
+      console.log('Failed get destination:' + data);
     }
     
     function listDestinationPolicySuccess(data, status) {
@@ -219,6 +228,7 @@
     }
     
     function listDestinationPolicyFailed(data, status) {
+      vm.errorMessages.push($filter('tr')('failed_get_destination_policies'));
       console.log('Failed list destination policy:' + data);
     }
     
@@ -243,6 +253,7 @@
       vm.checkDestinationPolicyStatus();
     }
     function listReplicationPolicyFailed(data, status) {
+      vm.errorMessages.push($filter('tr')('failed_get_replication_policy') + data);
       console.log('Failed list replication policy:' + data);
     }
     function createReplicationPolicySuccess(data, status) {
@@ -253,9 +264,10 @@
     function createReplicationPolicyFailed(data, status) {
       vm.toggleInProgress1 = false;
       if(status === 409) {
-        vm.modalMessage = $filter('tr')('policy_already_exists', []);
-        $scope.$broadcast('showDialog', true);
-      }
+        vm.errorMessages.push($filter('tr')('policy_already_exists'));
+      }else{
+        vm.errorMessages.push($filter('tr')('failed_create_replication_policy') + data);
+      }     
       console.log('Failed create replication policy.');
     }
     function updateReplicationPolicySuccess(data, status) {
@@ -265,8 +277,11 @@
     }
     function updateReplicationPolicyFailed(data, status) {
       vm.toggleInProgress1 = false;
-      vm.modalMessage = $filter('tr')('failed_update_policy', []) + data;
-      $scope.$broadcast('showDialog', true);
+      if(status === 409) {
+        vm.errorMessages.push($filter('tr')('policy_already_exists')); 
+      }else{
+        vm.errorMessages.push($filter('tr')('failed_update_replication_policy') + data);
+      }
       console.log('Failed update replication policy.');
     }
     function createDestinationSuccess(data, status, headers) {
@@ -276,8 +291,7 @@
       saveOrUpdatePolicy();
     }
     function createDestinationFailed(data, status) {
-      vm.modalMessage = $filter('tr')('failed_create_destination', []) + data;
-      $scope.$broadcast('showDialog', true);
+      vm.errorMessages.push($filter('tr')('failed_create_destination') + data);
       console.log('Failed create destination.');
     }
     function updateDestinationSuccess(data, status) {
@@ -286,7 +300,7 @@
       saveOrUpdatePolicy();
     }
     function updateDestinationFailed(data, status) {
-      vm.modalMessage = $filter('tr')('failed_update_destination', []) + data;
+      vm.errorMessages.push($filter('tr')('failed_update_destination') + data);
       $scope.$broadcast('showDialog', true);
       console.log('Failed update destination.');
     }
@@ -300,10 +314,9 @@
       vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
       vm.toggleInProgress0 = false;
     }
-    vm.hideTarget = true;
   }
   
-  function createPolicy() {
+  function createPolicy($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/replication/create-policy.directive.html',
@@ -338,12 +351,24 @@
               }
             }
           }); 
+          
+          scope.$watch('vm.errorMessages', function(current) {
+            if(current && current.length > 0) {
+              ctrl.toggleErrorMessage = true;
+            }
+          }, true);
             
           ctrl.checkedAddTarget = false;
           ctrl.targetEditable = true;
+          
           ctrl.notAvailable = false;
+          
           ctrl.pingMessage = '';
           ctrl.pingAvailable = true;
+          
+          ctrl.toggleErrorMessage = false;
+          ctrl.errorMessages = [];
+          
           ctrl.prepareDestination();
           
           switch(ctrl.action) {
@@ -356,11 +381,14 @@
           }   
         });
       });               
-                
-                       
+                  
       ctrl.save = save;
     
       function save(form) {
+        
+        ctrl.toggleErrorMessage = false;
+        ctrl.errorMessages = [];
+        
         var postPayload = {
           'projectId': Number(ctrl.projectId),
           'name': form.policy.name,
@@ -377,7 +405,11 @@
           ctrl.update(postPayload);
           break;
         }
-        element.find('#createPolicyModal').modal('hide');
+        $timeout(function() {      
+          if(!ctrl.toggleErrorMessage) {
+            element.find('#createPolicyModal').modal('hide');
+          }
+        }, 50);
       }
     }
   }
