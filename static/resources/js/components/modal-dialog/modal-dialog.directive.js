@@ -56,7 +56,7 @@
           }
         }
       });
-        
+      
       scope.$on('showDialog', function(e, val) {
         if(val) {
           element.find('#myModal').modal('show');

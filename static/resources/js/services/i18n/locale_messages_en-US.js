@@ -226,5 +226,11 @@ var locale_messages = {
   'failed_reset_pasword': 'Failed reset password.',
   'failed_in_search': 'Failed in search.',
   'failed_sign_up': 'Failed sign up.',
-  'failed_add_user': 'Failed add user'
+  'failed_add_user': 'Failed add user.',
+  'failed_delete_user': 'Failed delete user.',
+  'failed_list_user': 'Failed list user data.',
+  'failed_toggle_admin': 'Failed toggle admin user.',
+  'failed_list_destination': 'Failed list destinations.',
+  'failed_list_replication': 'Failed list replication policies.',
+  'failed_toggle_policy': 'Failed toggle replication policy.'
 };

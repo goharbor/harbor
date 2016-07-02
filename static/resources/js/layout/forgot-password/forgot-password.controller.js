@@ -36,7 +36,7 @@
           $scope.$broadcast('showDialog', false);
         };
         vm.contentType = 'text/plain';
-        vm.confirmOnly = true;      
+        vm.confirmOnly = true;   
         $scope.$broadcast('showDialog', true);
       }
     });
@@ -73,7 +73,7 @@
       
       if(status === 500) {
         $scope.$emit('modalTitle', $filter('tr')('error'));
-        $scope.$emit('modalMessage', $filter('tr')('failed_send_mail'));        
+        $scope.$emit('modalMessage', $filter('tr')('failed_send_email'));        
         $scope.$emit('raiseError', true);
       }
       console.log('Failed send mail:' + data);

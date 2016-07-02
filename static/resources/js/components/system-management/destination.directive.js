@@ -46,9 +46,17 @@
     
     function confirmToDelete(targetId) {
       vm.selectedTargetId = targetId;
-      vm.modalDialogTitle = $filter('tr')('confirm_to_delete_destination_title');
-      vm.modalDialogMessage = $filter('tr')('confirm_to_delete_destination');
-      $scope.$broadcast('showDialog', true);
+      
+      $scope.$emit('modalTitle', $filter('tr')('confirm_to_delete_destination_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_to_delete_destination'));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/plain',
+        'action': vm.deleteDestination
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
     }
     
     function deleteDestination() {
@@ -62,6 +70,9 @@
     }
     
     function listDestinationFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_list_destination'));
+      $scope.$emit('raiseError', true);
       console.log('Failed list destination:' + data);
     }
     
@@ -71,8 +82,10 @@
     }
     
     function deleteDestinationFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_delete_destination'));
+      $scope.$emit('raiseError', true);
       console.log('Failed delete destination.');
-      alert($filter('tr')('failed_delete_destination', []) + data);
     }   
   }
   

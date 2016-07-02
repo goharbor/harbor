@@ -6,9 +6,9 @@
     .module('harbor.user')
     .directive('toggleAdmin', toggleAdmin);
    
-  ToggleAdminController.$inject = ['$scope', 'ToggleAdminService'];
+  ToggleAdminController.$inject = ['$scope', 'ToggleAdminService', '$filter', 'trFilter'];
   
-  function ToggleAdminController($scope, ToggleAdminService) {
+  function ToggleAdminController($scope, ToggleAdminService, $filter, trFilter) {
     var vm = this;
     
     vm.isAdmin = (vm.hasAdminRole == 1) ? true : false;
@@ -31,6 +31,9 @@
     }
 
     function toggleAdminFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_toggle_admin'));
+      $scope.$emit('raiseError', true);
       console.log('Failed toggle admin:' + data);
     }    
   }

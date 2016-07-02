@@ -5,10 +5,15 @@
   angular
     .module('harbor.system.management')
     .directive('systemManagement', systemManagement);
+
+  SystemManagementController.$inject = ['$scope', '$location'];
     
-  function SystemManagementController() {
+  function SystemManagementController($scope, $location) {
     var vm = this;
     vm.target = 'destinations';
+    $scope.$on('$locationChangeSuccess', function(e) {
+      vm.target = $location.path().substring(1);
+    });
   }
   
   function systemManagement() {

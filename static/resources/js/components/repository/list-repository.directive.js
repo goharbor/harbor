@@ -61,26 +61,7 @@
     $scope.$on('tags', function(e, val) {
       vm.tags = val;
     });
-        
-    //Error message dialog handler for repositories.
-    $scope.$on('modalTitle', function(e, val) {
-      vm.modalTitle = val;
-    });
-    
-    $scope.$on('modalMessage', function(e, val) {
-      vm.modalMessage = val;
-    });
-       
-    $scope.$on('raiseError', function(e, val) {
-      if(val) {   
-        vm.action = function() {
-          $scope.$broadcast('showDialog', false);
-        };
-        vm.confirmOnly = true;      
-        $scope.$broadcast('showDialog', true);
-      }
-    });
-        
+                
     vm.deleteByRepo = deleteByRepo;
     vm.deleteByTag = deleteByTag;
     vm.deleteImage =  deleteImage;
@@ -104,28 +85,40 @@
       vm.repoName = repoName;
       vm.tag = '';
       
-      vm.modalTitle = $filter('tr')('alert_delete_repo_title', [repoName]);
-      vm.modalMessage = $filter('tr')('alert_delete_repo', [repoName]);
-      vm.confirmOnly = false;
-      vm.contentType = 'text/html';
-      vm.action = vm.deleteImage;
+      $scope.$emit('modalTitle', $filter('tr')('alert_delete_repo_title', [repoName]));
+      $scope.$emit('modalMessage', $filter('tr')('alert_delete_repo', [repoName]));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/html',
+        'action' : vm.deleteImage
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
     }
     
     function deleteByTag() {
-      vm.modalTitle = $filter('tr')('alert_delete_tag_title', [vm.tag]);
+      $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [vm.tag]));
       var message;
-      if(vm.tags.length === 1) {
+      console.log('vm.tagCount:' + angular.toJson(vm.tagCount[vm.repoName]));
+      if(vm.tagCount[vm.repoName] === 1) {
         message = $filter('tr')('alert_delete_last_tag', [vm.tag]);
       }else {
         message = $filter('tr')('alert_delete_tag', [vm.tag]);
       }
-      vm.modalMessage = message;
-      vm.confirmOnly = false;
-      vm.contentType = 'text/html';
-      vm.action = vm.deleteImage;
+      $scope.$emit('modalMessage', message);
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/html',
+        'action' : vm.deleteImage
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
     }
   
     function deleteImage() {
+      
       console.log('Delete image, repoName:' + vm.repoName + ', tag:' + vm.tag);
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = true;
       DeleteRepositoryService(vm.repoName, vm.tag)
@@ -136,13 +129,11 @@
     function deleteRepositorySuccess(data, status) {
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
       vm.retrieve();
-      $scope.$broadcast('showDialog', false);
     }
     
     function deleteRepositoryFailed(data, status) {
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;  
-      vm.contentType = 'text/plain';     
-
+        
       $scope.$emit('modalTitle', $filter('tr')('error'));
       var message;
       if(status === 401) {

@@ -36,9 +36,11 @@
     }
     
     function getTagComplete(response) {
+      
       vm.tags = response.data;
-      $scope.$emit('tags', vm.tags);
       vm.tagCount[vm.repoName] = vm.tags.length;
+      
+      $scope.$emit('tags', vm.tags);
       $scope.$emit('tagCount', vm.tagCount);
       
       angular.forEach(vm.tags, function(item) {

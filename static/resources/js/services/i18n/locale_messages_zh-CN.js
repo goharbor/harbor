@@ -222,9 +222,15 @@ var locale_messages = {
   'failed_get_stat': '获取统计数据失败。',
   'failed_get_top_repo': '获取Top镜像仓库数据失败。',
   'failed_get_user_log': '获取用户日志数据失败。',
-  'failed_send_mail': '发送邮件失败。',
+  'failed_send_email': '发送邮件失败。',
   'failed_reset_pasword': '重置邮件失败。',
   'failed_in_search': '搜索操作失败。',
   'failed_sign_up': '注册用户失败。',
-  'failed_add_user': '新增用户失败。'
+  'failed_add_user': '新增用户失败。',
+  'failed_delete_user': '删除用户失败。',
+  'failed_list_user': '获取用户数据失败。',
+  'failed_toggle_admin': '切换管理员用户失败。',
+  'failed_list_destination': '获取目标数据失败。',
+  'failed_list_replication': '获取复制策略数据失败。',
+  'failed_toggle_policy': '切换复制策略状态失败。'
 };

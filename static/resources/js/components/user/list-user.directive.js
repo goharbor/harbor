@@ -6,9 +6,9 @@
     .module('harbor.user')
     .directive('listUser', listUser);
     
-  ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService'];
+  ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService', '$filter', 'trFilter'];
   
-  function ListUserController($scope, ListUserService, DeleteUserService) {
+  function ListUserController($scope, ListUserService, DeleteUserService, $filter, $trFilter) {
 
     $scope.subsSubPane = 226;
         
@@ -34,6 +34,17 @@
     
     function confirmToDelete(userId) {
       vm.selectedUserId = userId;
+     
+      $scope.$emit('modalTitle', $filter('tr')('confirm_to_delete_user_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_to_delete_user'));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/plain',
+        'action': vm.deleteUser
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
     }
     
     function retrieve() {
@@ -48,6 +59,9 @@
     }
     
     function deleteUserFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_delete_user'));
+      $scope.$emit('raiseError', true);
       console.log('Failed delete user.');
     }
     
@@ -56,6 +70,9 @@
     }
     
     function listUserFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_list_user'));
+      $scope.$emit('raiseError', true);
       console.log('Failed list user:' + data);
     }      
   }

@@ -1,16 +1,17 @@
 <div class="container-fluid container-fluid-custom" element-height ng-controller="AdminOptionController as vm">
+  <modal-dialog action="vm.action()" content-type="//vm.contentType//" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="vm.confirmOnly"></modal-dialog>
   <div class="container container-custom">
     <div class="row extend-height">
 	    <div class="section">
 		    <h4 class="page-header">
           <span ng-if="!vm.toggle">// 'users' | tr //</span>
-          <a ng-if="vm.toggle" href="#" ng-click="vm.toggleAdminOption()">// 'users' | tr //</a>
+          <a ng-if="vm.toggle" href="#" ng-click="vm.toggleAdminOption({target: 'users'})">// 'users' | tr //</a>
           <span class="gutter">|</span>
           <span ng-if="vm.toggle">// 'system_management' | tr //</span>
-          <a ng-if="!vm.toggle" href="#/destinations" class="title-color" ng-click="vm.toggleAdminOption()">// 'system_management' | tr //</a>
+          <a ng-if="!vm.toggle" href="#/destinations" class="title-color" ng-click="vm.toggleAdminOption({target: 'system_management'})">// 'system_management' | tr //</a>
         </h4> 
-        <list-user ng-if="!vm.toggle"></list-user>
-        <system-management ng-if="vm.toggle"></system-management>
+        <list-user ng-if="vm.target === 'users'"></list-user>
+        <system-management ng-if="vm.target === 'system_management'"></system-management>
       </div>
     </div>
   </div>

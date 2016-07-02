@@ -6,9 +6,9 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService', '$window'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'trFilter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService', '$window'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService, $window) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, trFilter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService, $window) {
     var vm = this;
     
     vm.projectName = '';
@@ -20,7 +20,7 @@
     }
 
     vm.retrieve = retrieve;
-    vm.filterInput = "";
+    vm.filterInput = '';
     vm.selectItem = selectItem;  
     vm.checkProjectMember = checkProjectMember;  
        
@@ -78,6 +78,9 @@
     }
     
     function getProjectFailed(response) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_project'));
+      $scope.$emit('raiseError', true);
       console.log('Failed to list projects:' + response);
     }
       
@@ -104,8 +107,13 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      console.log('Use has no member for current project:' + status +  ', location.url:' + $location.url());
       vm.isProjectMember = false;
+      
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_get_project_member'));
+      $scope.$emit('raiseError', true);
+      
+      console.log('Current user has no member for the project:' + status +  ', location.url:' + $location.url());
     }
     
   }

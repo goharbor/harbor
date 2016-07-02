@@ -30,26 +30,7 @@
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrieve();
     });
-    
-    //Error message dialog handler for project members.
-    $scope.$on('modalTitle', function(e, val) {
-      vm.modalTitle = val;
-    });
-    
-    $scope.$on('modalMessage', function(e, val) {
-      vm.modalMessage = val;
-    });
-       
-    $scope.$on('raiseError', function(e, val) {
-      if(val) {   
-        vm.action = function() {
-          $scope.$broadcast('showDialog', false);
-        };
-        vm.confirmOnly = true;      
-        $scope.$broadcast('showDialog', true);
-      }
-    });  
-          
+              
     function search(e) {
       vm.projectId = e.projectId;
       vm.username = e.username;

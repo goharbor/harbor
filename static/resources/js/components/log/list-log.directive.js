@@ -49,26 +49,7 @@
       };
       retrieve(vm.queryParams);
     });
-    
-    //Error message dialog handler for logs.
-    $scope.$on('modalTitle', function(e, val) {
-      vm.modalTitle = val;
-    });
-    
-    $scope.$on('modalMessage', function(e, val) {
-      vm.modalMessage = val;
-    });
-       
-    $scope.$on('raiseError', function(e, val) {
-      if(val) {   
-        vm.action = function() {
-          $scope.$broadcast('showDialog', false);
-        };
-        vm.confirmOnly = true;      
-        $scope.$broadcast('showDialog', true);
-      }
-    });
-    
+            
     function search(e) {
       if(e.op[0] === 'all') {
         vm.queryParams.keywords = '';
@@ -99,6 +80,7 @@
 
     function listLogComplete(response) {
       vm.logs = response.data;
+      vm.isOpen = false;
     }
     function listLogFailed(response){
       $scope.$emit('modalTitle', $filter('tr')('error'));

@@ -6,9 +6,9 @@
     .module('harbor.system.management')
     .directive('replication', replication);
   
-  ReplicationController.$inject = ['$scope', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService'];
+  ReplicationController.$inject = ['$scope', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', '$filter', 'trFilter'];
   
-  function ReplicationController($scope, ListReplicationPolicyService, ToggleReplicationPolicyService) {
+  function ReplicationController($scope, ListReplicationPolicyService, ToggleReplicationPolicyService, $filter, trFilter) {
     
     $scope.subsSubPane = 276;
     
@@ -34,6 +34,9 @@
     }
     
     function listReplicationPolicyFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_list_replication'));
+      $scope.$emit('raiseError', true);
       console.log('Failed list replication policy.');
     }
     
@@ -49,6 +52,9 @@
     }
     
     function toggleReplicationPolicyFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_toggle_policy'));
+      $scope.$emit('raiseError', true);
       console.log('Failed toggle replication policy.');
     }
     
