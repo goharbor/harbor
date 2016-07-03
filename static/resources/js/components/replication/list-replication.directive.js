@@ -39,6 +39,7 @@
     
     vm.searchReplicationPolicy = searchReplicationPolicy;
     vm.searchReplicationJob = searchReplicationJob;
+    vm.refreshReplicationJob = refreshReplicationJob;
     
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
@@ -56,15 +57,26 @@
    
     vm.pickUp = pickUp;
     
+    vm.searchJobTIP = false;
+    vm.refreshJobTIP = false;
+    
     function searchReplicationPolicy() {
       vm.retrievePolicy();
     }   
     
     function searchReplicationJob() {
       if(vm.lastPolicyId !== -1) {
+        vm.searchJobTIP = true;
         vm.retrieveJob(vm.lastPolicyId);
       }
     }            
+    
+    function refreshReplicationJob() {
+      if(vm.lastPolicyId !== -1) {
+        vm.refreshJobTIP = true;
+        vm.retrieveJob(vm.lastPolicyId);
+      }
+    }
    
     function retrievePolicy() {
       ListReplicationPolicyService('', vm.projectId, vm.replicationPolicyName)
@@ -102,11 +114,14 @@
           }
         }
       });
+      vm.searchJobTIP = false;
+      vm.refreshJobTIP = false;
     }
     
     function listReplicationJobFailed(data, status) {
       console.log('Failed list replication job:' + data);
-      vm.refreshPending = false;
+      vm.searchJobTIP = false;
+      vm.refreshJobTIP = false;
     }
 
     function addReplication() {

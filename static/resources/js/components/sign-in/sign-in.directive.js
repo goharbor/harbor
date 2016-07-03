@@ -21,6 +21,8 @@
     vm.doContinue = doContinue;
     vm.doLogOut = doLogOut;
     
+    vm.signInTIP = false;
+    
     function reset() {
       vm.hasError = false;
       vm.errorMessage = '';
@@ -28,6 +30,7 @@
       
     function doSignIn(user) {  
       if(user && angular.isDefined(user.principal) && angular.isDefined(user.password)) {
+        vm.signInTIP = true;
         SignInService(user.principal, user.password)
           .success(signedInSuccess)
           .error(signedInFailed);
@@ -39,6 +42,7 @@
     }
     
     function signedInFailed(data, status) {
+      vm.signInTIP = false;
       if(status === 401) {
         vm.hasError = true;
         vm.errorMessage = 'username_or_password_is_incorrect';

@@ -63,7 +63,7 @@
       <div class="input-group">
         <input type="text" class="form-control" placeholder="" ng-model="vm.replicationJobName" size="30">
         <span class="input-group-btn">
-          <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()" ng-disabled="vm.refreshPending"><span class="glyphicon glyphicon-search"></span></button>
+          <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.searchJobTIP"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
       <div class="input-group">
@@ -91,7 +91,7 @@
         </div>
       </div>		
       <div class="input-group">
-        <button type="button" class="btn btn-success" ng-click="vm.searchReplicationJob()"><span class="glyphicon glyphicon-refresh"></span></button>
+        <button type="button" class="btn btn-success" ng-click="vm.refreshReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.refreshJobTIP" ><span class="glyphicon glyphicon-refresh"></span></button>
       </div>
     </div> 
     <div class="pane-split" id="down-pane">   

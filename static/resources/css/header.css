@@ -25,14 +25,14 @@ nav .container-custom {
 }
 
 .navbar-form {
-    margin-top: 0;
-    padding-right: 0;
+  margin-top: 0;
+  padding-right: 0;
 }
 
 .search-icon {
-    background: url("/static/resources/img/magnitude-glass.jpg") no-repeat 97% 6px;
-    background-size: 1.5em;
-    background-color: #FFFFFF;
+  background: url("/static/resources/img/magnitude-glass.jpg") no-repeat 97% 6px;
+  background-size: 1.5em;
+  background-color: #FFFFFF;
 }
 
 .nav-custom li {
@@ -67,49 +67,61 @@ nav .container-custom {
 }
 
 .dropdown-submenu {
-    position: relative;
+  position: relative;
 }
 
 .dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  -webkit-border-radius: 0 6px 6px 6px;
+  -moz-border-radius: 0 6px 6px;
+  border-radius: 0 6px 6px 6px;
 }
 
 .dropdown-submenu:hover>.dropdown-menu {
-    display: block;
+  display: block;
 }
 
 .dropdown-submenu>a:after {
-    display: block;
-    content: " ";
-    float: right;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px 0 5px 5px;
-    border-left-color: #ccc;
-    margin-top: 5px;
-    margin-right: -10px;
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #ccc;
+  margin-top: 5px;
+  margin-right: -10px;
 }
 
 .dropdown-submenu:hover>a:after {
-    border-left-color: #fff;
+  border-left-color: #fff;
 }
 
 .dropdown-submenu.pull-left {
-    float: none;
+  float: none;
 }
 
 .dropdown-submenu.pull-left>.dropdown-menu {
-    left: -100%;
-    margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
+  left: -100%;
+  margin-left: 10px;
+  -webkit-border-radius: 6px 0 6px 6px;
+  -moz-border-radius: 6px 0 6px 6px;
+  border-radius: 6px 0 6px 6px;
 }
+
+.loading-progress {
+  display: inline-block;
+  position: relative;
+  background-image: url('/static/resources/img/loading.gif');
+  background-position: center;
+  background-size: 107px;
+  width: 1em;
+  height: 1.2em;
+  margin-bottom: 2px;
+  vertical-align: middle;
+}  

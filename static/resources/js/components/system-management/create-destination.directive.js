@@ -29,6 +29,8 @@
     vm.toggleErrorMessage = false;
     vm.errorMessages = [];            
         
+    vm.pingTIP = false;
+    
     $scope.$watch('destination.endpoint', function(current) {
       if(current) {
         vm.notAvailable = false;
@@ -124,6 +126,8 @@
     }
     
     function pingDestination() {
+      
+      vm.pingTIP = true;
       vm.pingAvailable = false;
       
       var target = {
@@ -143,10 +147,12 @@
     
     function pingDestinationSuccess(data, status) {
       vm.pingAvailable = true;
+      vm.pingTIP = false;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
     }
     function pingDestinationFailed(data, status) {
-      vm.pingAvailable = true;
+
+      vm.pingTIP = false;
       vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
     }
   }

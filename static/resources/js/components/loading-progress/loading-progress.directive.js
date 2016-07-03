@@ -11,7 +11,7 @@
       'restrict': 'EA',
       'scope': {
         'toggleInProgress': '=',
-        'hideTarget': '='
+        'hideTarget': '@'
       },
       'link': link
     };
@@ -19,29 +19,33 @@
     return directive;
     
     function link(scope, element, attrs) {
-      var spinner = $('<div>')
-        .css({'display': 'inline-block'})
-        .css({'position': 'relative'}) 
-        .css({'background-image': 'url(/static/resources/img/loading.gif)'}) 
-        .css({'background-position': 'center'})
-        .css({'background-size': '107px'})
-        .css({'width': '1.2em'})
-        .css({'height': '1.2em'})
-        .css({'margin': '0 0 1px 8px'})
-        .css({'vertical-align': 'middle'});  
+      var spinner = $('<span class="loading-progress">');
+
+      function convertToBoolean(val) {
+        return val === 'true' ? true : false;
+      }
       
+      var hideTarget = convertToBoolean(scope.hideTarget);
+      
+      console.log('loading-progress, toggleInProgress:' + scope.toggleInProgress + ', hideTarget:' + hideTarget);
+      
+      var pristine = element.html();
+                 
       scope.$watch('toggleInProgress', function(current) {
         if(scope.toggleInProgress) {
-          element.append(spinner);
           element.attr('disabled', 'disabled');
-          if(scope.hideTarget) {
+          if(hideTarget) {
+            element.html(spinner);
+          }else{
+            spinner = spinner.css({'margin-left': '5px'});
             element.append(spinner);
-            element.hide();     
           }
         }else{
-          scope.hideTarget = false;
-          element.show();
-          element.find('div').remove();
+          if(hideTarget) {
+            element.html(pristine);
+          }else{
+            element.find('.loading-progress').remove();
+          }
           element.removeAttr('disabled');
         }
       });

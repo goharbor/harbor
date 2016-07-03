@@ -90,7 +90,7 @@ var locale_messages = {
   'from': '起始',
   'to': '结束',
   'timestamp': '时间戳',
-  'dashboard': '消息中心',
+  'dashboard': '控制面板',
   'admin_options': '管理员选项',
   'account_setting': '个人设置',
   'log_out': '注销',
