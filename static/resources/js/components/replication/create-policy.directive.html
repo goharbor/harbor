@@ -58,7 +58,7 @@
               <div class="col-md-7">
                 <input type="text" ng-if="vm.checkedAddTarget" class="form-control form-control-custom" style="width: 50% !important;" ng-model="replication.destination.name">
                 <select ng-if="!vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-change="vm.selectDestination(replication.destination.selection)" style="width: 50% !important;" ng-disabled="!vm.targetEditable"></select>               
-                <div class="display-inline-block" ng-show="vm.targetEditable">&nbsp;&nbsp;<input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget">// 'add_new_destination' | tr //</div>
+                <div class="display-inline-block" ng-show="vm.targetEditable">&nbsp;&nbsp;<input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget">&nbsp;&nbsp;// 'add_new_destination' | tr //</div>
               </div>
             </div>  
             <div class="form-group col-md-12 form-group-custom">
