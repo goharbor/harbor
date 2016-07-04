@@ -13,24 +13,11 @@
    limitations under the License.
 */
 
-package replication
+package error
 
-import (
-	"net"
-)
-
-// ReplicaRetryChecker determines whether a job should be retried when an error occurred
-type ReplicaRetryChecker struct {
-}
-
-// Retry ...
-func (r *ReplicaRetryChecker) Retry(err error) bool {
-	return isTemporary(err)
-}
-
-func isTemporary(err error) bool {
-	if netErr, ok := err.(net.Error); ok {
-		return netErr.Temporary()
-	}
-	return false
+// RetryChecker checks whether a job should retry if encounters an error
+type RetryChecker interface {
+	// Retry : if the error can be disappear after retrying the job, Retry
+	// returns true
+	Retry(error) bool
 }
