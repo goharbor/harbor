@@ -16,6 +16,8 @@
     
     vm.opAll = true;
     
+    vm.doSearch = doSearch;
+    
     $scope.$watch('vm.op', function(current) {
       if(current && vm.op[0] === 'all') {
         vm.opCreate = true;
@@ -23,7 +25,6 @@
         vm.opPush = true;
         vm.opDelete = true;
         vm.opOthers = true;
-        vm.others = "";
       }
     }, true);
     
@@ -38,13 +39,14 @@
         vm.toDate = current;
       }
     });
-    
+                
+               
     vm.opCreate = true;
     vm.opPull = true;
     vm.opPush = true;
     vm.opDelete = true;
     vm.opOthers = true;
-    vm.others = "";
+    vm.others = '';
          
     vm.op = [];
     vm.op.push('all');
@@ -56,26 +58,25 @@
         vm.opDelete = vm.opAll;
         vm.opOthers = vm.opAll;
       }else {
+        vm.op = [];
         vm.opAll = false;
       }
-      
-      vm.op = [];
       
       if(vm.opCreate) {
         vm.op.push('create');
       }
       if(vm.opPull) {
-         vm.op.push('pull');
+        vm.op.push('pull');
       } 
       if(vm.opPush) {
-         vm.op.push('push');
+        vm.op.push('push');
       }
       if(vm.opDelete) {
-         vm.op.push('delete');
+        vm.op.push('delete');
       }
-      if(vm.opOthers && vm.others !== "") {
-         vm.op.push(vm.others);
-      }      
+      if(vm.opOthers && $.trim(vm.others) !== '') {
+        vm.op.push($.trim(vm.others));
+      }
     }   
     
     vm.pickUp = pickUp;
@@ -100,6 +101,13 @@
       vm.others = '';
       vm.isOpen = false;
     }
+    
+    function doSearch (e){
+      if(vm.opOthers && $.trim(vm.others) !== '') {
+        e.op.push(vm.others);
+      }
+      vm.search(e);
+    }
   }
   
   function advancedSearch() {
@@ -109,6 +117,7 @@
       'scope': {
         'isOpen': '=',
         'op': '=',
+        'opOthers': '=',
         'others': '=',
         'fromDate': '=',
         'toDate': '=',

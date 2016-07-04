@@ -24,7 +24,8 @@
     vm.username = "";
         
     vm.op = [];
-   
+    vm.opOthers = true;
+    
     vm.search = search;
     vm.showAdvancedSearch = showAdvancedSearch;
   
@@ -52,9 +53,18 @@
             
     function search(e) {
       if(e.op[0] === 'all') {
-        vm.queryParams.keywords = '';
+        if(vm.opOthers && $.trim(vm.others) !== '') {
+          e.op = [];
+          e.op.push(vm.others);
+          vm.queryParams.keywords = e.op.join('/');
+        }else{
+          vm.queryParams.keywords = '';
+        }
       }else {
-        vm.queryParams.keywords = e.op.join('/') ;
+        if(vm.opOthers && $.trim(vm.others) !== '') {
+          e.op.push(vm.others);
+        }               
+        vm.queryParams.keywords = e.op.join('/');
       }
       vm.queryParams.username = e.username;
       
@@ -92,6 +102,7 @@
       vm.fromDate = '';
       vm.toDate = '';
       vm.others = '';
+      vm.opOthers = true;
       vm.isOpen = false;
     }
     function listLogFailed(response){

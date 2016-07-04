@@ -36,6 +36,7 @@
         
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.filterInput = '';
       vm.retrieve();    
     });
     
