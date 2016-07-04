@@ -172,18 +172,11 @@
       if(!angular.isDefined(date) || date === '') {
         return '';
       }
-      
 			var t = new Date(date);
 			t.setHours(hour);
 			t.setMinutes(min);
 			t.setSeconds(sec);
-			var utcTime = new Date(t.getUTCFullYear(),
-				t.getUTCMonth(), 
-				t.getUTCDate(),
-				t.getUTCHours(),
-				t.getUTCMinutes(),
-		    	t.getUTCSeconds());
-			return utcTime.getTime() / 1000;
+			return t.getTime() / 1000;
 		}
   
   }

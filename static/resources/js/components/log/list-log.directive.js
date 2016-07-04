@@ -80,6 +80,18 @@
 
     function listLogComplete(response) {
       vm.logs = response.data;
+      
+      vm.queryParams = {
+        'beginTimestamp' : 0,
+        'endTimestamp'   : 0,
+        'keywords' : '',
+        'projectId': vm.projectId,
+        'username' : ''
+      };
+      vm.op = ['all'];
+      vm.fromDate = '';
+      vm.toDate = '';
+      vm.others = '';
       vm.isOpen = false;
     }
     function listLogFailed(response){
@@ -98,13 +110,8 @@
 			t.setHours(hour);
 			t.setMinutes(min);
 			t.setSeconds(sec);
-			var utcTime = new Date(t.getUTCFullYear(),
-				t.getUTCMonth(), 
-				t.getUTCDate(),
-				t.getUTCHours(),
-				t.getUTCMinutes(),
-		    t.getUTCSeconds());
-			return utcTime.getTime() / 1000;
+			
+			return t.getTime() / 1000;
 		}
     
   }

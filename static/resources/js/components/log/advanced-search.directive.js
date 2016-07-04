@@ -15,6 +15,30 @@
     vm.close = close;
     
     vm.opAll = true;
+    
+    $scope.$watch('vm.op', function(current) {
+      if(current && vm.op[0] === 'all') {
+        vm.opCreate = true;
+        vm.opPull = true;
+        vm.opPush = true;
+        vm.opDelete = true;
+        vm.opOthers = true;
+        vm.others = "";
+      }
+    }, true);
+    
+    $scope.$watch('vm.fromDate', function(current) {
+      if(current) {
+        vm.fromDate = current;
+      }
+    });
+    
+    $scope.$watch('vm.toDate', function(current) {
+      if(current) {
+        vm.toDate = current;
+      }
+    });
+    
     vm.opCreate = true;
     vm.opPull = true;
     vm.opPush = true;
@@ -69,6 +93,11 @@
     }
     
     function close() {
+      vm.op = [];
+      vm.op.push('all');
+      vm.fromDate = '';
+      vm.toDate = '';
+      vm.others = '';
       vm.isOpen = false;
     }
   }

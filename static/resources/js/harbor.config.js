@@ -1,17 +1,38 @@
 (function() {
-    'use strict';
-    angular
-      .module('harbor.app')
-      .config(function($interpolateProvider){
-        $interpolateProvider.startSymbol('//');
-        $interpolateProvider.endSymbol('//');
-      })
-      .config(function($httpProvider) {
-        $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
-      })
-      .factory('getParameterByName', getParameterByName)
-      .filter('dateL', localizeDate)
-      .filter('tr', tr);
+  'use strict';
+  angular
+    .module('harbor.app')
+    .config(function($interpolateProvider){
+      $interpolateProvider.startSymbol('//');
+      $interpolateProvider.endSymbol('//');
+    })
+    .config(function($httpProvider) {
+      $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
+      $httpProvider.interceptors.push('redirectInterceptor');
+    })
+    .factory('redirectInterceptor', RedirectInterceptorFactory)
+    .factory('getParameterByName', getParameterByName)
+    .filter('dateL', localizeDate)
+    .filter('tr', tr);
+   
+  RedirectInterceptorFactory.$inject = ['$q', '$window'];
+  
+  function RedirectInterceptorFactory($q, $window) {
+    return redirectInterceptor;
+    function redirectInterceptor() {
+      return {
+        'request' : function(r) {
+          console.log('global interceptor has being triggered, "Request"');
+        },
+        'response': function(r) {
+          console.log('global interceptor has being triggered, "Response"');
+        },
+        'responseError': function(rejection) {
+          console.log('global interceptor has being triggered. "ResponseError"');
+        }
+      };
+    }
+  }
   
   function getParameterByName() {
     return get;
