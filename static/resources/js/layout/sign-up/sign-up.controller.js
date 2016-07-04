@@ -70,9 +70,9 @@
       $scope.$emit('modalTitle', $filter('tr')('error'));
       var message;
       if(vm.targetType) {
-        message = $filter('tr')('failed_add_user');
+        message = $filter('tr')('failed_to_add_user');
       }else{
-        message = $filter('tr')('failed_sign_up');
+        message = $filter('tr')('failed_to_sign_up');
       }
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);

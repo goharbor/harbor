@@ -21,9 +21,9 @@
 
     function listTopRepositoryFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_top_repo'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_top_repo'));
       $scope.$emit('raiseError', true);
-      console.log('Failed get top repo:' + data);
+      console.log('Failed to get top repo:' + data);
     }
   }
   

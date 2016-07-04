@@ -48,7 +48,7 @@
       $scope.$emit('modalMessage', $filter('tr')('failed_in_search'));
       $scope.$emit('raiseError', true);
       
-      console.log('Failed search:' + data);
+      console.log('Failed to search:' + data);
     }
   }
   

@@ -72,9 +72,9 @@
       if(status === 409) {
         vm.errorMessages.push($filter('tr')('destination_already_exists'));
       }else{
-        vm.errorMessages.push($filter('tr')('failed_create_destination') + data);
+        vm.errorMessages.push($filter('tr')('failed_to_create_destination') + data);
       }
-      console.log('Failed create destination:' + data);
+      console.log('Failed to create destination:' + data);
     }
     
     function update(destination) {
@@ -89,8 +89,8 @@
     }
     
     function updateDestinationFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_update_destination') + data);
-      console.log('Failed update destination.');
+      vm.errorMessages.push($filter('tr')('failed_to_update_destination') + data);
+      console.log('Failed to update destination.');
     }
     
     
@@ -108,7 +108,7 @@
     
     function getDestinationFailed(data, status) {
       vm.errorMessages.push($filter('tr')('failed_get_destination'));
-      console.log('Failed get destination.');
+      console.log('Failed to get destination.');
     }
     
     function listDestinationPolicySuccess(data, status) {
@@ -122,7 +122,7 @@
     
     function listDestinationPolicyFailed(data, status) {
       vm.errorMessages.push($filter('tr')('failed_get_destination_policies'));
-      console.log('Failed list destination policy:' + data);
+      console.log('Failed to list destination policy:' + data);
     }
     
     function pingDestination() {
@@ -153,7 +153,7 @@
     function pingDestinationFailed(data, status) {
 
       vm.pingTIP = false;
-      vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
     }
   }
   

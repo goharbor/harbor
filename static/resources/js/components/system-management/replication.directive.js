@@ -35,9 +35,9 @@
     
     function listReplicationPolicyFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_list_replication'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_list_replication'));
       $scope.$emit('raiseError', true);
-      console.log('Failed list replication policy.');
+      console.log('Failed to list replication policy.');
     }
     
     function togglePolicy(policyId, enabled) {
@@ -53,9 +53,9 @@
     
     function toggleReplicationPolicyFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_toggle_policy'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_toggle_policy'));
       $scope.$emit('raiseError', true);
-      console.log('Failed toggle replication policy.');
+      console.log('Failed to toggle replication policy.');
     }
     
     function editReplication(policyId) {

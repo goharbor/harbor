@@ -211,7 +211,7 @@
     }
     function listDestinationFailed(data, status) {
       vm.errorMessages.push($filter('tr')('failed_get_destination'));
-      console.log('Failed get destination:' + data);
+      console.log('Failed to get destination:' + data);
     }
     
     function listDestinationPolicySuccess(data, status) {
@@ -229,7 +229,7 @@
     
     function listDestinationPolicyFailed(data, status) {
       vm.errorMessages.push($filter('tr')('failed_get_destination_policies'));
-      console.log('Failed list destination policy:' + data);
+      console.log('Failed to list destination policy:' + data);
     }
     
     function listReplicationPolicySuccess(data, status) {
@@ -253,8 +253,8 @@
       vm.checkDestinationPolicyStatus();
     }
     function listReplicationPolicyFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_get_replication_policy') + data);
-      console.log('Failed list replication policy:' + data);
+      vm.errorMessages.push($filter('tr')('failed_to_get_replication_policy') + data);
+      console.log('Failed to list replication policy:' + data);
     }
     function createReplicationPolicySuccess(data, status) {
       vm.saveTIP = false;
@@ -266,9 +266,9 @@
       if(status === 409) {
         vm.errorMessages.push($filter('tr')('policy_already_exists'));
       }else{
-        vm.errorMessages.push($filter('tr')('failed_create_replication_policy') + data);
+        vm.errorMessages.push($filter('tr')('failed_to_create_replication_policy') + data);
       }     
-      console.log('Failed create replication policy.');
+      console.log('Failed to create replication policy.');
     }
     function updateReplicationPolicySuccess(data, status) {
       console.log('Successful update replication policy.');
@@ -280,9 +280,9 @@
       if(status === 409) {
         vm.errorMessages.push($filter('tr')('policy_already_exists')); 
       }else{
-        vm.errorMessages.push($filter('tr')('failed_update_replication_policy') + data);
+        vm.errorMessages.push($filter('tr')('failed_to_update_replication_policy') + data);
       }
-      console.log('Failed update replication policy.');
+      console.log('Failed to update replication policy.');
     }
     function createDestinationSuccess(data, status, headers) {
       var content = headers('Location');
@@ -291,8 +291,8 @@
       saveOrUpdatePolicy();
     }
     function createDestinationFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_create_destination') + data);
-      console.log('Failed create destination.');
+      vm.errorMessages.push($filter('tr')('failed_to_create_destination') + data);
+      console.log('Failed to create destination.');
     }
     function updateDestinationSuccess(data, status) {
       console.log('Successful update destination.');
@@ -300,9 +300,9 @@
       saveOrUpdatePolicy();
     }
     function updateDestinationFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_update_destination') + data);
+      vm.errorMessages.push($filter('tr')('failed_to_update_destination') + data);
       $scope.$broadcast('showDialog', true);
-      console.log('Failed update destination.');
+      console.log('Failed to update destination.');
     }
     function pingDestinationSuccess(data, status) {
       vm.pingAvailable = true;
@@ -311,7 +311,7 @@
     }
     function pingDestinationFailed(data, status) {
       vm.pingAvailable = true;
-      vm.pingMessage = $filter('tr')('failed_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
       vm.pingTIP = false;
     }
   }

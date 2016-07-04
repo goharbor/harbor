@@ -21,9 +21,9 @@
     
     function statProjectFailed(data) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_stat') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_stat') + data);
       $scope.$emit('raiseError', true);
-      console.log('Failed get stat:' + data);
+      console.log('Failed to get stat:' + data);
     }
   }
   

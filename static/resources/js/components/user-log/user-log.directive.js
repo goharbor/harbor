@@ -21,9 +21,9 @@
 
     function listIntegratedLogFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_user_log') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_user_log') + data);
       $scope.$emit('raiseError', true);
-      console.log('Failed get user logs:' + data);
+      console.log('Failed to get user logs:' + data);
     }
   }
   

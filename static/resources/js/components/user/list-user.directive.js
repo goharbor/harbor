@@ -35,8 +35,8 @@
     function confirmToDelete(userId) {
       vm.selectedUserId = userId;
      
-      $scope.$emit('modalTitle', $filter('tr')('confirm_to_delete_user_title'));
-      $scope.$emit('modalMessage', $filter('tr')('confirm_to_delete_user'));
+      $scope.$emit('modalTitle', $filter('tr')('confirm_delete_user_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_user'));
       
       var emitInfo = {
         'confirmOnly': false,
@@ -60,9 +60,9 @@
     
     function deleteUserFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_delete_user'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_user'));
       $scope.$emit('raiseError', true);
-      console.log('Failed delete user.');
+      console.log('Failed to delete user.');
     }
     
     function listUserSuccess(data, status) {
@@ -71,9 +71,9 @@
     
     function listUserFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_list_user'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_list_user'));
       $scope.$emit('raiseError', true);
-      console.log('Failed list user:' + data);
+      console.log('Failed to list user:' + data);
     }      
   }
   

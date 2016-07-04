@@ -72,10 +72,10 @@
       vm.hasError = true;
           
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_reset_pasword') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_reset_pasword') + data);
       $scope.$emit('raiseError', true);
       
-      console.log('Failed reset password:' + data);
+      console.log('Failed to reset password:' + data);
     }
     
     function cancel() {

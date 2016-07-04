@@ -50,9 +50,9 @@
       
     function getTagFailed(response) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_tag') + response);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_tag') + response);
       $scope.$emit('raiseError', true);
-      console.log('Failed get tag:' + response);
+      console.log('Failed to get tag:' + response);
     }
     
     function deleteTag(e) {

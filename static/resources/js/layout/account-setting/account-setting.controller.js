@@ -91,7 +91,7 @@
     }
     
     function changePasswordFailed(data, status) {
-      console.log('Failed changed password:' + data);
+      console.log('Failed to changed password:' + data);
       if(data == 'old_password_is_not_correct') {
         vm.hasError = true;
         vm.errorMessage = 'old_password_is_incorrect';
@@ -110,11 +110,11 @@
       if(status === 409) {
         message = $filter('tr')('email_has_been_taken');
       }else{
-        message = $filter('tr')('failed_update_user') + data;
+        message = $filter('tr')('failed_to_update_user') + data;
       }
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);
-      console.log('Failed update user.');
+      console.log('Failed to update user.');
     }
     
     function cancel(form) {

@@ -97,7 +97,7 @@
     }
     
     function listReplicationPolicyFailed(data, status) {
-      console.log('Failed list replication policy:' + data);      
+      console.log('Failed to list replication policy:' + data);      
     }
 
     function listReplicationJobSuccess(data, status) {
@@ -119,7 +119,7 @@
     }
     
     function listReplicationJobFailed(data, status) {
-      console.log('Failed list replication job:' + data);
+      console.log('Failed to list replication job:' + data);
       vm.searchJobTIP = false;
       vm.refreshJobTIP = false;
     }
@@ -149,7 +149,7 @@
     }
     
     function toggleReplicationPolicyFailed(data, status) {
-      console.log('Failed toggle replication policy.');
+      console.log('Failed to toggle replication policy.');
     }
     
     function downloadLog(policyId) {

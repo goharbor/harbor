@@ -79,7 +79,7 @@
     
     function getProjectFailed(response) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_project'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
       $scope.$emit('raiseError', true);
       console.log('Failed to list projects:' + response);
     }
@@ -110,7 +110,7 @@
       vm.isProjectMember = false;
       
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_project_member'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project_member'));
       $scope.$emit('raiseError', true);
       
       console.log('Current user has no member for the project:' + status +  ', location.url:' + $location.url());

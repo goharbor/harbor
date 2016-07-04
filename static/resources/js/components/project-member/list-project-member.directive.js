@@ -75,11 +75,11 @@
     } 
            
     function getProjectMemberFailed(response) {
-      console.log('Failed get project members:' + response);
+      console.log('Failed to get project members:' + response);
       vm.projectMembers = [];
       
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_project_member'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project_member'));
       $scope.$emit('raiseError', true);
             
       $location.url('repositories').search('project_id', vm.projectId);

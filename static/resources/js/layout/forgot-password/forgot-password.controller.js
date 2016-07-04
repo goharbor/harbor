@@ -73,10 +73,10 @@
       
       if(status === 500) {
         $scope.$emit('modalTitle', $filter('tr')('error'));
-        $scope.$emit('modalMessage', $filter('tr')('failed_send_email'));        
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_send_email'));        
         $scope.$emit('raiseError', true);
       }
-      console.log('Failed send mail:' + data);
+      console.log('Failed to send mail:' + data);
     }
     
     function confirm() {

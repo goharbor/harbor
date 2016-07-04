@@ -26,7 +26,7 @@
     }
     
     function getManifestFailed(data, status) {
-      console.log('Failed get manifest:' + data);
+      console.log('Failed to get manifest:' + data);
     }
   }
   

@@ -66,9 +66,9 @@
     
     function listProjectFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_project') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project') + data);
       $scope.$emit('raiseError', true);
-      console.log('Failed get Project:' + data);
+      console.log('Failed to get Project:' + data);
     }
           
     $scope.$on('addedSuccess', function(e, val) {

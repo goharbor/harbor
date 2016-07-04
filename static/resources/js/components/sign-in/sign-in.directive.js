@@ -47,7 +47,7 @@
         vm.hasError = true;
         vm.errorMessage = 'username_or_password_is_incorrect';
       }
-      console.log('Failed sign in:' + data + ', status:' + status);     
+      console.log('Failed to sign in:' + data + ', status:' + status);     
     }
     
     function doSignUp() {
@@ -75,7 +75,7 @@
     }
     
     function logOutFailed(data, status) {
-      console.log('Failed to log out:' + data);
+      console.log('Failed to to log out:' + data);
     }
   }
   

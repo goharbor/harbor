@@ -32,9 +32,9 @@
 
     function toggleAdminFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_toggle_admin'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_toggle_admin'));
       $scope.$emit('raiseError', true);
-      console.log('Failed toggle admin:' + data);
+      console.log('Failed to toggle admin:' + data);
     }    
   }
   

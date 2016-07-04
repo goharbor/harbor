@@ -84,9 +84,9 @@
     }
     function listLogFailed(response){
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_get_log') + response);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_log') + response);
       $scope.$emit('raiseError', true);
-      console.log('Failed get log:' + response);
+      console.log('Failed to get log:' + response);
     }
     
     function toUTCSeconds(date, hour, min, sec) {

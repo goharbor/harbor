@@ -36,7 +36,7 @@
     }
     
     function toggleProjectPublicityFailed(e) {
-      console.log('Failed toggle project publicity:' + e);
+      console.log('Failed to toggle project publicity:' + e);
     }
   }
 

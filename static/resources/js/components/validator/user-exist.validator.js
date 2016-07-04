@@ -45,7 +45,7 @@
         }
         
         function userExistFailed(data, status) {
-          console.log('Failed in retrieval:' + data);
+          console.log('Failed to in retrieval:' + data);
         }       
         
         return valid;

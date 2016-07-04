@@ -78,7 +78,7 @@
     }
     
     function getRepositoryFailed(response) {
-      console.log('Failed list repositories:' + response);      
+      console.log('Failed to list repositories:' + response);      
     }
    
     function deleteByRepo(repoName) { 
@@ -137,14 +137,14 @@
       $scope.$emit('modalTitle', $filter('tr')('error'));
       var message;
       if(status === 401) {
-        message = $filter('tr')('failed_delete_repo_insuffient_permissions');
+        message = $filter('tr')('failed_to_delete_repo_insuffient_permissions');
       }else{
-        message = $filter('tr')('failed_delete_repo');
+        message = $filter('tr')('failed_to_delete_repo');
       }
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);
       
-      console.log('Failed delete repository:' + data);
+      console.log('Failed to delete repository:' + angular.toJson(data));
     }
     
   }

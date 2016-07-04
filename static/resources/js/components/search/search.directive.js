@@ -29,7 +29,7 @@
     }
     
     function searchFailed(data, status) {
-      console.log('Failed search:' + data);
+      console.log('Failed to search:' + data);
     }
     
   }
