@@ -34,10 +34,6 @@
       vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
       vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
-      if(vm.publicity) {
-        vm.isProjectMember = false;
-        vm.target = 'repository';
-      }
       vm.retrieve();      
     });
        

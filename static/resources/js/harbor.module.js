@@ -45,6 +45,7 @@
       'harbor.replication',
       'harbor.system.management',
       'harbor.loading.progress',
-      'harbor.inline.help'
+      'harbor.inline.help',
+      'harbor.dismissable.alerts'
     ]);
 })();

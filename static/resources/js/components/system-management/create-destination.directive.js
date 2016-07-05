@@ -184,6 +184,7 @@
         ctrl.pingAvailable = true;
         ctrl.pingMessage = '';
         
+        ctrl.pingTIP = false;
         ctrl.toggleErrorMessage = false;
         ctrl.errorMessages = [];
         

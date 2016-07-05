@@ -37,6 +37,7 @@
       'projectId': vm.projectId,
       'username' : vm.username
     };
+        
     retrieve(vm.queryParams);
   
     $scope.$on('$locationChangeSuccess', function() {

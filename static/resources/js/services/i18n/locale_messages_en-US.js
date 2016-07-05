@@ -153,7 +153,9 @@ var locale_messages = {
   'status': 'Status',
   'logs' : 'Logs',
   'enabled': 'Enabled',
+  'enable': 'Enable',
   'disabled': 'Disabled',
+  'disable': 'Disable',
   'no_replication_policies_add_new': 'No replication policies, add new replication policy.',
   'no_replication_policies': 'No replication policies.',
   'no_replication_jobs': 'No replication jobs.',
@@ -205,6 +207,7 @@ var locale_messages = {
   'finished': 'Finished',
   'canceled': 'Canceled',
   'stopped': 'Stopped',
+  'retrying': 'Retrying',
   'error': 'Error',
   'failed_to_get_project_member': 'Failed to get current project member.',
   'failed_to_delete_repo': 'Failed to delete repository. ',
@@ -243,6 +246,7 @@ var locale_messages = {
       '<strong>Developer</strong>: Developer has read and write privileges for a project.<br/>' +
       '<strong>Guest</strong>: Guest has read-only privilege for a specified project.',
   'inline_help_publicity_title': '<strong>Publicity of Project</strong>',
-  'inline_help_publicity': 'Setting the project as public.'
-  
+  'inline_help_publicity': 'Setting the project as public.',
+  'alert_job_contains_error': 'There contain errors in current replication jobs results, please look into it.',
+  'caution': 'Caution'
 };

@@ -17,7 +17,7 @@
   
     vm.filterInput = '';
     vm.toggleInProgress = [];
-
+    
     var hashValue = $location.hash();
     if(hashValue) {
       var slashIndex = hashValue.indexOf('/');
