@@ -154,7 +154,8 @@ type Checker struct {
 func (c *Checker) Enter() (string, error) {
 	state, err := c.enter()
 	if err != nil && retry(err) {
-		return models.JobRetrying, err
+		c.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
 	}
 
 	return state, err
@@ -328,7 +329,8 @@ type ManifestPuller struct {
 func (m *ManifestPuller) Enter() (string, error) {
 	state, err := m.enter()
 	if err != nil && retry(err) {
-		return models.JobRetrying, err
+		m.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
 	}
 
 	return state, err
@@ -411,7 +413,8 @@ type BlobTransfer struct {
 func (b *BlobTransfer) Enter() (string, error) {
 	state, err := b.enter()
 	if err != nil && retry(err) {
-		return models.JobRetrying, err
+		b.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
 	}
 
 	return state, err
@@ -446,10 +449,11 @@ type ManifestPusher struct {
 // Enter checks the existence of manifest in the source registry first, and if it
 // exists, pushs it to destination registry. The checking operation is to avoid
 // the situation that the tag is deleted during the blobs transfering
-func (b *ManifestPusher) Enter() (string, error) {
-	state, err := b.enter()
+func (m *ManifestPusher) Enter() (string, error) {
+	state, err := m.enter()
 	if err != nil && retry(err) {
-		return models.JobRetrying, err
+		m.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
 	}
 
 	return state, err
