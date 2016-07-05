@@ -26,7 +26,6 @@
         var role = r[i];
         if(query.key === 'roleName' && role.roleName === query.value
           || query.key === 'roleId' && role.id === String(query.value)) {
-            console.log('role.name: ' + role.name);
            return role;
         }
       }
