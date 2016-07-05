@@ -150,10 +150,12 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 
 	sql := `select rp.id, rp.project_id, p.name as project_name, rp.target_id, 
 				rt.name as target_name, rp.name, rp.enabled, rp.description,
-				rp.cron_str, rp.start_time, rp.creation_time, rp.update_time  
+				rp.cron_str, rp.start_time, rp.creation_time, rp.update_time, 
+				count(rj.status) as error_job_count 
 			from replication_policy rp 
-			join project p on rp.project_id=p.project_id 
-			join replication_target rt on rp.target_id=rt.id `
+			left join project p on rp.project_id=p.project_id 
+			left join replication_target rt on rp.target_id=rt.id 
+			left join replication_job rj on rp.id=rj.policy_id and rj.status="error" `
 
 	if len(name) != 0 && projectID != 0 {
 		sql += `where rp.name like ? and rp.project_id = ? `
