@@ -20,8 +20,8 @@
        
     vm.beginTimestamp = 0;
     vm.endTimestamp = 0;
-    vm.keywords = "";
-    vm.username = "";
+    vm.keywords = '';
+    vm.username = '';
         
     vm.op = [];
     vm.opOthers = true;
@@ -48,24 +48,20 @@
         'projectId': vm.projectId,
         'username' : vm.username
       };
+      vm.username = '';
       retrieve(vm.queryParams);
     });
             
     function search(e) {
+
       if(e.op[0] === 'all') {
-        if(vm.opOthers && $.trim(vm.others) !== '') {
-          e.op = [];
-          e.op.push(vm.others);
-          vm.queryParams.keywords = e.op.join('/');
-        }else{
-          vm.queryParams.keywords = '';
-        }
-      }else {
-        if(vm.opOthers && $.trim(vm.others) !== '') {
-          e.op.push(vm.others);
-        }               
-        vm.queryParams.keywords = e.op.join('/');
-      }
+        e.op = ['create', 'pull', 'push', 'delete'];
+      }      
+      if(vm.opOthers && $.trim(vm.others) !== '') {
+        e.op.push(vm.others);
+      }               
+      
+      vm.queryParams.keywords = e.op.join('/');
       vm.queryParams.username = e.username;
       
       vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);

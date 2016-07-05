@@ -10,28 +10,31 @@
       $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
       $httpProvider.interceptors.push('redirectInterceptor');
     })
-    .factory('redirectInterceptor', RedirectInterceptorFactory)
+    .service('redirectInterceptor', RedirectInterceptorService)
     .factory('getParameterByName', getParameterByName)
     .filter('dateL', localizeDate)
     .filter('tr', tr);
    
-  RedirectInterceptorFactory.$inject = ['$q', '$window'];
+  RedirectInterceptorService.$inject = ['$q', '$window'];
   
-  function RedirectInterceptorFactory($q, $window) {
-    return redirectInterceptor;
-    function redirectInterceptor() {
-      return {
-        'request' : function(r) {
-          console.log('global interceptor has being triggered, "Request"');
-        },
-        'response': function(r) {
-          console.log('global interceptor has being triggered, "Response"');
-        },
-        'responseError': function(rejection) {
-          console.log('global interceptor has being triggered. "ResponseError"');
+  function RedirectInterceptorService($q, $window) {
+    return {
+      'responseError': function(rejection) {
+        var pathname = $window.location.pathname;
+        var exclusions = ['/', '/search', '/reset_password', '/sign_up', '/forgot_password'];
+        var isExcluded = false;
+        for(var i in exclusions) {
+          if(exclusions[i] === pathname) {
+            isExcluded = true;
+            break;
+          }
         }
-      };
-    }
+        if(rejection.status === 401 && !isExcluded) {
+          $window.location.href = '/';
+        }
+        return $q.reject(rejection);
+      }
+    };
   }
   
   function getParameterByName() {

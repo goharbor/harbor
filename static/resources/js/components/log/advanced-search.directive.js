@@ -58,9 +58,10 @@
         vm.opDelete = vm.opAll;
         vm.opOthers = vm.opAll;
       }else {
-        vm.op = [];
         vm.opAll = false;
       }
+      
+      vm.op = [];
       
       if(vm.opCreate) {
         vm.op.push('create');

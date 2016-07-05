@@ -26,21 +26,7 @@
     }
     
     function getCurrentUserFailed(e){
-      var url = location.pathname;
-      var exclusions = [
-        '/',
-        '/forgot_password', 
-        '/sign_up', 
-        '/reset_password',
-        '/search',
-        '/repository'
-      ];
-      for(var i = 0; i < exclusions.length; i++) {
-        if(exclusions[i]===url) {
-          return;
-        }
-      }     
-      $window.location.href = '/';
+      console.log('No session of current user.');
     }   
   }
  
