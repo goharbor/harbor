@@ -3,9 +3,9 @@
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-        
+
         http://www.apache.org/licenses/LICENSE-2.0
-        
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,7 @@ var global_messages = {
 	 "ru-RU": "Требуется ввести имя пользователя."
   },
   "username_has_been_taken" : {
-         "en-US": "Username has been taken.",
+   "en-US": "Username has been taken.",
 	 "zh-CN": "用户名已被占用。",
 	 "ja-JP": "ユーザ名はすでに登録されました。",
 	 "de-DE": "Benutzername bereits vergeben.",
@@ -95,7 +95,7 @@ var global_messages = {
 	 "zh-CN": "全名包含不合法的字符。",
 	 "ja-JP": "フルネームに使えない文字が入っています。",
 	 "de-DE": "Vollständiger Name enthält ungültige Zeichen.",
-	 "ru-RU": "Полное имя содержит недопустимые символы." 
+	 "ru-RU": "Полное имя содержит недопустимые символы."
   },
   "password_is_required" : {
 	 "en-US": "Password is required.",
@@ -180,7 +180,7 @@ var global_messages = {
 	 "ja-JP": "ユーザを削除",
 	 "de-DE": "Benutzer löschen",
 	 "ru-RU": "Удалить пользователя"
-  },	
+  },
   "are_you_sure_to_delete_user" : {
 	 "en-US": "Are you sure to delete ",
 	 "zh-CN": "确认要删除用户 ",
@@ -358,7 +358,7 @@ var global_messages = {
   },
   "tag" : {
          "en-US": "Tag",
-	 "zh-CN": "标签", 
+	 "zh-CN": "标签",
 	 "ja-JP": "タグ",
 	 "de-DE": "Tag",
 	 "ru-RU": "Метка"
@@ -376,6 +376,13 @@ var global_messages = {
 	 "ja-JP": "イメージ詳細",
 	 "de-DE": "Image Details",
 	 "ru-RU": "Информация об образе"
+  },
+  "add_label" : {
+	 "en-US": "Add label",
+	 "zh-CN": "添加源数据",
+	 "ja-JP": "",
+	 "de-DE": "",
+	 "ru-RU": ""
   },
   "add_members" : {
 	 "en-US": "Add Member",
