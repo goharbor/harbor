@@ -39,8 +39,6 @@ import (
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
-// For repostiories, we won't check the session in this API due to search functionality, querying manifest will be contorlled by
-// the security of registry
 type RepositoryAPI struct {
 	BaseAPI
 }
@@ -115,6 +113,20 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
+	projectName := getProjectName(repoName)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		log.Errorf("failed to get project %s: %v", projectName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project.Public == 0 {
+		userID := ra.ValidateUser()
+		if !hasProjectAdminRole(userID, project.ProjectID) {
+			ra.CustomAbort(http.StatusForbidden, "")
+		}
+	}
+
 	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
@@ -144,10 +156,6 @@ func (ra *RepositoryAPI) Delete() {
 		tags = append(tags, tag)
 	}
 
-	project := ""
-	if strings.Contains(repoName, "/") {
-		project = repoName[0:strings.LastIndex(repoName, "/")]
-	}
 	user, _, ok := ra.Ctx.Request.BasicAuth()
 	if !ok {
 		user, err = ra.getUsername()
@@ -169,7 +177,7 @@ func (ra *RepositoryAPI) Delete() {
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			if err := dao.AccessLog(user, project, repoName, tag, "delete"); err != nil {
+			if err := dao.AccessLog(user, projectName, repoName, tag, "delete"); err != nil {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}(t)
@@ -193,6 +201,20 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString("repo_name")
 	if len(repoName) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+
+	projectName := getProjectName(repoName)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		log.Errorf("failed to get project %s: %v", projectName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project.Public == 0 {
+		userID := ra.ValidateUser()
+		if !checkProjectPermission(userID, project.ProjectID) {
+			ra.CustomAbort(http.StatusForbidden, "")
+		}
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -228,6 +250,20 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	if len(repoName) == 0 || len(tag) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
+	}
+
+	projectName := getProjectName(repoName)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		log.Errorf("failed to get project %s: %v", projectName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project.Public == 0 {
+		userID := ra.ValidateUser()
+		if !checkProjectPermission(userID, project.ProjectID) {
+			ra.CustomAbort(http.StatusForbidden, "")
+		}
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -361,4 +397,12 @@ func newRepositoryClient(endpoint string, insecure bool, username, password, rep
 		return nil, err
 	}
 	return client, nil
+}
+
+func getProjectName(repository string) string {
+	project := ""
+	if strings.Contains(repository, "/") {
+		project = repository[0:strings.LastIndex(repository, "/")]
+	}
+	return project
 }
