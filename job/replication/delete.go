@@ -74,6 +74,17 @@ func (d *Deleter) Exit() error {
 
 // Enter deletes repository or tags
 func (d *Deleter) Enter() (string, error) {
+	state, err := d.enter()
+	if err != nil && retry(err) {
+		d.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+
+}
+
+func (d *Deleter) enter() (string, error) {
 
 	if len(d.tags) == 0 {
 		tags, err := d.dstClient.ListTag()

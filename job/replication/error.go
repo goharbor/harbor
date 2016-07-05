@@ -19,12 +19,10 @@ import (
 	"net"
 )
 
-// ReplicaRetryChecker determines whether a job should be retried when an error occurred
-type ReplicaRetryChecker struct {
-}
-
-// Retry ...
-func (r *ReplicaRetryChecker) Retry(err error) bool {
+func retry(err error) bool {
+	if err == nil {
+		return false
+	}
 	return isTemporary(err)
 }
 

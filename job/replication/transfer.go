@@ -152,6 +152,17 @@ type Checker struct {
 // Enter check existence of project, if it does not exist, create it,
 // if it exists, check whether the user has write privilege to it.
 func (c *Checker) Enter() (string, error) {
+	state, err := c.enter()
+	if err != nil && retry(err) {
+		c.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+
+}
+
+func (c *Checker) enter() (string, error) {
 enter:
 	exist, canWrite, err := c.projectExist()
 	if err != nil {
@@ -316,6 +327,17 @@ type ManifestPuller struct {
 
 // Enter pulls manifest of a tag and checks if all blobs exist in the destination registry
 func (m *ManifestPuller) Enter() (string, error) {
+	state, err := m.enter()
+	if err != nil && retry(err) {
+		m.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+
+}
+
+func (m *ManifestPuller) enter() (string, error) {
 	if len(m.tags) == 0 {
 		m.logger.Infof("no tag needs to be replicated, next state is \"finished\"")
 		return models.JobFinished, nil
@@ -389,6 +411,17 @@ type BlobTransfer struct {
 
 // Enter pulls blobs and then pushs them to destination registry.
 func (b *BlobTransfer) Enter() (string, error) {
+	state, err := b.enter()
+	if err != nil && retry(err) {
+		b.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+
+}
+
+func (b *BlobTransfer) enter() (string, error) {
 	name := b.repository
 	tag := b.tags[0]
 	for _, blob := range b.blobs {
@@ -417,6 +450,17 @@ type ManifestPusher struct {
 // exists, pushs it to destination registry. The checking operation is to avoid
 // the situation that the tag is deleted during the blobs transfering
 func (m *ManifestPusher) Enter() (string, error) {
+	state, err := m.enter()
+	if err != nil && retry(err) {
+		m.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+
+}
+
+func (m *ManifestPusher) enter() (string, error) {
 	name := m.repository
 	tag := m.tags[0]
 	_, exist, err := m.srcClient.ManifestExist(tag)
