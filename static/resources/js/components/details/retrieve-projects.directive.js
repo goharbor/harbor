@@ -34,6 +34,10 @@
       vm.publicity = current ? true : false;
       vm.isPublic =  vm.publicity ? 1 : 0;
       vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
+      if(vm.publicity) {
+        vm.isProjectMember = false;
+        vm.target = 'repository';
+      }
       vm.retrieve();      
     });
        
@@ -91,7 +95,6 @@
   
     $scope.$on('$locationChangeSuccess', function(e) {
       var projectId = getParameterByName('project_id', $location.absUrl());
-      vm.checkProjectMember(projectId);
       vm.isOpen = false;   
     });
     
@@ -107,12 +110,7 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      vm.isProjectMember = false;
-      
-//      $scope.$emit('modalTitle', $filter('tr')('error'));
-//      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project_member'));
-//      $scope.$emit('raiseError', true);
-      
+      vm.isProjectMember = false;           
       console.log('Current user has no member for the project:' + status +  ', location.url:' + $location.url());
     }
     

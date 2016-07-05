@@ -22,8 +22,8 @@
               <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
               <list-repository ng-if="vm.target === 'repositories'"  section-height="vm.sectionHeight"></list-repository>
               <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
-              <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight"></list-project-member>
-              <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight"></list-log>
+              <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight" target="vm.target"></list-project-member>
+              <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight" target="vm.target" publicity="vm.publicity"></list-log>
             </div>
           </div>
         </div>
