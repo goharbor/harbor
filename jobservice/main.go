@@ -38,13 +38,13 @@ func resumeJobs() {
 	if err != nil {
 		log.Warningf("Failed to reset all running jobs to pending, error: %v", err)
 	}
-	jobs, err := dao.GetRepJobByStatus(models.JobPending)
+	jobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying)
 	if err == nil {
 		for _, j := range jobs {
-			log.Debugf("Rescheduling job: %d", j.ID)
+			log.Debugf("Resuming job: %d", j.ID)
 			job.Schedule(j.ID)
 		}
 	} else {
-		log.Warningf("Failed to get pending jobs, error: %v", err)
+		log.Warningf("Failed to jobs to resume, error: %v", err)
 	}
 }
