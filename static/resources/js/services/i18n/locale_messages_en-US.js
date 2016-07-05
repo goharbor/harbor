@@ -235,5 +235,14 @@ var locale_messages = {
   'failed_to_delete_destination': 'Failed to delete destination.',
   'failed_to_create_destination': 'Failed to create destination.',
   'failed_to_update_destination': 'Failed to update destination.',
+  'project_admin': 'Project Admin',
+  'developer': 'Developer',
+  'guest': 'Guest',
+  'inline_help_role_title': '<strong>The Definitions of Roles</strong>',
+  'inline_help_role': '<strong>Project Admin</strong>: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.<br/>' +
+      '<strong>Developer</strong>: Developer has read and write privileges for a project.<br/>' +
+      '<strong>Guest</strong>: Guest has read-only privilege for a specified project.',
+  'inline_help_publicity_title': '<strong>Publicity of Project</strong>',
+  'inline_help_publicity': 'Setting the project as public.'
   
 };

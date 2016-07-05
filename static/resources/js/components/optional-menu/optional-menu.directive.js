@@ -45,7 +45,7 @@
   function optionalMenu() {
     var directive = {
       'restrict': 'E',
-      'templateUrl': '/optional_menu',
+      'templateUrl': '/optional_menu?timestamp=' + new Date().getTime(),
       'scope': true,
       'controller': OptionalMenuController,
       'controllerAs': 'vm',

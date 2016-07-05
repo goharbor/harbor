@@ -21,10 +21,10 @@
     return {
       'responseError': function(rejection) {
         var pathname = $window.location.pathname;
-        var exclusions = ['/', '/search', '/reset_password', '/sign_up', '/forgot_password'];
+        var exclusion = ['/', '/search', '/reset_password', '/sign_up', '/forgot_password', '/repository'];
         var isExcluded = false;
-        for(var i in exclusions) {
-          if(exclusions[i] === pathname) {
+        for(var i in exclusion) {
+          if(exclusion[i] === pathname) {
             isExcluded = true;
             break;
           }

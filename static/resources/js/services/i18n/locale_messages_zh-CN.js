@@ -234,5 +234,14 @@ var locale_messages = {
   'failed_to_update_replication_policy': '修改复制策略失败。',
   'failed_to_delete_destination': '删除目标失败。',
   'failed_to_create_destination': '创建目标失败。',
-  'failed_to_update_destination': '修改目标失败。'
+  'failed_to_update_destination': '修改目标失败。',
+  'project_admin': '项目管理员',
+  'developer': '开发人员',
+  'guest': '来宾用户',
+  'inline_help_role_title': '<strong>角色定义</strong>',
+  'inline_help_role': '<strong>项目管理员</strong>: 当创建一个新项目后，您将被指派一个“项目管理员”角色。除了具备读/写权限外，“项目管理员”还拥有添加、删除其他项目成员的管理权限。<br/>'+ 
+      '<strong>开发人员</strong>: “开发人员” 拥有一个项目的读/写权限。<br/>' +
+      '<strong>来宾用户</strong>: “来宾用户”拥有特定项目的只读权限。',
+  'inline_help_publicity_title': '<strong>公开项目</strong>',
+  'inline_help_publicity': '设置该项目为公开。'
 };

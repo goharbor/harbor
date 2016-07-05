@@ -16,7 +16,7 @@
   function navigationHeader() {
     var directive = {
       restrict: 'E',
-      templateUrl: '/navigation_header',
+      templateUrl: '/navigation_header?timestamp=' + new Date().getTime(),
       link: link,
       scope: true,
       controller: NavigationHeaderController,
