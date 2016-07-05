@@ -9,15 +9,15 @@
     
   function roles() {
     return [
-      {'id': '1', 'name': 'Project Admin', 'roleName': 'projectAdmin'},
-      {'id': '2', 'name': 'Developer', 'roleName': 'developer'},
-      {'id': '3', 'name': 'Guest', 'roleName': 'guest'}
+      {'id': '1', 'name': 'project_admin', 'roleName': 'projectAdmin'},
+      {'id': '2', 'name': 'developer', 'roleName': 'developer'},
+      {'id': '3', 'name': 'guest', 'roleName': 'guest'}
     ];
   }
   
-  getRole.$inject = ['roles'];
+  getRole.$inject = ['roles', '$filter', 'trFilter'];
   
-  function getRole(roles) {
+  function getRole(roles, $filter, trFilter) {
     var r = roles();
     return get;     
     function get(query) {

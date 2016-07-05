@@ -124,4 +124,8 @@ nav .container-custom {
   height: 1.2em;
   margin-bottom: 2px;
   vertical-align: middle;
-}  
+} 
+
+a:hover, a:visited, a:link {
+  text-decoration: none;
+}

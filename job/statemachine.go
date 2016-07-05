@@ -179,6 +179,7 @@ func (sm *SM) Init() {
 		models.JobError:    struct{}{},
 		models.JobStopped:  struct{}{},
 		models.JobCanceled: struct{}{},
+		models.JobRetrying: struct{}{},
 	}
 }
 
@@ -243,9 +244,11 @@ func (sm *SM) Reset(jid int64) error {
 	sm.Transitions = make(map[string]map[string]struct{})
 	sm.CurrentState = models.JobPending
 
-	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobRunning})
-	sm.Handlers[models.JobError] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobError}
-	sm.Handlers[models.JobStopped] = StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobStopped}
+	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{sm.JobID, models.JobRunning})
+	sm.AddTransition(models.JobRetrying, models.JobRunning, StatusUpdater{sm.JobID, models.JobRunning})
+	sm.Handlers[models.JobError] = StatusUpdater{sm.JobID, models.JobError}
+	sm.Handlers[models.JobStopped] = StatusUpdater{sm.JobID, models.JobStopped}
+	sm.Handlers[models.JobRetrying] = Retry{sm.JobID}
 
 	switch sm.Parms.Operation {
 	case models.RepOpTransfer:
@@ -259,6 +262,12 @@ func (sm *SM) Reset(jid int64) error {
 	return err
 }
 
+//for testing onlly
+func addTestTransition(sm *SM) error {
+	sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{img: sm.Parms.Repository, logger: sm.Logger})
+	return nil
+}
+
 func addImgTransferTransition(sm *SM) error {
 	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
@@ -269,7 +278,7 @@ func addImgTransferTransition(sm *SM) error {
 	sm.AddTransition(models.JobRunning, replication.StateCheck, &replication.Checker{BaseHandler: base})
 	sm.AddTransition(replication.StateCheck, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 	sm.AddTransition(replication.StatePullManifest, replication.StateTransferBlob, &replication.BlobTransfer{BaseHandler: base})
-	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
 	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 	return nil
@@ -283,7 +292,7 @@ func addImgDeleteTransition(sm *SM) error {
 	}
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
-	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{DummyHandler{JobID: sm.JobID}, models.JobFinished})
+	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
 
 	return nil
 }

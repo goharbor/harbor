@@ -409,7 +409,7 @@
           if(!ctrl.toggleErrorMessage) {
             element.find('#createPolicyModal').modal('hide');
           }
-        }, 50);
+        }, 150);
       }
     }
   }

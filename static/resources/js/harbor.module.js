@@ -44,6 +44,7 @@
       'harbor.validator',
       'harbor.replication',
       'harbor.system.management',
-      'harbor.loading.progress'
+      'harbor.loading.progress',
+      'harbor.inline.help'
     ]);
 })();

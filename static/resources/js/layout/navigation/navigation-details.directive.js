@@ -23,7 +23,7 @@
   function navigationDetails() {
     var directive = {
       restrict: 'E',
-      templateUrl: '/navigation_detail',
+      templateUrl: '/navigation_detail?timestamp=' + new Date().getTime(),
       link: link,
       scope: {
         'target': '='
