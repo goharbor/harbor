@@ -22,8 +22,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -93,6 +95,10 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
+	if os.Getenv("storePath") == "git" {
+		FetchRepoInfo(&repository)
+	}
+
 	catalog, err := utils.ParseQuestions(repository.Catalog)
 	if err != nil {
 		beego.Error("Sry Compose parse error", err)
@@ -129,6 +135,13 @@ func (ra *RepositoryV3API) GetMineRepositories() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 		return
 	}
+
+	if os.Getenv("storePath") == "git" {
+		for i := 0; i < len(repositories); i++ {
+			FetchRepoInfo(&repositories[i])
+		}
+	}
+
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
 }
@@ -140,6 +153,13 @@ func (ra *RepositoryV3API) GetRepositories() {
 		beego.Error("Failed to get repositories from DB: ", err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
+
+	if os.Getenv("storePath") == "git" {
+		for i := 0; i < len(repositories); i++ {
+			FetchRepoInfo(&repositories[i])
+		}
+	}
+
 	repositoriesResponse := models.RepositoriesResponse{
 		Code: 0,
 		Data: repositories,
@@ -247,4 +267,23 @@ func (ra *RepositoryV3API) GetCategories() {
 	}
 	ra.Data["json"] = categoriesResponse
 	ra.ServeJSON()
+}
+
+//fetch catalog info from local files
+func FetchRepoInfo(repository *models.Repository) {
+	workspace := os.Getenv("workspace")
+	dir := fmt.Sprintf("%s\\%s", workspace, repository.Name)
+	repository.Category = readFile(fmt.Sprintf("%s\\%s", dir, "category"))
+	repository.Description = readFile(fmt.Sprintf("%s\\%s", dir, "description"))
+	repository.DockerCompose = readFile(fmt.Sprintf("%s\\%s", dir, "docker_compose.yml"))
+	repository.Readme = readFile(fmt.Sprintf("%s\\%s", dir, "README.md"))
+	repository.Catalog = readFile(fmt.Sprintf("%s\\%s", dir, "catalog.yml"))
+	repository.MarathonConfig = readFile(fmt.Sprintf("%s\\%s", dir, "marathon_config.yml"))
+}
+func readFile(path string) string {
+	contents, error := ioutil.ReadFile(path)
+	if error != nil {
+		log.Error(fmt.Sprintf("%s:%s", "file not exists:", path))
+	}
+	return string(contents)
 }
