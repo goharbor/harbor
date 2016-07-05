@@ -8,6 +8,7 @@ REGISTRY_URL=http://registry:5000
 VERIFY_REMOTE_CERT=$verify_remote_cert
 MAX_JOB_WORKERS=$max_job_workers
 LOG_LEVEL=debug
+LOG_DIR=/var/log/jobs
 GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url
 TOKEN_URL=http://ui
