@@ -90,7 +90,6 @@ func parseError(err error) error {
 		if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
 			return regErr
 		}
-		return urlErr.Err
 	}
 	return err
 }

@@ -226,7 +226,7 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 	}
 
 	if resp.StatusCode == http.StatusOK {
-		projects := make([]models.Project, 1)
+		var projects []models.Project
 		if err = json.Unmarshal(data, &projects); err != nil {
 			return
 		}
