@@ -61,6 +61,7 @@ func (ra *RepJobAPI) List() {
 	var policyID int64
 	var repository, status string
 	var startTime, endTime *time.Time
+	var num int
 	var err error
 
 	policyIDStr := ra.GetString("policy_id")
@@ -69,6 +70,17 @@ func (ra *RepJobAPI) List() {
 		if err != nil || policyID <= 0 {
 			ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("invalid policy ID: %s", policyIDStr))
 		}
+	}
+
+	numStr := ra.GetString("num")
+	if len(numStr) != 0 {
+		num, err = strconv.Atoi(numStr)
+		if err != nil {
+			ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("invalid num: %s", numStr))
+		}
+	}
+	if num <= 0 {
+		num = 200
 	}
 
 	endTimeStr := ra.GetString("end_time")
@@ -100,7 +112,7 @@ func (ra *RepJobAPI) List() {
 	repository = ra.GetString("repository")
 	status = ra.GetString("status")
 
-	jobs, err := dao.FilterRepJobs(policyID, repository, status, startTime, endTime, 1000)
+	jobs, err := dao.FilterRepJobs(policyID, repository, status, startTime, endTime, num)
 	if err != nil {
 		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s: %v", policyID, repository, status, err)
 		ra.RenderError(http.StatusInternalServerError, "Failed to query job")

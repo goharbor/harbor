@@ -35,6 +35,8 @@ import (
 )
 
 const (
+	// StateInitialize ...
+	StateInitialize = "initialize"
 	// StateCheck ...
 	StateCheck = "check"
 	// StatePullManifest ...
@@ -56,7 +58,8 @@ type BaseHandler struct {
 	repository string // prject_name/repo_name
 	tags       []string
 
-	srcURL string // url of source registry
+	srcURL    string // url of source registry
+	srcSecret string
 
 	dstURL string // url of target registry
 	dstUsr string // username ...
@@ -76,18 +79,15 @@ type BaseHandler struct {
 	logger *log.Logger
 }
 
-// InitBaseHandler initializes a BaseHandler: creating clients for source and destination registry,
-// listing tags of the repository if parameter tags is nil.
+// InitBaseHandler initializes a BaseHandler.
 func InitBaseHandler(repository, srcURL, srcSecret,
-	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) (*BaseHandler, error) {
-
-	logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
-		repository, tags, srcURL, dstURL, insecure, dstUsr)
+	dstURL, dstUsr, dstPwd string, insecure bool, tags []string, logger *log.Logger) *BaseHandler {
 
 	base := &BaseHandler{
 		repository:     repository,
 		tags:           tags,
 		srcURL:         srcURL,
+		srcSecret:      srcSecret,
 		dstURL:         dstURL,
 		dstUsr:         dstUsr,
 		dstPwd:         dstPwd,
@@ -98,39 +98,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 
 	base.project = getProjectName(base.repository)
 
-	c := &http.Cookie{Name: models.UISecretCookie, Value: srcSecret}
-	srcCred := auth.NewCookieCredential(c)
-	//	srcCred := auth.NewBasicAuthCredential("admin", "Harbor12345")
-	srcClient, err := newRepositoryClient(base.srcURL, base.insecure, srcCred,
-		base.repository, "repository", base.repository, "pull", "push", "*")
-	if err != nil {
-		base.logger.Errorf("an error occurred while creating source repository client: %v", err)
-		return nil, err
-	}
-	base.srcClient = srcClient
-
-	dstCred := auth.NewBasicAuthCredential(base.dstUsr, base.dstPwd)
-	dstClient, err := newRepositoryClient(base.dstURL, base.insecure, dstCred,
-		base.repository, "repository", base.repository, "pull", "push", "*")
-	if err != nil {
-		base.logger.Errorf("an error occurred while creating destination repository client: %v", err)
-		return nil, err
-	}
-	base.dstClient = dstClient
-
-	if len(base.tags) == 0 {
-		tags, err := base.srcClient.ListTag()
-		if err != nil {
-			base.logger.Errorf("an error occurred while listing tags for source repository: %v", err)
-			return nil, err
-		}
-		base.tags = tags
-	}
-
-	base.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
-		base.project, base.repository, base.tags, base.srcURL, base.dstURL, base.insecure, base.dstUsr)
-
-	return base, nil
+	return base
 }
 
 // Exit ...
@@ -142,6 +110,61 @@ func getProjectName(repository string) string {
 	repository = strings.TrimSpace(repository)
 	repository = strings.TrimRight(repository, "/")
 	return repository[:strings.LastIndex(repository, "/")]
+}
+
+// Initializer creates clients for source and destination registry,
+// lists tags of the repository if parameter tags is nil.
+type Initializer struct {
+	*BaseHandler
+}
+
+// Enter ...
+func (i *Initializer) Enter() (string, error) {
+	i.logger.Infof("initializing: repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		i.repository, i.tags, i.srcURL, i.dstURL, i.insecure, i.dstUsr)
+
+	state, err := i.enter()
+	if err != nil && retry(err) {
+		i.logger.Info("waiting for retrying...")
+		return models.JobRetrying, nil
+	}
+
+	return state, err
+}
+
+func (i *Initializer) enter() (string, error) {
+	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
+	srcCred := auth.NewCookieCredential(c)
+	srcClient, err := newRepositoryClient(i.srcURL, i.insecure, srcCred,
+		i.repository, "repository", i.repository, "pull", "push", "*")
+	if err != nil {
+		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
+		return "", err
+	}
+	i.srcClient = srcClient
+
+	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
+	dstClient, err := newRepositoryClient(i.dstURL, i.insecure, dstCred,
+		i.repository, "repository", i.repository, "pull", "push", "*")
+	if err != nil {
+		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
+		return "", err
+	}
+	i.dstClient = dstClient
+
+	if len(i.tags) == 0 {
+		tags, err := i.srcClient.ListTag()
+		if err != nil {
+			i.logger.Errorf("an error occurred while listing tags for source repository: %v", err)
+			return "", err
+		}
+		i.tags = tags
+	}
+
+	i.logger.Infof("initialization completed: project: %s, repository: %s, tags: %v, source URL: %s, destination URL: %s, insecure: %v, destination user: %s",
+		i.project, i.repository, i.tags, i.srcURL, i.dstURL, i.insecure, i.dstUsr)
+
+	return StateCheck, nil
 }
 
 // Checker checks the existence of project and the user's privlege to the project
@@ -159,7 +182,6 @@ func (c *Checker) Enter() (string, error) {
 	}
 
 	return state, err
-
 }
 
 func (c *Checker) enter() (string, error) {

@@ -48,6 +48,7 @@ var locale_messages = {
   'forgot_password_description': '重置邮件将发送到此邮箱。',
   'reset_password': '重置密码',
   'successful_reset_password': '重置密码成功。',
+  'failed_to_change_password': '修改密码失败。',
   'summary': '摘要',
   'projects': '项目',
   'public_projects': '公开项目',

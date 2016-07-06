@@ -3,12 +3,12 @@
   'use strict';
   
   angular
-    .module('harbor.layout.account.setting')
-    .controller('AccountSettingController', AccountSettingController);
+    .module('harbor.layout.change.password')
+    .controller('ChangePasswordController', ChangePasswordController);
   
-  AccountSettingController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
+  ChangePasswordController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
   
-  function AccountSettingController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
+  function ChangePasswordController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
 
     var vm = this;
     vm.isOpen = false;
@@ -17,8 +17,9 @@
     vm.errorMessage = '';
     
     vm.reset = reset;    
+    
     vm.confirm = confirm;
-    vm.updateUser = updateUser;
+    vm.updatePassword = updatePassword;
     vm.cancel = cancel;
     
     $scope.user = currentUser.get();
@@ -55,34 +56,35 @@
       $window.location.href = '/dashboard';
     }    
                 
-    function updateUser(user) {
-      vm.confirmOnly = true;
-      vm.action = vm.confirm;
-      if(user && angular.isDefined(user.username) && angular.isDefined(user.realname)) {
-        UpdateUserService(userId, user)
-          .success(updateUserSuccess)
-          .error(updateUserFailed); 
-        currentUser.set(user);        
+    function updatePassword(user) {
+      if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
+        vm.action = vm.confirm;
+        ChangePasswordService(userId, user.oldPassword, user.password)
+          .success(changePasswordSuccess)
+          .error(changePasswordFailed);
       }
+     
     }
-        
-    function updateUserSuccess(data, status) {
-      vm.modalTitle = $filter('tr')('change_profile', []);
-      vm.modalMessage = $filter('tr')('successful_changed_profile', []);
+    
+    function changePasswordSuccess(data, status) {
+      vm.modalTitle = $filter('tr')('change_password', []);
+      vm.modalMessage = $filter('tr')('successful_changed_password', []);
       $scope.$broadcast('showDialog', true);
     }
     
-    function updateUserFailed(data, status) {
-      $scope.$emit('modalTitle', $filter('tr')('error'));
+    function changePasswordFailed(data, status) {
+
       var message;
-      if(status === 409) {
-        message = $filter('tr')('email_has_been_taken');
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      console.log('Failed to change password:' + data);
+      if(data == 'old_password_is_not_correct') {
+        message = $filter('tr')('old_password_is_incorrect');
       }else{
-        message = $filter('tr')('failed_to_update_user') + data;
+        message = $filter('tr')('failed_to_change_password');
       }
+
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);
-      console.log('Failed to update user.');
     }
     
     function cancel(form) {

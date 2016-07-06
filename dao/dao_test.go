@@ -1139,24 +1139,40 @@ func TestGetRepPolicyByProject(t *testing.T) {
 func TestGetRepJobByPolicy(t *testing.T) {
 	jobs, err := GetRepJobByPolicy(999)
 	if err != nil {
-		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
+		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
 		return
 	}
 	if len(jobs) > 0 {
-		log.Errorf("Unexpected length of jobs, expected: 0, in fact: %d", len(jobs))
+		t.Errorf("Unexpected length of jobs, expected: 0, in fact: %d", len(jobs))
 		return
 	}
 	jobs, err = GetRepJobByPolicy(policyID)
 	if err != nil {
-		log.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
+		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
 		return
 	}
 	if len(jobs) != 1 {
-		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		t.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
 		return
 	}
 	if jobs[0].ID != jobID {
-		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		t.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
+		return
+	}
+}
+
+func TestFilterRepJobs(t *testing.T) {
+	jobs, err := FilterRepJobs(policyID, "", "", nil, nil, 1000)
+	if err != nil {
+		t.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
+		return
+	}
+	if len(jobs) != 1 {
+		t.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
+		return
+	}
+	if jobs[0].ID != jobID {
+		t.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
 		return
 	}
 }
@@ -1175,22 +1191,6 @@ func TestDeleteRepJob(t *testing.T) {
 	}
 	if j != nil {
 		t.Errorf("Able to find rep job after deletion, id: %d", jobID)
-		return
-	}
-}
-
-func TestFilterRepJobs(t *testing.T) {
-	jobs, err := FilterRepJobs(policyID, "", "", nil, nil, 1000)
-	if err != nil {
-		log.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
-		return
-	}
-	if len(jobs) != 1 {
-		log.Errorf("Unexpected length of jobs, expected: 1, in fact: %d", len(jobs))
-		return
-	}
-	if jobs[0].ID != jobID {
-		log.Errorf("Unexpected job ID in the result, expected: %d, in fact: %d", jobID, jobs[0].ID)
 		return
 	}
 }
@@ -1265,7 +1265,7 @@ func TestDeleteRepTarget(t *testing.T) {
 func TestFilterRepPolicies(t *testing.T) {
 	_, err := FilterRepPolicies("name", 0)
 	if err != nil {
-		t.Fatalf("failed to filter policy")
+		t.Fatalf("failed to filter policy: %v", err)
 	}
 }
 
