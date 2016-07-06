@@ -7,6 +7,13 @@
       $interpolateProvider.endSymbol('//');
     })
     .config(function($httpProvider) {
+//      if(!$httpProvider.defaults.headers) {
+//        $httpProvider.defaults.headers = {};
+//      }
+//      $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
+//      $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
+//      $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
+      
       $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
       $httpProvider.interceptors.push('redirectInterceptor');
     })

@@ -26,6 +26,7 @@
       var indexDesc3 = $filter('tr')('index_desc_3', []);
       var indexDesc4 = $filter('tr')('index_desc_4', []);
       var indexDesc5 = $filter('tr')('index_desc_5', []);
+      var indexDesc6 = $filter('tr')('index_desc_6', []);
       
       $scope.$emit('modalTitle', $filter('tr')('harbor_intro_title'));
       $scope.$emit('modalMessage', '<p class="page-content text-justify">'+
@@ -37,6 +38,7 @@
   			 '<li class="long-line">▪︎ ' + indexDesc3 + '</li>' +
   			 '<li class="long-line">▪︎ ' + indexDesc4 + '</li>' +
   			 '<li class="long-line">▪︎ ' + indexDesc5 + '</li>' +
+         '<li class="long-line">▪︎ ' + indexDesc6 + '</li>' +
   			'</ul>');
       var emitInfo = {
         'contentType': 'text/html',

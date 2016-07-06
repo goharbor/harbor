@@ -102,12 +102,7 @@
       $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [vm.tag]));
       var message;
       console.log('vm.tagCount:' + angular.toJson(vm.tagCount[vm.repoName]));
-      if(vm.tagCount[vm.repoName] === 1) {
-        message = $filter('tr')('alert_delete_last_tag', [vm.tag]);
-      }else {
-        message = $filter('tr')('alert_delete_tag', [vm.tag]);
-      }
-      $scope.$emit('modalMessage', message);
+      $scope.$emit('modalMessage',  $filter('tr')('alert_delete_tag', [vm.tag]));
       
       var emitInfo = {
         'confirmOnly': false,

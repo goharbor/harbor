@@ -13,10 +13,10 @@
     <table class="table table-pane">
       <tbody>
         <tr>
-          <td colspan="5" height="120px" class="empty-hint" ng-if="vm.top10Repositories.length === 0"><h3 class="text-muted">// 'no_top_repositories' | tr //</h3></td>
+          <td colspan="5" height="120px" class="empty-hint" ng-if="vm.top10Repositories.length === 0"><h4 class="text-muted">// 'no_top_repositories' | tr //</h4></td>
         </tr>
         <tr ng-if="vm.top10Repositories.length > 0" ng-repeat="t in vm.top10Repositories">
-          <td width="60%">//t.name//</td><td width="15%">//t.count//</td><td width="25%">//t.creator === '' ? 'N/A' : t.creator //</td>
+          <td width="60%">//t.name//</td><td width="15%">//t.count//</td><td width="25%">//t.creator === '' ? '-' : t.creator //</td>
         </tr>
       </tbody>
     </table>
