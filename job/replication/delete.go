@@ -44,14 +44,7 @@ type Deleter struct {
 }
 
 // NewDeleter returns a Deleter
-func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, insecure bool, logger *log.Logger) (*Deleter, error) {
-	dstCred := auth.NewBasicAuthCredential(dstUsr, dstPwd)
-	dstClient, err := newRepositoryClient(dstURL, insecure, dstCred,
-		repository, "repository", repository, "pull", "push", "*")
-	if err != nil {
-		return nil, err
-	}
-
+func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string, insecure bool, logger *log.Logger) *Deleter {
 	deleter := &Deleter{
 		repository: repository,
 		tags:       tags,
@@ -59,12 +52,11 @@ func NewDeleter(repository string, tags []string, dstURL, dstUsr, dstPwd string,
 		dstUsr:     dstUsr,
 		dstPwd:     dstPwd,
 		insecure:   insecure,
-		dstClient:  dstClient,
 		logger:     logger,
 	}
 	deleter.logger.Infof("initialization completed: repository: %s, tags: %v, destination URL: %s, insecure: %v, destination user: %s",
 		deleter.repository, deleter.tags, deleter.dstURL, deleter.insecure, deleter.dstUsr)
-	return deleter, nil
+	return deleter
 }
 
 // Exit ...
@@ -81,10 +73,18 @@ func (d *Deleter) Enter() (string, error) {
 	}
 
 	return state, err
-
 }
 
 func (d *Deleter) enter() (string, error) {
+	dstCred := auth.NewBasicAuthCredential(d.dstUsr, d.dstPwd)
+	dstClient, err := newRepositoryClient(d.dstURL, d.insecure, dstCred,
+		d.repository, "repository", d.repository, "pull", "push", "*")
+	if err != nil {
+		d.logger.Errorf("an error occurred while creating destination repository client: %v", err)
+		return "", err
+	}
+
+	d.dstClient = dstClient
 
 	if len(d.tags) == 0 {
 		tags, err := d.dstClient.ListTag()
