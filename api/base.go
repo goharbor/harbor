@@ -25,6 +25,7 @@ import (
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
+	//"k8s.io/kubernetes/pkg/api/resource"
 )
 
 // BaseAPI wraps common methods for controllers to host API
@@ -91,6 +92,7 @@ func (b *BaseAPI) ValidateUser() int {
 func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	requestURI := b.Ctx.Request.RequestURI
 	resoucreURI := requestURI + "/" + resouceID
+	println(resoucreURI)
 
 	b.Ctx.Redirect(statusCode, resoucreURI)
 }

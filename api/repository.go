@@ -118,7 +118,13 @@ func (ra *RepositoryAPI) AddLabel(){
 	}
 
 	repoLabel := models.RepoLabel{RepoName: repoName, Label: label}
-	dao.AddLabel(repoLabel)
+	insertId, err := dao.AddLabel(repoLabel)
+	if err != nil{
+		ra.CustomAbort(http.StatusInternalServerError, "Failed to insert label to db")
+	}else {
+		ra.Data["json"] = insertId
+	}
+	ra.ServeJSON()
 }
 
 
@@ -134,7 +140,14 @@ func (ra *RepositoryAPI) DeleteLabel(){
 	}
 
 	repoLabel := models.RepoLabel{RepoName: repoName, Label: label}
-	dao.DeletelLabel(repoLabel)
+	affectedRows, err :=dao.DeletelLabel(repoLabel)
+
+	if err != nil{
+		ra.CustomAbort(http.StatusInternalServerError, "Failed to delete labels from db")
+	}else {
+		ra.Data["json"] = affectedRows
+	}
+	ra.ServeJSON()
 }
 
 
@@ -144,7 +157,13 @@ func (ra *RepositoryAPI) GetLabels(){
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
-	dao.GetRepoLabels(repoName)
+	labels, err := dao.GetRepoLabels(repoName)
+	if err != nil{
+		ra.CustomAbort(http.StatusInternalServerError, "Failed to get labels from db")
+	}else {
+		ra.Data["json"] = labels
+	}
+	ra.ServeJSON()
 }
 
 func (ra *RepositoryAPI) GetRepoNames(){
@@ -153,7 +172,12 @@ func (ra *RepositoryAPI) GetRepoNames(){
 		ra.CustomAbort(http.StatusBadRequest, "label is nil")
 	}
 
-	dao.GetRepoNames(label)
+	repos, err := dao.GetRepoNames(label)
+	if err != nil{
+		ra.CustomAbort(http.StatusInternalServerError, "Failed to get repo names from db")
+	}else {
+		ra.Data["json"] = repos
+	}
 }
 
 // Delete ...
