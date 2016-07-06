@@ -42,11 +42,11 @@
                 </td>
                 <td width="12%">
                   <div class="display-inline-block" ng-switch on="//r.enabled//">
-                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
-                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
+                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)" title="// 'disable' | tr //"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
+                    <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)" title="// 'enable' | tr //"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
                   </div>
                   &nbsp;
-                  <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+                  <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)" title="// 'edit_policy' | tr //"><span class="glyphicon glyphicon-pencil"></span></a>
                   &nbsp;
                   <!--a  href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a-->
                 </td>

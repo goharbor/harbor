@@ -34,6 +34,11 @@
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_toggle_admin'));
       $scope.$emit('raiseError', true);
+      if(vm.isAdmin) {
+        vm.isAdmin = false;
+      }else{
+        vm.isAdmin = true;
+      }
       console.log('Failed to toggle admin:' + data);
     }    
   }

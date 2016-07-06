@@ -31,13 +31,13 @@
     
     function retrieve() {
       ListTagService(vm.repoName)
-        .then(getTagComplete)
-        .catch(getTagFailed);
+        .success(getTagSuccess)
+        .error(getTagFailed);
     }
     
-    function getTagComplete(response) {
+    function getTagSuccess(data) {
       
-      vm.tags = response.data;
+      vm.tags = data || [];
       vm.tagCount[vm.repoName] = vm.tags.length;
       
       $scope.$emit('tags', vm.tags);
@@ -48,11 +48,11 @@
       });
     }
       
-    function getTagFailed(response) {
+    function getTagFailed(data) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_get_tag') + response);
       $scope.$emit('raiseError', true);
-      console.log('Failed to get tag:' + response);
+      console.log('Failed to get tag:' + data);
     }
     
     function deleteTag(e) {
