@@ -155,7 +155,8 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 			from replication_policy rp 
 			left join project p on rp.project_id=p.project_id 
 			left join replication_target rt on rp.target_id=rt.id 
-			left join replication_job rj on rp.id=rj.policy_id and rj.status="error" `
+			left join replication_job rj on rp.id=rj.policy_id and (rj.status="error" 
+				or rj.status="retrying") group by rp.id `
 
 	if len(name) != 0 && projectID != 0 {
 		sql += `where rp.name like ? and rp.project_id = ? `
