@@ -22,6 +22,7 @@ import (
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
+	"github.com/harbor/service"
 	_ "github.com/vmware/harbor/auth/db"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -61,7 +62,13 @@ func updateInitPassword(userID int, password string) error {
 	}
 	return nil
 }
-
+func modCatalogTimer() {
+	config :=
+		log.Println("start init git client and clone the uri")
+	client := InitClient()
+	log.Println("start git pull timer")
+	go PullTimer(&client)
+}
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionProvider = "redis"
@@ -70,5 +77,12 @@ func main() {
 	dao.InitDB()
 	dao.UpgradeDB()
 	updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD"))
+
+	service.InitParam()
+	config := service.Pairs()
+	if config.Storemethod == "git" {
+		modCatalogTimer()
+	}
+
 	beego.Run()
 }

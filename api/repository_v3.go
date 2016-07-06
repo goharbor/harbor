@@ -27,6 +27,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/astaxie/beego"
+	"github.com/harbor/service"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
@@ -95,7 +96,8 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	if os.Getenv("storePath") == "git" {
+	config := service.Pairs()
+	if config.Storemethod == "git" {
 		FetchRepoInfo(&repository)
 	}
 
@@ -136,7 +138,8 @@ func (ra *RepositoryV3API) GetMineRepositories() {
 		return
 	}
 
-	if os.Getenv("storePath") == "git" {
+	config := service.Pairs()
+	if config.Storemethod == "git" {
 		for i := 0; i < len(repositories); i++ {
 			FetchRepoInfo(&repositories[i])
 		}
@@ -154,7 +157,8 @@ func (ra *RepositoryV3API) GetRepositories() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
 
-	if os.Getenv("storePath") == "git" {
+	config := service.Pairs()
+	if config.Storemethod == "git" {
 		for i := 0; i < len(repositories); i++ {
 			FetchRepoInfo(&repositories[i])
 		}

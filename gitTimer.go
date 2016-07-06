@@ -9,22 +9,23 @@ import (
 	"github.com/harbor/service"
 )
 
-func initClient() *service.Client {
-	client, err := git.NewClient(os.Getenv("workspace"), os.Getenv("project"), os.Getenv("imageName"), os.Getenv("gitUri"), os.Getenv("branchName"))
+func InitClient() *service.Client {
+	config := service.Pairs()
+	client, err := service.NewClient(config.Workspace, config.Project, config.Imagename, config.Gituri, config.Branch)
 	if err != nil {
 		log.Error("the creation of git client failed")
 	}
-	err = client.Clone()
+	err = service.Clone()
 	if err != nil {
-		log.Error(fmt.Sprintf("%s :%s", "git clone failed,git uri is", os.Getenv("gitUri")))
+		log.Error(fmt.Sprintf("%s :%s", "git clone failed,git uri is", config.Gituri))
 	}
 	return &client
 }
-func pullTimer(client *service.Client) {
+func PullTimer(client *service.Client) {
 	timer := time.NewTicker(time.Second * 2)
 	for {
 		<-timer.C
-		if err := client.Pull(); err != nil {
+		if err := service.Pull(); err != nil {
 			log.Error(fmt.Sprintf("%s:%s", "git pull failed,the uri is:", client.URI))
 		}
 	}
