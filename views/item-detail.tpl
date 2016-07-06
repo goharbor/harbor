@@ -3,9 +3,9 @@
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-        
+
         http://www.apache.org/licenses/LICENSE-2.0
-        
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@
 		<div class="row">
 			<div class="col-md-2">
 				<ul class="nav nav-pills nav-stacked" id="tabItemDetail">
-					<li role="presentation"><a href="#tabRepoInfo" aria-controls="tabRepoInfo" role="tab" data-toggle="tab">{{i18n .Lang "repo"}}</a></li> 
+					<li role="presentation"><a href="#tabRepoInfo" aria-controls="tabRepoInfo" role="tab" data-toggle="tab">{{i18n .Lang "repo"}}</a></li>
 					<li role="presentation" style="visibility: hidden;"><a href="#tabUserInfo" aria-controls="tabUserInfo" role="tab" data-toggle="tab">{{i18n .Lang "user"}}</a></li>
 					<li role="presentation" style="visibility: hidden;"><a href="#tabOperationLog" aria-controls="tabOperationLog" role="tab" data-toggle="tab">{{i18n .Lang "logs"}}</a></li>
 				</ul>
@@ -38,16 +38,17 @@
 				<input type="hidden" id="harborRegUrl" value="{{.HarborRegUrl}}">
 				<input type="hidden" id="public" value="{{.Public}}">
 				<input type="hidden" id="repoName" value="{{.RepoName}}">
+				<input type="hidden" id="targetId" value="{{.targetId}}">
 				<!-- tab panes -->
 				<div class="tab-content">
 					<div role="tabpanel" class="tab-pane" id="tabRepoInfo">
-						<form class="form-inline">						
+						<form class="form-inline">
 							<div class="form-group">
 								<label class="sr-only" for="txtRepoName">{{i18n .Lang "repo_name"}}:</label>
-								<div class="input-group">							
+								<div class="input-group">
 									<div class="input-group-addon">{{i18n .Lang "repo_name"}}:</div>
 									<input type="text" class="form-control" id="txtRepoName">
-									<span class="input-group-btn"> 
+									<span class="input-group-btn">
 										<button id="btnSearchRepo" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
 									</span>
 								</div>
@@ -59,16 +60,16 @@
 							<div class="panel-group" id="accordionRepo" role="tablist" aria-multiselectable="true">
 							</div>
 						</div>
-					</div>		
+					</div>
 					<div role="tabpanel" class="tab-pane" id="tabUserInfo">
-						<form class="form-inline">						
+						<form class="form-inline">
 							<div class="form-group">
-								<div class="input-group">							
+								<div class="input-group">
 									<label class="sr-only" for="txtSearchUser">{{i18n .Lang "username"}}:</label>
-									<div class="input-group">	
+									<div class="input-group">
 										<div class="input-group-addon">{{i18n .Lang "username"}}:</div>
 										<input type="text" class="form-control" id="txtSearchUser">
-										<span class="input-group-btn"> 
+										<span class="input-group-btn">
 											<button id="btnSearchUser" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
 										</span>
 									</div>
@@ -89,7 +90,7 @@
 								<tbody>
 								</tbody>
 							</table>
-						</div>		
+						</div>
 					</div>
 					<div role="tabpanel" class="tab-pane" id="tabOperationLog">
 						<form class="form-inline">
@@ -98,7 +99,7 @@
 								<div class="input-group">
 									<div class="input-group-addon">{{i18n .Lang "username"}}:</div>
 									<input type="text" class="form-control" id="txtSearchUserName">
-									<span class="input-group-btn"> 
+									<span class="input-group-btn">
 										<button id="btnFilterLog" type="button" class="btn btn-primary" data-toggle="modal" data-target="#dlgSearch"><span class="glyphicon glyphicon-search"></span></button>
 									</span>
 								</div>
@@ -114,7 +115,7 @@
 									<div class="form-group">
 										<label for="txtUserName" class="sr-only">{{i18n .Lang "operation"}}:</label>
 										<div class="input-group">
-											<div class="input-group-addon">{{i18n .Lang "operation"}}:</div>	
+											<div class="input-group-addon">{{i18n .Lang "operation"}}:</div>
 											<span class="input-group-addon" id="spnFilterOption">
 												<input type="checkbox" name="chkAll" value="0"> {{i18n .Lang "all"}}
 												<input type="checkbox" name="chkOperation" value="create"> Create
@@ -122,14 +123,14 @@
 												<input type="checkbox" name="chkOperation" value="push"> Push
 												<input type="checkbox" name="chkOperation" value="delete"> Delete
 												<input type="checkbox" name="chkOperation" value="others"> {{i18n .Lang "others"}}:
-												<input type="text" id="txtOthers" size="10">								
+												<input type="text" id="txtOthers" size="10">
 											</span>
 										</div>
 									</div>
 									<p></p>
 									<div class="form-group">
 										<label for="begindatepicker" class="sr-only">{{i18n .Lang "start_date"}}:</label>
-										<div class="input-group">	
+										<div class="input-group">
 											<div class="input-group-addon">{{i18n .Lang "start_date"}}:</div>
 											<div class="input-group date" id="datetimepicker1">
 												<input type="text" class="form-control" id="begindatepicker" readonly="readonly">
@@ -140,7 +141,7 @@
 										</div>
 									</div>
 									<div class="form-group">
-										<div class="input-group">	
+										<div class="input-group">
 											<div class="input-group-addon">{{i18n .Lang "end_date"}}:</div>
 											<div class="input-group date" id="datetimepicker2">
 												<input type="text" class="form-control" id="enddatepicker" readonly="readonly">
@@ -149,9 +150,9 @@
 												</span>
 											</div>
 										</div>
-									</div>			
-								</form>	
-							</div>				
+									</div>
+								</form>
+							</div>
 							<div class="table-responsive div-height">
 								<table id="tblAccessLog" class="table table-hover" >
 									<thead>
@@ -166,8 +167,8 @@
 									<tbody>
 									</tbody>
 								</table>
-							</div>	
-						</form>		
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>

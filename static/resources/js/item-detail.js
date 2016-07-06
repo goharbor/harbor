@@ -108,6 +108,7 @@ jQuery(function(){
 			});
 
 			$('#accordionRepo').on('show.bs.collapse', function (e) {
+
 				$('#accordionRepo .in').collapse('hide');
 				var targetId = $(e.target).attr("targetId");
 				var repoName = targetId.replace(/[-]{6}/g, "/").replace(/[-]{3}/g, ".");
@@ -145,74 +146,87 @@ jQuery(function(){
 					}
 				}).exec();
 
-				//
-				$('#' + targetId +' ul.labels-panel').remove();
-
-				var row = [];
-				row.push('<li><button type="button" class="btn btn-primary addLabel" repoName="'+ repoName +'" data-toggle="modal" data-target="#dlgLabel" id="btnAddLabel">添加</button></li>');
-
-				$('#' + targetId +' ul.labels-panel').append(row.join(""));
-
-
-				$("#btnLabelSave").on("click", function() {
-
-					var labelName = $("#labelName").val();
-					if ($.trim(labelName).length == 0) {
-						$("#dlgModal").dialogModal({
-							"title": 'Error',
-							"content": 'not null'
-						});
-						return;
-					}
-
-					new AjaxUtil({
-						url: "/api/repositories/labels?repo_name=" + repoName + "&label=" + labelName,
-						type: "post",
-						data : { repo_name : repoName, label : labelName},
-						success: function(data, status, xhr){
-							if(data && data.status == 200){
-								$("#btnLabelCancel").trigger("click");
-								listLabel(targetId, repoName);
-							}
-						}
-					}).exec();
-				});
 
 				listLabel(targetId, repoName);
-
-				$(document, '#' + targetId +' ul.labels-panel .close').on("click", function(e){
-					var labelName = $(this).attr("labelName");
-					var repoName = $(this).attr("repoName");
-					new AjaxUtil({
-						url: "/api/repositories/labels/label?repo_name=" + repoName + "&label=" + labelName,
-						type: "delete",
-						success: function(data, status, xhr){
-							if(data && data.status == 200){
-								$("#btnLabelCancel").trigger("click");
-								listLabel(targetId, repoName);
-							}
-							//删除label的回调
-						}
-					}).exec();
-				});
 
 			});
 		}
 
+		$(document).on("click", "#btnLabelSave",  function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+			var labelName = $("#labelName").val();
+			var repoName = $('#repoName').val();
+			var targetId = $('#targetId').val();
+
+			if ($.trim(labelName).length == 0) {
+				$("#dlgModal").dialogModal({
+					"title": 'Error',
+					"content": 'not null'
+				});
+				return;
+			}
+
+			new AjaxUtil({
+				url: "/api/repositories/labels?repo_name=" + repoName + "&label=" + labelName,
+				type: "post",
+				data : { repo_name : repoName, label : labelName},
+				success: function(data, status, xhr){
+					if(status == 'success'){
+						$("#btnLabelCancel").trigger("click");
+						listLabel(targetId, repoName);
+					}
+				}
+			}).exec();
+		});
+
+
+		$(document).on("click", 'ul.labels-panel .close', function(e){
+			e.stopPropagation();
+			e.preventDefault();
+			var labelName = $(this).attr("labelName");
+			var repoName = $(this).attr("repoName");
+			var targetId = $(this).attr("targetId");
+
+			new AjaxUtil({
+				url: "/api/repositories/labels?repo_name=" + repoName + "&label=" + labelName,
+				type: "delete",
+				success: function(data, status, xhr){
+					if(status == 'success'){
+						$("#btnLabelCancel").trigger("click");
+						listLabel(targetId, repoName);
+					}
+					//删除label的回调
+				}
+			}).exec();
+		});
+
 		function listLabel(targetId, repoName) {
+
+			//获取列表的时候带上更新
+			$('#' + targetId +' ul.labels-panel').empty();
+
+			var row = [];
+
+			row.push('<li><button type="button" class="btn btn-primary addLabel" targetId="' + targetId + '" repoName="'+ repoName +'" data-toggle="modal" data-target="#dlgLabel" id="btnAddLabel">添加</button></li>');
+
+			//纪录弹出框的值
+			$('#repoName').val(repoName);
+			$('#targetId').val(targetId);
+			$('#' + targetId +' ul.labels-panel').append(row.join(""));
+
 			new AjaxUtil({
 				url: "/api/repositories/labels/label?repo_name=" + repoName,
 				type: "get",
 				success: function(data, status, xhr){
-					//先清空，再获取labels列表
-					$('#' + targetId +' ul.labels-panel').remove();
-					var row = [];
+					var tmp = [];
+					//获取labels列表
 					for(var i in data){
 						var labelName = data[i]
-						row.push('<li>' + labelName + '<a class="close" labelName="' + labelName + '" repoName="' + repoName + '"><span aria-hidden="true">×</span></a></li>');
+						tmp.push('<li class="label-name">' + labelName + '<a class="close"  targetId="' + targetId + '" labelName="' + labelName + '" repoName="' + repoName + '"><span aria-hidden="true">×</span></a></li>');
 					}
 
-					$('#' + targetId +' ul.labels-panel').append(row.join(""));
+					$('#' + targetId +' ul.labels-panel').append(tmp.join(""));
 				}
 			}).exec();
 		}
