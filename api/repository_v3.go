@@ -27,9 +27,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/astaxie/beego"
-	"github.com/harbor/service"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service"
 	"github.com/vmware/harbor/utils"
 )
 

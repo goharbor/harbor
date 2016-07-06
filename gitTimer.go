@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/harbor/service"
+	"github.com/vmware/harbor/service"
 )
 
 func InitClient() *service.Client {

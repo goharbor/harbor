@@ -22,11 +22,11 @@ import (
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
-	"github.com/harbor/service"
 	_ "github.com/vmware/harbor/auth/db"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	_ "github.com/vmware/harbor/routers"
+	"github.com/vmware/harbor/service"
 )
 
 const (
