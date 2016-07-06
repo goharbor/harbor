@@ -1,6 +1,7 @@
 version: '2'
 services:
   log:
+    container_name: logging
     build: ./log/
     volumes:
       - /var/log/harbor/:/var/log/docker/
@@ -25,6 +26,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "registry"
   mysql:
+    container_name: mysql
     build: ./db/
     volumes:
       - /data/database:/var/lib/mysql
@@ -38,6 +40,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "mysql"
   ui:
+    container_name: ui
     build:
       context: ../
       dockerfile: Dockerfile.ui
@@ -54,6 +57,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "ui"
   proxy:
+    container_name: proxy
     image: library/nginx:1.9
     volumes:
       - ./config/nginx:/etc/nginx

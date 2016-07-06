@@ -42,7 +42,7 @@ func DeletelLabel(repoLabel models.RepoLabel) (int64, error) {
 func GetRepoLabels(repoName string) ([]string, error){
 	o := GetOrmer()
 
-	sql := `select lable from repo_label where repoName=?`
+	sql := `select label from repo_label where repoName=?`
 
 	var labels []string
 
@@ -57,7 +57,7 @@ func GetRepoLabels(repoName string) ([]string, error){
 func GetRepoNames(label string) ([]string, error){
 	o := GetOrmer()
 
-	sql := `select repoName from repo_label where lable=?`
+	sql := `select repoName from repo_label where label=?`
 
 	var repoNames []string
 
