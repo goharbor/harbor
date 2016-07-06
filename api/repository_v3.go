@@ -25,11 +25,10 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/git"
 	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/service"
 	"github.com/vmware/harbor/utils"
 )
 
@@ -96,9 +95,9 @@ func (ra *RepositoryV3API) GetRepository() {
 		return
 	}
 
-	config := service.Pairs()
+	config := git.Pairs()
 	if config.Storemethod == "git" {
-		FetchRepoInfo(&repository)
+		FetchRepoInfo(repository)
 	}
 
 	catalog, err := utils.ParseQuestions(repository.Catalog)
@@ -138,7 +137,7 @@ func (ra *RepositoryV3API) GetMineRepositories() {
 		return
 	}
 
-	config := service.Pairs()
+	config := git.Pairs()
 	if config.Storemethod == "git" {
 		for i := 0; i < len(repositories); i++ {
 			FetchRepoInfo(&repositories[i])
@@ -157,7 +156,7 @@ func (ra *RepositoryV3API) GetRepositories() {
 		ra.RenderError(http.StatusInternalServerError, "Failed to get repositories")
 	}
 
-	config := service.Pairs()
+	config := git.Pairs()
 	if config.Storemethod == "git" {
 		for i := 0; i < len(repositories); i++ {
 			FetchRepoInfo(&repositories[i])
@@ -287,7 +286,7 @@ func FetchRepoInfo(repository *models.Repository) {
 func readFile(path string) string {
 	contents, error := ioutil.ReadFile(path)
 	if error != nil {
-		log.Error(fmt.Sprintf("%s:%s", "file not exists:", path))
+		log.Println(fmt.Sprintf("%s:%s", "file not exists:", path))
 	}
 	return string(contents)
 }
