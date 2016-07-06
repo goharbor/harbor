@@ -218,5 +218,30 @@
 			</div>
 		</div>
 	</div>
+	<div class="modal fade" id="dlgLabel" tabindex="-1" role="dialog" aria-labelledby="User" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="dlgLabelTitle">添加元数据</h4>
+				</div>
+				<div class="modal-body">
+					<form role="form">
+							<div class="input-group">
+								<label for="txtUserName" class="input-group-addon">{{i18n .Lang "label_name"}}:</label>
+								<input type="text" class="form-control" id="labelName">
+							</div>
+
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="btnLabelSave">{{i18n .Lang "button_save"}}</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal" id="btnLabelCancel">{{i18n .Lang "button_cancel"}}</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 <script src="static/resources/js/item-detail.js"></script>
