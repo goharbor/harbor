@@ -22,7 +22,7 @@
     vm.deleteProjectMember = deleteProjectMember;
     vm.retrieve = retrieve;
     vm.username = '';
-     
+    
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve();
     
@@ -78,11 +78,7 @@
     function getProjectMemberFailed(response) {
       console.log('Failed to get project members:' + response);
       vm.projectMembers = [];
-      
-      $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project_member'));
-      $scope.$emit('raiseError', true);
-            
+      vm.target = 'repositories';    
       $location.url('repositories').search('project_id', vm.projectId);
     }
     
@@ -93,7 +89,8 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project-member/list-project-member.directive.html',
       'scope': {
-        'sectionHeight': '='
+        'sectionHeight': '=',
+        'target': '='
       },
       'controller': ListProjectMemberController,
       'controllerAs': 'vm',

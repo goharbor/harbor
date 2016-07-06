@@ -33,9 +33,9 @@
               <td width="30%">//r.endpoint//</td>
               <td width="35%">//r.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
               <td width="15%">
-                <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)" title="// 'edit' | tr //" ><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;
-                <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id)"><span class="glyphicon glyphicon-trash"></span></a>
+                <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id)" title="// 'delete' | tr //"><span class="glyphicon glyphicon-trash"></span></a>
               </td>
             </tr>
           </tbody>

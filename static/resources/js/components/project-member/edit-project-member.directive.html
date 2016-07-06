@@ -2,7 +2,7 @@
 <td width="45%"><switch-role roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-name="vm.roleName"></switch-role></td>
 <td width="25%">
   <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.updateProjectMember({projectId: vm.projectId, userId: vm.userId, roleId: vm.roleId})">
-    <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil" title="// 'edit' | tr //"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok" title="Confirm">
+    <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil" title="// 'edit' | tr //"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok" title="// 'confirm' | tr //">
   </a>
   <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.cancelUpdate()" title="// 'cancel' | tr //">
     <span ng-if="vm.editMode" class="glyphicon glyphicon-remove"></span>

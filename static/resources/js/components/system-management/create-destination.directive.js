@@ -21,7 +21,7 @@
     vm.pingDestination = pingDestination;
     
     vm.editable = true;
-    vm.notAvailable = true;
+    vm.notAvailable = false;
     vm.pingAvailable = true;
     vm.pingMessage = '';
         
@@ -40,7 +40,6 @@
     });
         
     function addNew() {
-      vm.editable = true;
       vm.modalTitle = $filter('tr')('add_new_destination', []);
       vm0.name = '';
       vm0.endpoint = '';
@@ -153,7 +152,7 @@
     function pingDestinationFailed(data, status) {
 
       vm.pingTIP = false;
-      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '');
     }
   }
   
@@ -176,33 +175,34 @@
     function link(scope, element, attrs, ctrl) {
       
       element.find('#createDestinationModal').on('show.bs.modal', function() {
-        
-        scope.form.$setPristine();
-        scope.form.$setUntouched();
-        
-        ctrl.notAvailble = true;
-        ctrl.pingAvailable = true;
-        ctrl.pingMessage = '';
-        
-        ctrl.toggleErrorMessage = false;
-        ctrl.errorMessages = [];
-        
-        switch(ctrl.action) {
-        case 'ADD_NEW':
-          ctrl.addNew();
-          break;
-        case 'EDIT':
-          ctrl.edit(ctrl.targetId);
-          break;
-        }
-        
-        scope.$watch('vm.errorMessages', function(current) {
-          if(current && current.length > 0) {
-            ctrl.toggleErrorMessage = true;
+        scope.$apply(function(){
+          scope.form.$setPristine();
+          scope.form.$setUntouched();
+          
+          ctrl.notAvailble = false;
+          ctrl.pingAvailable = true;
+          ctrl.pingMessage = '';
+          
+          ctrl.pingTIP = false;
+          ctrl.toggleErrorMessage = false;
+          ctrl.errorMessages = [];
+          
+          switch(ctrl.action) {
+          case 'ADD_NEW':
+            ctrl.addNew();
+            break;
+          case 'EDIT':
+            ctrl.edit(ctrl.targetId);
+            break;
           }
-        }, true);
-        
-        scope.$apply();
+          
+          scope.$watch('vm.errorMessages', function(current) {
+            if(current && current.length > 0) {
+              ctrl.toggleErrorMessage = true;
+            }
+          }, true);
+          
+        });
       });
       
       ctrl.save = save;

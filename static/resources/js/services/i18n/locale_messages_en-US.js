@@ -79,6 +79,7 @@ var locale_messages = {
   'new_project': 'New Project', 
   'save': 'Save',
   'cancel': 'Cancel',
+  'confirm': 'Confirm',
   'items': 'items',  
   'add_member': 'Add Member',
   'operation': 'Operation',
@@ -153,7 +154,9 @@ var locale_messages = {
   'status': 'Status',
   'logs' : 'Logs',
   'enabled': 'Enabled',
+  'enable': 'Enable',
   'disabled': 'Disabled',
+  'disable': 'Disable',
   'no_replication_policies_add_new': 'No replication policies, add new replication policy.',
   'no_replication_policies': 'No replication policies.',
   'no_replication_jobs': 'No replication jobs.',
@@ -186,9 +189,9 @@ var locale_messages = {
   'successful_added': 'Added new user successfully.',
   'copyright': 'Copyright',
   'all_rights_reserved': 'All Rights Reserved.',
-  'pinging_target': 'Testing connection, please wait...',
+  'pinging_target': 'Testing connection, please stand by...',
   'successful_ping_target': 'Test connection successfully.',
-  'failed_to_ping_target': 'Faild to connect target.',
+  'failed_to_ping_target': 'Cannot connect to the target.',
   'policy_already_exists': 'Policy alreay exists.',
   'destination_already_exists': 'Destination already exists.',
   'refresh': 'Refresh',
@@ -205,6 +208,7 @@ var locale_messages = {
   'finished': 'Finished',
   'canceled': 'Canceled',
   'stopped': 'Stopped',
+  'retrying': 'Retrying',
   'error': 'Error',
   'failed_to_get_project_member': 'Failed to get current project member.',
   'failed_to_delete_repo': 'Failed to delete repository. ',
@@ -235,6 +239,8 @@ var locale_messages = {
   'failed_to_delete_destination': 'Failed to delete destination.',
   'failed_to_create_destination': 'Failed to create destination.',
   'failed_to_update_destination': 'Failed to update destination.',
+  'failed_to_toggle_publicity_insuffient_permissions': 'Failed to toggle project publicity, insuffient permissions.',
+  'failed_to_toggle_publicity': 'Failed to toggle project publicity.',
   'project_admin': 'Project Admin',
   'developer': 'Developer',
   'guest': 'Guest',
@@ -243,6 +249,7 @@ var locale_messages = {
       '<strong>Developer</strong>: Developer has read and write privileges for a project.<br/>' +
       '<strong>Guest</strong>: Guest has read-only privilege for a specified project.',
   'inline_help_publicity_title': '<strong>Publicity of Project</strong>',
-  'inline_help_publicity': 'Setting the project as public.'
-  
+  'inline_help_publicity': 'Setting the project as public.',
+  'alert_job_contains_error': 'Found errors in the current replication jobs, please look into it.',
+  'caution': 'Caution'
 };

@@ -37,9 +37,15 @@
       'projectId': vm.projectId,
       'username' : vm.username
     };
+        
     retrieve(vm.queryParams);
   
     $scope.$on('$locationChangeSuccess', function() {
+      
+      if(vm.publicity) {
+        vm.target = 'repositories';
+      }
+      
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.queryParams = {
         'beginTimestamp' : vm.beginTimestamp,
@@ -128,7 +134,9 @@
       restrict: 'E',
       templateUrl: '/static/resources/js/components/log/list-log.directive.html',
       scope: {
-        'sectionHeight': '='
+        'sectionHeight': '=',
+        'target': '=',
+        'publicity': '='
       },
       controller: ListLogController,
       controllerAs: 'vm',

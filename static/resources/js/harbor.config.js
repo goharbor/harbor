@@ -20,17 +20,36 @@
   function RedirectInterceptorService($q, $window) {
     return {
       'responseError': function(rejection) {
-        var pathname = $window.location.pathname;
-        var exclusion = ['/', '/search', '/reset_password', '/sign_up', '/forgot_password', '/repository'];
+        var url = rejection.config.url;
+        console.log('url:' + url);
+        var exclusion = [
+         '/',
+         '/search',
+         '/reset_password',
+         '/sign_up', 
+         '/forgot_password', 
+         '/api/targets/ping',
+         '/api/users/current',
+         '/api/repositories',
+          /^\/api\/projects\/[0-9]+\/members\/current$/
+        ];
         var isExcluded = false;
         for(var i in exclusion) {
-          if(exclusion[i] === pathname) {
-            isExcluded = true;
+          switch(typeof(exclusion[i])) {
+          case 'string':
+            isExcluded = (exclusion[i] === url);
+            break;
+          case 'object':
+            isExcluded = exclusion[i].test(url);
             break;
           }
-        }
-        if(rejection.status === 401 && !isExcluded) {
+          if(isExcluded) {
+            break;
+          }
+        }        
+        if(!isExcluded && rejection.status === 401) {
           $window.location.href = '/';
+          return;
         }
         return $q.reject(rejection);
       }

@@ -56,12 +56,13 @@ type RepPolicy struct {
 	TargetName  string `json:"target_name,omitempty"`
 	Name        string `orm:"column(name)" json:"name"`
 	//	Target       RepTarget `orm:"-" json:"target"`
-	Enabled      int       `orm:"column(enabled)" json:"enabled"`
-	Description  string    `orm:"column(description)" json:"description"`
-	CronStr      string    `orm:"column(cron_str)" json:"cron_str"`
-	StartTime    time.Time `orm:"column(start_time)" json:"start_time"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+	Enabled       int       `orm:"column(enabled)" json:"enabled"`
+	Description   string    `orm:"column(description)" json:"description"`
+	CronStr       string    `orm:"column(cron_str)" json:"cron_str"`
+	StartTime     time.Time `orm:"column(start_time)" json:"start_time"`
+	CreationTime  time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime    time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+	ErrorJobCount int       `json:"error_job_count"`
 }
 
 // Valid ...

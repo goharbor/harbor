@@ -15,6 +15,7 @@
         {'key': 'pending', 'value': $filter('tr')('pending')},
         {'key': 'running', 'value': $filter('tr')('running')},
         {'key': 'error'  , 'value': $filter('tr')('error')},
+        {'key': 'retrying', 'value': $filter('tr')('retrying')},
         {'key': 'stopped', 'value': $filter('tr')('stopped')}, 
         {'key': 'finished', 'value':$filter('tr')('finished')},
         {'key': 'canceled', 'value': $filter('tr')('canceled')}
@@ -28,7 +29,7 @@
     var vm = this;
     
     vm.sectionHeight = {'min-height': '1200px'};
-    
+      
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.retrievePolicy();
@@ -59,7 +60,7 @@
     
     vm.searchJobTIP = false;
     vm.refreshJobTIP = false;
-    
+        
     function searchReplicationPolicy() {
       vm.retrievePolicy();
     }   
@@ -102,9 +103,17 @@
 
     function listReplicationJobSuccess(data, status) {
       vm.replicationJobs = data || [];
+      var alertInfo = {
+        'show': false,
+        'message': ''
+      };
       angular.forEach(vm.replicationJobs, function(item) {
         for(var key in item) {          
-          var value = item[key]
+          var value = item[key];
+          if(key === 'status' && (value === 'error' || value === 'retrying')) {
+            alertInfo.show = true;
+            alertInfo.message = $filter('tr')('alert_job_contains_error');
+          }
           switch(key) {
           case 'operation':            
           case 'status':
@@ -114,6 +123,8 @@
           }
         }
       });
+     
+      $scope.$emit('raiseAlert', alertInfo);
       vm.searchJobTIP = false;
       vm.refreshJobTIP = false;
     }

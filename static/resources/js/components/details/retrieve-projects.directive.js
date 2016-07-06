@@ -44,7 +44,7 @@
     }
     
     function getProjectSuccess(data, status) {
-      vm.projects = data;
+      vm.projects = data || [];
 
       if(!angular.isDefined(vm.projects)) {
         vm.isPublic = 1;
@@ -77,11 +77,11 @@
       });
     }
     
-    function getProjectFailed(response) {
-      $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
-      $scope.$emit('raiseError', true);
-      console.log('Failed to list projects:' + response);
+    function getProjectFailed() {
+//      $scope.$emit('modalTitle', $filter('tr')('error'));
+//      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
+//      $scope.$emit('raiseError', true);
+      console.log('Failed to list projects.');
     }
       
     function selectItem(item) {
@@ -91,7 +91,6 @@
   
     $scope.$on('$locationChangeSuccess', function(e) {
       var projectId = getParameterByName('project_id', $location.absUrl());
-      vm.checkProjectMember(projectId);
       vm.isOpen = false;   
     });
     
@@ -107,12 +106,7 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      vm.isProjectMember = false;
-      
-//      $scope.$emit('modalTitle', $filter('tr')('error'));
-//      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project_member'));
-//      $scope.$emit('raiseError', true);
-      
+      vm.isProjectMember = false;           
       console.log('Current user has no member for the project:' + status +  ', location.url:' + $location.url());
     }
     

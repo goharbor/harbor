@@ -171,6 +171,7 @@
       vm.policy = policy;        
       if(vm.targetEditable) {
         vm.policy.targetId = vm1.selection.id;
+        saveDestination();
         saveOrUpdatePolicy();
       }
     }
@@ -366,6 +367,8 @@
           ctrl.pingMessage = '';
           ctrl.pingAvailable = true;
           
+          ctrl.saveTIP = false;
+          ctrl.pingTIP = false;
           ctrl.toggleErrorMessage = false;
           ctrl.errorMessages = [];
           

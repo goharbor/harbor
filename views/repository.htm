@@ -2,7 +2,7 @@
   <modal-dialog action="vm.action()" content-type="//vm.contentType//" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="vm.confirmOnly"></modal-dialog>
   <div class="container container-custom">
     <div class="row extend-height">
-    	  <div class="col-xs-12 col-md-12 extend-height">
+    	<div class="col-xs-12 col-md-12 extend-height">
     	    <div class="section" ng-style="vm.sectionHeight"> 
     		    <h4 class="page-header">
             <span ng-show="!vm.publicity">// 'my_projects' | tr //</span>
@@ -22,10 +22,11 @@
               <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
               <list-repository ng-if="vm.target === 'repositories'"  section-height="vm.sectionHeight"></list-repository>
               <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
-              <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight"></list-project-member>
-              <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight"></list-log>
+              <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight" target="vm.target"></list-project-member>
+              <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight" target="vm.target" publicity="vm.publicity"></list-log>
             </div>
           </div>
+          <dismissable-alerts></dismissable-alerts>
         </div>
       </div>
     </div>
