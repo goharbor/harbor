@@ -312,7 +312,7 @@
     }
     function pingDestinationFailed(data, status) {
       vm.pingAvailable = true;
-      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '.');
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '');
       vm.pingTIP = false;
     }
   }

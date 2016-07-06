@@ -28,7 +28,7 @@
           <table class="table table-pane">
       			 <tbody>
               <tr ng-if="vm.replicationPolicies.length == 0">
-                <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_policies_add_new' | tr //</h3></td>
+                <td colspan="7" height="100%" class="empty-hint" ><h4 class="text-muted">// 'no_replication_policies_add_new' | tr //</h4></td>
               </tr>
               <tr policy_id="//r.id//" ng-if="vm.replicationPolicies.length > 0" ng-repeat="r in vm.replicationPolicies" value="//vm.last = $last//"> 
                 <td width="10%">//r.name//</td>
@@ -41,8 +41,8 @@
                 </td>
                 <td width="15%">
                   <div class="display-inline-block" ng-switch on="//r.enabled//">
-                   <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 0)" title="// 'disable' | tr //"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
-                   <a href="javascript:void(0);" ng-click="vm.togglePolicy(r.id, 1)" title="// 'enable' | tr //"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
+                   <a href="javascript:void(0);" ng-click="vm.confirmToTogglePolicy(r.id, 0, r.name)" title="// 'disable' | tr //"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
+                   <a href="javascript:void(0);" ng-click="vm.confirmToTogglePolicy(r.id, 1, r.name)" title="// 'enable' | tr //"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
                   </div>
                   &nbsp;
                   <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)" title="// 'edit_policy' | tr //"><span class="glyphicon glyphicon-pencil"></span></a>
@@ -91,7 +91,7 @@
         </div>
       </div>		
       <div class="input-group">
-        <button type="button" class="btn btn-success" ng-click="vm.refreshReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.refreshJobTIP" ><span class="glyphicon glyphicon-refresh"></span></button>
+        <button type="button" class="btn btn-success" ng-click="vm.refreshReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.refreshJobTIP" title="//'refresh' | tr//"><span class="glyphicon glyphicon-refresh"></span></button>
       </div>
     </div> 
     <div class="pane-split" id="down-pane">   
@@ -112,7 +112,7 @@
             <table class="table table-pane">
         			 <tbody>
                 <tr ng-if="vm.replicationJobs.length == 0">
-                  <td colspan="4" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_replication_jobs' | tr //</h3></td>
+                  <td colspan="4" height="100%" class="empty-hint" ><h4 class="text-muted">// 'no_replication_jobs' | tr //</h4></td>
                 </tr>
                 <tr ng-if="vm.replicationJobs.length > 0" ng-repeat="r in vm.replicationJobs"> 
                   <td width="15%">//r.repository//</td>

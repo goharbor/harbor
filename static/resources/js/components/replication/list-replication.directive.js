@@ -44,6 +44,8 @@
     
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
+    
+    vm.confirmToTogglePolicy = confirmToTogglePolicy;
     vm.togglePolicy = togglePolicy;
     
     vm.downloadLog = downloadLog;
@@ -147,9 +149,27 @@
       
       console.log('Selected policy ID:' + vm.policyId);
     }
+
+    function confirmToTogglePolicy(policyId, enabled, name) {
+      vm.policyId = policyId;
+      vm.enabled = enabled;
+
+      var status = $filter('tr')(vm.enabled === 1 ? 'enabled':'disabled');
+
+      $scope.$emit('modalTitle', $filter('tr')('confirm_to_toggle_policy_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_to_toggle_policy', [name, status]));
+            
+      var emitInfo = {
+        'contentType': 'text/html',
+        'confirmOnly': false,
+        'action': vm.togglePolicy
+      }
+      
+      $scope.$emit('raiseInfo', emitInfo);
+    }
      
-    function togglePolicy(policyId, enabled) {
-      ToggleReplicationPolicyService(policyId, enabled)
+    function togglePolicy() {      
+      ToggleReplicationPolicyService(vm.policyId, vm.enabled)
         .success(toggleReplicationPolicySuccess)
         .error(toggleReplicationPolicyFailed);
     }

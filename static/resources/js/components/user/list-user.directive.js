@@ -32,11 +32,11 @@
         .error(deleteUserFailed);
     }
     
-    function confirmToDelete(userId) {
+    function confirmToDelete(userId, username) {
       vm.selectedUserId = userId;
      
       $scope.$emit('modalTitle', $filter('tr')('confirm_delete_user_title'));
-      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_user'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_user', [username]));
       
       var emitInfo = {
         'confirmOnly': false,

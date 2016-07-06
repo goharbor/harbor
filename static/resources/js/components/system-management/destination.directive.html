@@ -26,7 +26,7 @@
         <table class="table table-pane">
           <tbody>
             <tr ng-if="vm.destinations.length == 0">
-              <td colspan="7" height="100%" class="empty-hint" ><h3 class="text-muted">// 'no_destinations' | tr //</h3></td>
+              <td colspan="7" height="100%" class="empty-hint" ><h4 class="text-muted">// 'no_destinations' | tr //</h4></td>
             </tr>
             <tr ng-if="vm.destinations.length > 0" ng-repeat="r in vm.destinations"> 
               <td width="20%">//r.name//</td>
@@ -35,7 +35,7 @@
               <td width="15%">
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#createDestinationModal" ng-click="vm.editDestination(r.id)" title="// 'edit' | tr //" ><span class="glyphicon glyphicon-pencil"></span></a>
                 &nbsp;
-                <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id)" title="// 'delete' | tr //"><span class="glyphicon glyphicon-trash"></span></a>
+                <a href="javascript:void(0);" ng-click="vm.confirmToDelete(r.id, r.name)" title="// 'delete' | tr //"><span class="glyphicon glyphicon-trash"></span></a>
               </td>
             </tr>
           </tbody>

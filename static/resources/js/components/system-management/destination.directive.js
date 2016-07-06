@@ -44,11 +44,11 @@
       console.log('Action for destination:' + vm.action + ', target ID:' + vm.targetId);
     }
     
-    function confirmToDelete(targetId) {
+    function confirmToDelete(targetId, name) {
       vm.selectedTargetId = targetId;
       
       $scope.$emit('modalTitle', $filter('tr')('confirm_delete_destination_title'));
-      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_destination'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_destination', [name]));
       
       var emitInfo = {
         'confirmOnly': false,
