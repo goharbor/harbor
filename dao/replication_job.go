@@ -156,7 +156,7 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 			left join project p on rp.project_id=p.project_id 
 			left join replication_target rt on rp.target_id=rt.id 
 			left join replication_job rj on rp.id=rj.policy_id and (rj.status="error" 
-				or rj.status="retrying") group by rp.id `
+				or rj.status="retrying") `
 
 	if len(name) != 0 && projectID != 0 {
 		sql += `where rp.name like ? and rp.project_id = ? `
@@ -170,7 +170,7 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 		args = append(args, projectID)
 	}
 
-	sql += `order by rp.creation_time`
+	sql += `group by rp.id order by rp.creation_time`
 
 	var policies []*models.RepPolicy
 	if _, err := o.Raw(sql, args).QueryRows(&policies); err != nil {
