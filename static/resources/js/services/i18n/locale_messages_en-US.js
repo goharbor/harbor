@@ -47,7 +47,7 @@ var locale_messages = {
   'forgot_password_description': 'Please input the Email used when you signed up, a reset password Email will be sent to you.',
   'reset_password': 'Reset Password',
   'successful_reset_password': 'Password has been reset successfully.',
-  'fail_change_password': 'Password change fail.',
+  'failed_to_change_password': 'Failed to change password.',
   'summary': 'Summary',
   'projects': 'Projects',
   'public_projects': 'Public Projects', 
