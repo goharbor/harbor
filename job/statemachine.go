@@ -252,9 +252,9 @@ func (sm *SM) Reset(jid int64) error {
 
 	switch sm.Parms.Operation {
 	case models.RepOpTransfer:
-		err = addImgTransferTransition(sm)
+		addImgTransferTransition(sm)
 	case models.RepOpDelete:
-		err = addImgDeleteTransition(sm)
+		addImgDeleteTransition(sm)
 	default:
 		err = fmt.Errorf("unsupported operation: %s", sm.Parms.Operation)
 	}
@@ -268,31 +268,24 @@ func addTestTransition(sm *SM) error {
 	return nil
 }
 
-func addImgTransferTransition(sm *SM) error {
-	base, err := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
+func addImgTransferTransition(sm *SM) {
+	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
-	if err != nil {
-		return err
-	}
-	sm.AddTransition(models.JobRunning, replication.StateCheck, &replication.Checker{BaseHandler: base})
+
+	sm.AddTransition(models.JobRunning, replication.StateInitialize, &replication.Initializer{BaseHandler: base})
+	sm.AddTransition(replication.StateInitialize, replication.StateCheck, &replication.Checker{BaseHandler: base})
 	sm.AddTransition(replication.StateCheck, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 	sm.AddTransition(replication.StatePullManifest, replication.StateTransferBlob, &replication.BlobTransfer{BaseHandler: base})
 	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
 	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
-	return nil
 }
 
-func addImgDeleteTransition(sm *SM) error {
-	deleter, err := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
+func addImgDeleteTransition(sm *SM) {
+	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
 		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Parms.Insecure, sm.Logger)
-	if err != nil {
-		return err
-	}
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
 	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
-
-	return nil
 }
