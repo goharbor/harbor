@@ -17,11 +17,6 @@ package replication
 
 import (
 	"net"
-	"syscall"
-)
-
-const (
-	connectionRefusedErr syscall.Errno = 0x6f
 )
 
 func retry(err error) bool {
