@@ -92,7 +92,6 @@ func (b *BaseAPI) ValidateUser() int {
 func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	requestURI := b.Ctx.Request.RequestURI
 	resoucreURI := requestURI + "/" + resouceID
-	println(resoucreURI)
 
 	b.Ctx.Redirect(statusCode, resoucreURI)
 }
