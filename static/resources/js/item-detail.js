@@ -145,6 +145,9 @@ jQuery(function(){
 					}
 				}).exec();
 
+				//
+				$('#' + targetId +' ul.labels-panel').remove();
+
 				var row = [];
 				row.push('<li><button type="button" class="btn btn-primary addLabel" repoName="'+ repoName +'" data-toggle="modal" data-target="#dlgLabel" id="btnAddLabel">添加</button></li>');
 
@@ -167,59 +170,51 @@ jQuery(function(){
 						type: "post",
 						data : { repo_name : repoName, label : labelName},
 						success: function(data, status, xhr){
-							//删除label的回调
-							if(data){
-								for(var i in data){
-									if(data[i] == ""){
-										data[i] = "N/A";
-									}
-								}
-								data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");
-								$("#dlgModal").dialogModal({"title": 'success', "content": 'success'});
+							if(data && data.status == 200){
+								$("#btnLabelCancel").trigger("click");
+								listLabel(targetId, repoName);
 							}
 						}
 					}).exec();
 				});
 
+				listLabel(targetId, repoName);
 
-				new AjaxUtil({
-					url: "/api/repositories/labels/label?repo_name=" + repoName,
-					type: "get",
-					success: function(data, status, xhr){
-						//先清空，再获取labels列表
-						$('#' + targetId +' ul.labels-panel').remove();
-						var row = [];
-						for(var i in data){
-							var labelName = data[i]
-							row.push('<li>' + labelName + '<a class="close" labelName="' + labelName + '" repoName="' + repoName + '"><span aria-hidden="true">×</span></a></li>');
+				$(document, '#' + targetId +' ul.labels-panel .close').on("click", function(e){
+					var labelName = $(this).attr("labelName");
+					var repoName = $(this).attr("repoName");
+					new AjaxUtil({
+						url: "/api/repositories/labels/label?repo_name=" + repoName + "&label=" + labelName,
+						type: "delete",
+						success: function(data, status, xhr){
+							if(data && data.status == 200){
+								$("#btnLabelCancel").trigger("click");
+								listLabel(targetId, repoName);
+							}
+							//删除label的回调
 						}
-
-						$('#' + targetId +' ul.labels-panel').append(row.join(""));
-
-						$('#' + targetId +' ul.labels-panel .close').on("click", function(e){
-							var labelName = $(this).attr("labelName");
-							var repoName = $(this).attr("repoName");
-							new AjaxUtil({
-								url: "/api/repositories/labels/label?repo_name=" + repoName + "&label=" + labelName,
-								type: "get",
-								success: function(data, status, xhr){
-									//删除label的回调
-									if(data){
-										for(var i in data){
-											if(data[i] == ""){
-												data[i] = "N/A";
-											}
-										}
-										data.Created = moment(new Date(data.Created)).format("YYYY-MM-DD HH:mm:ss");
-										$("#dlgModal").dialogModal({"title": i18n.getMessage("add_details"), "content": data});
-									}
-								}
-							}).exec();
-						});
-					}
-				}).exec();
+					}).exec();
+				});
 
 			});
+		}
+
+		function listLabel(targetId, repoName) {
+			new AjaxUtil({
+				url: "/api/repositories/labels/label?repo_name=" + repoName,
+				type: "get",
+				success: function(data, status, xhr){
+					//先清空，再获取labels列表
+					$('#' + targetId +' ul.labels-panel').remove();
+					var row = [];
+					for(var i in data){
+						var labelName = data[i]
+						row.push('<li>' + labelName + '<a class="close" labelName="' + labelName + '" repoName="' + repoName + '"><span aria-hidden="true">×</span></a></li>');
+					}
+
+					$('#' + targetId +' ul.labels-panel').append(row.join(""));
+				}
+			}).exec();
 		}
 
 		function needToLoginCallback(){
