@@ -7,5 +7,5 @@ type ChangePasswordController struct {
 
 // Get renders the change password page
 func (asc *ChangePasswordController) Get() {
-	asc.Forward("page_title_reset_password", "change-password.htm")
+	asc.Forward("page_title_change_password", "change-password.htm")
 }
