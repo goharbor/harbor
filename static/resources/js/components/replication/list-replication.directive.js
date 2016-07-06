@@ -212,7 +212,7 @@
   
   }
   
-  function listReplication($timeout) {
+  function listReplication($timeout, I18nService) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/replication/list-replication.directive.html',
@@ -296,7 +296,7 @@
       }
       
       element.find('.datetimepicker').datetimepicker({
-				locale: 'en-US',
+				locale: I18nService().getCurrentLanguage(),
 				ignoreReadonly: true,
 				format: 'L',
 				showClear: true

@@ -5,8 +5,8 @@
 
 .extend-height {
   height: 100%;
-  min-height: 1px;
-  min-width: 1024px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .section {
@@ -14,8 +14,8 @@
   margin-top: 20px;
   background-color: #FFFFFF;
   height: 100%;
+  min-height: 640px;
   width: 100%;
-  min-height: 579px;
 }
 
 .search-pane {
@@ -53,6 +53,11 @@
   min-height: 1px;
 }
 
+.tab-pane {
+  min-height: 1px;
+  max-height: 1px;
+}
+
 .sub-pane {
   margin: 15px;
   min-height: 380px;
@@ -60,11 +65,11 @@
 }
 
 .well-custom {
-  position: absolute;
-  width: 1064px;
+  
+  width: 100%;
   background-color: #f5f5f5;
   background-image: none;
-  margin: 0 10px;
+  
   z-index: 10;
 }
 

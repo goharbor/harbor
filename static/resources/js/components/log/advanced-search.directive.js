@@ -111,7 +111,7 @@
     }
   }
   
-  function advancedSearch() {
+  function advancedSearch(I18nService) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/log/advanced-search.directive.html',
@@ -133,7 +133,7 @@
     
     function link(scope, element, attrs, ctrl) {
       element.find('.datetimepicker').datetimepicker({
-				locale: 'en-US',
+				locale: I18nService().getCurrentLanguage(),
 				ignoreReadonly: true,
 				format: 'L',
 				showClear: true

@@ -139,6 +139,7 @@
       };
      
       if(vm.checkedAddTarget){
+        
         CreateDestinationService(target.name, target.endpoint, target.username, target.password)
           .success(createDestinationSuccess)
           .error(createDestinationFailed);
@@ -172,7 +173,6 @@
       if(vm.targetEditable) {
         vm.policy.targetId = vm1.selection.id;
         saveDestination();
-        saveOrUpdatePolicy();
       }
     }
         
@@ -278,11 +278,7 @@
     }
     function updateReplicationPolicyFailed(data, status) {
       vm.saveTIP = false;
-      if(status === 409) {
-        vm.errorMessages.push($filter('tr')('policy_already_exists')); 
-      }else{
-        vm.errorMessages.push($filter('tr')('failed_to_update_replication_policy') + data);
-      }
+      vm.errorMessages.push($filter('tr')('failed_to_update_replication_policy') + data);
       console.log('Failed to update replication policy.');
     }
     function createDestinationSuccess(data, status, headers) {

@@ -33,12 +33,12 @@
         indexDesc + 
   			'</p>' +
         '<ul>' +
-  			 '<li class="long-line">▪︎ ' + indexDesc1 + '</li>' +
-  			 '<li class="long-line">▪︎ ' + indexDesc2 + '</li>' +
-  			 '<li class="long-line">▪︎ ' + indexDesc3 + '</li>' +
-  			 '<li class="long-line">▪︎ ' + indexDesc4 + '</li>' +
-  			 '<li class="long-line">▪︎ ' + indexDesc5 + '</li>' +
-         '<li class="long-line">▪︎ ' + indexDesc6 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc1 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc2 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc3 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc4 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc5 + '</li>' +
+          '<li class="long-line">▪︎ ' + indexDesc6 + '</li>' +
   			'</ul>');
       var emitInfo = {
         'contentType': 'text/html',

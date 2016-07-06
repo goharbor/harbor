@@ -11,7 +11,7 @@
             <div class="col-md-12"  ng-show="vm.toggleErrorMessage">
               <div class="pull-right clearfix" style="padding: 5px 10px;"><a href="javascript:void(0);" ng-click="vm.closeError()"><span class="glyphicon glyphicon-remove"></span></a></div>
               <div class="bg-danger dialog-message">
-                <ul class="list-unstyled" style="color: red; margin: 0;" ng-repeat="msg in vm.errorMessages">
+                <ul class="list-unstyled" style="color: red; margin: 0;" ng-repeat="msg in vm.errorMessages track by $index">
                   <li>// msg //</li>
                 </ul>
               </div>

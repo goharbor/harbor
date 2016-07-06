@@ -129,10 +129,12 @@
 }
 
 .alert-custom {
-  position: fixed;
-  bottom: 24px;
+  position: relative;
+  bottom: 42px;
   z-index: 99;
-  width: 1110px;
+  width: 1140px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 10px;
   background-color: #f2dede;
   background-image: none;

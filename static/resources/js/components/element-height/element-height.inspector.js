@@ -30,9 +30,10 @@
       scope.$watch(scope.getDimension, function(current) {
         if(current) {
           var h = current.h; 
+          element.css({'height': (h - scope.subsHeight) + 'px'});
           element.find('.section').css({'height': (h - scope.subsHeight - scope.subsSection) + 'px'});        
           element.find('.sub-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});
-          element.find('.tab-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane) + 'px'});
+          element.find('.tab-pane').css({'height': (h - scope.subsHeight - scope.subsSubPane - scope.subsSection -100) + 'px'});
 //          var subPaneHeight = element.find('.sub-pane').height();
 //          element.find('.table-body-container').css({'height': (subPaneHeight - scope.subsTblBody) + 'px'});
         }
