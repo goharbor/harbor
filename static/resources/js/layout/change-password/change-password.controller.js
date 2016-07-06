@@ -17,7 +17,7 @@
     vm.errorMessage = '';
     
     vm.reset = reset;    
-    vm.toggleChangePassword = toggleChangePassword;
+    
     vm.confirm = confirm;
     vm.updatePassword = updatePassword;
     vm.cancel = cancel;
@@ -52,14 +52,6 @@
       vm.errorMessage = '';
     }
      
-    function toggleChangePassword() {
-      if(vm.isOpen) {
-        vm.isOpen = false;
-      }else{
-        vm.isOpen = true;
-      }     
-    }
-    
     function confirm() {     
       $window.location.href = '/dashboard';
     }    
