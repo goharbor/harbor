@@ -54,7 +54,7 @@
             
             <div class="form-group">
               <div class="col-md-offset-7 col-md-10">
-                <input type="submit" class="btn btn-primary" ng-click="vm.updateUser(user)" value="// 'save' | tr //">                    
+                <input type="submit" class="btn btn-primary" ng-click="form.$valid && vm.updateUser(user)" value="// 'save' | tr //">                    
                 <input type="button" class="btn btn-default" ng-click="vm.cancel(form)" value="// 'cancel' | tr //">
               </div>
             </div>  
