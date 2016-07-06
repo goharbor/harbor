@@ -58,8 +58,7 @@
     function updateUser(user) {
       vm.confirmOnly = true;
       vm.action = vm.confirm;
-      if(user && angular.isDefined(user.username) && angular.isDefined(user.password) && 
-            angular.isDefined(user.realname)) {
+      if(user && angular.isDefined(user.username) && angular.isDefined(user.realname)) {
         UpdateUserService(userId, user)
           .success(updateUserSuccess)
           .error(updateUserFailed); 
