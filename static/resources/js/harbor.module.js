@@ -13,6 +13,7 @@
       'harbor.layout.sign.up',
       'harbor.layout.add.new',
       'harbor.layout.account.setting',
+      'harbor.layout.change.password',
       'harbor.layout.forgot.password',
       'harbor.layout.reset.password',
       'harbor.layout.index',
