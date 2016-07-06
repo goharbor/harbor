@@ -17,13 +17,18 @@ package replication
 
 import (
 	"net"
+	"syscall"
+)
+
+const (
+	connectionRefusedErr syscall.Errno = 0x6f
 )
 
 func retry(err error) bool {
 	if err == nil {
 		return false
 	}
-	return isTemporary(err)
+	return isNetworkErr(err)
 }
 
 func isTemporary(err error) bool {
@@ -31,4 +36,9 @@ func isTemporary(err error) bool {
 		return netErr.Temporary()
 	}
 	return false
+}
+
+func isNetworkErr(err error) bool {
+	_, ok := err.(net.Error)
+	return ok
 }
