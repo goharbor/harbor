@@ -17,7 +17,6 @@
     vm.errorMessage = '';
     
     vm.reset = reset;    
-    vm.toggleChangePassword = toggleChangePassword;
     vm.confirm = confirm;
     vm.updateUser = updateUser;
     vm.cancel = cancel;
@@ -52,14 +51,6 @@
       vm.errorMessage = '';
     }
      
-    function toggleChangePassword() {
-      if(vm.isOpen) {
-        vm.isOpen = false;
-      }else{
-        vm.isOpen = true;
-      }     
-    }
-    
     function confirm() {     
       $window.location.href = '/dashboard';
     }    
@@ -67,37 +58,15 @@
     function updateUser(user) {
       vm.confirmOnly = true;
       vm.action = vm.confirm;
-      if(vm.isOpen){
-        if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
-          ChangePasswordService(userId, user.oldPassword, user.password)
-            .success(changePasswordSuccess)
-            .error(changePasswordFailed);
-        }
-      }else{
-        if(user && angular.isDefined(user.username) && angular.isDefined(user.password) && 
+      if(user && angular.isDefined(user.username) && angular.isDefined(user.password) && 
             angular.isDefined(user.realname)) {
-          UpdateUserService(userId, user)
-            .success(updateUserSuccess)
-            .error(updateUserFailed); 
-          currentUser.set(user);        
-        }
+        UpdateUserService(userId, user)
+          .success(updateUserSuccess)
+          .error(updateUserFailed); 
+        currentUser.set(user);        
       }
     }
-    
-    function changePasswordSuccess(data, status) {
-      vm.modalTitle = $filter('tr')('change_password', []);
-      vm.modalMessage = $filter('tr')('successful_changed_password', []);
-      $scope.$broadcast('showDialog', true);
-    }
-    
-    function changePasswordFailed(data, status) {
-      console.log('Failed to changed password:' + data);
-      if(data == 'old_password_is_not_correct') {
-        vm.hasError = true;
-        vm.errorMessage = 'old_password_is_incorrect';
-      }
-    }
-    
+        
     function updateUserSuccess(data, status) {
       vm.modalTitle = $filter('tr')('change_profile', []);
       vm.modalMessage = $filter('tr')('successful_changed_profile', []);

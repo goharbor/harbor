@@ -37,6 +37,7 @@ func initRouters() {
 	beego.Router("/sign_up", &controllers.SignUpController{})
 	beego.Router("/add_new", &controllers.AddNewController{})
 	beego.Router("/account_setting", &controllers.AccountSettingController{})
+	beego.Router("/change_password", &controllers.ChangePasswordController{})
 	beego.Router("/admin_option", &controllers.AdminOptionController{})
 	beego.Router("/forgot_password", &controllers.ForgotPasswordController{})
 	beego.Router("/reset_password", &controllers.ResetPasswordController{})

@@ -15,8 +15,8 @@
             <div class="form-group">
               <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
               <div class="col-sm-7">
-                <input type="email" class="form-control" id="email" ng-model="user.email" name="uEmail"  ng-disabled="vm.isOpen" required>
-                <div ng-messages="form.$submitted && form.uEmail.$error">
+                <input type="email" class="form-control" id="email" ng-model="user.email" name="uEmail"  required>
+                <div class="error-message" ng-messages="form.uEmail.$touched && form.uEmail.$error">
                   <span ng-message="required">// 'email_is_required' | tr //</span>
                   <span ng-message="email">// 'email_content_illegal' | tr //</span>
                 </div>
@@ -28,8 +28,8 @@
             <div class="form-group">
               <label for="fullName" class="col-sm-3 control-label">// 'full_name' | tr //:</label>
               <div class="col-sm-7"> 
-                <input type="text" class="form-control" id="fullName" ng-model="user.realname" name="uFullName" ng-disabled="vm.isOpen" required maxlength="20" invalid-chars>
-                <div ng-messages="form.$submitted && form.uFullName.$error">
+                <input type="text" class="form-control" id="fullName" ng-model="user.realname" name="uFullName" required maxlength="20" invalid-chars>
+                <div class="error-message" ng-messages="form.uFullName.$touched && form.uFullName.$error">
                   <span ng-message="required">// 'full_name_is_required' | tr //</span>
                   <span ng-message="invalidChars">// 'full_name_contains_illegal_chars' | tr //</span>
                   <span ng-message="maxlength">// 'full_name_is_too_long' | tr //</span>
@@ -42,56 +42,16 @@
             <div class="form-group">
               <label for="comments" class="col-sm-3 control-label">// 'comments' | tr //:</label>
               <div class="col-sm-7">
-                <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" ng-disabled="vm.isOpen" maxlength="20">
-                <div ng-messages="form.$submitted && form.uComments.$error">
+                <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" maxlength="20">
+                <div class="error-message" ng-messages="form.uComments.$touched && form.uComments.$error">
                   <span ng-show="maxlength">// 'comment_is_too_long' | tr //</span>
                 </div>
               </div>
             </div>          
             <div class="form-group">
-              <label for="toggleChangePassword" class="col-sm-3 control-label"><a id="toggleChangePassword" href="#" ng-click="vm.toggleChangePassword()">// 'change_password' | tr //</a></label>
+              <label for="toggleChangePassword" class="col-sm-3 control-label"><a id="toggleChangePassword" href="/change_password" >// 'change_password' | tr //</a></label>
             </div>
-            <div ng-show="vm.isOpen">
-              <hr/>
-              <div class="form-group">
-                <label for="oldPassword" class="col-sm-3 control-label">// 'old_password' | tr //:</label>
-                <div class="col-sm-7">
-                  <input type="password" class="form-control" id="oldPassword" ng-model="user.oldPassword" ng-change="vm.reset()" name="uOldPassword" required>
-                  <div class="error-message" ng-messages="vm.isOpen && form.$submitted && form.uOldPassword.$touched && form.uOldPassword.$error">
-                    <span ng-message="required">// 'old_password_is_required' | tr //</span>
-                  </div> 
-                </div>
-                <div class="col-sm-2">
-                  <span class="asterisk">*</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="password" class="col-sm-3 control-label">// 'new_password' | tr //:</label>
-                <div class="col-sm-7">
-                  <input type="password" class="form-control" id="password" ng-model="user.password" ng-change="vm.reset()" name="uPassword" required password>
-                  <div class="error-message" ng-messages="vm.isOpen && form.$submitted && form.uPassword.$touched && form.uPassword.$error">
-                    <span ng-message="required">// 'password_is_required' | tr //</span>
-                    <span ng-message="password">// 'password_is_invalid' | tr //</span>
-                  </div>
-                  <p class="help-block small-size-fonts">// 'password_desc' | tr //</p>
-                </div>
-                <div class="col-sm-2">
-                  <span class="asterisk">*</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="confirmPassword" class="col-sm-3 control-label">// 'confirm_password' | tr //:</label>
-                <div class="col-sm-7">
-                  <input type="password" class="form-control" id="confirmPassword" ng-model="user.confirmPassword" ng-change="vm.reset()" name="uConfirmPassword" ng-model-options="{ updateOn: 'blur' }" compare-to="user.password">
-                  <div class="error-message" ng-messages="vm.isOpen && form.$submitted && form.uConfirmPassword.$touched && form.uConfirmPassword.$error">
-                    <span ng-message="compareTo">// 'password_does_not_match' | tr //</span>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <span class="asterisk">*</span>
-                </div>
-              </div>
-            </div>
+            
             <div class="form-group">
               <div class="col-md-offset-7 col-md-10">
                 <input type="submit" class="btn btn-primary" ng-click="vm.updateUser(user)" value="// 'save' | tr //">                    
