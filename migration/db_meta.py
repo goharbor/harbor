@@ -124,3 +124,4 @@ class ReplicationJob(Base):
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     
+    __table_args__ = (sa.Index('policy', "policy_id"),)
