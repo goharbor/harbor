@@ -20,7 +20,8 @@
             <th width="18%">// 'destination' | tr //</th>
             <th width="18%">// 'last_start_time' | tr //</th>
             <th width="14%">// 'activation' | tr// </th>
-            <th width="15%">// 'actions' | tr //</th>
+            <th width="10%">// 'actions' | tr //</th>
+            <th width="5%"></th>
     			 </thead>
         </table>
         </div>
@@ -39,7 +40,7 @@
                   <span ng-switch-when="1">// 'enabled' | tr //</span>
                   <span ng-switch-when="0">// 'disabled' | tr //</span>
                 </td>
-                <td width="15%">
+                <td width="10%">
                   <div class="display-inline-block" ng-switch on="//r.enabled//">
                    <a href="javascript:void(0);" ng-click="vm.confirmToTogglePolicy(r.id, 0, r.name)" title="// 'disable' | tr //"><span ng-switch-when="1" class="glyphicon glyphicon-stop color-danger"></span></a>
                    <a href="javascript:void(0);" ng-click="vm.confirmToTogglePolicy(r.id, 1, r.name)" title="// 'enable' | tr //"><span ng-switch-when="0" class="glyphicon glyphicon-play color-success"></span></a>
@@ -48,6 +49,9 @@
                   <a href="javascript:void(0);" data-toggle="modal" data-target="#createPolicyModal" ng-click="vm.editReplication(r.id)" title="// 'edit_policy' | tr //"><span class="glyphicon glyphicon-pencil"></span></a>
                   &nbsp;
                   <!--a href="javascript:void(0);"><span class="glyphicon glyphicon-trash"></span></a -->
+                </td>
+                <td width="5%">
+                  <a ng-if= "r.error_job_count > 0" title = "// 'found_error_in_replication_job' | tr: [r.error_job_count] //"><span class="glyphicon glyphicon-exclamation-sign color-danger" ></span></a>
                 </td>
               </tr>
             </tbody>
