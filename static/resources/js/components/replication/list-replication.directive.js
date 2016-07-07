@@ -154,7 +154,7 @@
       vm.policyId = policyId;
       vm.enabled = enabled;
 
-      var status = $filter('tr')(vm.enabled === 1 ? 'enabled':'disabled');
+      var status = $filter('tr')(vm.enabled === 1 ? 'enable':'disable');
 
       $scope.$emit('modalTitle', $filter('tr')('confirm_to_toggle_policy_title'));
       $scope.$emit('modalMessage', $filter('tr')('confirm_to_toggle_policy', [name, status]));

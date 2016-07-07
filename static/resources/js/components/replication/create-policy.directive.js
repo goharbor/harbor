@@ -139,7 +139,6 @@
       };
      
       if(vm.checkedAddTarget){
-        
         CreateDestinationService(target.name, target.endpoint, target.username, target.password)
           .success(createDestinationSuccess)
           .error(createDestinationFailed);
@@ -198,12 +197,14 @@
     }
     
     function checkDestinationPolicyStatus() {
+      console.log('Checking destination policy status, target_ID:' + vm.targetId);
       ListDestinationPolicyService(vm.targetId)
         .success(listDestinationPolicySuccess)
         .error(listDestinationPolicyFailed);
     }
     
     function closeError() {
+      vm.errorMessages = [];
       vm.toggleErrorMessage = false;
     }
         
@@ -211,12 +212,13 @@
       vm.destinations = data || [];     
     }
     function listDestinationFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_get_destination'));
+      vm.errorMessages.push($filter('tr')('failed_to_get_destination'));
       console.log('Failed to get destination:' + data);
     }
     
     function listDestinationPolicySuccess(data, status) {
       if(vm.action === 'EDIT') {
+        console.log('Current target editable:' + vm.targetEditable + ', policy ID:' + vm.policyId);
         vm.targetEditable = true;
         for(var i in data) {
           if(data[i].enabled === 1) {
@@ -225,11 +227,10 @@
           }
         }
       }
-      console.log('current target editable:' + vm.targetEditable + ', policy ID:' + vm.policyId);
     }
     
     function listDestinationPolicyFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_get_destination_policies'));
+      vm.errorMessages.push($filter('tr')('failed_to_get_destination_policies'));
       console.log('Failed to list destination policy:' + data);
     }
     
@@ -341,6 +342,7 @@
             if(origin) {
               var d = scope.replication.destination;
               if(angular.isDefined(d) && angular.isDefined(d.selection)) {
+                ctrl.targetId = d.selection.id;
                 d.endpoint = d.selection.endpoint;
                 d.username = d.selection.username;
                 d.password = d.selection.password;

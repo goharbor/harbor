@@ -141,6 +141,7 @@
     }
     
     function closeError() {
+      vm.errorMessages = [];
       vm.toggleErrorMessage = false;
     }
     
