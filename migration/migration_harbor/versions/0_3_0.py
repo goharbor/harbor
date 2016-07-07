@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""0.1.1 to 0.2.0
+"""0.1.1 to 0.3.0
 
 Revision ID: 0.1.1
 Revises: 
@@ -20,7 +20,7 @@ Revises:
 """
 
 # revision identifiers, used by Alembic.
-revision = '0.2.0'
+revision = '0.3.0'
 down_revision = '0.1.1'
 branch_labels = None
 depends_on = None
