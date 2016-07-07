@@ -156,8 +156,17 @@
 
       var status = $filter('tr')(vm.enabled === 1 ? 'enable':'disable');
 
-      $scope.$emit('modalTitle', $filter('tr')('confirm_to_toggle_policy_title'));
-      $scope.$emit('modalMessage', $filter('tr')('confirm_to_toggle_policy', [name, status]));
+      var title;
+      var message;
+      if(enabled === 1){
+        title = $filter('tr')('confirm_to_toggle_enabled_policy_title');
+        message = $filter('tr')('confirm_to_toggle_enabled_policy');
+      }else{
+        title = $filter('tr')('confirm_to_toggle_disabled_policy_title');
+        message = $filter('tr')('confirm_to_toggle_disabled_policy');
+      }
+      $scope.$emit('modalTitle', title);
+      $scope.$emit('modalMessage', message);
             
       var emitInfo = {
         'contentType': 'text/html',

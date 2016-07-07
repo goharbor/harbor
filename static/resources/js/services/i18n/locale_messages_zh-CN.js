@@ -245,10 +245,14 @@ var locale_messages = {
       '<strong>开发人员</strong>: “开发人员” 拥有一个项目的读/写权限。<br/>' +
       '<strong>访客</strong>: “访客”拥有特定项目的只读权限。',
   'inline_help_publicity_title': '<strong>公开项目</strong>',
-  'inline_help_publicity': '设置该项目为公开。',
+  'inline_help_publicity': '当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。',
   'alert_job_contains_error': '当前复制任务中包含错误，请检查。',
   'found_error_in_replication_job': '发现 $0 个错误。',
   'caution': '注意',
   'confirm_to_toggle_policy_title': '切换复制策略状态',
-  'confirm_to_toggle_policy': '确认将复制策略 $0 切换为 <strong>$1</strong> 状态吗?'
+  'confirm_to_toggle_policy': '确认将复制策略 $0 切换为 <strong>$1</strong> 状态吗?',
+  'confirm_to_toggle_enabled_policy_title': '启用策略',
+  'confirm_to_toggle_enabled_policy': '启用策略后，系统将触发复制任务来同步项目下的所有镜像仓库到策略的目标实例。请确认继续。',
+  'confirm_to_toggle_disabled_policy_title': '停用策略',
+  'confirm_to_toggle_disabled_policy': '停用策略后，属于此策略的所有复制任务将终止。请确认继续。'
 };
