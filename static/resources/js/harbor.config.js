@@ -22,9 +22,9 @@
     .filter('dateL', localizeDate)
     .filter('tr', tr);
    
-  RedirectInterceptorService.$inject = ['$q', '$window'];
+  RedirectInterceptorService.$inject = ['$q', '$window', '$location'];
   
-  function RedirectInterceptorService($q, $window) {
+  function RedirectInterceptorService($q, $window, $location) {
     return {
       'responseError': function(rejection) {
         var url = rejection.config.url;
@@ -55,7 +55,7 @@
           }
         }        
         if(!isExcluded && rejection.status === 401) {
-          $window.location.href = '/';
+          $window.location.href = '/?last_url=' + encodeURIComponent(location.pathname + '#' + $location.url());
           return;
         }
         return $q.reject(rejection);

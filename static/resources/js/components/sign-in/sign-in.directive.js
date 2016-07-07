@@ -6,8 +6,8 @@
     .module('harbor.sign.in')
     .directive('signIn', signIn);
     
-  SignInController.$inject = ['SignInService', 'LogOutService', 'currentUser', 'I18nService', '$window', '$scope'];
-  function SignInController(SignInService, LogOutService, currentUser, I18nService, $window, $scope) {
+  SignInController.$inject = ['SignInService', 'LogOutService', 'currentUser', 'I18nService', '$window', '$scope', 'getParameterByName', '$location'];
+  function SignInController(SignInService, LogOutService, currentUser, I18nService, $window, $scope, getParameterByName, $location) {
     var vm = this;
 
     vm.hasError = false;
@@ -20,7 +20,7 @@
        
     vm.doContinue = doContinue;
     vm.doLogOut = doLogOut;
-    
+       
     vm.signInTIP = false;
     
     function reset() {
@@ -30,6 +30,7 @@
       
     function doSignIn(user) {  
       if(user && angular.isDefined(user.principal) && angular.isDefined(user.password)) {
+        vm.lastUrl = getParameterByName('last_url', $location.absUrl());
         vm.signInTIP = true;
         SignInService(user.principal, user.password)
           .success(signedInSuccess)
@@ -38,6 +39,10 @@
     }
     
     function signedInSuccess(data, status) {
+      if(vm.lastUrl) {
+        $window.location.href = vm.lastUrl;
+        return;
+      }
       $window.location.href = "/dashboard";
     }
     

@@ -23,6 +23,10 @@
     vm.cancel = cancel;
     
     $scope.user = currentUser.get();
+    if(!$scope.user) {
+      $window.location.href = '/';
+      return;
+    }
     var userId = $scope.user.user_id;
 
     //Error message dialog handler for account setting.

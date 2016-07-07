@@ -44,13 +44,14 @@
     }
     
     function getProjectSuccess(data, status) {
-      vm.projects = data || [];
+      vm.projects = data;
 
-      if(!angular.isDefined(vm.projects)) {
+      if(vm.projects == null) {
         vm.isPublic = 1;
-        vm.publicity = 1;
+        vm.publicity = true;
         vm.projectType = 'public_projects';
-        console.log('vm.projects is undefined, load public projects.');
+        console.log('vm.projects is null, load public projects.');
+        return;
       }
       
       if(angular.isArray(vm.projects) && vm.projects.length > 0) {
@@ -78,9 +79,9 @@
     }
     
     function getProjectFailed() {
-//      $scope.$emit('modalTitle', $filter('tr')('error'));
-//      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
-//      $scope.$emit('raiseError', true);
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
+      $scope.$emit('raiseError', true);
       console.log('Failed to list projects.');
     }
       
