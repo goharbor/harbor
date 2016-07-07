@@ -120,7 +120,7 @@ insert into alembic_version values ('0.1.1');
 
 -- create a table for setting labels for repo.
 create table repo_label (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  repoName varchar(30) NOT NULL,
-  label varchar(30) NOT NULL
-)
+  repoName varchar(30) BINARY NOT NULL,
+  label varchar(30) BINARY NOT NULL,
+  primary key (repoName, label)
+);

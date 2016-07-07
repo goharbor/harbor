@@ -44,6 +44,8 @@ type RepositoryAPI struct {
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
+	pageNum, _ := ra.GetInt("pageNum")
+
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil {
 		log.Errorf("Failed to get project id, error: %v", err)
@@ -84,29 +86,39 @@ func (ra *RepositoryAPI) Get() {
 			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], q) && r[0:strings.LastIndex(r, "/")] == projectName {
 				resp = append(resp, r)
 			}
-			labelList,_ := dao.GetRepoLabels(r)
-			for _, label := range labelList{
-				if strings.Contains(label, q) {
-					resp = append(resp, label)
-				}
-			}
 		}
-		ra.Data["json"] = resp
+		repoLs, _ := dao.GetRepoNames(q)
+		for _, repol := range repoLs {
+			resp = append(resp, repol)
+		}
+		ra.Data["json"] = getSubPage(resp, pageNum)
 	} else if len(projectName) > 0 {
 		for _, r := range repoList {
 			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
 				resp = append(resp, r)
 			}
 		}
-		ra.Data["json"] = resp
+		ra.Data["json"] = getSubPage(resp, pageNum)
 	} else {
-		ra.Data["json"] = repoList
+		ra.Data["json"] = getSubPage(repoList, pageNum)
 	}
 	ra.ServeJSON()
 }
 
+func getSubPage(strs []string, pageNum int) (subStr []string) {
+	length := len(strs)
 
-func (ra *RepositoryAPI) AddLabel(){
+	switch {
+	case length >= (pageNum+1)*5:
+		return strs[pageNum*5 : (pageNum+1)*5]
+	case length < (pageNum+1)*5 && length >= (pageNum)*5:
+		return strs[pageNum*5 : length]
+	default:
+		return nil
+	}
+}
+
+func (ra *RepositoryAPI) AddLabel() {
 	repoName := ra.GetString("repo_name")
 	if len(repoName) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
@@ -119,16 +131,15 @@ func (ra *RepositoryAPI) AddLabel(){
 
 	repoLabel := models.RepoLabel{RepoName: repoName, Label: label}
 	insertId, err := dao.AddLabel(repoLabel)
-	if err != nil{
+	if err != nil {
 		ra.CustomAbort(http.StatusInternalServerError, "Failed to insert label to db")
-	}else {
+	} else {
 		ra.Data["json"] = insertId
 	}
 	ra.ServeJSON()
 }
 
-
-func (ra *RepositoryAPI) DeleteLabel(){
+func (ra *RepositoryAPI) DeleteLabel() {
 	repoName := ra.GetString("repo_name")
 	if len(repoName) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
@@ -140,42 +151,41 @@ func (ra *RepositoryAPI) DeleteLabel(){
 	}
 
 	repoLabel := models.RepoLabel{RepoName: repoName, Label: label}
-	affectedRows, err :=dao.DeletelLabel(repoLabel)
+	affectedRows, err := dao.DeletelLabel(repoLabel)
 
-	if err != nil{
+	if err != nil {
 		ra.CustomAbort(http.StatusInternalServerError, "Failed to delete labels from db")
-	}else {
+	} else {
 		ra.Data["json"] = affectedRows
 	}
 	ra.ServeJSON()
 }
 
-
-func (ra *RepositoryAPI) GetLabels(){
+func (ra *RepositoryAPI) GetLabels() {
 	repoName := ra.GetString("repo_name")
 	if len(repoName) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
 	labels, err := dao.GetRepoLabels(repoName)
-	if err != nil{
+	if err != nil {
 		ra.CustomAbort(http.StatusInternalServerError, "Failed to get labels from db")
-	}else {
+	} else {
 		ra.Data["json"] = labels
 	}
 	ra.ServeJSON()
 }
 
-func (ra *RepositoryAPI) GetRepoNames(){
+func (ra *RepositoryAPI) GetRepoNames() {
 	label := ra.GetString("label")
 	if len(label) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "label is nil")
 	}
 
 	repos, err := dao.GetRepoNames(label)
-	if err != nil{
+	if err != nil {
 		ra.CustomAbort(http.StatusInternalServerError, "Failed to get repo names from db")
-	}else {
+	} else {
 		ra.Data["json"] = repos
 	}
 }
