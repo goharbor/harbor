@@ -247,6 +247,7 @@ var locale_messages = {
   'inline_help_publicity_title': '<strong>公开项目</strong>',
   'inline_help_publicity': '设置该项目为公开。',
   'alert_job_contains_error': '当前复制任务中包含错误，请检查。',
+  'found_error_in_replication_job': '发现 $0 个错误。',
   'caution': '注意',
   'confirm_to_toggle_policy_title': '切换复制策略状态',
   'confirm_to_toggle_policy': '确认将复制策略 $0 切换为 <strong>$1</strong> 状态吗?'
