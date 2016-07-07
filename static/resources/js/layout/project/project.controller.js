@@ -19,8 +19,8 @@
     vm.showAddProject = showAddProject;
     vm.searchProject = searchProject;    
     vm.showAddButton = showAddButton;
-    vm.togglePublicity = togglePublicity;
-    vm.user = currentUser.get();  
+    vm.togglePublicity = togglePublicity;    
+    vm.user = currentUser.get();      
     vm.retrieve();
     vm.getProjectRole = getProjectRole;
     
@@ -66,9 +66,9 @@
     
     function listProjectFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
       $scope.$emit('raiseError', true);
-      console.log('Failed to get Project:' + data);
+      console.log('Failed to get Project.');
     }
           
     $scope.$on('addedSuccess', function(e, val) {

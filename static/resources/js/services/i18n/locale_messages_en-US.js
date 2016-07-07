@@ -245,10 +245,12 @@ var locale_messages = {
       '<strong>Developer</strong>: Developer has read and write privileges to the project.<br/>' +
       '<strong>Guest</strong>: Guest has read-only privilege for a specified project.',
   'inline_help_publicity_title': '<strong>Publicity of Project</strong>',
-  'inline_help_publicity': 'Setting the project as public.',
+  'inline_help_publicity': 'When a project is set to public, anyone will have read permission to the repositories under this project, and user will not need to run "docker login" before pulling images under this project.',
   'alert_job_contains_error': 'Found errors in the current replication jobs, please check.',
   'found_error_in_replication_job': 'Found $0 error(s).',
   'caution': 'Caution',
-  'confirm_to_toggle_policy_title': 'Policy Toggle',
-  'confirm_to_toggle_policy': 'Are you sure to toggle policy $0 to <strong>$1</strong> status?'
+  'confirm_to_toggle_enabled_policy_title': 'Enable Policy',
+  'confirm_to_toggle_enabled_policy': 'After enabling the policy, replication jobs will be triggered to replicate all repositories under the project to the destination of the policy.  Please confirm to continue.',
+  'confirm_to_toggle_disabled_policy_title': 'Disable Policy',
+  'confirm_to_toggle_disabled_policy': 'After disabling the policy, running replication jobs of this policy will be canceled.  Please confirm to continue.'
 };

@@ -78,7 +78,7 @@
       });
     }
     
-    function getProjectFailed() {
+    function getProjectFailed(data) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
       $scope.$emit('raiseError', true);
