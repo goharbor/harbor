@@ -247,6 +247,7 @@ var locale_messages = {
   'inline_help_publicity_title': '<strong>Publicity of Project</strong>',
   'inline_help_publicity': 'Setting the project as public.',
   'alert_job_contains_error': 'Found errors in the current replication jobs, please check.',
+  'found_error_in_replication_job': 'Found $0 error(s).',
   'caution': 'Caution',
   'confirm_to_toggle_policy_title': 'Policy Toggle',
   'confirm_to_toggle_policy': 'Are you sure to toggle policy $0 to <strong>$1</strong> status?'
