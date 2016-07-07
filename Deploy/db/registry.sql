@@ -143,7 +143,8 @@ create table replication_job (
  tags   varchar(16384),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY (id)
+ PRIMARY KEY (id),
+ INDEX policy (policy_id)
  );
  
 create table properties (
@@ -152,11 +153,8 @@ create table properties (
  primary key (k)
  );
 
-insert into properties (k, v) values 
-('schema_version', '0.1.1');
-
 CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('0.2.0');
+insert into alembic_version values ('0.3.0');
