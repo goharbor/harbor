@@ -1,0 +1,32 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="container-fluid container-fluid-custom" element-height ng-controller="AdminOptionController as vm">
+  <modal-dialog action="vm.action()" content-type="//vm.contentType//" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="vm.confirmOnly"></modal-dialog>
+  <div class="container container-custom">
+    <div class="row extend-height">
+	    <div class="section">
+		    <h4 class="page-header">
+          <span ng-if="!vm.toggle">// 'users' | tr //</span>
+          <a ng-if="vm.toggle" href="#" ng-click="vm.toggleAdminOption({target: 'users'})">// 'users' | tr //</a>
+          <span class="gutter">|</span>
+          <span ng-if="vm.toggle">// 'system_management' | tr //</span>
+          <a ng-if="!vm.toggle" href="#/destinations" class="title-color" ng-click="vm.toggleAdminOption({target: 'system_management'})">// 'system_management' | tr //</a>
+        </h4> 
+        <list-user ng-if="vm.target === 'users'"></list-user>
+        <system-management ng-if="vm.target === 'system_management'"></system-management>
+      </div>
+    </div>
+  </div>
+</div>

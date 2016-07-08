@@ -1,0 +1,25 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<td width="30%">//vm.username//</td>
+<td width="45%"><switch-role roles="vm.roles" edit-mode="vm.editMode" user-id="vm.userId" role-name="vm.roleName"></switch-role></td>
+<td width="25%">
+  <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.updateProjectMember({projectId: vm.projectId, userId: vm.userId, roleId: vm.roleId})">
+    <span ng-if="!vm.editMode" class="glyphicon glyphicon-pencil" title="// 'edit' | tr //"></span><span ng-if="vm.editMode" class="glyphicon glyphicon-ok" title="// 'confirm' | tr //">
+  </a>
+  <a ng-show="vm.userId != vm.currentUserId" href="javascript:void(0);" ng-click="vm.cancelUpdate()" title="// 'cancel' | tr //">
+    <span ng-if="vm.editMode" class="glyphicon glyphicon-remove"></span>
+  </a>
+  <a ng-show="vm.userId != vm.currentUserId && !vm.editMode" href="javascript:void(0);" ng-click="vm.deleteProjectMember()" title="// 'delete' | tr //"><span class="glyphicon glyphicon-trash"></span></a>
+</td>

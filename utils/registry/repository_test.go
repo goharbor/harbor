@@ -25,9 +25,8 @@ import (
 	"testing"
 	"time"
 
-	//"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry/auth"
-	"github.com/vmware/harbor/utils/registry/errors"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 var (
@@ -140,7 +139,8 @@ func serveToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestListTag(t *testing.T) {
-	client, err := NewRepositoryWithCredential(repo, registryServer.URL, credential)
+	client, err := newRepositoryClient(registryServer.URL, true, credential,
+		repo, "repository", repo, "pull", "push", "*")
 	if err != nil {
 		t.Error(err)
 	}
@@ -159,18 +159,36 @@ func TestListTag(t *testing.T) {
 
 func TestListTagWithInvalidCredential(t *testing.T) {
 	credential := auth.NewBasicAuthCredential(username, "wrong_password")
-	client, err := NewRepositoryWithCredential(repo, registryServer.URL, credential)
+	client, err := newRepositoryClient(registryServer.URL, true, credential,
+		repo, "repository", repo, "pull", "push", "*")
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = client.ListTag()
-	if err != nil {
-		e, ok := errors.ParseError(err)
+	if _, err = client.ListTag(); err != nil {
+		e, ok := err.(*registry_error.Error)
 		if ok && e.StatusCode == http.StatusUnauthorized {
 			return
 		}
+
 		t.Error(err)
 		return
 	}
+}
+
+func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
+	scopeActions ...string) (*Repository, error) {
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, true, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := NewRepositoryWithModifiers(repository, endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

@@ -1,0 +1,120 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="modal fade" data-backdrop="static" id="createPolicyModal" tabindex="-1"  role="dialog">
+  <div class="modal-dialog">
+    <form name="form" class="form-horizontal css-form" novalidate>
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;//vm.modalTitle//</h4>
+        </div>
+        <div class="modal-body">
+          <div class="create-policy">
+            <div class="col-md-12"  ng-show="vm.toggleErrorMessage">
+              <div class="pull-right clearfix" style="padding: 5px 10px;"><a href="javascript:void(0);" ng-click="vm.closeError()"><span class="glyphicon glyphicon-remove"></span></a></div>
+              <div class="bg-danger dialog-message">
+                <ul class="list-unstyled" style="color: red; margin: 0;" ng-repeat="msg in vm.errorMessages track by $index">
+                  <li>// msg //</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <h4>// 'general_setting' | tr //</h4>
+              <hr class="hr-line"/>
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="name" class="col-md-3 control-label">// 'name' | tr //:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" name="uName" required maxlength="20" ng-disabled="!vm.targetEditable">                 
+                <div ng-messages="form.$submitted && form.uName.$error">
+                  <span ng-message="required">// 'name_is_required' | tr //</span>
+                  <span ng-message="maxlength">// 'name_is_too_long' | tr //</span>
+                </div>
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="description" class="col-md-3 control-label">// 'description' | tr //:</label>
+              <div class="col-md-9">
+                <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" name="uDescription" ng-disabled="!vm.targetEditable"></textarea>                 
+                <div ng-messages="form.$submitted && form.uDescription.$error">
+                  <span ng-message="maxlength">// 'description_is_too_long' | tr //</span>
+                </div>
+              </div>
+            </div>          
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="enable" class="col-md-3 control-label">// 'enable' | tr //:</label>
+              <div class="col-md-9">
+                <input type="checkbox" class="form-control" style="margin-top: 10px; height: auto;" ng-model="replication.policy.enabled" ng-disabled="!vm.targetEditable">
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-8" style="padding-left: 0;">
+                  <h4 class="h4-custom">// 'destination_setting' | tr //</h4>
+                </div>
+              </div>
+              <hr class="hr-line"/>              
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="destinationName" class="col-md-3 control-label">// 'name' | tr //:</label>
+              <div class="col-md-7">
+                <input type="text" ng-if="vm.checkedAddTarget" class="form-control form-control-custom" style="width: 50% !important;" ng-model="replication.destination.name">
+                <select ng-if="!vm.checkedAddTarget" class="form-control form-control-custom" ng-model="replication.destination.selection" ng-options="d as d.name for d in vm.destinations track by d.id" ng-change="vm.selectDestination(replication.destination.selection)" style="width: 50% !important;" ng-disabled="!vm.targetEditable"></select>               
+                <div class="display-inline-block" ng-show="vm.targetEditable">&nbsp;&nbsp;<input type="checkbox" ng-model="vm.checkedAddTarget" ng-checked="vm.checkedAddTarget">&nbsp;&nbsp;// 'add_new_destination' | tr //</div>
+              </div>
+            </div>  
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="endpoint" class="col-md-3 control-label">// 'endpoint' | tr //:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" ng-value="vm.endpoint" placeholder="http://ip_address" required ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
+                <div ng-messages="form.$submitted && form.uEndpoint.$error">
+                  <span ng-message="required">// 'endpoint_is_required' | tr //</span>
+                </div>
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="username" class="col-md-3 control-label">// 'username' | tr //:</label>
+              <div class="col-md-9">
+                <input type="text" class="form-control" id="username" ng-model="replication.destination.username" name="uUsername" ng-value="vm.username" ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <label for="password" class="col-md-3 control-label">// 'password' | tr //:</label>
+              <div class="col-md-9">
+                <input type="password" class="form-control" id="password" ng-model="replication.destination.password" name="uPassword" ng-value="vm.password" ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
+              </div> 
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="false" toggle-in-progress="vm.pingTIP">// 'test_connection' | tr //</button>
+              </div>
+            </div>
+            <div class="form-group col-md-12 form-group-custom">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+                <span>// vm.pingMessage //</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button ng-show="vm.targetEditable" type="submit" class="btn btn-primary" ng-click="form.$valid && vm.save(replication)" loading-progress hide-target="false" toggle-in-progress="vm.saveTIP">// 'ok' | tr //</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

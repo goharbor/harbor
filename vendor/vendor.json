@@ -1,0 +1,89 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "G0MBhApkgOH9++JlIA8FPfU7j9Y=",
+			"path": "github.com/astaxie/beego",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "gSSu0SO0GZIZrBgQpybXeNMWSJs=",
+			"path": "github.com/astaxie/beego/cache",
+			"revision": "88c5dfa6ead42e624c2e7d9e04eab6cb2d07412a",
+			"revisionTime": "2016-03-23T09:05:40Z"
+		},
+		{
+			"checksumSHA1": "raJhf500jq7AzIGIclRQBo0B5+s=",
+			"path": "github.com/astaxie/beego/config",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "52Cnm/rmogm6vPa2jW9D6SuKm3g=",
+			"path": "github.com/astaxie/beego/context",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "PDNn16w89zWODshT9zlPzSmWZFA=",
+			"path": "github.com/astaxie/beego/grace",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "xxtx4xJs8UcrvaXNQ9A5QM9+oFg=",
+			"path": "github.com/astaxie/beego/logs",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "4X7wg7DBwdaRW4W2dBf3U0+fTHc=",
+			"path": "github.com/astaxie/beego/orm",
+			"revision": "88c5dfa6ead42e624c2e7d9e04eab6cb2d07412a",
+			"revisionTime": "2016-03-23T09:05:40Z"
+		},
+		{
+			"checksumSHA1": "Zeh58fFq41Ym/YNH47O6gdm1Mh8=",
+			"path": "github.com/astaxie/beego/session",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "Mu2lA5Jq0tRk9MjhWllyzcJD6KU=",
+			"path": "github.com/astaxie/beego/toolbox",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "x90ZIgNp0dy/saCS+4tBR3gdQ6g=",
+			"path": "github.com/astaxie/beego/utils",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "pt/trdXvFa8AvhR67iMhfvqNfDU=",
+			"path": "github.com/astaxie/beego/validation",
+			"revision": "88c5dfa6ead42e624c2e7d9e04eab6cb2d07412a",
+			"revisionTime": "2016-03-23T09:05:40Z"
+		}
+	],
+	"rootPath": "github.com/vmware/harbor"
+}

@@ -18,6 +18,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
@@ -40,6 +41,7 @@ type projectReq struct {
 }
 
 const projectNameMaxLen int = 30
+const projectNameMinLen int = 4
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -75,7 +77,7 @@ func (p *ProjectAPI) Post() {
 	err := validateProjectReq(req)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
-		p.RenderError(http.StatusBadRequest, "Invalid request for creating project")
+		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
 		return
 	}
 	projectName := req.ProjectName
@@ -157,7 +159,7 @@ func (p *ProjectAPI) List() {
 	if len(isPublic) > 0 {
 		public, err = strconv.Atoi(isPublic)
 		if err != nil {
-			log.Errorf("Error parsing public property: %d, error: %v", isPublic, err)
+			log.Errorf("Error parsing public property: %v, error: %v", isPublic, err)
 			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
 		}
 	}
@@ -197,10 +199,9 @@ func (p *ProjectAPI) List() {
 	p.ServeJSON()
 }
 
-// Put ...
-func (p *ProjectAPI) Put() {
+// ToggleProjectPublic ...
+func (p *ProjectAPI) ToggleProjectPublic() {
 	p.userID = p.ValidateUser()
-
 	var req projectReq
 	var public int
 
@@ -284,11 +285,13 @@ func isProjectAdmin(userID int, pid int64) bool {
 
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
-	if len(pn) == 0 {
-		return fmt.Errorf("Project name can not be empty")
+	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
+		return fmt.Errorf("Project name is illegal in length. (greater than 4 or less than 30)")
 	}
-	if len(pn) > projectNameMaxLen {
-		return fmt.Errorf("Project name is too long")
+	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
+	legal := validProjectName.MatchString(pn)
+	if !legal {
+		return fmt.Errorf("Project name is not in lower case or contains illegal characters!")
 	}
 	return nil
 }

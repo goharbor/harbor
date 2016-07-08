@@ -20,9 +20,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/api"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-	svc_utils "github.com/vmware/harbor/service/utils"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
@@ -38,47 +39,85 @@ const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	//log.Info("Notification Handler triggered!\n")
-	//	log.Infof("request body in string: %s", string(n.Ctx.Input.CopyBody()))
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
-		log.Errorf("error while decoding json: %v", err)
+		log.Errorf("failed to decode notification: %v", err)
 		return
 	}
-	var username, action, repo, project, repoTag string
-	var matched bool
-	for _, e := range notification.Events {
-		matched, err = regexp.MatchString(manifestPattern, e.Target.MediaType)
-		if err != nil {
-			log.Errorf("Failed to match the media type against pattern, error: %v", err)
-			matched = false
-		}
-		if matched && strings.HasPrefix(e.Request.UserAgent, "docker") {
-			username = e.Actor.Name
-			action = e.Action
-			repo = e.Target.Repository
-			repoTag = e.Target.Tag
-			log.Debugf("repo tag is : %v ", repoTag)
 
-			if strings.Contains(repo, "/") {
-				project = repo[0:strings.LastIndex(repo, "/")]
+	events, err := filterEvents(&notification)
+	if err != nil {
+		log.Errorf("failed to filter events: %v", err)
+		return
+	}
+
+	for _, event := range events {
+		repository := event.Target.Repository
+
+		project := ""
+		if strings.Contains(repository, "/") {
+			project = repository[0:strings.LastIndex(repository, "/")]
+		}
+
+		tag := event.Target.Tag
+		action := event.Action
+
+		user := event.Actor.Name
+		if len(user) == 0 {
+			user = "anonymous"
+		}
+
+		go func() {
+			if err := dao.AccessLog(user, project, repository, tag, action); err != nil {
+				log.Errorf("failed to add access log: %v", err)
 			}
-			if username == "" {
-				username = "anonymous"
-			}
-			go dao.AccessLog(username, project, repo, repoTag, action)
+		}()
+		if action == "push" {
+			go func() {
+				if err := cache.RefreshCatalogCache(); err != nil {
+					log.Errorf("failed to refresh cache: %v", err)
+				}
+			}()
+
+			operation := ""
 			if action == "push" {
-				go func() {
-					err2 := svc_utils.RefreshCatalogCache()
-					if err2 != nil {
-						log.Errorf("Error happens when refreshing cache: %v", err2)
-					}
-				}()
+				operation = models.RepOpTransfer
 			}
+
+			go api.TriggerReplicationByRepository(repository, []string{tag}, operation)
+		}
+	}
+}
+
+func filterEvents(notification *models.Notification) ([]*models.Event, error) {
+	events := []*models.Event{}
+
+	for _, event := range notification.Events {
+		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
+		if err != nil {
+			log.Errorf("failed to match the media type against pattern: %v", err)
+			continue
+		}
+
+		if !isManifest {
+			continue
+		}
+
+		//pull and push manifest by docker-client
+		if strings.HasPrefix(event.Request.UserAgent, "docker") && (event.Action == "pull" || event.Action == "push") {
+			events = append(events, &event)
+			continue
+		}
+
+		//push manifest by docker-client or job-service
+		if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
+			events = append(events, &event)
+			continue
 		}
 	}
 
+	return events, nil
 }
 
 // Render returns nil as it won't render any template.

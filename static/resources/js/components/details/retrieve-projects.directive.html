@@ -1,0 +1,35 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="retrievePane" class="switch-pane-drop-down" ng-show="vm.isOpen">
+  <div class="row">
+    <div class="col-xs-12 col-md-12">
+      <div class="panel panel-default">
+        <div class="form-inline search-projects">
+          <div class="input-group">
+            <input type="text" id="retrieveFilter" class="form-control search-icon" placeholder="" ng-model="vm.filterInput" size="30">
+          </div>
+        </div>			
+        <h5 class="page-header">//vm.projectType | tr//: <span class="badge">//vm.resultCount//</span></h5>
+        <div class="project-list pane-container">
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="item in vm.projects | name: vm.filterInput: 'name'" ng-click="vm.selectItem(item)">
+    			    <span ng-show="item.project_id === vm.selectedId" class="glyphicon glyphicon-ok project-selected"></span> <a href="#/repositories?project_id=//item.project_id//">//item.name//</a>
+    			  </li>	
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

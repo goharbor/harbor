@@ -1,0 +1,97 @@
+/*
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+.container-custom {
+  position: relative;
+  min-height: 1px;
+}
+
+.extend-height {
+  height: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.section {
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #FFFFFF;
+  height: 100%;
+  min-height: 672px;
+  width: 100%;
+}
+
+.search-pane {
+  margin: 0 10px 0 10px;
+  height: 3em;
+}
+
+
+.table>tbody>tr>td, .table>tbody>tr>th {
+  vertical-align: middle;
+}
+
+.table-header {
+  margin-bottom: 0;
+}
+
+.table-head-container {
+  
+}
+
+.table-body-container {
+  overflow-y: auto;
+}
+
+.gutter {
+  margin: 0 1em 0 1em;
+}
+
+.project-pane {
+  margin: 0 10px 0 10px;
+}
+
+.pane {
+  height: auto;
+  min-height: 1px;
+}
+
+.tab-pane {
+  min-height: 1px;
+  max-height: 1px;
+}
+
+.sub-pane {
+  margin: 15px;
+  min-height: 380px;
+  overflow-y: auto;
+}
+
+.well-custom {
+  
+  width: 100%;
+  background-color: #f5f5f5;
+  background-image: none;
+  
+  z-index: 10;
+}
+
+.form-custom {
+  margin-top: 1em;
+}
+
+.empty-hint {
+  text-align: center;
+  vertical-align: middle;
+}

@@ -115,3 +115,79 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	}
 	return err
 }
+
+//GetRecentLogs returns recent logs according to parameters
+func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
+	var recentLogList []models.AccessLog
+	queryParam := make([]interface{}, 1)
+
+	sql := "select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username from access_log left join  user on access_log.user_id=user.user_id where project_id in (select distinct project_id from project_member where user_id = ?)"
+	queryParam = append(queryParam, userID)
+	if startTime != "" {
+		sql += " and op_time >= ?"
+		queryParam = append(queryParam, startTime)
+	}
+
+	if endTime != "" {
+		sql += " and op_time <= ?"
+		queryParam = append(queryParam, endTime)
+	}
+
+	sql += " order by op_time desc"
+	if linesNum != 0 {
+		sql += " limit ?"
+		queryParam = append(queryParam, linesNum)
+	}
+	o := GetOrmer()
+	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
+	if err != nil {
+		return nil, err
+	}
+	return recentLogList, nil
+}
+
+//GetTopRepos return top  accessed public repos
+func GetTopRepos(countNum int) ([]models.TopRepo, error) {
+
+	o := GetOrmer()
+	// hide the where condition: project.public = 1, Can add to the sql when necessary.
+	sql := "select repo_name, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where access_log.operation = 'pull' group by repo_name order by access_count desc limit ? "
+	queryParam := []interface{}{}
+	queryParam = append(queryParam, countNum)
+	var list []models.TopRepo
+	_, err := o.Raw(sql, queryParam).QueryRows(&list)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) == 0 {
+		return list, nil
+	}
+	placeHolder := make([]string, len(list))
+	repos := make([]string, len(list))
+	for i, v := range list {
+		repos[i] = v.RepoName
+		placeHolder[i] = "?"
+	}
+	placeHolderStr := strings.Join(placeHolder, ",")
+	queryParam = nil
+	queryParam = append(queryParam, repos)
+	var usrnameList []models.TopRepo
+	sql = `select a.username as creator, a.repo_name from (select access_log.repo_name, user.username,
+	access_log.op_time from user left join access_log on user.user_id = access_log.user_id where 
+	access_log.operation = 'push' and access_log.repo_name in (######) order by access_log.repo_name,
+	access_log.op_time ASC) a group by a.repo_name`
+	sql = strings.Replace(sql, "######", placeHolderStr, 1)
+	_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(list); i++ {
+		for _, v := range usrnameList {
+			if v.RepoName == list[i].RepoName {
+				list[i].Creator = v.Creator
+				break
+			}
+		}
+	}
+	return list, nil
+}
