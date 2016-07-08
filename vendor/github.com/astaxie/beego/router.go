@@ -62,12 +62,12 @@ var (
 	}
 	// these beego.Controller's methods shouldn't reflect to AutoRouter
 	exceptMethod = []string{"Init", "Prepare", "Finish", "Render", "RenderString",
-		"RenderBytes", "Redirect", "Abort", "StopRun", "UrlFor", "ServeJson", "ServeJsonp",
-		"ServeXml", "Input", "ParseForm", "GetString", "GetStrings", "GetInt", "GetBool",
+		"RenderBytes", "Redirect", "Abort", "StopRun", "UrlFor", "ServeJSON", "ServeJSONP",
+		"ServeXML", "Input", "ParseForm", "GetString", "GetStrings", "GetInt", "GetBool",
 		"GetFloat", "GetFile", "SaveToFile", "StartSession", "SetSession", "GetSession",
 		"DelSession", "SessionRegenerateID", "DestroySession", "IsAjax", "GetSecureCookie",
 		"SetSecureCookie", "XsrfToken", "CheckXsrfCookie", "XsrfFormHtml",
-		"GetControllerAndAction"}
+		"GetControllerAndAction", "ServeFormatted"}
 
 	urlPlaceholder = "{{placeholder}}"
 	// DefaultAccessLogFilter will skip the accesslog if return true
@@ -607,6 +607,7 @@ func (p *ControllerRegister) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	)
 	context := p.pool.Get().(*beecontext.Context)
 	context.Reset(rw, r)
+
 	defer p.pool.Put(context)
 	defer p.recoverPanic(context)
 

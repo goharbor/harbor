@@ -85,3 +85,43 @@ class Project(Base):
     deleted = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     public = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     owner = relationship(u'User')
+
+class ReplicationPolicy(Base):
+    __tablename__ = "replication_policy"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(256))
+    project_id = sa.Column(sa.Integer, nullable=False)
+    target_id = sa.Column(sa.Integer, nullable=False)
+    enabled = sa.Column(mysql.TINYINT(1), nullable=False, server_default=sa.text("'1'"))
+    description = sa.Column(sa.Text)
+    cron_str = sa.Column(sa.String(256))
+    start_time = sa.Column(mysql.TIMESTAMP)
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+class ReplicationTarget(Base):
+    __tablename__ = "replication_target"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(64))
+    url = sa.Column(sa.String(64))
+    username = sa.Column(sa.String(40))
+    password = sa.Column(sa.String(40))
+    target_type = sa.Column(mysql.TINYINT(1), nullable=False, server_default=sa.text("'0'"))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+class ReplicationJob(Base):
+    __tablename__ = "replication_job"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    status = sa.Column(sa.String(64), nullable=False)
+    policy_id = sa.Column(sa.Integer, nullable=False)
+    repository = sa.Column(sa.String(256), nullable=False)
+    operation = sa.Column(sa.String(64), nullable=False)
+    tags = sa.Column(sa.String(16384))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    
+    __table_args__ = (sa.Index('policy', "policy_id"),)

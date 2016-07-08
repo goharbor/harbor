@@ -46,6 +46,8 @@ services:
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
+      - ../static:/go/bin/static
+      - ../views:/go/bin/views
     depends_on:
       - log
     logging:
@@ -53,6 +55,22 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         syslog-tag: "ui"
+  jobservice:
+    build:
+      context: ../
+      dockerfile: Dockerfile.job
+    env_file:
+      - ./config/jobservice/env
+    volumes:
+      - /data/job_logs:/var/log/jobs
+      - ./config/jobservice/app.conf:/etc/jobservice/app.conf
+    depends_on:
+      - ui
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-tag: "jobservice"
   proxy:
     image: library/nginx:1.9
     volumes:

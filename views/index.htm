@@ -1,0 +1,74 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="container-fluid container-fluid-custom" element-height ng-controller="IndexController as vm">
+  <modal-dialog modal-title="// vm.modalTitle //" modal-message='// vm.modalMessage //' content-type="// vm.contentType //" confirm-only="vm.confirmOnly" action="vm.action()"></modal-dialog>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+	      <div class="row">
+	        <div class="up-section">
+		        <div class="col-sm-offset-1 col-sm-10">
+		          <span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;<h4 class="title-color display-inline-block">// 'login_now' | tr //</h4>
+			      </div>
+		        <sign-in></sign-in>
+          </div>						
+        </div>
+      </div>
+      <div class="col-md-8">
+	      <div class="up-section right-part">	
+		      <h4 class="page-header display-inline-block">// 'its_easy_to_get_started' | tr //</h4>
+          <div class="page-content">
+            <div style="margin-left: auto; margin-right: auto; width: 100%;">		      
+    	          <div class="thumbnail display-inline-block">
+    	            <img src="/static/resources/img/Step1.png" alt="Step 1">    
+    	            <h5 class="step-content">// 'icon_label_1' | tr //</h5>
+    	          </div>	      
+    	          <div class="thumbnail display-inline-block">
+    	            <img src="/static/resources/img/Step2.png" alt="Step 2">
+    	            <h5 class="step-content">// 'icon_label_2' | tr //</h5>
+    	          </div>	       
+    	          <div class="thumbnail display-inline-block">
+    	            <img src="/static/resources/img/Step3.png" alt="Step 3">
+    	            <h5 class="step-content">// 'icon_label_3' | tr //</h5>
+    	          </div>
+    		      </div>
+          </div>
+	      </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+    	    <div class="row">
+    	      <div class="down-section down-section-left">
+    	        <h4 class="page-header underlined">// 'why_use_harbor' | tr //</h4>
+              <p class="page-content text-justify" style="line-height: 2em; height: 70%;">
+      			  // 'index_desc' | tr //
+        			</p>
+    		      <div class="page-content pull-right">
+    		        <a href="javascript:void(0);" ng-click="vm.viewAll()"><span class="glyphicon glyphicon-triangle-right"></span> // 'view_all' | tr //</a>
+    		      </div>
+            </div>						
+    	    </div>
+      </div>
+      <div class="col-md-8">
+    	    <div class="down-section">
+      		  <top-repository custom-body-height="vm.customBodyHeight"></top-repository>
+    	    </div>
+    	  </div>
+    </div>
+  </div>
+</div>

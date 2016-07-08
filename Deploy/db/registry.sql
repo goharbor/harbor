@@ -93,8 +93,8 @@ create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,
  project_id int NOT NULL,
- repo_name varchar (40), 
- repo_tag varchar (20),
+ repo_name varchar (256), 
+ repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
  op_time timestamp,
@@ -103,17 +103,58 @@ create table access_log (
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 
+create table replication_policy (
+ id int NOT NULL AUTO_INCREMENT,
+ name varchar(256),
+ project_id int NOT NULL,
+ target_id int NOT NULL,
+ enabled tinyint(1) NOT NULL DEFAULT 1,
+ description text,
+ cron_str varchar(256),
+ start_time timestamp NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id)
+ );
+
+create table replication_target (
+ id int NOT NULL AUTO_INCREMENT,
+ name varchar(64),
+ url varchar(64),
+ username varchar(40),
+ password varchar(40),
+ /*
+ target_type indicates the type of target registry,
+ 0 means it's a harbor instance,
+ 1 means it's a regulart registry
+ */
+ target_type tinyint(1) NOT NULL DEFAULT 0,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id)
+ );
+
+create table replication_job (
+ id int NOT NULL AUTO_INCREMENT,
+ status varchar(64) NOT NULL,
+ policy_id int NOT NULL,
+ repository varchar(256) NOT NULL,
+ operation  varchar(64) NOT NULL,
+ tags   varchar(16384),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ INDEX policy (policy_id)
+ );
+ 
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
  primary key (k)
  );
 
-insert into properties (k, v) values 
-('schema_version', '0.1.1');
-
 CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('0.1.1');
+insert into alembic_version values ('0.3.0');
