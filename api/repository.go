@@ -43,8 +43,8 @@ type RepositoryAPI struct {
 }
 
 type repoPaging struct {
-	pages int
-	repoList []string
+	Pages    int `json:"pages"`
+	RepoList []string `json:"repoList"`
 }
 
 // Get ...
@@ -107,6 +107,7 @@ func (ra *RepositoryAPI) Get() {
 	} else {
 		ra.Data["json"] = getSubPage(repoList, pageId)
 	}
+
 	ra.ServeJSON()
 }
 
@@ -116,17 +117,19 @@ func getSubPage(strs []string, pageNum int) (repoPaging) {
 
 	switch {
 	case length >= (pageNum+1)*5:
-		repoPage.repoList = strs[pageNum*5 : (pageNum+1)*5]
+		repoPage.RepoList = strs[pageNum*5 : (pageNum+1)*5]
 
 	case length < (pageNum+1)*5 && length >= (pageNum)*5:
-		repoPage.repoList = strs[pageNum*5 : length]
+		repoPage.RepoList = strs[pageNum*5 : length]
 	}
 
 	if length % 5==0{
-		repoPage.pages = length/5
+		repoPage.Pages = length/5
 	}else{
-		repoPage.pages = length/5+1
+		repoPage.Pages = length/5+1
 	}
+	log.Info("repoPages: ", repoPage.Pages)
+	log.Info("repoList: ", repoPage.RepoList)
 
 	return repoPage
 }
