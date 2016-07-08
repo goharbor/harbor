@@ -88,7 +88,7 @@
     $scope.$on('addedSuccess', function(e, val) {
       vm.retrieve();
     });
-    
+   
     function showAddProject() {
       if(vm.isOpen){
         vm.isOpen = false;        

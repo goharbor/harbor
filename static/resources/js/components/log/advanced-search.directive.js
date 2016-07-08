@@ -158,6 +158,7 @@
       element.find('#toDatePicker').on('blur', function(){
         ctrl.pickUp({'key': 'toDate', 'value': $(this).val()});
       });
+          
     }
   }
   
