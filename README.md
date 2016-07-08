@@ -51,6 +51,10 @@ $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
 ```
 
+**Data migration:**
+
+The database schema can be updated in new version, so if you are upgrading from an older version with existing data, you need to migrate the existing data to new schema. For more details please refer to [Data Migration Guide](migration/README.md)
+
 **NOTE:**  
 For those who don't want to clone the source, or need to install Harbor on a server not connected to the Internet - there is a pre-built installation package available. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
 
