@@ -42,9 +42,14 @@ type RepositoryAPI struct {
 	BaseAPI
 }
 
+type repoPaging struct {
+	pages int
+	repoList []string
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
-	pageNum, _ := ra.GetInt("pageNum")
+	pageId, _ := ra.GetInt("pageId")
 
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil {
@@ -91,31 +96,39 @@ func (ra *RepositoryAPI) Get() {
 		for _, repol := range repoLs {
 			resp = append(resp, repol)
 		}
-		ra.Data["json"] = getSubPage(resp, pageNum)
+		ra.Data["json"] = getSubPage(resp, pageId)
 	} else if len(projectName) > 0 {
 		for _, r := range repoList {
 			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
 				resp = append(resp, r)
 			}
 		}
-		ra.Data["json"] = getSubPage(resp, pageNum)
+		ra.Data["json"] = getSubPage(resp, pageId)
 	} else {
-		ra.Data["json"] = getSubPage(repoList, pageNum)
+		ra.Data["json"] = getSubPage(repoList, pageId)
 	}
 	ra.ServeJSON()
 }
 
-func getSubPage(strs []string, pageNum int) (subStr []string) {
+func getSubPage(strs []string, pageNum int) (repoPaging) {
 	length := len(strs)
+	var repoPage repoPaging
 
 	switch {
 	case length >= (pageNum+1)*5:
-		return strs[pageNum*5 : (pageNum+1)*5]
+		repoPage.repoList = strs[pageNum*5 : (pageNum+1)*5]
+
 	case length < (pageNum+1)*5 && length >= (pageNum)*5:
-		return strs[pageNum*5 : length]
-	default:
-		return nil
+		repoPage.repoList = strs[pageNum*5 : length]
 	}
+
+	if length % 5==0{
+		repoPage.pages = length/5
+	}else{
+		repoPage.pages = length/5+1
+	}
+
+	return repoPage
 }
 
 func (ra *RepositoryAPI) AddLabel() {
