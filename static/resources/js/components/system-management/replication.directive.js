@@ -29,6 +29,7 @@
     var vm = this;
     vm.retrieve = retrieve;
     vm.search = search;
+    vm.confirmToTogglePolicy = confirmToTogglePolicy;
     vm.togglePolicy = togglePolicy;
     vm.editReplication = editReplication;
     vm.retrieve();
@@ -53,9 +54,36 @@
       $scope.$emit('raiseError', true);
       console.log('Failed to list replication policy.');
     }
+
+    function confirmToTogglePolicy(policyId, enabled, name) {
+      vm.policyId = policyId;
+      vm.enabled = enabled;
+
+      var status = $filter('tr')(vm.enabled === 1 ? 'enable':'disable');
+
+      var title;
+      var message;
+      if(enabled === 1){
+        title = $filter('tr')('confirm_to_toggle_enabled_policy_title');
+        message = $filter('tr')('confirm_to_toggle_enabled_policy');
+      }else{
+        title = $filter('tr')('confirm_to_toggle_disabled_policy_title');
+        message = $filter('tr')('confirm_to_toggle_disabled_policy');
+      }
+      $scope.$emit('modalTitle', title);
+      $scope.$emit('modalMessage', message);
+            
+      var emitInfo = {
+        'contentType': 'text/html',
+        'confirmOnly': false,
+        'action': vm.togglePolicy
+      }
+      
+      $scope.$emit('raiseInfo', emitInfo);
+    }
     
-    function togglePolicy(policyId, enabled) {
-      ToggleReplicationPolicyService(policyId, enabled)
+    function togglePolicy() {
+      ToggleReplicationPolicyService(vm.policyId, vm.enabled)
         .success(toggleReplicationPolicySuccess)
         .error(toggleReplicationPolicyFailed);
     }
