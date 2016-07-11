@@ -28,7 +28,7 @@
           <div class="search-pane">
     		    <div class="form-inline">
     		      <div class="input-group">
-    		        <input type="text" class="form-control" placeholder="" ng-model="vm.projectName" size="30">
+    		        <input type="text" class="form-control" placeholder="" ng-model="vm.projectName" size="30" ng-keydown="vm.searchProjectByKeyPress($event)">
     		        <span class="input-group-btn">
     		          <button class="btn btn-primary" type="button" ng-click="vm.searchProject()"><span class="glyphicon glyphicon-search"></span></button>
     		        </span>

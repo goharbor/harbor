@@ -143,7 +143,7 @@
       $scope.$emit('raiseAlert', alertInfo);
       vm.searchJobTIP = false;
       vm.refreshJobTIP = false;
-    }
+    }searchReplicationJob
     
     function listReplicationJobFailed(data, status) {
       console.log('Failed to list replication job:' + data);
@@ -303,6 +303,19 @@
       element.find('#toDatePicker').on('blur', function(){
         ctrl.pickUp({'key': 'toDate', 'value': $(this).val()});
       });
+      
+      element.find('#txtSearchPolicyInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.searchReplicationPolicy();
+        }
+      });
+      
+      element.find('#txtSearchJobInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.searchReplicationJob();
+        }
+      });
+      
     }
   }
   

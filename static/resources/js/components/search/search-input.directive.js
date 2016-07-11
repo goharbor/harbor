@@ -57,7 +57,7 @@
         .on('keydown', keydownHandler);
         
       function keydownHandler(e) {
-        if(e.keyCode === 13) {
+        if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.searchFor($(this).val());
         }
       }
