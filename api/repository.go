@@ -16,7 +16,8 @@
 package api
 
 import (
-	"encoding/json"
+	"io/ioutil"
+	//"encoding/json"
 	"net/http"
 	"os"
 	"sort"
@@ -24,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/service/cache"
@@ -251,6 +253,15 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
 	}
 
+	version := ra.GetString("version")
+	if len(version) == 0 {
+		version = "v2"
+	}
+
+	if version != "v1" && version != "v2" {
+		ra.CustomAbort(http.StatusBadRequest, "version should be v1 or v2")
+	}
+
 	projectName := getProjectName(repoName)
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
@@ -271,8 +282,20 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	mediaTypes := []string{schema1.MediaTypeManifest}
-	_, _, payload, err := rc.PullManifest(tag, mediaTypes)
+	result := struct {
+		Manifest interface{} `json:"manifest"`
+		Config   interface{} `json:"config,omitempty" `
+	}{}
+
+	mediaTypes := []string{}
+	switch version {
+	case "v1":
+		mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
+	case "v2":
+		mediaTypes = append(mediaTypes, schema2.MediaTypeManifest)
+	}
+
+	_, mediaType, payload, err := rc.PullManifest(tag, mediaTypes)
 	if err != nil {
 		if regErr, ok := err.(*registry_error.Error); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
@@ -281,15 +304,33 @@ func (ra *RepositoryAPI) GetManifests() {
 		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
-	mani := models.Manifest{}
-	err = json.Unmarshal(payload, &mani)
+
+	manifest, _, err := registry.UnMarshal(mediaType, payload)
 	if err != nil {
-		log.Errorf("Failed to decode json from response for manifests, repo name: %s, tag: %s, error: %v", repoName, tag, err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
+		log.Errorf("an error occurred while parsing manifest of %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	ra.Data["json"] = mani
+	result.Manifest = manifest
+
+	deserializedmanifest, ok := manifest.(*schema2.DeserializedManifest)
+	if ok {
+		_, data, err := rc.PullBlob(deserializedmanifest.Target().Digest.String())
+		if err != nil {
+			log.Errorf("failed to get config of manifest %s:%s: %v", repoName, tag, err)
+			ra.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		b, err := ioutil.ReadAll(data)
+		if err != nil {
+			log.Errorf("failed to read config of manifest %s:%s: %v", repoName, tag, err)
+			ra.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		result.Config = string(b)
+	}
+
+	ra.Data["json"] = result
 	ra.ServeJSON()
 }
 
