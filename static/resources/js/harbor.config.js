@@ -106,7 +106,7 @@
     
     function filter(input, pattern) {
       var d = new Date(input || '');
-      if(d.getTime() <= 0) return '-';
+      if(d.getTime() <= 0) {return '-';}
       return moment(d).format(pattern);
     }
   }

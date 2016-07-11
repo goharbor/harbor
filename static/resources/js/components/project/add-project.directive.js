@@ -55,13 +55,13 @@
     
     function addProjectFailed(data, status) {
       vm.hasError = true;
-      if(status === 400 && vm0.projectName!= '' && vm0.projectName.length < 4) {
+      if(status === 400 && vm0.projectName !== '' && vm0.projectName.length < 4) {
         vm.errorMessage = 'project_name_is_too_short';
       }
       if(status === 400 && vm0.projectName.length > 30) {
         vm.errorMessage = 'project_name_is_too_long';
       }
-      if(status === 409 && vm0.projectName != '') {
+      if(status === 409 && vm0.projectName !== '') {
         vm.errorMessage = 'project_already_exist';
       }
       console.log('Failed to add project:' + status);

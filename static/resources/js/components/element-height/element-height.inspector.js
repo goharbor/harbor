@@ -36,10 +36,10 @@
         return {'h' : w.height()};
       };
       
-      if(!angular.isDefined(scope.subsHeight))  scope.subsHeight = 110;
-      if(!angular.isDefined(scope.subsSection)) scope.subsSection = 32;
-      if(!angular.isDefined(scope.subsSubPane)) scope.subsSubPane = 226;
-      if(!angular.isDefined(scope.subsTblBody)) scope.subsTblBody = 40;
+      if(!angular.isDefined(scope.subsHeight))  {scope.subsHeight = 110;}
+      if(!angular.isDefined(scope.subsSection)) {scope.subsSection = 32;}
+      if(!angular.isDefined(scope.subsSubPane)) {scope.subsSubPane = 226;}
+      if(!angular.isDefined(scope.subsTblBody)) {scope.subsTblBody = 40;}
     
       scope.$watch(scope.getDimension, function(current) {
         if(current) {

@@ -30,7 +30,7 @@
       .error(listIntegratedLogFailed);
       
     function listIntegratedLogSuccess(data) {
-      vm.integratedLogs = data || []
+      vm.integratedLogs = data || [];
     }
 
     function listIntegratedLogFailed(data, status) {

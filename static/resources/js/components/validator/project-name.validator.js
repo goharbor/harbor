@@ -20,7 +20,7 @@
     .module('harbor.validator')
     .directive('projectName', projectName);
   
-  projectName.$inject = ['PROJECT_REGEXP']
+  projectName.$inject = ['PROJECT_REGEXP'];
   
   function projectName(PROJECT_REGEXP) {
     var directive = {

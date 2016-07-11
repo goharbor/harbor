@@ -38,8 +38,7 @@
      
       for(var i = 0; i < r.length; i++) {
         var role = r[i];
-        if(query.key === 'roleName' && role.roleName === query.value
-          || query.key === 'roleId' && role.id === String(query.value)) {
+        if(query.key === 'roleName' && role.roleName === query.value || query.key === 'roleId' && role.id === String(query.value)) {
            return role;
         }
       }
