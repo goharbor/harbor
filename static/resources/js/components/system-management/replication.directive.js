@@ -77,7 +77,7 @@
         'contentType': 'text/html',
         'confirmOnly': false,
         'action': vm.togglePolicy
-      }
+      };
       
       $scope.$emit('raiseInfo', emitInfo);
     }

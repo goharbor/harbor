@@ -60,7 +60,7 @@
         vm.action = function() {
           val.action();
           $scope.$broadcast('showDialog', false);
-        }
+        };
         vm.contentType = val.contentType;
         vm.confirmOnly = val.confirmOnly;
        
