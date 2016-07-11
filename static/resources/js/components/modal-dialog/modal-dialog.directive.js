@@ -51,12 +51,12 @@
         if(current) {
           ctrl.contentType = current;  
         }
-      })
+      });
       scope.$watch('confirmOnly', function(current) {
         if(current) {
           ctrl.confirmOnly = current;
         }
-      })
+      });
                         
       scope.$watch('vm.modalMessage', function(current) {
         if(current) {

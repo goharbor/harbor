@@ -23,7 +23,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "registry"
+        tag: "registry"
   mysql:
     build: ./db/
     volumes:
@@ -36,7 +36,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "mysql"
+        tag: "mysql"
   ui:
     build:
       context: ../
@@ -54,7 +54,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "ui"
+        tag: "ui"
   jobservice:
     build:
       context: ../
@@ -70,7 +70,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "jobservice"
+        tag: "jobservice"
   proxy:
     image: library/nginx:1.9
     volumes:
@@ -87,4 +87,4 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "proxy"
+        tag: "proxy"

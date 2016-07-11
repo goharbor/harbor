@@ -34,7 +34,7 @@
         {'key': 'finished', 'value':$filter('tr')('finished')},
         {'key': 'canceled', 'value': $filter('tr')('canceled')}
       ];
-    }
+    };
   }
   
   ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
@@ -134,6 +134,7 @@
           case 'operation':            
           case 'status':
             item[key] = $filter('tr')(value);
+            break;
           default:
             break;
           }
@@ -143,7 +144,7 @@
       $scope.$emit('raiseAlert', alertInfo);
       vm.searchJobTIP = false;
       vm.refreshJobTIP = false;
-    }searchReplicationJob
+    }
     
     function listReplicationJobFailed(data, status) {
       console.log('Failed to list replication job:' + data);
@@ -186,7 +187,7 @@
         'contentType': 'text/html',
         'confirmOnly': false,
         'action': vm.togglePolicy
-      }
+      };
       
       $scope.$emit('raiseInfo', emitInfo);
     }

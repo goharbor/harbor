@@ -95,7 +95,7 @@
       var message;
       $scope.$emit('modalTitle', $filter('tr')('error'));
       console.log('Failed to change password:' + data);
-      if(data == 'old_password_is_not_correct') {
+      if(data === 'old_password_is_not_correct') {
         message = $filter('tr')('old_password_is_incorrect');
       }else{
         message = $filter('tr')('failed_to_change_password');

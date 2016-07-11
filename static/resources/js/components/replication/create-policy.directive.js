@@ -256,7 +256,7 @@
       
       vm0.name = replicationPolicy.name;
       vm0.description = replicationPolicy.description;
-      vm0.enabled = (replicationPolicy.enabled == 1);
+      vm0.enabled = (replicationPolicy.enabled === 1);
       
       angular.forEach(vm.destinations, function(item) {
         if(item.id === vm.targetId) {
