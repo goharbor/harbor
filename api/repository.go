@@ -22,7 +22,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/vmware/harbor/dao"
@@ -272,8 +271,6 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	item := models.RepoItem{}
-
 	mediaTypes := []string{schema1.MediaTypeManifest}
 	_, _, payload, err := rc.PullManifest(tag, mediaTypes)
 	if err != nil {
@@ -291,17 +288,8 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
-	v1Compatibility := mani.History[0].V1Compatibility
 
-	err = json.Unmarshal([]byte(v1Compatibility), &item)
-	if err != nil {
-		log.Errorf("Failed to decode V1 field for repo, repo name: %s, tag: %s, error: %v", repoName, tag, err)
-		ra.RenderError(http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
-	item.DurationDays = strconv.Itoa(int(time.Since(item.Created).Hours()/24)) + " days"
-
-	ra.Data["json"] = item
+	ra.Data["json"] = mani
 	ra.ServeJSON()
 }
 
