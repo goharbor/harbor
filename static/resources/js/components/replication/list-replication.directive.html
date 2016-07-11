@@ -16,7 +16,7 @@
   <div class="col-xs-12 col-md-12 each-tab-pane">
     <div class="form-inline">
       <div class="input-group">
-        <input type="text" class="form-control" placeholder="" ng-model="vm.replicationPolicyName" size="30">
+        <input type="text" id="txtSearchPolicyInput" class="form-control" placeholder="" ng-model="vm.replicationPolicyName" size="30">
         <span class="input-group-btn">
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationPolicy()"><span class="glyphicon glyphicon-search"></span></button>
         </span>
@@ -79,7 +79,7 @@
     <hr class="hr-line"/>
     <div class="form-inline">
       <div class="input-group">
-        <input type="text" class="form-control" placeholder="" ng-model="vm.replicationJobName" size="30">
+        <input type="text" id="txtSearchJobInput" class="form-control" placeholder="" ng-model="vm.replicationJobName" size="30">
         <span class="input-group-btn">
           <button class="btn btn-primary" type="button" ng-click="vm.searchReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.searchJobTIP"><span class="glyphicon glyphicon-search"></span></button>
         </span>

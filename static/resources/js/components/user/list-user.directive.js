@@ -102,8 +102,12 @@
     };
     return directive;
     
-    function link(scope, element, attrs) {
-      
+    function link(scope, element, attrs, ctrl) {
+      element.find('#txtSearchInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.retrieve();
+        }
+      });
     }
   }
   

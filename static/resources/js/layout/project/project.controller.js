@@ -38,6 +38,8 @@
     vm.retrieve();
     vm.getProjectRole = getProjectRole;
     
+    vm.searchProjectByKeyPress = searchProjectByKeyPress;
+    
     
     //Error message dialog handler for project.
     $scope.$on('modalTitle', function(e, val) {
@@ -114,6 +116,13 @@
       vm.isOpen = false;
       vm.retrieve();
       console.log('vm.publicity:' + vm.publicity);
+    }
+    
+    function searchProjectByKeyPress($event) {
+      var keyCode = $event.which || $event.keyCode;
+      if(keyCode === 13) {
+        vm.retrieve();
+      }
     }
     
   }
