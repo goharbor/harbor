@@ -147,6 +147,30 @@ func (cc *CommonController) Login() {
 	cc.SetSession("username", user.Username)
 }
 
+
+func (cc *CommonController) LoginCargo() {
+	principal := cc.GetString("principal")
+	password := cc.GetString("password")
+
+	//query user is exist
+	userQuery := models.User{Username: principal,Password: password,Email: principal}
+	user, err := dao.GetUser(userQuery)
+
+	if (err != nil || user == nil) {
+		//Register User
+		userID, err := dao.Register(userQuery)
+		if err != nil {
+			log.Errorf("Error occurred in Register: %v", err)
+			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		cc.SetSession("userId", userID)
+		cc.SetSession("username", principal)
+	}else{
+		cc.SetSession("userId", user.UserID)
+		cc.SetSession("username", user.Username)
+	}
+}
+
 // LogOut Habor UI
 func (cc *CommonController) LogOut() {
 	cc.DestroySession()
