@@ -31,10 +31,11 @@
         <div class="table-head-container">
           <table class="table table-pane table-header">
             <thead>
-              <th width="14%">// 'username' | tr //</th>
-              <th width="32%">// 'repository_name' | tr //</th>
+              <th width="18%">// 'username' | tr //</th>
+              <th width="28%">// 'repository_name' | tr //</th>
+              <th width="15%">// 'tag' | tr //</th>
               <th width="14%">// 'operation' | tr //</th>
-              <th width="40%">// 'timestamp' | tr //</th>
+              <th width="25%">// 'timestamp' | tr //</th>
             </thead>
           </table>
         </div>
@@ -42,7 +43,7 @@
           <table class="table table-pane">
             <tbody>
               <tr ng-repeat="log in vm.logs">
-                <td width="14%">//log.username//</td><td width="32%">//log.repo_name//</td><td width="14%">//log.operation//</td><td width="40%">//log.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                <td width="18%">//log.username//</td><td width="28%">//log.repo_name//</td><td width="15%">//log.repo_tag//</td><td width="14%">//log.operation//</td><td width="25%">//log.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
               </tr>
             </tbody>
           </table>
