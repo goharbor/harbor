@@ -139,7 +139,7 @@ var locale_messages = {
       'The space of this repository will be recycled during garbage collection.<br/>' +
       '<br/>Delete repository "$0" now?',
   'alert_delete_tag_title': 'Confirm Deletion',
-  'alert_delete_tag': 'Delete tag "$0" now?',
+  'alert_delete_tag': 'Note: All tags under this repository which are associated with this image will be deleted too.<br/><br/>Delete tag "$0" now?',
   'close': 'Close',
   'ok': 'OK',
   'welcome': 'Welcome to Harbor!',

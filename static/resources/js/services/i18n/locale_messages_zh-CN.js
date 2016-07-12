@@ -138,7 +138,7 @@ var locale_messages = {
   'alert_delete_repo': '即将删除镜像仓库下的所有标签，镜像空间将在垃圾回收过程中释放。<br/>' +
       '<br/>是否删除镜像仓库 "$0" ?',
   'alert_delete_tag_title': '确认删除',
-  'alert_delete_tag': '删除镜像标签 "$0" ?',
+  'alert_delete_tag': '注意：此镜像仓库下其他指向该镜像的标签也将被删除。<br/><br/>删除镜像标签 "$0" ?',
   'close': '关闭',
   'ok': '确认',
   'welcome': '欢迎使用Harbor!',
