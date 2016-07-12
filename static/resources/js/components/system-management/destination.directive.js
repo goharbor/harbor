@@ -108,11 +108,20 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/system-management/destination.directive.html',
       'scope': true,
+      'link': link,
       'controller': DestinationController,
       'controllerAs': 'vm',
       'bindToController': true
     };
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      element.find('#txtSearchInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.retrieve();
+        }
+      });
+    }
   }
   
 })();

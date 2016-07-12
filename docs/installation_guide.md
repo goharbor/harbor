@@ -51,6 +51,9 @@ The parameters are described below - note that at the very least, you will need 
 * **ldap_basedn**: The basedn template for verifying the user's credentials against LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com`).  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **self_registration**: (**on** or **off**.  Default is **on**) Enable / Disable the ability for a user to register themselves.  When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
+* **max_job_workers**: The number of workers in job service, for image replication jobs, each worker will sync all tags of a repository to remote destination.  The default number of works is **3**, when the number of works increase the load of job service will grow, please allocate more resource to job service if you want to set the number of workers to larger than 10.
+* **verify_remote_cert**: (**on** or **off**.  Default is **on**) This attribute controls whether or not to verify SSL/TLS certificate when Harbor tries to communicate with remote registry instances, for example, when replicating images.  Setting this attribute to **off** will bypass the SSL/TLS verification.
+* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is set to **on**, the prepare script will generate private key and root cert for the generation/verification of regitry's token.  The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** will be used as parameters for generating the keys. 
 
 #### Configuring storage backend (optional)
 
@@ -85,6 +88,11 @@ Once **harbord.cfg** and storage backend (optional) are configured, build and st
     Generated configuration file: ./config/ui/app.conf
     Generated configuration file: ./config/registry/config.yml
     Generated configuration file: ./config/db/env
+    Generated configuration file: ./config/jobservice/env
+    Clearing the configuration file: ./config/ui/private_key.pem
+    Clearing the configuration file: ./config/registry/root.crt
+    Generated configuration file: ./config/ui/private_key.pem
+    Generated configuration file: ./config/registry/root.crt
     The configuration files are ready, please use docker-compose to start the service.
 
     $ sudo docker-compose up -d
@@ -125,6 +133,11 @@ Generated configuration file: ./config/ui/env
 Generated configuration file: ./config/ui/app.conf
 Generated configuration file: ./config/registry/config.yml
 Generated configuration file: ./config/db/env
+Generated configuration file: ./config/jobservice/env
+Clearing the configuration file: ./config/ui/private_key.pem
+Clearing the configuration file: ./config/registry/root.crt
+Generated configuration file: ./config/ui/private_key.pem
+Generated configuration file: ./config/registry/root.crt
 The configuration files are ready, please use docker-compose to start the service.
 
 $ sudo docker-compose up -d

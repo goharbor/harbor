@@ -256,7 +256,7 @@
       
       vm0.name = replicationPolicy.name;
       vm0.description = replicationPolicy.description;
-      vm0.enabled = (replicationPolicy.enabled == 1);
+      vm0.enabled = (replicationPolicy.enabled === 1);
       
       angular.forEach(vm.destinations, function(item) {
         if(item.id === vm.targetId) {
@@ -276,6 +276,7 @@
       vm.saveTIP = false;
       console.log('Successful create replication policy.');
       vm.reload();
+      vm.closeDialog();
     }
     function createReplicationPolicyFailed(data, status) {
       vm.saveTIP = false;
@@ -290,6 +291,7 @@
       console.log('Successful update replication policy.');
       vm.reload();
       vm.saveTIP = false;
+      vm.closeDialog();
     }
     function updateReplicationPolicyFailed(data, status) {
       vm.saveTIP = false;
@@ -398,6 +400,7 @@
       });               
                   
       ctrl.save = save;
+      ctrl.closeDialog = closeDialog;
     
       function save(form) {
         
@@ -420,11 +423,10 @@
           ctrl.update(postPayload);
           break;
         }
-        $timeout(function() {      
-          if(!ctrl.toggleErrorMessage) {
-            element.find('#createPolicyModal').modal('hide');
-          }
-        }, 150);
+      }
+      
+      function closeDialog() {
+        element.find('#createPolicyModal').modal('hide');
       }
     }
   }

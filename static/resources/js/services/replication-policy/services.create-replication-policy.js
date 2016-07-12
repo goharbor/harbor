@@ -35,7 +35,7 @@
           'description': policy.description,
           'cron_str': policy.cronStr,
           'start_time': policy.startTime
-        })
+        });
     }
   }
     

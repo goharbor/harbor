@@ -79,6 +79,7 @@
     function createDestinationSuccess(data, status) {
       console.log('Successful created destination.');
       vm.reload();
+      vm.closeDialog();
     }
     
     function createDestinationFailed(data, status) {
@@ -99,6 +100,7 @@
     function updateDestinationSuccess(data, status) {
       console.log('Successful update destination.');
       vm.reload();
+      vm.closeDialog();
     }
     
     function updateDestinationFailed(data, status) {
@@ -221,6 +223,7 @@
       });
       
       ctrl.save = save;
+      ctrl.closeDialog = closeDialog;
       
       function save(destination) {
         if(destination) {          
@@ -235,13 +238,11 @@
             ctrl.update(destination);
             break;
           }
-          
-          $timeout(function() {
-            if(!ctrl.toggleErrorMessage) {
-              element.find('#createDestinationModal').modal('hide');
-            }
-          }, 50);
         }
+      }
+      
+      function closeDialog() {
+        element.find('#createDestinationModal').modal('hide');
       }
     }
   }

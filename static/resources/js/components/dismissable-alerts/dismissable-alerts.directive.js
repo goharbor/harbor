@@ -31,14 +31,14 @@
       
       scope.close = function() {
         scope.toggleAlert = false;
-      }
+      };
       scope.$on('raiseAlert', function(e, val) {
         console.log('received raiseAlert:' + angular.toJson(val));
         if(val.show) {
           scope.message = val.message;
           scope.toggleAlert = true;
         }else{
-          scope.message = ''
+          scope.message = '';
           scope.toggleAlert = false;
         }
       });

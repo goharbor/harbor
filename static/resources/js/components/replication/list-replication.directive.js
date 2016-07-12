@@ -34,7 +34,7 @@
         {'key': 'finished', 'value':$filter('tr')('finished')},
         {'key': 'canceled', 'value': $filter('tr')('canceled')}
       ];
-    }
+    };
   }
   
   ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
@@ -134,6 +134,7 @@
           case 'operation':            
           case 'status':
             item[key] = $filter('tr')(value);
+            break;
           default:
             break;
           }
@@ -186,7 +187,7 @@
         'contentType': 'text/html',
         'confirmOnly': false,
         'action': vm.togglePolicy
-      }
+      };
       
       $scope.$emit('raiseInfo', emitInfo);
     }
@@ -303,6 +304,19 @@
       element.find('#toDatePicker').on('blur', function(){
         ctrl.pickUp({'key': 'toDate', 'value': $(this).val()});
       });
+      
+      element.find('#txtSearchPolicyInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.searchReplicationPolicy();
+        }
+      });
+      
+      element.find('#txtSearchJobInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.searchReplicationJob();
+        }
+      });
+      
     }
   }
   

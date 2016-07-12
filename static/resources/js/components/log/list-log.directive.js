@@ -145,19 +145,28 @@
   
   function listLog() {
     var directive = {
-      restrict: 'E',
-      templateUrl: '/static/resources/js/components/log/list-log.directive.html',
-      scope: {
+      'restrict': 'E',
+      'templateUrl': '/static/resources/js/components/log/list-log.directive.html',
+      'scope': {
         'sectionHeight': '=',
         'target': '=',
         'publicity': '='
       },
-      controller: ListLogController,
-      controllerAs: 'vm',
-      bindToController: true
+      'link': link,
+      'controller': ListLogController,
+      'controllerAs': 'vm',
+      'bindToController': true
     };
     
     return directive;
+    
+    function link(scope, element, attrs, ctrl) {
+      element.find('#txtSearchInput').on('keydown', function(e) {
+        if($(this).is(':focus') && e.keyCode === 13) {
+          ctrl.search({'op': ctrl.op, 'username': ctrl.username});
+        }
+      });
+    }
   }
   
 })();
