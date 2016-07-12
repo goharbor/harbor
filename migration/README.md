@@ -51,7 +51,7 @@ The directory **migration/** contains the tool for migration. The first step is 
     docker run -ti --rm -v /data/database:/var/lib/mysql migrate-tool up head
     ```
 
-8. Change to `Deploy/` directory, configure Harbor by updating the file `harbor.cfg`, you may need to refer to the configuration files you backed up during step 1. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+8. Change to `Deploy/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you backed up during step 1. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
 
 9. If HTTPS has been enabled for Harbor before, restore the `nginx.conf` and key/certificate files from the backup files in Step 1. Refer to [Configuring Harbor with HTTPS Access](../docs/configure_https.md) for more info.
 
