@@ -24,11 +24,11 @@
 	   <script src="/static/resources/js/services/i18n/locale_messages_zh-CN.js"></script>
 	{{ else if eq .Lang "en-US"}}
 	   <script src="/static/resources/js/services/i18n/locale_messages_en-US.js"></script>
-    {{ else if eq .Lang "<language>-<locale>"}}
-       <script src="/static/resources/js/services/i18n/locale_messages_<language>-<locale>.js"></script>
+   ** {{ else if eq .Lang "<language>-<locale>"}}
+       <script src="/static/resources/js/services/i18n/locale_messages_<language>-<locale>.js"></script>**
 	{{ end }}
     ```
-3. Add the new coming language to the `I18nService` module.
+3. Add the new language to the `I18nService` module.
 
     In the file `static/resources/js/services/i18n/services.i18n.js`, append a new key-value item to the `supportLanguages` object. This value will be displayed in the language dropdown list in the UI.
     ```
@@ -52,7 +52,9 @@
 		 names = en-US|zh-CN|<language>-<locale>
     ```
 
-6. Next, change to `Deploy/` directory, rebuild and start the Harbor  by the below command: 
+6. Next, change to `Deploy/` directory, rebuild and restart the Harbor by the below command: 
     ```
+        docker-compose down
         docker-compose up --build -d
     ```
+    
