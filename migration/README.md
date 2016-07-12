@@ -16,24 +16,25 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     cp Deploy/harbor.cfg /tmp/harbor
     ```
 
-2. Next, stop existing Harbor service if it is still running:
+2. Next, stop and remove existing Harbor service if it is still running:
 
     ``` 
-    cd ../../Deploy/
+    cd Deploy/
     docker-compose down
     ```
 
-3. Get the lastest source code from Github:
+3. Change to the parent directory of Harbor's source code folder (usually is the parent directory of `harbor/` ). Get the lastest source code from Github to overwrite the existing code:
     ```sh
-    $ git clone https://github.com/vmware/harbor
+    cd ../..
+    git clone https://github.com/vmware/harbor
     ```
  
-4. Before upgrading Harbor, perform data migration first.
+4. Before upgrading Harbor, perform database migration first.
 The directory **migration/** contains the tool for migration. The first step is to update values of `db_username`, `db_password`, `db_port`, `db_name` in **migration.cfg** so that they match your system's configuration. 
 
 5. The migration tool is delivered as a container, so you should build the image from its Dockerfile:
     ```
-    cd migration/harbor-migration
+    cd migration/
     
     docker build -t migrate-tool .
     ```
