@@ -24,8 +24,8 @@
 	   <script src="/static/resources/js/services/i18n/locale_messages_zh-CN.js"></script>
 	{{ else if eq .Lang "en-US"}}
 	   <script src="/static/resources/js/services/i18n/locale_messages_en-US.js"></script>
-   ** {{ else if eq .Lang "<language>-<locale>"}}
-       <script src="/static/resources/js/services/i18n/locale_messages_<language>-<locale>.js"></script>**
+    {{ else if eq .Lang "<language>-<locale>"}}
+       <script src="/static/resources/js/services/i18n/locale_messages_<language>-<locale>.js"></script>
 	{{ end }}
     ```
 3. Add the new language to the `I18nService` module.
