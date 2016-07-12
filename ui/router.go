@@ -67,6 +67,11 @@ func initRouters() {
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/labels", &api.RepositoryAPI{}, "post:AddLabel")
+	beego.Router("/api/repositories/labels/label", &api.RepositoryAPI{}, "get:GetLabels")
+	beego.Router("/api/repositories/labels/repo", &api.RepositoryAPI{}, "get:GetRepoNames")
+	beego.Router("/api/repositories/labels", &api.RepositoryAPI{}, "delete:DeleteLabel")
+
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
