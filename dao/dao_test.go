@@ -855,6 +855,22 @@ func TestGetRepTargetByName(t *testing.T) {
 	}
 }
 
+func TestGetRepTargetByEndpoint(t *testing.T) {
+	target, err := GetRepTarget(targetID)
+	if err != nil {
+		t.Fatalf("failed to get target %d: %v", targetID, err)
+	}
+
+	target2, err := GetRepTargetByEndpoint(target.URL)
+	if err != nil {
+		t.Fatalf("failed to get target %s: %v", target.URL, err)
+	}
+
+	if target.URL != target2.URL {
+		t.Errorf("unexpected target URL: %s, expected: %s", target2.URL, target.URL)
+	}
+}
+
 func TestUpdateRepTarget(t *testing.T) {
 	target := &models.RepTarget{
 		Name:     "name",
