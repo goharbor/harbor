@@ -40,14 +40,16 @@
         
     vm.pingTIP = false;
       
-    $scope.$watch('destination.endpoint', function(current) {
-      if(current) {
-        vm.notAvailable = false;
-      }else{
-        vm.notAvailable = true;
-      }
-    });      
-        
+    $timeout(function(){   
+      $scope.$watch('destination.endpoint', function(current) {
+        if(current) {
+          vm.notAvailable = false;
+        }else{
+          vm.notAvailable = true;
+        }
+      });      
+    });
+    
     function addNew() {
       vm.modalTitle = $filter('tr')('add_new_destination', []);
       vm0.name = '';
