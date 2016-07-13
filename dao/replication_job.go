@@ -53,14 +53,13 @@ func GetRepTargetByName(name string) (*models.RepTarget, error) {
 	return &t, err
 }
 
-// GetRepTargetByConnInfo ...
-func GetRepTargetByConnInfo(endpoint, username string) (*models.RepTarget, error) {
+// GetRepTargetByEndpoint ...
+func GetRepTargetByEndpoint(endpoint string) (*models.RepTarget, error) {
 	o := GetOrmer()
 	t := models.RepTarget{
-		URL:      endpoint,
-		Username: username,
+		URL: endpoint,
 	}
-	err := o.Read(&t, "URL", "Username")
+	err := o.Read(&t, "URL")
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
