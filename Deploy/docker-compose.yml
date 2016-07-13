@@ -46,8 +46,6 @@ services:
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
-      - ../static:/go/bin/static
-      - ../views:/go/bin/views
     depends_on:
       - log
     logging:
