@@ -191,6 +191,7 @@ func (sm *SM) Reset(jid int64) error {
 	sm.desiredState = ""
 	sm.lock.Unlock()
 
+	sm.Logger = utils.NewLogger(sm.JobID)
 	//init parms
 	job, err := dao.GetRepJob(sm.JobID)
 	if err != nil {
@@ -239,7 +240,6 @@ func (sm *SM) Reset(jid int64) error {
 	sm.Parms.TargetPassword = pwd
 
 	//init states handlers
-	sm.Logger = utils.NewLogger(sm.JobID)
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
 	sm.CurrentState = models.JobPending
