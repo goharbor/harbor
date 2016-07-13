@@ -9,23 +9,21 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 ### Upgrading Harbor and migrating data
 
-1. Log in to the machine that Harbor runs on, back up Harbor's configuration files. 
-    ```sh
-    mkdir -p /tmp/harbor/config
-    cp -r Deploy/config /tmp/harbor/config
-    cp Deploy/harbor.cfg /tmp/harbor
-    ```
-
-2. Next, stop and remove existing Harbor service if it is still running:
+1. Log in to the machine that Harbor runs on, stop and remove existing Harbor service if it is still running:
 
     ``` 
     cd Deploy/
     docker-compose down
     ```
 
-3. Change to the parent directory of Harbor's source code folder (usually is the parent directory of `harbor/` ). Get the lastest source code from Github to overwrite the existing code:
+2.  Back up Harbor's current source code so that you can roll back to the current version when it is necessary.
     ```sh
     cd ../..
+    mv harbor /tmp/harbor
+    ```
+
+3. Get the lastest source code from Github:
+    ```sh
     git clone https://github.com/vmware/harbor
     ```
  
@@ -51,11 +49,11 @@ The directory **migration/** contains the tool for migration. The first step is 
     docker run -ti --rm -v /data/database:/var/lib/mysql migrate-tool up head
     ```
 
-8. Change to `Deploy/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you backed up during step 1. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+8. Change to `Deploy/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
 
-9. If HTTPS has been enabled for Harbor before, restore the `nginx.conf` and key/certificate files from the backup files in Step 1. Refer to [Configuring Harbor with HTTPS Access](../docs/configure_https.md) for more info.
+9. If HTTPS has been enabled for Harbor before, restore the `nginx.conf` and key/certificate files from the backup files in Step 2. Refer to [Configuring Harbor with HTTPS Access](../docs/configure_https.md) for more info.
 
-10. Run the `./prepare` script to generate necessary config files.
+10. Under the directory `Deploy/`, run the `./prepare` script to generate necessary config files.
  
 11. Rebuild Harbor and restart the registry service
 
@@ -63,6 +61,37 @@ The directory **migration/** contains the tool for migration. The first step is 
     docker-compose up --build -d
     ```
 
+### Roll back from an upgrade
+For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
+
+1. Stop and remove the current Harbor service if it is still running.
+
+    ``` 
+    cd Deploy/
+    docker-compose down
+    ```
+2. Restore database from backup file in `/path/to/backup` .
+
+    ```
+    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool restore
+    ```
+
+3. Remove current source code of Harbor.
+    ``` 
+    rm -rf harbor
+    ```
+
+4. Restore the source code of an older version of Harbor. 
+    ```sh
+    mv /tmp/harbor harbor
+    ```
+
+5. Restart Harbor service using the previous configuration.
+    ```sh
+    cd Deploy/
+    docker-compose up --build -d
+    ```
+    
 ### Migration tool reference
 - Use `help` command to show instructions of the migration tool:
 
@@ -72,8 +101,3 @@ The directory **migration/** contains the tool for migration. The first step is 
 
     ```docker run --rm -v /data/database:/var/lib/mysql migrate-tool test```
 
-- Restore database from backup file in `/path/to/backup`
-
-    ```
-    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool restore
-    ```

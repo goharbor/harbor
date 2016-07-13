@@ -41,7 +41,7 @@ Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-c
     Generated configuration file: ./config/registry/config.yml
     Generated configuration file: ./config/db/env
     
-    $ docker-compose up
+    $ docker-compose up -d
     ```
 
 _If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
@@ -54,7 +54,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo
 
 **Data migration:**
 
-If you are upgrading Harbor from an older version with existing data, you may need to migrate the data to fit the new database schema. For more details please refer to [Data Migration Guide](migration/README.md) .
+If you are upgrading Harbor from an older version with existing data, you may need to migrate the data to fit the new database schema. For more details please refer to [Data Migration Guide](docs/migration_guide.md) .
 
 **NOTE:**  
 For those who don't want to clone the source, or need to install Harbor on a server not connected to the Internet - there is a pre-built installation package available. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
