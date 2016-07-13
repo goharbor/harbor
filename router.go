@@ -44,6 +44,7 @@ func initRouters() {
 	beego.Router("/search", &controllers.SearchController{})
 
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
+	beego.Router("/login_cargo", &controllers.CommonController{}, "post:LoginCargo")
 	beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")

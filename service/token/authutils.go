@@ -33,7 +33,8 @@ import (
 
 const (
 	issuer     = "registry-token-issuer"
-	privateKey = "/etc/ui/private_key.pem"
+	//privateKey = "/etc/ui/private_key.pem"
+	privateKey = "/works/goProject/src/github.com/vmware/harbor/Deploy/harbor/config/ui/private_key.pem"
 	expiration = 5 //minute
 )
 
