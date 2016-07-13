@@ -33,25 +33,20 @@
     vm.create = create;
     vm.update = update;
     vm.pingDestination = pingDestination;
-    
-    vm.editable = true;
-    vm.notAvailable = false;
-    vm.pingAvailable = true;
-    vm.pingMessage = '';
         
     vm.closeError = closeError;
     vm.toggleErrorMessage = false;
     vm.errorMessages = [];            
         
     vm.pingTIP = false;
-    
+      
     $scope.$watch('destination.endpoint', function(current) {
       if(current) {
         vm.notAvailable = false;
       }else{
         vm.notAvailable = true;
       }
-    });
+    });      
         
     function addNew() {
       vm.modalTitle = $filter('tr')('add_new_destination', []);
@@ -69,7 +64,7 @@
         .error(getDestinationFailed);
     }
     
-    function create(destination) {
+    function create(destination) {   
       CreateDestinationService(destination.name, destination.endpoint, 
          destination.username, destination.password)
           .success(createDestinationSuccess)
@@ -143,7 +138,6 @@
     function pingDestination() {
       
       vm.pingTIP = true;
-      vm.pingAvailable = false;
       
       var target = {
         'name': vm0.name,
@@ -162,12 +156,10 @@
     }
     
     function pingDestinationSuccess(data, status) {
-      vm.pingAvailable = true;
       vm.pingTIP = false;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
     }
     function pingDestinationFailed(data, status) {
-
       vm.pingTIP = false;
       vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '');
     }
@@ -195,9 +187,9 @@
         scope.$apply(function(){
           scope.form.$setPristine();
           scope.form.$setUntouched();
-          
-          ctrl.notAvailble = false;
-          ctrl.pingAvailable = true;
+                    
+          ctrl.editable = true;
+          ctrl.notAvailble = true;
           ctrl.pingMessage = '';
           
           ctrl.pingTIP = false;
@@ -218,7 +210,6 @@
               ctrl.toggleErrorMessage = true;
             }
           }, true);
-          
         });
       });
       
