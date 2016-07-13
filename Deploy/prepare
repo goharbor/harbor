@@ -38,6 +38,7 @@ ldap_url = rcp.get("configuration", "ldap_url")
 ldap_basedn = rcp.get("configuration", "ldap_basedn")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
+production = rcp.get("configuration", "production")
 customize_crt = rcp.get("configuration", "customize_crt")
 crt_country = rcp.get("configuration", "crt_country")
 crt_state = rcp.get("configuration", "crt_state")
@@ -98,8 +99,9 @@ render(os.path.join(templates_dir, "ui", "env"),
         ldap_url=ldap_url,
         ldap_basedn=ldap_basedn,
 	self_registration=self_registration,
+	production=production,
         ui_secret=ui_secret,
-		verify_remote_cert=verify_remote_cert)
+	verify_remote_cert=verify_remote_cert)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,

@@ -21,6 +21,7 @@ type BaseController struct {
 	SelfRegistration bool
 	IsAdmin          bool
 	AuthMode         string
+	Production       bool
 }
 
 type langType struct {
@@ -98,6 +99,14 @@ func (b *BaseController) Prepare() {
 	b.AuthMode = authMode
 	b.Data["AuthMode"] = b.AuthMode
 
+	production := os.Getenv("PRODUCTION")
+	if production == "on" {
+		b.Production = true
+	}
+
+	if _, err := os.Stat(filepath.Join("static", "resources", "js", "harbor.app.min.js")); os.IsNotExist(err) {
+		b.Production = false
+	}
 }
 
 // Forward to setup layout and template for content for a page.
@@ -107,6 +116,15 @@ func (b *BaseController) Forward(title, templateName string) {
 	b.Data["Title"] = b.Tr(title)
 	b.LayoutSections = make(map[string]string)
 	b.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
+
+	if b.Production {
+		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-min-include.htm")
+	} else {
+		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-include.htm")
+	}
+
+	log.Debugf("Loaded HeaderScriptInclude file: %s", b.LayoutSections["HeaderScriptInclude"])
+
 	b.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
 	b.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "header-content.htm")
 	b.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footer-content.htm")
