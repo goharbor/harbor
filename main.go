@@ -68,7 +68,10 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = "cargo"
-	//beego.BConfig.WebConfig.Session.SessionDomain = "51yixiao.com"
+	//beego.BConfig.WebConfig.Session.SessionAutoSetCookie = true
+	//beego.BConfig.WebConfig.Session.SessionDomain = ".51yixiao.com"
+
+
 	beego.AddTemplateExt("htm")
 	dao.InitDB()
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {

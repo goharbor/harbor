@@ -166,3 +166,11 @@ create table repo_label (
   label varchar(30) BINARY NOT NULL,
   primary key (repoName, label)
 );
+
+-- create a table for setting token for user
+create table user_token (
+  user_id int,
+  token varchar(128) BINARY NOT NULL,
+  md5_token varchar(32) BINARY NOT NULL,
+  index key (token)
+);
