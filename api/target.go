@@ -190,14 +190,14 @@ func (t *TargetAPI) Post() {
 		t.CustomAbort(http.StatusConflict, "name is already used")
 	}
 
-	ta, err = dao.GetRepTargetByConnInfo(target.URL, target.Username)
+	ta, err = dao.GetRepTargetByEndpoint(target.URL)
 	if err != nil {
-		log.Errorf("failed to get target [ %s %s ]: %v", target.URL, target.Username, err)
+		log.Errorf("failed to get target [ %s ]: %v", target.URL, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
 	if ta != nil {
-		t.CustomAbort(http.StatusConflict, "the connection information[ endpoint, username ] is conflict with other target")
+		t.CustomAbort(http.StatusConflict, fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
 	}
 
 	if len(target.Password) != 0 {
@@ -260,15 +260,15 @@ func (t *TargetAPI) Put() {
 		}
 	}
 
-	if target.URL != originalTarget.URL || target.Username != originalTarget.Username {
-		ta, err := dao.GetRepTargetByConnInfo(target.URL, target.Username)
+	if target.URL != originalTarget.URL {
+		ta, err := dao.GetRepTargetByEndpoint(target.URL)
 		if err != nil {
-			log.Errorf("failed to get target [ %s %s ]: %v", target.URL, target.Username, err)
+			log.Errorf("failed to get target [ %s ]: %v", target.URL, err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
 		if ta != nil {
-			t.CustomAbort(http.StatusConflict, "the connection information[ endpoint, username ] is conflict with other target")
+			t.CustomAbort(http.StatusConflict, fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
 		}
 	}
 

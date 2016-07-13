@@ -28,6 +28,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
@@ -192,7 +193,13 @@ enter:
 		return "", err
 	}
 	if !exist {
-		err := c.createProject()
+		project, err := dao.GetProjectByName(c.project)
+		if err != nil {
+			c.logger.Errorf("an error occurred while getting project %s on %s: %v", c.project, c.srcURL, err)
+			return "", err
+		}
+
+		err = c.createProject(project.Public == 1)
 		if err != nil {
 			// other job may be also doing the same thing when the current job
 			// is creating project, so when the response code is 409, re-check
@@ -286,13 +293,13 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 	return
 }
 
-func (c *Checker) createProject() error {
-	// TODO handle publicity of project
+func (c *Checker) createProject(isPublic bool) error {
 	project := struct {
 		ProjectName string `json:"project_name"`
 		Public      bool   `json:"public"`
 	}{
 		ProjectName: c.project,
+		Public:      isPublic,
 	}
 
 	data, err := json.Marshal(project)
@@ -495,8 +502,8 @@ func (m *ManifestPusher) enter() (string, error) {
 	} else {
 		m.logger.Infof("manifest of %s:%s exists on source registry %s, continue manifest pushing", name, tag, m.srcURL)
 
-		_, manifestExist, err := m.dstClient.ManifestExist(m.digest)
-		if manifestExist {
+		digest, manifestExist, err := m.dstClient.ManifestExist(tag)
+		if manifestExist && digest == m.digest {
 			m.logger.Infof("manifest of %s:%s exists on destination registry %s, skip manifest pushing", name, tag, m.dstURL)
 
 			m.tags = m.tags[1:]
