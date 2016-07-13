@@ -10,9 +10,8 @@ Project Harbor is an enterprise-class registry server, which extends the open so
 
 ### Features
 * **Role based access control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
-* **Image synchronization**: Images can be synchronized(replicated) between multiple registry instances. Great for load balancing and distributed data centers.
+* **Image replication**: Images can be replicated(synchronized) between multiple registry instances. Great for load balancing and distributed data centers.
 * **Graphical user portal**: User can easily browse, search Docker repositories, manage projects/namespaces.
-* **Garbage collection of images**: Recycle storage space by garbage collection for deleted images.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
 * **Internationalization**: Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.
