@@ -63,7 +63,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable || !vm.pingAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="false" toggle-in-progress="vm.pingTIP">// 'test_connection' | tr //</button>
+                <button type="button" class="btn btn-default" ng-disabled="vm.notAvailable" ng-click="vm.pingDestination()" loading-progress hide-target="false" toggle-in-progress="vm.pingTIP">// 'test_connection' | tr //</button>
               </div>
             </div>
             <div class="form-group col-md-12 form-group-custom">
@@ -75,7 +75,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button ng-show="vm.editable" type="submit" class="btn btn-primary" id="btnOk" ng-click="vm.save(destination)">// 'ok' | tr //</button>
+          <button ng-show="vm.editable" type="submit" class="btn btn-primary" id="btnOk" ng-click="form.$valid && vm.save(destination)">// 'ok' | tr //</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">// 'close' | tr //</button>
         </div>
       </div><!-- /.modal-content -->
