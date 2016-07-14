@@ -131,12 +131,11 @@ func (r *Registry) Ping() error {
 	if err != nil {
 		return parseError(err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

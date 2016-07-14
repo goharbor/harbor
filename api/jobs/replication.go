@@ -181,13 +181,14 @@ func getRepoList(projectID int64) ([]string, error) {
 		log.Errorf("Error when calling UI api to get repositories, error: %v", err)
 		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("Unexpected status code: %d", resp.StatusCode)
 		dump, _ := httputil.DumpResponse(resp, true)
 		log.Debugf("response: %q", dump)
 		return nil, fmt.Errorf("Unexpected status code when getting repository list: %d", resp.StatusCode)
 	}
-	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorf("Failed to read the response body, error: %v", err)

@@ -150,6 +150,8 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 		return
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusOK {
 		exist = true
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
@@ -159,8 +161,6 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 	if resp.StatusCode == http.StatusNotFound {
 		return
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -227,12 +227,12 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 		return
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusCreated {
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 		return
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -259,11 +259,11 @@ func (r *Repository) DeleteManifest(digest string) error {
 		return parseError(err)
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -304,6 +304,8 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 		return false, parseError(err)
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusOK {
 		return true, nil
 	}
@@ -311,8 +313,6 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -325,7 +325,7 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 	}
 }
 
-// PullBlob ...
+// PullBlob : client must close data if it is not nil
 func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, err error) {
 	req, err := http.NewRequest("GET", buildBlobURL(r.Endpoint.String(), r.Name, digest), nil)
 	if err != nil {
@@ -349,6 +349,7 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 	}
 
 	defer resp.Body.Close()
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
@@ -372,13 +373,13 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 		return
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusAccepted {
 		location = resp.Header.Get(http.CanonicalHeaderKey("Location"))
 		uploadUUID = resp.Header.Get(http.CanonicalHeaderKey("Docker-Upload-UUID"))
 		return
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -404,11 +405,11 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 		return parseError(err)
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusCreated {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -443,11 +444,11 @@ func (r *Repository) DeleteBlob(digest string) error {
 		return parseError(err)
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
