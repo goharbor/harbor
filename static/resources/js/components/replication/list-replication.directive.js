@@ -42,7 +42,7 @@
   function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
     var vm = this;
     
-    vm.sectionHeight = {'min-height': '1200px'};
+    vm.sectionHeight = {'min-height': '1260px'};
       
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());

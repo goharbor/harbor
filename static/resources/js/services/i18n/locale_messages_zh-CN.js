@@ -266,7 +266,7 @@ var locale_messages = {
   'confirm_to_toggle_policy_title': '切换复制策略状态',
   'confirm_to_toggle_policy': '确认将复制策略 $0 切换为 <strong>$1</strong> 状态吗?',
   'confirm_to_toggle_enabled_policy_title': '启用策略',
-  'confirm_to_toggle_enabled_policy': '启用策略后，系统将触发复制任务来同步项目下的所有镜像仓库到策略的目标实例。请确认继续。',
+  'confirm_to_toggle_enabled_policy': '启用策略后，该项目下的所有镜像仓库将复制到目标实例。请确认继续。',
   'confirm_to_toggle_disabled_policy_title': '停用策略',
-  'confirm_to_toggle_disabled_policy': '停用策略后，属于此策略的所有复制任务将终止。请确认继续。'
+  'confirm_to_toggle_disabled_policy': '停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。'
 };
