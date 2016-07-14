@@ -55,6 +55,7 @@ func NewAuthorizerStore(endpoint string, insecure bool, authorizers ...Authorize
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	challenges := ParseChallengeFromResponse(resp)
 	return &AuthorizerStore{

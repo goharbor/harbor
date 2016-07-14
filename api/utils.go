@@ -119,12 +119,11 @@ func TriggerReplication(policyID int64, repository string,
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -194,11 +193,11 @@ func postReplicationAction(policyID int64, acton string) error {
 		return err
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusOK {
 		return nil
 	}
-
-	defer resp.Body.Close()
 
 	b, err = ioutil.ReadAll(resp.Body)
 	if err != nil {

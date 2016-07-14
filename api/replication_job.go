@@ -155,7 +155,7 @@ func (ra *RepJobAPI) GetLog() {
 		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
 		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-
+	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
 		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
 		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
@@ -167,7 +167,6 @@ func (ra *RepJobAPI) GetLog() {
 		return
 	}
 
-	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorf("failed to read reponse body: %v", err)

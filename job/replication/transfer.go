@@ -250,6 +250,8 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 		return
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusNotFound {
 		return
 	}
@@ -259,7 +261,6 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 		return
 	}
 
-	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
@@ -328,6 +329,8 @@ func (c *Checker) createProject(isPublic bool) error {
 		return err
 	}
 
+	defer resp.Body.Close()
+
 	// version 0.1.1's reponse code is 200
 	if resp.StatusCode == http.StatusCreated ||
 		resp.StatusCode == http.StatusOK {
@@ -338,7 +341,6 @@ func (c *Checker) createProject(isPublic bool) error {
 		return ErrConflict
 	}
 
-	defer resp.Body.Close()
 	message, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Errorf("an error occurred while reading message from response: %v", err)
@@ -459,6 +461,9 @@ func (b *BlobTransfer) enter() (string, error) {
 		if err != nil {
 			b.logger.Errorf("an error occurred while pulling blob %s of %s:%s from %s: %v", blob, name, tag, b.srcURL, err)
 			return "", err
+		}
+		if data != nil {
+			defer data.Close()
 		}
 		if err = b.dstClient.PushBlob(blob, size, data); err != nil {
 			b.logger.Errorf("an error occurred while pushing blob %s of %s:%s to %s : %v", blob, name, tag, b.dstURL, err)
