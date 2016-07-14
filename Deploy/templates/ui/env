@@ -13,10 +13,9 @@ LDAP_URL=$ldap_url
 LDAP_BASE_DN=$ldap_basedn
 UI_SECRET=$ui_secret
 SELF_REGISTRATION=$self_registration
-PRODUCTION=$production
+PRODUCTION=$use_compressed_js
 LOG_LEVEL=debug
 GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url
 TOKEN_URL=http://ui
 VERIFY_REMOTE_CERT=$verify_remote_cert
-PRODUCTION=$production
