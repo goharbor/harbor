@@ -24,7 +24,7 @@
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addReplication()" data-toggle="modal" data-target="#createPolicyModal"><span class="glyphicon glyphicon-plus"></span>// 'add_new_policy' | tr //</button>
       <create-policy reload="vm.retrievePolicy()" action="vm.action" modal-title="//vm.modalTitle//" policy-id="//vm.policyId//"></create-policy>
     </div>
-    <div class="pane-split" id="upon-pane"> 	           
+    <div class="pane-split" id="upon-pane" style="max-height: 760px;"> 	           
       <div class="sub-pane-split">
         <div class="table-head-container">
         <table class="table table-pane table-header">
@@ -74,7 +74,7 @@
       </div>
     </div>
     <div class="col-xs-4 col-md-12 well well-sm well-custom well-split"><div class="col-md-offset-10">//vm.replicationPolicies ? vm.replicationPolicies.length : 0// // 'items' | tr //</div></div>  
-    <!--p class="split-handle"><span class="glyphicon glyphicon-align-justify"></span></p-->
+    <p class="split-handle"><span class="glyphicon glyphicon-align-justify"></span></p>
     <h4 class="h4-custom-down">// 'replication_jobs' | tr //</h4>
     <hr class="hr-line"/>
     <div class="form-inline">
@@ -112,7 +112,7 @@
         <button type="button" class="btn btn-success" ng-click="vm.refreshReplicationJob()" loading-progress hide-target = "true" toggle-in-progress="vm.refreshJobTIP" title="//'refresh' | tr//"><span class="glyphicon glyphicon-refresh"></span></button>
       </div>
     </div> 
-    <div class="pane-split" id="down-pane">   
+    <div class="pane-split" id="down-pane" style="min-height: 142px;">   
       <div class="sub-pane-split">
         <div class="table-head-container">
           <table class="table table-pane table-header">
@@ -126,7 +126,7 @@
       			 </thead>
           </table>
          </div>
-          <div class="table-body-container" style="height: 510px;">
+          <div class="table-body-container" style="height: 510px; min-height: 80px;">
             <table class="table table-pane">
         			 <tbody>
                 <tr ng-if="vm.replicationJobs.length == 0">
