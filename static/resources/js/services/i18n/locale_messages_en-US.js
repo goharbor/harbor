@@ -264,7 +264,7 @@ var locale_messages = {
   'found_error_in_replication_job': 'Found $0 error(s).',
   'caution': 'Caution',
   'confirm_to_toggle_enabled_policy_title': 'Enable Policy',
-  'confirm_to_toggle_enabled_policy': 'After enabling the policy, replication jobs will be triggered to replicate all repositories under the project to the destination of the policy.  Please confirm to continue.',
+  'confirm_to_toggle_enabled_policy': 'After enabling the replication policy, all repositories under the project will be replicated to the destination registry. Please confirm to continue.',
   'confirm_to_toggle_disabled_policy_title': 'Disable Policy',
-  'confirm_to_toggle_disabled_policy': 'After disabling the policy, running replication jobs of this policy will be canceled.  Please confirm to continue.'
+  'confirm_to_toggle_disabled_policy': 'After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue.'
 };
