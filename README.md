@@ -9,7 +9,8 @@
 Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, control, and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require.  It also helps minimize bandwidth usage, which is helpful to both improve productivity (local network access) as well as performance (for those with poor internet connectivity).
 
 ### Features
-* **Role Based Access Control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
+* **Role based access control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
+* **Image replication**: Images can be replicated(synchronized) between multiple registry instances. Great for load balancing and distributed data centers.
 * **Graphical user portal**: User can easily browse, search Docker repositories, manage projects/namespaces.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
@@ -40,7 +41,7 @@ Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-c
     Generated configuration file: ./config/registry/config.yml
     Generated configuration file: ./config/db/env
     
-    $ docker-compose up
+    $ docker-compose up -d
     ```
 
 _If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
@@ -53,7 +54,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo
 
 **Data migration:**
 
-The database schema can be updated in new version, so if you are upgrading from an older version with existing data, you need to migrate the existing data to new schema. For more details please refer to [Data Migration Guide](migration/README.md)
+If you are upgrading Harbor from an older version with existing data, you may need to migrate the data to fit the new database schema. For more details please refer to [Data Migration Guide](docs/migration_guide.md) .
 
 **NOTE:**  
 For those who don't want to clone the source, or need to install Harbor on a server not connected to the Internet - there is a pre-built installation package available. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .

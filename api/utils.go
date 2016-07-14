@@ -162,6 +162,9 @@ func TriggerReplicationByRepository(repository string, tags []string, operation 
 	}
 
 	for _, policy := range policies {
+		if policy.Enabled == 0 {
+			continue
+		}
 		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
 			log.Errorf("failed to trigger replication of policy %d for %s: %v", policy.ID, repository, err)
 		} else {
