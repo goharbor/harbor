@@ -51,6 +51,7 @@ The parameters are described below - note that at the very least, you will need 
 * **ldap_basedn**: The basedn template for verifying the user's credentials against LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com`).  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **self_registration**: (**on** or **off**.  Default is **on**) Enable / Disable the ability for a user to register themselves.  When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
+* **use_compressed_js**: (**on** or **off**.  Default is **on**) Enable / Disable the js files compress. When enable, will compress most of the js files to one bigger js file. Will accelerate the js file visit speed. Disable will let the browser visit all js files separately.
 * **max_job_workers**: The number of workers in job service, for image replication jobs, each worker will sync all tags of a repository to remote destination.  The default number of works is **3**, when the number of works increase the load of job service will grow, please allocate more resource to job service if you want to set the number of workers to larger than 10.
 * **verify_remote_cert**: (**on** or **off**.  Default is **on**) This attribute controls whether or not to verify SSL/TLS certificate when Harbor tries to communicate with remote registry instances, for example, when replicating images.  Setting this attribute to **off** will bypass the SSL/TLS verification.
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is set to **on**, the prepare script will generate private key and root cert for the generation/verification of regitry's token.  The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** will be used as parameters for generating the keys. 
@@ -118,7 +119,7 @@ Harbor does not ship with any certificates, and, by default, uses HTTP to serve 
 Pre-built installation packages of each release are available at [release page](https://github.com/vmware/harbor/releases). 
 Download the package file **harbor-&lt;version&gt;.tgz** , and then extract the files.  
 ```
-$ tar -xzvf harbor-0.1.1.tgz
+$ tar -xzvf harbor-0.3.0.tgz
 $ cd harbor
 ```
 
@@ -180,15 +181,17 @@ saving the image of nginx
 finished saving the image of nginx
 saving the image of registry
 finished saving the image of registry
+saving the image of harbor_jobservice
+finished saving the image of harbor_jobservice
 $ cd ../  
-$ tar -cvzf harbor_offline-0.1.1.tgz harbor
+$ tar -cvzf harbor_offline-0.3.0.tgz harbor
 ```
 
-The file `harbor_offline-0.1.1.tgz` contains the images and other files required to start Harbor.  You can use tools such as `rsync` or `scp` to transfer this file to the target host. 
+The file `harbor_offline-0.3.0.tgz` contains the images and other files required to start Harbor.  You can use tools such as `rsync` or `scp` to transfer this file to the target host. 
 On the target host, execute the following commands to start Harbor. _Note that before running the **prepare** script, you **must** update **harbor.cfg** to reflect the right configuration of the target machine!_ (Refer to Section [Configuring Harbor](#configuring-harbor)).
 
 ```
-$ tar -xzvf harbor_offline-0.1.1.tgz  
+$ tar -xzvf harbor_offline-0.3.0.tgz  
 $ cd harbor  
 
 # load images save by excute ./save_image.sh
@@ -201,6 +204,8 @@ loading the image of nginx
 finished loading the image of nginx
 loading the image of registry
 finished loading the image of registry
+loading the image of harbor_jobservice
+finished loading the image of harbor_jobservice
 
 # Make update to the parameters in ./harbor.cfg  
 $ ./prepare
@@ -225,6 +230,7 @@ Creating harbor_mysql_1
 Creating harbor_registry_1
 Creating harbor_ui_1
 Creating harbor_proxy_1
+Creating harbor_jobservice_1
 ```  
 *Stop Harbor:*
 ```
@@ -234,6 +240,7 @@ Stopping harbor_ui_1 ... done
 Stopping harbor_registry_1 ... done
 Stopping harbor_mysql_1 ... done
 Stopping harbor_log_1 ... done
+Stopping harbor_jobservice_1 ... done
 ```  
 *Restart Harbor after stopping:*
 ```
@@ -243,16 +250,19 @@ Starting harbor_mysql_1
 Starting harbor_registry_1
 Starting harbor_ui_1
 Starting harbor_proxy_1
+Starting harbor_jobservice_1
 ```  
 *Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:*
 ```
 $ sudo docker-compose rm
-Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1
+Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1, harbor_jobservice_1
 Are you sure? [yN] y
 Removing harbor_proxy_1 ... done
 Removing harbor_ui_1 ... done
 Removing harbor_registry_1 ... done
 Removing harbor_mysql_1 ... done
+Removing harbor_log_1 ... done
+Removing harbor_jobservice_1 ... done
 ```  
 
 *Remove Harbor's database and image data (for a clean re-installation):*
