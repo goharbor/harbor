@@ -48,12 +48,13 @@ The parameters are described below - note that at the very least, you will need 
 * **harbor_admin_password**: The adminstrator's password. _Note that the default username/password are **admin/Harbor12345** ._  
 * **auth_mode**: The type of authentication that is used. By default it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
-* **ldap_basedn**: The basedn template for verifying the user's credentials against LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com`).  _Only used when **auth_mode** is set to *ldap_auth* ._ 
+* **ldap_basedn**: The basedn template for verifying the user's credential against an LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com` ) or an AD (e.g. `CN=%s,OU=Dept1,DC=mydomain,DC=com`) server.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
-* **self_registration**: (**on** or **off**.  Default is **on**) Enable / Disable the ability for a user to register themselves.  When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
-* **max_job_workers**: The number of workers in job service, for image replication jobs, each worker will sync all tags of a repository to remote destination.  The default number of works is **3**, when the number of works increase the load of job service will grow, please allocate more resource to job service if you want to set the number of workers to larger than 10.
-* **verify_remote_cert**: (**on** or **off**.  Default is **on**) This attribute controls whether or not to verify SSL/TLS certificate when Harbor tries to communicate with remote registry instances, for example, when replicating images.  Setting this attribute to **off** will bypass the SSL/TLS verification.
-* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is set to **on**, the prepare script will generate private key and root cert for the generation/verification of regitry's token.  The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** will be used as parameters for generating the keys. 
+* **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register themselves. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
+* **use_compressed_js**: (**on** or **off**. Default is **on**) For production use, turn this flag to **on**. In development mode, set it to **off** so that js files can be modified separately.
+* **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
+* **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** will bypass the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
+* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the regitry's token.  The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** are used as parameters for generating the keys. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
 
 #### Configuring storage backend (optional)
 
@@ -95,7 +96,7 @@ Once **harbord.cfg** and storage backend (optional) are configured, build and st
     Generated configuration file: ./config/registry/root.crt
     The configuration files are ready, please use docker-compose to start the service.
 
-    $ sudo docker-compose up -d
+    $ sudo docker-compose up --build -d
 ```
 
 _If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
@@ -267,7 +268,7 @@ Please check the [Docker Compose command-line reference](https://docs.docker.com
 By default, registry data is persisted in the target host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.
 In addition, Harbor uses `rsyslog` to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host.  
 
-##Troubleshooting
+## Troubleshooting
 1.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
