@@ -342,7 +342,7 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 		qs = qs.Limit(limit)
 	}
 
-	qs = qs.OrderBy("-CreationTime")
+	qs = qs.OrderBy("-UpdateTime")
 
 	var jobs []*models.RepJob
 	_, err := qs.All(&jobs)
