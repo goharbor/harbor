@@ -2,12 +2,14 @@ version: '2'
 services:
   log:
     build: ./log/
+    restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/
     ports:
       - 1514:514
   registry:
     image: library/registry:2.4.0
+    restart: always
     volumes:
       - /data/registry:/storage
       - ./config/registry/:/etc/registry/
@@ -26,6 +28,7 @@ services:
         tag: "registry"
   mysql:
     build: ./db/
+    restart: always
     volumes:
       - /data/database:/var/lib/mysql
     env_file:
@@ -43,6 +46,7 @@ services:
       dockerfile: Dockerfile.ui
     env_file:
       - ./config/ui/env
+    restart: always
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
@@ -59,6 +63,7 @@ services:
       dockerfile: Dockerfile.job
     env_file:
       - ./config/jobservice/env
+    restart: always
     volumes:
       - /data/job_logs:/var/log/jobs
       - ./config/jobservice/app.conf:/etc/jobservice/app.conf
@@ -71,6 +76,7 @@ services:
         tag: "jobservice"
   proxy:
     image: library/nginx:1.9
+    restart: always
     volumes:
       - ./config/nginx:/etc/nginx
     ports:
