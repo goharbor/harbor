@@ -252,6 +252,46 @@
     
     function link(scope, element, attrs, ctrl) {
 
+
+      var uponPaneHeight = element.find('#upon-pane').height();		
+      var downPaneHeight = element.find('#down-pane').height();
+      
+      var uponTableHeight = element.find('#upon-pane .table-body-container').height();
+      var downTableHeight = element.find('#down-pane .table-body-container').height();
+      
+      var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top + element.find('.well').height() - 24;		
+      
+      var maxDownPaneHeight = 760;		
+                      		
+      element.find('.split-handle').on('mousedown', mousedownHandler);		
+     		
+      function mousedownHandler(e) {		
+        e.preventDefault();		
+        $(document).on('mousemove', mousemoveHandler);    		
+        $(document).on('mouseup', mouseupHandler);		
+      }		
+      		
+      function mousemoveHandler(e) {		
+        
+        var incrementHeight = $('.container-fluid').scrollTop() + e.pageY;
+                
+        if(element.find('#down-pane').height() <= maxDownPaneHeight) {		
+          element.find('#upon-pane').css({'height' : (uponPaneHeight - (handleHeight - incrementHeight)) + 'px'});		
+          element.find('#down-pane').css({'height' : (downPaneHeight + (handleHeight - incrementHeight)) + 'px'});  		
+          element.find('#upon-pane .table-body-container').css({'height': (uponTableHeight - (handleHeight - incrementHeight)) + 'px'});
+          element.find('#down-pane .table-body-container').css({'height': (downTableHeight + (handleHeight - incrementHeight)) + 'px'});
+        }else{
+          element.find('#down-pane').css({'height' : (maxDownPaneHeight) + 'px'});
+          $(document).off('mousemove');		
+        }			
+      }		
+      
+      function mouseupHandler(e) {		
+        $(document).off('mousedown');		
+        $(document).off('mousemove');		
+      }
+   
+    
       ctrl.lastPolicyId = -1;          
       
       scope.$watch('vm.replicationPolicies', function(current) { 
