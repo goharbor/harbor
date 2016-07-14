@@ -13,7 +13,7 @@ LDAP_URL=$ldap_url
 LDAP_BASE_DN=$ldap_basedn
 UI_SECRET=$ui_secret
 SELF_REGISTRATION=$self_registration
-PRODUCTION=$use_compressed_js
+USE_COMPRESSED_JS=$use_compressed_js
 LOG_LEVEL=debug
 GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url

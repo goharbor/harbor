@@ -21,7 +21,7 @@ type BaseController struct {
 	SelfRegistration bool
 	IsAdmin          bool
 	AuthMode         string
-	Production       bool
+	UseCompressedJS  bool
 }
 
 type langType struct {
@@ -99,13 +99,13 @@ func (b *BaseController) Prepare() {
 	b.AuthMode = authMode
 	b.Data["AuthMode"] = b.AuthMode
 
-	production := os.Getenv("PRODUCTION")
-	if production == "on" {
-		b.Production = true
+	useCompressedJS := os.Getenv("USE_COMPRESSED_JS")
+	if useCompressedJS == "on" {
+		b.UseCompressedJS = true
 	}
 
 	if _, err := os.Stat(filepath.Join("static", "resources", "js", "harbor.app.min.js")); os.IsNotExist(err) {
-		b.Production = false
+		b.UseCompressedJS = false
 	}
 }
 
@@ -117,7 +117,7 @@ func (b *BaseController) Forward(title, templateName string) {
 	b.LayoutSections = make(map[string]string)
 	b.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
 
-	if b.Production {
+	if b.UseCompressedJS {
 		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-min-include.htm")
 	} else {
 		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-include.htm")

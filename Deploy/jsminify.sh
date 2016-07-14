@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 echo "This shell will minify the Javascript in Harbor project."
 echo "Usage: #jsminify [src] [dest]"
@@ -9,25 +9,25 @@ rm -rf $2 /tmp/harbor.app.temp.js
 BASEPATH=/go/bin
 #concat the js files from js include file
 echo "Concat js files..."
-cat $1  |while read LINE
+
+cat $1   | while read LINE || [[ -n $LINE ]]
 do
     if [ -n "$LINE" ] 
     then
         TEMP="$BASEPATH""$LINE"
-        cat `echo "$TEMP" | sed 's/<script src=\"//g' |sed 's/\"><\/script>//g'` >> /tmp/harbor.app.temp.js
+        cat `echo "$TEMP" | sed 's/<script src=\"//g' | sed 's/\"><\/script>//g'` >> /tmp/harbor.app.temp.js
         printf "\n" >> /tmp/harbor.app.temp.js
     fi
 done
 
 #remove space
 echo "Remove space.."
-sed 's/  //g' -i /tmp/harbor.app.temp.js
+sed 's/ \+/ /g' -i /tmp/harbor.app.temp.js
 
 #remove '//' and '/*'
 echo "Remove '//'and '/*'  annotation..."
 sed '/^\/\//'d -i /tmp/harbor.app.temp.js
 sed '/\/\*/{/\*\//d;:a;N;/\*\//d;ba};s,//.*,,' -i /tmp/harbor.app.temp.js 
-
 
 cat > $2 << EOF
 /*
