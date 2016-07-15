@@ -256,7 +256,7 @@ func (c *Checker) projectExist() (exist, canWrite bool, err error) {
 		return
 	}
 
-	if resp.StatusCode == http.StatusUnauthorized {
+	if resp.StatusCode == http.StatusForbidden {
 		exist = true
 		return
 	}
