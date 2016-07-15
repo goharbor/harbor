@@ -186,112 +186,29 @@ func (c *Checker) Enter() (string, error) {
 }
 
 func (c *Checker) enter() (string, error) {
-enter:
-	exist, canWrite, err := c.projectExist()
+	project, err := dao.GetProjectByName(c.project)
 	if err != nil {
-		c.logger.Errorf("an error occurred while checking existence of project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
+		c.logger.Errorf("an error occurred while getting project %s in DB: %v", c.project, err)
 		return "", err
 	}
-	if !exist {
-		project, err := dao.GetProjectByName(c.project)
-		if err != nil {
-			c.logger.Errorf("an error occurred while getting project %s on %s: %v", c.project, c.srcURL, err)
-			return "", err
-		}
 
-		err = c.createProject(project.Public == 1)
-		if err != nil {
-			// other job may be also doing the same thing when the current job
-			// is creating project, so when the response code is 409, re-check
-			// the existence of project
-			if err == ErrConflict {
-				goto enter
-			} else {
-				c.logger.Errorf("an error occurred while creating project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
-				return "", err
-			}
-		}
+	err = c.createProject(project.Public == 1)
+	if err == nil {
 		c.logger.Infof("project %s is created on %s with user %s", c.project, c.dstURL, c.dstUsr)
 		return StatePullManifest, nil
 	}
 
-	c.logger.Infof("project %s already exists on %s", c.project, c.dstURL)
-
-	if !canWrite {
-		err = fmt.Errorf("the user %s is unauthorized to write to project %s on %s", c.dstUsr, c.project, c.dstURL)
-		c.logger.Errorf("%v", err)
-		return "", err
-	}
-	c.logger.Infof("the user %s has write privilege to project %s on %s", c.dstUsr, c.project, c.dstURL)
-
-	return StatePullManifest, nil
-}
-
-// check the existence of project, if it exists, returning whether the user has write privilege to it
-func (c *Checker) projectExist() (exist, canWrite bool, err error) {
-	url := strings.TrimRight(c.dstURL, "/") + "/api/projects/?project_name=" + c.project
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return
+	// other job may be also doing the same thing when the current job
+	// is creating project, so when the response code is 409, continue
+	// to do next step
+	if err == ErrConflict {
+		c.logger.Warningf("the status code is 409 when creating project %s on %s with user %s, try to do next step", c.project, c.dstURL, c.dstUsr)
+		return StatePullManifest, nil
 	}
 
-	req.SetBasicAuth(c.dstUsr, c.dstPwd)
+	c.logger.Errorf("an error occurred while creating project %s on %s with user %s : %v", c.project, c.dstURL, c.dstUsr, err)
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: c.insecure,
-			},
-		},
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusNotFound {
-		return
-	}
-
-	if resp.StatusCode == http.StatusForbidden {
-		exist = true
-		return
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		var projects []models.Project
-		if err = json.Unmarshal(data, &projects); err != nil {
-			return
-		}
-
-		if len(projects) == 0 {
-			return
-		}
-
-		for _, project := range projects {
-			if project.Name == c.project {
-				exist = true
-				canWrite = (project.Role == models.PROJECTADMIN ||
-					project.Role == models.DEVELOPER)
-				break
-			}
-		}
-
-		return
-	}
-
-	err = fmt.Errorf("an error occurred while checking existen of project %s on %s with user %s: %d %s",
-		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(data))
-
-	return
+	return "", err
 }
 
 func (c *Checker) createProject(isPublic bool) error {
