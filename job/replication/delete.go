@@ -16,15 +16,26 @@
 package replication
 
 import (
+	"errors"
+
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-	"github.com/vmware/harbor/utils/registry"
-	"github.com/vmware/harbor/utils/registry/auth"
+	//"github.com/vmware/harbor/utils/registry"
+	//"github.com/vmware/harbor/utils/registry/auth"
+	"crypto/tls"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 const (
 	// StateDelete ...
 	StateDelete = "delete"
+)
+
+var (
+	errNotFound = errors.New("Not Found")
 )
 
 // Deleter deletes repository or tags
@@ -38,7 +49,7 @@ type Deleter struct {
 
 	insecure bool
 
-	dstClient *registry.Repository
+	//dstClient *registry.Repository
 
 	logger *log.Logger
 }
@@ -76,37 +87,115 @@ func (d *Deleter) Enter() (string, error) {
 }
 
 func (d *Deleter) enter() (string, error) {
-	dstCred := auth.NewBasicAuthCredential(d.dstUsr, d.dstPwd)
-	dstClient, err := newRepositoryClient(d.dstURL, d.insecure, dstCred,
-		d.repository, "repository", d.repository, "pull", "push", "*")
-	if err != nil {
-		d.logger.Errorf("an error occurred while creating destination repository client: %v", err)
-		return "", err
-	}
+	url := strings.TrimRight(d.dstURL, "/") + "/api/repositories/"
 
-	d.dstClient = dstClient
-
+	// delete repository
 	if len(d.tags) == 0 {
-		tags, err := d.dstClient.ListTag()
-		if err != nil {
-			d.logger.Errorf("an error occurred while listing tags of repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
+		u := url + "?repo_name=" + d.repository
+		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
+			if err == errNotFound {
+				d.logger.Warningf("repository %s does not exist on %s", d.repository, d.dstURL)
+				return models.JobFinished, nil
+			}
+			d.logger.Errorf("an error occurred while deleting repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
 			return "", err
+
 		}
 
-		d.tags = append(d.tags, tags...)
+		d.logger.Infof("repository %s on %s has been deleted", d.repository, d.dstURL)
+
+		return models.JobFinished, nil
+
 	}
 
-	d.logger.Infof("tags %v will be deleted", d.tags)
-
+	// delele tags
 	for _, tag := range d.tags {
+		u := url + "?repo_name=" + d.repository + "&tag=" + tag
+		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
+			if err == errNotFound {
+				d.logger.Warningf("repository %s does not exist on %s", d.repository, d.dstURL)
+				continue
+			}
 
-		if err := d.dstClient.DeleteTag(tag); err != nil {
 			d.logger.Errorf("an error occurred while deleting repository %s:%s on %s with user %s: %v", d.repository, tag, d.dstURL, d.dstUsr, err)
 			return "", err
 		}
-
 		d.logger.Infof("repository %s:%s on %s has been deleted", d.repository, tag, d.dstURL)
 	}
-
 	return models.JobFinished, nil
+
+	/*
+		// the follow codes can be used for non-harbor repository deletion
+		dstCred := auth.NewBasicAuthCredential(d.dstUsr, d.dstPwd)
+		dstClient, err := newRepositoryClient(d.dstURL, d.insecure, dstCred,
+			d.repository, "repository", d.repository, "pull", "push", "*")
+		if err != nil {
+			d.logger.Errorf("an error occurred while creating destination repository client: %v", err)
+			return "", err
+		}
+
+		d.dstClient = dstClient
+
+		if len(d.tags) == 0 {
+			tags, err := d.dstClient.ListTag()
+			if err != nil {
+				d.logger.Errorf("an error occurred while listing tags of repository %s on %s with user %s: %v", d.repository, d.dstURL, d.dstUsr, err)
+				return "", err
+			}
+
+			d.tags = append(d.tags, tags...)
+		}
+
+		d.logger.Infof("tags %v will be deleted", d.tags)
+
+		for _, tag := range d.tags {
+
+			if err := d.dstClient.DeleteTag(tag); err != nil {
+				d.logger.Errorf("an error occurred while deleting repository %s:%s on %s with user %s: %v", d.repository, tag, d.dstURL, d.dstUsr, err)
+				return "", err
+			}
+
+			d.logger.Infof("repository %s:%s on %s has been deleted", d.repository, tag, d.dstURL)
+		}
+
+		return models.JobFinished, nil
+	*/
+}
+
+func del(url, username, password string, insecure bool) error {
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.SetBasicAuth(username, password)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecure,
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return errNotFound
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
 }
