@@ -119,7 +119,7 @@ Harbor does not ship with any certificates, and, by default, uses HTTP to serve 
 Pre-built installation packages of each release are available at [release page](https://github.com/vmware/harbor/releases). 
 Download the package file **harbor-&lt;version&gt;.tgz** , and then extract the files.  
 ```
-$ tar -xzvf harbor-0.1.1.tgz
+$ tar -xzvf harbor-0.3.0.tgz
 $ cd harbor
 ```
 
@@ -181,15 +181,17 @@ saving the image of nginx
 finished saving the image of nginx
 saving the image of registry
 finished saving the image of registry
+saving the image of harbor_jobservice
+finished saving the image of harbor_jobservice
 $ cd ../  
-$ tar -cvzf harbor_offline-0.1.1.tgz harbor
+$ tar -cvzf harbor_offline-0.3.0.tgz harbor
 ```
 
-The file `harbor_offline-0.1.1.tgz` contains the images and other files required to start Harbor.  You can use tools such as `rsync` or `scp` to transfer this file to the target host. 
+The file `harbor_offline-0.3.0.tgz` contains the images and other files required to start Harbor.  You can use tools such as `rsync` or `scp` to transfer this file to the target host. 
 On the target host, execute the following commands to start Harbor. _Note that before running the **prepare** script, you **must** update **harbor.cfg** to reflect the right configuration of the target machine!_ (Refer to Section [Configuring Harbor](#configuring-harbor)).
 
 ```
-$ tar -xzvf harbor_offline-0.1.1.tgz  
+$ tar -xzvf harbor_offline-0.3.0.tgz  
 $ cd harbor  
 
 # load images save by excute ./save_image.sh
@@ -202,6 +204,8 @@ loading the image of nginx
 finished loading the image of nginx
 loading the image of registry
 finished loading the image of registry
+loading the image of harbor_jobservice
+finished loading the image of harbor_jobservice
 
 # Make update to the parameters in ./harbor.cfg  
 $ ./prepare
@@ -226,6 +230,7 @@ Creating harbor_mysql_1
 Creating harbor_registry_1
 Creating harbor_ui_1
 Creating harbor_proxy_1
+Creating harbor_jobservice_1
 ```  
 *Stop Harbor:*
 ```
@@ -235,6 +240,7 @@ Stopping harbor_ui_1 ... done
 Stopping harbor_registry_1 ... done
 Stopping harbor_mysql_1 ... done
 Stopping harbor_log_1 ... done
+Stopping harbor_jobservice_1 ... done
 ```  
 *Restart Harbor after stopping:*
 ```
@@ -244,16 +250,19 @@ Starting harbor_mysql_1
 Starting harbor_registry_1
 Starting harbor_ui_1
 Starting harbor_proxy_1
+Starting harbor_jobservice_1
 ```  
 *Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:*
 ```
 $ sudo docker-compose rm
-Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1
+Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1, harbor_jobservice_1
 Are you sure? [yN] y
 Removing harbor_proxy_1 ... done
 Removing harbor_ui_1 ... done
 Removing harbor_registry_1 ... done
 Removing harbor_mysql_1 ... done
+Removing harbor_log_1 ... done
+Removing harbor_jobservice_1 ... done
 ```  
 
 *Remove Harbor's database and image data (for a clean re-installation):*
