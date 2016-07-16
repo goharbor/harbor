@@ -20,7 +20,7 @@ To deploy Harbor on Kubernetes, it requires some additional steps because
      ```
 
   2. The registry config file needs to have the IP (or DNS name) of the registry, but on Kubernetes, you don't know the IP before the service is created. There are several workarounds to solve this problem for now:
-     - Use DNS name and link th DNS name with the IP after the service is created.
+     - Use DNS name and link the DNS name with the IP after the service is created.
      - Rebuild the registry image with the service IP after the service is created and use ```kubectl rolling-update``` to update to the new image.
         
  
