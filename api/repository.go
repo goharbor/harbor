@@ -227,12 +227,18 @@ func (ra *RepositoryAPI) GetTags() {
 
 	ts, err := rc.ListTag()
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
+		regErr, ok := err.(*registry_error.Error)
+		if !ok {
+			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
+		// TODO remove the logic if the bug of registry is fixed
+		// It's a workaround for a bug of registry: when listing tags of
+		// a repository which is being pushed, a "NAME_UNKNOWN" error will
+		// been returned, while the catalog API can list this repository.
+		if regErr.StatusCode != http.StatusNotFound {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
-
-		log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
 	tags = append(tags, ts...)
