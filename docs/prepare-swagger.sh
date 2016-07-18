@@ -11,6 +11,7 @@ tar -C ../static/vendors -zxf swagger.tar.gz swagger-ui-2.1.4/dist
 echo "Executing some processes..."
 sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/static\/resources\/yaml\/swagger\.yaml/g' \
 ../static/vendors/swagger-ui-2.1.4/dist/index.html
+sed -i.bak '/jsonEditor: false,/a\        validatorUrl: null,' ../static/vendors/swagger-ui-2.1.4/dist/index.html
 mkdir -p ../static/resources/yaml
 cp swagger.yaml ../static/resources/yaml
 sed -i.bak 's/host: localhost/host: '$SERVER_IP'/g' ../static/resources/yaml/swagger.yaml
