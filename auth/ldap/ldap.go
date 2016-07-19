@@ -35,8 +35,8 @@ type Auth struct{}
 
 const metaChars = "&|!=~*<>()"
 
-// Authenticate checks user's credential agains LDAP based on basedn template and LDAP URL,
-// if the check is successful a dummy record will be insert into DB, such that this user can
+// Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
+// if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
