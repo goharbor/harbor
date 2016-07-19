@@ -4,7 +4,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: "0.1.1"
+  version: "0.3.0"
 # the domain of the service
 host: localhost
 # array of all schemes that your API supports
@@ -798,34 +798,6 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
-  Repository:
-    type: object
-    properties:
-      id:
-        type: string
-        description: Repository ID
-      parent:
-        type: string
-        description: Parent of the image.
-      created:
-        type: string
-        format: date-time
-        description: Repository create time.
-      duration_days:
-        type: string
-        description: Duration days of the image.
-      author:
-        type: string
-        description: Author of the image.
-      architecture:
-        type: string
-        description: Architecture of the image.
-      docker_version:
-        type: string
-        description: Docker version of the image.
-      os:
-        type: string
-        description: OS of the image.
   User:
     type: object
     properties:
@@ -888,7 +860,7 @@ definitions:
         type: string
         description: The operation against the repository in this log entry.
       op_time:
-        type: time
+        type: string
         description: The time when this operation is triggered.
   Role:
     type: object
@@ -952,8 +924,4 @@ definitions:
         type: integer
         format: int32
         description: The count of the total repositories, only be seen when the user is admin.
-        
-        
-        
-        
-        
+
