@@ -4,9 +4,8 @@
 
 ![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
 
-> Project Harbor is initiated by VMware China R&D as a Cloud Application Accelerator (CAA) project. CAA provides a set of tools to improve the productivity of cloud developers in China and other countries. CAA includes tools like registry server, mirror server, decentralized image distributor, etc.
 
-Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, control, and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require.  It also helps minimize bandwidth usage, which is helpful to both improve productivity (local network access) as well as performance (for those with poor internet connectivity).
+Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, replication and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require.  It also helps minimize bandwidth usage, which is helpful to both improve productivity (local network access) as well as performance (for those with poor internet connectivity).
 
 ### Features
 * **Role based access control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
@@ -75,4 +74,7 @@ Harbor is available under the [Apache 2 license](LICENSE).
 <a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a> <a href="https://www.dianrong.com/" border="0" target="_blank"><img alt="Dianrong" src="docs/img/dianrong.png"></a>
 
 ### Supporting Technologies
-<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>, an open source framework to build and develop applications in the Go way.
+<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>.
+
+### About
+Project Harbor is initiated by VMware China R&D as a Cloud Application Accelerator (CAA) project. CAA provides a set of tools to improve the productivity of cloud developers in China and other countries. CAA includes tools like registry server, mirror server, decentralized image distributor, etc.
