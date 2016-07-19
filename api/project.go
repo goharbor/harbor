@@ -42,6 +42,7 @@ type projectReq struct {
 
 const projectNameMaxLen int = 30
 const projectNameMinLen int = 4
+const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -93,9 +94,14 @@ func (p *ProjectAPI) Post() {
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
-		p.RenderError(http.StatusInternalServerError, "Failed to add project")
+		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
+		if dup {
+			p.RenderError(http.StatusConflict, "")
+		} else {
+			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+		}
+		return
 	}
-
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
