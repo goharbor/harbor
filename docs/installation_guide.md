@@ -96,7 +96,7 @@ Once **harbord.cfg** and storage backend (optional) are configured, build and st
     Generated configuration file: ./config/registry/root.crt
     The configuration files are ready, please use docker-compose to start the service.
 
-    $ sudo docker-compose up --build -d
+    $ sudo docker-compose up -d
 ```
 
 _If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
