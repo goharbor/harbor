@@ -1,29 +1,34 @@
 version: '2'
 services:
   log:
-    image: daocloud.io/harbor/deploy_log:latest
+    image: daocloud.io/harbor/deploy_log:0.3.0
+    restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/
     ports:
       - 1514:514
   registry:
-    image: daocloud.io/library/registry:2.3.0
+    image: library/registry:2.4.0
+    restart: always
     volumes:
       - /data/registry:/storage
       - ./config/registry/:/etc/registry/
+    environment:
+      - GODEBUG=netdns=cgo
     ports:
       - 5001:5001
     command:
-      /etc/registry/config.yml
+      ["serve", "/etc/registry/config.yml"]
     depends_on:
       - log
     logging:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "registry"
+        tag: "registry"
   mysql:
-    image: daocloud.io/harbor/deploy_mysql:latest
+    image: daocloud.io/harbor/deploy_mysql:0.3.0 
+    restart: always
     volumes:
       - /data/database:/var/lib/mysql
     env_file:
@@ -34,11 +39,12 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "mysql"
-  ui:
-    image: daocloud.io/harbor/deploy_ui:latest
+        tag: "mysql"
+  ui:      
+    image: daocloud.io/harbor/deploy_ui:0.3.0 
     env_file:
       - ./config/ui/env
+    restart: always
     volumes:
       - ./config/ui/app.conf:/etc/ui/app.conf
       - ./config/ui/private_key.pem:/etc/ui/private_key.pem
@@ -48,9 +54,25 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "ui"
+        tag: "ui"
+  jobservice:
+    image: daocloud.io/harbor/deploy_jobservice:0.3.0 
+    env_file:
+      - ./config/jobservice/env
+    restart: always
+    volumes:
+      - /data/job_logs:/var/log/jobs
+      - ./config/jobservice/app.conf:/etc/jobservice/app.conf
+    depends_on:
+      - ui
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jobservice"
   proxy:
-    image: daocloud.io/library/nginx:1.9
+    image: library/nginx:1.9
+    restart: always
     volumes:
       - ./config/nginx:/etc/nginx
     ports:
@@ -65,4 +87,4 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        syslog-tag: "proxy"
+        tag: "proxy"
