@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/session/redis"
 )
 
 const (
