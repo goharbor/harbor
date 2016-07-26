@@ -20,7 +20,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 ### Install
 
 **System requirements:**
-Harbor only works with docker 1.10+ and docker-compose 1.6.0+.
+Harbor only works with docker 1.10.0+ and docker-compose 1.6.0+.
 
 #### Install via docker compose
 On an Internet connected host, Harbor can be easily installed via docker-compose: 
