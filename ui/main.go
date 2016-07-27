@@ -67,6 +67,13 @@ func updateInitPassword(userID int, password string) error {
 func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	//TODO
+	redisURL := os.Getenv("_REDIS_URL")
+	if len(redisURL) > 0 {
+		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
+		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+	}
+	//
 	beego.AddTemplateExt("htm")
 	dao.InitDB()
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
