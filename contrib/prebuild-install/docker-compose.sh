@@ -1,4 +1,4 @@
-#/bin/eash
+#/bin/bash
 read -p "Please input the platform name you want to pull images, for docker hub, enter 1; for daocloud.io, enter 2, otherwise enter the name of the platform, the default is 1:" choice 
 cd ../../Deploy
 template_file="docker-compose.yml.template"
