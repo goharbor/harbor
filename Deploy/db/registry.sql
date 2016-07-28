@@ -158,3 +158,24 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 insert into alembic_version values ('0.3.0');
+
+-- create a table for setting labels for repo.
+create table repo_label (
+  repoName varchar(30) BINARY NOT NULL,
+  label varchar(30) BINARY NOT NULL,
+  primary key (repoName, label)
+);
+
+-- create a table for setting customer for project
+CREATE TABLE `customer` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '客户ID',
+  `name` varchar(32) DEFAULT NULL COMMENT '客户名称',
+  `tag` varchar(32) DEFAULT NULL COMMENT '客户标签-用于镜像过滤',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+
+-- create a table for setting desc for project
+CREATE TABLE `project_desc` (
+  `project_id` int(11) DEFAULT NULL COMMENT '项目ID',
+  `name` varchar(32) DEFAULT NULL COMMENT '项目中文名'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

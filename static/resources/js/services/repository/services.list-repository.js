@@ -25,14 +25,16 @@
     
     return ListRepository;
     
-    function ListRepository(projectId, q) {      
-      $log.info('list repositories:' + projectId + ', q:' + q);
+    function ListRepository(projectId, q, pageId, customId) {
+      $log.info('list repositories:' + projectId + ', q:' + q  + ', pageId:' + pageId + ', customId:' + customId);
   
       return $http
         .get('/api/repositories', {
           'params':{
             'project_id': projectId,
-            'q': q
+            'q': q,
+            'page_id': pageId,
+            'custom_id': customId
           }
       });
     }

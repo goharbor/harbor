@@ -20,5 +20,7 @@
     .module('harbor.validator')
     .constant('INVALID_CHARS', [",","~","#", "$", "%"])
     .constant('PASSWORD_REGEXP', /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{7,20}$/)
-    .constant('PROJECT_REGEXP', /^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$/);
+    .constant('PROJECT_REGEXP', /^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$/)
+    .constant('TAG_REGEXP', /^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$/) //标记的英文名
+    .constant('CH_REGEXP', /[\u4e00-\u9fa5]/); //中文名
 })();

@@ -36,6 +36,7 @@ type Project struct {
 	UpdateTime time.Time `orm:"update_time" json:"update_time"`
 	Role       int       `json:"current_user_role_id"`
 	RepoCount  int       `json:"repo_count"`
+	NameChinese string   `json:"name_chinese"`
 }
 
 // ProjectSorter holds an array of projects

@@ -28,6 +28,7 @@
     $scope.p = {};
     var vm0 = $scope.p;
     vm0.projectName = '';
+    vm0.tagName = '';
     vm.isPublic = false;
     
     vm.addProject = addProject;
@@ -39,8 +40,8 @@
     vm.errorMessage = '';
         
     function addProject(p) {
-      if(p && angular.isDefined(p.projectName)) {
-        AddProjectService(p.projectName, vm.isPublic)
+      if(p && angular.isDefined(p.projectName) &&  angular.isDefined(p.tagName)) {
+        AddProjectService(p.projectName, p.tagName, vm.isPublic)
           .success(addProjectSuccess)
           .error(addProjectFailed);
       }

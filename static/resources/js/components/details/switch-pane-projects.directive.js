@@ -27,11 +27,18 @@
  
     $scope.$watch('vm.selectedProject', function(current, origin) {
       if(current){
-        vm.projectName = current.name;
+        vm.projectName = current.name_chinese;
         vm.selectedProject = current;
       }
     });
       
+    $scope.$watch('vm.selectedCustom', function(current, origin) {
+      if(current){
+        vm.customName = current.name;
+        vm.selectedCustom = current;
+      }
+    });
+
     vm.switchPane = switchPane;
     
     function switchPane() {
@@ -50,7 +57,8 @@
       templateUrl: '/static/resources/js/components/details/switch-pane-projects.directive.html',
       scope: {
         'isOpen': '=',
-        'selectedProject': '='
+        'selectedProject': '=',
+        'selectedCustom': '='
       },
       controller: SwitchPaneProjectsController,
       controllerAs: 'vm',

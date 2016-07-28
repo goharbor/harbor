@@ -81,7 +81,11 @@
 
 .list-group-item {
   text-align: left;
-  margin-left: 20%;
+  margin-left: 10%;
+}
+
+.mr-10 {
+  margin-right: 10px;
 }
 
 .panel-group {
@@ -156,4 +160,48 @@
 
 .alert-custom .close {
   right: 0;
+}
+/*标签style*/
+.labels-panel {
+  display: inline-block;
+  padding: 0;
+}
+
+.labels-panel li {
+  list-style: none;
+  display: inline-block;
+  margin: 5px 0;
+}
+
+.labels-panel li .glyphicon-remove {
+  cursor: pointer;
+}
+
+.labels-panel .label-name{
+  display: inline-block;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 0 5px;
+}
+
+.panel-r {
+  position: relative;
+}
+
+.label-add {
+  width: 40px;
+  display: inline-block;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 0 5px;
+  display: inline-block;
+  text-align: center;
+  color: rgb(0, 84, 190);
+  cursor: pointer;
+}
+
+.pagination li {
+  cursor: pointer;
 }

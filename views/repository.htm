@@ -34,6 +34,8 @@
             <!-- Tab panes -->
     		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
               <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
+              <input type="hidden" id="ConsoleWebUrl" value="{{.ConsoleWebUrl}}">
+              <list-custom ng-if="vm.target === 'customs'"  section-height="vm.sectionHeight"></list-custom>
               <list-repository ng-if="vm.target === 'repositories'"  section-height="vm.sectionHeight"></list-repository>
               <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
               <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight" target="vm.target"></list-project-member>

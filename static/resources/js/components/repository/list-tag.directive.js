@@ -20,12 +20,16 @@
     .module('harbor.repository')
     .directive('listTag', listTag);
     
-  ListTagController.$inject = ['$scope', 'ListTagService', '$filter', 'trFilter'];
+  ListTagController.$inject = ['$scope', 'ListTagService', 'ListLabelService', 'AddLabelService', '$filter', 'trFilter'];
   
-  function ListTagController($scope, ListTagService, $filter, trFilter) {
+  function ListTagController($scope, ListTagService, ListLabelService, AddLabelService, $filter, trFilter) {
     var vm = this;
     
     vm.tags = [];
+    vm.labelCount = {};
+    //跳转到部署应用界面
+    vm.consoleWebAppUrl = $('#ConsoleWebUrl').val() + '/application/add';
+    vm.harborRegUrl =  $('#HarborRegUrl').val() + '/';
     vm.retrieve = retrieve;
     
     $scope.$watch('vm.repoName', function(current, origin) {    
@@ -35,20 +39,47 @@
       }
     });
     
-    $scope.$on('refreshTags', function(e, val) {
+    $scope.$on('refreshTagsAndLabels', function(e, val) {
       if(val) {
         vm.retrieve();
       }
     });
     
     vm.deleteTag = deleteTag;
+    vm.showDeleteLabel = showDeleteLabel;
+    vm.showAddLabel = showAddLabel;
+    vm.isOpen = false;
     
     function retrieve() {
       ListTagService(vm.repoName)
         .success(getTagSuccess)
         .error(getTagFailed);
+
+      ListLabelService(vm.repoName)
+        .success(getLabelSuccess)
+        .error(getLabelFailed);
+    }
+
+    function getLabelSuccess(data) {
+      vm.labels = data || [];
+      vm.labelCount[vm.repoName] = vm.labels.length;
+
+      $scope.$emit('labels', vm.labels);
+      $scope.$emit('labelCount', vm.labelCount);
+
+      angular.forEach(vm.labels, function(item) {
+        vm.toggleInProgress[vm.repoName + '|' + item] = false;
+      });
+    }
+
+    function getLabelFailed(data) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_label') + data);
+      $scope.$emit('raiseError', true);
+      console.log('Failed to get tag:' + data);
     }
     
+
     function getTagSuccess(data) {
       
       vm.tags = data || [];
@@ -64,7 +95,7 @@
       
     function getTagFailed(data) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_tag') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_label') + data);
       $scope.$emit('raiseError', true);
       console.log('Failed to get tag:' + data);
     }
@@ -75,6 +106,25 @@
       vm.deleteByTag();
     }
     
+    function showDeleteLabel(e) {
+      $scope.$emit('repoName', e.repoName);
+      $scope.$emit('label', e.label);
+      vm.deleteByLabel();
+    }
+
+    function showAddLabel() {
+      if(vm.isOpen){
+        vm.isOpen = false;
+      }else{
+        vm.isOpen = true;
+      }
+    }
+
+    function refresh() {
+      vm.retrieve();
+      vm.isOpen = false;
+    }
+
   }
   
   function listTag() {
@@ -86,7 +136,8 @@
         'associateId': '=',
         'repoName': '=',
         'toggleInProgress': '=',
-        'deleteByTag': '&'
+        'deleteByTag': '&',
+        'deleteByLabel': '&'
       },
       'replace': true,
       'controller': ListTagController,
