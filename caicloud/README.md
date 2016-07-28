@@ -7,6 +7,8 @@
 - 新增镜像标签功能
 - 增加项目中文显示
 
+录制的视频地址: https://pan.baidu.com/s/1pKHWhbt
+
 ![](images/harbor01.png)
 
 ![](images/harbor02.png)
