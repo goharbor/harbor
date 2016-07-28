@@ -17,6 +17,14 @@
 			"revisionTime": "2016-03-23T09:05:40Z"
 		},
 		{
+			"checksumSHA1": "sHidosSzJBx644nr3tyeaqsCrSc=",
+			"path": "github.com/astaxie/beego/cache/redis",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
 			"checksumSHA1": "raJhf500jq7AzIGIclRQBo0B5+s=",
 			"path": "github.com/astaxie/beego/config",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
@@ -63,6 +71,14 @@
 			"versionExact": "v1.6.1"
 		},
 		{
+			"checksumSHA1": "+W/P2deANUhWrFkdP9m4SLJ7620=",
+			"path": "github.com/astaxie/beego/session/redis",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
 			"checksumSHA1": "Mu2lA5Jq0tRk9MjhWllyzcJD6KU=",
 			"path": "github.com/astaxie/beego/toolbox",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
@@ -83,6 +99,23 @@
 			"path": "github.com/astaxie/beego/validation",
 			"revision": "88c5dfa6ead42e624c2e7d9e04eab6cb2d07412a",
 			"revisionTime": "2016-03-23T09:05:40Z"
+		},
+		{
+			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
+			"path": "github.com/garyburd/redigo/internal",
+			"revision": "b8dc90050f24c1a73a52f107f3f575be67b21b7c",
+			"revisionTime": "2016-05-25T16:57:06Z"
+		},
+		{
+			"checksumSHA1": "507OiSqTxfGCje7xDT5eq9CCaNQ=",
+			"path": "github.com/garyburd/redigo/redis",
+			"revision": "b8dc90050f24c1a73a52f107f3f575be67b21b7c",
+			"revisionTime": "2016-05-25T16:57:06Z"
+		},
+		{
+			"path": "https://github.com/astaxie/beego/session/redis",
+			"revision": "v1.6.1",
+			"version": "v1.6.1"
 		}
 	],
 	"rootPath": "github.com/vmware/harbor"
