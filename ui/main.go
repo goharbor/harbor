@@ -20,6 +20,7 @@ import (
 
 	log "github.com/vmware/harbor/utils/log"
 
+	"github.com/vmware/harbor/ui/config"
 	"os"
 
 	_ "github.com/vmware/harbor/auth/db"
@@ -76,7 +77,7 @@ func main() {
 	//
 	beego.AddTemplateExt("htm")
 	dao.InitDB()
-	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
+	if err := updateInitPassword(adminUserID, config.HarborAdminPwd()); err != nil {
 		log.Error(err)
 	}
 	initRouters()
