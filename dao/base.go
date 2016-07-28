@@ -18,12 +18,12 @@ package dao
 import (
 	"net"
 
-	"os"
 	"sync"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" //register mysql driver
+	"github.com/vmware/harbor/dao/config"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -46,10 +46,10 @@ func GenerateRandomString() (string, error) {
 func InitDB() {
 	//	orm.Debug = true
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	addr := os.Getenv("MYSQL_HOST")
-	port := os.Getenv("MYSQL_PORT")
-	username := os.Getenv("MYSQL_USR")
-	password := os.Getenv("MYSQL_PWD")
+	addr := config.MysqlPort()
+	port := config.MysqlAddr()
+	username := config.MysqlUserName()
+	password := config.MysqlPwd()
 
 	log.Debugf("db url: %s:%s, db user: %s", addr, port, username)
 	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
