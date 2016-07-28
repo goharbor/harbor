@@ -5,22 +5,25 @@
 ![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
 
 
-Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, replication and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require.  It also helps minimize bandwidth usage, which is helpful to both improve productivity (local network access) as well as performance (for those with poor internet connectivity).
+Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. With Harbor, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
 
 ### Features
-* **Role based access control**: Users and Docker repositories are organized via "projects", a user can have different permission for images under a project.
-* **Image replication**: Images can be replicated(synchronized) between multiple registry instances. Great for load balancing and distributed data centers.
-* **Graphical user portal**: User can easily browse, search Docker repositories, manage projects/namespaces.
+* **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
+* **Image replication**: Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, hybrid and multi-cloud scenarios.
+* **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
 * **Internationalization**: Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.
-* **RESTful API**: RESTful APIs for most administrative operations, easing intergration with external management platforms.
+* **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
+* **Easy deployment**: docker compose and offline installer.
 
-### Getting Started
-Harbor is self-contained and can be easily deployed via docker-compose (Quick-Start steps below). Refer to the [Installation and Configuration Guide](docs/installation_guide.md) for detailed information.  
+### Install
 
-**System requirements:**  
-Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-connected host.
+**System requirements:**
+Harbor only works with docker 1.10.0+ and docker-compose 1.6.0+.
+
+#### Install via docker compose
+On an Internet connected host, Harbor can be easily installed via docker-compose: 
 
 1. Get the source code:
     
@@ -43,22 +46,24 @@ Harbor only works with docker 1.10+ and docker-compose 1.6.0+, and an internet-c
     $ docker-compose up -d
     ```
 
-_If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com . Note that the default administrator username/password are admin/Harbor12345 ._
+#### Install via offline installer
+For those who do not want to clone the source, or need to install Harbor on a server not connected to the Internet, there is a pre-built installation package available. For details on how to download and use the installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md).
 
-Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (By default, the registry server listens on port 80):
+#### After installation
+_If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com. Note that the default administrator username/password are admin/Harbor12345._
+
+Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (by default, the registry server listens on port 80):
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo
 ```
 
-**Data migration:**
+### Upgrade
 
-If you are upgrading Harbor from an older version with existing data, you may need to migrate the data to fit the new database schema. For more details please refer to [Data Migration Guide](docs/migration_guide.md) .
+If you are upgrading Harbor from an older version with existing data, you need to migrate the data to fit the new database schema. For more details, please refer to [Data Migration Guide](docs/migration_guide.md).
 
-**NOTE:**  
-For those who don't want to clone the source, or need to install Harbor on a server not connected to the Internet - there is a pre-built installation package available. For details on how to download and use this installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md) .
-
-For information on how to use Harbor, please see [User Guide](docs/user_guide.md) .
+### Run
+For information on how to use Harbor, please take a look at [User Guide](docs/user_guide.md).
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
@@ -77,4 +82,4 @@ Harbor is available under the [Apache 2 license](LICENSE).
 <img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>.
 
 ### About
-Project Harbor is initiated by VMware China R&D as a Cloud Application Accelerator (CAA) project. CAA provides a set of tools to improve the productivity of cloud developers in China and other countries. CAA includes tools like registry server, mirror server, decentralized image distributor, etc.
+Project Harbor is initiated by the Advanced Technology Center (ATC), VMware China R&D as a Cloud Application Accelerator (CAA) project.
