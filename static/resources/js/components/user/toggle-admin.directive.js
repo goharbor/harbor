@@ -25,7 +25,7 @@
   function ToggleAdminController($scope, ToggleAdminService, $filter, trFilter) {
     var vm = this;
     
-    vm.isAdmin = (Number(vm.hasAdminRole) === 1);
+    vm.isAdmin = (vm.hasAdminRole === 1);
     vm.enabled = vm.isAdmin ? 0 : 1;
     vm.toggle = toggle;
     
