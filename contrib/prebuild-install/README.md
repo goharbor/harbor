@@ -1,0 +1,1 @@
+docker-compose.sh is used to configure docker-compose.yml to pull images from platform like docker hub, daocloud.io and others. If you don't want to waste time on building images, you can execute this script to pull images from platform you prefer. Currently, we only support daocloud.io and docker hub, the default is docker hub. 
