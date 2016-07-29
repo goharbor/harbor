@@ -65,7 +65,6 @@ const PageSize int = 3
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
-	//增加客户ID过滤镜像
 	var tag string = ""
 	customerId, err := ra.GetInt("custom_id")
 	log.Info("customerid:",customerId)

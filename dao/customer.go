@@ -47,7 +47,6 @@ func GetProjectAllCustomer(projectId string) ([]models.Customer, error) {
 
 	var customer []models.Customer
 	if projectId == "" {
-		//返回客户列表
 		if _, err := o.Raw("select * from customer").QueryRows(&customer); err != nil {
 			return nil, err
 		}
@@ -60,7 +59,6 @@ func GetProjectAllCustomer(projectId string) ([]models.Customer, error) {
 		projectName := p.Name+"%"
 
 		log.Infof("res: %+v", projectName)
-		//返回项目的客户列表
 		// select * from customer where tag in (select label from repo_label where repoName like 'library%' group by label)
 		sql = `select * from customer where name in (select label from repo_label
 		 where repoName like ? group by label)`
@@ -93,7 +91,6 @@ func DeleteCustomer(id int) (err error) {
 	return err
 }
 
-//获取客户数量
 func GetCustomerCount() (count int) {
 	o := GetOrmer()
 	p := []models.Customer{}
@@ -101,7 +98,6 @@ func GetCustomerCount() (count int) {
 	return len(p)
 }
 
-//增加客户项目过滤
 func GetCustomerRepoList(repoList []string, tag string) ([]string) {
 	o := GetOrmer()
 

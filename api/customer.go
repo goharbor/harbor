@@ -26,8 +26,8 @@ const customerNameMinLen int = 4
 /*
 	Method: Post
  	https://registry.51yixiao.com/api/customer
-	param: name 客户中文名
-	param: tag 客户标签
+	param: name
+	param: tag
  */
 
 func (c *CustomerController) PostCustomer() {
@@ -71,7 +71,7 @@ func (c *CustomerController) PostCustomer() {
 /*
 	Method: Get
  	https://registry.51yixiao.com/api/customer/3
-	ret: 返回客户信息
+	ret: customer
  */
 func (c *CustomerController) GetOneCustomer() {
 	idStr := c.Ctx.Input.Param(":id")
@@ -110,8 +110,8 @@ func (c *CustomerController) GetListCustomer() {
 /*
  Method: Put
  https://registry.51yixiao.com/api/customer/3
- param: name 招商银行
- param: tag CMM
+ param: name
+ param: tag
  */
 func (c *CustomerController) UpdateCustomer() {
 
