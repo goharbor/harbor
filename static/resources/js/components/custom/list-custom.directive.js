@@ -58,20 +58,20 @@
       vm.retrieve();
     });
 
-    //添加客户成功之后，刷新列表
+    //After adding customer success, refresh the list
     $scope.$on('addedCustomSuccess', function(e, val) {
       vm.retrieve();
     });
 
     function retrieve(){
-      //默认请求第0页
+      //Default request page 0
       ListCustomService()
         .success(getCustomComplete)
         .error(getCustomFailed);
     }
 
     function getCustomComplete(data, status) {
-      //获取客户列表
+      //Get a list of customers
       vm.customs = data || [];
     }
 

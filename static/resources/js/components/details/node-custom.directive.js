@@ -54,7 +54,6 @@
     }
 
     function getCustomComplete(data, status) {
-      //获取客户列表
       vm.customs = data || [];
     }
 

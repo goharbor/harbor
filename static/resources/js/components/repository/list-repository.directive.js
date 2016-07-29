@@ -121,13 +121,12 @@
                 
     function retrieve(){
       var pageId = vm.paginationConf.currentPage || 1;
-      //默认请求第0页
       ListRepositoryService(vm.projectId, vm.filterInput, pageId, vm.customId)
         .success(getRepositoryComplete)
         .error(getRepositoryFailed);
     }
    
-    //根据根据配置初始化分页
+    //Depending on the configuration tab according to initialize
     function getRepositoryComplete(data, status) {
       vm.repositories = data.repoList || [];
       vm.paginationConf.totalItems = data.totalItems || 1;
@@ -156,8 +155,7 @@
       
       $scope.$emit('raiseInfo', emitInfo);
     }
-    
-    //通过label删除代码
+
     function deleteByLabel() {
       $scope.$emit('modalTitle', $filter('tr')('alert_delete_label_title', [vm.label]));
       var message;

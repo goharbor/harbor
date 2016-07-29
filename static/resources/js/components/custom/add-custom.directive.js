@@ -38,7 +38,6 @@
     vm.errorMessage = '';
     vm.addCustom = addCustom;
 
-    // 添加label
     function addCustom( p) {
       if(p && angular.isDefined(p.customName) && angular.isDefined(p.tagName)) {
         AddCustomService(p.customName, p.tagName)
@@ -48,7 +47,6 @@
     }
 
     function addCustomSuccess(data, status) {
-      //发送信息更新custom列表
       $scope.$emit('addedCustomSuccess', true);
       vm.hasError = false;
       vm.errorMessage = '';
