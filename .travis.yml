@@ -27,6 +27,7 @@ env:
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
+  UI_SECRET: tempString  
 
 before_install:
    - sudo ./tests/hostcfg.sh
@@ -68,9 +69,9 @@ before_script:
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
 script: 
-  - go list ./... | grep -v 'tests' | grep -v /vendor/ | xargs -L1 fgt golint
-  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go vet
-  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go test -v
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
+  - ./Deploy/coverage4gotest.sh
 
   - docker-compose -f Deploy/docker-compose.yml up -d
   
