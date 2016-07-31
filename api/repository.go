@@ -17,6 +17,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"sort"
@@ -34,6 +35,7 @@ import (
 
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/registry/auth"
 )
 
@@ -46,23 +48,23 @@ type RepositoryAPI struct {
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
-	if err != nil {
-		log.Errorf("Failed to get project id, error: %v", err)
-		ra.RenderError(http.StatusBadRequest, "Invalid project id")
-		return
-	}
-	p, err := dao.GetProjectByID(projectID)
-	if err != nil {
-		log.Errorf("Error occurred in GetProjectById, error: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if p == nil {
-		log.Warningf("Project with Id: %d does not exist", projectID)
-		ra.RenderError(http.StatusNotFound, "")
-		return
+	if err != nil || projectID <= 0 {
+		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
 	}
 
-	if p.Public == 0 {
+	page, pageSize := ra.getPaginationParams()
+
+	project, err := dao.GetProjectByID(projectID)
+	if err != nil {
+		log.Errorf("failed to get project %d: %v", projectID, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %d not found", projectID))
+	}
+
+	if project.Public == 0 {
 		var userID int
 
 		if svc_utils.VerifySecret(ra.Ctx.Request) {
@@ -72,37 +74,47 @@ func (ra *RepositoryAPI) Get() {
 		}
 
 		if !checkProjectPermission(userID, projectID) {
-			ra.RenderError(http.StatusForbidden, "")
-			return
+			ra.CustomAbort(http.StatusForbidden, "")
 		}
 	}
 
 	repoList, err := cache.GetRepoFromCache()
 	if err != nil {
-		log.Errorf("Failed to get repo from cache, error: %v", err)
-		ra.RenderError(http.StatusInternalServerError, "internal sever error")
+		log.Errorf("failed to get repository from cache: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	projectName := p.Name
+	repositories := []string{}
+
 	q := ra.GetString("q")
-	var resp []string
-	if len(q) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], q) && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp = append(resp, r)
-			}
+	for _, repo := range repoList {
+		pn, rest := utils.ParseRepository(repo)
+		if project.Name != pn {
+			continue
 		}
-		ra.Data["json"] = resp
-	} else if len(projectName) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp = append(resp, r)
-			}
+
+		if len(q) != 0 && !strings.Contains(rest, q) {
+			continue
 		}
-		ra.Data["json"] = resp
-	} else {
-		ra.Data["json"] = repoList
+
+		repositories = append(repositories, repo)
 	}
+
+	total := int64(len(repositories))
+
+	if (page-1)*pageSize > total {
+		repositories = []string{}
+	} else {
+		repositories = repositories[(page-1)*pageSize:]
+	}
+
+	if page*pageSize <= total {
+		repositories = repositories[:pageSize]
+	}
+
+	ra.setPaginationHeader(total, page, pageSize)
+
+	ra.Data["json"] = repositories
 	ra.ServeJSON()
 }
 
