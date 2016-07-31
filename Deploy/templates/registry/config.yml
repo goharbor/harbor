@@ -30,6 +30,6 @@ notifications:
       - name: harbor
         disabled: false
         url: http://ui/service/notifications
-        timeout: 500ms
+        timeout: 3000ms
         threshold: 5
         backoff: 1s
