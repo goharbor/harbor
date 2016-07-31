@@ -31,6 +31,11 @@ import (
 	"github.com/astaxie/beego"
 )
 
+const (
+	defaultPageSize int64 = 10
+	maxPageSize     int64 = 100
+)
+
 // BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
 	beego.Controller
@@ -136,6 +141,60 @@ func (b *BaseAPI) GetIDFromURL() int64 {
 	}
 
 	return id
+}
+
+// set "Link" and "X-Total-Count" header for pagination request
+func (b *BaseAPI) setPaginationHeader(total, page, pageSize int64) {
+	b.Ctx.ResponseWriter.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
+
+	link := ""
+
+	// set previous link
+	if page > 1 && (page-1)*pageSize <= total {
+		u := *(b.Ctx.Request.URL)
+		q := u.Query()
+		q.Set("page", strconv.FormatInt(page-1, 10))
+		u.RawQuery = q.Encode()
+		if len(link) != 0 {
+			link += ", "
+		}
+		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
+	}
+
+	// set next link
+	if pageSize*page < total {
+		u := *(b.Ctx.Request.URL)
+		q := u.Query()
+		q.Set("page", strconv.FormatInt(page+1, 10))
+		u.RawQuery = q.Encode()
+		if len(link) != 0 {
+			link += ", "
+		}
+		link += fmt.Sprintf("<%s>; rel=\"next\"", u.String())
+	}
+
+	if len(link) != 0 {
+		b.Ctx.ResponseWriter.Header().Set("Link", link)
+	}
+}
+
+func (b *BaseAPI) getPaginationParams() (page, pageSize int64) {
+	page, err := b.GetInt64("page", 1)
+	if err != nil || page <= 0 {
+		b.CustomAbort(http.StatusBadRequest, "invalid page")
+	}
+
+	pageSize, err = b.GetInt64("page_size", defaultPageSize)
+	if err != nil || pageSize <= 0 {
+		b.CustomAbort(http.StatusBadRequest, "invalid page_size")
+	}
+
+	if pageSize > maxPageSize {
+		pageSize = maxPageSize
+		log.Debugf("the parameter page_size %d exceeds the max %d, set it to max", pageSize, maxPageSize)
+	}
+
+	return page, pageSize
 }
 
 func getIsInsecure() bool {

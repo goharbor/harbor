@@ -17,9 +17,10 @@
 package utils
 
 import (
-	"github.com/vmware/harbor/utils/log"
 	"net/http"
 	"os"
+
+	"github.com/vmware/harbor/utils/log"
 )
 
 // VerifySecret verifies the UI_SECRET cookie in a http request.
@@ -27,7 +28,7 @@ func VerifySecret(r *http.Request) bool {
 	secret := os.Getenv("UI_SECRET")
 	c, err := r.Cookie("uisecret")
 	if err != nil {
-		log.Errorf("Failed to get secret cookie, error: %v", err)
+		log.Warningf("Failed to get secret cookie, error: %v", err)
 	}
 	return c != nil && c.Value == secret
 }
