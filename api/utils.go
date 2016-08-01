@@ -115,7 +115,14 @@ func TriggerReplication(policyID int64, repository string,
 
 	url := buildReplicationURL()
 
-	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+	addAuthentication(req)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -188,7 +195,16 @@ func postReplicationAction(policyID int64, acton string) error {
 
 	url := buildReplicationActionURL()
 
-	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	addAuthentication(req)
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -205,6 +221,16 @@ func postReplicationAction(policyID int64, acton string) error {
 	}
 
 	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+}
+
+func addAuthentication(req *http.Request) {
+	if req != nil {
+		req.AddCookie(&http.Cookie{
+			Name: models.UISecretCookie,
+			// TODO read secret from config
+			Value: os.Getenv("UI_SECRET"),
+		})
+	}
 }
 
 func buildReplicationURL() string {

@@ -150,7 +150,14 @@ func (ra *RepJobAPI) GetLog() {
 		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
 
-	resp, err := http.Get(buildJobLogURL(strconv.FormatInt(ra.jobID, 10)))
+	req, err := http.NewRequest("GET", buildJobLogURL(strconv.FormatInt(ra.jobID, 10)), nil)
+	if err != nil {
+		log.Errorf("failed to create a request: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+	addAuthentication(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
 		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
