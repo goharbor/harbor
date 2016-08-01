@@ -238,25 +238,25 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 func (p *ProjectAPI) FilterAccessLog() {
 	p.userID = p.ValidateUser()
 
-	var filter models.AccessLog
-	p.DecodeJSONReq(&filter)
+	var query models.AccessLog
+	p.DecodeJSONReq(&query)
 
-	username := filter.Username
-	keywords := filter.Keywords
+	query.ProjectID = p.projectID
+	query.Username = "%" + query.Username + "%"
+	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
+	query.EndTime = time.Unix(query.EndTimestamp, 0)
 
-	beginTime := time.Unix(filter.BeginTimestamp, 0)
-	endTime := time.Unix(filter.EndTimestamp, 0)
+	page, pageSize := p.getPaginationParams()
 
-	query := models.AccessLog{ProjectID: p.projectID, Username: "%" + username + "%", Keywords: keywords, BeginTime: beginTime, BeginTimestamp: filter.BeginTimestamp, EndTime: endTime, EndTimestamp: filter.EndTimestamp}
-
-	log.Infof("Query AccessLog: begin: %v, end: %v, keywords: %s", query.BeginTime, query.EndTime, query.Keywords)
-
-	accessLogList, err := dao.GetAccessLogs(query)
+	logs, total, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
 	if err != nil {
-		log.Errorf("Error occurred in GetAccessLogs, error: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		log.Errorf("failed to get access log: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "")
 	}
-	p.Data["json"] = accessLogList
+
+	p.setPaginationHeader(total, page, pageSize)
+
+	p.Data["json"] = logs
 
 	p.ServeJSON()
 }

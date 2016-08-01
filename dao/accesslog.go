@@ -39,67 +39,78 @@ func AddAccessLog(accessLog models.AccessLog) error {
 }
 
 //GetAccessLogs gets access logs according to different conditions
-func GetAccessLogs(accessLog models.AccessLog) ([]models.AccessLog, error) {
-
+func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.AccessLog, int64, error) {
 	o := GetOrmer()
-	sql := `select a.log_id, u.username, a.repo_name, a.repo_tag, a.operation, a.op_time
-		from access_log a left join user u on a.user_id = u.user_id
+
+	condition := ` from access_log a left join user u on a.user_id = u.user_id
 		where a.project_id = ? `
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, accessLog.ProjectID)
+	queryParam = append(queryParam, query.ProjectID)
 
-	if accessLog.UserID != 0 {
-		sql += ` and a.user_id = ? `
-		queryParam = append(queryParam, accessLog.UserID)
+	if query.UserID != 0 {
+		condition += ` and a.user_id = ? `
+		queryParam = append(queryParam, query.UserID)
 	}
-	if accessLog.Operation != "" {
-		sql += ` and a.operation = ? `
-		queryParam = append(queryParam, accessLog.Operation)
+	if query.Operation != "" {
+		condition += ` and a.operation = ? `
+		queryParam = append(queryParam, query.Operation)
 	}
-	if accessLog.Username != "" {
-		sql += ` and u.username like ? `
-		queryParam = append(queryParam, accessLog.Username)
+	if query.Username != "" {
+		condition += ` and u.username like ? `
+		queryParam = append(queryParam, query.Username)
 	}
-	if accessLog.RepoName != "" {
-		sql += ` and a.repo_name = ? `
-		queryParam = append(queryParam, accessLog.RepoName)
+	if query.RepoName != "" {
+		condition += ` and a.repo_name = ? `
+		queryParam = append(queryParam, query.RepoName)
 	}
-	if accessLog.RepoTag != "" {
-		sql += ` and a.repo_tag = ? `
-		queryParam = append(queryParam, accessLog.RepoTag)
+	if query.RepoTag != "" {
+		condition += ` and a.repo_tag = ? `
+		queryParam = append(queryParam, query.RepoTag)
 	}
-	if accessLog.Keywords != "" {
-		sql += ` and a.operation in ( `
-		keywordList := strings.Split(accessLog.Keywords, "/")
+	if query.Keywords != "" {
+		condition += ` and a.operation in ( `
+		keywordList := strings.Split(query.Keywords, "/")
 		num := len(keywordList)
 		for i := 0; i < num; i++ {
 			if keywordList[i] != "" {
 				if i == num-1 {
-					sql += `?)`
+					condition += `?)`
 				} else {
-					sql += `?,`
+					condition += `?,`
 				}
 				queryParam = append(queryParam, keywordList[i])
 			}
 		}
 	}
-	if accessLog.BeginTimestamp > 0 {
-		sql += ` and a.op_time >= ? `
-		queryParam = append(queryParam, accessLog.BeginTime)
+	if query.BeginTimestamp > 0 {
+		condition += ` and a.op_time >= ? `
+		queryParam = append(queryParam, query.BeginTime)
 	}
-	if accessLog.EndTimestamp > 0 {
-		sql += ` and a.op_time <= ? `
-		queryParam = append(queryParam, accessLog.EndTime)
+	if query.EndTimestamp > 0 {
+		condition += ` and a.op_time <= ? `
+		queryParam = append(queryParam, query.EndTime)
 	}
 
-	sql += ` order by a.op_time desc `
+	condition += ` order by a.op_time desc `
 
-	var accessLogList []models.AccessLog
-	_, err := o.Raw(sql, queryParam).QueryRows(&accessLogList)
+	totalSQL := `select count(*) ` + condition
+
+	logs := []models.AccessLog{}
+
+	var total int64
+	if err := o.Raw(totalSQL, queryParam).QueryRow(&total); err != nil {
+		return logs, 0, err
+	}
+
+	condition = paginateForRawSQL(condition, limit, offset)
+
+	recordsSQL := `select a.log_id, u.username, a.repo_name, a.repo_tag, a.operation, a.op_time ` + condition
+	_, err := o.Raw(recordsSQL, queryParam).QueryRows(&logs)
 	if err != nil {
-		return nil, err
+		return logs, 0, err
 	}
-	return accessLogList, nil
+
+	return logs, total, nil
 }
 
 // AccessLog ...

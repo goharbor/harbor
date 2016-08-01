@@ -312,12 +312,14 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	return res, err
 }
 
-// FilterRepJobs filters jobs by repo and policy ID
+// FilterRepJobs ...
 func FilterRepJobs(policyID int64, repository, status string, startTime,
-	endTime *time.Time, limit int) ([]*models.RepJob, error) {
-	o := GetOrmer()
+	endTime *time.Time, limit, offset int64) ([]*models.RepJob, int64, error) {
 
-	qs := o.QueryTable(new(models.RepJob))
+	jobs := []*models.RepJob{}
+
+	qs := GetOrmer().QueryTable(new(models.RepJob))
+
 	if policyID != 0 {
 		qs = qs.Filter("PolicyID", policyID)
 	}
@@ -327,32 +329,28 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 	if len(status) != 0 {
 		qs = qs.Filter("Status__icontains", status)
 	}
-
 	if startTime != nil {
-		fmt.Printf("%v\n", startTime)
 		qs = qs.Filter("CreationTime__gte", startTime)
 	}
-
 	if endTime != nil {
-		fmt.Printf("%v\n", endTime)
 		qs = qs.Filter("CreationTime__lte", endTime)
-	}
-
-	if limit != 0 {
-		qs = qs.Limit(limit)
 	}
 
 	qs = qs.OrderBy("-UpdateTime")
 
-	var jobs []*models.RepJob
-	_, err := qs.All(&jobs)
+	total, err := qs.Count()
 	if err != nil {
-		return nil, err
+		return jobs, 0, err
+	}
+
+	_, err = qs.Limit(limit).Offset(offset).All(&jobs)
+	if err != nil {
+		return jobs, 0, err
 	}
 
 	genTagListForJob(jobs...)
 
-	return jobs, nil
+	return jobs, total, nil
 }
 
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.

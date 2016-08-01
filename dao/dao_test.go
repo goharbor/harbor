@@ -420,7 +420,7 @@ func TestGetAccessLog(t *testing.T) {
 		UserID:    currentUser.UserID,
 		ProjectID: currentProject.ProjectID,
 	}
-	accessLogs, err := GetAccessLogs(queryAccessLog)
+	accessLogs, _, err := GetAccessLogs(queryAccessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -448,7 +448,7 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog)
+	accessLogList, _, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -477,7 +477,7 @@ func TestAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog)
+	accessLogList, _, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -1178,7 +1178,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 }
 
 func TestFilterRepJobs(t *testing.T) {
-	jobs, err := FilterRepJobs(policyID, "", "", nil, nil, 1000)
+	jobs, _, err := FilterRepJobs(policyID, "", "", nil, nil, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return
