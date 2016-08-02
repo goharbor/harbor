@@ -29,7 +29,8 @@
         .get('/api/repositories/manifests', {
           'params': {
             'repo_name': repoName,
-            'tag': tag
+            'tag': tag,
+            'version': 'v1'
           }
         });
     }

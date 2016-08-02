@@ -34,9 +34,9 @@
     }
     
     function getManifestSuccess(data, status) {
-      console.log('Successful get manifest:' + data);
-      vm.manifest = data;      
-      vm.manifest['Created'] = $filter('dateL')(vm.manifest['Created'], 'YYYY-MM-DD HH:mm:ss');
+	  console.log('Successful get manifest:' + data);
+	  vm.manifest = angular.fromJson(data.manifest.history[0].v1Compatibility);
+	  vm.manifest['created'] = $filter('dateL')(vm.manifest['created'], 'YYYY-MM-DD HH:mm:ss');
     }
     
     function getManifestFailed(data, status) {
@@ -89,21 +89,19 @@
         var content =  '<form class="form-horizontal" width="100%">' +
           '<div class="form-group">' +
           '<label class="col-sm-3 control-label">Id</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['Id'] + '" readonly size="32"></p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['id'] + '" readonly size="32"></p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Parent</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['Parent'] + '" readonly size="32"></p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['parent'] + '" readonly size="32"></p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Created</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ctrl.manifest['Created'] + '</p></div></div>' +
-          '<div class="form-group"><label class="col-sm-3 control-label">Duration Days</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + (ctrl.manifest['Duration Days'] === '' ? 'N/A' : ctrl.manifest['Duration Days']) + ' days</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ctrl.manifest['created'] + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Author</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + (ctrl.manifest['Author'] === '' ? 'N/A' : ctrl.manifest['Author']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['author']) || ctrl.manifest['author'] === '') ? 'N/A' : ctrl.manifest['author']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Architecture</label>' + 
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + (ctrl.manifest['Architecture'] === '' ? 'N/A' : ctrl.manifest['Architecture']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['architecture']) || ctrl.manifest['architecture'] === '') ? 'N/A' : ctrl.manifest['architecture']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Docker Version</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + (ctrl.manifest['Docker Version'] === '' ? 'N/A' : ctrl.manifest['Docker Version']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['docker_version']) || ctrl.manifest['docker_version'] === '') ? 'N/A' : ctrl.manifest['docker_version']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">OS</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + (ctrl.manifest['OS']  === '' ? 'N/A' : ctrl.manifest['OS']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['os']) || ctrl.manifest['os']  === '') ? 'N/A' : ctrl.manifest['os']) + '</p></div></div>' +
         '</form>';
         return content;
       }
