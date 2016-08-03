@@ -17,7 +17,7 @@ In a test or development environment, you may choose to use a self-signed certif
 2) Generate a Certificate Signing Request:
 
 If you use FQDN like **reg.yourdomain.com** to connect your registry host, then you must use **reg.yourdomain.com** as CN (Common Name). 
-Otherwise, if you use IP address to connect your registry host, the CN can be the IP or your name or something else, and replace yourdomain.com with your registry IP in the command below:
+Otherwise, if you use IP address to connect your registry host, CN can be anything like your name and so on:
 ```
   openssl req \
     -newkey rsa:4096 -nodes -sha256 -keyout yourdomain.com.key \
@@ -37,12 +37,12 @@ If you're using FQDN like **reg.yourdomain.com** to connect your registry host, 
 ```
   openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -outdir .
 ```
-If you're using **IP** to connect your registry host, you may instead run the command below, replace xx.xx.xx.xx with your registry host IP:
+If you're using **IP** to connect your registry host, you may instead run the command below:
 ```
   
-  echo subjectAltName = IP:your host IP > extfile.cnf
+  echo subjectAltName = IP:your registry host IP > extfile.cnf
 
-  openssl ca -in xx.xx.xx.xx.csr -out your xx.xx.xx.xx.crt -cert ca.crt -keyfile ca.key -extfile extfile.cnf -outdir .
+  openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -extfile extfile.cnf -outdir .
 ```
 ##Configuration of Nginx
 After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, change the directory to Deploy/config/nginx in Harbor project.
