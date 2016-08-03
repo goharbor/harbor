@@ -277,6 +277,102 @@ Please check the [Docker Compose command-line reference](https://docs.docker.com
 By default, registry data is persisted in the target host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.
 In addition, Harbor uses `rsyslog` to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host.  
 
+## Configuring Harbor listening on a customized port
+By default, Harbor listens on port 80(HTTP) and 443(HTTPS, if configured) for both admin portal and docker commands, you can configure it with a customized one.  
+
+### For HTTP protocol
+
+1.Modify Deploy/docker-compose.yml  
+Replace the first "80" to a customized port, e.g. 8888:80.  
+
+```
+proxy:
+    image: library/nginx:1.9
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx
+    ports:
+      - 8888:80
+      - 443:443
+    depends_on:
+      - mysql
+      - registry
+      - ui
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+```
+
+2.Modify Deploy/templates/registry/config.yml  
+Add the customized port, e.g. ":8888", after "$ui_url".  
+
+```  
+auth:
+  token:
+    issuer: registry-token-issuer
+    realm: $ui_url:8888/service/token
+    rootcertbundle: /etc/registry/root.crt
+    service: token-service
+```
+
+3.Execute Deploy/prepare script and start/restart Harbor.  
+```sh
+$ cd Deploy
+$ ./prepare
+# If Harbor has already been installed, shutdown it first:
+$ docker-compose down
+$ docker-compose up -d
+```
+### For HTTPS protocol
+1.Enable HTTPS in Harbor by following this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md).  
+2.Modify Deploy/docker-compose.yml  
+Replace the first "443" to a customized port, e.g. 4443:443.  
+
+```
+proxy:
+    image: library/nginx:1.9
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx
+    ports:
+      - 80:80
+      - 4443:443
+    depends_on:
+      - mysql
+      - registry
+      - ui
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+```
+
+3.Modify Deploy/templates/registry/config.yml  
+Add the customized port, e.g. ":4443", after "$ui_url".  
+
+```  
+auth:
+  token:
+    issuer: registry-token-issuer
+    realm: $ui_url:4443/service/token
+    rootcertbundle: /etc/registry/root.crt
+    service: token-service
+```
+
+4.Execute Deploy/prepare script and start/restart Harbor.  
+```sh
+$ cd Deploy
+$ ./prepare
+# If Harbor has already been installed, shutdown it first:
+$ docker-compose down
+$ docker-compose up -d
+```
+
 ## Troubleshooting
 1.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
 ```
