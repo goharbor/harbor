@@ -107,6 +107,12 @@ func (b *BaseController) Prepare() {
 	if _, err := os.Stat(filepath.Join("static", "resources", "js", "harbor.app.min.js")); os.IsNotExist(err) {
 		b.UseCompressedJS = false
 	}
+
+	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
+	if selfRegistration == "on" {
+		b.SelfRegistration = true
+	}
+	b.Data["SelfRegistration"] = b.SelfRegistration
 }
 
 // Forward to setup layout and template for content for a page.

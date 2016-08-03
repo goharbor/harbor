@@ -127,6 +127,10 @@ func (ra *RepJobAPI) Delete() {
 		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
+	if job == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("job %d not found", ra.jobID))
+	}
+
 	if job.Status == models.JobPending || job.Status == models.JobRunning {
 		ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("job is %s, can not be deleted", job.Status))
 	}

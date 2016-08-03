@@ -222,6 +222,10 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
+	}
+
 	if project.Public == 0 {
 		userID := ra.ValidateUser()
 		if !checkProjectPermission(userID, project.ProjectID) {

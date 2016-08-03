@@ -195,7 +195,7 @@ func GetTopRepos(countNum int) ([]models.TopRepo, error) {
 	for i := 0; i < len(list); i++ {
 		for _, v := range usrnameList {
 			if v.RepoName == list[i].RepoName {
-				list[i].Creator = v.Creator
+				//			list[i].Creator = v.Creator
 				break
 			}
 		}
