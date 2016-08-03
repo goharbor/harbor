@@ -17,6 +17,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"sort"
@@ -208,6 +209,10 @@ func (ra *RepositoryAPI) GetTags() {
 	if err != nil {
 		log.Errorf("failed to get project %s: %v", projectName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
 	}
 
 	if project.Public == 0 {

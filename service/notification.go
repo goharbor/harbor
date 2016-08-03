@@ -94,6 +94,9 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
 	for _, event := range notification.Events {
+		log.Debugf("receive an event: ID-%s, target-%s:%s, digest-%s, action-%s", event.ID, event.Target.Repository, event.Target.Tag,
+			event.Target.Digest, event.Action)
+
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
 		if err != nil {
 			log.Errorf("failed to match the media type against pattern: %v", err)
@@ -107,12 +110,14 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 		//pull and push manifest by docker-client
 		if strings.HasPrefix(event.Request.UserAgent, "docker") && (event.Action == "pull" || event.Action == "push") {
 			events = append(events, &event)
+			log.Debugf("add event to collect: %s", event.ID)
 			continue
 		}
 
 		//push manifest by docker-client or job-service
 		if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
 			events = append(events, &event)
+			log.Debugf("add event to collect: %s", event.ID)
 			continue
 		}
 	}
