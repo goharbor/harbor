@@ -770,9 +770,11 @@ func TestGetTopRepos(t *testing.T) {
 	if topRepos[0].AccessCount != 1 {
 		t.Errorf("error occured in get top reop's access count, expected: %v, actual: %v", 1, topRepos[0].AccessCount)
 	}
-	if topRepos[0].Creator != currentUser.Username {
-		t.Errorf("error occured in get top reop's creator, expected: %v, actual: %v", currentUser.Username, topRepos[0].Creator)
-	}
+	/*
+		if topRepos[0].Creator != currentUser.Username {
+			t.Errorf("error occured in get top reop's creator, expected: %v, actual: %v", currentUser.Username, topRepos[0].Creator)
+		}
+	*/
 	err = ToggleProjectPublicity(currentProject.ProjectID, publicityOff)
 	if err != nil {
 		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
