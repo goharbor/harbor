@@ -765,7 +765,7 @@ definitions:
         type: integer
         format: int32
         description: The owner ID of the project always means the creator of the project.
-      name:
+      project_name:
         type: string
         description: The name of the project.
       creation_time:
