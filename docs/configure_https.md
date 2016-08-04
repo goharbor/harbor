@@ -14,7 +14,10 @@ In a test or development environment, you may choose to use a self-signed certif
     -newkey rsa:4096 -nodes -sha256 -keyout ca.key \
     -x509 -days 365 -out ca.crt
 ```
-2) Generate a Certificate Signing Request, be sure to use **reg.yourdomain.com** as the CN (Common Name):
+2) Generate a Certificate Signing Request:
+
+If you use FQDN like **reg.yourdomain.com** to connect your registry host, then you must use **reg.yourdomain.com** as CN (Common Name). 
+Otherwise, if you use IP address to connect your registry host, CN can be anything like your name and so on:
 ```
   openssl req \
     -newkey rsa:4096 -nodes -sha256 -keyout yourdomain.com.key \
@@ -22,7 +25,7 @@ In a test or development environment, you may choose to use a self-signed certif
 ```
 3) Generate the certificate of your registry host:
 
-You need to configure openssl first. On Ubuntu, the config file locates at **/etc/ssl/openssl.cnf**. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
+On Ubuntu, the config file of openssl locates at **/etc/ssl/openssl.cnf**. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
 ```
   mkdir demoCA
   cd demoCA
@@ -30,11 +33,17 @@ You need to configure openssl first. On Ubuntu, the config file locates at **/et
   echo '01' > serial
   cd ..
  ```
-Then run this command to generate the certificate of your registry host:
+If you're using FQDN like **reg.yourdomain.com** to connect your registry host, then run this command to generate the certificate of your registry host:
 ```
   openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -outdir .
 ```
+If you're using **IP** to connect your registry host, you may instead run the command below:
+```
+  
+  echo subjectAltName = IP:your registry host IP > extfile.cnf
 
+  openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -extfile extfile.cnf -outdir .
+```
 ##Configuration of Nginx
 After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, change the directory to Deploy/config/nginx in Harbor project.
 ```
@@ -99,14 +108,22 @@ Finally, restart Harbor:
 ```
   docker-compose up -d
 ```
-After setting up HTTPS for Harbor, you can verify it by the follow steps:
+After setting up HTTPS for Harbor, you can verify it by the following steps:
 
 1. Open a browser and enter the address: https://reg.yourdomain.com . It should display the user interface of Harbor.
 
-2. On a machine with Docker daemon, make sure the option "-insecure-registry" does not present, run any docker command to verify the setup, e.g. 
+2. On a machine with Docker daemon, make sure the option "-insecure-registry" does not present, and you must copy ca.crt generated in the above step to /etc/docker/certs.d/yourdomain.com(or your registry host IP), if the directory does not exist, create it.
+If you mapped nginx port 443 to another port, then you should instead create the directory /etc/docker/certs.d/yourdomain.com:port(or your registry host IP:port). Then run any docker command to verify the setup, e.g. 
+
 ```
   docker login reg.yourdomain.com
 ```
+If you've mapped nginx 443 port to another, you need to add the port to login, like below:
+
+```
+  docker login reg.yourdomain.com:port
+```
+
 ##Troubleshooting
 1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:  
     ```
