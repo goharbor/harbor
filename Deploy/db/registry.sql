@@ -122,7 +122,7 @@ create table replication_target (
  name varchar(64),
  url varchar(64),
  username varchar(40),
- password varchar(40),
+ password varchar(128),
  /*
  target_type indicates the type of target registry,
  0 means it's a harbor instance,

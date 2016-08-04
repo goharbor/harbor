@@ -16,6 +16,10 @@ if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
 
+def validate(conf): 
+    if len(conf.get("configuration", "secret_key")) != 16:
+        raise Exception("Error: The length of secret key has to be 16 characters!")
+
 #Read configurations
 conf = StringIO.StringIO()
 conf.write("[configuration]\n")
@@ -23,6 +27,8 @@ conf.write(open("harbor.cfg").read())
 conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
+
+validate(rcp)
 
 hostname = rcp.get("configuration", "hostname")
 ui_url = rcp.get("configuration", "ui_url_protocol") + "://" + hostname
@@ -49,6 +55,7 @@ crt_commonname = rcp.get("configuration", "crt_commonname")
 crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
+secret_key = rcp.get("configuration", "secret_key")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -101,6 +108,7 @@ render(os.path.join(templates_dir, "ui", "env"),
 	self_registration=self_registration,
 	use_compressed_js=use_compressed_js,
         ui_secret=ui_secret,
+        secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
@@ -126,6 +134,7 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         db_password=db_password,
         ui_secret=ui_secret,
         max_job_workers=max_job_workers,
+        secret_key=secret_key,
         ui_url=ui_url,
         verify_remote_cert=verify_remote_cert)
 

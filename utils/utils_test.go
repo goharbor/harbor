@@ -61,3 +61,23 @@ func TestParseRepository(t *testing.T) {
 		t.Errorf("unexpected rest: [%s] != [%s]", rest, "")
 	}
 }
+
+func TestReversibleEncrypt(t *testing.T) {
+	password := "password"
+	key := "1234567890123456"
+	encrypted, err := ReversibleEncrypt(password, key)
+	if err != nil {
+		t.Errorf("Failed to encrypt: %v", err)
+	}
+	t.Logf("Encrypted password: %s", encrypted)
+	if encrypted == password {
+		t.Errorf("Encrypted password is identical to the original")
+	}
+	decrypted, err := ReversibleDecrypt(encrypted, key)
+	if err != nil {
+		t.Errorf("Failed to decrypt: %v", err)
+	}
+	if decrypted != password {
+		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
+	}
+}
