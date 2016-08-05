@@ -51,8 +51,23 @@
       'projectId': vm.projectId,
       'username' : vm.username
     };
-        
-    retrieve(vm.queryParams);
+
+    vm.page = 1;
+    vm.pageSize = 1;            
+    
+    $scope.$watch('vm.totalCount', function(current) {
+      if(current) {
+        vm.totalCount = current;
+      }
+    });
+    $scope.$watch('vm.page', function(current) {
+      if(current) {
+        vm.page = current;
+        retrieve(vm.queryParams, vm.page, vm.pageSize);
+      }
+    }); 
+    
+    retrieve(vm.queryParams, vm.page, vm.pageSize);
   
     $scope.$on('$locationChangeSuccess', function() {
       
@@ -69,7 +84,7 @@
         'username' : vm.username
       };
       vm.username = '';
-      retrieve(vm.queryParams);
+      retrieve(vm.queryParams, vm.page, vm.pageSize);
     });
             
     function search(e) {
@@ -87,7 +102,7 @@
       vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);
       vm.queryParams.endTimestamp = toUTCSeconds(vm.toDate, 23, 59, 59);
      
-      retrieve(vm.queryParams);
+      retrieve(vm.queryParams, vm.page, vm.pageSize);
     }
     
     function showAdvancedSearch() {
@@ -98,14 +113,17 @@
       }
     }
     
-    function retrieve(queryParams) {
-      ListLogService(queryParams)
+    function retrieve(queryParams, page, pageSize) {     
+      ListLogService(queryParams, page, pageSize)
         .then(listLogComplete)
         .catch(listLogFailed);
     }
 
     function listLogComplete(response) {
       vm.logs = response.data;
+      vm.totalCount = response.headers('X-Total-Count');
+           
+      console.log('Total Count in logs:' + vm.totalCount + ', page:' + vm.page);
       
       vm.queryParams = {
         'beginTimestamp' : 0,
