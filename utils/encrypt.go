@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -32,6 +33,11 @@ import (
 func Encrypt(content string, salt string) string {
 	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, sha1.New))
 }
+
+const (
+	// EncryptHeaderV1 ...
+	EncryptHeaderV1 = "<enc-v1>"
+)
 
 // ReversibleEncrypt encrypts the str with aes/base64
 func ReversibleEncrypt(str, key string) (string, error) {
@@ -50,12 +56,26 @@ func ReversibleEncrypt(str, key string) (string, error) {
 
 	cfb := cipher.NewCFBEncrypter(block, iv)
 	cfb.XORKeyStream(cipherText[aes.BlockSize:], []byte(str))
-	encrypted := base64.StdEncoding.EncodeToString(cipherText)
+	encrypted := EncryptHeaderV1 + base64.StdEncoding.EncodeToString(cipherText)
 	return encrypted, nil
 }
 
-// ReversibleDecrypt decrypts the str with aes/base64
+// ReversibleDecrypt decrypts the str with aes/base64 or base 64 depending on "header"
 func ReversibleDecrypt(str, key string) (string, error) {
+	if strings.HasPrefix(str, EncryptHeaderV1) {
+		str = str[len(EncryptHeaderV1):]
+		return decryptAES(str, key)
+	}
+	//fallback to base64
+	return decodeB64(str)
+}
+
+func decodeB64(str string) (string, error) {
+	cipherText, err := base64.StdEncoding.DecodeString(str)
+	return string(cipherText), err
+}
+
+func decryptAES(str, key string) (string, error) {
 	keyBytes := []byte(key)
 	var block cipher.Block
 	var cipherText []byte
