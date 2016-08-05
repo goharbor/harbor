@@ -20,9 +20,16 @@ do
     fi
 done
 
-#remove space
-echo "Remove space.."
-sed 's/ \+/ /g' -i /tmp/harbor.app.temp.js
+
+# If you want run this script on Mac OS X,
+# I suggest you install gun-sed (whth --with-default-names option).
+# $ brew install gnu-sed --with-default-names
+# Reference:
+# http://stackoverflow.com/a/27834828/3167471
+
+# remove space and tab
+echo "Remove space and tab.."
+sed 's/[ \t]\+/ /g' -i /tmp/harbor.app.temp.js
 
 #remove '//' and '/*'
 echo "Remove '//'and '/*'  annotation..."
