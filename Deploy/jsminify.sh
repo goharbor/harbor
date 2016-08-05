@@ -24,6 +24,13 @@ done
 echo "Remove space.."
 sed 's/ \+/ /g' -i /tmp/harbor.app.temp.js
 
+# If you want run this script on Mac OS X,
+# I suggest you install gun-sed (whth --with-default-names option).
+# $ brew install gnu-sed --with-default-names
+# Reference:
+# http://stackoverflow.com/a/27834828/3167471
+
+
 #remove '//' and '/*'
 echo "Remove '//'and '/*'  annotation..."
 sed '/^\/\//'d -i /tmp/harbor.app.temp.js
