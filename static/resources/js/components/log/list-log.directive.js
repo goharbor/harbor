@@ -101,7 +101,7 @@
       
       vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);
       vm.queryParams.endTimestamp = toUTCSeconds(vm.toDate, 23, 59, 59);
-     
+      vm.page = 1;
       retrieve(vm.queryParams, vm.page, vm.pageSize);
     }
     

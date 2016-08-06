@@ -33,25 +33,29 @@
     
     function link(scope, element, attrs, ctrl) {
       
+      var tc;
+      
       scope.$watch('vm.totalCount', function(current) {
         if(current) {
-          var totalCount   = current;         
-          var pageSize     = parseInt(ctrl.pageSize);
-          var displayCount = parseInt(ctrl.displayCount);
+          var totalCount   = current;   
+                                                 
+          element.find('ul li:first a').off('click');
+          element.find('ul li:last a').off('click');
           
-          console.log('Total Count:' + totalCount + ', Page Size:' + pageSize + ', Display Count:' + displayCount);
+          tc = new TimeCounter();
+          
+          console.log('Total Count:' + totalCount + ', Page Size:' + ctrl.pageSize + ', Display Count:' + ctrl.displayCount + ', Page:' + ctrl.page);
 
-          var buttonCount = Math.ceil(totalCount / pageSize);
-          ctrl.buttonCount = buttonCount;
+          ctrl.buttonCount = Math.ceil(totalCount / ctrl.pageSize);
                                 
-          if(buttonCount <= displayCount) {
+          if(ctrl.buttonCount <= ctrl.displayCount) {
             tc.setMaximum(0);
           }else{
-            tc.setMaximum(Math.floor(buttonCount / displayCount));
+            tc.setMaximum(Math.floor(ctrl.buttonCount / ctrl.displayCount));
           }
-         
+                   
           element.find('ul li:first a').on('click', previous);          
-          element.find('ul li:last a').on('click', next);
+          element.find('ul li:last a').on('click', next);          
           
           drawButtons(tc.getTime());    
 
@@ -62,8 +66,8 @@
           
         }
       }); 
-      
-      var TimeCounter = function() {
+
+      var TimeCounter = function() {  
         this.time = 0;
         this.minimum = 0;
         this.maximum = 0;
@@ -71,45 +75,54 @@
       
       TimeCounter.prototype.setMaximum = function(maximum) {
         this.maximum = maximum;
-      }
+      };
       
       TimeCounter.prototype.increment = function() {
         if(this.time < this.maximum) {
           ++this.time;
+          if((ctrl.page % ctrl.displayCount) != 0) {
+            ctrl.page = this.time * ctrl.displayCount;
+          }
           ++ctrl.page;
+          console.log('Increment Page:' + ctrl.page + ', DisplayCount:' + ctrl.displayCount + ',Time:' + this.time);
         }
         scope.$apply();
-      }
+      };
       
       TimeCounter.prototype.canIncrement = function() {
         if(this.time < this.maximum) {
           return true;
         }
         return false;
-      }
+      };
       
       TimeCounter.prototype.decrement = function() {
         if(this.time > this.minimum) {
           --this.time;
           --ctrl.page;
+          
+          if(this.time === 0) {
+            ctrl.page = ctrl.displayCount;                        
+          }else if((ctrl.page % ctrl.displayCount) != 0) {
+            ctrl.page =  this.time * ctrl.displayCount;
+          }
+          console.log('Decrement Page:' + ctrl.page + ', DisplayCount:' + ctrl.displayCount + ',Time:' + this.time);
         }
         scope.$apply();
-      }
+      };
       
       TimeCounter.prototype.canDecrement = function() {
         if(this.time > this.minimum) {
           return true;
         }
         return false;
-      }
+      };
       
       TimeCounter.prototype.getTime = function() {
         return this.time;
-      }
-      
-      var tc = new TimeCounter();
-           
-      function drawButtons(time, displayCount, buttonCount) {
+      };
+                 
+      function drawButtons(time) {
         element.find('li[tag="pagination-button"]').remove();
         var buttons = [];
         for(var i = 1; i <= ctrl.displayCount; i++) {
