@@ -30,6 +30,7 @@ type MysqlConfig struct {
 
 var mysqlConfig MysqlConfig
 var harborAdminPwd string
+var redisUrl string
 
 func init() {
 
@@ -40,6 +41,7 @@ func init() {
 	mysqlConfig.password = os.Getenv("MYSQL_PWD")
 	//get harbor admin password
 	harborAdminPwd = os.Getenv("HARBOR_ADMIN_PASSWORD")
+	redisUrl = os.Getenv("_REDIS_URL")
 }
 
 //get mysql configure
@@ -70,4 +72,9 @@ func MysqlPwd() string {
 //get harbor admin password
 func HarborAdminPwd() string {
 	return harborAdminPwd
+}
+
+//get redis url
+func RedisUrl() string {
+	return redisUrl
 }
