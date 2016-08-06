@@ -22,8 +22,7 @@
         'totalCount': '@',
         'pageSize': '@',
         'page': '=',
-        'displayCount': '@',
-        'retrieve': '&'
+        'displayCount': '@'
       },
       'link': link,
       'controller': PaginatorController,
@@ -57,6 +56,7 @@
               ++this.time;
               ++ctrl.page;
             }
+            scope.$apply();
           }
           
           TimeCounter.prototype.canIncrement = function() {
@@ -71,6 +71,7 @@
               --this.time;
               --ctrl.page;
             }
+            scope.$apply();
           }
           
           TimeCounter.prototype.canDecrement = function() {
@@ -93,11 +94,8 @@
             tc.setMaximum(Math.floor(buttonCount / displayCount));
           }
          
-          element.find('ul li:first a').on('click', previous);
-          ctrl.showPrevious = false;
-          
+          element.find('ul li:first a').on('click', previous);          
           element.find('ul li:last a').on('click', next);
-          ctrl.showNext = (buttonCount > displayCount);
           
           var drawButtons = function(time) {
             element.find('li[tag="pagination-button"]').remove();
@@ -114,11 +112,11 @@
           }
           
           drawButtons(tc.getTime());    
-          togglePrevious(false);
-          toggleNext((buttonCount > displayCount));
+
+          togglePrevious(tc.canDecrement());
+          toggleNext(tc.canIncrement());
           
           togglePageButton();
-          
           
           function togglePrevious(status) {
             if(status){
@@ -133,38 +131,29 @@
               element.find('ul li:last').removeClass('disabled');
             }else{
               element.find('ul li:last').addClass('disabled');
-            }
+            } 
           }
           
           function buttonClickHandler(e) {
             ctrl.page = $(e.target).attr('page');
-            togglePageButton();
-            ctrl.retrieve(); 
-                                      
-            if(tc.canIncrement()) {
-              toggleNext(true);
-            }else {
-              toggleNext(false);
-            }
-            
-            if(tc.canDecrement()) {
-              togglePrevious(true);
-            }else{
-              togglePrevious(false);
-            }
+            togglePageButton();                                      
+            togglePrevious(tc.canDecrement());
+            toggleNext(tc.canIncrement());
+            scope.$apply();
           }  
           
           function togglePageButton() {
-             element.find('li[tag="pagination-button"]').removeClass('active');
-             element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').parent().addClass('active');
+            element.find('li[tag="pagination-button"]').removeClass('active');
+            element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').parent().addClass('active');
           }          
          
           function previous() {
             if(tc.canDecrement()) {
               tc.decrement();
               drawButtons(tc.getTime());
-              element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').trigger('click');      
+              element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').trigger('click');  
             }
+            scope.$apply(); 
           }      
           
           function next() {
@@ -172,8 +161,8 @@
               tc.increment();
               drawButtons(tc.getTime());     
               element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').trigger('click');
-              
             }
+            scope.$apply();
           }
         }
       }); 
