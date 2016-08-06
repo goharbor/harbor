@@ -29,6 +29,7 @@ import (
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
+	"github.com/vmware/harbor/ui/config"
 )
 
 const (
@@ -68,7 +69,7 @@ func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	//TODO
-	redisURL := os.Getenv("_REDIS_URL")
+	redisURL := config.RedisUrl()
 	if len(redisURL) > 0 {
 		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
@@ -76,7 +77,7 @@ func main() {
 	//
 	beego.AddTemplateExt("htm")
 	dao.InitDB()
-	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
+	if err := updateInitPassword(adminUserID, config.HarborAdminPwd()); err != nil {
 		log.Error(err)
 	}
 	initRouters()
