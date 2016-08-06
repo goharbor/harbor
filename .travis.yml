@@ -27,6 +27,9 @@ env:
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
+  UI_SECRET: tempString  
+  MAX_JOB_WORKERS: 3
+  SECRET_KEY: 1234567890123456
 
 before_install:
    - sudo ./tests/hostcfg.sh
@@ -62,15 +65,18 @@ install:
   - sudo service docker restart
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
   
 before_script:
   # create tables and load data
   - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
 script: 
-  - go list ./... | grep -v 'tests' | grep -v /vendor/ | xargs -L1 fgt golint
-  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go vet
-  - go list ./... | grep -v 'tests' | grep -v 'vendor' | xargs -L1 go test -v
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
+  - ./Deploy/coverage4gotest.sh
+  - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f Deploy/docker-compose.yml up -d
   

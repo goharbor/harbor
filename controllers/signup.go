@@ -11,7 +11,7 @@ type SignUpController struct {
 
 // Get renders sign up page
 func (suc *SignUpController) Get() {
-	if suc.AuthMode != "db_auth" {
+	if suc.AuthMode != "db_auth" || !suc.SelfRegistration {
 		suc.CustomAbort(http.StatusUnauthorized, "Status unauthorized.")
 	}
 	suc.Data["AddNew"] = false

@@ -46,6 +46,27 @@ type ReplicationReq struct {
 	TagList   []string `json:"tags"`
 }
 
+// Prepare ...
+func (rj *ReplicationJob) Prepare() {
+	rj.authenticate()
+}
+
+func (rj *ReplicationJob) authenticate() {
+	cookie, err := rj.Ctx.Request.Cookie(models.UISecretCookie)
+	if err != nil && err != http.ErrNoCookie {
+		log.Errorf("failed to get cookie %s: %v", models.UISecretCookie, err)
+		rj.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if err == http.ErrNoCookie {
+		rj.CustomAbort(http.StatusUnauthorized, "")
+	}
+
+	if cookie.Value != config.UISecret() {
+		rj.CustomAbort(http.StatusForbidden, "")
+	}
+}
+
 // Post creates replication jobs according to the policy.
 func (rj *ReplicationJob) Post() {
 	var data ReplicationReq
