@@ -53,7 +53,7 @@
     };
 
     vm.page = 1;
-    vm.pageSize = 2;            
+    vm.pageSize = 1;            
     
     $scope.$watch('vm.totalCount', function(current) {
       if(current) {
