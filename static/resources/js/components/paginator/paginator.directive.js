@@ -169,7 +169,7 @@
         if(tc.canDecrement()) {
           tc.decrement();
           drawButtons(tc.getTime());
-          element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').trigger('click');  
+          togglePageButton();
         }
         scope.$apply(); 
       }      
@@ -178,7 +178,7 @@
         if(tc.canIncrement()) {    
           tc.increment();
           drawButtons(tc.getTime());     
-          element.find('li[tag="pagination-button"] a[page="' + ctrl.page + '"]').trigger('click');
+          togglePageButton();
         }
         scope.$apply();
       }
