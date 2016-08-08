@@ -63,7 +63,7 @@ Copy the template **nginx.https.conf** as the new configuration file:
 ```
   cp nginx.https.conf nginx.conf
 ```
-Edit the file nginx.conf and replace two occurrences of **harbordomain.com** to your own host name, such as reg.yourdomain.com .
+Edit the file nginx.conf and replace two occurrences of **harbordomain.com** to your own host name, such as reg.yourdomain.com . If you use a customized port rather than the default port 443, replace the port "443" in the line "rewrite ^/(.*) https://$server_name:443/$1 permanent;" as well. Please refer to the [installation guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md) for other required steps of port customization.  
 ```
   server {
     listen 443 ssl;
@@ -74,7 +74,7 @@ Edit the file nginx.conf and replace two occurrences of **harbordomain.com** to 
   server {
     listen 80;
     server_name harbordomain.com;
-    rewrite ^/(.*) https://$server_name$1 permanent;
+    rewrite ^/(.*) https://$server_name:443/$1 permanent;
 ```
 Then look for the SSL section to make sure the files of your certificates match the names in the config file. Do not change the path of the files.
 ```
