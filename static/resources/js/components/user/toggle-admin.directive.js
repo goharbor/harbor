@@ -28,7 +28,7 @@
     vm.isAdmin = (vm.hasAdminRole === 1);
     vm.enabled = vm.isAdmin ? 0 : 1;
     vm.toggle = toggle;
-    vm.editable = (vm.currentUser.user_id != vm.userId);
+    vm.editable = (vm.currentUser.user_id !== Number(vm.userId));
     
     function toggle() {
       ToggleAdminService(vm.userId, vm.enabled)
