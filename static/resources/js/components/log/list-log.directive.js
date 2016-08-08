@@ -53,15 +53,10 @@
     };
 
     vm.page = 1;
-    vm.pageSize = 1;            
-    
-    $scope.$watch('vm.totalCount', function(current) {
-      if(current) {
-        vm.totalCount = current;
-      }
-    });
-    $scope.$watch('vm.page', function(current) {
-      if(current) {
+    vm.pageSize = 20;            
+
+    $scope.$watch('vm.page', function(current, origin) {
+      if(current !== 1) {
         vm.page = current;
         retrieve(vm.queryParams, vm.page, vm.pageSize);
       }
@@ -88,7 +83,9 @@
     });
             
     function search(e) {
-
+      
+      vm.page = 1;
+      
       if(e.op[0] === 'all') {
         e.op = ['create', 'pull', 'push', 'delete'];
       }      
@@ -98,11 +95,12 @@
       
       vm.queryParams.keywords = e.op.join('/');
       vm.queryParams.username = e.username;
-      
+            
       vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);
       vm.queryParams.endTimestamp = toUTCSeconds(vm.toDate, 23, 59, 59);
-      vm.page = 1;
+      
       retrieve(vm.queryParams, vm.page, vm.pageSize);
+
     }
     
     function showAdvancedSearch() {
@@ -113,7 +111,7 @@
       }
     }
     
-    function retrieve(queryParams, page, pageSize) {     
+    function retrieve(queryParams, page, pageSize) {
       ListLogService(queryParams, page, pageSize)
         .then(listLogComplete)
         .catch(listLogFailed);
@@ -122,21 +120,21 @@
     function listLogComplete(response) {
       vm.logs = response.data;
       vm.totalCount = response.headers('X-Total-Count');
-           
+      
       console.log('Total Count in logs:' + vm.totalCount + ', page:' + vm.page);
       
-      vm.queryParams = {
-        'beginTimestamp' : 0,
-        'endTimestamp'   : 0,
-        'keywords' : '',
-        'projectId': vm.projectId,
-        'username' : ''
-      };
-      vm.op = ['all'];
-      vm.fromDate = '';
-      vm.toDate = '';
-      vm.others = '';
-      vm.opOthers = true;
+//      vm.queryParams = {
+//        'beginTimestamp' : 0,
+//        'endTimestamp'   : 0,
+//        'keywords' : '',
+//        'projectId': vm.projectId,
+//        'username' : ''
+//      };
+//      vm.op = ['all'];
+//      vm.fromDate = '';
+//      vm.toDate = '';
+//      vm.others = '';
+//      vm.opOthers = true;
       vm.isOpen = false;
     }
     function listLogFailed(response){

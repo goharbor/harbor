@@ -48,8 +48,8 @@
             </tbody>
           </table>
         </div>
-        <paginator class="pull-right" total-count="//vm.totalCount//" page-size="//vm.pageSize//" page="vm.page" display-count="2"></paginator>
-      </div>
+      </div>      
+      <paginator ng-if="vm.totalCount > 0" total-count="//vm.totalCount//" page-size="//vm.pageSize//" page="vm.page" display-count="5"></paginator>
     </div>
   </div>
 </div>

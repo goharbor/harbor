@@ -26,9 +26,9 @@
     
     return listReplicationJob;
     
-    function listReplicationJob(policyId, repository, status, startTime, endTime) {
+    function listReplicationJob(policyId, repository, status, startTime, endTime, page, pageSize) {
       return $http
-        .get('/api/jobs/replication/', {
+        .get('/api/jobs/replication/?page=' + page + '&page_size=' + pageSize, {
           'params': {
             'policy_id': policyId,
             'repository': repository,
