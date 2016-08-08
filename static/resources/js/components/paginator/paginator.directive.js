@@ -33,15 +33,22 @@
     
     function link(scope, element, attrs, ctrl) {
       
-      var tc;
+      scope.$watch('vm.page', function(current) {
+        if(current) { 
+          ctrl.page = current;
+          togglePageButton();
+        }
+      });
       
+      var tc;
+                        
       scope.$watch('vm.totalCount', function(current) {
         if(current) {
           var totalCount   = current;   
-                                                 
+                                              
           element.find('ul li:first a').off('click');
           element.find('ul li:last a').off('click');
-          
+                    
           tc = new TimeCounter();
           
           console.log('Total Count:' + totalCount + ', Page Size:' + ctrl.pageSize + ', Display Count:' + ctrl.displayCount + ', Page:' + ctrl.page);
@@ -49,9 +56,9 @@
           ctrl.buttonCount = Math.ceil(totalCount / ctrl.pageSize);
                                 
           if(ctrl.buttonCount <= ctrl.displayCount) {
-            tc.setMaximum(0);
+            tc.setMaximum(1);
           }else{
-            tc.setMaximum(Math.floor(ctrl.buttonCount / ctrl.displayCount));
+            tc.setMaximum(Math.ceil(ctrl.buttonCount / ctrl.displayCount));
           }
                    
           element.find('ul li:first a').on('click', previous);          
@@ -67,7 +74,7 @@
         }
       }); 
 
-      var TimeCounter = function() {  
+      var TimeCounter = function() {
         this.time = 0;
         this.minimum = 0;
         this.maximum = 0;
@@ -84,29 +91,26 @@
             ctrl.page = this.time * ctrl.displayCount;
           }
           ++ctrl.page;
-          console.log('Increment Page:' + ctrl.page + ', DisplayCount:' + ctrl.displayCount + ',Time:' + this.time);
         }
         scope.$apply();
       };
       
       TimeCounter.prototype.canIncrement = function() {
-        if(this.time < this.maximum) {
+        if(this.time + 1 < this.maximum) {
           return true;
         }
         return false;
       };
       
       TimeCounter.prototype.decrement = function() {
-        if(this.time > this.minimum) {
-          --this.time;
-          --ctrl.page;
-          
+        if(this.time > this.minimum) {         
           if(this.time === 0) {
-            ctrl.page = ctrl.displayCount;                        
+            ctrl.page = ctrl.displayCount;
           }else if((ctrl.page % ctrl.displayCount) != 0) {
             ctrl.page =  this.time * ctrl.displayCount;
           }
-          console.log('Decrement Page:' + ctrl.page + ', DisplayCount:' + ctrl.displayCount + ',Time:' + this.time);
+          --this.time;
+          --ctrl.page;
         }
         scope.$apply();
       };
@@ -170,6 +174,8 @@
           tc.decrement();
           drawButtons(tc.getTime());
           togglePageButton();
+          togglePrevious(tc.canDecrement());
+          toggleNext(tc.canIncrement());
         }
         scope.$apply(); 
       }      
@@ -179,6 +185,8 @@
           tc.increment();
           drawButtons(tc.getTime());     
           togglePageButton();
+          togglePrevious(tc.canDecrement());
+          toggleNext(tc.canIncrement());
         }
         scope.$apply();
       }
