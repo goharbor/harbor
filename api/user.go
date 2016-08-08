@@ -239,6 +239,11 @@ func (ua *UserAPI) Delete() {
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
+
+	if ua.currentUserID == ua.userID {
+		ua.CustomAbort(http.StatusForbidden, "can not delete yourself")
+	}
+
 	var err error
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {
