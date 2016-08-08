@@ -16,6 +16,8 @@
 package utils
 
 import (
+	"encoding/base64"
+	"strings"
 	"testing"
 )
 
@@ -73,7 +75,19 @@ func TestReversibleEncrypt(t *testing.T) {
 	if encrypted == password {
 		t.Errorf("Encrypted password is identical to the original")
 	}
+	if !strings.HasPrefix(encrypted, EncryptHeaderV1) {
+		t.Errorf("Encrypted password does not have v1 header")
+	}
 	decrypted, err := ReversibleDecrypt(encrypted, key)
+	if err != nil {
+		t.Errorf("Failed to decrypt: %v", err)
+	}
+	if decrypted != password {
+		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
+	}
+	//Test b64 for backward compatibility
+	b64password := base64.StdEncoding.EncodeToString([]byte(password))
+	decrypted, err = ReversibleDecrypt(b64password, key)
 	if err != nil {
 		t.Errorf("Failed to decrypt: %v", err)
 	}
