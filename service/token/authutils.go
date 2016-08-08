@@ -21,6 +21,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,8 +36,31 @@ import (
 const (
 	issuer     = "registry-token-issuer"
 	privateKey = "/etc/ui/private_key.pem"
-	expiration = 5 //minute
 )
+
+var (
+	expiration = 30 //minutes
+)
+
+func init() {
+	// TODO read it from config
+	expi := os.Getenv("TOKEN_EXPIRATION")
+	if len(expi) != 0 {
+		i, err := strconv.Atoi(expi)
+		if err != nil {
+			log.Errorf("failed to parse token expiration: %v, using default value: %d minutes", err, expiration)
+			return
+		}
+
+		if i <= 0 {
+			log.Warningf("invalid token expiration, using default value: %d minutes", expiration)
+			return
+		}
+
+		expiration = i
+	}
+	log.Infof("token expiration: %d minutes", expiration)
+}
 
 // GetResourceActions ...
 func GetResourceActions(scopes []string) []*token.ResourceActions {
