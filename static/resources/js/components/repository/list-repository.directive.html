@@ -26,10 +26,20 @@
                 <a ng-show="vm.tagCount[repo] > 0" class="pull-right" style="margin-right: 75px;" href="javascript:void(0)" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[repo + '|']"><span class="glyphicon glyphicon-trash"></span></a>          
               </h4>
             </div>
-            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress" delete-by-tag="vm.deleteByTag()"></list-tag>
+            <list-tag ng-show="vm.tagCount[repo] > 0"
+              associate-id="$index + 1"
+              repo-name="repo"
+              tag-count="vm.tagCount"
+              toggle-in-progress="vm.toggleInProgress"
+              delete-by-tag="vm.deleteByTag()"
+              delete-by-label="vm.deleteByLabel()"
+              show-add-label="vm.showAddLabel()"
+              ></list-tag>
           </div>
         </div>
+        <div ng-if="vm.paginationConf"><pagination conf="vm.paginationConf"></pagination></div>
       </div>
+
     </div>
   </div>
 </div>

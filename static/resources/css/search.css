@@ -21,3 +21,6 @@
 .search-result li {
   margin-bottom: 15px;
 }
+table > tbody > tr > td {
+  vertical-align: bottom;
+}

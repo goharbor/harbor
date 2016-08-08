@@ -25,7 +25,10 @@
         <div class="project-list pane-container">
           <ul class="list-group">
             <li class="list-group-item" ng-repeat="item in vm.projects | name: vm.filterInput: 'name'" ng-click="vm.selectItem(item)">
-    			    <span ng-show="item.project_id === vm.selectedId" class="glyphicon glyphicon-ok project-selected"></span> <a href="#/repositories?project_id=//item.project_id//">//item.name//</a>
+    			    <span ng-show="item.project_id === vm.selectedId" class="glyphicon glyphicon-ok project-selected"></span> <a href="#/repositories?project_id=//item.project_id//">//item.name_chinese//</a>
+              <div class="list-child-group">
+                <node-custom project-id="item.project_id"></node-custom>
+              </div>
     			  </li>	
           </ul>
         </div>

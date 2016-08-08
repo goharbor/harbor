@@ -20,13 +20,14 @@
     .module('harbor.details')
     .directive('retrieveProjects', retrieveProjects);
   
-  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'trFilter', 'ListProjectService', '$location', 'getParameterByName', 'CurrentProjectMemberService', '$window'];
+  RetrieveProjectsController.$inject = ['$scope', 'nameFilter', '$filter', 'trFilter', 'ListProjectService', 'ListCustomService', '$location', 'getParameterByName', 'CurrentProjectMemberService', '$window'];
    
-  function RetrieveProjectsController($scope, nameFilter, $filter, trFilter, ListProjectService, $location, getParameterByName, CurrentProjectMemberService, $window) {
+  function RetrieveProjectsController($scope, nameFilter, $filter, trFilter, ListProjectService, ListCustomService, $location, getParameterByName, CurrentProjectMemberService, $window) {
     var vm = this;
     
     vm.projectName = '';
     vm.isOpen = false;
+    vm.customMap = {};
     
     if(getParameterByName('is_public', $location.absUrl())) {
       vm.isPublic = getParameterByName('is_public', $location.absUrl()) === 'true' ? 1 : 0;
@@ -51,6 +52,21 @@
       vm.retrieve();      
     });
        
+
+
+    function getCustoms(projectId){
+      //根据项目id获取对应的客户
+      ListCustomService(projectId)
+        .success(function(data, status) {
+          vm.customMap[projectId] = data || [];
+        })
+        .error(getCustomFailed);
+    }
+
+    function getCustomFailed(response) {
+      console.log('Failed to list repositories:' + response);
+    }
+
     function retrieve() {
       ListProjectService(vm.projectName, vm.isPublic)
         .success(getProjectSuccess)
@@ -101,6 +117,7 @@
       
     function selectItem(item) {
       vm.selectedProject = item;
+      $scope.$emit('selectedCustomNull', true);
       $location.search('project_id', vm.selectedProject.project_id);
     }       
   

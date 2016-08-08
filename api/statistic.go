@@ -58,6 +58,7 @@ func (s *StatisticAPI) Get() {
 	proMap["my_repo_count"] = 0
 	proMap["public_project_count"] = 0
 	proMap["public_repo_count"] = 0
+	proMap["total_customer_count"] = dao.GetCustomerCount()
 	var publicProjects []models.Project
 	publicProjects, err = dao.GetPublicProjects("")
 	if err != nil {
@@ -83,6 +84,7 @@ func (s *StatisticAPI) Get() {
 		}
 	}
 	s.Data["json"] = proMap
+	log.Infof("proMap: %+v", proMap)
 	s.ServeJSON()
 }
 
@@ -95,7 +97,9 @@ func getRepoCountByProject(projectName string) int {
 	}
 	var resp int
 	if len(projectName) > 0 {
+		log.Info("projectName:", projectName)
 		for _, r := range repoList {
+			log.Infof("r: %+v", r)
 			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
 				resp++
 			}

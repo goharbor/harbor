@@ -1,5 +1,17 @@
-<div id="collapse//vm.associateId//" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading//vm.associateId//">
+<div id="collapse//vm.associateId//" class="panel-collapse collapse panel-r" role="tabpanel" aria-labelledby="heading//vm.associateId//">
   <div class="panel-body">
+    <add-label ng-show="vm.isOpen" associate-id="vm.associateId" is-open="vm.isOpen" repo-name="vm.repoName" refresh="vm.refresh()"></add-label>
+    <div class="label-box">
+      <ul class="labels-panel">
+        <li><div class="label-add" ng-click="vm.showAddLabel()"><span class="glyphicon glyphicon-plus" ></span></div></li>
+        <li class="label-name" ng-repeat="label in vm.labels">
+          <span>//label//</span>
+          <span class="glyphicon glyphicon-remove"
+          ng-click="vm.showDeleteLabel({repoName: vm.repoName, label: label})"
+          loading-progress hide-target="true"
+          toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ label]"></span></li>
+      </ul>
+    </div>
     <table class="repository-table">
       <thead>
         <th width="20%"><span class="glyphicon glyphicon-tags"></span> // 'tag' | tr //</th>
@@ -14,7 +26,12 @@
           <td>
             <pull-command repo-name="//vm.repoName//" tag="//tag//"></pull-command>   
           </td>
-          <td style="text-align: center;"><a href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]"><span class="glyphicon glyphicon-trash"></span></a></td>
+          <td style="text-align: center;">
+            <a class="mr-10" href="//vm.consoleWebAppUrl//?image=//vm.harborRegUrl////vm.repoName//://tag//"><span class="glyphicon glyphicon-new-window"></span></a>
+            <a href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]">
+              <span class="glyphicon glyphicon-trash"></span>
+            </a>
+            </td>
         </tr>
       </tbody>
     </table>

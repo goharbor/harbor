@@ -1,0 +1,6 @@
+<ul >
+  <li ng-repeat="custom in vm.customs" ng-click="vm.selectItem(custom)">
+    <span ng-show="vm.selectedCustom && custom.id === vm.selectedCustom.id" class="glyphicon glyphicon-ok project-selected"></span>
+    <a href="#/repositories?project_id=//vm.projectId//&custom_id=//custom.id//">//custom.tag//</a>
+  </li>
+</ul>

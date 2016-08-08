@@ -1,0 +1,40 @@
+<div class="well well-custom" style="position: absolute; margin-left: 10px; margin-top: 5px; width: 96%;">
+  <form name="form" class="css-form form-custom form" novalidate>
+    <div class="row">
+      <div class="col-xs-10 col-md-10">
+
+        <div class="form-group col-md-7">
+          <input type="text" class="form-control" placeholder="// 'custom_name' | tr //" ng-model="p.customName" name="uCustomName" ng-change="vm.reset()" ng-model-options="{ debounce: 250 }" normal-name required>
+          <div class="error-message">
+            <div ng-messages="form.$submitted && form.uCustomName.$error">
+              <span ng-message="required">// 'custom_name_is_required' | tr //</span>
+              <span ng-message="projectName">// 'custom_name_is_invalid' | tr //</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group col-md-7">
+          <input type="text" class="form-control" placeholder="// 'tag_name' | tr //" ng-model="p.tagName" name="uTagName" ng-change="vm.reset()" ng-model-options="{ debounce: 250 }" tag-name required>
+          <div class="error-message">
+            <div ng-messages="form.$submitted && form.uTagName.$error">
+              <span ng-message="required">// 'tag_name_is_required' | tr //</span>
+              <span ng-message="tagName">// 'tag_name_is_invalid' | tr //</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="error-message">
+            <span ng-show="vm.hasError">// vm.errorMessage | tr //</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-xs-2 col-md-2">
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary" ng-click="vm.addCustom(p)">// 'save' | tr //</button>
+          <button type="button" class="btn btn-default" ng-click="vm.cancel(form)">// 'cancel' | tr //</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
