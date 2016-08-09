@@ -336,12 +336,12 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 		qs = qs.Filter("CreationTime__lte", endTime)
 	}
 
-	qs = qs.OrderBy("-UpdateTime")
-
 	total, err := qs.Count()
 	if err != nil {
 		return jobs, 0, err
 	}
+
+	qs = qs.OrderBy("-UpdateTime")
 
 	_, err = qs.Limit(limit).Offset(offset).All(&jobs)
 	if err != nil {
