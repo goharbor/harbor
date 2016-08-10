@@ -20,17 +20,6 @@ import (
 	"strings"
 )
 
-// Repository holds information about repository
-type Repository struct {
-	Name string
-}
-
-// GetProject parses the repository and return the name of project.
-func (r *Repository) GetProject() string {
-	project, _ := ParseRepository(r.Name)
-	return project
-}
-
 // FormatEndpoint formats endpoint
 func FormatEndpoint(endpoint string) string {
 	endpoint = strings.TrimSpace(endpoint)

@@ -101,18 +101,19 @@ func filterRepositories(repositories []string, projects []models.Project, keywor
 	i, j := 0, 0
 	result := []map[string]interface{}{}
 	for i < len(repositories) && j < len(projects) {
-		r := &utils.Repository{Name: repositories[i]}
-		d := strings.Compare(r.GetProject(), projects[j].Name)
+		r := repositories[i]
+		p, _ := utils.ParseRepository(r)
+		d := strings.Compare(p, projects[j].Name)
 		if d < 0 {
 			i++
 			continue
 		} else if d == 0 {
 			i++
-			if len(keyword) != 0 && !strings.Contains(r.Name, keyword) {
+			if len(keyword) != 0 && !strings.Contains(r, keyword) {
 				continue
 			}
 			entry := make(map[string]interface{})
-			entry["repository_name"] = r.Name
+			entry["repository_name"] = r
 			entry["project_name"] = projects[j].Name
 			entry["project_id"] = projects[j].ProjectID
 			entry["project_public"] = projects[j].Public
