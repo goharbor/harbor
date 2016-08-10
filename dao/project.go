@@ -182,66 +182,98 @@ func SearchProjects(userID int) ([]models.Project, error) {
 	return projects, nil
 }
 
-// GetUserRelevantProjects returns the projects of the user which are not deleted and name like projectName
-func GetUserRelevantProjects(userID int, projectName string) ([]models.Project, error) {
+//GetTotalOfUserRelevantProjects returns the total count of
+// user relevant projects
+func GetTotalOfUserRelevantProjects(userID int, projectName string,
+	public ...int) (int64, error) {
 	o := GetOrmer()
-	sql := `select distinct
-		p.project_id, p.owner_id, p.name,p.creation_time, p.update_time, p.public, pm.role role 
-	 from project p 
-		left join project_member pm on p.project_id = pm.project_id
-	 where p.deleted = 0 and pm.user_id= ?`
+	sql := `select count(*) from project p 
+			left join project_member pm 
+			on p.project_id = pm.project_id
+	 		where p.deleted = 0 and pm.user_id= ?`
 
-	queryParam := make([]interface{}, 1)
+	queryParam := []interface{}{}
 	queryParam = append(queryParam, userID)
 	if projectName != "" {
 		sql += " and p.name like ? "
-		queryParam = append(queryParam, projectName)
+		queryParam = append(queryParam, "%"+projectName+"%")
 	}
-	sql += " order by p.name "
-	var r []models.Project
-	_, err := o.Raw(sql, queryParam).QueryRows(&r)
-	if err != nil {
-		return nil, err
-	}
-	return r, nil
+
+	var total int64
+	err := o.Raw(sql, queryParam).QueryRow(&total)
+
+	return total, err
 }
 
-//GetPublicProjects returns all public projects whose name like projectName
-func GetPublicProjects(projectName string) ([]models.Project, error) {
-	publicProjects, err := getProjects(1, projectName)
-	if err != nil {
-		return nil, err
-	}
-	return publicProjects, nil
+// GetUserRelevantProjects returns the user relevant projects
+// args[0]: public, args[1]: limit, args[2]: offset
+func GetUserRelevantProjects(userID int, projectName string, args ...int64) ([]models.Project, error) {
+	return getProjects(userID, projectName, args...)
 }
 
-// GetAllProjects returns all projects which are not deleted and name like projectName
-func GetAllProjects(projectName string) ([]models.Project, error) {
-	allProjects, err := getProjects(0, projectName)
-	if err != nil {
-		return nil, err
+// GetTotalOfProjects returns the total count of projects
+func GetTotalOfProjects(name string, public ...int) (int64, error) {
+	qs := GetOrmer().
+		QueryTable(new(models.Project)).
+		Filter("Deleted", 0)
+
+	if len(name) > 0 {
+		qs = qs.Filter("Name__icontains", name)
 	}
-	return allProjects, nil
+
+	if len(public) > 0 {
+		qs = qs.Filter("Public", public[0])
+	}
+
+	return qs.Count()
 }
 
-func getProjects(public int, projectName string) ([]models.Project, error) {
+// GetProjects returns project list
+// args[0]: public, args[1]: limit, args[2]: offset
+func GetProjects(name string, args ...int64) ([]models.Project, error) {
+	return getProjects(0, name, args...)
+}
+
+func getProjects(userID int, name string, args ...int64) ([]models.Project, error) {
+	projects := []models.Project{}
+
 	o := GetOrmer()
-	sql := `select project_id, owner_id, creation_time, update_time, name, public 
-		from project
-		where deleted = 0`
-	queryParam := make([]interface{}, 1)
-	if public == 1 {
-		sql += " and public = ? "
-		queryParam = append(queryParam, public)
+	sql := ""
+	queryParam := []interface{}{}
+
+	if userID != 0 { //get user's projects
+		sql = `select distinct p.project_id, p.owner_id, p.name, 
+					p.creation_time, p.update_time, p.public, pm.role role 
+			from project p 
+			left join project_member pm 
+			on p.project_id = pm.project_id
+	 		where p.deleted = 0 and pm.user_id= ?`
+		queryParam = append(queryParam, userID)
+	} else { // get all projects
+		sql = `select * from project p where p.deleted = 0 `
 	}
-	if len(projectName) > 0 {
-		sql += " and name like ? "
-		queryParam = append(queryParam, projectName)
+
+	if name != "" {
+		sql += ` and p.name like ? `
+		queryParam = append(queryParam, "%"+name+"%")
 	}
-	sql += " order by name "
-	var projects []models.Project
-	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
-		return nil, err
+
+	switch len(args) {
+	case 1:
+		sql += ` and p.public = ?`
+		queryParam = append(queryParam, args[0])
+		sql += ` order by p.name `
+	case 2:
+		sql += ` order by p.name `
+		sql = paginateForRawSQL(sql, args[0], args[1])
+	case 3:
+		sql += ` and p.public = ?`
+		queryParam = append(queryParam, args[0])
+		sql += ` order by p.name `
+		sql = paginateForRawSQL(sql, args[1], args[2])
 	}
-	return projects, nil
+
+	_, err := o.Raw(sql, queryParam).QueryRows(&projects)
+
+	return projects, err
 }
