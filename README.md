@@ -66,6 +66,9 @@ If you are upgrading Harbor from an older version with existing data, you need t
 ### Run
 For information on how to use Harbor, please take a look at [User Guide](docs/user_guide.md).
 
+### Community
+Get connected with Project Harbor's community and sign up with VMware {code} [https://code.vmware.com/join/](https://code.vmware.com/join/) to get invited to VMware {code} Slack group, Channel: #harbor.
+
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
 

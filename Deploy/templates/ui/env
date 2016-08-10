@@ -20,3 +20,4 @@ GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url
 TOKEN_URL=http://ui
 VERIFY_REMOTE_CERT=$verify_remote_cert
+TOKEN_EXPIRATION=$token_expiration
