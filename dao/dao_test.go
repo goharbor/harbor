@@ -645,6 +645,17 @@ func TestProjectPermission(t *testing.T) {
 	}
 }
 
+func TestGetTotalOfUserRelevantProjects(t *testing.T) {
+	total, err := GetTotalOfUserRelevantProjects(currentUser.UserID, "")
+	if err != nil {
+		t.Fatalf("failed to get total of user relevant projects: %v", err)
+	}
+
+	if total != 1 {
+		t.Errorf("unexpected total: %d != 1", total)
+	}
+}
+
 func TestGetUserRelevantProjects(t *testing.T) {
 	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
 	if err != nil {
@@ -658,8 +669,19 @@ func TestGetUserRelevantProjects(t *testing.T) {
 	}
 }
 
-func TestGetAllProjects(t *testing.T) {
-	projects, err := GetAllProjects("")
+func TestGetTotalOfProjects(t *testing.T) {
+	total, err := GetTotalOfProjects("")
+	if err != nil {
+		t.Fatalf("failed to get total of projects: %v", err)
+	}
+
+	if total != 2 {
+		t.Errorf("unexpected total: %d != 2", total)
+	}
+}
+
+func TestGetProjects(t *testing.T) {
+	projects, err := GetProjects("")
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -672,7 +694,7 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetPublicProjects(t *testing.T) {
-	projects, err := GetPublicProjects("")
+	projects, err := GetProjects("", 1)
 	if err != nil {
 		t.Errorf("Error occurred in getProjects: %v", err)
 	}
