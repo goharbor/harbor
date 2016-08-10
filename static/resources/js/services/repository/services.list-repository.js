@@ -25,11 +25,11 @@
     
     return ListRepository;
     
-    function ListRepository(projectId, q) {      
+    function ListRepository(projectId, q, page, pageSize) {      
       $log.info('list repositories:' + projectId + ', q:' + q);
   
       return $http
-        .get('/api/repositories', {
+        .get('/api/repositories?page=' + page + '&page_size=' + pageSize, {
           'params':{
             'project_id': projectId,
             'q': q
