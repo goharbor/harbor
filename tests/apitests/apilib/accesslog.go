@@ -13,8 +13,9 @@
    limitations under the License.
 */
 
-package HarborAPI
+package apilib
 
+//AccessLog for go test
 type AccessLog struct {
 	Username       string `json:"username,omitempty"`
 	Keywords       string `json:"keywords,omitempty"`
