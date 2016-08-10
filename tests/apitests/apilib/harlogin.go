@@ -1,5 +1,5 @@
 // HarborLogon.go
-package HarborAPI
+package apilib
 
 import (
 	"io/ioutil"

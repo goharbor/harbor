@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/vmware/harbor/api/apilib"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 

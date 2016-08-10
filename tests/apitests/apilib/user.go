@@ -1,7 +1,8 @@
-package HarborAPI
+package apilib
 
+//User ...
 type User struct {
-	UserId   int32  `json:"user_id,omitempty"`
+	UserID   int32  `json:"user_id,omitempty"`
 	Username string `json:"username,omitempty"`
 	Email    string `json:"email,omitempty"`
 	Password string `json:"password,omitempty"`

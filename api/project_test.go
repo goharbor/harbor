@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/api/apilib"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 func TestAddProject(t *testing.T) {
@@ -22,7 +22,7 @@ func TestAddProject(t *testing.T) {
 	prjUsr := &usrInfo{"unknown", "unknown"}
 
 	var project apilib.Project
-	project.ProjectName = "test_project"
+	project.ProjectName = "testproject"
 	project.Public = true
 
 	//case 1: admin not login, expect project creation fail.
@@ -36,7 +36,7 @@ func TestAddProject(t *testing.T) {
 		//t.Log(result)
 	}
 
-	project.ProjectName = "test_project"
+	project.ProjectName = "testproject"
 	//case 2: admin successful login, expect project creation success.
 	fmt.Println("case 2: admin successful login, expect project creation success.")
 

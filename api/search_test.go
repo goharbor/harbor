@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/api/apilib"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 func TestSearch(t *testing.T) {
