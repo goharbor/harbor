@@ -1,6 +1,6 @@
-//Package HarborAPI
+//Package apilib
 //These APIs provide services for manipulating Harbor project.
-package HarborAPI
+package apilib
 
 import (
 	"encoding/json"

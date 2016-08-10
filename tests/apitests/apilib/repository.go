@@ -1,11 +1,12 @@
-package HarborAPI
+package apilib
 
 import (
 	"time"
 )
 
+//Repository ...
 type Repository struct {
-	Id            string    `json:"id,omitempty"`
+	ID            string    `json:"id,omitempty"`
 	Parent        string    `json:"parent,omitempty"`
 	Created       time.Time `json:"created,omitempty"`
 	DurationDays  string    `json:"duration_days,omitempty"`
