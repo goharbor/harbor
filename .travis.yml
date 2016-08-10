@@ -9,27 +9,25 @@ go_import_path: github.com/vmware/harbor
 
 services: 
   - docker
-  - mysql 
 
 dist: trusty
-addons:
-  apt:
-    packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
 
 env:
   DB_HOST: 127.0.0.1
   DB_PORT: 3306 
   DB_USR: root 
-  DB_PWD:
+  DB_PWD: root123
+  MYSQL_HOST: localhost
+  MYSQL_PORT: 3306 
+  MYSQL_USR: root 
+  MYSQL_PWD: root123
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
   UI_SECRET: tempString  
   MAX_JOB_WORKERS: 3
-  SECRET_KEY: 1234567890123456
+  SECRET_KEY: 1234567890123456 
+  AUTH_MODE: db_auth  
 
 before_install:
    - sudo ./tests/hostcfg.sh
@@ -56,8 +54,8 @@ install:
   - go get -d github.com/go-sql-driver/mysql
   - go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
-  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
-  - sudo rm /usr/local/bin/docker-compose
+#  - sudo apt-get install -y --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
+#  - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
@@ -70,21 +68,27 @@ install:
   
 before_script:
   # create tables and load data
-  - mysql < ./Deploy/db/registry.sql -uroot --verbose
+  # - mysql < ./Deploy/db/registry.sql -uroot --verbose
 
-script: 
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
+script:
+  - sudo ./tests/testprepare.sh 
+  - docker-compose -f Deploy/docker-compose.test.yml up -d
+  - go list ./... | grep -v -E 'vendor|tests|api' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests|api' | xargs -L1 go vet
+  - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+  - export MYSQL_HOST=$IP
+  - export REGISTRY_URL=http://$IP:5000
+  - echo $REGISTRY_URL
   - ./Deploy/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
+  - docker-compose -f Deploy/docker-compose.test.yml down
+  
   - docker-compose -f Deploy/docker-compose.yml up -d
   
   - docker ps
   - go run tests/startuptest.go http://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
-
-  # test for API
-  - sudo ./tests/testprepare.sh
-  - go test -v ./tests/apitests
+#  - sudo ./tests/testprepare.sh
+#  - go test -v ./tests/apitests

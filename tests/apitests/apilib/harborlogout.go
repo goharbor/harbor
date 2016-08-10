@@ -1,5 +1,5 @@
 // HarborLogout.go
-package HarborAPI
+package apilib
 
 import (
 	"net/http"
