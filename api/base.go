@@ -81,7 +81,28 @@ func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) {
 
 // ValidateUser checks if the request triggered by a valid user
 func (b *BaseAPI) ValidateUser() int {
+	userID, needsCheck, ok := b.GetUserIDForRequest()
+	if !ok {
+		log.Warning("No user id in session, canceling request")
+		b.CustomAbort(http.StatusUnauthorized, "")
+	}
+	if needsCheck {
+		u, err := dao.GetUser(models.User{UserID: userID})
+		if err != nil {
+			log.Errorf("Error occurred in GetUser, error: %v", err)
+			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		if u == nil {
+			log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
+			b.CustomAbort(http.StatusUnauthorized, "")
+		}
+	}
+	return userID
+}
 
+// GetUserIDForRequest tries to get user ID from basic auth header and session.
+// It returns the user ID, whether need further verification(when the id is from session) and if the action is successful
+func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {
 		log.Infof("Requst with Basic Authentication header, username: %s", username)
@@ -94,25 +115,17 @@ func (b *BaseAPI) ValidateUser() int {
 			user = nil
 		}
 		if user != nil {
-			return user.UserID
+			// User login successfully no further check required.
+			return user.UserID, false, true
 		}
 	}
-	sessionUserID := b.GetSession("userId")
-	if sessionUserID == nil {
-		log.Warning("No user id in session, canceling request")
-		b.CustomAbort(http.StatusUnauthorized, "")
+	sessionUserID, ok := b.GetSession("userId").(int)
+	if ok {
+		// The ID is from session
+		return sessionUserID, true, true
 	}
-	userID := sessionUserID.(int)
-	u, err := dao.GetUser(models.User{UserID: userID})
-	if err != nil {
-		log.Errorf("Error occurred in GetUser, error: %v", err)
-		b.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if u == nil {
-		log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
-		b.CustomAbort(http.StatusUnauthorized, "")
-	}
-	return userID
+	log.Debug("No valid user id in session.")
+	return 0, false, false
 }
 
 // Redirect does redirection to resource URI with http header status code.
