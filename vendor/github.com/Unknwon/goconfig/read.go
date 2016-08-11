@@ -176,16 +176,31 @@ func (c *ConfigFile) read(reader io.Reader) (err error) {
 
 // LoadFromData accepts raw data directly from memory
 // and returns a new configuration representation.
+// Note that the configuration is written to the system
+// temporary folder, so your file should not contain
+// sensitive information.
 func LoadFromData(data []byte) (c *ConfigFile, err error) {
 	// Save memory data to temporary file to support further operations.
 	tmpName := path.Join(os.TempDir(), "goconfig", fmt.Sprintf("%d", time.Now().Nanosecond()))
-	os.MkdirAll(path.Dir(tmpName), os.ModePerm)
+	if err = os.MkdirAll(path.Dir(tmpName), os.ModePerm); err != nil {
+		return nil, err
+	}
 	if err = ioutil.WriteFile(tmpName, data, 0655); err != nil {
 		return nil, err
 	}
 
 	c = newConfigFile([]string{tmpName})
 	err = c.read(bytes.NewBuffer(data))
+	return c, err
+}
+
+// LoadFromReader accepts raw data directly from a reader
+// and returns a new configuration representation.
+// You must use ReloadData to reload.
+// You cannot append files a configfile read this way.
+func LoadFromReader(in io.Reader) (c *ConfigFile, err error) {
+	c = newConfigFile([]string{""})
+	err = c.read(in)
 	return c, err
 }
 
@@ -224,6 +239,9 @@ func LoadConfigFile(fileName string, moreFiles ...string) (c *ConfigFile, err er
 func (c *ConfigFile) Reload() (err error) {
 	var cfg *ConfigFile
 	if len(c.fileNames) == 1 {
+		if c.fileNames[0] == "" {
+			return fmt.Errorf("file opened from in-memory data, use ReloadData to reload")
+		}
 		cfg, err = LoadConfigFile(c.fileNames[0])
 	} else {
 		cfg, err = LoadConfigFile(c.fileNames[0], c.fileNames[1:]...)
@@ -235,8 +253,25 @@ func (c *ConfigFile) Reload() (err error) {
 	return err
 }
 
+// ReloadData reloads configuration file from memory
+func (c *ConfigFile) ReloadData(in io.Reader) (err error) {
+	var cfg *ConfigFile
+	if len(c.fileNames) != 1 {
+		return fmt.Errorf("Multiple files loaded, unable to mix in-memory and file data")
+	}
+
+	cfg, err = LoadFromReader(in)
+	if err == nil {
+		*c = *cfg
+	}
+	return err
+}
+
 // AppendFiles appends more files to ConfigFile and reload automatically.
 func (c *ConfigFile) AppendFiles(files ...string) error {
+	if len(c.fileNames) == 1 && c.fileNames[0] == "" {
+		return fmt.Errorf("Cannot append file data to in-memory data")
+	}
 	c.fileNames = append(c.fileNames, files...)
 	return c.Reload()
 }

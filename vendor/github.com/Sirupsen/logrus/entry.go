@@ -68,7 +68,7 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 
 // Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
-	data := Fields{}
+	data := make(Fields, len(entry.Data)+len(fields))
 	for k, v := range entry.Data {
 		data[k] = v
 	}
@@ -150,7 +150,7 @@ func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
-	os.Exit(1)
+	Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
@@ -198,7 +198,7 @@ func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
 		entry.Fatal(fmt.Sprintf(format, args...))
 	}
-	os.Exit(1)
+	Exit(1)
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
@@ -245,7 +245,7 @@ func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
 		entry.Fatal(entry.sprintlnn(args...))
 	}
-	os.Exit(1)
+	Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
