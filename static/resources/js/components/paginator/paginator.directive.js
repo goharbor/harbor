@@ -78,7 +78,7 @@
         this.time = 0;
         this.minimum = 0;
         this.maximum = 0;
-      }
+      };
       
       TimeCounter.prototype.setMaximum = function(maximum) {
         this.maximum = maximum;

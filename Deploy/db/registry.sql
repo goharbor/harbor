@@ -110,6 +110,7 @@ create table replication_policy (
  target_id int NOT NULL,
  enabled tinyint(1) NOT NULL DEFAULT 1,
  description text,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
  start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
