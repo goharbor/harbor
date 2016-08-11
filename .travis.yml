@@ -53,8 +53,8 @@ install:
   - go get -d github.com/go-sql-driver/mysql
   - go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
-  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
-  - sudo rm /usr/local/bin/docker-compose
+#  - sudo apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine=1.11.1-0~trusty
+#  - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
