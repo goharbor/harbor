@@ -815,13 +815,13 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /jobs/replication/{repo_id}/log:
+  /jobs/replication/{id}/log:
     get:
-      summary: Get job logs accompany with a relevant repository.
+      summary: Get job logs.
       description: |
-        This endpoint let user search job logs filtered by repository ID.
+        This endpoint let user search job logs filtered by specific ID.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
@@ -896,18 +896,18 @@ paths:
           description: Policy name already used or policy already exists with the same project and target.
         500:
           description: Unexpected internal errors.
-  /policies/replication/{repo_id}:
+  /policies/replication/{id}:
     get:
-      summary: Get replication policy accompany with a relevant repository.
+      summary: Get replication policy.
       description: |
-        This endpoint let user search replication policy by repository ID.
+        This endpoint let user search replication policy by specific ID.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: Relevant repository ID
+          description: policy ID
       tags:
         - Products
       responses:
@@ -926,12 +926,12 @@ paths:
       description: |
         This endpoint let user update policy name, description, target and enablement.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: Relevant repository ID
+          description: policy ID
         - name: policyupdate
           in: body
           description: Update policy name, description, target and enablement.
@@ -953,18 +953,18 @@ paths:
           description: Policy name already used or policy already exists with the same project and target.
         500:
           description: Unexpected internal errors.
-  /policies/replication/{repo_id}/enablement:
+  /policies/replication/{id}/enablement:
     put:
       summary: Put modifies enablement of the policy.
       description: |
         This endpoint let user update policy enablement flag.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: Relevant repository ID
+          description: policy ID
         - name: enabledflag
           in: body
           description: The policy enablement flag.
@@ -1057,13 +1057,13 @@ paths:
           description: Target not found.
         500:
           description: Unexpected internal errors.
-  /targets/{repo_id}: 
+  /targets/{id}: 
     put:
       summary: Update replication's target.
       description: |
         This endpoint is for update specific replication's target.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
@@ -1096,7 +1096,7 @@ paths:
       tags:
         - Products
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
@@ -1120,7 +1120,7 @@ paths:
       description: |
         This endpoint is for to delete specific replication's target.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
@@ -1139,13 +1139,13 @@ paths:
           description: Replication's target does not exist.
         500:
           description: Unexpected internal errors.
-  /targets/{repo_id}/policies/:
+  /targets/{id}/policies/:
     get:
       summary: List the target relevant policies.
       description: |
         This endpoint list policies filter with specific replication's target ID.
       parameters:
-        - name: repo_id
+        - name: id
           in: path
           type: integer
           format: int64
