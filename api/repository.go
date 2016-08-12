@@ -121,6 +121,10 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
+	}
+
 	if project.Public == 0 {
 		userID := ra.ValidateUser()
 		if !hasProjectAdminRole(userID, project.ProjectID) {
@@ -268,6 +272,10 @@ func (ra *RepositoryAPI) GetManifests() {
 	if err != nil {
 		log.Errorf("failed to get project %s: %v", projectName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
 	}
 
 	if project.Public == 0 {
