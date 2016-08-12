@@ -21,7 +21,36 @@ import (
 	"testing"
 )
 
-func TestMain(t *testing.T) {
+func TestParseEndpoint(t *testing.T) {
+	endpoint := "example.com"
+	u, err := ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "http://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
+	}
+
+	endpoint = "https://example.com"
+	u, err = ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "https://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "https://example.com")
+	}
+
+	endpoint = "  example.com/ "
+	u, err = ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "http://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
+	}
 }
 
 func TestParseRepository(t *testing.T) {
@@ -61,6 +90,16 @@ func TestParseRepository(t *testing.T) {
 
 	if rest != "" {
 		t.Errorf("unexpected rest: [%s] != [%s]", rest, "")
+	}
+}
+
+func TestEncrypt(t *testing.T) {
+	content := "content"
+	salt := "salt"
+	result := Encrypt(content, salt)
+
+	if result != "dc79e76c88415c97eb089d9cc80b4ab0" {
+		t.Errorf("unexpected result: %s != %s", result, "dc79e76c88415c97eb089d9cc80b4ab0")
 	}
 }
 
