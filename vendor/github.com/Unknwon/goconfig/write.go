@@ -16,6 +16,7 @@ package goconfig
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"strings"
 )
@@ -23,14 +24,8 @@ import (
 // Write spaces around "=" to look better.
 var PrettyFormat = true
 
-// SaveConfigFile writes configuration file to local file system
-func SaveConfigFile(c *ConfigFile, filename string) (err error) {
-	// Write configuration file by filename.
-	var f *os.File
-	if f, err = os.Create(filename); err != nil {
-		return err
-	}
-
+// SaveConfigData writes configuration to a writer
+func SaveConfigData(c *ConfigFile, out io.Writer) (err error) {
 	equalSign := "="
 	if PrettyFormat {
 		equalSign = " = "
@@ -101,7 +96,21 @@ func SaveConfigFile(c *ConfigFile, filename string) (err error) {
 		}
 	}
 
-	if _, err = buf.WriteTo(f); err != nil {
+	if _, err := buf.WriteTo(out); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SaveConfigFile writes configuration file to local file system
+func SaveConfigFile(c *ConfigFile, filename string) (err error) {
+	// Write configuration file by filename.
+	var f *os.File
+	if f, err = os.Create(filename); err != nil {
+		return err
+	}
+
+	if err := SaveConfigData(c, f); err != nil {
 		return err
 	}
 	return f.Close()

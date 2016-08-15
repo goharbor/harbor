@@ -32,7 +32,6 @@ paths:
           description: Search parameter for project and repository name.
           required: true
           type: string
-          format: string
       tags:
         - Products
       responses:
@@ -55,7 +54,6 @@ paths:
           description: Project name for filtering results.
           required: false
           type: string
-          format: string
         - name: is_public
           in: query
           description: Public sign for filtering projects.
@@ -71,6 +69,8 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Project'
+        401:
+          description: User need to log in first.
         500:
           description: Internal errors.
     head:
@@ -83,7 +83,6 @@ paths:
           description: Project name for checking exists.
           required: true
           type: string
-          format: string
       tags:
         - Products
       responses:
@@ -119,6 +118,31 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
+  /projects/{project_id}:
+    get:
+      summary: Return specific project detail infomation
+      description: |
+        This endpoint returns specific project information by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID for filtering results.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched project information.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /projects/{project_id}/publicity:
     put:
       summary: Update properties for a selected project.
@@ -128,7 +152,7 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Selected project ID.
         - name: project
@@ -161,7 +185,7 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID
         - name: access_log
@@ -193,7 +217,7 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID.
       tags:
@@ -223,7 +247,7 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID.
         - name: roles
@@ -257,13 +281,13 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Relevant user ID
       tags:
@@ -293,13 +317,13 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID.
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Relevant user ID.
         - name: roles
@@ -330,13 +354,13 @@ paths:
         - name: project_id
           in: path
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID.
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Relevant user ID.
       tags:
@@ -377,10 +401,9 @@ paths:
       description: |
         This endpoint is for user to search registered users, support for filtering results with username.Notice, by now this operation is only for administrator.
       parameters:
-        - name: user_name
+        - name: username
           in: query
           type: string
-          format: string
           required: false
           description: Username for filtering results.
       tags:
@@ -431,7 +454,7 @@ paths:
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Registered user ID
         - name: profile
@@ -464,7 +487,7 @@ paths:
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: User ID for marking as to be removed.
       tags:
@@ -491,7 +514,7 @@ paths:
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Registered user ID.
         - name: password
@@ -508,9 +531,9 @@ paths:
         400:
           description: Invalid user ID; Old password is blank; New password is blank.
         401:
-          description: Old password is not correct.
+          description: Don't have authority to change password. Please check login status.
         403:
-          description: Guests can only change their own account.
+          description: Old password is not correct.
         500:
           description: Unexpected internal errors.
   /users/{user_id}/sysadmin:
@@ -523,7 +546,7 @@ paths:
         - name: user_id
           in: path
           type: integer
-          format: int32
+          format: int
           required: true
           description: Registered user ID
       tags:
@@ -556,7 +579,6 @@ paths:
         - name: q
           in: query
           type: string
-          format: string
           required: false
           description: Repo name for filtering results.
       tags:
@@ -584,13 +606,11 @@ paths:
         - name: repo_name
           in: query
           type: string
-          format: string
           required: true
           description: The name of repository which will be deleted.
         - name: tag
           in: query
           type: string
-          format: string
           required: false
           description: Tag of a repository.
       tags:
@@ -645,6 +665,10 @@ paths:
       responses:
         200:
           description: Retrieved manifests from a relevant repository successfully.
+          schema:
+            $ref: '#/definitions/Repository'
+        404:
+          description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
   /repositories/top:
@@ -709,6 +733,437 @@ paths:
           description: Bad request because of invalid parameter of lines or start_time or end_time.
         401:
           description: User need to login first.
+        500:
+          description: Unexpected internal errors.
+  /jobs/replication:
+    get:
+      summary: List filters jobs according to the policy and repository
+      description: |
+        This endpoint let user list filters jobs according to the policy and repository. (if start_time and end_time are both null, list jobs of last 10 days)
+      tags:
+        - Products
+      parameters:
+        - name: policy_id
+          in: query
+          type: integer
+          format: int
+          required: false
+          description: The ID of the policy that triggered this job.
+        - name: num
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The return list length number. 
+        - name: end_time
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: The end time of jobs done. (Timestamp)
+        - name: start_time
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: The start time of jobs. (Timestamp)
+        - name: repository
+          in: query
+          type: string
+          required: false
+          description: The respond jobs list filter by repository name.
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The respond jobs list filter by status.
+      responses:
+        200:
+          description: Get the required logs successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/JobStatus'
+        400:
+          description: Bad request because of invalid parameters.
+        401:
+          description: User need to login first.
+        500:
+          description: Unexpected internal errors.
+  /jobs/replication/{id}:
+    delete:
+      summary: Delete specific ID job.
+      description: |
+        This endpoint is aimed to remove specific ID job from jobservice.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Delete job ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Job deleted successfully.
+        400:
+          description: Job ID is invalid or can't remove this job.
+        401:
+          description: Only admin has this authority.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /jobs/replication/{id}/log:
+    get:
+      summary: Get job logs.
+      description: |
+        This endpoint let user search job logs filtered by specific ID.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant repository ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get job log successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        404:
+          description: The specific repository ID's log does not exist.
+        500:
+          description: Unexpected internal errors.
+  /policies/replication:
+    get:
+      summary: List filters policies by name and project_id
+      description: |
+        This endpoint let user list filters policies by name and project_id, if name and project_id are nil, list returns all policies
+      parameters:
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: The replication's policy name.
+        - name: project_id
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get policy successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/JobStatus'
+        400:
+          description: Invalid project ID.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Post creates a policy
+      description: |
+          This endpoint let user creates a policy, and if it is enabled, the replication will be triggered right now.
+      parameters:
+        - name: policyinfo
+          in: body
+          description: Create new policy.
+          required: true
+          schema:
+            $ref: '#/definitions/RepPolicyPost'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Create policy successfully.
+        400:
+          description: Invalid project ID or target ID.
+        401:
+          description: User need to log in first.
+        409:
+          description: Policy name already used or policy already exists with the same project and target.
+        500:
+          description: Unexpected internal errors.
+  /policies/replication/{id}:
+    get:
+      summary: Get replication policy.
+      description: |
+        This endpoint let user search replication policy by specific ID.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: policy ID
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get job policy successfully.
+          schema:
+            $ref: '#/definitions/RepPolicy'
+        401:
+          description: User need to log in first.
+        404:
+          description: The specific repository ID's policy does not exist.
+        500:
+          description: Unexpected internal errors.
+    put:
+      summary: Put modifies name, description, target and enablement of policy.
+      description: |
+        This endpoint let user update policy name, description, target and enablement.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: policy ID
+        - name: policyupdate
+          in: body
+          description: Update policy name, description, target and enablement.
+          required: true
+          schema:
+            $ref: '#/definitions/RepPolicyUpdate'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update job policy content successfully.
+        400:
+          description: policy is enabled or target does not exist
+        401:
+          description: User need to log in first.
+        404:
+          description: The specific repository ID's policy does not exist.
+        409:
+          description: Policy name already used or policy already exists with the same project and target.
+        500:
+          description: Unexpected internal errors.
+  /policies/replication/{id}/enablement:
+    put:
+      summary: Put modifies enablement of the policy.
+      description: |
+        This endpoint let user update policy enablement flag.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: policy ID
+        - name: enabledflag
+          in: body
+          description: The policy enablement flag.
+          required: true
+          schema:
+            $ref: '#/definitions/RepPolicyEnablementReq'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update job policy enablement successfully.
+        400:
+          description: Invalid enabled value.
+        401:
+          description: User need to log in first.
+        404:
+          description: The specific repository ID's policy does not exist.
+        500:
+          description: Unexpected internal errors.
+  /targets:
+    get:
+      summary: List filters targets by name.
+      description: |
+        This endpoint let user list filters targets by name, if name is nil, list returns all targets.
+      parameters:
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: The replication's target name.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get policy successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepTarget'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Create a new replication target.
+      description: |
+        This endpoint is for user to create a new replication target.
+      parameters:
+        - name: reptarget
+          in: body
+          description: New created replication target.
+          required: true
+          schema:
+            $ref: '#/definitions/RepTargetPost'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Replication target created successfully.
+        400:
+          description: Unsatisfied with constraints of the target creation.
+        401:
+          description: User need to log in first.
+        409:
+          description: Replication target name already exists.
+        500:
+          description: Unexpected internal errors.
+  /targets/ping:    
+    post:
+      summary: Ping validates target.
+      description: |
+        This endpoint is for ping validates whether the target is reachable and whether the credential is valid.
+      parameters:
+        - name: id
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: The replication's policy ID.
+      tags:
+        - Products  
+      responses:
+        200:
+          description: Ping target successfully.
+        400:
+          description: Target id is invalid/ endpoint is needed/ invaild URL/ network issue.
+        401:
+          description: User need to log in first or wrong username/password for remote target.
+        404:
+          description: Target not found.
+        500:
+          description: Unexpected internal errors.
+  /targets/{id}: 
+    put:
+      summary: Update replication's target.
+      description: |
+        This endpoint is for update specific replication's target.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The replication's target ID.
+        - name: repo_target
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/RepTargetPost'
+          description: Updates of replication's target.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated replication's target successfully.
+        400:
+          description: The target is associated with policy which is enabled.
+        401:
+          description: User need to log in first.
+        404:
+          description: Target ID does not exist.
+        409:
+          description: Target name or endpoint is already used.
+        500:
+          description: Unexpected internal errors.
+    get:
+      summary: Get replication's target.
+      description: This endpoint is for get specific replication's target.
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The replication's target ID.
+      responses:
+        200:
+          description: Get replication's target successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepTarget'
+        401:
+          description: User need to log in first.
+        404:
+          description: Replication's target not found
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete specific replication's target.
+      description: |
+        This endpoint is for to delete specific replication's target.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The replication's target ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Replication's target deleted successfully.
+        400:
+          description: Replication's target ID is invalid or the target is used by policies.
+        401:
+          description: Only admin has this authority.
+        404:
+          description: Replication's target does not exist.
+        500:
+          description: Unexpected internal errors.
+  /targets/{id}/policies/:
+    get:
+      summary: List the target relevant policies.
+      description: |
+        This endpoint list policies filter with specific replication's target ID.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The replication's target ID.  
+      tags:
+        - Products  
+      responses:
+        200:
+          description: Get relevant policies successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepPolicy'
+        401:
+          description: User need to log in first.
+        404:
+          description: Replication's target not found
         500:
           description: Unexpected internal errors.
 definitions:
@@ -798,6 +1253,33 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+  Repository:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Repository ID
+      parent:
+        type: string
+        description: Parent of the image.
+      created:
+        type: string
+        description: Repository create time.
+      duration_days:
+        type: string
+        description: Duration days of the image.
+      author:
+        type: string
+        description: Author of the image.
+      architecture:
+        type: string
+        description: Architecture of the image.
+      docker_version:
+        type: string
+        description: Docker version of the image.
+      os:
+        type: string
+        description: OS of the image.
   User:
     type: object
     properties:
@@ -924,4 +1406,171 @@ definitions:
         type: integer
         format: int32
         description: The count of the total repositories, only be seen when the user is admin.
-
+  JobStatus:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The job ID.
+      status: 
+        type: string
+        description: The status of the job.
+      repository: 
+        type: string
+        description: The repository handled by the job.
+      policy_id:
+        type: integer
+        format: int64
+        description: The ID of the policy that triggered this job.
+      operation: 
+        type: string
+        description: The operation of the job.
+      tags:
+        type: array
+        description: The repository's used tag list.
+        items:
+          $ref: '#/definitions/Tags'
+      creation_time:
+        type: string
+        description: The creation time of the job.
+      update_time:
+        type: string
+        description: The update time of the job.   
+  Tags:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The repository's used tag.
+  RepPolicy:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The policy ID.
+      project_id: 
+        type: integer
+        format: int64
+        description: The project ID.
+      project_name: 
+        type: string
+        description: The project name.
+      target_id: 
+        type: integer
+        format: int64
+        description: The target ID.
+      target_name: 
+        type: string
+        description: The target name.
+      name: 
+        type: string
+        description: The policy name.
+      enabled:
+        type: integer
+        format: int
+        description: The policy's enabled status.
+      description: 
+        type: string
+        description: The description of the policy.
+      cron_str:
+        type: string
+        description: The cron string for schedule job.
+      start_time:
+        type: string
+        description: The start time of the policy.
+      creation_time:
+        type: string
+        description: The create time of the policy.
+      update_time:
+        type: string
+        description: The update time of the policy.
+      error_job_count:
+        format: int
+        description: The error job count number for the policy.
+  RepPolicyPost:
+    type: object
+    properties:
+      project_id: 
+        type: integer
+        format: int64
+        description: The project ID.
+      target_id: 
+        type: integer
+        format: int64
+        description: The target ID.
+      name: 
+        type: string
+        description: The policy name.
+  RepPolicyUpdate:
+    type: object
+    properties:
+      target_id: 
+        type: integer
+        format: int64
+        description: The target ID.
+      name: 
+        type: string
+        description: The policy name.
+      enabled:
+        type: integer
+        format: int
+        description: The policy's enabled status.
+      description: 
+        type: string
+        description: The description of the policy.
+      cron_str:
+        type: string
+        description: The cron string for schedule job.
+  RepPolicyEnablementReq:
+    type: object
+    properties:
+      enabled: 
+        type: integer
+        format: int
+        description: The policy enablement flag.
+  RepTarget:
+    type: object
+    properties:
+      id: 
+        type: integer
+        format: int64
+        description: The target ID.
+      endpoint:
+        type: string
+        description: The target address URL string.
+      name: 
+        type: string
+        description: The target name.
+      username: 
+        type: string
+        description: The target server username.
+      password: 
+        type: string
+        description: The target server password.
+      type:
+        type: integer
+        format: int
+        description: Reserved field.
+      creation_time:
+        type: string
+        description: The create time of the policy.
+      update_time:
+        type: string
+        description: The update time of the policy.
+  RepTargetPost:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: The target address URL string.
+      name: 
+        type: string
+        description: The target name.
+      username: 
+        type: string
+        description: The target server username.
+      password: 
+        type: string
+        description: The target server password.
