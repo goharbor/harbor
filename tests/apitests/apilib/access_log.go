@@ -22,14 +22,20 @@
 
 package apilib
 
-type Role struct {
+type AccessLog struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The ID of the log entry.
+	LogId int32 `json:"log_id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// Name of the repository in this log entry.
+	RepoName string `json:"repo_name,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// Tag of the repository in this log entry.
+	RepoTag string `json:"repo_tag,omitempty"`
+
+	// The operation against the repository in this log entry.
+	Operation string `json:"operation,omitempty"`
+
+	// The time when this operation is triggered.
+	OpTime string `json:"op_time,omitempty"`
 }

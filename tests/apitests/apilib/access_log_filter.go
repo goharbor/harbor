@@ -22,14 +22,17 @@
 
 package apilib
 
-type Role struct {
+type AccessLogFilter struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// Relevant user's name that accessed this project.
+	Username string `json:"username,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// Operation name specified when project created.
+	Keywords string `json:"keywords,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// Begin timestamp for querying access logs.
+	BeginTimestamp int64 `json:"begin_timestamp,omitempty"`
+
+	// End timestamp for querying accessl logs.
+	EndTimestamp int64 `json:"end_timestamp,omitempty"`
 }

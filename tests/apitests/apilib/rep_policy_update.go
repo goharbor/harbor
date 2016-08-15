@@ -22,14 +22,20 @@
 
 package apilib
 
-type Role struct {
+type RepPolicyUpdate struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The target ID.
+	TargetId int64 `json:"target_id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// The policy name.
+	Name string `json:"name,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The policy's enabled status.
+	Enabled int32 `json:"enabled,omitempty"`
+
+	// The description of the policy.
+	Description string `json:"description,omitempty"`
+
+	// The cron string for schedule job.
+	CronStr string `json:"cron_str,omitempty"`
 }

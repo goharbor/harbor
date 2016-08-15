@@ -22,14 +22,14 @@
 
 package apilib
 
-type Role struct {
+type SearchProject struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The ID of project
+	Id int64 `json:"id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// The name of the project
+	Name string `json:"name,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The flag to indicate the publicity of the project (1 is public, 0 is non-public)
+	Public int32 `json:"public,omitempty"`
 }

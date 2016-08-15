@@ -22,14 +22,11 @@
 
 package apilib
 
-type Role struct {
+type RoleParam struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// Role ID for updating project role member.
+	Roles []int32 `json:"roles,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
-
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// Username relevant to a project role member.
+	Username string `json:"username,omitempty"`
 }

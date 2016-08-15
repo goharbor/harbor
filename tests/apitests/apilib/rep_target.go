@@ -22,14 +22,29 @@
 
 package apilib
 
-type Role struct {
+type RepTarget struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The target ID.
+	Id int64 `json:"id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// The target address URL string.
+	Endpoint string `json:"endpoint,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The target name.
+	Name string `json:"name,omitempty"`
+
+	// The target server username.
+	Username string `json:"username,omitempty"`
+
+	// The target server password.
+	Password string `json:"password,omitempty"`
+
+	// Reserved field.
+	Type_ int32 `json:"type,omitempty"`
+
+	// The create time of the policy.
+	CreationTime string `json:"creation_time,omitempty"`
+
+	// The update time of the policy.
+	UpdateTime string `json:"update_time,omitempty"`
 }
