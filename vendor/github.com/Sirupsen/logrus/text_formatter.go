@@ -128,10 +128,10 @@ func needsQuoting(text string) bool {
 			(ch >= 'A' && ch <= 'Z') ||
 			(ch >= '0' && ch <= '9') ||
 			ch == '-' || ch == '.') {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
@@ -141,14 +141,14 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 
 	switch value := value.(type) {
 	case string:
-		if needsQuoting(value) {
+		if !needsQuoting(value) {
 			b.WriteString(value)
 		} else {
 			fmt.Fprintf(b, "%q", value)
 		}
 	case error:
 		errmsg := value.Error()
-		if needsQuoting(errmsg) {
+		if !needsQuoting(errmsg) {
 			b.WriteString(errmsg)
 		} else {
 			fmt.Fprintf(b, "%q", value)
