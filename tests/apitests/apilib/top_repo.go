@@ -22,14 +22,11 @@
 
 package apilib
 
-type Role struct {
+type TopRepo struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The name of the repo
+	RepoName string `json:"repo_name,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
-
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The access count of the repo
+	AccessCount int32 `json:"access_count,omitempty"`
 }

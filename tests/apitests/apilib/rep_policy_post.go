@@ -22,14 +22,14 @@
 
 package apilib
 
-type Role struct {
+type RepPolicyPost struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The project ID.
+	ProjectId int64 `json:"project_id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// The target ID.
+	TargetId int64 `json:"target_id,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The policy name.
+	Name string `json:"name,omitempty"`
 }

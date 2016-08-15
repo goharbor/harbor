@@ -22,14 +22,29 @@
 
 package apilib
 
-type Role struct {
+type JobStatus struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
+	// The job ID.
+	Id int64 `json:"id,omitempty"`
 
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
+	// The status of the job.
+	Status string `json:"status,omitempty"`
 
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The repository handled by the job.
+	Repository string `json:"repository,omitempty"`
+
+	// The ID of the policy that triggered this job.
+	PolicyId int64 `json:"policy_id,omitempty"`
+
+	// The operation of the job.
+	Operation string `json:"operation,omitempty"`
+
+	// The repository's used tag list.
+	Tags []Tags `json:"tags,omitempty"`
+
+	// The creation time of the job.
+	CreationTime string `json:"creation_time,omitempty"`
+
+	// The update time of the job.
+	UpdateTime string `json:"update_time,omitempty"`
 }

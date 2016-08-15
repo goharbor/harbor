@@ -22,14 +22,8 @@
 
 package apilib
 
-type Role struct {
+type RepPolicyEnablementReq struct {
 
-	// ID in table.
-	RoleId int32 `json:"role_id,omitempty"`
-
-	// Description of permissions for the role.
-	RoleCode string `json:"role_code,omitempty"`
-
-	// Name the the role.
-	RoleName string `json:"role_name,omitempty"`
+	// The policy enablement flag.
+	Enabled int32 `json:"enabled,omitempty"`
 }
