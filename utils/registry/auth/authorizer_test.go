@@ -17,15 +17,26 @@ package auth
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/docker/distribution/registry/client/auth"
+	"github.com/vmware/harbor/utils/test"
 )
 
 func TestNewAuthorizerStore(t *testing.T) {
-	server := newRegistryServer()
+	handler := test.Handler(&test.Response{
+		StatusCode: http.StatusUnauthorized,
+		Headers: map[string]string{
+			"Www-Authenticate": "Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\"",
+		},
+	})
+
+	server := test.NewServer(&test.RequestHandlerMapping{
+		Method:  "GET",
+		Pattern: "/v2/",
+		Handler: handler,
+	})
 	defer server.Close()
 
 	_, err := NewAuthorizerStore(server.URL, false, nil)
@@ -75,17 +86,4 @@ func TestModify(t *testing.T) {
 	if !strings.HasPrefix(header, "Bearer") {
 		t.Fatal("\"Authorization\" header does not start with \"Bearer\"")
 	}
-}
-
-func newRegistryServer() *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/v2/", handlePing)
-
-	return httptest.NewServer(mux)
-}
-
-func handlePing(w http.ResponseWriter, r *http.Request) {
-	challenge := "Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\""
-	w.Header().Set("Www-Authenticate", challenge)
-	w.WriteHeader(http.StatusUnauthorized)
 }

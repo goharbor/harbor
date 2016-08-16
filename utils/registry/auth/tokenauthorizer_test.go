@@ -16,20 +16,29 @@
 package auth
 
 import (
-	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
-	"time"
-)
 
-var (
-	token = "token"
+	"github.com/vmware/harbor/utils/test"
 )
 
 func TestAuthorizeOfStandardTokenAuthorizer(t *testing.T) {
-	tokenServer := newTokenServer()
-	defer tokenServer.Close()
+	handler := test.Handler(&test.Response{
+		Body: []byte(`
+		{
+			"token":"token",
+			"expires_in":300,
+			"issued_at":"2016-08-17T23:17:58+08:00"
+		}
+		`),
+	})
+
+	server := test.NewServer(&test.RequestHandlerMapping{
+		Method:  "GET",
+		Pattern: "/token",
+		Handler: handler,
+	})
+	defer server.Close()
 
 	authorizer := NewStandardTokenAuthorizer(nil, false, "repository", "library/ubuntu", "pull")
 	req, err := http.NewRequest("GET", "http://registry", nil)
@@ -38,7 +47,7 @@ func TestAuthorizeOfStandardTokenAuthorizer(t *testing.T) {
 	}
 
 	params := map[string]string{
-		"realm": tokenServer.URL + "/token",
+		"realm": server.URL + "/token",
 	}
 
 	if err := authorizer.Authorize(req, params); err != nil {
@@ -46,8 +55,8 @@ func TestAuthorizeOfStandardTokenAuthorizer(t *testing.T) {
 	}
 
 	tk := req.Header.Get("Authorization")
-	if tk != "Bearer "+token {
-		t.Errorf("unexpected token: %s != %s", tk, "Bearer "+token)
+	if tk != "Bearer token" {
+		t.Errorf("unexpected token: %s != %s", tk, "Bearer token")
 	}
 }
 
@@ -57,25 +66,4 @@ func TestSchemeOfStandardTokenAuthorizer(t *testing.T) {
 		t.Errorf("unexpected scheme: %s != %s", authorizer.Scheme(), "bearer")
 	}
 
-}
-
-func newTokenServer() *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/token", handleToken)
-
-	return httptest.NewServer(mux)
-}
-
-func handleToken(w http.ResponseWriter, r *http.Request) {
-	result := map[string]interface{}{}
-	result["token"] = token
-	result["expires_in"] = 300
-	result["issued_at"] = time.Now().Format(time.RFC3339)
-
-	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(result); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
 }

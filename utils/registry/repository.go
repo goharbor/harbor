@@ -61,13 +61,6 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 
 // NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
 func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
-	name = strings.TrimSpace(name)
-
-	u, err := utils.ParseEndpoint(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	t := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: insecure,
@@ -76,13 +69,9 @@ func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers 
 
 	transport := NewTransport(t, modifiers...)
 
-	return &Repository{
-		Name:     name,
-		Endpoint: u,
-		client: &http.Client{
-			Transport: transport,
-		},
-	}, nil
+	return NewRepository(name, endpoint, &http.Client{
+		Transport: transport,
+	})
 }
 
 func parseError(err error) error {
@@ -347,7 +336,7 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 		data = resp.Body
 		return
 	}
-
+	// can not close the connect if the status code is 200
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
@@ -428,7 +417,6 @@ func (r *Repository) PushBlob(digest string, size int64, data io.Reader) error {
 	if err != nil {
 		return err
 	}
-
 	return r.monolithicBlobUpload(location, digest, size, data)
 }
 
@@ -482,5 +470,12 @@ func buildInitiateBlobUploadURL(endpoint, repoName string) string {
 }
 
 func buildMonolithicBlobUploadURL(location, digest string) string {
-	return fmt.Sprintf("%s&digest=%s", location, digest)
+	query := ""
+	if strings.ContainsRune(location, '?') {
+		query = "&"
+	} else {
+		query = "?"
+	}
+	query += fmt.Sprintf("digest=%s", digest)
+	return fmt.Sprintf("%s%s", location, query)
 }
