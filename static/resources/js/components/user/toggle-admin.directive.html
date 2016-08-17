@@ -12,5 +12,5 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<button ng-show="vm.isAdmin" class="btn btn-success" ng-click="vm.toggle()">// 'button_on' | tr //</button>
+<button ng-show="vm.isAdmin" ng-disabled="!vm.editable" class="btn btn-success" ng-click="vm.toggle()">// 'button_on' | tr //</button>
 <button ng-show="!vm.isAdmin" class="btn btn-danger" ng-click="vm.toggle()">// 'button_off' | tr //</button>

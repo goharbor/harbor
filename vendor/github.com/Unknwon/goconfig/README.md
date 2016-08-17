@@ -51,6 +51,11 @@ Please see [conf.ini](testdata/conf.ini) as an example.
 - Finally, `SaveConfigFile` saves your configuration to local file system.
 - Use method `Reload` in case someone else modified your file(s).
 - Methods contains `Comment` help you manipulate comments.
+- `LoadFromReader` allows loading data without an intermediate file.
+- `SaveConfigData` added, which writes configuration to an arbitrary writer.
+- `ReloadData` allows to reload data from memory.
+
+Note that you cannot mix in-memory configuration with on-disk configuration.
 
 ## More Information
 

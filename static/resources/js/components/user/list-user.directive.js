@@ -20,9 +20,9 @@
     .module('harbor.user')
     .directive('listUser', listUser);
     
-  ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService', '$filter', 'trFilter'];
+  ListUserController.$inject = ['$scope', 'ListUserService', 'DeleteUserService', 'currentUser', '$filter', 'trFilter'];
   
-  function ListUserController($scope, ListUserService, DeleteUserService, $filter, $trFilter) {
+  function ListUserController($scope, ListUserService, DeleteUserService, currentUser, $filter, $trFilter) {
 
     $scope.subsSubPane = 226;
         
@@ -33,6 +33,8 @@
     vm.deleteUser = deleteUser;
     vm.confirmToDelete = confirmToDelete;
     vm.retrieve = retrieve;
+
+    vm.currentUser = currentUser.get();
     
     vm.retrieve();
     
