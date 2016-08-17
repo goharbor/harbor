@@ -1,12 +1,18 @@
 #!/bin/bash
 set -e
 echo "This shell will minify the Javascript in Harbor project."
-echo "Usage: #jsminify [src] [dest]"
+echo "Usage: #jsminify [src] [dest] [basedir]"
 
 #prepare workspace
 rm -rf $2 /tmp/harbor.app.temp.js
 
-BASEPATH=/go/bin
+if [ -z $3 ] 
+then
+    BASEPATH=/go/bin
+else
+    BASEPATH=$3
+fi
+
 #concat the js files from js include file
 echo "Concat js files..."
 
