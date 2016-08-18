@@ -1376,7 +1376,7 @@ func TestDeleteRepPolicy(t *testing.T) {
 	if err != nil && err != orm.ErrNoRows {
 		t.Errorf("Error occured in GetRepPolicy:%v", err)
 	}
-	if p != nil {
+	if p != nil && p.Deleted != 1 {
 		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
 	}
 }
