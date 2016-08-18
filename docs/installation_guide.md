@@ -48,7 +48,12 @@ The parameters are described below - note that at the very least, you will need 
 * **harbor_admin_password**: The adminstrator's password. _Note that the default username/password are **admin/Harbor12345** ._  
 * **auth_mode**: The type of authentication that is used. By default it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
+* **ldap_searchdn**: The dn of the user who has the permission to search a ldap/AD server (e.g. `cn=admin,ou=people,dc=mydomain,dc=com`).
+* **ldap_search_pwd**: The password of the user who was set as the ldap_searchdn.
 * **ldap_basedn**: The basedn template for verifying the user's credential against an LDAP (e.g. `uid=%s,ou=people,dc=mydomain,dc=com` ) or an AD (e.g. `CN=%s,OU=Dept1,DC=mydomain,DC=com`) server.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
+* **ldap_filter**:The attribute to filter a user, you can add as many as you need, be sure the grammar is right. If not needed, comment it (e.g. `ldap_filter = objectClass=person`).
+* **ldap_uid**:The exclusive attribute to distinguish a user, it can be uid or cn or mail or email(e.g. `ldap_uid = uid`).
+* **ldap_scope**:The scope to search, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE, default is 3(e.g. `ldap_scope = 3`). 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register themselves. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **use_compressed_js**: (**on** or **off**. Default is **on**) For production use, turn this flag to **on**. In development mode, set it to **off** so that js files can be modified separately.
