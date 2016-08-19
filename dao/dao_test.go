@@ -889,20 +889,6 @@ func TestGetTopRepos(t *testing.T) {
 	}
 }
 
-func TestDeleteUser(t *testing.T) {
-	err := DeleteUser(currentUser.UserID)
-	if err != nil {
-		t.Errorf("Error occurred in DeleteUser: %v", err)
-	}
-	user, err := GetUser(*currentUser)
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-	if user != nil {
-		t.Errorf("user is not nil after deletion, user: %+v", user)
-	}
-}
-
 var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestAddRepTarget(t *testing.T) {
