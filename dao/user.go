@@ -214,7 +214,10 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 // DeleteUser ...
 func DeleteUser(userID int) error {
 	o := GetOrmer()
-	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
+	_, err := o.Raw(`update user 
+		set deleted = 1, username = concat(username, "#", user_id),
+			email = concat(email, "#", user_id)
+		where user_id = ?`, userID).Exec()
 	return err
 }
 
