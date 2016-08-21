@@ -2,8 +2,7 @@
 
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
 
-![alg tag](https://cloud.githubusercontent.com/assets/2390463/13484557/088a1000-e13a-11e5-87d4-a64366365bef.png)
-
+<img alt="Harbor" src="docs/img/harbor_logo.png">
 
 Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. With Harbor, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
 
@@ -55,7 +54,7 @@ _If everything worked properly, you should be able to open a browser to visit th
 Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (by default, the registry server listens on port 80):
 ```sh
 $ docker login reg.yourdomain.com
-$ docker push reg.yourdomain.com/myproject/myrepo
+$ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 
 ### Upgrade
