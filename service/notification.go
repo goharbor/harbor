@@ -34,7 +34,7 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
-const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
+const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d`
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -94,8 +94,8 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
 	for _, event := range notification.Events {
-		log.Debugf("receive an event: ID-%s, target-%s:%s, digest-%s, action-%s", event.ID, event.Target.Repository, event.Target.Tag,
-			event.Target.Digest, event.Action)
+		log.Debugf("receive an event: ID-%s, target-%s:%s, digest-%s, action-%s, mediaType-%s, userAgent-%s", event.ID, event.Target.Repository, event.Target.Tag,
+			event.Target.Digest, event.Action, event.Target.MediaType, event.Request.UserAgent)
 
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
 		if err != nil {
