@@ -60,6 +60,18 @@ paths:
           required: false
           type: integer
           format: int32
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -69,6 +81,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Project'
+          headers:
+            X-Total-Count:
+              description: The total count of projects
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         401:
           description: User need to log in first.
         500:
@@ -193,6 +212,18 @@ paths:
           schema:
             $ref: '#/definitions/AccessLogFilter'
           description: Search results of access logs.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -202,6 +233,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AccessLog'
+          headers:
+            X-Total-Count:
+              description: The total count of access logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         400:
           description: Illegal format of provided ID value.
         401:
@@ -581,6 +619,18 @@ paths:
           type: string
           required: false
           description: Repo name for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -589,6 +639,13 @@ paths:
           schema:
             type: array
             items:
+              type: string
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
               type: string
         400:
           description: Invalid project ID.
@@ -660,6 +717,11 @@ paths:
           type: string
           required: true
           description: Tag name
+        - name: version
+          in: query
+          type: string
+          required: false
+          description: The version of manifest, valid value are "v1" and "v2", default is "v2"		
       tags:
         - Products
       responses:
@@ -777,6 +839,18 @@ paths:
           type: string
           required: false
           description: The respond jobs list filter by status.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       responses:
         200:
           description: Get the required logs successfully.
@@ -784,6 +858,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/JobStatus'
+          headers:
+            X-Total-Count:
+              description: The total count of jobs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         400:
           description: Bad request because of invalid parameters.
         401:
@@ -1256,30 +1337,12 @@ definitions:
   Repository:
     type: object
     properties:
-      id:
+      manifest:
+        type: object
+        description: The detail of manifest.
+      config:
         type: string
-        description: Repository ID
-      parent:
-        type: string
-        description: Parent of the image.
-      created:
-        type: string
-        description: Repository create time.
-      duration_days:
-        type: string
-        description: Duration days of the image.
-      author:
-        type: string
-        description: Author of the image.
-      architecture:
-        type: string
-        description: Architecture of the image.
-      docker_version:
-        type: string
-        description: Docker version of the image.
-      os:
-        type: string
-        description: OS of the image.
+        description: The config of the repository.
   User:
     type: object
     properties:
