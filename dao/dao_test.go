@@ -16,6 +16,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -871,16 +872,37 @@ func TestGetTopRepos(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	err := DeleteUser(currentUser.UserID)
+	u, err := GetUser(models.User{
+		UserID: currentUser.UserID,
+	})
+	if err != nil {
+		t.Fatalf("failed to get user %s: %v", currentUser.UserID, err)
+	}
+
+	err = DeleteUser(u.UserID)
 	if err != nil {
 		t.Errorf("Error occurred in DeleteUser: %v", err)
 	}
-	user, err := GetUser(*currentUser)
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
+
+	user := &models.User{}
+	sql := "select * from user where user_id = ?"
+	if err = GetOrmer().Raw(sql, u.UserID).
+		QueryRow(user); err != nil {
+		t.Fatalf("failed to query user: %v", err)
 	}
-	if user != nil {
-		t.Errorf("user is not nil after deletion, user: %+v", user)
+
+	if user.Deleted != 1 {
+		t.Error("user is not deleted")
+	}
+
+	if user.Username != fmt.Sprintf("%s#%d", u.Username,
+		u.UserID) {
+		t.Errorf("unexpected username: %s != %s", user.Username, u.Username)
+	}
+
+	if user.Email != fmt.Sprintf("%s#%d", u.Email,
+		u.UserID) {
+		t.Errorf("unexpected email: %s != %s", user.Email, u.Email)
 	}
 }
 
