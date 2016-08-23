@@ -245,3 +245,12 @@ func getProjects(public int, projectName string) ([]models.Project, error) {
 	}
 	return projects, nil
 }
+
+// DeleteProject ...
+func DeleteProject(id int64) error {
+	sql := `update project 
+		set deleted = 1, name = concat(name,"#",project_id) 
+		where project_id = ?`
+	_, err := GetOrmer().Raw(sql, id).Exec()
+	return err
+}

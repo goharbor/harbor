@@ -26,6 +26,8 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/cache"
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -258,4 +260,35 @@ func getJobServiceURL() string {
 	}
 
 	return url
+}
+
+func getReposByProject(name string, keyword ...string) ([]string, error) {
+	repositories := []string{}
+
+	list, err := getAllRepos()
+	if err != nil {
+		return repositories, err
+	}
+
+	project := ""
+	rest := ""
+	for _, repository := range list {
+		project, rest = utils.ParseRepository(repository)
+		if project != name {
+			continue
+		}
+
+		if len(keyword) > 0 && len(keyword[0]) != 0 &&
+			!strings.Contains(rest, keyword[0]) {
+			continue
+		}
+
+		repositories = append(repositories, repository)
+	}
+
+	return repositories, nil
+}
+
+func getAllRepos() ([]string, error) {
+	return cache.GetRepoFromCache()
 }

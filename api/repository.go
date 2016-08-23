@@ -35,7 +35,6 @@ import (
 
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 
-	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/registry/auth"
 )
 
@@ -78,26 +77,10 @@ func (ra *RepositoryAPI) Get() {
 		}
 	}
 
-	repoList, err := cache.GetRepoFromCache()
+	repositories, err := getReposByProject(project.Name, ra.GetString("q"))
 	if err != nil {
-		log.Errorf("failed to get repository from cache: %v", err)
+		log.Errorf("failed to get repository: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
-	}
-
-	repositories := []string{}
-
-	q := ra.GetString("q")
-	for _, repo := range repoList {
-		pn, rest := utils.ParseRepository(repo)
-		if project.Name != pn {
-			continue
-		}
-
-		if len(q) != 0 && !strings.Contains(rest, q) {
-			continue
-		}
-
-		repositories = append(repositories, repo)
 	}
 
 	total := int64(len(repositories))

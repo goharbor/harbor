@@ -61,7 +61,9 @@ insert into user (username, email, password, realname, comment, deleted, sysadmi
 create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
- name varchar (30) NOT NULL,
+ # The max length of name controlled by API is 30, 
+ # and 11 bytes is reserved for marking the deleted project.
+ name varchar (41) NOT NULL,
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
