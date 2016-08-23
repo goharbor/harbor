@@ -51,6 +51,7 @@
         console.log('url:' + url);
         var exclusion = [
          '/',
+         '/login',
          '/search',
          '/reset_password',
          '/sign_up', 
