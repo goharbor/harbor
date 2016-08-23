@@ -45,7 +45,7 @@ func (s *StatisticAPI) Get() {
 	}
 	var projectList []models.Project
 	if isAdmin {
-		projectList, err = dao.GetAllProjects("")
+		projectList, err = dao.GetProjects("")
 	} else {
 		projectList, err = dao.GetUserRelevantProjects(s.userID, "")
 	}
@@ -59,7 +59,7 @@ func (s *StatisticAPI) Get() {
 	proMap["public_project_count"] = 0
 	proMap["public_repo_count"] = 0
 	var publicProjects []models.Project
-	publicProjects, err = dao.GetPublicProjects("")
+	publicProjects, err = dao.GetProjects("", 1)
 	if err != nil {
 		log.Errorf("Error occured in QueryPublicProject, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")

@@ -25,17 +25,17 @@ type Project struct {
 	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
 	Name            string    `orm:"column(name)" json:"name"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
-	CreationTimeStr string    `json:"creation_time_str"`
+	CreationTimeStr string    `orm:"-" json:"creation_time_str"`
 	Deleted         int       `orm:"column(deleted)" json:"deleted"`
 	//UserID          int `json:"UserId"`
-	OwnerName string `json:"owner_name"`
+	OwnerName string `orm:"-" json:"owner_name"`
 	Public    int    `orm:"column(public)" json:"public"`
 	//This field does not have correspondent column in DB, this is just for UI to disable button
-	Togglable bool
+	Togglable bool `orm:"-"`
 
 	UpdateTime time.Time `orm:"update_time" json:"update_time"`
-	Role       int       `json:"current_user_role_id"`
-	RepoCount  int       `json:"repo_count"`
+	Role       int       `orm:"-" json:"current_user_role_id"`
+	RepoCount  int       `orm:"-" json:"repo_count"`
 }
 
 // ProjectSorter holds an array of projects
