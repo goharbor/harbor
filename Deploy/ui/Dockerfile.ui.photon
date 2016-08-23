@@ -1,0 +1,17 @@
+FROM library/photon:latest
+
+RUN mkdir /harbor/
+RUN tdnf install -y sed apr-util-ldap
+
+COPY ./Deploy/ui/harbor_ui /harbor/
+
+COPY ./views /harbor/views
+COPY ./static /harbor/static
+COPY ./favicon.ico /harbor/favicon.ico
+COPY ./Deploy/jsminify.sh /tmp/jsminify.sh
+
+RUN chmod u+x /harbor/harbor_ui \
+    && tmp/jsminify.sh /harbor/views/sections/script-include.htm /harbor/static/resources/js/harbor.app.min.js /harbor/ \
+    && echo "TLS_REQCERT allow" >> /etc/openldap/ldap.conf
+WORKDIR /harbor/
+ENTRYPOINT ["/harbor/harbor_ui"]
