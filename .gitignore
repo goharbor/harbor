@@ -4,6 +4,8 @@ Deploy/config/ui/env
 Deploy/config/ui/app.conf
 Deploy/config/db/env
 Deploy/config/jobservice/env
+Deploy/ui/harbor_ui
+Deploy/jobservice/harbor_jobservice
 ui/ui
 *.pyc
 jobservice/test

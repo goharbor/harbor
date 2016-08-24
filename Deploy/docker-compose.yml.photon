@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    build: ./log/
+    image: harbor_log_photon 
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/
@@ -41,9 +41,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
   ui:
-    build:
-      context: ../
-      dockerfile: Deploy/ui/Dockerfile
+    image: harbor_ui_photon
     env_file:
       - ./config/ui/env
     restart: always
@@ -58,9 +56,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
   jobservice:
-    build:
-      context: ../
-      dockerfile: Deploy/jobservice/Dockerfile
+    image: harbor_jobservice_photon
     env_file:
       - ./config/jobservice/env
     restart: always
@@ -75,7 +71,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.9.0
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx
