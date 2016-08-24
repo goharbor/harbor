@@ -41,7 +41,9 @@
         vm.filterInput = hashValue;
       }
     }
-        
+    vm.page = 1;
+    vm.pageSize = 8;    
+    
     vm.retrieve = retrieve;
     vm.tagCount = {};
     
@@ -61,6 +63,15 @@
       }
     });
     
+   
+    
+    $scope.$watch('vm.page', function(current) {
+      if(current !== 1) {
+        vm.page = current;
+        vm.retrieve();
+      }
+    });
+    
     $scope.$on('repoName', function(e, val) {
       vm.repoName = val;
     });
@@ -76,19 +87,19 @@
     $scope.$on('tags', function(e, val) {
       vm.tags = val;
     });
-                
+            
     vm.deleteByRepo = deleteByRepo;
     vm.deleteByTag = deleteByTag;
     vm.deleteImage =  deleteImage;
                 
     function retrieve(){
-      ListRepositoryService(vm.projectId, vm.filterInput)
-        .success(getRepositoryComplete)
-        .error(getRepositoryFailed);
+      ListRepositoryService(vm.projectId, vm.filterInput, vm.page, vm.pageSize)
+        .then(getRepositoryComplete, getRepositoryFailed);
     }
    
-    function getRepositoryComplete(data, status) {
-      vm.repositories = data || [];
+    function getRepositoryComplete(response) {
+      vm.repositories = response.data || [];
+      vm.totalCount = response.headers('X-Total-Count');
       $scope.$broadcast('refreshTags', true);
     }
     

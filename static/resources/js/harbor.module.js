@@ -60,6 +60,7 @@
       'harbor.system.management',
       'harbor.loading.progress',
       'harbor.inline.help',
-      'harbor.dismissable.alerts'
+      'harbor.dismissable.alerts',
+      'harbor.paginator'
     ]);
 })();

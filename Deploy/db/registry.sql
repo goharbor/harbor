@@ -110,6 +110,7 @@ create table replication_policy (
  target_id int NOT NULL,
  enabled tinyint(1) NOT NULL DEFAULT 1,
  description text,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
  start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
@@ -122,7 +123,7 @@ create table replication_target (
  name varchar(64),
  url varchar(64),
  username varchar(40),
- password varchar(40),
+ password varchar(128),
  /*
  target_type indicates the type of target registry,
  0 means it's a harbor instance,

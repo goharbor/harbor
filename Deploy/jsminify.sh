@@ -1,12 +1,18 @@
 #!/bin/bash
 set -e
 echo "This shell will minify the Javascript in Harbor project."
-echo "Usage: #jsminify [src] [dest]"
+echo "Usage: #jsminify [src] [dest] [basedir]"
 
 #prepare workspace
 rm -rf $2 /tmp/harbor.app.temp.js
 
-BASEPATH=/go/bin
+if [ -z $3 ] 
+then
+    BASEPATH=/go/bin
+else
+    BASEPATH=$3
+fi
+
 #concat the js files from js include file
 echo "Concat js files..."
 
@@ -19,6 +25,12 @@ do
         printf "\n" >> /tmp/harbor.app.temp.js
     fi
 done
+
+# If you want run this script on Mac OS X,
+# I suggest you install gnu-sed (whth --with-default-names option).
+# $ brew install gnu-sed --with-default-names
+# Reference:
+# http://stackoverflow.com/a/27834828/3167471
 
 #remove space
 echo "Remove space.."

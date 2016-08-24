@@ -31,6 +31,7 @@ var localUIURL string
 var localRegURL string
 var logDir string
 var uiSecret string
+var secretKey string
 var verifyRemoteCert string
 
 func init() {
@@ -86,6 +87,11 @@ func init() {
 		beego.LoadAppConfig("ini", configPath)
 	}
 
+	secretKey = os.Getenv("SECRET_KEY")
+	if len(secretKey) != 16 {
+		panic("The length of secretkey has to be 16 characters!")
+	}
+
 	log.Debugf("config: maxJobWorkers: %d", maxJobWorkers)
 	log.Debugf("config: localUIURL: %s", localUIURL)
 	log.Debugf("config: localRegURL: %s", localRegURL)
@@ -117,6 +123,11 @@ func LogDir() string {
 // UISecret will return the value of secret cookie for jobsevice to call UI API.
 func UISecret() string {
 	return uiSecret
+}
+
+// SecretKey will return the secret key for encryption/decryption password in target.
+func SecretKey() string {
+	return secretKey
 }
 
 // VerifyRemoteCert return the flag to tell jobservice whether or not verify the cert of remote registry

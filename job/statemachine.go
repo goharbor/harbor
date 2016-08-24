@@ -231,7 +231,7 @@ func (sm *SM) Reset(jid int64) error {
 	pwd := target.Password
 
 	if len(pwd) != 0 {
-		pwd, err = uti.ReversibleDecrypt(pwd)
+		pwd, err = uti.ReversibleDecrypt(pwd, config.SecretKey())
 		if err != nil {
 			return fmt.Errorf("failed to decrypt password: %v", err)
 		}
