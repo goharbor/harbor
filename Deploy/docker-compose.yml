@@ -8,7 +8,7 @@ services:
     ports:
       - 1514:514
   registry:
-    image: library/registry:2.4.0
+    image: library/registry:2.5.0
     restart: always
     volumes:
       - /data/registry:/storage
@@ -43,7 +43,7 @@ services:
   ui:
     build:
       context: ../
-      dockerfile: Dockerfile.ui
+      dockerfile: Deploy/ui/Dockerfile
     env_file:
       - ./config/ui/env
     restart: always
@@ -60,7 +60,7 @@ services:
   jobservice:
     build:
       context: ../
-      dockerfile: Dockerfile.job
+      dockerfile: Deploy/jobservice/Dockerfile
     env_file:
       - ./config/jobservice/env
     restart: always
