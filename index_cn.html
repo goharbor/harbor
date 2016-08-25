@@ -76,15 +76,17 @@
           <div class='content'>
             <h2 id="what-is-harbor">Harbor简介</h2>
             <p>
-            Harbor是一个企业级Registry服务。它对开源的Docker Registry服务进行了扩展,添加了更多企业用户需要的功能。Harbor被设计用于部署一套组织内部使用的私有环境，这个私有Registry服务对于非常关心安全
-            的组织来说是十分重要的。另外，私有Registry服务可以通过避免从公域网下载镜像而提高企业生产力。这对于没有良好的Internet连接状态，使用Docker Container的用户是一个福音。
+Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，通过添加一些企业必需的功能特性，例如安全、标识和管理等，扩展了开源Docker Distribution。作为一个企业级私有Registry服务器，Harbor提供了更好的性能和安全。提升用户使用Registry构建和运行环境传输镜像的效率。Harbor支持安装在多个Registry节点的镜像资源复制，镜像全部保存在私有Registry中， 确保数据和知识产权在公司内部网络中管控。另外，Harbor也提供了高级的安全特性，诸如用户管理，访问控制和活动审计等。
             </p>
             <ul>
               <li><strong>基于角色的访问控制</strong> - 用户与Docker镜像仓库通过“项目”进行组织管理，一个用户可以对多个镜像仓库在同一命名空间（project）里有不同的权限。</li>
+              <li><strong>镜像复制</strong> - 镜像可以在多个Registry实例中复制（同步）。尤其适合于负载均衡，高可用，混合云和多云的场景。</li>
               <li><strong>图形化用户界面</strong> - 用户可以通过浏览器来浏览，检索当前Docker镜像仓库，管理项目和命名空间。</li>
+              <li><strong>AD/LDAP 支持</strong> - Harbor可以集成企业内部已有的AD/LDAP，用于鉴权认证管理。</li>
               <li><strong>审计管理</strong> - 所有针对镜像仓库的操作都可以被记录追溯，用于审计管理。</li>
-              <li><strong>国际化</strong> - 基于英文与中文语言进行了本地化。可以增加更多的语言支持。</li>
+              <li><strong>国际化</strong> - 已拥有英文、中文、德文、日文和俄文的本地化版本。更多的语言会添加进来。</li>
               <li><strong>RESTful API</strong> - RESTful API 提供给管理员对于Harbor更多的操控, 使得与其它管理软件集成变得更容易。</li>
+              <li><strong>部署简单</strong> - docker-compose和离线安装。</li>
             </ul>
             <p>更多信息请查看<a href="https://github.com/vmware/harbor/blob/master/README.md" target="_blank">Readme</a>文档。</p>
           </div>
@@ -101,7 +103,7 @@
             </p>
 
             <ul>
-              <li><a href="https://github.com/vmware/harbor/releases/download/0.3.0/harbor-0.3.0.tgz" target="_blank">Harbor 0.3.0</a> - 一个预编译好的安装包。</li>
+              <li><a href="https://github.com/vmware/harbor/archive/0.3.5-rc.tar.gz" target="_blank">Harbor 0.3.5-rc</a> - 最新安装包。</li>
             </ul>
   
             <p>
