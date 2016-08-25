@@ -6,6 +6,7 @@ import random
 import string
 import os
 import sys
+import argparse
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -16,10 +17,14 @@ if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-conf', dest='cfgfile', default = 'harbor.cfg',type=str,help="the path of Harbor configuration file")
+args = parser.parse_args()
+
 #Read configurations
 conf = StringIO.StringIO()
 conf.write("[configuration]\n")
-conf.write(open("harbor.cfg").read())
+conf.write(open(args.cfgfile).read())
 conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
