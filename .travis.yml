@@ -72,6 +72,7 @@ script:
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - ./Deploy/coverage4gotest.sh
+  - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f Deploy/docker-compose.yml up -d
   
