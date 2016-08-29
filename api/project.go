@@ -31,8 +31,9 @@ import (
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
 	BaseAPI
-	userID    int
-	projectID int64
+	userID      int
+	projectID   int64
+	projectName string
 }
 
 type projectReq struct {
@@ -54,14 +55,16 @@ func (p *ProjectAPI) Prepare() {
 			log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
 			p.CustomAbort(http.StatusBadRequest, "invalid project id")
 		}
-		exist, err := dao.ProjectExists(p.projectID)
+
+		project, err := dao.GetProjectByID(p.projectID)
 		if err != nil {
-			log.Errorf("Error occurred in ProjectExists, error: %v", err)
+			log.Errorf("failed to get project %d: %v", p.projectID, err)
 			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
-		if !exist {
+		if project == nil {
 			p.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", p.projectID))
 		}
+		p.projectName = project.Name
 	}
 }
 
@@ -150,6 +153,71 @@ func (p *ProjectAPI) Get() {
 
 	p.Data["json"] = project
 	p.ServeJSON()
+}
+
+// Delete ...
+func (p *ProjectAPI) Delete() {
+	if p.projectID == 0 {
+		p.CustomAbort(http.StatusBadRequest, "project ID is required")
+	}
+
+	userID := p.ValidateUser()
+
+	if !hasProjectAdminRole(userID, p.projectID) {
+		p.CustomAbort(http.StatusForbidden, "")
+	}
+
+	contains, err := projectContainsRepo(p.projectName)
+	if err != nil {
+		log.Errorf("failed to check whether project %s contains any repository: %v", p.projectName, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+	if contains {
+		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
+	}
+
+	contains, err = projectContainsPolicy(p.projectID)
+	if err != nil {
+		log.Errorf("failed to check whether project %s contains any policy: %v", p.projectName, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+	if contains {
+		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
+	}
+
+	if err = dao.DeleteProject(p.projectID); err != nil {
+		log.Errorf("failed to delete project %d: %v", p.projectID, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	go func() {
+		if err := dao.AddAccessLog(models.AccessLog{
+			UserID:    userID,
+			ProjectID: p.projectID,
+			RepoName:  p.projectName,
+			Operation: "delete",
+		}); err != nil {
+			log.Errorf("failed to add access log: %v", err)
+		}
+	}()
+}
+
+func projectContainsRepo(name string) (bool, error) {
+	repositories, err := getReposByProject(name)
+	if err != nil {
+		return false, err
+	}
+
+	return len(repositories) > 0, nil
+}
+
+func projectContainsPolicy(id int64) (bool, error) {
+	policies, err := dao.GetRepPolicyByProject(id)
+	if err != nil {
+		return false, err
+	}
+
+	return len(policies) > 0, nil
 }
 
 // List ...

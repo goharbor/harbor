@@ -48,11 +48,6 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 
 // NewRegistryWithModifiers returns an instance of Registry according to the modifiers
 func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modifier) (*Registry, error) {
-	u, err := utils.ParseEndpoint(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	t := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: insecure,
@@ -61,12 +56,9 @@ func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modif
 
 	transport := NewTransport(t, modifiers...)
 
-	return &Registry{
-		Endpoint: u,
-		client: &http.Client{
-			Transport: transport,
-		},
-	}, nil
+	return NewRegistry(endpoint, &http.Client{
+		Transport: transport,
+	})
 }
 
 // Catalog ...

@@ -26,7 +26,7 @@
     
     return LogResult;
     
-    function LogResult(queryParams) {      
+    function LogResult(queryParams, page, pageSize) {      
       var projectId = queryParams.projectId;
       var username = queryParams.username;
       var beginTimestamp = queryParams.beginTimestamp;
@@ -34,7 +34,7 @@
       var keywords = queryParams.keywords;
       
       return $http
-        .post('/api/projects/' + projectId + '/logs/filter', {
+        .post('/api/projects/' + projectId + '/logs/filter?page=' + page + '&page_size=' + pageSize, {
           'begin_timestamp' : beginTimestamp,
           'end_timestamp'   : endTimestamp,
           'keywords' : keywords,

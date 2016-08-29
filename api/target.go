@@ -20,6 +20,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/vmware/harbor/dao"
@@ -34,10 +35,14 @@ import (
 // TargetAPI handles request to /api/targets/ping /api/targets/{}
 type TargetAPI struct {
 	BaseAPI
+	secretKey string
 }
 
 // Prepare validates the user
 func (t *TargetAPI) Prepare() {
+	//TODO:move to config
+	t.secretKey = os.Getenv("SECRET_KEY")
+
 	userID := t.ValidateUser()
 	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
@@ -76,7 +81,7 @@ func (t *TargetAPI) Ping() {
 		password = target.Password
 
 		if len(password) != 0 {
-			password, err = utils.ReversibleDecrypt(password)
+			password, err = utils.ReversibleDecrypt(password, t.secretKey)
 			if err != nil {
 				log.Errorf("failed to decrypt password: %v", err)
 				t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -136,7 +141,7 @@ func (t *TargetAPI) Get() {
 	// modify other fields of target he does not need to input the password again.
 	// The security issue can be fixed by enable https.
 	if len(target.Password) != 0 {
-		pwd, err := utils.ReversibleDecrypt(target.Password)
+		pwd, err := utils.ReversibleDecrypt(target.Password, t.secretKey)
 		if err != nil {
 			log.Errorf("failed to decrypt password: %v", err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -162,7 +167,7 @@ func (t *TargetAPI) List() {
 			continue
 		}
 
-		str, err := utils.ReversibleDecrypt(target.Password)
+		str, err := utils.ReversibleDecrypt(target.Password, t.secretKey)
 		if err != nil {
 			log.Errorf("failed to decrypt password: %v", err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -201,7 +206,11 @@ func (t *TargetAPI) Post() {
 	}
 
 	if len(target.Password) != 0 {
-		target.Password = utils.ReversibleEncrypt(target.Password)
+		target.Password, err = utils.ReversibleEncrypt(target.Password, t.secretKey)
+		if err != nil {
+			log.Errorf("failed to encrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 	}
 
 	id, err := dao.AddRepTarget(*target)
@@ -275,7 +284,11 @@ func (t *TargetAPI) Put() {
 	target.ID = id
 
 	if len(target.Password) != 0 {
-		target.Password = utils.ReversibleEncrypt(target.Password)
+		target.Password, err = utils.ReversibleEncrypt(target.Password, t.secretKey)
+		if err != nil {
+			log.Errorf("failed to encrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 	}
 
 	if err := dao.UpdateRepTarget(*target); err != nil {

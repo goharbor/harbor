@@ -12,6 +12,7 @@ AUTH_MODE=$auth_mode
 LDAP_URL=$ldap_url
 LDAP_BASE_DN=$ldap_basedn
 UI_SECRET=$ui_secret
+SECRET_KEY=$secret_key
 SELF_REGISTRATION=$self_registration
 USE_COMPRESSED_JS=$use_compressed_js
 LOG_LEVEL=debug

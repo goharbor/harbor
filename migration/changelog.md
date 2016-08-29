@@ -17,7 +17,7 @@ Changelog for harbor database schema
   - delete data `AMDRWS` from table `role`
   - delete data `A` from table `access`
   
-## 0.2.0
+## 0.3.0
 
   - create table `replication_policy`
   - create table `replication_target`
@@ -25,3 +25,9 @@ Changelog for harbor database schema
   - add column `repo_tag` to table `access_log`
   - alter column `repo_name` on table `access_log`
   - alter column `email` on table `user` 
+
+## TODO
+
+  - add index `pid_optime (project_id, op_time)` on table `access_log`
+  - add index `poid_uptime (policy_id, update_time)` on table `replication_job`
+  - add column `deleted` to table `replication_policy`

@@ -26,6 +26,8 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/cache"
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -115,7 +117,14 @@ func TriggerReplication(policyID int64, repository string,
 
 	url := buildReplicationURL()
 
-	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+	addAuthentication(req)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -188,7 +197,16 @@ func postReplicationAction(policyID int64, acton string) error {
 
 	url := buildReplicationActionURL()
 
-	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	addAuthentication(req)
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -205,6 +223,16 @@ func postReplicationAction(policyID int64, acton string) error {
 	}
 
 	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+}
+
+func addAuthentication(req *http.Request) {
+	if req != nil {
+		req.AddCookie(&http.Cookie{
+			Name: models.UISecretCookie,
+			// TODO read secret from config
+			Value: os.Getenv("UI_SECRET"),
+		})
+	}
 }
 
 func buildReplicationURL() string {
@@ -232,4 +260,35 @@ func getJobServiceURL() string {
 	}
 
 	return url
+}
+
+func getReposByProject(name string, keyword ...string) ([]string, error) {
+	repositories := []string{}
+
+	list, err := getAllRepos()
+	if err != nil {
+		return repositories, err
+	}
+
+	project := ""
+	rest := ""
+	for _, repository := range list {
+		project, rest = utils.ParseRepository(repository)
+		if project != name {
+			continue
+		}
+
+		if len(keyword) > 0 && len(keyword[0]) != 0 &&
+			!strings.Contains(rest, keyword[0]) {
+			continue
+		}
+
+		repositories = append(repositories, repository)
+	}
+
+	return repositories, nil
+}
+
+func getAllRepos() ([]string, error) {
+	return cache.GetRepoFromCache()
 }

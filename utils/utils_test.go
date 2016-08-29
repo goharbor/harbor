@@ -16,10 +16,41 @@
 package utils
 
 import (
+	"encoding/base64"
+	"strings"
 	"testing"
 )
 
-func TestMain(t *testing.T) {
+func TestParseEndpoint(t *testing.T) {
+	endpoint := "example.com"
+	u, err := ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "http://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
+	}
+
+	endpoint = "https://example.com"
+	u, err = ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "https://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "https://example.com")
+	}
+
+	endpoint = "  example.com/ "
+	u, err = ParseEndpoint(endpoint)
+	if err != nil {
+		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	}
+
+	if u.String() != "http://example.com" {
+		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
+	}
 }
 
 func TestParseRepository(t *testing.T) {
@@ -59,5 +90,47 @@ func TestParseRepository(t *testing.T) {
 
 	if rest != "" {
 		t.Errorf("unexpected rest: [%s] != [%s]", rest, "")
+	}
+}
+
+func TestEncrypt(t *testing.T) {
+	content := "content"
+	salt := "salt"
+	result := Encrypt(content, salt)
+
+	if result != "dc79e76c88415c97eb089d9cc80b4ab0" {
+		t.Errorf("unexpected result: %s != %s", result, "dc79e76c88415c97eb089d9cc80b4ab0")
+	}
+}
+
+func TestReversibleEncrypt(t *testing.T) {
+	password := "password"
+	key := "1234567890123456"
+	encrypted, err := ReversibleEncrypt(password, key)
+	if err != nil {
+		t.Errorf("Failed to encrypt: %v", err)
+	}
+	t.Logf("Encrypted password: %s", encrypted)
+	if encrypted == password {
+		t.Errorf("Encrypted password is identical to the original")
+	}
+	if !strings.HasPrefix(encrypted, EncryptHeaderV1) {
+		t.Errorf("Encrypted password does not have v1 header")
+	}
+	decrypted, err := ReversibleDecrypt(encrypted, key)
+	if err != nil {
+		t.Errorf("Failed to decrypt: %v", err)
+	}
+	if decrypted != password {
+		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
+	}
+	//Test b64 for backward compatibility
+	b64password := base64.StdEncoding.EncodeToString([]byte(password))
+	decrypted, err = ReversibleDecrypt(b64password, key)
+	if err != nil {
+		t.Errorf("Failed to decrypt: %v", err)
+	}
+	if decrypted != password {
+		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
 	}
 }
