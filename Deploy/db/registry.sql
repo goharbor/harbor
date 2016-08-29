@@ -105,6 +105,22 @@ create table access_log (
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 
+create table repository (
+ repository_id int NOT NULL AUTO_INCREMENT,
+ name varchar(255) NOT NULL,
+ project_id int NOT NULL,
+ owner_id int NOT NULL,
+ description text,
+ pull_count int DEFAULT 0 NOT NULL,
+ star_count int DEFAULT 0 NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ primary key (repository_id),
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id),
+ UNIQUE (name)
+);
+
 create table replication_policy (
  id int NOT NULL AUTO_INCREMENT,
  name varchar(256),
