@@ -63,6 +63,7 @@ type RepPolicy struct {
 	CreationTime  time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime    time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 	ErrorJobCount int       `json:"error_job_count"`
+	Deleted       int       `orm:"column(deleted)" json:"deleted"`
 }
 
 // Valid ...

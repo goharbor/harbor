@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 echo "mode: set" >>profile.cov
 for dir in $(go list ./... | grep -v -E 'vendor|tests')
 do

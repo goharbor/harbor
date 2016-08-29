@@ -16,6 +16,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -112,6 +113,7 @@ func clearUp(username string) {
 }
 
 const username string = "Tester01"
+const password string = "Abc12345"
 const projectName string = "test_project"
 const repoTag string = "test1.1"
 const repoTag2 string = "test1.2"
@@ -157,7 +159,7 @@ func TestRegister(t *testing.T) {
 	user := models.User{
 		Username: username,
 		Email:    "tester01@vmware.com",
-		Password: "Abc12345",
+		Password: password,
 		Realname: "tester01",
 		Comment:  "register",
 	}
@@ -181,6 +183,41 @@ func TestRegister(t *testing.T) {
 	}
 	if newUser.Email != "tester01@vmware.com" {
 		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
+	}
+}
+
+func TestCheckUserPassword(t *testing.T) {
+	nonExistUser := models.User{
+		Username: "non-exist",
+	}
+	correctUser := models.User{
+		Username: username,
+		Password: password,
+	}
+	wrongPwd := models.User{
+		Username: username,
+		Password: "wrong",
+	}
+	u, err := CheckUserPassword(nonExistUser)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u != nil {
+		t.Errorf("Expected nil for Non exist user, but actual: %+v", u)
+	}
+	u, err = CheckUserPassword(wrongPwd)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u != nil {
+		t.Errorf("Expected nil for user with wrong password, but actual: %+v", u)
+	}
+	u, err = CheckUserPassword(correctUser)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u == nil {
+		t.Errorf("User should not be nil for correct user")
 	}
 }
 
@@ -694,6 +731,21 @@ func TestAddProjectMember(t *testing.T) {
 	}
 }
 
+func TestUpdateProjectMember(t *testing.T) {
+	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST)
+	if err != nil {
+		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
+	}
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	if err != nil {
+		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+	}
+	if roles[0].Name != "guest" {
+		t.Errorf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name)
+	}
+
+}
+
 func TestDeleteProjectMember(t *testing.T) {
 	err := DeleteProjectMember(currentProject.ProjectID, 1)
 	if err != nil {
@@ -707,6 +759,23 @@ func TestDeleteProjectMember(t *testing.T) {
 
 	if len(roles) != 0 {
 		t.Errorf("delete record failed from table project_member")
+	}
+}
+
+func TestGetRoleByID(t *testing.T) {
+	r, err := GetRoleByID(models.PROJECTADMIN)
+	if err != nil {
+		t.Errorf("Failed to call GetRoleByID: %v", err)
+	}
+	if r == nil || r.Name != "projectAdmin" || r.RoleCode != "MDRWS" {
+		t.Errorf("Role does not match for role id: %d, actual: %+v", models.PROJECTADMIN, r)
+	}
+	r, err = GetRoleByID(9999)
+	if err != nil {
+		t.Errorf("Failed to call GetRoleByID: %v", err)
+	}
+	if r != nil {
+		t.Errorf("Role should nil for non-exist id 9999, actual: %+v", r)
 	}
 }
 
@@ -1330,7 +1399,7 @@ func TestDeleteRepPolicy(t *testing.T) {
 	if err != nil && err != orm.ErrNoRows {
 		t.Errorf("Error occured in GetRepPolicy:%v", err)
 	}
-	if p != nil {
+	if p != nil && p.Deleted != 1 {
 		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
 	}
 }
@@ -1411,4 +1480,37 @@ func TestGetOrmer(t *testing.T) {
 	if o == nil {
 		t.Errorf("Error get ormer.")
 	}
+}
+
+func TestDeleteProject(t *testing.T) {
+	name := "project_for_test"
+	project := models.Project{
+		OwnerID: currentUser.UserID,
+		Name:    name,
+	}
+
+	id, err := AddProject(project)
+	if err != nil {
+		t.Fatalf("failed to add project: %v", err)
+	}
+
+	if err = DeleteProject(id); err != nil {
+		t.Fatalf("failed to delete project: %v", err)
+	}
+
+	p := &models.Project{}
+	if err = GetOrmer().Raw(`select * from project where project_id = ?`, id).
+		QueryRow(p); err != nil {
+		t.Fatalf("failed to get project: %v", err)
+	}
+
+	if p.Deleted != 1 {
+		t.Errorf("unexpeced deleted column: %d != %d", p.Deleted, 1)
+	}
+
+	deletedName := fmt.Sprintf("%s#%d", name, id)
+	if p.Name != deletedName {
+		t.Errorf("unexpected name: %s != %s", p.Name, deletedName)
+	}
+
 }

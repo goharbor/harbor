@@ -61,7 +61,9 @@ insert into user (username, email, password, realname, comment, deleted, sysadmi
 create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
- name varchar (30) NOT NULL,
+ # The max length of name controlled by API is 30, 
+ # and 11 bytes is reserved for marking the deleted project.
+ name varchar (41) NOT NULL,
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -110,6 +112,7 @@ create table replication_policy (
  target_id int NOT NULL,
  enabled tinyint(1) NOT NULL DEFAULT 1,
  description text,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
  start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
@@ -122,7 +125,7 @@ create table replication_target (
  name varchar(64),
  url varchar(64),
  username varchar(40),
- password varchar(40),
+ password varchar(128),
  /*
  target_type indicates the type of target registry,
  0 means it's a harbor instance,

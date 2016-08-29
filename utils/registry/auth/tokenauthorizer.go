@@ -180,7 +180,9 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 		return
 	}
 
-	s.credential.AddAuthorization(r)
+	if s.credential != nil {
+		s.credential.AddAuthorization(r)
+	}
 
 	resp, err := s.client.Do(r)
 	if err != nil {

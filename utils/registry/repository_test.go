@@ -16,179 +16,395 @@
 package registry
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
-	"os"
+	"net/url"
+	"strconv"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/vmware/harbor/utils/registry/auth"
+	"github.com/docker/distribution/manifest/schema2"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
+	"github.com/vmware/harbor/utils/test"
 )
 
 var (
-	username         = "user"
-	password         = "P@ssw0rd"
-	repo             = "samalba/my-app"
-	tags             = tagResp{Tags: []string{"1.0", "2.0", "3.0"}}
-	validToken       = "valid_token"
-	invalidToken     = "invalid_token"
-	credential       auth.Credential
-	registryServer   *httptest.Server
-	tokenServer      *httptest.Server
-	repositoryClient *Repository
+	repository = "library/hello-world"
+	tag        = "latest"
+
+	mediaType = schema2.MediaTypeManifest
+	manifest  = []byte("manifest")
+
+	blob = []byte("blob")
+
+	uuid = "0663ff44-63bb-11e6-8b77-86f30ca893d3"
+
+	digest = "sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b"
 )
 
-type tagResp struct {
-	Tags []string `json:"tags"`
-}
-
-func TestMain(m *testing.M) {
-	//log.SetLevel(log.DebugLevel)
-	credential = auth.NewBasicAuthCredential(username, password)
-
-	tokenServer = initTokenServer()
-	defer tokenServer.Close()
-
-	registryServer = initRegistryServer()
-	defer registryServer.Close()
-
-	os.Exit(m.Run())
-}
-
-func initRegistryServer() *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/v2/", servePing)
-	mux.HandleFunc(fmt.Sprintf("/v2/%s/tags/list", repo), serveTaglisting)
-
-	return httptest.NewServer(mux)
-}
-
-//response ping request: http://registry/v2
-func servePing(w http.ResponseWriter, r *http.Request) {
-	if !isTokenValid(r) {
-		challenge(w)
-		return
+func TestNewRepositoryWithModifiers(t *testing.T) {
+	_, err := NewRepositoryWithModifiers("library/ubuntu",
+		"http://registry.org", true, nil)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
 	}
 }
 
-func serveTaglisting(w http.ResponseWriter, r *http.Request) {
-	if !isTokenValid(r) {
-		challenge(w)
-		return
-	}
-
-	if err := json.NewEncoder(w).Encode(tags); err != nil {
-		w.Write([]byte(err.Error()))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-}
-
-func isTokenValid(r *http.Request) bool {
-	valid := false
-	auth := r.Header.Get(http.CanonicalHeaderKey("Authorization"))
-	if len(auth) != 0 {
-		auth = strings.TrimSpace(auth)
-		index := strings.Index(auth, "Bearer")
-		token := auth[index+6:]
-		token = strings.TrimSpace(token)
-		if token == validToken {
-			valid = true
+func TestBlobExist(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		dgt := path[strings.LastIndex(path, "/")+1 : len(path)]
+		if dgt == digest {
+			w.Header().Add(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(blob)))
+			w.Header().Add(http.CanonicalHeaderKey("Docker-Content-Digest"), digest)
+			w.Header().Add(http.CanonicalHeaderKey("Content-Type"), "application/octet-stream")
+			return
 		}
-	}
-	return valid
-}
 
-func challenge(w http.ResponseWriter) {
-	challenge := "Bearer realm=\"" + tokenServer.URL + "/service/token\",service=\"token-service\""
-	w.Header().Set("Www-Authenticate", challenge)
-	w.WriteHeader(http.StatusUnauthorized)
-	return
-}
-
-func initTokenServer() *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/service/token", serveToken)
-
-	return httptest.NewServer(mux)
-}
-
-func serveToken(w http.ResponseWriter, r *http.Request) {
-	u, p, ok := r.BasicAuth()
-	if !ok || u != username || p != password {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
+		w.WriteHeader(http.StatusNotFound)
 	}
 
-	result := make(map[string]interface{})
-	result["token"] = validToken
-	result["expires_in"] = 300
-	result["issued_at"] = time.Now().Format(time.RFC3339)
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/", repository),
+			Handler: handler,
+		})
+	defer server.Close()
 
-	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(result); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
+	client, err := newRepository(server.URL)
+	if err != nil {
+		err = parseError(err)
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	exist, err := client.BlobExist(digest)
+	if err != nil {
+		t.Fatalf("failed to check the existence of blob: %v", err)
+	}
+
+	if !exist {
+		t.Errorf("blob should exist on registry, but it does not exist")
+	}
+
+	exist, err = client.BlobExist("invalid_digest")
+	if err != nil {
+		t.Fatalf("failed to check the existence of blob: %v", err)
+	}
+
+	if exist {
+		t.Errorf("blob should not exist on registry, but it exists")
+	}
+}
+
+func TestPullBlob(t *testing.T) {
+	handler := test.Handler(&test.Response{
+		Headers: map[string]string{
+			"Content-Length":        strconv.Itoa(len(blob)),
+			"Docker-Content-Digest": digest,
+			"Content-Type":          "application/octet-stream",
+		},
+		Body: blob,
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/%s", repository, digest),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	size, reader, err := client.PullBlob(digest)
+	if err != nil {
+		t.Fatalf("failed to pull blob: %v", err)
+	}
+
+	if size != int64(len(blob)) {
+		t.Errorf("unexpected size of blob: %d != %d", size, len(blob))
+	}
+
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("failed to read from reader: %v", err)
+	}
+
+	if bytes.Compare(b, blob) != 0 {
+		t.Errorf("unexpected blob: %s != %s", string(b), string(blob))
+	}
+}
+
+func TestPushBlob(t *testing.T) {
+	location := ""
+	initUploadHandler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add(http.CanonicalHeaderKey("Content-Length"), "0")
+		w.Header().Add(http.CanonicalHeaderKey("Location"), location)
+		w.Header().Add(http.CanonicalHeaderKey("Range"), "0-0")
+		w.Header().Add(http.CanonicalHeaderKey("Docker-Upload-UUID"), uuid)
+		w.WriteHeader(http.StatusAccepted)
+	}
+
+	monolithicUploadHandler := test.Handler(&test.Response{
+		StatusCode: http.StatusCreated,
+		Headers: map[string]string{
+			"Content-Length":        "0",
+			"Location":              fmt.Sprintf("/v2/%s/blobs/%s", repository, digest),
+			"Docker-Content-Digest": digest,
+		},
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "POST",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/uploads/", repository),
+			Handler: initUploadHandler,
+		},
+		&test.RequestHandlerMapping{
+			Method:  "PUT",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/uploads/%s", repository, uuid),
+			Handler: monolithicUploadHandler,
+		})
+	defer server.Close()
+	location = fmt.Sprintf("%s/v2/%s/blobs/uploads/%s", server.URL, repository, uuid)
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	if err = client.PushBlob(digest, int64(len(blob)), bytes.NewReader(blob)); err != nil {
+		t.Fatalf("failed to push blob: %v", err)
+	}
+}
+
+func TestDeleteBlob(t *testing.T) {
+	handler := test.Handler(&test.Response{
+		StatusCode: http.StatusAccepted,
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "DELETE",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/%s", repository, digest),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	if err = client.DeleteBlob(digest); err != nil {
+		t.Fatalf("failed to delete blob: %v", err)
+	}
+}
+
+func TestManifestExist(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		tg := path[strings.LastIndex(path, "/")+1 : len(path)]
+		if tg == tag {
+			w.Header().Add(http.CanonicalHeaderKey("Docker-Content-Digest"), digest)
+			w.Header().Add(http.CanonicalHeaderKey("Content-Type"), mediaType)
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+	}
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: fmt.Sprintf("/v2/%s/manifests/%s", repository, tag),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	d, exist, err := client.ManifestExist(tag)
+	if err != nil {
+		t.Fatalf("failed to check the existence of manifest: %v", err)
+	}
+
+	if !exist || d != digest {
+		t.Errorf("manifest should exist on registry, but it does not exist")
+	}
+
+	_, exist, err = client.ManifestExist("invalid_tag")
+	if err != nil {
+		t.Fatalf("failed to check the existence of manifest: %v", err)
+	}
+
+	if exist {
+		t.Errorf("manifest should not exist on registry, but it exists")
+	}
+}
+
+func TestPullManifest(t *testing.T) {
+	handler := test.Handler(&test.Response{
+		Headers: map[string]string{
+			"Docker-Content-Digest": digest,
+			"Content-Type":          mediaType,
+		},
+		Body: manifest,
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: fmt.Sprintf("/v2/%s/manifests/%s", repository, tag),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	d, md, payload, err := client.PullManifest(tag, []string{mediaType})
+	if err != nil {
+		t.Fatalf("failed to pull manifest: %v", err)
+	}
+
+	if d != digest {
+		t.Errorf("unexpected digest of manifest: %s != %s", d, digest)
+	}
+
+	if md != mediaType {
+		t.Errorf("unexpected media type of manifest: %s != %s", md, mediaType)
+	}
+
+	if bytes.Compare(payload, manifest) != 0 {
+		t.Errorf("unexpected manifest: %s != %s", string(payload), string(manifest))
+	}
+}
+
+func TestPushManifest(t *testing.T) {
+	handler := test.Handler(&test.Response{
+		StatusCode: http.StatusCreated,
+		Headers: map[string]string{
+			"Content-Length":        "0",
+			"Docker-Content-Digest": digest,
+			"Location":              "",
+		},
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "PUT",
+			Pattern: fmt.Sprintf("/v2/%s/manifests/%s", repository, tag),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	d, err := client.PushManifest(tag, mediaType, manifest)
+	if err != nil {
+		t.Fatalf("failed to pull manifest: %v", err)
+	}
+
+	if d != digest {
+		t.Errorf("unexpected digest of manifest: %s != %s", d, digest)
+	}
+}
+
+func TestDeleteTag(t *testing.T) {
+	manifestExistHandler := test.Handler(&test.Response{
+		Headers: map[string]string{
+			"Docker-Content-Digest": digest,
+			"Content-Type":          mediaType,
+		},
+	})
+
+	deleteManifestandler := test.Handler(&test.Response{
+		StatusCode: http.StatusAccepted,
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: fmt.Sprintf("/v2/%s/manifests/", repository),
+			Handler: manifestExistHandler,
+		},
+		&test.RequestHandlerMapping{
+			Method:  "DELETE",
+			Pattern: fmt.Sprintf("/v2/%s/manifests/%s", repository, digest),
+			Handler: deleteManifestandler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	if err = client.DeleteTag(tag); err != nil {
+		t.Fatalf("failed to delete tag: %v", err)
 	}
 }
 
 func TestListTag(t *testing.T) {
-	client, err := newRepositoryClient(registryServer.URL, true, credential,
-		repo, "repository", repo, "pull", "push", "*")
+	handler := test.Handler(&test.Response{
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body: []byte(fmt.Sprintf("{\"name\": \"%s\",\"tags\": [\"%s\"]}", repository, tag)),
+	})
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: fmt.Sprintf("/v2/%s/tags/list", repository),
+			Handler: handler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("failed to create client for repository: %v", err)
 	}
 
-	list, err := client.ListTag()
+	tags, err := client.ListTag()
 	if err != nil {
-		t.Error(err)
-		return
-	}
-	if len(list) != len(tags.Tags) {
-		t.Errorf("expected length: %d, actual length: %d", len(tags.Tags), len(list))
-		return
+		t.Fatalf("failed to list tags: %v", err)
 	}
 
-}
-
-func TestListTagWithInvalidCredential(t *testing.T) {
-	credential := auth.NewBasicAuthCredential(username, "wrong_password")
-	client, err := newRepositoryClient(registryServer.URL, true, credential,
-		repo, "repository", repo, "pull", "push", "*")
-	if err != nil {
-		t.Error(err)
+	if len(tags) != 1 {
+		t.Fatalf("unexpected length of tags: %d != %d", len(tags), 1)
 	}
 
-	if _, err = client.ListTag(); err != nil {
-		e, ok := err.(*registry_error.Error)
-		if ok && e.StatusCode == http.StatusUnauthorized {
-			return
-		}
-
-		t.Error(err)
-		return
+	if tags[0] != tag {
+		t.Errorf("unexpected tag: %s != %s", tags[0], tag)
 	}
 }
 
-func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
-	scopeActions ...string) (*Repository, error) {
-
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
-
-	store, err := auth.NewAuthorizerStore(endpoint, true, authorizer)
-	if err != nil {
-		return nil, err
+func TestParseError(t *testing.T) {
+	err := &url.Error{
+		Err: &registry_error.Error{},
 	}
-
-	client, err := NewRepositoryWithModifiers(repository, endpoint, insecure, store)
-	if err != nil {
-		return nil, err
+	e := parseError(err)
+	if _, ok := e.(*registry_error.Error); !ok {
+		t.Errorf("error type does not match registry error")
 	}
-	return client, nil
+}
+
+func newRepository(endpoint string) (*Repository, error) {
+	return NewRepository(repository, endpoint, &http.Client{})
 }
