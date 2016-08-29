@@ -64,38 +64,69 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if ldapBaseDn == "" {
 		return nil, errors.New("Can not get any available LDAP_BASE_DN.")
 	}
+	log.Debug("baseDn:", ldapBaseDn)
 
-	baseDn := fmt.Sprintf(ldapBaseDn, m.Principal)
-	log.Debug("baseDn:", baseDn)
-
-	err = ldap.Bind(baseDn, m.Password)
+	ldapSearchDn := os.Getenv("LDAP_SEARCH_DN")
+	if ldapSearchDn != "" {
+		log.Debug("Search DN: ", ldapSearchDn)
+		ldapSearchPwd := os.Getenv("LDAP_SEARCH_PWD")
+		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
+		if err != nil {
+			log.Debug("Bind search dn error", err)
+			return nil, err
+		}
+	}
+	filter := os.Getenv("LDAP_FILTER")
+	log.Debug("ldapfilter:", filter)
+	uid := os.Getenv("LDAP_UID")
+	if filter != "" {
+		filter = "(&(" + filter + ")(" + uid + "=" + m.Principal + "))"
+	} else {
+		filter = "(" + uid + "=" + m.Principal + ")"
+	}
+	log.Debug("2 filter", filter)
+	ldapScope := os.Getenv("LDAP_SCOPE")
+	var scope int
+	if ldapScope == "1" {
+		scope = openldap.LDAP_SCOPE_BASE
+	} else if ldapScope == "2" {
+		scope = openldap.LDAP_SCOPE_ONELEVEL
+	} else {
+		scope = openldap.LDAP_SCOPE_SUBTREE
+	}
+	attributes := []string{uid}
+	result, err := ldap.SearchAll(ldapBaseDn, scope, filter, attributes)
 	if err != nil {
+		return nil, err
+	}
+	if len(result.Entries()) == 0 {
+		log.Warningf("Not found an entry.")
+		return nil, nil
+	} else if len(result.Entries()) != 1 {
+		log.Warningf("Found more than one entry.")
+		return nil, nil
+	}
+	en := result.Entries()[0]
+	bindDN := en.Dn()
+	u := models.User{}
+	for _, attr := range en.Attributes() {
+		val := attr.Values()[0]
+		switch attr.Name() {
+		case uid:
+			u.Username = val
+		}
+	}
+
+	log.Debug("BindDN (result.Base): ", result.Base())
+
+	err = ldap.Bind(bindDN, m.Password)
+	if err != nil {
+		log.Debug("Bind user error", err)
 		return nil, err
 	}
 	defer ldap.Close()
 
-	scope := openldap.LDAP_SCOPE_SUBTREE // LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE
-	filter := "objectClass=*"
-	attributes := []string{"mail"}
-
-	result, err := ldap.SearchAll(baseDn, scope, filter, attributes)
-	if err != nil {
-		return nil, err
-	}
-	u := models.User{}
-	if len(result.Entries()) == 1 {
-		en := result.Entries()[0]
-		for _, attr := range en.Attributes() {
-			val := attr.Values()[0]
-			if attr.Name() == "mail" {
-				u.Email = val
-			}
-		}
-	}
-
-	u.Username = m.Principal
 	log.Debug("username:", u.Username, ",email:", u.Email)
-
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
 		return nil, err
