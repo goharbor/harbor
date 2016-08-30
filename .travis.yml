@@ -73,8 +73,8 @@ before_script:
 script:
   - sudo ./tests/testprepare.sh 
   - docker-compose -f Deploy/docker-compose.test.yml up -d
-  - go list ./... | grep -v -E 'vendor|tests|api' | xargs -L1 fgt golint
-  - go list ./... | grep -v -E 'vendor|tests|api' | xargs -L1 go vet
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=http://$IP:5000
