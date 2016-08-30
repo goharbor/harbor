@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -20,6 +20,11 @@ import (
 	//for test env prepare
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
+)
+
+const (
+	jsonAcceptHeader = "application/json"
+	textAcceptHeader = "text/plain"
 )
 
 type api struct {
@@ -53,9 +58,37 @@ func init() {
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/statistics", &StatisticAPI{})
+	beego.Router("/api/logs", &LogAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
 
+}
+
+func request(_sling *sling.Sling, acceptHeader string) (int, []byte, error) {
+	_sling = _sling.Set("Accept", acceptHeader)
+	req, err := _sling.Request()
+	if err != nil {
+		return 400, nil, err
+	}
+	w := httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, req)
+	body, err := ioutil.ReadAll(w.Body)
+	return w.Code, body, err
+}
+
+func authRequest(_sling *sling.Sling, acceptHeader string, authInfo usrInfo) (int, []byte, error) {
+	_sling = _sling.Set("Accept", acceptHeader)
+	req, err := _sling.Request()
+	if err != nil {
+		return 400, nil, err
+	}
+
+	req.SetBasicAuth(authInfo.Name, authInfo.Passwd)
+	w := httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, req)
+	body, err := ioutil.ReadAll(w.Body)
+	return w.Code, body, err
 }
 
 //Search for projects and repositories
@@ -67,36 +100,15 @@ func init() {
 //@return []Search
 //func (a api) SearchGet (q string) (apilib.Search, error) {
 func (a api) SearchGet(q string) (apilib.Search, error) {
-
 	_sling := sling.New().Get(a.basePath)
-
 	// create path and map variables
 	path := "/api/search"
 	_sling = _sling.Path(path)
-
 	type QueryParams struct {
 		Query string `url:"q,omitempty"`
 	}
-
 	_sling = _sling.QueryStruct(&QueryParams{Query: q})
-
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
-	req, err := _sling.Request()
-
-	w := httptest.NewRecorder()
-
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
-
-	body, err := ioutil.ReadAll(w.Body)
-	if err != nil {
-		// handle error
-	}
-
+	_, body, err := request(_sling, jsonAcceptHeader)
 	var successPayload = new(apilib.Search)
 	err = json.Unmarshal(body, &successPayload)
 	return *successPayload, err
@@ -111,30 +123,13 @@ func (a api) SearchGet(q string) (apilib.Search, error) {
 func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
 
 	_sling := sling.New().Post(a.basePath)
-
 	// create path and map variables
 	path := "/api/projects/"
-
 	_sling = _sling.Path(path)
-
-	// accept header
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
 	// body params
 	_sling = _sling.BodyJSON(project)
-	//fmt.Printf("project post req: %+v\n", _sling)
-	req, err := _sling.Request()
-	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
-
-	w := httptest.NewRecorder()
-
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
-
-	return w.Code, err
+	httpStatusCode, _, err := authRequest(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, err
 }
 
 //Change password
@@ -147,35 +142,54 @@ func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
 func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.Password) int {
 
 	_sling := sling.New().Put(a.basePath)
-
 	// create path and map variables
 	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/password"
 	fmt.Printf("change passwd path: %s\n", path)
 	fmt.Printf("password %+v\n", password)
 	_sling = _sling.Path(path)
 
-	// accept header
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
 	// body params
 	_sling = _sling.BodyJSON(password)
 	fmt.Printf("project post req: %+v\n", _sling)
-	req, err := _sling.Request()
-	req.SetBasicAuth(user.Name, user.Passwd)
-	fmt.Printf("project post req: %+v\n", req)
-	if err != nil {
-		// handle error
+	httpStatusCode, _, _ := authRequest(_sling, jsonAcceptHeader, user)
+	return httpStatusCode
+}
+
+func (a api) StatisticGet(user usrInfo) (apilib.StatisticMap, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create path and map variables
+	path := "/api/statistics/"
+	fmt.Printf("project statistic path: %s\n", path)
+	_sling = _sling.Path(path)
+	var successPayload = new(apilib.StatisticMap)
+	code, body, err := authRequest(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
 	}
-	w := httptest.NewRecorder()
+	return *successPayload, err
+}
 
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
+func (a api) LogGet(user usrInfo, startTime, endTime, lines string) ([]apilib.AccessLog, error) {
+	_sling := sling.New().Get(a.basePath)
 
-	return w.Code
+	// create path and map variables
+	path := "/api/logs/"
+	fmt.Printf("logs path: %s\n", path)
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		StartTime string `url:"startTime,omitempty"`
+		EndTime   string `url:"endTime,omitempty"`
+		Lines     string `url:"lines,omitempty"`
+	}
 
+	_sling = _sling.QueryStruct(&QueryParams{StartTime: startTime, EndTime: endTime, Lines: lines})
+	var successPayload []apilib.AccessLog
+	code, body, err := authRequest(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return successPayload, err
 }
 
 ////Delete a repository or a tag in a repository.
