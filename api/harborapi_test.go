@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -20,6 +20,11 @@ import (
 	//for test env prepare
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
+)
+
+const (
+	jsonAcceptHeader = "application/json"
+	testAcceptHeader = "text/plain"
 )
 
 type api struct {
@@ -51,11 +56,29 @@ func init() {
 	beego.TestBeegoInit(apppath)
 
 	beego.Router("/api/search/", &SearchAPI{})
-	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
+	beego.Router("/api/projects/:id/delete", &ProjectAPI{}, "delete:Delete")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
+	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
+}
+
+func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
+	_sling = _sling.Set("Accept", acceptHeader)
+	req, err := _sling.Request()
+	if err != nil {
+		return 400, nil, err
+	}
+	if len(authInfo) > 0 {
+		req.SetBasicAuth(authInfo[0].Name, authInfo[0].Passwd)
+	}
+	w := httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, req)
+	body, err := ioutil.ReadAll(w.Body)
+	return w.Code, body, err
 }
 
 //Search for projects and repositories
@@ -80,23 +103,7 @@ func (a api) SearchGet(q string) (apilib.Search, error) {
 
 	_sling = _sling.QueryStruct(&QueryParams{Query: q})
 
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
-	req, err := _sling.Request()
-
-	w := httptest.NewRecorder()
-
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
-
-	body, err := ioutil.ReadAll(w.Body)
-	if err != nil {
-		// handle error
-	}
-
+	_, body, err := request(_sling, jsonAcceptHeader)
 	var successPayload = new(apilib.Search)
 	err = json.Unmarshal(body, &successPayload)
 	return *successPayload, err
@@ -117,24 +124,10 @@ func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
 
 	_sling = _sling.Path(path)
 
-	// accept header
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
 	// body params
 	_sling = _sling.BodyJSON(project)
-	//fmt.Printf("project post req: %+v\n", _sling)
-	req, err := _sling.Request()
-	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
-
-	w := httptest.NewRecorder()
-
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
-
-	return w.Code, err
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, err
 }
 
 //Change password
@@ -154,27 +147,11 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 	fmt.Printf("password %+v\n", password)
 	_sling = _sling.Path(path)
 
-	// accept header
-	accepts := []string{"application/json", "text/plain"}
-	for key := range accepts {
-		_sling = _sling.Set("Accept", accepts[key])
-		break // only use the first Accept
-	}
-
 	// body params
 	_sling = _sling.BodyJSON(password)
-	fmt.Printf("project post req: %+v\n", _sling)
-	req, err := _sling.Request()
-	req.SetBasicAuth(user.Name, user.Passwd)
-	fmt.Printf("project post req: %+v\n", req)
-	if err != nil {
-		// handle error
-	}
-	w := httptest.NewRecorder()
 
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
-
-	return w.Code
+	httpStatusCode, _, _ := request(_sling, jsonAcceptHeader, user)
+	return httpStatusCode
 
 }
 
@@ -184,8 +161,8 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 ////@param repoName The name of repository which will be deleted.
 ////@param tag Tag of a repository.
 ////@return void
-////func (a HarborAPI) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
-//func (a HarborAPI) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+////func (a api) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+//func (a api) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
 //	_sling := sling.New().Delete(a.basePath)
 
 //	// create path and map variables
@@ -220,6 +197,128 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 //	return httpResponse.StatusCode, err
 //}
 
+//Delete project by projectID
+func (a api) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+
+	//create api path
+	path := "api/projects/" + projectID + "/delete"
+	_sling = _sling.Path(path)
+
+	//_sling = _sling.BodyJSON(project)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	fmt.Println(string(body))
+	return httpStatusCode, err
+}
+
+//Check if the project name user provided already exists
+func (a api) ProjectsHead(prjUsr usrInfo, projectName string) (int, error) {
+	_sling := sling.New().Head(a.basePath)
+
+	//create api path
+	path := "api/projects"
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		ProjectName string `url:"project_name,omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{ProjectName: projectName})
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, err
+}
+
+//Search projects by projectName and isPublic
+func (a api) ProjectsGet(projectName string, isPublic int32) (int, []apilib.Project, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	//create api path
+	path := "api/projects"
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		ProjectName string `url:"project_name,omitempty"`
+		IsPubilc    int32  `url:"is_public,omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{ProjectName: projectName, IsPubilc: isPublic})
+
+	var successPayload []apilib.Project
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+
+	return httpStatusCode, successPayload, err
+}
+
+//Update properties for a selected project.
+func (a api) ToggleProjectPublicity(prjUsr usrInfo, projectID string, ispublic int32) (int, error) {
+	// create path and map variables
+	path := "/api/projects/" + projectID + "/publicity/"
+	_sling := sling.New().Put(a.basePath)
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		Public int32 `json:"public,omitempty"`
+	}
+
+	_sling = _sling.BodyJSON(&QueryParams{Public: ispublic})
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, err
+
+}
+
+//Get access logs accompany with a relevant project.
+func (a api) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLogFilter) (int, []byte, error) {
+	//func (a api) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLog) (int, apilib.AccessLog, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/projects/" + projectID + "/logs/filter"
+
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(accessLog)
+
+	//	var successPayload []apilib.AccessLog
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	/*
+		if err == nil && httpStatusCode == 200 {
+			err = json.Unmarshal(body, &successPayload)
+		}
+	*/
+	return httpStatusCode, body, err
+	//	return httpStatusCode, successPayload, err
+}
+
+//Return relevant role members of projectID
+func (a api) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int, []byte, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/projects/" + projectID + "/members/"
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, body, err
+
+}
+
+//Add project role member accompany with  projectID
+func (a api) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, []byte, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/projects/" + projectID + "/members/"
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, body, err
+
+}
+
 //Return projects created by Harbor
 //func (a HarborApi) ProjectsGet (projectName string, isPublic int32) ([]Project, error) {
 //    }
@@ -229,35 +328,35 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 //}
 
 //Get access logs accompany with a relevant project.
-//func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectId int32, accessLog AccessLog) ([]AccessLog, error) {
+//func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectID int32, accessLog AccessLog) ([]AccessLog, error) {
 //}
 
 //Return a project&#39;s relevant role members.
-//func (a HarborApi) ProjectsProjectIdMembersGet (projectId int32) ([]Role, error) {
+//func (a HarborApi) ProjectsProjectIdMembersGet (projectID int32) ([]Role, error) {
 //}
 
 //Add project role member accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersPost (projectId int32, roles RoleParam) (error) {
+//func (a HarborApi) ProjectsProjectIdMembersPost (projectID int32, roles RoleParam) (error) {
 //}
 
 //Delete project role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectId int32, userId int32) (error) {
+//func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectID int32, userId int32) (error) {
 //}
 
 //Return role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectId int32, userId int32) ([]Role, error) {
+//func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectID int32, userId int32) ([]Role, error) {
 //}
 
 //Update project role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectId int32, userId int32, roles RoleParam) (error) {
+//func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectID int32, userId int32, roles RoleParam) (error) {
 //}
 
 //Update properties for a selected project.
-//func (a HarborApi) ProjectsProjectIdPut (projectId int32, project Project) (error) {
+//func (a HarborApi) ProjectsProjectIdPut (projectID int32, project Project) (error) {
 //}
 
 //Get repositories accompany with relevant project and repo name.
-//func (a HarborApi) RepositoriesGet (projectId int32, q string) ([]Repository, error) {
+//func (a HarborApi) RepositoriesGet (projectID int32, q string) ([]Repository, error) {
 //}
 
 //Get manifests of a relevant repository.
