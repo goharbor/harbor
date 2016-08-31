@@ -532,16 +532,16 @@ func TestAccessLog(t *testing.T) {
 
 func TestGetAccessLogCreator(t *testing.T) {
 	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "push")
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "push")
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
-	user, err := GetAccessLogCreator(currentProject.Name + "/ubuntu")
+	user, err := GetAccessLogCreator(currentProject.Name + "/tomcat")
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLogCreator: %v", err)
 	}
@@ -552,20 +552,20 @@ func TestGetAccessLogCreator(t *testing.T) {
 
 func TestCountPull(t *testing.T) {
 	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
-	pullCount, err := CountPull(currentProject.Name + "/ubuntu")
+	pullCount, err := CountPull(currentProject.Name + "/tomcat")
 	if err != nil {
 		t.Errorf("Error occurred in CountPull: %v", err)
 	}
