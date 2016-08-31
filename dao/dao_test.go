@@ -1609,9 +1609,6 @@ func TestIncreasePullCount(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
 	}
-	if repository != nil {
-		t.Errorf("repository is not nil after IncreasePullCount, repository: %+v", repository)
-	}
 
 	if repository.PullCount != 1 {
 		t.Errorf("repository pull count is not 1 after IncreasePullCount, expected: 1, actual: %d", repository.PullCount)
