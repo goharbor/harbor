@@ -541,7 +541,10 @@ func TestGetAccessLogCreator(t *testing.T) {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
-	user := GetAccessLogCreator(currentProject.Name + "/ubuntu")
+	user, err := GetAccessLogCreator(currentProject.Name + "/ubuntu")
+	if err != nil {
+		t.Errorf("Error occurred in GetAccessLogCreator: %v", err)
+	}
 	if user != currentUser.Username {
 		t.Errorf("The access log creator does not match, expected: %s, actual: %s", currentUser.Username, user)
 	}
@@ -562,7 +565,10 @@ func TestCountPull(t *testing.T) {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
-	pullCount := CountPull(currentProject.Name + "/ubuntu")
+	pullCount, err := CountPull(currentProject.Name + "/ubuntu")
+	if err != nil {
+		t.Errorf("Error occurred in CountPull: %v", err)
+	}
 	if pullCount != 3 {
 		t.Errorf("The access log pull count does not match, expected: 3, actual: %d", pullCount)
 	}
@@ -1564,7 +1570,7 @@ func TestAddRepository(t *testing.T) {
 		StarCount:   0,
 	}
 
-	_, err := AddRepository(repoRecord)
+	err := AddRepository(repoRecord)
 	if err != nil {
 		t.Errorf("Error occurred in AddRepository: %v", err)
 	}
@@ -1595,7 +1601,6 @@ func TestGetRepositoryByName(t *testing.T) {
 }
 
 func TestIncreasePullCount(t *testing.T) {
-	var err error
 	if err := IncreasePullCount(currentRepository.Name); err != nil {
 		log.Errorf("Error happens when increasing pull count: %v", currentRepository.Name)
 	}
@@ -1615,18 +1620,13 @@ func TestIncreasePullCount(t *testing.T) {
 
 func TestRepositoryExists(t *testing.T) {
 	var exists bool
-	var err error
-	exists, err = RepositoryExists(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in RepositoryExists: %v", err)
-	}
+	exists = RepositoryExists(currentRepository.Name)
 	if !exists {
 		t.Errorf("The repository with name: %d, does not exist", currentRepository.Name)
 	}
 }
 
 func TestDeleteRepository(t *testing.T) {
-	var err error
 	err := DeleteRepository(currentRepository.Name)
 	if err != nil {
 		t.Errorf("Error occurred in DeleteRepository: %v", err)
