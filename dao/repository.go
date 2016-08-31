@@ -37,7 +37,7 @@ func AddRepository(repo models.RepoRecord) error {
 func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	o := GetOrmer()
 	r := models.RepoRecord{Name: name}
-	err := o.Read(&r)
+	err := o.Read(&r, "Name")
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
