@@ -20,14 +20,17 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', '$timeout', 'currentUser', 'getRole', '$filter', 'trFilter']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', 'DeleteProjectService', '$timeout', 'currentUser', 'getRole', '$filter', 'trFilter']; 
 
-  function ProjectController($scope, ListProjectService, $timeout, currentUser, getRole, $filter, trFilter) {
+  function ProjectController($scope, ListProjectService, DeleteProjectService, $timeout, currentUser, getRole, $filter, trFilter) {
     var vm = this;
  
     vm.isOpen = false;
     vm.projectName = '';
     vm.publicity = 0;
+    
+    vm.page = 1;
+    vm.pageSize = 20;  
      
     vm.retrieve = retrieve;
     vm.showAddProject = showAddProject;
@@ -39,6 +42,8 @@
     vm.getProjectRole = getProjectRole;
     
     vm.searchProjectByKeyPress = searchProjectByKeyPress;
+    vm.confirmToDelete = confirmToDelete;
+    vm.deleteProject = deleteProject;
     
     
     //Error message dialog handler for project.
@@ -57,19 +62,42 @@
         };
         vm.contentType = 'text/plain';
         vm.confirmOnly = true;      
+        $timeout(function() {
+          $scope.$broadcast('showDialog', true);
+        }, 350);
+      }
+    });
+    
+    $scope.$on('raiseInfo', function(e, val) {
+      if(val) {
+        vm.action = function() {
+          val.action();
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = val.contentType;
+        vm.confirmOnly = val.confirmOnly;
+       
         $scope.$broadcast('showDialog', true);
       }
     });
     
     
+    $scope.$watch('vm.page', function(current) {
+      if(current) {
+        vm.page = current;
+        vm.retrieve();
+      }
+    });
+    
     function retrieve() {       
-      ListProjectService(vm.projectName, vm.publicity)
-        .success(listProjectSuccess)
-        .error(listProjectFailed);
+      ListProjectService(vm.projectName, vm.publicity, vm.page, vm.pageSize)
+        .then(listProjectSuccess)
+        .catch(listProjectFailed);
     }
     
-    function listProjectSuccess(data, status) {
-      vm.projects = data || [];
+    function listProjectSuccess(response) {
+      vm.totalCount = response.headers('X-Total-Count');
+      vm.projects = response.data || [];
     }
     
     function getProjectRole(roleId) {
@@ -80,7 +108,7 @@
       return '';
     }
     
-    function listProjectFailed(data, status) {
+    function listProjectFailed(response) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
       $scope.$emit('raiseError', true);
@@ -92,11 +120,7 @@
     });
    
     function showAddProject() {
-      if(vm.isOpen){
-        vm.isOpen = false;        
-      }else{
-        vm.isOpen = true;        
-      }
+      vm.isOpen = vm.isOpen ? false : true;
     }
     
     function searchProject() {
@@ -104,11 +128,7 @@
     }
     
     function showAddButton() {
-      if(vm.publicity === 0) {
-        return true;
-      }else{
-        return false;
-      }
+      return (vm.publicity === 0);
     }
     
     function togglePublicity(e) {
@@ -123,6 +143,39 @@
       if(keyCode === 13) {
         vm.retrieve();
       }
+    }
+    
+    function confirmToDelete(projectId, projectName) {
+      vm.selectedProjectId = projectId;
+     
+      $scope.$emit('modalTitle', $filter('tr')('confirm_delete_project_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_project', [projectName]));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/plain',
+        'action': vm.deleteProject
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
+    }
+    
+    function deleteProject() {
+      DeleteProjectService(vm.selectedProjectId)
+        .success(deleteProjectSuccess)
+        .error(deleteProjectFailed);
+    }
+    
+    function deleteProjectSuccess(data, status) {
+      console.log('Successful delete project.');
+      vm.retrieve();
+    }
+    
+    function deleteProjectFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project'));
+      $scope.$emit('raiseError', true);
+      console.log('Failed to delete project.');
     }
     
   }
