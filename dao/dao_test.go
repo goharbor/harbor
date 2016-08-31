@@ -896,6 +896,18 @@ func TestGetTopRepos(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
 	topRepos, err := GetTopRepos(10)
 	if err != nil {
 		t.Errorf("error occured in getting top repos, error: %v", err)
@@ -903,7 +915,7 @@ func TestGetTopRepos(t *testing.T) {
 	if topRepos[0].RepoName != currentProject.Name+"/ubuntu" {
 		t.Errorf("error occured in get top reop's name, expected: %v, actual: %v", currentProject.Name+"/ubuntu", topRepos[0].RepoName)
 	}
-	if topRepos[0].AccessCount != 1 {
+	if topRepos[0].AccessCount != 4 {
 		t.Errorf("error occured in get top reop's access count, expected: %v, actual: %v", 1, topRepos[0].AccessCount)
 	}
 	/*
