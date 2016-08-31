@@ -61,6 +61,8 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/statistics", &StatisticAPI{})
+	beego.Router("/api/logs", &LogAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -90,17 +92,13 @@ func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int
 //@return []Search
 //func (a api) SearchGet (q string) (apilib.Search, error) {
 func (a api) SearchGet(q string) (apilib.Search, error) {
-
 	_sling := sling.New().Get(a.basePath)
-
 	// create path and map variables
 	path := "/api/search"
 	_sling = _sling.Path(path)
-
 	type QueryParams struct {
 		Query string `url:"q,omitempty"`
 	}
-
 	_sling = _sling.QueryStruct(&QueryParams{Query: q})
 
 	_, body, err := request(_sling, jsonAcceptHeader)
@@ -118,10 +116,8 @@ func (a api) SearchGet(q string) (apilib.Search, error) {
 func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
 
 	_sling := sling.New().Post(a.basePath)
-
 	// create path and map variables
 	path := "/api/projects/"
-
 	_sling = _sling.Path(path)
 
 	// body params
@@ -140,7 +136,6 @@ func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
 func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.Password) int {
 
 	_sling := sling.New().Put(a.basePath)
-
 	// create path and map variables
 	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/password"
 	fmt.Printf("change passwd path: %s\n", path)
@@ -149,10 +144,45 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 
 	// body params
 	_sling = _sling.BodyJSON(password)
-
 	httpStatusCode, _, _ := request(_sling, jsonAcceptHeader, user)
 	return httpStatusCode
+}
 
+func (a api) StatisticGet(user usrInfo) (apilib.StatisticMap, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create path and map variables
+	path := "/api/statistics/"
+	fmt.Printf("project statistic path: %s\n", path)
+	_sling = _sling.Path(path)
+	var successPayload = new(apilib.StatisticMap)
+	code, body, err := request(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return *successPayload, err
+}
+
+func (a api) LogGet(user usrInfo, startTime, endTime, lines string) (int, []apilib.AccessLog, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create path and map variables
+	path := "/api/logs/"
+	fmt.Printf("logs path: %s\n", path)
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		StartTime string `url:"start_time,omitempty"`
+		EndTime   string `url:"end_time,omitempty"`
+		Lines     string `url:"lines,omitempty"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{StartTime: startTime, EndTime: endTime, Lines: lines})
+	var successPayload []apilib.AccessLog
+	code, body, err := request(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return code, successPayload, err
 }
 
 ////Delete a repository or a tag in a repository.

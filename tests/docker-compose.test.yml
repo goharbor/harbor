@@ -11,7 +11,7 @@ services:
     ports:
       - 5000:5000
     command:
-      ["serve", "/etc/registry/config.yml"]
+      ["serve", "/etc/docker/registry/config.yml"]
   mysql:
     build: ./db/
     restart: always
