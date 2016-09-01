@@ -1251,7 +1251,7 @@ paths:
     post:
       summary: Sync repositories from registry to DB. 
       description: |
-        This endpoint is fo syncing all repositories of registry with database. 
+        This endpoint is for syncing all repositories of registry with database. 
       tags:
         - Products  
       responses:
