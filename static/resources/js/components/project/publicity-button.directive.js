@@ -27,11 +27,7 @@
     vm.toggle = toggle;
     
     function toggle() {      
-      if(vm.isPublic) {
-        vm.isPublic = false;
-      }else{
-        vm.isPublic = true;
-      }
+      vm.isPublic = vm.isPublic ? 0 : 1;
       ToggleProjectPublicityService(vm.projectId, vm.isPublic)
         .success(toggleProjectPublicitySuccess)
         .error(toggleProjectPublicityFailed);
@@ -53,12 +49,7 @@
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);
       
-      if(vm.isPublic) {
-        vm.isPublic = false;
-      }else{
-        vm.isPublic = true;
-      }
-      
+      vm.isPublic = vm.isPublic ? 0 : 1;
       console.log('Failed to toggle project publicity:' + e);
     }
   }
@@ -69,7 +60,6 @@
       'templateUrl': '/static/resources/js/components/project/publicity-button.directive.html',
       'scope': {
         'isPublic': '=',
-        'owned': '=',
         'projectId': '='
       },
       'link': link,

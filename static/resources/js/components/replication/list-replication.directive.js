@@ -37,9 +37,9 @@
     };
   }
   
-  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'DeleteReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
   
-  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, DeleteReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
     var vm = this;
     
     vm.sectionHeight = {'min-height': '1260px'};
@@ -51,6 +51,9 @@
     
     vm.addReplication = addReplication;
     vm.editReplication = editReplication;
+    vm.deleteReplicationPolicy = deleteReplicationPolicy;
+    
+    vm.confirmToDelete = confirmToDelete;
     
     vm.searchReplicationPolicy = searchReplicationPolicy;
     vm.searchReplicationJob = searchReplicationJob;
@@ -175,6 +178,40 @@
       
       console.log('Selected policy ID:' + vm.policyId);
     }
+
+    function deleteReplicationPolicy() {
+      DeleteReplicationPolicyService(vm.policyId)
+        .success(deleteReplicationPolicySuccess)
+        .error(deleteReplicationPolicyFailed);
+    }
+    
+    function deleteReplicationPolicySuccess(data, status) {
+      console.log('Successful delete replication policy.');
+      vm.retrievePolicy();
+    }
+    
+    function deleteReplicationPolicyFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_policy'));
+      $scope.$emit('raiseError', true);
+      console.log('Failed to delete replication policy.');
+    }
+    
+    function confirmToDelete(policyId, policyName) {
+      vm.policyId = policyId;
+     
+      $scope.$emit('modalTitle', $filter('tr')('confirm_delete_policy_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_policy', [policyName]));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/plain',
+        'action': vm.deleteReplicationPolicy
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
+    }
+
 
     function confirmToTogglePolicy(policyId, enabled, name) {
       vm.policyId = policyId;
