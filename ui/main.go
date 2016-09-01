@@ -17,11 +17,11 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/vmware/harbor/utils/log"
 
-	"os"
-
+	"github.com/vmware/harbor/api"
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
@@ -80,5 +80,8 @@ func main() {
 		log.Error(err)
 	}
 	initRouters()
+	if err := api.SyncRegistry(); err != nil {
+		log.Error(err)
+	}
 	beego.Run()
 }
