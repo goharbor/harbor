@@ -62,7 +62,7 @@ create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  # The max length of name controlled by API is 30, 
- # and 11 bytes is reserved for marking the deleted project.
+ # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
  creation_time timestamp,
  update_time timestamp,
