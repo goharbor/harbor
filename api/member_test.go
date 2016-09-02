@@ -25,7 +25,7 @@ func TestMemGet(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		assert.Equal(int32(1), result[0].UserId, "User Id should be 1")
+		assert.Equal(int(1), result[0].UserId, "User Id should be 1")
 		assert.Equal("admin", result[0].Username, "User name should be admin")
 	}
 
