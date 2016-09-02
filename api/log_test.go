@@ -18,7 +18,7 @@ func TestLogGet(t *testing.T) {
 	//prepare for test
 
 	admin := &usrInfo{"admin", "Harbor12345"}
-	var project apilib.Project
+	var project apilib.ProjectReq
 	project.ProjectName = "my_project"
 	project.Public = 1
 
@@ -99,17 +99,18 @@ func TestLogGet(t *testing.T) {
 
 	//get the project
 	var projects []apilib.Project
+	var addProjectID int32
 	httpStatusCode, projects, err := apiTest.ProjectsGet(project.ProjectName, 1)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		project.ProjectId = projects[0].ProjectId
+		addProjectID = projects[0].ProjectId
 	}
 
 	//delete the project
-	projectID := strconv.Itoa(int(project.ProjectId))
+	projectID := strconv.Itoa(int(addProjectID))
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
 	if err != nil {
 		t.Error("Error while delete project", err.Error())

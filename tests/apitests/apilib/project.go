@@ -31,7 +31,7 @@ type Project struct {
 	OwnerId int32 `json:"owner_id,omitempty"`
 
 	// The name of the project.
-	ProjectName string `json:"project_name,omitempty"`
+	ProjectName string `json:"name,omitempty"`
 
 	// The creation time of the project.
 	CreationTime string `json:"creation_time,omitempty"`
