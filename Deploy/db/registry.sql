@@ -38,8 +38,14 @@ insert into role (role_code, name) values
 
 create table user (
  user_id int NOT NULL AUTO_INCREMENT,
- username varchar(15),
- email varchar(128),
+# The max length of username controlled by API is 20, 
+# and 11 is reserved for marking the deleted users.
+# The mark of deleted user is "#user_id".
+# The 11 consist of 10 for the max value of user_id(4294967295)  
+# in MySQL and 1 of '#'.
+ username varchar(32),
+# 11 bytes is reserved for marking the deleted users.
+ email varchar(255),
  password varchar(40) NOT NULL,
  realname varchar (20) NOT NULL,
  comment varchar (30),
