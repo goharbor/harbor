@@ -458,7 +458,7 @@ func TestGetAccessLog(t *testing.T) {
 		UserID:    currentUser.UserID,
 		ProjectID: currentProject.ProjectID,
 	}
-	accessLogs, _, err := GetAccessLogs(queryAccessLog, 1000, 0)
+	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -467,6 +467,21 @@ func TestGetAccessLog(t *testing.T) {
 	}
 	if accessLogs[0].RepoName != projectName+"/" {
 		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogs[0].RepoName)
+	}
+}
+
+func TestGetTotalOfAccessLogs(t *testing.T) {
+	queryAccessLog := models.AccessLog{
+		UserID:    currentUser.UserID,
+		ProjectID: currentProject.ProjectID,
+	}
+	total, err := GetTotalOfAccessLogs(queryAccessLog)
+	if err != nil {
+		t.Fatalf("failed to get total of access log: %v", err)
+	}
+
+	if total != 1 {
+		t.Errorf("unexpected total %d != %d", total, 1)
 	}
 }
 
@@ -486,7 +501,7 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, _, err = GetAccessLogs(accessLog, 1000, 0)
+	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -515,7 +530,7 @@ func TestAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	accessLogList, _, err = GetAccessLogs(accessLog, 1000, 0)
+	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
