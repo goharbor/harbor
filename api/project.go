@@ -339,13 +339,18 @@ func (p *ProjectAPI) FilterAccessLog() {
 	p.DecodeJSONReq(&query)
 
 	query.ProjectID = p.projectID
-	query.Username = "%" + query.Username + "%"
 	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
 	query.EndTime = time.Unix(query.EndTimestamp, 0)
 
 	page, pageSize := p.getPaginationParams()
 
-	logs, total, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
+	total, err := dao.GetTotalOfAccessLogs(query)
+	if err != nil {
+		log.Errorf("failed to get total of access log: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	logs, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
 	if err != nil {
 		log.Errorf("failed to get access log: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "")

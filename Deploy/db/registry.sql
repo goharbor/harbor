@@ -107,6 +107,7 @@ create table access_log (
  operation varchar(20) NOT NULL,
  op_time timestamp,
  primary key (log_id),
+ INDEX pid_optime (project_id, op_time),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
@@ -169,7 +170,8 @@ create table replication_job (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
- INDEX policy (policy_id)
+ INDEX policy (policy_id),
+ INDEX poid_uptime (policy_id, update_time)
  );
  
 create table properties (
