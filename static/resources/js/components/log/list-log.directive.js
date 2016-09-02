@@ -65,11 +65,7 @@
     retrieve(vm.queryParams, vm.page, vm.pageSize);
   
     $scope.$on('$locationChangeSuccess', function() {
-      
-      if(vm.publicity) {
-        vm.target = 'repositories';
-      }
-      
+            
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.queryParams = {
         'beginTimestamp' : vm.beginTimestamp,
