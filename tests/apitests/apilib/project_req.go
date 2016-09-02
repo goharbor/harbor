@@ -22,34 +22,11 @@
 
 package apilib
 
-type User struct {
+type ProjectReq struct {
 
-	// The ID of the user.
-	UserId int `json:"user_id,omitempty"`
+	// The name of the project.
+	ProjectName string `json:"project_name,omitempty"`
 
-	Username string `json:"username,omitempty"`
-
-	Email string `json:"email,omitempty"`
-
-	Password string `json:"password,omitempty"`
-
-	Realname string `json:"realname,omitempty"`
-
-	Comment string `json:"comment,omitempty"`
-
-	Deleted int32 `json:"deleted,omitempty"`
-
-	RoleName string `json:"role_name,omitempty"`
-
-	RoleId int32 `json:"role_id,omitempty"`
-
-	HasAdminRole int32 `json:"has_admin_role,omitempty"`
-
-	ResetUuid string `json:"reset_uuid,omitempty"`
-
-	Salt string `json:"Salt,omitempty"`
-
-	CreationTime string `json:"creation_time,omitempty"`
-
-	UpdateTime string `json:"update_time,omitempty"`
+	// The public status of the project.
+	Public int32 `json:"public,omitempty"`
 }
