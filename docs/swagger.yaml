@@ -123,7 +123,7 @@ paths:
           description: New created project.
           required: true
           schema:
-            $ref: '#/definitions/Project'
+            $ref: '#/definitions/ProjectReq'
       tags:
         - Products
       responses:
@@ -155,11 +155,35 @@ paths:
         200:
           description: Return matched project information.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Project'
+            $ref: '#/definitions/Project'
         401:
           description: User need to log in first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete project by projectID
+      description: |
+        This endpoint is aimed to delete project by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID of project which will be deleted.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project is deleted successfully.
+        400:
+          description: Invalid project id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Project does not exist.
+        412:
+          description: Project contains policies, can not be deleted.
         500:
           description: Internal errors.
   /projects/{project_id}/publicity:
@@ -682,7 +706,7 @@ paths:
         404:
           description: Repository or tag not found.
         403:
-          description: Forbidden.		
+          description: Forbidden.
   /repositories/tags:
     get:
       summary: Get tags of a relevant repository.
@@ -721,7 +745,7 @@ paths:
           in: query
           type: string
           required: false
-          description: The version of manifest, valid value are "v1" and "v2", default is "v2"		
+          description: The version of manifest, valid value are "v1" and "v2", default is "v2"
       tags:
         - Products
       responses:
@@ -1290,6 +1314,16 @@ definitions:
       project_public:
         type: integer
         description: The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)
+  ProjectReq:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The name of the project.
+      public:
+        type: integer
+        format: int
+        description: The public status of the project.
   Project:
     type: object
     properties:
@@ -1301,7 +1335,7 @@ definitions:
         type: integer
         format: int32
         description: The owner ID of the project always means the creator of the project.
-      project_name:
+      name:
         type: string
         description: The name of the project.
       creation_time:
@@ -1320,10 +1354,10 @@ definitions:
         description: A relation field to the user table.
       owner_name:
         type: string
-        description: The owner name of the project. 
+        description: The owner name of the project.
       public:
-        type: boolean
-        format: boolean
+        type: integer
+        format: int
         description: The public status of the project.
       togglable:
         type: boolean
@@ -1348,21 +1382,37 @@ definitions:
     properties:
       user_id:
         type: integer
-        format: int32
+        format: int
         description: The ID of the user.
       username:
         type: string
       email:
         type: string
-      password: 
+      password:
         type: string
-      realname: 
+      realname:
         type: string
       comment:
         type: string
       deleted:
         type: integer
         format: int32
+      role_name:
+        type: string
+      role_id:
+        type: integer
+        format: int
+      has_admin_role:
+        type: integer
+        format: int
+      reset_uuid:
+        type: string
+      Salt:
+        type: string
+      creation_time:
+        type: string
+      update_time:
+        type: string
   Password:
     type: object
     properties:
@@ -1371,7 +1421,7 @@ definitions:
         description: The user's existing password.
       new_password:
         type: string
-        description: New password for marking as to be updated.	
+        description: New password for marking as to be updated.
   AccessLogFilter:
     type: object
     properties:
@@ -1637,3 +1687,4 @@ definitions:
       password: 
         type: string
         description: The target server password.
+
