@@ -2,13 +2,17 @@ package api
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 func TestStatisticGet(t *testing.T) {
+	if err := SyncRegistry(); err != nil {
+		t.Fatalf("failed to sync repositories from registry: %v", err)
+	}
 
 	fmt.Println("Testing Statistic API")
 	assert := assert.New(t)

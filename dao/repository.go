@@ -84,3 +84,84 @@ func RepositoryExists(name string) bool {
 	o := GetOrmer()
 	return o.QueryTable("repository").Filter("name", name).Exist()
 }
+
+// GetRepositoryByProjectName ...
+func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
+	sql := `select * from repository 
+		where project_id = (
+			select project_id from project
+			where name = ?
+		)`
+	repos := []*models.RepoRecord{}
+	_, err := GetOrmer().Raw(sql, name).QueryRows(&repos)
+	return repos, err
+}
+
+//GetTopRepos returns the most popular repositories
+func GetTopRepos(count int) ([]models.TopRepo, error) {
+	topRepos := []models.TopRepo{}
+
+	repositories := []*models.RepoRecord{}
+	if _, err := GetOrmer().QueryTable(&models.RepoRecord{}).
+		OrderBy("-PullCount", "Name").Limit(count).All(&repositories); err != nil {
+		return topRepos, err
+	}
+
+	for _, repository := range repositories {
+		topRepos = append(topRepos, models.TopRepo{
+			RepoName:    repository.Name,
+			AccessCount: repository.PullCount,
+		})
+	}
+
+	return topRepos, nil
+}
+
+// GetTotalOfRepositories ...
+func GetTotalOfRepositories(name string) (int64, error) {
+	qs := GetOrmer().QueryTable(&models.RepoRecord{})
+	if len(name) != 0 {
+		qs = qs.Filter("Name__contains", name)
+	}
+	return qs.Count()
+}
+
+// GetTotalOfPublicRepositories ...
+func GetTotalOfPublicRepositories(name string) (int64, error) {
+	params := []interface{}{}
+	sql := `select count(*) from repository r 
+		join project p 
+		on r.project_id = p.project_id and p.public = 1 `
+	if len(name) != 0 {
+		sql += ` where r.name like ?`
+		params = append(params, "%"+name+"%")
+	}
+
+	var total int64
+	err := GetOrmer().Raw(sql, params).QueryRow(&total)
+	return total, err
+}
+
+// GetTotalOfUserRelevantRepositories ...
+func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) {
+	params := []interface{}{}
+	sql := `select count(*) 
+		from repository r 
+		join (
+			select p.project_id, p.public 
+				from project p
+				join project_member pm
+				on p.project_id = pm.project_id
+				where pm.user_id = ?
+		) as pp 
+		on r.project_id = pp.project_id `
+	params = append(params, userID)
+	if len(name) != 0 {
+		sql += ` where r.name like ?`
+		params = append(params, "%"+name+"%")
+	}
+
+	var total int64
+	err := GetOrmer().Raw(sql, params).QueryRow(&total)
+	return total, err
+}

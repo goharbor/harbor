@@ -33,6 +33,7 @@ import (
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
@@ -243,13 +244,8 @@ func addAuthentication(req *http.Request) {
 func SyncRegistry() error {
 
 	log.Debugf("Start syncing repositories from registry to DB... ")
-	rc, err := initRegistryClient()
-	if err != nil {
-		log.Errorf("error occurred while initializing registry client for %v", err)
-		return err
-	}
 
-	reposInRegistry, err := rc.Catalog()
+	reposInRegistry, err := catalog()
 	if err != nil {
 		log.Error(err)
 		return err
@@ -261,6 +257,7 @@ func SyncRegistry() error {
 		log.Errorf("error occurred while getting all registories. %v", err)
 		return err
 	}
+
 	var reposInDB []string
 	for _, repoRecordInDB := range repoRecordsInDB {
 		reposInDB = append(reposInDB, repoRecordInDB.Name)
@@ -269,7 +266,6 @@ func SyncRegistry() error {
 	var reposToAdd []string
 	var reposToDel []string
 	reposToAdd, reposToDel = diffRepos(reposInRegistry, reposInDB)
-
 	if len(reposToAdd) > 0 {
 		log.Debugf("Start adding repositories into DB... ")
 		for _, repoToAdd := range reposToAdd {
@@ -307,6 +303,44 @@ func SyncRegistry() error {
 	return nil
 }
 
+func catalog() ([]string, error) {
+	repositories := []string{}
+
+	rc, err := initRegistryClient()
+	if err != nil {
+		return repositories, err
+	}
+
+	repos, err := rc.Catalog()
+	if err != nil {
+		return repositories, err
+	}
+
+	for _, repo := range repos {
+		// TODO remove the workaround when the bug of registry is fixed
+		// TODO read it from config
+		endpoint := os.Getenv("REGISTRY_URL")
+		client, err := cache.NewRepositoryClient(endpoint, true,
+			"admin", repo, "repository", repo)
+		if err != nil {
+			return repositories, err
+		}
+
+		exist, err := repositoryExist(repo, client)
+		if err != nil {
+			return repositories, err
+		}
+
+		if !exist {
+			continue
+		}
+
+		repositories = append(repositories, repo)
+	}
+
+	return repositories, nil
+}
+
 func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string) {
 	var needsAdd []string
 	var needsDel []string
@@ -315,13 +349,26 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	sort.Strings(reposInDB)
 
 	i, j := 0, 0
+	repoInR, repoInD := "", ""
 	for i < len(reposInRegistry) && j < len(reposInDB) {
-		d := strings.Compare(reposInRegistry[i], reposInDB[j])
+		repoInR = reposInRegistry[i]
+		repoInD = reposInDB[j]
+		d := strings.Compare(repoInR, repoInD)
 		if d < 0 {
-			needsAdd = append(needsAdd, reposInRegistry[i])
 			i++
+			exist, err := projectExists(repoInR)
+			if err != nil {
+				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
+				continue
+			}
+
+			if !exist {
+				continue
+			}
+
+			needsAdd = append(needsAdd, repoInR)
 		} else if d > 0 {
-			needsDel = append(needsDel, reposInDB[j])
+			needsDel = append(needsDel, repoInD)
 			j++
 		} else {
 			i++
@@ -330,8 +377,18 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	}
 
 	for i < len(reposInRegistry) {
-		needsAdd = append(needsAdd, reposInRegistry[i])
+		repoInR = reposInRegistry[i]
 		i++
+		exist, err := projectExists(repoInR)
+		if err != nil {
+			log.Errorf("failed to check whether project of %s exists: %v", repoInR, err)
+			continue
+		}
+
+		if !exist {
+			continue
+		}
+		needsAdd = append(needsAdd, repoInR)
 	}
 
 	for j < len(reposInDB) {
@@ -342,10 +399,15 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	return needsAdd, needsDel
 }
 
+func projectExists(repository string) (bool, error) {
+	project, _ := utils.ParseRepository(repository)
+	return dao.ProjectExists(project)
+}
+
 func initRegistryClient() (r *registry.Registry, err error) {
 	endpoint := os.Getenv("REGISTRY_URL")
 
-	addr := ""
+	addr := endpoint
 	if strings.Contains(endpoint, "/") {
 		addr = endpoint[strings.LastIndex(endpoint, "/")+1:]
 	}
@@ -409,25 +471,20 @@ func getJobServiceURL() string {
 func getReposByProject(name string, keyword ...string) ([]string, error) {
 	repositories := []string{}
 
-	list, err := getAllRepos()
+	repos, err := dao.GetRepositoryByProjectName(name)
 	if err != nil {
 		return repositories, err
 	}
 
-	project := ""
-	rest := ""
-	for _, repository := range list {
-		project, rest = utils.ParseRepository(repository)
-		if project != name {
+	needMatchKeyword := len(keyword) > 0 && len(keyword[0]) != 0
+	for _, repo := range repos {
+		if needMatchKeyword &&
+			strings.Contains(repo.Name, keyword[0]) {
+			repositories = append(repositories, repo.Name)
 			continue
 		}
 
-		if len(keyword) > 0 && len(keyword[0]) != 0 &&
-			!strings.Contains(rest, keyword[0]) {
-			continue
-		}
-
-		repositories = append(repositories, repository)
+		repositories = append(repositories, repo.Name)
 	}
 
 	return repositories, nil
@@ -435,4 +492,15 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 
 func getAllRepos() ([]string, error) {
 	return cache.GetRepoFromCache()
+}
+
+func repositoryExist(name string, client *registry.Repository) (bool, error) {
+	tags, err := client.ListTag()
+	if err != nil {
+		if regErr, ok := err.(*registry_error.Error); ok && regErr.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return len(tags) != 0, nil
 }

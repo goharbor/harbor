@@ -184,8 +184,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 
 //GetTotalOfUserRelevantProjects returns the total count of
 // user relevant projects
-func GetTotalOfUserRelevantProjects(userID int, projectName string,
-	public ...int) (int64, error) {
+func GetTotalOfUserRelevantProjects(userID int, projectName string) (int64, error) {
 	o := GetOrmer()
 	sql := `select count(*) from project p 
 			left join project_member pm 

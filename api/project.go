@@ -290,7 +290,14 @@ func (p *ProjectAPI) List() {
 				projectList[i].Togglable = true
 			}
 		}
-		projectList[i].RepoCount = getRepoCountByProject(projectList[i].Name)
+
+		repos, err := dao.GetRepositoryByProjectName(projectList[i].Name)
+		if err != nil {
+			log.Errorf("failed to get repositories of project %s: %v", projectList[i].Name, err)
+			p.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		projectList[i].RepoCount = len(repos)
 	}
 
 	p.setPaginationHeader(total, page, pageSize)
