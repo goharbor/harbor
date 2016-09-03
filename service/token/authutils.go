@@ -159,7 +159,11 @@ func GenTokenForUI(username string, service string, scopes []string) (token stri
 
 // MakeToken makes a valid jwt token based on parms.
 func MakeToken(username, service string, access []*token.ResourceActions) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	pk, err := libtrust.LoadKeyFile(privateKey)
+	var privateKeyPath = os.Getenv("PRIVATE_KEY_PATH")
+	if privateKeyPath == "" {
+		privateKeyPath = privateKey
+	}
+	pk, err := libtrust.LoadKeyFile(privateKeyPath)
 	if err != nil {
 		return "", 0, nil, err
 	}
