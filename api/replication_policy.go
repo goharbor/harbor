@@ -91,15 +91,17 @@ func (pa *RepPolicyAPI) Post() {
 	policy := &models.RepPolicy{}
 	pa.DecodeJSONReqAndValidate(policy)
 
-	po, err := dao.GetRepPolicyByName(policy.Name)
-	if err != nil {
-		log.Errorf("failed to get policy %s: %v", policy.Name, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+	/*
+		po, err := dao.GetRepPolicyByName(policy.Name)
+		if err != nil {
+			log.Errorf("failed to get policy %s: %v", policy.Name, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 
-	if po != nil {
-		pa.CustomAbort(http.StatusConflict, "name is already used")
-	}
+		if po != nil {
+			pa.CustomAbort(http.StatusConflict, "name is already used")
+		}
+	*/
 
 	project, err := dao.GetProjectByID(policy.ProjectID)
 	if err != nil {
@@ -169,18 +171,20 @@ func (pa *RepPolicyAPI) Put() {
 	policy.ProjectID = originalPolicy.ProjectID
 	pa.Validate(policy)
 
-	// check duplicate name
-	if policy.Name != originalPolicy.Name {
-		po, err := dao.GetRepPolicyByName(policy.Name)
-		if err != nil {
-			log.Errorf("failed to get policy %s: %v", policy.Name, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+	/*
+		// check duplicate name
+		if policy.Name != originalPolicy.Name {
+			po, err := dao.GetRepPolicyByName(policy.Name)
+			if err != nil {
+				log.Errorf("failed to get policy %s: %v", policy.Name, err)
+				pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
 
-		if po != nil {
-			pa.CustomAbort(http.StatusConflict, "name is already used")
+			if po != nil {
+				pa.CustomAbort(http.StatusConflict, "name is already used")
+			}
 		}
-	}
+	*/
 
 	if policy.TargetID != originalPolicy.TargetID {
 		//target of policy can not be modified when the policy is enabled
