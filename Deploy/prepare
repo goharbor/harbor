@@ -7,6 +7,7 @@ import string
 import os
 import sys
 import argparse
+import commands
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -16,10 +17,6 @@ if sys.version_info[:3][0] == 2:
 if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
-
-def validate(conf): 
-    if len(conf.get("configuration", "secret_key")) != 16:
-        raise Exception("Error: The length of secret key has to be 16 characters!")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-conf', dest='cfgfile', default = 'harbor.cfg',type=str,help="the path of Harbor configuration file")
@@ -32,8 +29,6 @@ conf.write(open(args.cfgfile).read())
 conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
-
-validate(rcp)
 
 hostname = rcp.get("configuration", "hostname")
 ui_url = rcp.get("configuration", "ui_url_protocol") + "://" + hostname
@@ -61,8 +56,15 @@ crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
-secret_key = rcp.get("configuration", "secret_key")
 ########
+
+#Read version form .git
+status, output = commands.getstatusoutput('git describe --tags')
+if status == 0:
+    version = output
+else:
+    version = 'unkonwn'
+#######
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
@@ -114,9 +116,9 @@ render(os.path.join(templates_dir, "ui", "env"),
 	self_registration=self_registration,
 	use_compressed_js=use_compressed_js,
         ui_secret=ui_secret,
-        secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert,
-	token_expiration=token_expiration)
+	token_expiration=token_expiration,
+        version=version)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
@@ -141,7 +143,6 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         db_password=db_password,
         ui_secret=ui_secret,
         max_job_workers=max_job_workers,
-        secret_key=secret_key,
         ui_url=ui_url,
         verify_remote_cert=verify_remote_cert)
 
