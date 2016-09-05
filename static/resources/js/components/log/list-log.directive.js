@@ -56,14 +56,12 @@
     vm.pageSize = 20;            
 
     $scope.$watch('vm.page', function(current, origin) {
-      if(current !== 1) {
+      if(current) {
         vm.page = current;
         retrieve(vm.queryParams, vm.page, vm.pageSize);
       }
     }); 
-    
-    retrieve(vm.queryParams, vm.page, vm.pageSize);
-  
+      
     $scope.$on('$locationChangeSuccess', function() {
             
       vm.projectId = getParameterByName('project_id', $location.absUrl());
