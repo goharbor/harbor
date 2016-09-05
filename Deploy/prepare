@@ -7,6 +7,7 @@ import string
 import os
 import sys
 import argparse
+import commands
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -64,6 +65,14 @@ verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 secret_key = rcp.get("configuration", "secret_key")
 ########
 
+#Read version form .git
+status, output = commands.getstatusoutput('git describe --tags')
+if status == 0:
+    version = output
+else:
+    version = 'UNKNOWN'
+#######
+
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
 base_dir = os.path.dirname(__file__)
@@ -116,7 +125,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         ui_secret=ui_secret,
         secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert,
-	token_expiration=token_expiration)
+	token_expiration=token_expiration,
+        version=version)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
