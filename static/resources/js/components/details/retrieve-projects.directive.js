@@ -102,12 +102,13 @@
     function selectItem(item) {
       vm.selectedProject = item;
       $location.search('project_id', vm.selectedProject.project_id);
-      vm.checkProjectMember(vm.selectedProject.project_id);
+      $scope.$emit('projectChanged', true);
     }       
   
     $scope.$on('$locationChangeSuccess', function(e) {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
       vm.isOpen = false;
+      vm.checkProjectMember(vm.selectedProject.project_id);
     });
     
     function checkProjectMember(projectId) {

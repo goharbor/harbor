@@ -253,6 +253,7 @@ var locale_messages = {
   'failed_to_get_replication_policy': 'Failed to get replication policy.',
   'failed_to_update_replication_policy': 'Failed to update replication policy.',
   'failed_to_delete_replication_policy': 'Failed to delete replication policy.',
+  'failed_to_delete_replication_enabled': 'Policy is enabled, can not be deleted.',
   'failed_to_delete_destination': 'Failed to delete destination.',
   'failed_to_create_destination': 'Failed to create destination.',
   'failed_to_update_destination': 'Failed to update destination.',

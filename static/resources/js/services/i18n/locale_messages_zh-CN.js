@@ -252,6 +252,7 @@ var locale_messages = {
   'failed_to_get_destination_policies': '获取目标关联策略数据失败。',
   'failed_to_get_replication_policy': '获取复制策略失败。',
   'failed_to_update_replication_policy': '修改复制策略失败。',
+  'failed_to_delete_replication_enabled': '无法删除正在使用的复制策略。',
   'failed_to_delete_replication_policy': '删除复制策略失败。',
   'failed_to_delete_destination': '删除目标失败。',
   'failed_to_create_destination': '创建目标失败。',

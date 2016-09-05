@@ -68,6 +68,12 @@
       }
     });
     
+    $scope.$on('projectChanged', function(e, val) {
+      if(val) {
+        $scope.$broadcast('retrieveData', true);
+      }
+    });
+     
     function togglePublicity(e) {      
       vm.publicity = e.publicity;
     }

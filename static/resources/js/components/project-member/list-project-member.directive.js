@@ -36,14 +36,19 @@
     vm.deleteProjectMember = deleteProjectMember;
     vm.retrieve = retrieve;
     vm.username = '';
+    vm.hasRetrieved = false;
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve();
     
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.username = '';
-      vm.retrieve();
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        console.log('received retrieve data:' + val);
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.username = '';
+        vm.retrieve();
+        vm.hasRetrieved = false;
+      }
     });
               
     function search(e) {
@@ -87,6 +92,7 @@
     function getProjectMemberComplete(response) {  
       vm.user = currentUser.get();
       vm.projectMembers = response.data || [];  
+      vm.hasRetrieved = true;
     } 
            
     function getProjectMemberFailed(response) {
