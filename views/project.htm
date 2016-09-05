@@ -37,16 +37,19 @@
               <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>               
     		    </div>    
           </div> 
-            <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
+          
+          <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
+          <div class="each-tab-pane">   
             <div class="sub-pane">
               <div class="table-head-container">
                 <table class="table table-pane table-header">
                   <thead>
-                    <th width="15%">// 'project_name' | tr //</th>
-                    <th width="20%">// 'repositories' | tr //</th>
+                    <th width="20%">// 'project_name' | tr //</th>
+                    <th width="15%">// 'repositories' | tr //</th>
                     <th width="15%" ng-if="!vm.publicity">// 'role' | tr //</th>
-                    <th width="30%">// 'creation_time' | tr //</th>
+                    <th width="20%">// 'creation_time' | tr //</th>
                     <th width="15%">// 'publicity' | tr //</th>
+                    <th width="10%">// 'operation' | tr //</th>
                   </thead>
                 </table>
               </div>
@@ -57,17 +60,21 @@
                       <td colspan="5" height="320px" class="empty-hint" ng-if="vm.projects.length === 0"><h4 class="text-muted">// 'no_projects_add_new_project' | tr //</h4></td>
                     </tr>
                     <tr ng-if="vm.projects.length > 0" ng-repeat="p in vm.projects">
-                      <td width="15%"><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
-                      <td width="20%">//p.repo_count//</td>
+                      <td width="20%"><a href="/repository#/repositories?project_id=//p.project_id//&is_public=//p.public//">//p.name//</a></td>
+                      <td width="15%">//p.repo_count//</td>
                       <td width="15%" ng-if="!vm.publicity">//vm.getProjectRole(p.current_user_role_id) | tr//</td>
-                      <td width="30%">//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                      <td width="15%"><publicity-button is-public="p.public" owned="p.owner_id == vm.user.user_id" project-id="p.project_id"></publicity-button></td>
+                      <td width="20%">//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
+                      <td width="15%"><publicity-button is-public="p.public" project-id="p.project_id"></publicity-button></td>
+                      <td width="10%">
+                        &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.confirmToDelete(p.project_id, p.name)"><span class="glyphicon glyphicon-trash"></span></a>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
-          <div class="col-xs-4 col-md-12 well well-sm well-custom"><div class="col-md-offset-10">//vm.projects ? vm.projects.length : 0// // 'items' | tr //</div></div>               
+          </div>
+          <paginator ng-if="vm.totalCount > 0" total-count="//vm.totalCount//" page-size="//vm.pageSize//" page="vm.page" display-count="5"></paginator>               
   	    </div>
       </div>
     </div>

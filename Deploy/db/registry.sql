@@ -38,8 +38,14 @@ insert into role (role_code, name) values
 
 create table user (
  user_id int NOT NULL AUTO_INCREMENT,
- username varchar(15),
- email varchar(128),
+# The max length of username controlled by API is 20, 
+# and 11 is reserved for marking the deleted users.
+# The mark of deleted user is "#user_id".
+# The 11 consist of 10 for the max value of user_id(4294967295)  
+# in MySQL and 1 of '#'.
+ username varchar(32),
+# 11 bytes is reserved for marking the deleted users.
+ email varchar(255),
  password varchar(40) NOT NULL,
  realname varchar (20) NOT NULL,
  comment varchar (30),
@@ -62,7 +68,7 @@ create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  # The max length of name controlled by API is 30, 
- # and 11 bytes is reserved for marking the deleted project.
+ # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
  creation_time timestamp,
  update_time timestamp,
@@ -101,8 +107,25 @@ create table access_log (
  operation varchar(20) NOT NULL,
  op_time timestamp,
  primary key (log_id),
+ INDEX pid_optime (project_id, op_time),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
+);
+
+create table repository (
+ repository_id int NOT NULL AUTO_INCREMENT,
+ name varchar(255) NOT NULL,
+ project_id int NOT NULL,
+ owner_id int NOT NULL,
+ description text,
+ pull_count int DEFAULT 0 NOT NULL,
+ star_count int DEFAULT 0 NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ primary key (repository_id),
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id),
+ UNIQUE (name)
 );
 
 create table replication_policy (
@@ -147,7 +170,8 @@ create table replication_job (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
- INDEX policy (policy_id)
+ INDEX policy (policy_id),
+ INDEX poid_uptime (policy_id, update_time)
  );
  
 create table properties (

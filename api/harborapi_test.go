@@ -25,7 +25,11 @@ import (
 const (
 	jsonAcceptHeader = "application/json"
 	testAcceptHeader = "text/plain"
+	adminName        = "admin"
+	adminPwd         = "Harbor12345"
 )
+
+var admin, unknownUsr *usrInfo
 
 type api struct {
 	basePath string
@@ -57,12 +61,19 @@ func init() {
 
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
-	beego.Router("/api/projects/:id/delete", &ProjectAPI{}, "delete:Delete")
+	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get")
+	beego.Router("/api/statistics", &StatisticAPI{})
+	beego.Router("/api/logs", &LogAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
+
+	//Init user Info
+	admin = &usrInfo{adminName, adminPwd}
+	unknownUsr = &usrInfo{"unknown", "unknown"}
 
 }
 
@@ -115,7 +126,7 @@ func (a api) SearchGet(q string) (apilib.Search, error) {
 //@param project New created project.
 //@return void
 //func (a api) ProjectsPost (prjUsr usrInfo, project apilib.Project) (int, error) {
-func (a api) ProjectsPost(prjUsr usrInfo, project apilib.Project) (int, error) {
+func (a api) ProjectsPost(prjUsr usrInfo, project apilib.ProjectReq) (int, error) {
 
 	_sling := sling.New().Post(a.basePath)
 
@@ -152,7 +163,43 @@ func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.
 
 	httpStatusCode, _, _ := request(_sling, jsonAcceptHeader, user)
 	return httpStatusCode
+}
 
+func (a api) StatisticGet(user usrInfo) (apilib.StatisticMap, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create path and map variables
+	path := "/api/statistics/"
+	fmt.Printf("project statistic path: %s\n", path)
+	_sling = _sling.Path(path)
+	var successPayload = new(apilib.StatisticMap)
+	code, body, err := request(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return *successPayload, err
+}
+
+func (a api) LogGet(user usrInfo, startTime, endTime, lines string) (int, []apilib.AccessLog, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create path and map variables
+	path := "/api/logs/"
+	fmt.Printf("logs path: %s\n", path)
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		StartTime string `url:"start_time,omitempty"`
+		EndTime   string `url:"end_time,omitempty"`
+		Lines     string `url:"lines,omitempty"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{StartTime: startTime, EndTime: endTime, Lines: lines})
+	var successPayload []apilib.AccessLog
+	code, body, err := request(_sling, jsonAcceptHeader, user)
+	if 200 == code && nil == err {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return code, successPayload, err
 }
 
 ////Delete a repository or a tag in a repository.
@@ -202,12 +249,9 @@ func (a api) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
 	//create api path
-	path := "api/projects/" + projectID + "/delete"
+	path := "api/projects/" + projectID
 	_sling = _sling.Path(path)
-
-	//_sling = _sling.BodyJSON(project)
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
-	fmt.Println(string(body))
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 }
 
@@ -225,6 +269,23 @@ func (a api) ProjectsHead(prjUsr usrInfo, projectName string) (int, error) {
 
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
+}
+
+//Return specific project detail infomation
+func (a api) ProjectsGetByPID(projectID string) (int, apilib.Project, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	//create api path
+	path := "api/projects/" + projectID
+	_sling = _sling.Path(path)
+
+	var successPayload apilib.Project
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return httpStatusCode, successPayload, err
 }
 
 //Search projects by projectName and isPublic
@@ -281,7 +342,7 @@ func (a api) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apili
 	// body params
 	_sling = _sling.BodyJSON(accessLog)
 
-	//	var successPayload []apilib.AccessLog
+	//var successPayload []apilib.AccessLog
 
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
 	/*
@@ -293,17 +354,23 @@ func (a api) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apili
 	//	return httpStatusCode, successPayload, err
 }
 
+//-------------------------Member Test---------------------------------------//
+
 //Return relevant role members of projectID
-func (a api) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int, []byte, error) {
-	_sling := sling.New().Post(a.basePath)
+func (a api) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int, []apilib.User, error) {
+	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/projects/" + projectID + "/members/"
 
 	_sling = _sling.Path(path)
 
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
-	return httpStatusCode, body, err
+	var successPayload []apilib.User
 
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return httpStatusCode, successPayload, err
 }
 
 //Add project role member accompany with  projectID

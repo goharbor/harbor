@@ -20,15 +20,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
+	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
@@ -235,6 +240,207 @@ func addAuthentication(req *http.Request) {
 	}
 }
 
+// SyncRegistry syncs the repositories of registry with database.
+func SyncRegistry() error {
+
+	log.Debugf("Start syncing repositories from registry to DB... ")
+
+	reposInRegistry, err := catalog()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	var repoRecordsInDB []models.RepoRecord
+	repoRecordsInDB, err = dao.GetAllRepositories()
+	if err != nil {
+		log.Errorf("error occurred while getting all registories. %v", err)
+		return err
+	}
+
+	var reposInDB []string
+	for _, repoRecordInDB := range repoRecordsInDB {
+		reposInDB = append(reposInDB, repoRecordInDB.Name)
+	}
+
+	var reposToAdd []string
+	var reposToDel []string
+	reposToAdd, reposToDel = diffRepos(reposInRegistry, reposInDB)
+	if len(reposToAdd) > 0 {
+		log.Debugf("Start adding repositories into DB... ")
+		for _, repoToAdd := range reposToAdd {
+			project, _ := utils.ParseRepository(repoToAdd)
+			user, err := dao.GetAccessLogCreator(repoToAdd)
+			if err != nil {
+				log.Errorf("Error happens when getting the repository owner from access log: %v", err)
+			}
+			if len(user) == 0 {
+				user = "anonymous"
+			}
+			pullCount, err := dao.CountPull(repoToAdd)
+			if err != nil {
+				log.Errorf("Error happens when counting pull count from access log: %v", err)
+			}
+			repoRecord := models.RepoRecord{Name: repoToAdd, OwnerName: user, ProjectName: project, PullCount: pullCount}
+			if err := dao.AddRepository(repoRecord); err != nil {
+				log.Errorf("Error happens when adding the missing repository: %v", err)
+			}
+			log.Debugf("Add repository: %s success.", repoToAdd)
+		}
+	}
+
+	if len(reposToDel) > 0 {
+		log.Debugf("Start deleting repositories from DB... ")
+		for _, repoToDel := range reposToDel {
+			if err := dao.DeleteRepository(repoToDel); err != nil {
+				log.Errorf("Error happens when deleting the repository: %v", err)
+			}
+			log.Debugf("Delete repository: %s success.", repoToDel)
+		}
+	}
+
+	log.Debugf("Sync repositories from registry to DB is done.")
+	return nil
+}
+
+func catalog() ([]string, error) {
+	repositories := []string{}
+
+	rc, err := initRegistryClient()
+	if err != nil {
+		return repositories, err
+	}
+
+	repos, err := rc.Catalog()
+	if err != nil {
+		return repositories, err
+	}
+
+	for _, repo := range repos {
+		// TODO remove the workaround when the bug of registry is fixed
+		// TODO read it from config
+		endpoint := os.Getenv("REGISTRY_URL")
+		client, err := cache.NewRepositoryClient(endpoint, true,
+			"admin", repo, "repository", repo)
+		if err != nil {
+			return repositories, err
+		}
+
+		exist, err := repositoryExist(repo, client)
+		if err != nil {
+			return repositories, err
+		}
+
+		if !exist {
+			continue
+		}
+
+		repositories = append(repositories, repo)
+	}
+
+	return repositories, nil
+}
+
+func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string) {
+	var needsAdd []string
+	var needsDel []string
+
+	sort.Strings(reposInRegistry)
+	sort.Strings(reposInDB)
+
+	i, j := 0, 0
+	repoInR, repoInD := "", ""
+	for i < len(reposInRegistry) && j < len(reposInDB) {
+		repoInR = reposInRegistry[i]
+		repoInD = reposInDB[j]
+		d := strings.Compare(repoInR, repoInD)
+		if d < 0 {
+			i++
+			exist, err := projectExists(repoInR)
+			if err != nil {
+				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
+				continue
+			}
+
+			if !exist {
+				continue
+			}
+
+			needsAdd = append(needsAdd, repoInR)
+		} else if d > 0 {
+			needsDel = append(needsDel, repoInD)
+			j++
+		} else {
+			i++
+			j++
+		}
+	}
+
+	for i < len(reposInRegistry) {
+		repoInR = reposInRegistry[i]
+		i++
+		exist, err := projectExists(repoInR)
+		if err != nil {
+			log.Errorf("failed to check whether project of %s exists: %v", repoInR, err)
+			continue
+		}
+
+		if !exist {
+			continue
+		}
+		needsAdd = append(needsAdd, repoInR)
+	}
+
+	for j < len(reposInDB) {
+		needsDel = append(needsDel, reposInDB[j])
+		j++
+	}
+
+	return needsAdd, needsDel
+}
+
+func projectExists(repository string) (bool, error) {
+	project, _ := utils.ParseRepository(repository)
+	return dao.ProjectExists(project)
+}
+
+func initRegistryClient() (r *registry.Registry, err error) {
+	endpoint := os.Getenv("REGISTRY_URL")
+
+	addr := endpoint
+	if strings.Contains(endpoint, "/") {
+		addr = endpoint[strings.LastIndex(endpoint, "/")+1:]
+	}
+
+	ch := make(chan int, 1)
+	go func() {
+		var err error
+		var c net.Conn
+		for {
+			c, err = net.DialTimeout("tcp", addr, 20*time.Second)
+			if err == nil {
+				c.Close()
+				ch <- 1
+			} else {
+				log.Errorf("failed to connect to registry client, retry after 2 seconds :%v", err)
+				time.Sleep(2 * time.Second)
+			}
+		}
+	}()
+	select {
+	case <-ch:
+	case <-time.After(60 * time.Second):
+		panic("Failed to connect to registry client after 60 seconds")
+	}
+
+	registryClient, err := cache.NewRegistryClient(endpoint, true, "admin",
+		"registry", "catalog", "*")
+	if err != nil {
+		return nil, err
+	}
+	return registryClient, nil
+}
+
 func buildReplicationURL() string {
 	url := getJobServiceURL()
 	return fmt.Sprintf("%s/api/jobs/replication", url)
@@ -265,25 +471,20 @@ func getJobServiceURL() string {
 func getReposByProject(name string, keyword ...string) ([]string, error) {
 	repositories := []string{}
 
-	list, err := getAllRepos()
+	repos, err := dao.GetRepositoryByProjectName(name)
 	if err != nil {
 		return repositories, err
 	}
 
-	project := ""
-	rest := ""
-	for _, repository := range list {
-		project, rest = utils.ParseRepository(repository)
-		if project != name {
+	needMatchKeyword := len(keyword) > 0 && len(keyword[0]) != 0
+	for _, repo := range repos {
+		if needMatchKeyword &&
+			strings.Contains(repo.Name, keyword[0]) {
+			repositories = append(repositories, repo.Name)
 			continue
 		}
 
-		if len(keyword) > 0 && len(keyword[0]) != 0 &&
-			!strings.Contains(rest, keyword[0]) {
-			continue
-		}
-
-		repositories = append(repositories, repository)
+		repositories = append(repositories, repo.Name)
 	}
 
 	return repositories, nil
@@ -291,4 +492,15 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 
 func getAllRepos() ([]string, error) {
 	return cache.GetRepoFromCache()
+}
+
+func repositoryExist(name string, client *registry.Repository) (bool, error) {
+	tags, err := client.ListTag()
+	if err != nil {
+		if regErr, ok := err.(*registry_error.Error); ok && regErr.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return len(tags) != 0, nil
 }
