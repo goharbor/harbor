@@ -30,7 +30,7 @@
     vm.publicity = 0;
     
     vm.page = 1;
-    vm.pageSize = 20;  
+    vm.pageSize = 10;  
      
     vm.retrieve = retrieve;
     vm.showAddProject = showAddProject;
@@ -38,7 +38,6 @@
     vm.showAddButton = showAddButton;
     vm.togglePublicity = togglePublicity;    
     vm.user = currentUser.get();      
-    vm.retrieve();
     vm.getProjectRole = getProjectRole;
     
     vm.searchProjectByKeyPress = searchProjectByKeyPress;
@@ -134,6 +133,7 @@
     function togglePublicity(e) {
       vm.publicity = e.publicity;
       vm.isOpen = false;
+      vm.page = 1;
       vm.retrieve();
       console.log('vm.publicity:' + vm.publicity);
     }
