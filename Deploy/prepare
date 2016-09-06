@@ -66,10 +66,9 @@ secret_key = rcp.get("configuration", "secret_key")
 ########
 
 #Read version form .git
-stdoutdata, stderrdata=subprocess.Popen(["git", "describe","--tags"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-if len(stderrdata) == 0:
-    version = stdoutdata.strip('\n')
-else :
+try:
+    version = subprocess.check_output(["git", "describe","--tags"]).strip('\n')
+except :
     version = "UNKNOWN"
 #######
 
