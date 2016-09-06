@@ -76,6 +76,7 @@
      
     function togglePublicity(e) {      
       vm.publicity = e.publicity;
+      vm.target = 'repositories';
     }
   }
   
