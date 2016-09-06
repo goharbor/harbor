@@ -36,7 +36,6 @@
     vm.deleteProjectMember = deleteProjectMember;
     vm.retrieve = retrieve;
     vm.username = '';
-    vm.hasRetrieved = false;
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve();
@@ -47,7 +46,6 @@
         vm.projectId = getParameterByName('project_id', $location.absUrl());
         vm.username = '';
         vm.retrieve();
-        vm.hasRetrieved = false;
       }
     });
               
@@ -92,7 +90,6 @@
     function getProjectMemberComplete(response) {  
       vm.user = currentUser.get();
       vm.projectMembers = response.data || [];  
-      vm.hasRetrieved = true;
     } 
            
     function getProjectMemberFailed(response) {
