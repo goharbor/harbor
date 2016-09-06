@@ -477,10 +477,10 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 	}
 
 	needMatchKeyword := len(keyword) > 0 && len(keyword[0]) != 0
+
 	for _, repo := range repos {
 		if needMatchKeyword &&
-			strings.Contains(repo.Name, keyword[0]) {
-			repositories = append(repositories, repo.Name)
+			!strings.Contains(repo.Name, keyword[0]) {
 			continue
 		}
 
