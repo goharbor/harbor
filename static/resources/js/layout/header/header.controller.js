@@ -42,6 +42,40 @@
       vm.searchInput = getParameterByName('q', $window.location.search);
       console.log('vm.searchInput at header:' + vm.searchInput);
     }
+    
+    $scope.$on('modalTitle', function(e, val) {
+      vm.modalTitle = val;
+    });
+    
+    $scope.$on('modalMessage', function(e, val) {
+      vm.modalMessage = val;
+    });
+    
+    $scope.$on('raiseInfo', function(e, val) {
+      if(val) {
+        vm.action = function() {
+          val.action();
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = val.contentType;
+        vm.confirmOnly = val.confirmOnly;
+       
+        $scope.$broadcast('showDialog', true);
+      }
+    });
+    
+    $scope.$on('raiseInfo', function(e, val) {
+      if(val) {
+        vm.action = function() {
+          val.action();
+          $scope.$broadcast('showDialog', false);
+        };
+        vm.contentType = val.contentType;
+        vm.confirmOnly = val.confirmOnly;
+       
+        $scope.$broadcast('showDialog', true);
+      }
+    });
   }
   
 })();
