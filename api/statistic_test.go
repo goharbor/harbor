@@ -21,8 +21,6 @@ func TestStatisticGet(t *testing.T) {
 
 	//prepare for test
 
-	admin := &usrInfo{"admin", "Harbor12345"}
-
 	var myProCount, pubProCount, totalProCount int32
 	result, err := apiTest.StatisticGet(*admin)
 	if err != nil {
