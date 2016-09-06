@@ -173,7 +173,12 @@
     
     function deleteProjectFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project'));
+      if(status === 412) {
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project_contains_repo'));
+      }
+      if(status === 403) {
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project_insuffient_permissions'));  
+      }
       $scope.$emit('raiseError', true);
       console.log('Failed to delete project.');
     }
