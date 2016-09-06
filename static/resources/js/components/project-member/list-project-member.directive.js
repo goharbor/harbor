@@ -40,10 +40,13 @@
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve();
     
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.username = '';
-      vm.retrieve();
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        console.log('received retrieve data:' + val);
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.username = '';
+        vm.retrieve();
+      }
     });
               
     function search(e) {

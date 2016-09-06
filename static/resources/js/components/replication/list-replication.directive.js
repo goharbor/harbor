@@ -44,9 +44,11 @@
     
     vm.sectionHeight = {'min-height': '1260px'};
       
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.retrievePolicy();
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.retrievePolicy();
+      }
     });
     
     vm.addReplication = addReplication;
@@ -66,7 +68,7 @@
     vm.page = 1;
     
     $scope.$watch('vm.page', function(current) {
-      if(current !== 1) {
+      if(vm.lastPolicyId !== -1 && current) {
         vm.page = current;
         console.log('replication job: vm.page:' + current);
         vm.retrieveJob(vm.lastPolicyId, vm.page, vm.pageSize);
@@ -192,7 +194,11 @@
     
     function deleteReplicationPolicyFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_policy'));
+      if(status === 412) {
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_enabled')); 
+      }else{
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_policy'));
+      }
       $scope.$emit('raiseError', true);
       console.log('Failed to delete replication policy.');
     }
@@ -347,11 +353,7 @@
           if(current) {
             if(current.length > 0) {
               element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
-              if(ctrl.lastPolicyId === -1) {
-                element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');  
-              }else{
-                element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
-              }
+              element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');
             }else{
                element
                 .find('#upon-pane table>tbody>tr')  

@@ -62,18 +62,19 @@
       }
     }); 
       
-    $scope.$on('$locationChangeSuccess', function() {
-            
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.queryParams = {
-        'beginTimestamp' : vm.beginTimestamp,
-        'endTimestamp'   : vm.endTimestamp,
-        'keywords' : vm.keywords,
-        'projectId': vm.projectId,
-        'username' : vm.username
-      };
-      vm.username = '';
-      retrieve(vm.queryParams, vm.page, vm.pageSize);
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.queryParams = {
+          'beginTimestamp' : vm.beginTimestamp,
+          'endTimestamp'   : vm.endTimestamp,
+          'keywords' : vm.keywords,
+          'projectId': vm.projectId,
+          'username' : vm.username
+        };
+        vm.username = '';
+        retrieve(vm.queryParams, vm.page, vm.pageSize);
+      }
     });
             
     function search(e) {
