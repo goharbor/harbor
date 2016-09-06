@@ -20,31 +20,15 @@
     .module('harbor.repository')
     .directive('popupDetails', popupDetails);
   
-  PopupDetailsController.$inject = ['ListManifestService', '$filter', 'dateLFilter'];
+  PopupDetailsController.$inject = [];
   
-  function PopupDetailsController(ListManifestService, $filter, dateLFilter) {
-    var vm = this;
-    
-    vm.retrieve = retrieve;
-    
-    function retrieve() {
-      ListManifestService(vm.repoName, vm.tag)
-        .success(getManifestSuccess)
-        .error(getManifestFailed);
-    }
-    
-    function getManifestSuccess(data, status) {
-	  console.log('Successful get manifest:' + data);
-	  vm.manifest = angular.fromJson(data.manifest.history[0].v1Compatibility);
-	  vm.manifest['created'] = $filter('dateL')(vm.manifest['created'], 'YYYY-MM-DD HH:mm:ss');
-    }
-    
-    function getManifestFailed(data, status) {
-      console.log('Failed to get manifest:' + data);
-    }
+  function PopupDetailsController() {
+       
   }
   
-  function popupDetails() {
+  popupDetails.$inject = ['ListManifestService', '$filter', 'dateLFilter'];
+  
+  function popupDetails(ListManifestService, $filter, dateLFilter) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/repository/popup-details.directive.html',
@@ -61,30 +45,39 @@
     };
     return directive;
     
-    function link(scope, element, attrs, ctrl) {
-      ctrl.retrieve();
-      scope.$watch('vm.manifest', function(current) {
-        if(current) {
-          
-          element
-            .popover({
-              'template': '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-title"></div><div class="popover-content"></div></div>',
-              'title': '<div class="pull-right clearfix"><a href="javascript:void(0);"><span class="glyphicon glyphicon-remove-circle"></span></a></div>',
-              'content': generateContent,
-              'html': true
+    function link(scope, element, attrs, ctrl) {  
+      element
+        .popover({
+          'template': '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-title"></div><div class="popover-content"></div></div>',
+          'title': '<div class="pull-right clearfix"><a href="javascript:void(0);"><span class="glyphicon glyphicon-remove-circle"></span></a></div>',
+          'content': generateContent,
+          'html': true
+        })
+        .on('show.bs.popover', function(e) {
+           var data = ListManifestService(ctrl.repoName, ctrl.tag)
+            .success(function(data) {
+              return data;
             })
-            .on('shown.bs.popover', function(e){      
-              var self = jQuery(this);                 
-              $('[type="text"]:input', self.parent())
-                .on('click', function() {
-                  $(this).select();
-                });
-              self.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
-                element.trigger('click');
-              });
+            .error(function(data, status) {
+              console.log('Failed to get manifest of repo :' + ctrl.repoName);
+              return null;
+            });      
+           if(data) {
+             ctrl.manifest = angular.fromJson(data.responseJSON.manifest.history[0].v1Compatibility);
+             ctrl.manifest['created'] = $filter('dateL')(ctrl.manifest['created'], 'YYYY-MM-DD HH:mm:ss');
+           }
+        })
+        .on('inserted.bs.popover', function(e){      
+          var self = jQuery(this);                 
+          $('[type="text"]:input', self.parent())
+            .on('click', function() {
+              $(this).select();
             });
-        }
-      });
+          self.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
+            element.trigger('click');
+          });
+        });      
+  
       function generateContent() {
         var content =  '<form class="form-horizontal" width="100%">' +
           '<div class="form-group">' +
@@ -103,7 +96,7 @@
           '<div class="form-group"><label class="col-sm-3 control-label">OS</label>' +
           '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['os']) || ctrl.manifest['os']  === '') ? 'N/A' : ctrl.manifest['os']) + '</p></div></div>' +
         '</form>';
-        return content;
+        return content;        
       }
     }
   }
