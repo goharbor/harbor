@@ -38,7 +38,7 @@ type ProjectAPI struct {
 
 type projectReq struct {
 	ProjectName string `json:"project_name"`
-	Public      bool   `json:"public"`
+	Public      int    `json:"public"`
 }
 
 const projectNameMaxLen int = 30
@@ -73,11 +73,8 @@ func (p *ProjectAPI) Post() {
 	p.userID = p.ValidateUser()
 
 	var req projectReq
-	var public int
 	p.DecodeJSONReq(&req)
-	if req.Public {
-		public = 1
-	}
+	public := req.Public
 	err := validateProjectReq(req)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
@@ -293,7 +290,14 @@ func (p *ProjectAPI) List() {
 				projectList[i].Togglable = true
 			}
 		}
-		projectList[i].RepoCount = getRepoCountByProject(projectList[i].Name)
+
+		repos, err := dao.GetRepositoryByProjectName(projectList[i].Name)
+		if err != nil {
+			log.Errorf("failed to get repositories of project %s: %v", projectList[i].Name, err)
+			p.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		projectList[i].RepoCount = len(repos)
 	}
 
 	p.setPaginationHeader(total, page, pageSize)
@@ -305,7 +309,6 @@ func (p *ProjectAPI) List() {
 func (p *ProjectAPI) ToggleProjectPublic() {
 	p.userID = p.ValidateUser()
 	var req projectReq
-	var public int
 
 	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
@@ -315,9 +318,7 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 	}
 
 	p.DecodeJSONReq(&req)
-	if req.Public {
-		public = 1
-	}
+	public := req.Public
 	if !isProjectAdmin(p.userID, projectID) {
 		log.Warningf("Current user, id: %d does not have project admin role for project, id: %d", p.userID, projectID)
 		p.RenderError(http.StatusForbidden, "")
@@ -338,13 +339,18 @@ func (p *ProjectAPI) FilterAccessLog() {
 	p.DecodeJSONReq(&query)
 
 	query.ProjectID = p.projectID
-	query.Username = "%" + query.Username + "%"
 	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
 	query.EndTime = time.Unix(query.EndTimestamp, 0)
 
 	page, pageSize := p.getPaginationParams()
 
-	logs, total, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
+	total, err := dao.GetTotalOfAccessLogs(query)
+	if err != nil {
+		log.Errorf("failed to get total of access log: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	logs, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
 	if err != nil {
 		log.Errorf("failed to get access log: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, "")

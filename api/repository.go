@@ -21,8 +21,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -35,6 +33,7 @@ import (
 
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/registry/auth"
 )
 
@@ -108,7 +107,7 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
-	projectName := getProjectName(repoName)
+	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
 		log.Errorf("failed to get project %s: %v", projectName, err)
@@ -182,6 +181,18 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
+	exist, err := repositoryExist(repoName, rc)
+	if err != nil {
+		log.Errorf("failed to check the existence of repository %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+	if !exist {
+		if err = dao.DeleteRepository(repoName); err != nil {
+			log.Errorf("failed to delete repository %s: %v", repoName, err)
+			ra.CustomAbort(http.StatusInternalServerError, "")
+		}
+	}
+
 	go func() {
 		log.Debug("refreshing catalog cache")
 		if err := cache.RefreshCatalogCache(); err != nil {
@@ -202,7 +213,7 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
 
-	projectName := getProjectName(repoName)
+	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
 		log.Errorf("failed to get project %s: %v", projectName, err)
@@ -270,7 +281,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusBadRequest, "version should be v1 or v2")
 	}
 
-	projectName := getProjectName(repoName)
+	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {
 		log.Errorf("failed to get project %s: %v", projectName, err)
@@ -397,25 +408,14 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 
 //GetTopRepos handles request GET /api/repositories/top
 func (ra *RepositoryAPI) GetTopRepos() {
-	var err error
-	var countNum int
-	count := ra.GetString("count")
-	if len(count) == 0 {
-		countNum = 10
-	} else {
-		countNum, err = strconv.Atoi(count)
-		if err != nil {
-			log.Errorf("Get parameters error--count, err: %v", err)
-			ra.CustomAbort(http.StatusBadRequest, "bad request of count")
-		}
-		if countNum <= 0 {
-			log.Warning("count must be a positive integer")
-			ra.CustomAbort(http.StatusBadRequest, "count is 0 or negative")
-		}
+	count, err := ra.GetInt("count", 10)
+	if err != nil || count <= 0 {
+		ra.CustomAbort(http.StatusBadRequest, "invalid count")
 	}
-	repos, err := dao.GetTopRepos(countNum)
+
+	repos, err := dao.GetTopRepos(count)
 	if err != nil {
-		log.Errorf("error occured in get top 10 repos: %v", err)
+		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 	ra.Data["json"] = repos
@@ -438,12 +438,4 @@ func newRepositoryClient(endpoint string, insecure bool, username, password, rep
 		return nil, err
 	}
 	return client, nil
-}
-
-func getProjectName(repository string) string {
-	project := ""
-	if strings.Contains(repository, "/") {
-		project = repository[0:strings.LastIndex(repository, "/")]
-	}
-	return project
 }

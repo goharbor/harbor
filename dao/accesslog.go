@@ -38,79 +38,106 @@ func AddAccessLog(accessLog models.AccessLog) error {
 	return err
 }
 
-//GetAccessLogs gets access logs according to different conditions
-func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.AccessLog, int64, error) {
+// GetTotalOfAccessLogs ...
+func GetTotalOfAccessLogs(query models.AccessLog) (int64, error) {
 	o := GetOrmer()
 
-	condition := ` from access_log a left join user u on a.user_id = u.user_id
-		where a.project_id = ? `
-	queryParam := make([]interface{}, 1)
+	queryParam := []interface{}{}
+
+	sql := `select count(*) from access_log al 
+		where al.project_id = ?`
 	queryParam = append(queryParam, query.ProjectID)
 
-	if query.UserID != 0 {
-		condition += ` and a.user_id = ? `
-		queryParam = append(queryParam, query.UserID)
-	}
-	if query.Operation != "" {
-		condition += ` and a.operation = ? `
-		queryParam = append(queryParam, query.Operation)
-	}
 	if query.Username != "" {
-		condition += ` and u.username like ? `
-		queryParam = append(queryParam, query.Username)
+		sql = `select count(*) from access_log al 
+			left join user u 
+			on al.user_id = u.user_id 
+			where al.project_id = ? and u.username like ? `
+		queryParam = append(queryParam, "%"+query.Username+"%")
+	}
+
+	sql += genFilterClauses(query, &queryParam)
+
+	var total int64
+	if err := o.Raw(sql, queryParam).QueryRow(&total); err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+//GetAccessLogs gets access logs according to different conditions
+func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.AccessLog, error) {
+	o := GetOrmer()
+
+	queryParam := []interface{}{}
+	sql := `select al.log_id, u.username, al.repo_name, 
+			al.repo_tag, al.operation, al.op_time 
+		from access_log al 
+		left join user u 
+		on al.user_id = u.user_id
+		where al.project_id = ? `
+	queryParam = append(queryParam, query.ProjectID)
+
+	if query.Username != "" {
+		sql += ` and u.username like ? `
+		queryParam = append(queryParam, "%"+query.Username+"%")
+	}
+
+	sql += genFilterClauses(query, &queryParam)
+
+	sql += ` order by al.op_time desc `
+
+	sql = paginateForRawSQL(sql, limit, offset)
+
+	logs := []models.AccessLog{}
+	_, err := o.Raw(sql, queryParam).QueryRows(&logs)
+	if err != nil {
+		return logs, err
+	}
+
+	return logs, nil
+}
+
+func genFilterClauses(query models.AccessLog, queryParam *[]interface{}) string {
+	sql := ""
+
+	if query.Operation != "" {
+		sql += ` and al.operation = ? `
+		*queryParam = append(*queryParam, query.Operation)
 	}
 	if query.RepoName != "" {
-		condition += ` and a.repo_name = ? `
-		queryParam = append(queryParam, query.RepoName)
+		sql += ` and al.repo_name = ? `
+		*queryParam = append(*queryParam, query.RepoName)
 	}
 	if query.RepoTag != "" {
-		condition += ` and a.repo_tag = ? `
-		queryParam = append(queryParam, query.RepoTag)
+		sql += ` and al.repo_tag = ? `
+		*queryParam = append(*queryParam, query.RepoTag)
 	}
 	if query.Keywords != "" {
-		condition += ` and a.operation in ( `
+		sql += ` and al.operation in ( `
 		keywordList := strings.Split(query.Keywords, "/")
 		num := len(keywordList)
 		for i := 0; i < num; i++ {
 			if keywordList[i] != "" {
 				if i == num-1 {
-					condition += `?)`
+					sql += `?)`
 				} else {
-					condition += `?,`
+					sql += `?,`
 				}
-				queryParam = append(queryParam, keywordList[i])
+				*queryParam = append(*queryParam, keywordList[i])
 			}
 		}
 	}
 	if query.BeginTimestamp > 0 {
-		condition += ` and a.op_time >= ? `
-		queryParam = append(queryParam, query.BeginTime)
+		sql += ` and al.op_time >= ? `
+		*queryParam = append(*queryParam, query.BeginTime)
 	}
 	if query.EndTimestamp > 0 {
-		condition += ` and a.op_time <= ? `
-		queryParam = append(queryParam, query.EndTime)
+		sql += ` and al.op_time <= ? `
+		*queryParam = append(*queryParam, query.EndTime)
 	}
 
-	condition += ` order by a.op_time desc `
-
-	totalSQL := `select count(*) ` + condition
-
-	logs := []models.AccessLog{}
-
-	var total int64
-	if err := o.Raw(totalSQL, queryParam).QueryRow(&total); err != nil {
-		return logs, 0, err
-	}
-
-	condition = paginateForRawSQL(condition, limit, offset)
-
-	recordsSQL := `select a.log_id, u.username, a.repo_name, a.repo_tag, a.operation, a.op_time ` + condition
-	_, err := o.Raw(recordsSQL, queryParam).QueryRows(&logs)
-	if err != nil {
-		return logs, 0, err
-	}
-
-	return logs, total, nil
+	return sql
 }
 
 // AccessLog ...
@@ -157,48 +184,31 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 	return recentLogList, nil
 }
 
-//GetTopRepos return top  accessed public repos
-func GetTopRepos(countNum int) ([]models.TopRepo, error) {
-
+// GetAccessLogCreator ...
+func GetAccessLogCreator(repoName string) (string, error) {
 	o := GetOrmer()
-	// hide the where condition: project.public = 1, Can add to the sql when necessary.
-	sql := "select repo_name, COUNT(repo_name) as access_count from access_log left join project on access_log.project_id=project.project_id where access_log.operation = 'pull' group by repo_name order by access_count desc limit ? "
-	queryParam := []interface{}{}
-	queryParam = append(queryParam, countNum)
-	var list []models.TopRepo
-	_, err := o.Raw(sql, queryParam).QueryRows(&list)
+	sql := "select * from user where user_id = (select user_id from access_log where operation = 'push' and repo_name = ? order by op_time desc limit 1)"
+
+	var u []models.User
+	n, err := o.Raw(sql, repoName).QueryRows(&u)
+
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	if len(list) == 0 {
-		return list, nil
+	if n == 0 {
+		return "", nil
 	}
-	placeHolder := make([]string, len(list))
-	repos := make([]string, len(list))
-	for i, v := range list {
-		repos[i] = v.RepoName
-		placeHolder[i] = "?"
-	}
-	placeHolderStr := strings.Join(placeHolder, ",")
-	queryParam = nil
-	queryParam = append(queryParam, repos)
-	var usrnameList []models.TopRepo
-	sql = `select a.username as creator, a.repo_name from (select access_log.repo_name, user.username,
-	access_log.op_time from user left join access_log on user.user_id = access_log.user_id where 
-	access_log.operation = 'push' and access_log.repo_name in (######) order by access_log.repo_name,
-	access_log.op_time ASC) a group by a.repo_name`
-	sql = strings.Replace(sql, "######", placeHolderStr, 1)
-	_, err = o.Raw(sql, queryParam).QueryRows(&usrnameList)
+
+	return u[0].Username, nil
+}
+
+// CountPull ...
+func CountPull(repoName string) (int64, error) {
+	o := GetOrmer()
+	num, err := o.QueryTable("access_log").Filter("repo_name", repoName).Filter("operation", "pull").Count()
 	if err != nil {
-		return nil, err
+		log.Errorf("error in CountPull: %v ", err)
+		return 0, err
 	}
-	for i := 0; i < len(list); i++ {
-		for _, v := range usrnameList {
-			if v.RepoName == list[i].RepoName {
-				//			list[i].Creator = v.Creator
-				break
-			}
-		}
-	}
-	return list, nil
+	return num, nil
 }

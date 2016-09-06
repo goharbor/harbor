@@ -7,7 +7,7 @@ import string
 import os
 import sys
 import argparse
-import commands
+import subprocess
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -66,11 +66,11 @@ secret_key = rcp.get("configuration", "secret_key")
 ########
 
 #Read version form .git
-status, output = commands.getstatusoutput('git describe --tags')
-if status == 0:
-    version = output
-else:
-    version = 'UNKNOWN'
+stdoutdata, stderrdata=subprocess.Popen(["git", "describe","--tags"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+if len(stderrdata) == 0:
+    version = stdoutdata.strip('\n')
+else :
+    version = "UNKNOWN"
 #######
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -197,7 +197,6 @@ def openssl_is_installed(stat):
         return False
 
 if customize_crt == 'on':
-    import subprocess
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
     if openssl_is_installed(shell_stat):
         private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")

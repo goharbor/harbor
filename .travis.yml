@@ -59,7 +59,8 @@ install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - sudo sed -i '$a DOCKER_OPTS=\"$DOCKER_OPTS --insecure-registry 127.0.0.1\"' /etc/default/docker
+  - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+  - sudo sed -i '$a DOCKER_OPTS=\"--insecure-registry '$IP':5000\"' /etc/default/docker
   - sudo service docker restart
   - go get github.com/dghubble/sling
   - go get github.com/stretchr/testify
@@ -75,10 +76,10 @@ script:
   - docker-compose -f Deploy/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
-  - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
   - export MYSQL_HOST=$IP
-  - export REGISTRY_URL=http://$IP:5000
+  - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
+  - ./tests/pushimage.sh 
   - ./Deploy/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 

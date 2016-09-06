@@ -28,7 +28,7 @@
     $scope.p = {};
     var vm0 = $scope.p;
     vm0.projectName = '';
-    vm.isPublic = false;
+    vm.isPublic = 0;
     
     vm.addProject = addProject;
     vm.cancel = cancel;
@@ -37,9 +37,20 @@
     
     vm.hasError = false;
     vm.errorMessage = '';
+    
+    $scope.$watch('vm.isOpen', function(current) {
+      if(current) {
+        $scope.form.$setPristine();
+        $scope.form.$setUntouched();
+        vm0.projectName = '';
+        vm.isPublic = 0;
+      }
+    });
+    
         
     function addProject(p) {
       if(p && angular.isDefined(p.projectName)) {
+        vm.isPublic = vm.isPublic ? 1 : 0;
         AddProjectService(p.projectName, vm.isPublic)
           .success(addProjectSuccess)
           .error(addProjectFailed);
@@ -74,9 +85,9 @@
       }
       vm.isOpen = false;
       vm0.projectName = '';
-      vm.isPublic = false;
+      vm.isPublic = 0;
     
-      vm.hasError = false; vm.close = close;
+      vm.hasError = false; 
       vm.errorMessage = '';
     }
    
@@ -94,16 +105,10 @@
       'scope' : {
         'isOpen': '='
       },
-      'link': link,
       'controllerAs': 'vm',
       'bindToController': true
     };
-    return directive;
-
-    function link(scope, element, attrs, ctrl) {
-      scope.form.$setPristine();
-      scope.form.$setUntouched();
-    }
+    return directive;    
   }
    
 })();
