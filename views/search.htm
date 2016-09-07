@@ -23,13 +23,13 @@
             <h4 class="page-header title-color underlined">// 'projects' | tr //&nbsp;&nbsp;<span class="badge">//vm.project.length//</span></h4>  
             <div class="search-result">
               <ul>
-        			  <li ng-repeat="p in vm.project"><a href="/repository#/repositories?project_id=//p.id//&is_public=//p.public === 1//">//p.name//</a></li>
+        			  <li ng-repeat="p in vm.project"><a href="/repository#/repositories?project_id=//p.id//&is_public=//p.public//">//p.name//</a></li>
         		  </ul>
             </div>
             <h4 class="page-header title-color underlined">// 'repositories' | tr //&nbsp;&nbsp;<span class="badge">//vm.repository.length//</span></h4>  
             <div class="search-result">
               <ul>
-        			  <li  ng-repeat="r in vm.repository"><a href="/repository#/repositories?project_id=//r.project_id//&is_public=//r.project_public === 1//#//r.repository_name//">//r.repository_name//</a></li>
+        			  <li  ng-repeat="r in vm.repository"><a href="/repository#/repositories?project_id=//r.project_id//&is_public=//r.project_public//#//r.repository_name//">//r.repository_name//</a></li>
         			</ul>
             </div>
           </div>
