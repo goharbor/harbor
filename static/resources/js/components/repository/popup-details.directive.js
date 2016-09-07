@@ -62,7 +62,8 @@
               console.log('Failed to get manifest of repo :' + ctrl.repoName);
               return null;
             });      
-           if(data) {
+           ctrl.manifest = {};
+           if(data && angular.isDefined(data.responseJSON)) {
              ctrl.manifest = angular.fromJson(data.responseJSON.manifest.history[0].v1Compatibility);
              ctrl.manifest['created'] = $filter('dateL')(ctrl.manifest['created'], 'YYYY-MM-DD HH:mm:ss');
            }
@@ -82,21 +83,24 @@
         var content =  '<form class="form-horizontal" width="100%">' +
           '<div class="form-group">' +
           '<label class="col-sm-3 control-label">Id</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['id'] + '" readonly size="32"></p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + check_output(ctrl.manifest['id']) + '" readonly size="32"></p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Parent</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + ctrl.manifest['parent'] + '" readonly size="32"></p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line long-line-margin-right"><input type="text" id="txtImageId" value="' + check_output(ctrl.manifest['parent']) + '" readonly size="32"></p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Created</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ctrl.manifest['created'] + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + check_output(ctrl.manifest['created']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Author</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['author']) || ctrl.manifest['author'] === '') ? 'N/A' : ctrl.manifest['author']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + check_output(ctrl.manifest['author'])  + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Architecture</label>' + 
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['architecture']) || ctrl.manifest['architecture'] === '') ? 'N/A' : ctrl.manifest['architecture']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + check_output(ctrl.manifest['architecture']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">Docker Version</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['docker_version']) || ctrl.manifest['docker_version'] === '') ? 'N/A' : ctrl.manifest['docker_version']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + check_output(ctrl.manifest['docker_version']) + '</p></div></div>' +
           '<div class="form-group"><label class="col-sm-3 control-label">OS</label>' +
-          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + ((!angular.isDefined(ctrl.manifest['os']) || ctrl.manifest['os']  === '') ? 'N/A' : ctrl.manifest['os']) + '</p></div></div>' +
+          '<div class="col-sm-9"><p class="form-control-static long-line-margin-right">' + check_output(ctrl.manifest['os']) + '</p></div></div>' +
         '</form>';
         return content;        
+      }
+      function check_output(s) {
+        return (angular.isUndefined(s) || s === '') ? 'N/A' : s;
       }
     }
   }
