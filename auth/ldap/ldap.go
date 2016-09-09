@@ -40,62 +40,96 @@ const metaChars = "&|!=~*<>()"
 // be associated to other entities in the system.
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
-	ldapURL := os.Getenv("LDAP_URL")
-	if ldapURL == "" {
-		return nil, errors.New("Can not get any available LDAP_URL.")
-	}
-	log.Debug("ldapURL:", ldapURL)
-
 	p := m.Principal
 	for _, c := range metaChars {
 		if strings.ContainsRune(p, c) {
 			return nil, fmt.Errorf("the principal contains meta char: %q", c)
 		}
 	}
-
+	ldapURL := os.Getenv("LDAP_URL")
+	if ldapURL == "" {
+		return nil, errors.New("Can not get any available LDAP_URL.")
+	}
+	log.Debug("ldapURL:", ldapURL)
 	ldap, err := openldap.Initialize(ldapURL)
 	if err != nil {
 		return nil, err
 	}
-
 	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
 	ldapBaseDn := os.Getenv("LDAP_BASE_DN")
 	if ldapBaseDn == "" {
 		return nil, errors.New("Can not get any available LDAP_BASE_DN.")
 	}
+	log.Debug("baseDn:", ldapBaseDn)
 
-	baseDn := fmt.Sprintf(ldapBaseDn, m.Principal)
-	log.Debug("baseDn:", baseDn)
+	ldapSearchDn := os.Getenv("LDAP_SEARCH_DN")
+	if ldapSearchDn != "" {
+		log.Debug("Search DN: ", ldapSearchDn)
+		ldapSearchPwd := os.Getenv("LDAP_SEARCH_PWD")
+		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
+		if err != nil {
+			log.Debug("Bind search dn error", err)
+			return nil, err
+		}
+	}
 
-	err = ldap.Bind(baseDn, m.Password)
+	attrName := os.Getenv("LDAP_UID")
+	filter := os.Getenv("LDAP_FILTER")
+	if filter != "" {
+		filter = "(&(" + filter + ")(" + attrName + "=" + m.Principal + "))"
+	} else {
+		filter = "(" + attrName + "=" + m.Principal + ")"
+	}
+	log.Debug("one or more filter", filter)
+
+	ldapScope := os.Getenv("LDAP_SCOPE")
+	var scope int
+	if ldapScope == "1" {
+		scope = openldap.LDAP_SCOPE_BASE
+	} else if ldapScope == "2" {
+		scope = openldap.LDAP_SCOPE_ONELEVEL
+	} else {
+		scope = openldap.LDAP_SCOPE_SUBTREE
+	}
+	attributes := []string{"uid", "cn", "mail", "email"}
+	result, err := ldap.SearchAll(ldapBaseDn, scope, filter, attributes)
 	if err != nil {
+		return nil, err
+	}
+	if len(result.Entries()) == 0 {
+		log.Warningf("Not found an entry.")
+		return nil, nil
+	} else if len(result.Entries()) != 1 {
+		log.Warningf("Found more than one entry.")
+		return nil, nil
+	}
+	en := result.Entries()[0]
+	bindDN := en.Dn()
+	log.Debug("found entry:", en)
+	err = ldap.Bind(bindDN, m.Password)
+	if err != nil {
+		log.Debug("Bind user error", err)
 		return nil, err
 	}
 	defer ldap.Close()
 
-	scope := openldap.LDAP_SCOPE_SUBTREE // LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE
-	filter := "objectClass=*"
-	attributes := []string{"mail"}
-
-	result, err := ldap.SearchAll(baseDn, scope, filter, attributes)
-	if err != nil {
-		return nil, err
-	}
 	u := models.User{}
-	if len(result.Entries()) == 1 {
-		en := result.Entries()[0]
-		for _, attr := range en.Attributes() {
-			val := attr.Values()[0]
-			if attr.Name() == "mail" {
-				u.Email = val
-			}
+	for _, attr := range en.Attributes() {
+		val := attr.Values()[0]
+		switch attr.Name() {
+		case "uid":
+			u.Realname = val
+		case "cn":
+			u.Realname = val
+		case "mail":
+			u.Email = val
+		case "email":
+			u.Email = val
 		}
 	}
-
 	u.Username = m.Principal
 	log.Debug("username:", u.Username, ",email:", u.Email)
-
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
 		return nil, err
