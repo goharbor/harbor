@@ -31,3 +31,8 @@ Changelog for harbor database schema
   - add index `pid_optime (project_id, op_time)` on table `access_log`
   - add index `poid_uptime (policy_id, update_time)` on table `replication_job`
   - add column `deleted` to table `replication_policy`
+  - alter column `username` on table `user`: varchar(15)->varchar(32)
+  - alter column `email` on table `user`: varchar(128)->varchar(255)
+  - alter column `name` on table `project`: varchar(30)->varchar(41)
+  - create table `repository`
+  - alter column `password` on table `replication_target`: varchar(40)->varchar(128)
