@@ -5,14 +5,15 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 	"io/ioutil"
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
-
-	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/tests/apitests/apilib"
+	//	"strconv"
+	//	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -27,9 +28,14 @@ const (
 	testAcceptHeader = "text/plain"
 	adminName        = "admin"
 	adminPwd         = "Harbor12345"
+	//Prepare Test info
+	TestUserName  = "testUser0001"
+	TestUserPwd   = "testUser0001"
+	TestUserEmail = "testUser0001@mydomain.com"
+	TestProName   = "testProject0001"
 )
 
-var admin, unknownUsr *usrInfo
+var admin, unknownUsr, testUser *usrInfo
 
 type api struct {
 	basePath string
@@ -65,15 +71,21 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get")
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/statistics", &StatisticAPI{})
+	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
+	beego.Router("/api/repositories", &RepositoryAPI{})
+	beego.Router("/api/repositories/tags", &RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/manifests", &RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
 	//Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
+	testUser = &usrInfo{TestUserName, TestUserPwd}
 
 }
 
@@ -374,16 +386,120 @@ func (a api) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int, []
 }
 
 //Add project role member accompany with  projectID
-func (a api) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, []byte, error) {
+func (a api) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/projects/" + projectID + "/members/"
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(roles)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
+	return httpStatusCode, err
+
+}
+
+//Delete project role member accompany with  projectID
+func (a api) DeleteProjectMember(authInfo usrInfo, projectID string, userID string) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+
+	path := "/api/projects/" + projectID + "/members/" + userID
+	_sling = _sling.Path(path)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+
+}
+
+//Get role memberInfo by projectId and UserId
+func (a api) GetMemByPIDUID(authInfo usrInfo, projectID string, userID string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/projects/" + projectID + "/members/" + userID
 
 	_sling = _sling.Path(path)
 
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
-	return httpStatusCode, body, err
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
 
+//Put:update current project role members accompany with relevant project and user
+func (a api) PutProjectMember(authInfo usrInfo, projectID string, userID string, roles apilib.RoleParam) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+	path := "/api/projects/" + projectID + "/members/" + userID
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(roles)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//-------------------------Repositories Test---------------------------------------//
+//Return relevant repos of projectID
+func (a api) GetRepos(authInfo usrInfo, projectID string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/repositories/"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		ProjectID string `url:"project_id"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{ProjectID: projectID})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Get tags of a relevant repository
+func (a api) GetReposTags(authInfo usrInfo, repoName string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/repositories/tags"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		RepoName string `url:"repo_name"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Get manifests of a relevant repository
+func (a api) GetReposManifests(authInfo usrInfo, repoName string, tag string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/repositories/manifests"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		RepoName string `url:"repo_name"`
+		Tag      string `url:"tag"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName, Tag: tag})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Get public repositories which are accessed most
+func (a api) GetReposTop(authInfo usrInfo, count string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/repositories/top"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		Count string `url:"count"`
+	}
+
+	_sling = _sling.QueryStruct(&QueryParams{Count: count})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
 }
 
 //Return projects created by Harbor
