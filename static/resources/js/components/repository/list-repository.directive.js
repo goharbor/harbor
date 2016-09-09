@@ -42,9 +42,10 @@
       }
     }
     vm.page = 1;
-    vm.pageSize = 8;    
+    vm.pageSize = 15;    
     
     vm.retrieve = retrieve;
+    vm.searchRepo = searchRepo;
     vm.tagCount = {};
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
@@ -99,13 +100,17 @@
     function getRepositoryComplete(response) {
       vm.repositories = response.data || [];
       vm.totalCount = response.headers('X-Total-Count');
-      $scope.$broadcast('refreshTags', true);
     }
     
     function getRepositoryFailed(response) {
       console.log('Failed to list repositories:' + response);      
     }
    
+    function searchRepo() {
+      $scope.$broadcast('refreshTags', true);
+      vm.retrieve();
+    }
+  
     function deleteByRepo(repoName) { 
       vm.repoName = repoName;
       vm.tag = '';

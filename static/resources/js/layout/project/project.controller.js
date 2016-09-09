@@ -30,7 +30,7 @@
     vm.publicity = 0;
     
     vm.page = 1;
-    vm.pageSize = 10;  
+    vm.pageSize = 15;  
      
     vm.retrieve = retrieve;
     vm.showAddProject = showAddProject;
