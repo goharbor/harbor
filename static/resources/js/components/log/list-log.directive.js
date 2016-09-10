@@ -53,7 +53,7 @@
     };
 
     vm.page = 1;
-    vm.pageSize = 20;            
+    vm.pageSize = 15;            
 
     $scope.$watch('vm.page', function(current, origin) {
       if(current) {
