@@ -47,7 +47,21 @@ email_ssl = rcp.get("configuration", "email_ssl")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
 auth_mode = rcp.get("configuration", "auth_mode")
 ldap_url = rcp.get("configuration", "ldap_url")
+# this two options are either both set or unset
+if rcp.has_option("configuration", "ldap_searchdn"):
+    ldap_searchdn = rcp.get("configuration", "ldap_searchdn")
+    ldap_search_pwd = rcp.get("configuration", "ldap_search_pwd")
+else:
+    ldap_searchdn = ""
+    ldap_search_pwd = ""
 ldap_basedn = rcp.get("configuration", "ldap_basedn")
+# ldap_filter is null by default
+if rcp.has_option("configuration", "ldap_filter"):
+    ldap_filter = rcp.get("configuration", "ldap_filter")
+else:
+    ldap_filter = ""
+ldap_uid = rcp.get("configuration", "ldap_uid")
+ldap_scope = rcp.get("configuration", "ldap_scope")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
 use_compressed_js = rcp.get("configuration", "use_compressed_js")
@@ -118,7 +132,12 @@ render(os.path.join(templates_dir, "ui", "env"),
         auth_mode=auth_mode,
         harbor_admin_password=harbor_admin_password,
         ldap_url=ldap_url,
+        ldap_searchdn =ldap_searchdn, 
+        ldap_search_pwd =ldap_search_pwd,
         ldap_basedn=ldap_basedn,
+        ldap_filter=ldap_filter,
+        ldap_uid=ldap_uid,
+        ldap_scope=ldap_scope,
 	self_registration=self_registration,
 	use_compressed_js=use_compressed_js,
         ui_secret=ui_secret,
