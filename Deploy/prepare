@@ -56,6 +56,7 @@ crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
+log_level = rcp.get("configuration", "log_level")
 ########
 
 #Read version form .git
@@ -118,7 +119,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         ui_secret=ui_secret,
 	verify_remote_cert=verify_remote_cert,
 	token_expiration=token_expiration,
-        version=version)
+        version=version,
+        log_level=log_level,)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
@@ -130,9 +132,19 @@ render(os.path.join(templates_dir, "ui", "app.conf"),
         email_ssl=email_ssl,
         ui_url=ui_url)
 
+def parseRegistryLevel(level):
+    return {
+        "debug": "debug",
+        "info": "info",
+        "warning": "warn",
+        "error": "error",
+        "fatal": "error",
+        }.get(level, "debug")
+
 render(os.path.join(templates_dir, "registry", "config.yml"),
         registry_conf,
-        ui_url=ui_url)
+        ui_url=ui_url,
+        log_level=parseRegistryLevel(log_level),)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -144,7 +156,8 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         ui_secret=ui_secret,
         max_job_workers=max_job_workers,
         ui_url=ui_url,
-        verify_remote_cert=verify_remote_cert)
+        verify_remote_cert=verify_remote_cert,
+        log_level=log_level,)
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \
