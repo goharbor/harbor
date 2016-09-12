@@ -1,9 +1,7 @@
 harbor
-Deploy/config/registry/config.yml
-Deploy/config/ui/env
-Deploy/config/ui/app.conf
-Deploy/config/db/env
-Deploy/config/jobservice/env
+Deploy/config/registry
+Deploy/config/ui
+Deploy/config/*/env
 Deploy/ui/harbor_ui
 Deploy/jobservice/harbor_jobservice
 ui/ui
