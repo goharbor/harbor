@@ -19,16 +19,17 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils"
+	"github.com/vmware/harbor/utils/log"
+
+	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/session/redis"
 
 	"github.com/vmware/harbor/api"
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
-
-	"github.com/astaxie/beego"
-	_ "github.com/astaxie/beego/session/redis"
 )
 
 const (
@@ -45,10 +46,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("User id: %d does not exist.", userID)
 	}
 	if user.Salt == "" {
-		salt, err := dao.GenerateRandomString()
-		if err != nil {
-			return fmt.Errorf("Failed to generate salt for encrypting password, %v", err)
-		}
+		salt := utils.GenerateRandomString()
 
 		user.Salt = salt
 		user.Password = password
@@ -75,7 +73,9 @@ func main() {
 	}
 	//
 	beego.AddTemplateExt("htm")
-	dao.InitDB()
+
+	dao.InitDatabase()
+
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
 		log.Error(err)
 	}

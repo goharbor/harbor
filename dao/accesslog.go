@@ -17,6 +17,7 @@ package dao
 
 import (
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
@@ -27,13 +28,14 @@ func AddAccessLog(accessLog models.AccessLog) error {
 	o := GetOrmer()
 	p, err := o.Raw(`insert into access_log
 		 (user_id, project_id, repo_name, repo_tag, guid, operation, op_time)
-		 values (?, ?, ?, ?, ?, ?, now())`).Prepare()
+		 values (?, ?, ?, ?, ?, ?, ?)`).Prepare()
 	if err != nil {
 		return err
 	}
 	defer p.Close()
 
-	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.RepoTag, accessLog.GUID, accessLog.Operation)
+	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.RepoTag,
+		accessLog.GUID, accessLog.Operation, time.Now())
 
 	return err
 }
@@ -145,8 +147,8 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 	o := GetOrmer()
 	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +
 		"select (select user_id as user_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, now() "
-	_, err := o.Raw(sql, username, projectName, repoName, repoTag, action).Exec()
+		"(select project_id as project_id from project where name=?), ?, ?, ?, ? "
+	_, err := o.Raw(sql, username, projectName, repoName, repoTag, action, time.Now()).Exec()
 
 	if err != nil {
 		log.Errorf("error in AccessLog: %v ", err)

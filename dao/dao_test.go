@@ -16,13 +16,13 @@
 package dao
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -45,41 +45,49 @@ func clearUp(username string) {
 	o := orm.NewOrm()
 	o.Begin()
 
-	err = execUpdate(o, `delete pm 
-		from project_member pm 
-		join user u 
-		on pm.user_id = u.user_id 
-		where u.username = ?`, username)
+	err = execUpdate(o, `delete 
+		from project_member 
+		where user_id = (
+			select user_id
+			from user
+			where username = ?
+		) `, username)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete pm 
-		from project_member pm
-		join project p 
-		on pm.project_id = p.project_id 
-		where p.name = ?`, projectName)
+	err = execUpdate(o, `delete  
+		from project_member
+		where project_id = (
+			select project_id
+			from project
+			where name = ?
+		)`, projectName)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete al 
-		from access_log al
-		join user u 
-		on al.user_id = u.user_id 
-		where u.username = ?`, username)
+	err = execUpdate(o, `delete 
+		from access_log 
+		where user_id = (
+			select user_id
+			from user
+			where username = ?
+		)`, username)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete al 
-		from access_log al
-		join project p 
-		on al.project_id = p.project_id 
-		where p.name = ?`, projectName)
+	err = execUpdate(o, `delete 
+		from access_log
+		where project_id = (
+			select project_id
+			from project
+			where name = ?
+		)`, projectName)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
@@ -127,6 +135,31 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
+	databases := []string{"mysql", "sqlite"}
+	for _, database := range databases {
+		log.Infof("run test cases for database: %s", database)
+
+		result := 1
+		switch database {
+		case "mysql":
+			result = testForMySQL(m)
+		case "sqlite":
+			result = testForSQLite(m)
+		default:
+			log.Fatalf("invalid database: %s", database)
+		}
+
+		if result != 0 {
+			os.Exit(result)
+		}
+	}
+}
+
+func testForMySQL(m *testing.M) int {
+	db := os.Getenv("DATABASE")
+	defer os.Setenv("DATABASE", db)
+
+	os.Setenv("DATABASE", "mysql")
 
 	dbHost := os.Getenv("DB_HOST")
 	if len(dbHost) == 0 {
@@ -148,11 +181,51 @@ func TestMain(m *testing.M) {
 	os.Setenv("MYSQL_PORT", dbPort)
 	os.Setenv("MYSQL_USR", dbUser)
 	os.Setenv("MYSQL_PWD", dbPassword)
-	os.Setenv("AUTH_MODE", "db_auth")
-	InitDB()
-	clearUp(username)
-	os.Exit(m.Run())
 
+	return testForAll(m)
+}
+
+func testForSQLite(m *testing.M) int {
+	db := os.Getenv("DATABASE")
+	defer os.Setenv("DATABASE", db)
+
+	os.Setenv("DATABASE", "sqlite")
+
+	file := os.Getenv("SQLITE_FILE")
+	if len(file) == 0 {
+		os.Setenv("SQLITE_FILE", "/registry.db")
+		defer os.Setenv("SQLITE_FILE", "")
+	}
+
+	return testForAll(m)
+}
+
+func testForAll(m *testing.M) int {
+	os.Setenv("AUTH_MODE", "db_auth")
+	initDatabaseForTest()
+	clearUp(username)
+
+	return m.Run()
+}
+
+var defaultRegistered = false
+
+func initDatabaseForTest() {
+	database, err := getDatabase()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Infof("initializing database: %s", database.String())
+
+	alias := database.Name()
+	if !defaultRegistered {
+		defaultRegistered = true
+		alias = "default"
+	}
+	if err := database.Register(alias); err != nil {
+		panic(err)
+	}
 }
 
 func TestRegister(t *testing.T) {
@@ -332,12 +405,9 @@ func TestListUsers(t *testing.T) {
 }
 
 func TestResetUserPassword(t *testing.T) {
-	uuid, err := GenerateRandomString()
-	if err != nil {
-		t.Errorf("Error occurred in GenerateRandomString: %v", err)
-	}
+	uuid := utils.GenerateRandomString()
 
-	err = UpdateUserResetUUID(models.User{ResetUUID: uuid, Email: currentUser.Email})
+	err := UpdateUserResetUUID(models.User{ResetUUID: uuid, Email: currentUser.Email})
 	if err != nil {
 		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
 	}
@@ -1492,39 +1562,6 @@ func TestGetOrmer(t *testing.T) {
 	if o == nil {
 		t.Errorf("Error get ormer.")
 	}
-}
-
-func TestDeleteProject(t *testing.T) {
-	name := "project_for_test"
-	project := models.Project{
-		OwnerID: currentUser.UserID,
-		Name:    name,
-	}
-
-	id, err := AddProject(project)
-	if err != nil {
-		t.Fatalf("failed to add project: %v", err)
-	}
-
-	if err = DeleteProject(id); err != nil {
-		t.Fatalf("failed to delete project: %v", err)
-	}
-
-	p := &models.Project{}
-	if err = GetOrmer().Raw(`select * from project where project_id = ?`, id).
-		QueryRow(p); err != nil {
-		t.Fatalf("failed to get project: %v", err)
-	}
-
-	if p.Deleted != 1 {
-		t.Errorf("unexpeced deleted column: %d != %d", p.Deleted, 1)
-	}
-
-	deletedName := fmt.Sprintf("%s#%d", name, id)
-	if p.Name != deletedName {
-		t.Errorf("unexpected name: %s != %s", p.Name, deletedName)
-	}
-
 }
 
 func TestAddRepository(t *testing.T) {

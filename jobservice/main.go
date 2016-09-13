@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	dao.InitDB()
+	dao.InitDatabase()
 	initRouters()
 	job.InitWorkerPool()
 	go job.Dispatch()

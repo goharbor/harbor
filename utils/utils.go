@@ -16,8 +16,10 @@
 package utils
 
 import (
+	"math/rand"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // FormatEndpoint formats endpoint
@@ -55,4 +57,16 @@ func ParseRepository(repository string) (project, rest string) {
 	project = repository[0:index]
 	rest = repository[index+1:]
 	return
+}
+
+// GenerateRandomString generates a random string
+func GenerateRandomString() string {
+	length := 32
+	rand.Seed(time.Now().UTC().UnixNano())
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }

@@ -134,3 +134,10 @@ func TestReversibleEncrypt(t *testing.T) {
 		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
 	}
 }
+
+func TestGenerateRandomString(t *testing.T) {
+	str := GenerateRandomString()
+	if len(str) != 32 {
+		t.Errorf("unexpected length: %d != %d", len(str), 32)
+	}
+}
