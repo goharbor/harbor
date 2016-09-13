@@ -22,6 +22,7 @@ import (
 
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
@@ -84,15 +85,10 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	repos, err := dao.GetAllRepositories()
+	repositories, err := cache.GetRepoFromCache()
 	if err != nil {
 		log.Errorf("failed to list repositories: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "")
-	}
-
-	repositories := []string{}
-	for _, repo := range repos {
-		repositories = append(repositories, repo.Name)
 	}
 
 	sort.Strings(repositories)
