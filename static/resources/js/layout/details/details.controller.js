@@ -20,12 +20,12 @@
     .module('harbor.details')
     .controller('DetailsController', DetailsController);
 
-  DetailsController.$inject = ['$scope', '$timeout'];
+  DetailsController.$inject = ['$scope', '$timeout', '$window'];
 
-  function DetailsController($scope, $timeout) {
+  function DetailsController($scope, $timeout, $window) {
     var vm = this;
           
-    vm.publicity = false;
+    vm.isPublic = 0;
     vm.isProjectMember = false;
     
     vm.togglePublicity = togglePublicity;
@@ -75,8 +75,9 @@
     });
      
     function togglePublicity(e) {      
-      vm.publicity = e.publicity;
-      vm.target = 'repositories';
+      vm.isPublic = e.isPublic;
+      $window.location='/project?is_public=' + vm.isPublic;
+      return;
     }
   }
   

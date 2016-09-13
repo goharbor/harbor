@@ -29,7 +29,7 @@
           <td colspan="5" height="120px" class="empty-hint" ng-if="vm.top10Repositories.length === 0"><h4 class="text-muted">// 'no_top_repositories' | tr //</h4></td>
         </tr>
         <tr ng-if="vm.top10Repositories.length > 0" ng-repeat="t in vm.top10Repositories">
-          <td width="60%"><a href="javascript:void(0);" ng-click="vm.gotoRepo(t.name)">//t.name//</a></td>
+          <td width="60%">//t.name//</td>
           <td width="40%">//t.count//</td>
         </tr>
       </tbody>

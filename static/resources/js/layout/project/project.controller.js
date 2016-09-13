@@ -20,14 +20,14 @@
     .module('harbor.layout.project')
     .controller('ProjectController', ProjectController);
 
-  ProjectController.$inject = ['$scope', 'ListProjectService', 'DeleteProjectService', '$timeout', 'currentUser', 'getRole', '$filter', 'trFilter']; 
+  ProjectController.$inject = ['$scope', 'ListProjectService', 'DeleteProjectService', '$timeout', 'currentUser', 'getRole', '$filter', 'trFilter', 'getParameterByName', '$location']; 
 
-  function ProjectController($scope, ListProjectService, DeleteProjectService, $timeout, currentUser, getRole, $filter, trFilter) {
+  function ProjectController($scope, ListProjectService, DeleteProjectService, $timeout, currentUser, getRole, $filter, trFilter, getParameterByName, $location) {
     var vm = this;
  
     vm.isOpen = false;
     vm.projectName = '';
-    vm.publicity = 0;
+    vm.isPublic = Number(getParameterByName('is_public', $location.absUrl())) || 0;
     
     vm.page = 1;
     vm.pageSize = 15;  
@@ -44,6 +44,7 @@
     vm.confirmToDelete = confirmToDelete;
     vm.deleteProject = deleteProject;
     
+   
     
     //Error message dialog handler for project.
     $scope.$on('modalTitle', function(e, val) {
@@ -89,7 +90,7 @@
     });
     
     function retrieve() {       
-      ListProjectService(vm.projectName, vm.publicity, vm.page, vm.pageSize)
+      ListProjectService(vm.projectName, vm.isPublic, vm.page, vm.pageSize)
         .then(listProjectSuccess)
         .catch(listProjectFailed);
     }
@@ -127,15 +128,14 @@
     }
     
     function showAddButton() {
-      return (vm.publicity === 0);
+      return (vm.isPublic === 0);
     }
     
     function togglePublicity(e) {
-      vm.publicity = e.publicity;
+      vm.isPublic = e.isPublic;
       vm.isOpen = false;
       vm.page = 1;
       vm.retrieve();
-      console.log('vm.publicity:' + vm.publicity);
     }
     
     function searchProjectByKeyPress($event) {

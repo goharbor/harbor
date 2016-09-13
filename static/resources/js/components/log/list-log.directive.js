@@ -148,9 +148,7 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/log/list-log.directive.html',
       'scope': {
-        'sectionHeight': '=',
-        'target': '=',
-        'publicity': '='
+        'sectionHeight': '='
       },
       'link': link,
       'controller': ListLogController,

@@ -20,17 +20,15 @@
     .module('harbor.top.repository')
     .directive('topRepository', topRepository);
     
-  TopRepositoryController.$inject = ['$scope', 'ListTopRepositoryService', 'SearchService', '$filter', 'trFilter', '$window'];
+  TopRepositoryController.$inject = ['$scope', 'ListTopRepositoryService', '$filter', 'trFilter'];
   
-  function TopRepositoryController($scope, ListTopRepositoryService, SearchService, $filter, trFilter, $window) {
+  function TopRepositoryController($scope, ListTopRepositoryService, $filter, trFilter) {
     var vm = this;
     
     ListTopRepositoryService(5)
       .success(listTopRepositorySuccess)
       .error(listTopRepositoryFailed);
 
-    vm.gotoRepo = gotoRepo;
-      
     function listTopRepositorySuccess(data) {
       vm.top10Repositories = data || [];
     }
@@ -41,26 +39,7 @@
       $scope.$emit('raiseError', true);
       console.log('Failed to get top repo:' + data);
     }
-    
-    function gotoRepo(repoName) {
-      SearchService(repoName)
-        .success(searchSuccess)
-        .error(searchFailed);
-    }
-    
-    function searchSuccess(data, status) {
-      var repoInfo = data['repository'];
-      if(repoInfo && repoInfo.length > 0) {
-        var projectId = repoInfo[0]['project_id'];
-        var publicity = repoInfo[0]['project_public'];
-        var repoName = repoInfo[0]['repository_name'];
-        $window.location.href = '/repository#/repositories?project_id=' + projectId + '&is_public=' + publicity +'#' + repoName;
-      }
-    }
-    
-    function searchFailed(data) {
-      console.log('Failed to get repo info:' + data);
-    }
+        
   }
   
   function topRepository() {
