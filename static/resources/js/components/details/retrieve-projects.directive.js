@@ -28,7 +28,9 @@
     vm.projectName = '';
     vm.isOpen = false;
     vm.isProjectMember = false;
-    vm.target = 'repositories';
+    
+    vm.target = $location.path().substr(1) || 'repositories';
+
     
     vm.isPublic = Number(getParameterByName('is_public', $location.absUrl()));
     vm.publicity = (vm.isPublic === 1) ? true : false;

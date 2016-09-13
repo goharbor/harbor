@@ -35,7 +35,8 @@
     vm.beginTimestamp = 0;
     vm.endTimestamp = 0;
     vm.keywords = '';
-    vm.username = '';
+    
+    vm.username = $location.hash() || '';
         
     vm.op = [];
     vm.opOthers = true;
@@ -118,18 +119,6 @@
       
       console.log('Total Count in logs:' + vm.totalCount + ', page:' + vm.page);
       
-//      vm.queryParams = {
-//        'beginTimestamp' : 0,
-//        'endTimestamp'   : 0,
-//        'keywords' : '',
-//        'projectId': vm.projectId,
-//        'username' : ''
-//      };
-//      vm.op = ['all'];
-//      vm.fromDate = '';
-//      vm.toDate = '';
-//      vm.others = '';
-//      vm.opOthers = true;
       vm.isOpen = false;
     }
     function listLogFailed(response){
