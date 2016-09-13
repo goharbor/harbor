@@ -279,9 +279,16 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 
 // DeleteProject ...
 func DeleteProject(id int64) error {
+	project, err := GetProjectByID(id)
+	if err != nil {
+		return err
+	}
+
+	name := fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
+
 	sql := `update project 
-		set deleted = 1, name = concat(name,"#",project_id) 
+		set deleted = 1, name = ? 
 		where project_id = ?`
-	_, err := GetOrmer().Raw(sql, id).Exec()
+	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err
 }
