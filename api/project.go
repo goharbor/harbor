@@ -338,6 +338,11 @@ func (p *ProjectAPI) FilterAccessLog() {
 	var query models.AccessLog
 	p.DecodeJSONReq(&query)
 
+	if !checkProjectPermission(p.userID, p.projectID) {
+		log.Warningf("Current user, user id: %d does not have permission to read accesslog of project, id: %d", p.userID, p.projectID)
+		p.RenderError(http.StatusForbidden, "")
+		return
+	}
 	query.ProjectID = p.projectID
 	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
 	query.EndTime = time.Unix(query.EndTimestamp, 0)
