@@ -68,7 +68,6 @@
           var project = vm.projects[i];
           if(project['project_id'] == getParameterByName('project_id', $location.absUrl())) {
             vm.selectedProject = project;
-            console.log('matched project_id:' + angular.toJson(vm.selectedProject));
             break;
           }
         } 

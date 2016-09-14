@@ -32,6 +32,8 @@
     vm.page = 1;
     vm.pageSize = 15;  
      
+    vm.sectionHeight = {'min-height': '579px'};    
+    
     vm.retrieve = retrieve;
     vm.showAddProject = showAddProject;
     vm.searchProject = searchProject;    

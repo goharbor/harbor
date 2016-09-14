@@ -30,7 +30,7 @@
     
     vm.togglePublicity = togglePublicity;
     
-    vm.sectionDefaultHeight = {'min-height': '579px'};
+    vm.sectionHeight = {'min-height': '579px'};
     
     //Message dialog handler for details.
     $scope.$on('modalTitle', function(e, val) {
