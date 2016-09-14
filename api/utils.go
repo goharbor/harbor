@@ -265,7 +265,11 @@ func SyncRegistry() error {
 
 	var reposToAdd []string
 	var reposToDel []string
-	reposToAdd, reposToDel = diffRepos(reposInRegistry, reposInDB)
+	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB)
+	if err != nil {
+		return err
+	}
+
 	if len(reposToAdd) > 0 {
 		log.Debugf("Start adding repositories into DB... ")
 		for _, repoToAdd := range reposToAdd {
@@ -311,37 +315,15 @@ func catalog() ([]string, error) {
 		return repositories, err
 	}
 
-	repos, err := rc.Catalog()
+	repositories, err = rc.Catalog()
 	if err != nil {
 		return repositories, err
-	}
-
-	for _, repo := range repos {
-		// TODO remove the workaround when the bug of registry is fixed
-		// TODO read it from config
-		endpoint := os.Getenv("REGISTRY_URL")
-		client, err := cache.NewRepositoryClient(endpoint, true,
-			"admin", repo, "repository", repo)
-		if err != nil {
-			return repositories, err
-		}
-
-		exist, err := repositoryExist(repo, client)
-		if err != nil {
-			return repositories, err
-		}
-
-		if !exist {
-			continue
-		}
-
-		repositories = append(repositories, repo)
 	}
 
 	return repositories, nil
 }
 
-func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string) {
+func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string, error) {
 	var needsAdd []string
 	var needsDel []string
 
@@ -360,6 +342,24 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			if err != nil {
 				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
 				continue
+			}
+
+			if !exist {
+				continue
+			}
+
+			// TODO remove the workaround when the bug of registry is fixed
+			// TODO read it from config
+			endpoint := os.Getenv("REGISTRY_URL")
+			client, err := cache.NewRepositoryClient(endpoint, true,
+				"admin", repoInR, "repository", repoInR)
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
+
+			exist, err = repositoryExist(repoInR, client)
+			if err != nil {
+				return needsAdd, needsDel, err
 			}
 
 			if !exist {
@@ -396,7 +396,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 		j++
 	}
 
-	return needsAdd, needsDel
+	return needsAdd, needsDel, nil
 }
 
 func projectExists(repository string) (bool, error) {
