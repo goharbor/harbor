@@ -32,6 +32,10 @@ import (
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
+const (
+	latency int = 10 //second, the network latency when token is received
+)
+
 type scope struct {
 	Type    string
 	Name    string
@@ -49,8 +53,7 @@ type tokenAuthorizer struct {
 	scope     *scope
 	tg        tokenGenerator
 	cache     string     // cached token
-	expiresIn int        // The duration in seconds since the token was issued that it will remain valid
-	issuedAt  *time.Time // The RFC3339-serialized UTC standard time at which a given token was issued
+	expiresAt *time.Time // The UTC standard time at when the token will expire
 	sync.Mutex
 }
 
@@ -83,10 +86,10 @@ func (t *tokenAuthorizer) Authorize(req *http.Request, params map[string]string)
 
 	expired := true
 
-	cachedToken, cachedExpiredIn, cachedIssuedAt := t.getCachedToken()
+	cachedToken, cachedExpiredAt := t.getCachedToken()
 
-	if len(cachedToken) != 0 && cachedExpiredIn != 0 && cachedIssuedAt != nil {
-		expired = cachedIssuedAt.Add(time.Duration(cachedExpiredIn) * time.Second).Before(time.Now().UTC())
+	if len(cachedToken) != 0 && cachedExpiredAt != nil {
+		expired = cachedExpiredAt.Before(time.Now().UTC())
 	}
 
 	if expired || hasFrom {
@@ -94,14 +97,14 @@ func (t *tokenAuthorizer) Authorize(req *http.Request, params map[string]string)
 		for _, scope := range scopes {
 			scopeStrs = append(scopeStrs, scope.string())
 		}
-		to, expiresIn, issuedAt, err := t.tg(params["realm"], params["service"], scopeStrs)
+		to, expiresIn, _, err := t.tg(params["realm"], params["service"], scopeStrs)
 		if err != nil {
 			return err
 		}
 		token = to
 
 		if !hasFrom {
-			t.updateCachedToken(to, expiresIn, issuedAt)
+			t.updateCachedToken(to, expiresIn)
 		}
 	} else {
 		token = cachedToken
@@ -112,18 +115,19 @@ func (t *tokenAuthorizer) Authorize(req *http.Request, params map[string]string)
 	return nil
 }
 
-func (t *tokenAuthorizer) getCachedToken() (string, int, *time.Time) {
+func (t *tokenAuthorizer) getCachedToken() (string, *time.Time) {
 	t.Lock()
 	defer t.Unlock()
-	return t.cache, t.expiresIn, t.issuedAt
+	return t.cache, t.expiresAt
 }
 
-func (t *tokenAuthorizer) updateCachedToken(token string, expiresIn int, issuedAt *time.Time) {
+func (t *tokenAuthorizer) updateCachedToken(token string, expiresIn int) {
 	t.Lock()
 	defer t.Unlock()
 	t.cache = token
-	t.expiresIn = expiresIn
-	t.issuedAt = issuedAt
+	n := (time.Duration)(expiresIn - latency)
+	e := time.Now().Add(n * time.Second).UTC()
+	t.expiresAt = &e
 }
 
 // Implements interface Authorizer
