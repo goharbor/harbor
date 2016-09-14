@@ -79,6 +79,11 @@ func init() {
 	beego.Router("/api/repositories/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
+	beego.Router("/api/targets/", &TargetAPI{}, "get:List")
+	beego.Router("/api/targets/", &TargetAPI{}, "post:Post")
+	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
+	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
+	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -498,6 +503,102 @@ func (a api) GetReposTop(authInfo usrInfo, count string) (int, error) {
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{Count: count})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//-------------------------Targets Test---------------------------------------//
+//Create a new replication target
+func (a api) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/targets"
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(repTarget)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//List filters targets by name
+func (a api) ListTargets(authInfo usrInfo, targetName string) (int, []apilib.RepTarget, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/targets?name=" + targetName
+
+	_sling = _sling.Path(path)
+
+	var successPayload []apilib.RepTarget
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+
+	return httpStatusCode, successPayload, err
+}
+
+//Ping target by targetID
+func (a api) PingTargetsByID(authInfo usrInfo, targetID string) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/targets/ping?id=" + targetID
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Get target by targetID
+func (a api) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/targets/" + targetID
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return httpStatusCode, err
+}
+
+//Update target by targetID
+func (a api) PutTargetByID(authInfo usrInfo, targetID string, repTarget apilib.RepTargetPost) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+
+	path := "/api/targets/" + targetID
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(repTarget)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return httpStatusCode, err
+}
+
+//List the target relevant policies by targetID
+func (a api) GetTargetPoliciesByID(authInfo usrInfo, targetID string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/targets/" + targetID + "/policies/"
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return httpStatusCode, err
+}
+
+//Delete target by targetID
+func (a api) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+
+	path := "/api/targets/" + targetID
+
+	_sling = _sling.Path(path)
+
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
 }
