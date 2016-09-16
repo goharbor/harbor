@@ -14,11 +14,12 @@ Please open an issue to track any initiative on the roadmap of Harbor. We will w
 
 ---
 
+### 0. Notary
 
-### 1. Image replication between Harbor instances 
+### 1. Image replication between Harbor instances (Completed)
 Enable images to be replicated between two or more Harbor instances. This is useful to have multiple registry servers servicing a large cluster of nodes, or have distributed registry instances with identical images.
 
-### 2. Image deletion and garbage collection 
+### 2. Image deletion and garbage collection (Completed)
 a) Images can be deleted from UI. The files of deleted images are not removed immediately. 
 
 b) The files of deleted images are recycled by an administrator during system maintenance(Garbage collection). The registry service must be shut down during the process of garbage collection.
