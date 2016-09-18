@@ -7,6 +7,7 @@ import string
 import os
 import sys
 import argparse
+import commands
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -56,6 +57,14 @@ max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 ########
+
+#Read version form .git
+status, output = commands.getstatusoutput('git describe --tags')
+if status == 0:
+    version = output
+else:
+    version = 'UNKNOWN'
+#######
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
@@ -108,7 +117,8 @@ render(os.path.join(templates_dir, "ui", "env"),
 	use_compressed_js=use_compressed_js,
         ui_secret=ui_secret,
 	verify_remote_cert=verify_remote_cert,
-	token_expiration=token_expiration)
+	token_expiration=token_expiration,
+        version=version)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
