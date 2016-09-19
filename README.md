@@ -13,7 +13,6 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **AD/LDAP support**: Harbor integrates with existing enterprise AD/LDAP for user authentication and management.
 * **Auditing**: All the operations to the repositories are tracked.
-* **Internationalization**: Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
 * **Easy deployment**: docker compose and offline installer.
 
@@ -66,7 +65,7 @@ If you are upgrading Harbor from an older version with existing data, you need t
 For information on how to use Harbor, please take a look at [User Guide](docs/user_guide.md).
 
 ### Community
-Get connected with Project Harbor's community and sign up with VMware {code} [https://code.vmware.com/join/](https://code.vmware.com/join/) to get invited to VMware {code} Slack group, Channel: #harbor.
+Get connected with Project Harbor's community and sign up with VMware {code} [https://code.vmware.com/join/](https://code.vmware.com/join/) to get invited to VMware {code} Slack group, Channel: #harbor. **Email:** harbor @ vmware.com . 
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
@@ -92,4 +91,4 @@ This project uses open source components which have additional licensing terms. 
 <img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>.
 
 ### About
-Project Harbor is initiated by the Advanced Technology Center (ATC), VMware China R&D as a Cloud Application Accelerator (CAA) project.
+Project Harbor is initiated by the Advanced Technology Center (ATC), VMware China R&D.
