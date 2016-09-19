@@ -41,7 +41,7 @@ type projectReq struct {
 }
 
 const projectNameMaxLen int = 30
-const projectNameMinLen int = 4
+const projectNameMinLen int = 1
 const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
@@ -292,7 +292,7 @@ func isProjectAdmin(userID int, pid int64) bool {
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
 	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("Project name is illegal in length. (greater than 4 or less than 30)")
+		return fmt.Errorf("Project name is illegal in length. (greater than 0 or less than 31)")
 	}
 	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
 	legal := validProjectName.MatchString(pn)

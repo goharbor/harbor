@@ -37,6 +37,15 @@ type searchResult struct {
 	Repository []map[string]interface{} `json:"repository"`
 }
 
+type v1SearchResult struct {
+	Query		string			`json:"query"`
+	NumPages	int			`json:"num_pages"`
+	NumResults	int			`json:"num_results"`
+	Page		int			`json:"page"`
+	PageSize	int			`json:"page_size"`
+	Results		[]map[string]string	`json:"results"`
+}
+
 // Get ...
 func (s *SearchAPI) Get() {
 	userID, _, ok := s.GetUserIDForRequest()
@@ -92,6 +101,23 @@ func (s *SearchAPI) Get() {
 	}
 	sort.Strings(repositories)
 	repositoryResult := filterRepositories(repositories, projects, keyword)
+
+	if s.Ctx.Input.URL() == "/v1/search" {
+		numResults := len(repositoryResult)
+		v1Result := &v1SearchResult{Query: keyword, NumPages: 1, NumResults: numResults, Page: 1, PageSize: numResults, Results: make([]map[string]string, numResults)}
+
+		for i, repo := range repositoryResult {
+			m := make(map[string]string)
+			m["description"] = ""
+			m["name"] = repo["repository_name"].(string)
+			v1Result.Results[i] = m
+		}
+
+		s.Data["json"] = v1Result
+		s.ServeJSON()
+		return
+	}
+
 	result := &searchResult{Project: projectResult, Repository: repositoryResult}
 	s.Data["json"] = result
 	s.ServeJSON()

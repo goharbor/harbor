@@ -56,6 +56,7 @@ func initRouters() {
 	beego.Router("/sign_in", &controllers.SignInController{})
 
 	//API:
+	beego.Router("/v1/search", &api.SearchAPI{})
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List")

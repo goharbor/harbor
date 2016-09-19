@@ -16,13 +16,16 @@
 package cache
 
 import (
+	"fmt"
 	"os"
 	"time"
 
+	_ "github.com/vmware/harbor/controllers"	// it initializes beego.AppConfig
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 )
 
@@ -31,13 +34,16 @@ var (
 	Cache    cache.Cache
 	endpoint string
 	username string
+	interval int
 )
 
 const catalogKey string = "catalog"
 
 func init() {
 	var err error
-	Cache, err = cache.NewCache("memory", `{"interval":720}`)
+	interval = beego.AppConfig.DefaultInt("cache::interval", 720)
+	log.Infof("cache::interval is %d", interval)
+	Cache, err = cache.NewCache("memory", fmt.Sprintf(`{"interval": %d}`, interval))
 	if err != nil {
 		log.Errorf("Failed to initialize cache, error:%v", err)
 	}
@@ -86,7 +92,7 @@ func RefreshCatalogCache() error {
 		}
 	*/
 
-	Cache.Put(catalogKey, rs, 600*time.Second)
+	Cache.Put(catalogKey, rs, time.Duration(interval) * time.Second)
 	return nil
 }
 
