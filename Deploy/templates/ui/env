@@ -14,7 +14,7 @@ LDAP_BASE_DN=$ldap_basedn
 UI_SECRET=$ui_secret
 SELF_REGISTRATION=$self_registration
 USE_COMPRESSED_JS=$use_compressed_js
-LOG_LEVEL=debug
+LOG_LEVEL=$log_level
 GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url
 TOKEN_URL=http://ui
