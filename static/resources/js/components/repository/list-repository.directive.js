@@ -31,7 +31,7 @@
   
     vm.filterInput = '';
     vm.toggleInProgress = [];
-    
+       
     var hashValue = $location.hash();
     if(hashValue) {
       var slashIndex = hashValue.indexOf('/');
@@ -54,10 +54,10 @@
       if(val) {
         vm.projectId = getParameterByName('project_id', $location.absUrl());
         vm.filterInput = '';
-        vm.retrieve();
+        vm.retrieve();        
       }
     });
-    
+     
 
     $scope.$watch('vm.repositories', function(current) {
       if(current) {
@@ -93,6 +93,7 @@
     vm.deleteImage =  deleteImage;
                 
     function retrieve(){
+      console.log('retrieve repositories, project_id:' + vm.projectId);
       ListRepositoryService(vm.projectId, vm.filterInput, vm.page, vm.pageSize)
         .then(getRepositoryComplete, getRepositoryFailed);
     }

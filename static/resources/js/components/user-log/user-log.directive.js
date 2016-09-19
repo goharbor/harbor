@@ -20,15 +20,17 @@
     .module('harbor.user.log')
     .directive('userLog', userLog);
     
-  UserLogController.$inject = ['$scope', 'ListIntegratedLogService', '$filter', 'trFilter'];
+  UserLogController.$inject = ['$scope', 'ListIntegratedLogService', '$filter', 'trFilter', '$window'];
   
-  function UserLogController($scope, ListIntegratedLogService, $filter, trFilter) {
+  function UserLogController($scope, ListIntegratedLogService, $filter, trFilter, $window) {
     var vm = this;
     
     ListIntegratedLogService()
       .success(listIntegratedLogSuccess)
       .error(listIntegratedLogFailed);
-      
+    
+    vm.gotoLog = gotoLog;
+    
     function listIntegratedLogSuccess(data) {
       vm.integratedLogs = data || [];
     }
@@ -39,6 +41,11 @@
       $scope.$emit('raiseError', true);
       console.log('Failed to get user logs:' + data);
     }
+    
+    function gotoLog(projectId, username) {
+      $window.location.href = '/repository#/logs?project_id=' + projectId + '#' + encodeURIComponent(username);
+    }
+    
   }
   
   function userLog() {
