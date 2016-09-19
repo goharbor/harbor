@@ -314,7 +314,7 @@ paths:
           description: Relevant project ID.
         - name: roles
           in: body
-          description: Role members for adding to relevant project.
+          description: Role members for adding to relevant project. Only one role is supported in the role list.
           schema:
             $ref: '#/definitions/RoleParam'
       tags:
