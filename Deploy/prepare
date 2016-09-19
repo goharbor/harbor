@@ -7,7 +7,6 @@ import string
 import os
 import sys
 import argparse
-import subprocess
 from io import open
 
 if sys.version_info[:3][0] == 2:
