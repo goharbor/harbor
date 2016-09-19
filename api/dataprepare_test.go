@@ -18,14 +18,18 @@ package api
 import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
+	"os"
 )
 
-/*
-const username string = "testUser0001"
-const password string = "testUser0001"
-const email string = "testUser0001@mydomain.com"
-const projectname string = "testproject0001"
-*/
+const (
+	//Prepare Test info
+	TestUserName   = "testUser0001"
+	TestUserPwd    = "testUser0001"
+	TestUserEmail  = "testUser0001@mydomain.com"
+	TestProName    = "testProject0001"
+	TestTargetName = "testTarget0001"
+)
+
 func CommonAddUser() {
 
 	commonUser := models.User{
@@ -39,34 +43,34 @@ func CommonAddUser() {
 }
 
 func CommonGetUserID() int {
-	queryUser := models.User{
+	queryUser := &models.User{
 		Username: TestUserName,
 	}
-	commonUser, _ := dao.GetUser(queryUser)
+	commonUser, _ := dao.GetUser(*queryUser)
 	return commonUser.UserID
 }
 
 func CommonDelUser() {
-	queryUser := models.User{
+	queryUser := &models.User{
 		Username: TestUserName,
 	}
-	commonUser, _ := dao.GetUser(queryUser)
+	commonUser, _ := dao.GetUser(*queryUser)
 	_ = dao.DeleteUser(commonUser.UserID)
 
 }
 
 func CommonAddProject() {
 
-	queryUser := models.User{
+	queryUser := &models.User{
 		Username: "admin",
 	}
-	adminUser, _ := dao.GetUser(queryUser)
-	commonProject := models.Project{
+	adminUser, _ := dao.GetUser(*queryUser)
+	commonProject := &models.Project{
 		Name:    TestProName,
 		OwnerID: adminUser.UserID,
 	}
 
-	_, _ = dao.AddProject(commonProject)
+	_, _ = dao.AddProject(*commonProject)
 
 }
 
@@ -74,4 +78,29 @@ func CommonDelProject() {
 	commonProject, _ := dao.GetProjectByName(TestProName)
 
 	_ = dao.DeleteProject(commonProject.ProjectID)
+}
+
+func CommonAddTarget() {
+	endPoint := os.Getenv("REGISTRY_URL")
+	commonTarget := &models.RepTarget{
+		URL:      endPoint,
+		Name:     TestTargetName,
+		Username: adminName,
+		Password: adminPwd,
+	}
+	_, _ = dao.AddRepTarget(*commonTarget)
+}
+
+func CommonGetTarget() int {
+	target, _ := dao.GetRepTargetByName(TestTargetName)
+	return int(target.ID)
+}
+
+func CommonDelTarget() {
+	target, _ := dao.GetRepTargetByName(TestTargetName)
+	_ = dao.DeleteRepTarget(target.ID)
+}
+
+func CommonPolicyEabled(policyID int, enabled int) {
+	_ = dao.UpdateRepPolicyEnablement(int64(policyID), enabled)
 }

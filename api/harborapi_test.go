@@ -28,11 +28,6 @@ const (
 	testAcceptHeader = "text/plain"
 	adminName        = "admin"
 	adminPwd         = "Harbor12345"
-	//Prepare Test info
-	TestUserName  = "testUser0001"
-	TestUserPwd   = "testUser0001"
-	TestUserEmail = "testUser0001@mydomain.com"
-	TestProName   = "testProject0001"
 )
 
 var admin, unknownUsr, testUser *usrInfo
@@ -84,6 +79,10 @@ func init() {
 	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
+	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
+	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
+	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
+	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -596,6 +595,96 @@ func (a api) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
 	path := "/api/targets/" + targetID
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//--------------------Replication_Policy Test--------------------------------//
+
+//Create a new replication policy
+func (a api) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/policies/replication/"
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(repPolicy)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//List policies by policyName and projectID
+func (a api) ListPolicies(authInfo usrInfo, policyName string, proID string) (int, []apilib.RepPolicy, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/policies/replication/"
+
+	_sling = _sling.Path(path)
+
+	type QueryParams struct {
+		PolicyName string `url:"name"`
+		ProjectID  string `url:"project_id"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{PolicyName: policyName, ProjectID: proID})
+
+	var successPayload []apilib.RepPolicy
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return httpStatusCode, successPayload, err
+}
+
+//Get replication policy by policyID
+func (a api) GetPolicyByID(authInfo usrInfo, policyID string) (int, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	path := "/api/policies/replication/" + policyID
+
+	_sling = _sling.Path(path)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return httpStatusCode, err
+}
+
+//Update policyInfo by policyID
+func (a api) PutPolicyInfoByID(authInfo usrInfo, policyID string, policyUpdate apilib.RepPolicyUpdate) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+
+	path := "/api/policies/replication/" + policyID
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(policyUpdate)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Update policy enablement flag by policyID
+func (a api) PutPolicyEnableByID(authInfo usrInfo, policyID string, policyEnable apilib.RepPolicyEnablementReq) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+
+	path := "/api/policies/replication/" + policyID + "/enablement"
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(policyEnable)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Delete policy by policyID
+func (a api) DeletePolicyByID(authInfo usrInfo, policyID string) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+
+	path := "/api/policies/replication/" + policyID
 
 	_sling = _sling.Path(path)
 
