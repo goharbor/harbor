@@ -76,7 +76,8 @@ func DeleteRepTarget(id int64) error {
 // UpdateRepTarget ...
 func UpdateRepTarget(target models.RepTarget) error {
 	o := GetOrmer()
-	_, err := o.Update(&target, "URL", "Name", "Username", "Password")
+	target.UpdateTime = time.Now()
+	_, err := o.Update(&target, "URL", "Name", "Username", "Password", "UpdateTime")
 	return err
 }
 
@@ -105,18 +106,23 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 // AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := GetOrmer()
-	sqlTpl := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, %s, NOW(), NOW())`
-	var sql string
-	if policy.Enabled == 1 {
-		sql = fmt.Sprintf(sqlTpl, "NOW()")
-	} else {
-		sql = fmt.Sprintf(sqlTpl, "NULL")
-	}
+	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
 		return 0, err
 	}
-	r, err := p.Exec(policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.CronStr)
+
+	params := []interface{}{}
+	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.CronStr)
+	now := time.Now()
+	if policy.Enabled == 1 {
+		params = append(params, now)
+	} else {
+		params = append(params, nil)
+	}
+	params = append(params, now, now)
+
+	r, err := p.Exec(params...)
 	if err != nil {
 		return 0, err
 	}
@@ -241,7 +247,8 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
-	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr")
+	policy.UpdateTime = time.Now()
+	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr", "UpdateTime")
 	return err
 }
 
@@ -249,8 +256,9 @@ func UpdateRepPolicy(policy *models.RepPolicy) error {
 func DeleteRepPolicy(id int64) error {
 	o := GetOrmer()
 	policy := &models.RepPolicy{
-		ID:      id,
-		Deleted: 1,
+		ID:         id,
+		Deleted:    1,
+		UpdateTime: time.Now(),
 	}
 	_, err := o.Update(policy, "Deleted")
 	return err
@@ -260,8 +268,9 @@ func DeleteRepPolicy(id int64) error {
 func UpdateRepPolicyEnablement(id int64, enabled int) error {
 	o := GetOrmer()
 	p := models.RepPolicy{
-		ID:      id,
-		Enabled: enabled,
+		ID:         id,
+		Enabled:    enabled,
+		UpdateTime: time.Now(),
 	}
 
 	var err error
@@ -386,10 +395,11 @@ func DeleteRepJob(id int64) error {
 func UpdateRepJobStatus(id int64, status string) error {
 	o := GetOrmer()
 	j := models.RepJob{
-		ID:     id,
-		Status: status,
+		ID:         id,
+		Status:     status,
+		UpdateTime: time.Now(),
 	}
-	num, err := o.Update(&j, "Status")
+	num, err := o.Update(&j, "Status", "UpdateTime")
 	if num == 0 {
 		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
 	}
@@ -399,8 +409,8 @@ func UpdateRepJobStatus(id int64, status string) error {
 // ResetRunningJobs update all running jobs status to pending
 func ResetRunningJobs() error {
 	o := GetOrmer()
-	sql := fmt.Sprintf("update replication_job set status = '%s' where status = '%s'", models.JobPending, models.JobRunning)
-	_, err := o.Raw(sql).Exec()
+	sql := fmt.Sprintf("update replication_job set status = '%s', update_time = ? where status = '%s'", models.JobPending, models.JobRunning)
+	_, err := o.Raw(sql, time.Now()).Exec()
 	return err
 }
 

@@ -295,6 +295,12 @@
 			"revisionTime": "2016-08-01T17:00:46Z"
 		},
 		{
+			"checksumSHA1": "ToGxRLachRwa1HbVy7ZBdJaq5Zc=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "3fb7a0e792edd47bf0cf1e919dfc14e2be412e15",
+			"revisionTime": "2016-09-07T16:20:43Z"
+		},
+		{
 			"checksumSHA1": "JPm8dTnTbiYhi1kdn4JjHc4AZd0=",
 			"path": "github.com/mqu/openldap",
 			"revision": "91bfc2150f6c4991335de476c800caf26a990324",

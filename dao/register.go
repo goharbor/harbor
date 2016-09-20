@@ -32,10 +32,7 @@ func Register(user models.User) (int64, error) {
 	}
 	defer p.Close()
 
-	salt, err := GenerateRandomString()
-	if err != nil {
-		return 0, err
-	}
+	salt := utils.GenerateRandomString()
 
 	now := time.Now()
 	r, err := p.Exec(user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email, user.Comment, salt, user.HasAdminRole, now, now)

@@ -38,6 +38,7 @@ before_install:
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev 
+  - sudo apt-get install -y sqlite3
 #  - sudo apt-get remove -y mysql-common mysql-server-5.5 mysql-server-core-5.5 mysql-client-5.5 mysql-client-core-5.5
 #  - sudo apt-get autoremove -y
 #  - sudo apt-get install -y libaio1
@@ -71,6 +72,7 @@ install:
 before_script:
   # create tables and load data
   # - mysql < ./Deploy/db/registry.sql -uroot --verbose
+  - sudo sqlite3 /registry.db < ./Deploy/db/registry_sqlite.sql
 
 script:
   - sudo ./tests/testprepare.sh 
