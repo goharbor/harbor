@@ -113,8 +113,6 @@ func (b *BaseController) Prepare() {
 		b.SelfRegistration = true
 	}
 	b.Data["SelfRegistration"] = b.SelfRegistration
-
-	b.Data["Version"] = os.Getenv("VERSION")
 }
 
 // Forward to setup layout and template for content for a page.
