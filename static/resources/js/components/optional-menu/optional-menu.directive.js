@@ -57,7 +57,7 @@
     }
     function about() {
       $scope.$emit('modalTitle', $filter('tr')('about_harbor'));
-      $scope.$emit('modalMessage', $filter('tr')('current_version', [vm.version]));
+      $scope.$emit('modalMessage', $filter('tr')('current_version', [vm.version || 'Unknown']));
       var raiseInfo = {
         'confirmOnly': true,
         'contentType': 'text/html',
