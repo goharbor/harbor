@@ -156,18 +156,48 @@ func AccessLog(username, projectName, repoName, repoTag, action string) error {
 
 //GetRecentLogs returns recent logs according to parameters
 func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
-	var recentLogList []models.AccessLog
-	queryParam := make([]interface{}, 1)
+	logs := []models.AccessLog{}
 
-	sql := "select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username from access_log left join  user on access_log.user_id=user.user_id where project_id in (select distinct project_id from project_member where user_id = ?)"
-	queryParam = append(queryParam, userID)
+	isAdmin, err := IsAdminRole(userID)
+	if err != nil {
+		return logs, err
+	}
+
+	queryParam := []interface{}{}
+	sql := `select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username 
+		from access_log 
+		join user 
+		on access_log.user_id=user.user_id `
+
+	hasWhere := false
+	if !isAdmin {
+		sql += ` where project_id in 
+			(select distinct project_id 
+				from project_member 
+				where user_id = ?) `
+		queryParam = append(queryParam, userID)
+		hasWhere = true
+	}
+
 	if startTime != "" {
-		sql += " and op_time >= ?"
+		if hasWhere {
+			sql += " and op_time >= ?"
+		} else {
+			sql += " where op_time >= ?"
+			hasWhere = true
+		}
+
 		queryParam = append(queryParam, startTime)
 	}
 
 	if endTime != "" {
-		sql += " and op_time <= ?"
+		if hasWhere {
+			sql += " and op_time <= ?"
+		} else {
+			sql += " where op_time <= ?"
+			hasWhere = true
+		}
+
 		queryParam = append(queryParam, endTime)
 	}
 
@@ -176,12 +206,12 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 		sql += " limit ?"
 		queryParam = append(queryParam, linesNum)
 	}
-	o := GetOrmer()
-	_, err := o.Raw(sql, queryParam).QueryRows(&recentLogList)
+
+	_, err = GetOrmer().Raw(sql, queryParam).QueryRows(&logs)
 	if err != nil {
-		return nil, err
+		return logs, err
 	}
-	return recentLogList, nil
+	return logs, nil
 }
 
 // GetAccessLogCreator ...
