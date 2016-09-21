@@ -42,9 +42,6 @@ type Project struct {
 	// A deletion mark of the project (1 means it's deleted, 0 is not)
 	Deleted int32 `json:"deleted,omitempty"`
 
-	// A relation field to the user table.
-	UserId int32 `json:"user_id,omitempty"`
-
 	// The owner name of the project.
 	OwnerName string `json:"owner_name,omitempty"`
 
@@ -52,7 +49,7 @@ type Project struct {
 	Public int32 `json:"public,omitempty"`
 
 	// Correspond to the UI about whether the project's publicity is  updatable (for UI)
-	Togglable bool `json:"togglable,omitempty"`
+	Togglable bool `json:"Togglable,omitempty"`
 
 	// The role ID of the current user who triggered the API (for UI)
 	CurrentUserRoleId int32 `json:"current_user_role_id,omitempty"`

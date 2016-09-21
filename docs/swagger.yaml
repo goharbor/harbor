@@ -881,7 +881,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/JobStatus'
+              $ref: '#/definitions/RepPolicy'
           headers:
             X-Total-Count:
               description: The total count of jobs
@@ -1211,9 +1211,7 @@ paths:
         200:
           description: Get replication's target successfully.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/RepTarget'
+            $ref: '#/definitions/RepTarget'
         401:
           description: User need to log in first.
         404:
@@ -1302,18 +1300,18 @@ definitions:
   SearchRepository:
     type: object
     properties:
-      repository_name: 
-        type: string
-        description: The name of the repository
-      project_name:
-        type: string
-        description: The name of the project that the repository belongs to
       project_id:
         type: integer
         description: The ID of the project that the repository belongs to
+      project_name:
+        type: string
+        description: The name of the project that the repository belongs to
       project_public:
         type: integer
         description: The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)
+      repository_name:
+        type: string
+        description: The name of the repository
   ProjectReq:
     type: object
     properties:
@@ -1348,10 +1346,6 @@ definitions:
         type: integer
         format: int32
         description: A deletion mark of the project (1 means it's deleted, 0 is not)
-      user_id:
-        type: integer
-        format: int32
-        description: A relation field to the user table.
       owner_name:
         type: string
         description: The owner name of the project.
@@ -1359,7 +1353,7 @@ definitions:
         type: integer
         format: int
         description: The public status of the project.
-      togglable:
+      Togglable:
         type: boolean
         description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
       current_user_role_id:
@@ -1470,6 +1464,8 @@ definitions:
       role_name:
         type: string
         description: Name the the role.
+      role_mask:
+        type: string
   RoleParam:
     type: object
     properties:
@@ -1488,7 +1484,7 @@ definitions:
       repo_name: 
         type: string
         description: The name of the repo 
-      access_count: 
+      count:
         type: integer
         format: int
         description: The access count of the repo
@@ -1574,9 +1570,6 @@ definitions:
         type: integer
         format: int64
         description: The target ID.
-      target_name: 
-        type: string
-        description: The target name.
       name: 
         type: string
         description: The policy name.
@@ -1602,6 +1595,8 @@ definitions:
       error_job_count:
         format: int
         description: The error job count number for the policy.
+      deleted:
+        type: integer
   RepPolicyPost:
     type: object
     properties:
@@ -1687,4 +1682,3 @@ definitions:
       password: 
         type: string
         description: The target server password.
-
