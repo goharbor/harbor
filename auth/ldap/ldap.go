@@ -77,7 +77,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	attrName := os.Getenv("LDAP_UID")
 	filter := os.Getenv("LDAP_FILTER")
 	if filter != "" {
-		filter = "(&(" + filter + ")(" + attrName + "=" + m.Principal + "))"
+		filter = "(&" + filter + "(" + attrName + "=" + m.Principal + "))"
 	} else {
 		filter = "(" + attrName + "=" + m.Principal + ")"
 	}
