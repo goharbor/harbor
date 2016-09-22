@@ -315,13 +315,13 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 // validate only validate when user register
 func validate(user models.User) error {
 
-	if isIllegalLength(user.Username, 0, 20) {
+	if isIllegalLength(user.Username, 1, 20) {
 		return fmt.Errorf("Username with illegal length.")
 	}
 	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("Username contains illegal characters.")
 	}
-	if isIllegalLength(user.Password, 0, 20) {
+	if isIllegalLength(user.Password, 7, 20) {
 		return fmt.Errorf("Password with illegal length.")
 	}
 	if err := commonValidate(user); err != nil {

@@ -12,8 +12,6 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
-	//	"strconv"
-	//	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -63,7 +61,9 @@ func init() {
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
 	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get")
+	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
@@ -155,30 +155,6 @@ func (a api) ProjectsPost(prjUsr usrInfo, project apilib.ProjectReq) (int, error
 	_sling = _sling.BodyJSON(project)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
-}
-
-//Change password
-//Implementation Notes
-//Change the password on a user that already exists.
-//@param userID user ID
-//@param password user old and new password
-//@return error
-//func (a api) UsersUserIDPasswordPut (user usrInfo, userID int32, password apilib.Password) int {
-func (a api) UsersUserIDPasswordPut(user usrInfo, userID int32, password apilib.Password) int {
-
-	_sling := sling.New().Put(a.basePath)
-
-	// create path and map variables
-	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/password"
-	fmt.Printf("change passwd path: %s\n", path)
-	fmt.Printf("password %+v\n", password)
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(password)
-
-	httpStatusCode, _, _ := request(_sling, jsonAcceptHeader, user)
-	return httpStatusCode
 }
 
 func (a api) StatisticGet(user usrInfo) (apilib.StatisticMap, error) {
@@ -741,21 +717,114 @@ func (a api) DeletePolicyByID(authInfo usrInfo, policyID string) (int, error) {
 //}
 
 //Get registered users of Harbor.
-//func (a HarborApi) UsersGet (userName string) ([]User, error) {
-//}
+func (a api) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := "/api/users/"
+	_sling = _sling.Path(path)
+	// body params
+	type QueryParams struct {
+		UserName string `url:"username, omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad []apilib.User
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
+
+//Get registered users by userid.
+func (a api) UsersGetByID(userName string, authInfo usrInfo, userID int) (int, apilib.User, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := "/api/users/" + fmt.Sprintf("%d", userID)
+	_sling = _sling.Path(path)
+	// body params
+	type QueryParams struct {
+		UserName string `url:"username, omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad apilib.User
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
 
 //Creates a new user account.
-//func (a HarborApi) UsersPost (user User) (error) {
-//}
+func (a api) UsersPost(user apilib.User, authInfo ...usrInfo) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	// create path and map variables
+	path := "/api/users/"
+
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(user)
+	var httpStatusCode int
+	var err error
+	if len(authInfo) > 0 {
+		httpStatusCode, _, err = request(_sling, jsonAcceptHeader, authInfo[0])
+	} else {
+		httpStatusCode, _, err = request(_sling, jsonAcceptHeader)
+	}
+	return httpStatusCode, err
+
+}
+
+//Update a registered user to change profile.
+func (a api) UsersPut(userID int, profile apilib.UserProfile, authInfo usrInfo) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+	// create path and map variables
+	path := "/api/users/" + fmt.Sprintf("%d", userID)
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(profile)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Update a registered user to be an administrator of Harbor.
+func (a api) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole int32) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+	// create path and map variables
+	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/sysadmin"
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		HasAdminRole int32 `json:"has_admin_role,omitempty"`
+	}
+
+	_sling = _sling.BodyJSON(&QueryParams{HasAdminRole: hasAdminRole})
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//Update password of a registered user.
+func (a api) UsersUpdatePassword(userID int, password apilib.Password, authInfo usrInfo) (int, error) {
+	_sling := sling.New().Put(a.basePath)
+	// create path and map variables
+	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/password"
+	_sling = _sling.Path(path)
+	// body params
+	_sling = _sling.BodyJSON(password)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
 
 //Mark a registered user as be removed.
-//func (a HarborApi) UsersUserIdDelete (userId int32) (error) {
-//}
-
-//Update a registered user to change to be an administrator of Harbor.
-//func (a HarborApi) UsersUserIdPut (userId int32) (error) {
-//}
-
+func (a api) UsersDelete(userID int, authInfo usrInfo) (int, error) {
+	_sling := sling.New().Delete(a.basePath)
+	// create path and map variables
+	path := "/api/users/" + fmt.Sprintf("%d", userID)
+	_sling = _sling.Path(path)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
 func updateInitPassword(userID int, password string) error {
 	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
