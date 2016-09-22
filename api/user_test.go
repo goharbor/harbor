@@ -51,7 +51,7 @@ func TestUsersPost(t *testing.T) {
 
 	//case 4: register a new user with admin auth, but bad userpassword format, expect 400
 	testUser0002.Username = "testUser0002"
-	fmt.Println("Register user with admin auth, but bad userpassword format")
+	fmt.Println("Register user with admin auth, but empty password.")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occured while add a user", err.Error())
@@ -83,23 +83,26 @@ func TestUsersPost(t *testing.T) {
 	}
 
 	//case 7: register a new user with admin auth, but userrealname is empty, expect 400
-	testUser0002.Email = "testUser0002@mydomain.com"
-	fmt.Println("Register user with admin auth, but user realname is empty")
-	code, err = apiTest.UsersPost(testUser0002, *admin)
-	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(400, code, "Add user status should be 400")
-	}
-
+	/*
+		testUser0002.Email = "testUser0002@mydomain.com"
+		fmt.Println("Register user with admin auth, but user realname is empty")
+		code, err = apiTest.UsersPost(testUser0002, *admin)
+		if err != nil {
+			t.Error("Error occured while add a user", err.Error())
+			t.Log(err)
+		} else {
+			assert.Equal(400, code, "Add user status should be 400")
+		}
+	*/
 	//case 8: register a new user with admin auth, but bad userrealname format, expect 400
+	testUser0002.Email = "testUser0002@mydomain.com"
 	testUser0002.Realname = "test$com"
 	fmt.Println("Register user with admin auth, but bad user realname format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occured while add a user", err.Error())
 		t.Log(err)
+
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
