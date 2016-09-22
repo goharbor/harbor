@@ -19,9 +19,9 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 
 The installation steps boil down to the following
 
-1. Download the installer
-2. Configure **harbor.cfg**
-3. Run **install.sh** to install and start Harbor
+1. Download the installer;
+2. Configure **harbor.cfg**;
+3. Run **install.sh** to install and start Harbor;
 
 
 #### Downloading the installer:
@@ -51,22 +51,22 @@ The parameters are described below - note that at the very least, you will need 
 	* email_from = admin <sample_admin@mydomain.com>  
 	* email_ssl = false
 
-* **harbor_admin_password**: The adminstrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting will be ignored. The adminstrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
+* **harbor_admin_password**: The adminstrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the adminstrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
 * **auth_mode**: The type of authentication that is used. By default it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
-* **ldap_searchdn**: The DN of a user who has the permission to search an ldap/AD server (e.g. `cn=admin,ou=people,dc=mydomain,dc=com`).
+* **ldap_searchdn**: The DN of a user who has the permission to search an LDAP/AD server (e.g. `uid=admin,ou=people,dc=mydomain,dc=com`).
 * **ldap_search_pwd**: The password of the user specified by *ldap_searchdn*.
-* **ldap_basedn**: The base DN to look up a user from, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
+* **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
-* **ldap_uid**:The attribute used to match a user during a ldap search, it could be uid, cn, email or other attributes.
-* **ldap_scope**:The scope to search for a user, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE. Default is 3. 
+* **ldap_uid**: The attribute used to match a user during a ldap search, it could be uid, cn, email or other attributes.
+* **ldap_scope**: The scope to search for a user, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE. Default is 3. 
 * **db_password**: The root password for the mySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register themselves. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **use_compressed_js**: (**on** or **off**. Default is **on**) For production use, turn this flag to **on**. In development mode, set it to **off** so that js files can be modified separately.
 * **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
-* **secret_key** The key to encrypt or decrypt the password of a remote registry in a replication policy, its length has to be 16 characters. Change this key before any production use. *NOTE: After changing this key, previously encrypted password of a policy can not be decrypted.*
+* **secret_key**: The key to encrypt or decrypt the password of a remote registry in a replication policy, its length has to be 16 characters. Change this key before any production use. *NOTE: After changing this key, previously encrypted password of a policy can not be decrypted.*
 
-* **token_expiration** The expiration time (in minute) of a token created by token service, default is 30 minutes.
+* **token_expiration**: The expiration time (in minute) of a token created by token service, default is 30 minutes.
 
 * **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** bypasses the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the regitry's token.  
@@ -140,7 +140,7 @@ Starting harbor_proxy_1
 Starting harbor_jobservice_1
 ```  
 
-To change Harbor's confiugration, first stop existing Harbor instance, updated harbor.cfg, and then run install.sh again:
+To change Harbor's confiugration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
 ```
 $ sudo docker-compose down
 
@@ -149,7 +149,7 @@ $ vim harbor.cfg
 $ sudo install.sh
 ``` 
 
-*Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:*
+Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:
 ```
 $ sudo docker-compose rm
 Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1, harbor_jobservice_1
@@ -269,19 +269,19 @@ $ sudo install.sh
 1. When Harbor does not work properly, run the below commands to find out 6 containers of Harbor are all in **UP** status: 
 ```
     $ sudo docker-compose ps
-           Name                      Command               State                    Ports                   
--------------------------------------------------------------------------------------------------------
-harbor_jobservice_1   /harbor/harbor_jobservice        Up                                               
-harbor_log_1          /bin/sh -c crond && rsyslo ...   Up      0.0.0.0:1514->514/tcp                    
-harbor_mysql_1        /entrypoint.sh mysqld            Up      3306/tcp                                 
-harbor_proxy_1        nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
-harbor_registry_1     /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
-harbor_ui_1           /harbor/harbor_ui                Up                                               
+       Name                      Command               State                  Ports                   
+  -----------------------------------------------------------------------------------------------------
+  harbor_jobservice_1   /harbor/harbor_jobservice        Up                                               
+  harbor_log_1          /bin/sh -c crond && rsyslo ...   Up    0.0.0.0:1514->514/tcp                    
+  harbor_mysql_1        /entrypoint.sh mysqld            Up    3306/tcp                                 
+  harbor_proxy_1        nginx -g daemon off;             Up    0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
+  harbor_registry_1     /entrypoint.sh serve /etc/ ...   Up    5000/tcp                                 
+  harbor_ui_1           /harbor/harbor_ui                Up                                               
 ```
-If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor_ui_1``` is not running, you should look at the log file ```docker_ui.log```.
+If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor_ui_1``` is not running, you should look at the log file ```docker_ui.log```.  
 
 
-2. When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
