@@ -2,6 +2,7 @@
 
 ## v0.4.0 (2016-09-23)
 
+- Database schema changed, data migration/upgrade is needed for previous version.
 - A project can be deleted when no images and policies are under it.
 - Deleted users can be recreated.
 - Replication policy can be deleted.
@@ -22,6 +23,7 @@
 
 ## v0.3.0 (2016-07-15)
 
+- Database schema changed, data migration/upgrade is needed for previous version.
 - New UI
 - Image replication across multiple registry instances
 - Integration with registry v2.4.0 to support image deletion and garbage collection
