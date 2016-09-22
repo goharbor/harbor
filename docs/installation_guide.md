@@ -266,7 +266,7 @@ $ sudo install.sh
 ```
 
 ## Troubleshooting
-1. When Harbor does not work properly, run the below commands to find out 6 containers of Harbor are all in **UP** status: 
+1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
 ```
     $ sudo docker-compose ps
        Name                      Command               State                  Ports                   
