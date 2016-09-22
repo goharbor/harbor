@@ -524,7 +524,7 @@ paths:
           description: Only email, realname and comment can be modified.
           required: true
           schema:
-            $ref: '#/definitions/User' 
+            $ref: '#/definitions/UserProfile' 
       tags:
         - Products
       responses:
@@ -611,6 +611,12 @@ paths:
           format: int
           required: true
           description: Registered user ID
+        - name: has_admin_role
+          in: body
+          description:  Toggle a user to admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/HasAdminRole'
       tags:
         - Products
       responses:
@@ -1682,3 +1688,21 @@ definitions:
       password: 
         type: string
         description: The target server password.
+  HasAdminRole:
+    type: object
+    properties:
+      has_admin_role: 
+        type: integer
+        description: 1-has admin, 0-not.
+  UserProfile:
+    type: object
+    properties:
+      email:
+        type: string
+        description: The new email.
+      realname:
+        type: string
+        description: The new realname.
+      comment:
+        type: string
+        description: The new comment.

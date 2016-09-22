@@ -17,7 +17,6 @@ func TestLogGet(t *testing.T) {
 
 	//prepare for test
 
-	admin := &usrInfo{"admin", "Harbor12345"}
 	var project apilib.ProjectReq
 	project.ProjectName = "my_project"
 	project.Public = 1
