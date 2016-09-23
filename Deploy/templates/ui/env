@@ -1,7 +1,3 @@
-MYSQL_HOST=mysql
-MYSQL_PORT=3306
-MYSQL_USR=root
-MYSQL_PWD=$db_password
 REGISTRY_URL=http://registry:5000
 UI_URL=http://ui
 CONFIG_PATH=/etc/ui/app.conf
@@ -26,3 +22,9 @@ EXT_ENDPOINT=$ui_url
 TOKEN_URL=http://ui
 VERIFY_REMOTE_CERT=$verify_remote_cert
 TOKEN_EXPIRATION=$token_expiration
+DATABASE=$database
+SQLITE_FILE=$sqlite_file
+MYSQL_HOST=mysql
+MYSQL_PORT=3306
+MYSQL_USR=root
+MYSQL_PWD=$db_password
