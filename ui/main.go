@@ -17,17 +17,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/vmware/harbor/utils/log"
 
-	"os"
-
+	"github.com/vmware/harbor/api"
 	_ "github.com/vmware/harbor/auth/db"
 	_ "github.com/vmware/harbor/auth/ldap"
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 
 	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/session/redis"
 )
 
 const (
@@ -66,11 +67,21 @@ func updateInitPassword(userID int, password string) error {
 func main() {
 
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	//TODO
+	redisURL := os.Getenv("_REDIS_URL")
+	if len(redisURL) > 0 {
+		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
+		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+	}
+	//
 	beego.AddTemplateExt("htm")
 	dao.InitDB()
 	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
 		log.Error(err)
 	}
 	initRouters()
+	if err := api.SyncRegistry(); err != nil {
+		log.Error(err)
+	}
 	beego.Run()
 }

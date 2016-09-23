@@ -50,27 +50,15 @@
         var url = rejection.config.url;
         console.log('url:' + url);
         var exclusion = [
-         '/',
-         '/login',
-         '/search',
-         '/reset_password',
-         '/sign_up', 
-         '/forgot_password', 
-         '/api/targets/ping',
-         '/api/users/current',
-         '/api/repositories',
+          /^\/login$/,
+          /^\/api\/targets\/ping$/,
+          /^\/api\/users\/current$/,
+          /^\/api\/repositories$/,
           /^\/api\/projects\/[0-9]+\/members\/current$/
         ];
         var isExcluded = false;
         for(var i in exclusion) {
-          switch(typeof(exclusion[i])) {
-          case 'string':
-            isExcluded = (exclusion[i] === url);
-            break;
-          case 'object':
-            isExcluded = exclusion[i].test(url);
-            break;
-          }
+          isExcluded = exclusion[i].test(url);
           if(isExcluded) {
             break;
           }

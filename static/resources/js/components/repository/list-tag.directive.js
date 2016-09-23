@@ -30,7 +30,6 @@
     
     $scope.$watch('vm.repoName', function(current, origin) {    
       if(current) {
-        console.log('vm.repoName in tags:' + current);
         vm.retrieve();
       }
     });

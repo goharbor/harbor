@@ -56,43 +56,28 @@ func (ra *RepJobAPI) Prepare() {
 
 }
 
-// List filters jobs according to the policy and repository
+// List filters jobs according to the parameters
 func (ra *RepJobAPI) List() {
-	var policyID int64
-	var repository, status string
-	var startTime, endTime *time.Time
-	var num int
-	var err error
 
-	policyIDStr := ra.GetString("policy_id")
-	if len(policyIDStr) != 0 {
-		policyID, err = strconv.ParseInt(policyIDStr, 10, 64)
-		if err != nil || policyID <= 0 {
-			ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("invalid policy ID: %s", policyIDStr))
-		}
+	policyID, err := ra.GetInt64("policy_id")
+	if err != nil || policyID <= 0 {
+		ra.CustomAbort(http.StatusBadRequest, "invalid policy_id")
 	}
 
-	numStr := ra.GetString("num")
-	if len(numStr) != 0 {
-		num, err = strconv.Atoi(numStr)
-		if err != nil {
-			ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("invalid num: %s", numStr))
-		}
-	}
-	if num <= 0 {
-		num = 200
+	policy, err := dao.GetRepPolicy(policyID)
+	if err != nil {
+		log.Errorf("failed to get policy %d: %v", policyID, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	endTimeStr := ra.GetString("end_time")
-	if len(endTimeStr) != 0 {
-		i, err := strconv.ParseInt(endTimeStr, 10, 64)
-		if err != nil {
-			ra.CustomAbort(http.StatusBadRequest, "invalid end_time")
-		}
-		t := time.Unix(i, 0)
-		endTime = &t
+	if policy == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy %d not found", policyID))
 	}
 
+	repository := ra.GetString("repository")
+	status := ra.GetString("status")
+
+	var startTime *time.Time
 	startTimeStr := ra.GetString("start_time")
 	if len(startTimeStr) != 0 {
 		i, err := strconv.ParseInt(startTimeStr, 10, 64)
@@ -103,21 +88,29 @@ func (ra *RepJobAPI) List() {
 		startTime = &t
 	}
 
-	if startTime == nil && endTime == nil {
-		// if start_time and end_time are both null, list jobs of last 10 days
-		t := time.Now().UTC().AddDate(0, 0, -10)
-		startTime = &t
+	var endTime *time.Time
+	endTimeStr := ra.GetString("end_time")
+	if len(endTimeStr) != 0 {
+		i, err := strconv.ParseInt(endTimeStr, 10, 64)
+		if err != nil {
+			ra.CustomAbort(http.StatusBadRequest, "invalid end_time")
+		}
+		t := time.Unix(i, 0)
+		endTime = &t
 	}
 
-	repository = ra.GetString("repository")
-	status = ra.GetString("status")
+	page, pageSize := ra.getPaginationParams()
 
-	jobs, err := dao.FilterRepJobs(policyID, repository, status, startTime, endTime, num)
+	jobs, total, err := dao.FilterRepJobs(policyID, repository, status,
+		startTime, endTime, pageSize, pageSize*(page-1))
 	if err != nil {
-		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s: %v", policyID, repository, status, err)
-		ra.RenderError(http.StatusInternalServerError, "Failed to query job")
-		return
+		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s, start time %v, end time %v: %v",
+			policyID, repository, status, startTime, endTime, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
+
+	ra.setPaginationHeader(total, page, pageSize)
+
 	ra.Data["json"] = jobs
 	ra.ServeJSON()
 }
@@ -154,7 +147,14 @@ func (ra *RepJobAPI) GetLog() {
 		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
 
-	resp, err := http.Get(buildJobLogURL(strconv.FormatInt(ra.jobID, 10)))
+	req, err := http.NewRequest("GET", buildJobLogURL(strconv.FormatInt(ra.jobID, 10)), nil)
+	if err != nil {
+		log.Errorf("failed to create a request: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+	addAuthentication(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
 		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

@@ -35,7 +35,8 @@
     vm.beginTimestamp = 0;
     vm.endTimestamp = 0;
     vm.keywords = '';
-    vm.username = '';
+    
+    vm.username = $location.hash() || '';
         
     vm.op = [];
     vm.opOthers = true;
@@ -51,29 +52,36 @@
       'projectId': vm.projectId,
       'username' : vm.username
     };
-        
-    retrieve(vm.queryParams);
-  
-    $scope.$on('$locationChangeSuccess', function() {
-      
-      if(vm.publicity) {
-        vm.target = 'repositories';
+
+    vm.page = 1;
+    vm.pageSize = 15;            
+
+    $scope.$watch('vm.page', function(current, origin) {
+      if(current) {
+        vm.page = current;
+        retrieve(vm.queryParams, vm.page, vm.pageSize);
       }
+    }); 
       
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.queryParams = {
-        'beginTimestamp' : vm.beginTimestamp,
-        'endTimestamp'   : vm.endTimestamp,
-        'keywords' : vm.keywords,
-        'projectId': vm.projectId,
-        'username' : vm.username
-      };
-      vm.username = '';
-      retrieve(vm.queryParams);
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.queryParams = {
+          'beginTimestamp' : vm.beginTimestamp,
+          'endTimestamp'   : vm.endTimestamp,
+          'keywords' : vm.keywords,
+          'projectId': vm.projectId,
+          'username' : vm.username
+        };
+        vm.username = '';
+        retrieve(vm.queryParams, vm.page, vm.pageSize);
+      }
     });
             
     function search(e) {
-
+      
+      vm.page = 1;
+      
       if(e.op[0] === 'all') {
         e.op = ['create', 'pull', 'push', 'delete'];
       }      
@@ -83,11 +91,12 @@
       
       vm.queryParams.keywords = e.op.join('/');
       vm.queryParams.username = e.username;
-      
+            
       vm.queryParams.beginTimestamp = toUTCSeconds(vm.fromDate, 0, 0, 0);
       vm.queryParams.endTimestamp = toUTCSeconds(vm.toDate, 23, 59, 59);
-     
-      retrieve(vm.queryParams);
+      
+      retrieve(vm.queryParams, vm.page, vm.pageSize);
+
     }
     
     function showAdvancedSearch() {
@@ -98,27 +107,18 @@
       }
     }
     
-    function retrieve(queryParams) {
-      ListLogService(queryParams)
+    function retrieve(queryParams, page, pageSize) {
+      ListLogService(queryParams, page, pageSize)
         .then(listLogComplete)
         .catch(listLogFailed);
     }
 
     function listLogComplete(response) {
       vm.logs = response.data;
+      vm.totalCount = response.headers('X-Total-Count');
       
-      vm.queryParams = {
-        'beginTimestamp' : 0,
-        'endTimestamp'   : 0,
-        'keywords' : '',
-        'projectId': vm.projectId,
-        'username' : ''
-      };
-      vm.op = ['all'];
-      vm.fromDate = '';
-      vm.toDate = '';
-      vm.others = '';
-      vm.opOthers = true;
+      console.log('Total Count in logs:' + vm.totalCount + ', page:' + vm.page);
+      
       vm.isOpen = false;
     }
     function listLogFailed(response){
@@ -148,9 +148,7 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/log/list-log.directive.html',
       'scope': {
-        'sectionHeight': '=',
-        'target': '=',
-        'publicity': '='
+        'sectionHeight': '='
       },
       'link': link,
       'controller': ListLogController,

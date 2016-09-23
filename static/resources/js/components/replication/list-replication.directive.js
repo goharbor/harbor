@@ -37,20 +37,25 @@
     };
   }
   
-  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
+  ListReplicationController.$inject = ['$scope', 'getParameterByName', '$location', 'ListReplicationPolicyService', 'ToggleReplicationPolicyService', 'DeleteReplicationPolicyService', 'ListReplicationJobService', '$window', '$filter', 'trFilter', 'jobStatus'];
   
-  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
+  function ListReplicationController($scope, getParameterByName, $location, ListReplicationPolicyService, ToggleReplicationPolicyService, DeleteReplicationPolicyService, ListReplicationJobService, $window, $filter, trFilter, jobStatus) {
     var vm = this;
     
     vm.sectionHeight = {'min-height': '1260px'};
       
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.retrievePolicy();
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.retrievePolicy();
+      }
     });
     
     vm.addReplication = addReplication;
     vm.editReplication = editReplication;
+    vm.deleteReplicationPolicy = deleteReplicationPolicy;
+    
+    vm.confirmToDelete = confirmToDelete;
     
     vm.searchReplicationPolicy = searchReplicationPolicy;
     vm.searchReplicationJob = searchReplicationJob;
@@ -58,6 +63,17 @@
     
     vm.retrievePolicy = retrievePolicy;
     vm.retrieveJob = retrieveJob;
+    
+    vm.pageSize = 20;
+    vm.page = 1;
+    
+    $scope.$watch('vm.page', function(current) {
+      if(vm.lastPolicyId !== -1 && current) {
+        vm.page = current;
+        console.log('replication job: vm.page:' + current);
+        vm.retrieveJob(vm.lastPolicyId, vm.page, vm.pageSize);
+      }
+    });
     
     vm.confirmToTogglePolicy = confirmToTogglePolicy;
     vm.togglePolicy = togglePolicy;
@@ -84,14 +100,14 @@
     function searchReplicationJob() {
       if(vm.lastPolicyId !== -1) {
         vm.searchJobTIP = true;
-        vm.retrieveJob(vm.lastPolicyId);
+        vm.retrieveJob(vm.lastPolicyId, vm.page, vm.pageSize);
       }
     }            
     
     function refreshReplicationJob() {
       if(vm.lastPolicyId !== -1) {
         vm.refreshJobTIP = true;
-        vm.retrieveJob(vm.lastPolicyId);
+        vm.retrieveJob(vm.lastPolicyId, vm.page, vm.pageSize);
       }
     }
    
@@ -101,11 +117,10 @@
         .error(listReplicationPolicyFailed);
     }
     
-    function retrieveJob(policyId) {
+    function retrieveJob(policyId, page, pageSize) {
       var status = (vm.currentStatus.key === 'all' ? '' : vm.currentStatus.key);
-      ListReplicationJobService(policyId, vm.replicationJobName, status, toUTCSeconds(vm.fromDate, 0, 0, 0), toUTCSeconds(vm.toDate, 23, 59, 59))
-        .success(listReplicationJobSuccess)
-        .error(listReplicationJobFailed);
+      ListReplicationJobService(policyId, vm.replicationJobName, status, toUTCSeconds(vm.fromDate, 0, 0, 0), toUTCSeconds(vm.toDate, 23, 59, 59), page, pageSize)
+        .then(listReplicationJobSuccess, listReplicationJobFailed);
     }
 
     function listReplicationPolicySuccess(data, status) {
@@ -117,8 +132,9 @@
       console.log('Failed to list replication policy:' + data);      
     }
 
-    function listReplicationJobSuccess(data, status) {
-      vm.replicationJobs = data || [];
+    function listReplicationJobSuccess(response) {
+      vm.replicationJobs = response.data || [];
+      vm.totalCount = response.headers('X-Total-Count');
       var alertInfo = {
         'show': false,
         'message': ''
@@ -146,8 +162,8 @@
       vm.refreshJobTIP = false;
     }
     
-    function listReplicationJobFailed(data, status) {
-      console.log('Failed to list replication job:' + data);
+    function listReplicationJobFailed(response) {
+      console.log('Failed to list replication job:' + response);
       vm.searchJobTIP = false;
       vm.refreshJobTIP = false;
     }
@@ -164,6 +180,44 @@
       
       console.log('Selected policy ID:' + vm.policyId);
     }
+
+    function deleteReplicationPolicy() {
+      DeleteReplicationPolicyService(vm.policyId)
+        .success(deleteReplicationPolicySuccess)
+        .error(deleteReplicationPolicyFailed);
+    }
+    
+    function deleteReplicationPolicySuccess(data, status) {
+      console.log('Successful delete replication policy.');
+      vm.retrievePolicy();
+    }
+    
+    function deleteReplicationPolicyFailed(data, status) {
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      if(status === 412) {
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_enabled')); 
+      }else{
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_replication_policy'));
+      }
+      $scope.$emit('raiseError', true);
+      console.log('Failed to delete replication policy.');
+    }
+    
+    function confirmToDelete(policyId, policyName) {
+      vm.policyId = policyId;
+     
+      $scope.$emit('modalTitle', $filter('tr')('confirm_delete_policy_title'));
+      $scope.$emit('modalMessage', $filter('tr')('confirm_delete_policy', [policyName]));
+      
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/plain',
+        'action': vm.deleteReplicationPolicy
+      };
+      
+      $scope.$emit('raiseInfo', emitInfo);
+    }
+
 
     function confirmToTogglePolicy(policyId, enabled, name) {
       vm.policyId = policyId;
@@ -259,8 +313,8 @@
       var uponTableHeight = element.find('#upon-pane .table-body-container').height();
       var downTableHeight = element.find('#down-pane .table-body-container').height();
       
-      var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top + element.find('.well').height() - 24;		
-      
+      var handleHeight = element.find('.split-handle').height() + element.find('.split-handle').offset().top + element.find('.well').height() - 32;		
+      console.log('handleHeight:' + handleHeight);
       var maxDownPaneHeight = 760;		
                       		
       element.find('.split-handle').on('mousedown', mousedownHandler);		
@@ -299,11 +353,7 @@
           if(current) {
             if(current.length > 0) {
               element.find('#upon-pane table>tbody>tr').on('click', trClickHandler);
-              if(ctrl.lastPolicyId === -1) {
-                element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');  
-              }else{
-                element.find('#upon-pane table>tbody>tr').filter('[policy_id="' + ctrl.lastPolicyId + '"]').trigger('click');
-              }
+              element.find('#upon-pane table>tbody>tr:eq(0)').trigger('click');
             }else{
                element
                 .find('#upon-pane table>tbody>tr')  
@@ -328,7 +378,7 @@
           .css({'color': '#fff'});
         $('a', this)
           .css({'color': '#fff'});
-        ctrl.retrieveJob($(this).attr('policy_id'));
+        ctrl.retrieveJob($(this).attr('policy_id'), ctrl.page, ctrl.pageSize);
         ctrl.lastPolicyId = $(this).attr('policy_id');
       }
       

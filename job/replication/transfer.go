@@ -192,7 +192,7 @@ func (c *Checker) enter() (string, error) {
 		return "", err
 	}
 
-	err = c.createProject(project.Public == 1)
+	err = c.createProject(project.Public)
 	if err == nil {
 		c.logger.Infof("project %s is created on %s with user %s", c.project, c.dstURL, c.dstUsr)
 		return StatePullManifest, nil
@@ -211,13 +211,13 @@ func (c *Checker) enter() (string, error) {
 	return "", err
 }
 
-func (c *Checker) createProject(isPublic bool) error {
+func (c *Checker) createProject(public int) error {
 	project := struct {
 		ProjectName string `json:"project_name"`
-		Public      bool   `json:"public"`
+		Public      int    `json:"public"`
 	}{
 		ProjectName: c.project,
-		Public:      isPublic,
+		Public:      public,
 	}
 
 	data, err := json.Marshal(project)

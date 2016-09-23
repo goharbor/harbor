@@ -17,12 +17,24 @@ package api
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/service/cache"
 	"github.com/vmware/harbor/utils/log"
+)
+
+const (
+	// MPC : count of my projects
+	MPC = "my_project_count"
+	// MRC : count of my repositories
+	MRC = "my_repo_count"
+	// PPC : count of public projects
+	PPC = "public_project_count"
+	// PRC : count of public repositories
+	PRC = "public_repo_count"
+	// TPC : total count of projects
+	TPC = "total_project_count"
+	// TRC : total count of repositories
+	TRC = "total_repo_count"
 )
 
 // StatisticAPI handles request to /api/statistics/
@@ -38,80 +50,60 @@ func (s *StatisticAPI) Prepare() {
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
+	statistic := map[string]int64{}
+
+	n, err := dao.GetTotalOfProjects("", 1)
+	if err != nil {
+		log.Errorf("failed to get total of public projects: %v", err)
+		s.CustomAbort(http.StatusInternalServerError, "")
+	}
+	statistic[PPC] = n
+
+	n, err = dao.GetTotalOfPublicRepositories("")
+	if err != nil {
+		log.Errorf("failed to get total of public repositories: %v", err)
+		s.CustomAbort(http.StatusInternalServerError, "")
+	}
+	statistic[PRC] = n
+
 	isAdmin, err := dao.IsAdminRole(s.userID)
 	if err != nil {
 		log.Errorf("Error occured in check admin, error: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	var projectList []models.Project
+
 	if isAdmin {
-		projectList, err = dao.GetAllProjects("")
+		n, err := dao.GetTotalOfProjects("")
+		if err != nil {
+			log.Errorf("failed to get total of projects: %v", err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+		statistic[MPC] = n
+		statistic[TPC] = n
+
+		n, err = dao.GetTotalOfRepositories("")
+		if err != nil {
+			log.Errorf("failed to get total of repositories: %v", err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+		statistic[MRC] = n
+		statistic[TRC] = n
 	} else {
-		projectList, err = dao.GetUserRelevantProjects(s.userID, "")
-	}
-	if err != nil {
-		log.Errorf("Error occured in QueryProject, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	proMap := map[string]int{}
-	proMap["my_project_count"] = 0
-	proMap["my_repo_count"] = 0
-	proMap["public_project_count"] = 0
-	proMap["public_repo_count"] = 0
-	var publicProjects []models.Project
-	publicProjects, err = dao.GetPublicProjects("")
-	if err != nil {
-		log.Errorf("Error occured in QueryPublicProject, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	proMap["public_project_count"] = len(publicProjects)
-	for i := 0; i < len(publicProjects); i++ {
-		proMap["public_repo_count"] += getRepoCountByProject(publicProjects[i].Name)
-	}
-	if isAdmin {
-		proMap["total_project_count"] = len(projectList)
-		proMap["total_repo_count"] = getTotalRepoCount()
-	}
-	for i := 0; i < len(projectList); i++ {
-		if isAdmin {
-			projectList[i].Role = models.PROJECTADMIN
+		n, err := dao.GetTotalOfUserRelevantProjects(s.userID, "")
+		if err != nil {
+			log.Errorf("failed to get total of projects for user %d: %v", s.userID, err)
+			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		if projectList[i].Role == models.PROJECTADMIN || projectList[i].Role == models.DEVELOPER ||
-			projectList[i].Role == models.GUEST {
-			proMap["my_project_count"]++
-			proMap["my_repo_count"] += getRepoCountByProject(projectList[i].Name)
+		statistic[MPC] = n
+
+		n, err = dao.GetTotalOfUserRelevantRepositories(s.userID, "")
+		if err != nil {
+			log.Errorf("failed to get total of repositories for user %d: %v", s.userID, err)
+			s.CustomAbort(http.StatusInternalServerError, "")
 		}
+		statistic[MRC] = n
 	}
-	s.Data["json"] = proMap
+
+	s.Data["json"] = statistic
 	s.ServeJSON()
-}
-
-//getReposByProject returns repo numbers of specified project
-func getRepoCountByProject(projectName string) int {
-	repoList, err := cache.GetRepoFromCache()
-	if err != nil {
-		log.Errorf("Failed to get repo from cache, error: %v", err)
-		return 0
-	}
-	var resp int
-	if len(projectName) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && r[0:strings.LastIndex(r, "/")] == projectName {
-				resp++
-			}
-		}
-		return resp
-	}
-	return 0
-}
-
-//getTotalRepoCount returns total repo count
-func getTotalRepoCount() int {
-	repoList, err := cache.GetRepoFromCache()
-	if err != nil {
-		log.Errorf("Failed to get repo from cache, error: %v", err)
-		return 0
-	}
-	return len(repoList)
-
 }

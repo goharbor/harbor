@@ -155,17 +155,18 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 			left join project p on rp.project_id=p.project_id 
 			left join replication_target rt on rp.target_id=rt.id 
 			left join replication_job rj on rp.id=rj.policy_id and (rj.status="error" 
-				or rj.status="retrying") `
+				or rj.status="retrying") 
+			where rp.deleted = 0 `
 
 	if len(name) != 0 && projectID != 0 {
-		sql += `where rp.name like ? and rp.project_id = ? `
+		sql += `and rp.name like ? and rp.project_id = ? `
 		args = append(args, "%"+name+"%")
 		args = append(args, projectID)
 	} else if len(name) != 0 {
-		sql += `where rp.name like ? `
+		sql += `and rp.name like ? `
 		args = append(args, "%"+name+"%")
 	} else if projectID != 0 {
-		sql += `where rp.project_id = ? `
+		sql += `and rp.project_id = ? `
 		args = append(args, projectID)
 	}
 
@@ -181,7 +182,7 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 // GetRepPolicyByName ...
 func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where name = ?`
+	sql := `select * from replication_policy where deleted = 0 and name = ?`
 
 	var policy models.RepPolicy
 
@@ -198,7 +199,7 @@ func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 // GetRepPolicyByProject ...
 func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where project_id = ?`
+	sql := `select * from replication_policy where deleted = 0 and project_id = ?`
 
 	var policies []*models.RepPolicy
 
@@ -212,7 +213,7 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 // GetRepPolicyByTarget ...
 func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where target_id = ?`
+	sql := `select * from replication_policy where deleted = 0 and target_id = ?`
 
 	var policies []*models.RepPolicy
 
@@ -226,7 +227,7 @@ func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
 // GetRepPolicyByProjectAndTarget ...
 func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where project_id = ? and target_id = ?`
+	sql := `select * from replication_policy where deleted = 0 and project_id = ? and target_id = ?`
 
 	var policies []*models.RepPolicy
 
@@ -247,7 +248,11 @@ func UpdateRepPolicy(policy *models.RepPolicy) error {
 // DeleteRepPolicy ...
 func DeleteRepPolicy(id int64) error {
 	o := GetOrmer()
-	_, err := o.Delete(&models.RepPolicy{ID: id})
+	policy := &models.RepPolicy{
+		ID:      id,
+		Deleted: 1,
+	}
+	_, err := o.Update(policy, "Deleted")
 	return err
 }
 
@@ -312,12 +317,14 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 	return res, err
 }
 
-// FilterRepJobs filters jobs by repo and policy ID
+// FilterRepJobs ...
 func FilterRepJobs(policyID int64, repository, status string, startTime,
-	endTime *time.Time, limit int) ([]*models.RepJob, error) {
-	o := GetOrmer()
+	endTime *time.Time, limit, offset int64) ([]*models.RepJob, int64, error) {
 
-	qs := o.QueryTable(new(models.RepJob))
+	jobs := []*models.RepJob{}
+
+	qs := GetOrmer().QueryTable(new(models.RepJob))
+
 	if policyID != 0 {
 		qs = qs.Filter("PolicyID", policyID)
 	}
@@ -327,32 +334,28 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 	if len(status) != 0 {
 		qs = qs.Filter("Status__icontains", status)
 	}
-
 	if startTime != nil {
-		fmt.Printf("%v\n", startTime)
 		qs = qs.Filter("CreationTime__gte", startTime)
 	}
-
 	if endTime != nil {
-		fmt.Printf("%v\n", endTime)
 		qs = qs.Filter("CreationTime__lte", endTime)
 	}
 
-	if limit != 0 {
-		qs = qs.Limit(limit)
+	total, err := qs.Count()
+	if err != nil {
+		return jobs, 0, err
 	}
 
 	qs = qs.OrderBy("-UpdateTime")
 
-	var jobs []*models.RepJob
-	_, err := qs.All(&jobs)
+	_, err = qs.Limit(limit).Offset(offset).All(&jobs)
 	if err != nil {
-		return nil, err
+		return jobs, 0, err
 	}
 
 	genTagListForJob(jobs...)
 
-	return jobs, nil
+	return jobs, total, nil
 }
 
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
