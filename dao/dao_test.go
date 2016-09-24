@@ -16,6 +16,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -112,7 +113,9 @@ func clearUp(username string) {
 }
 
 const username string = "Tester01"
+const password string = "Abc12345"
 const projectName string = "test_project"
+const repositoryName string = "test_repository"
 const repoTag string = "test1.1"
 const repoTag2 string = "test1.2"
 const SysAdmin int = 1
@@ -157,7 +160,7 @@ func TestRegister(t *testing.T) {
 	user := models.User{
 		Username: username,
 		Email:    "tester01@vmware.com",
-		Password: "Abc12345",
+		Password: password,
 		Realname: "tester01",
 		Comment:  "register",
 	}
@@ -181,6 +184,41 @@ func TestRegister(t *testing.T) {
 	}
 	if newUser.Email != "tester01@vmware.com" {
 		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
+	}
+}
+
+func TestCheckUserPassword(t *testing.T) {
+	nonExistUser := models.User{
+		Username: "non-exist",
+	}
+	correctUser := models.User{
+		Username: username,
+		Password: password,
+	}
+	wrongPwd := models.User{
+		Username: username,
+		Password: "wrong",
+	}
+	u, err := CheckUserPassword(nonExistUser)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u != nil {
+		t.Errorf("Expected nil for Non exist user, but actual: %+v", u)
+	}
+	u, err = CheckUserPassword(wrongPwd)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u != nil {
+		t.Errorf("Expected nil for user with wrong password, but actual: %+v", u)
+	}
+	u, err = CheckUserPassword(correctUser)
+	if err != nil {
+		t.Errorf("Failed in CheckUserPassword: %v", err)
+	}
+	if u == nil {
+		t.Errorf("User should not be nil for correct user")
 	}
 }
 
@@ -420,7 +458,7 @@ func TestGetAccessLog(t *testing.T) {
 		UserID:    currentUser.UserID,
 		ProjectID: currentProject.ProjectID,
 	}
-	accessLogs, err := GetAccessLogs(queryAccessLog)
+	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -429,6 +467,21 @@ func TestGetAccessLog(t *testing.T) {
 	}
 	if accessLogs[0].RepoName != projectName+"/" {
 		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogs[0].RepoName)
+	}
+}
+
+func TestGetTotalOfAccessLogs(t *testing.T) {
+	queryAccessLog := models.AccessLog{
+		UserID:    currentUser.UserID,
+		ProjectID: currentProject.ProjectID,
+	}
+	total, err := GetTotalOfAccessLogs(queryAccessLog)
+	if err != nil {
+		t.Fatalf("failed to get total of access log: %v", err)
+	}
+
+	if total != 1 {
+		t.Errorf("unexpected total %d != %d", total, 1)
 	}
 }
 
@@ -448,7 +501,7 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog)
+	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -477,7 +530,7 @@ func TestAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog)
+	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -489,6 +542,50 @@ func TestAccessLog(t *testing.T) {
 	}
 	if accessLogList[0].RepoTag != repoTag2 {
 		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag2, accessLogList[0].RepoTag)
+	}
+}
+
+func TestGetAccessLogCreator(t *testing.T) {
+	var err error
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+
+	user, err := GetAccessLogCreator(currentProject.Name + "/tomcat")
+	if err != nil {
+		t.Errorf("Error occurred in GetAccessLogCreator: %v", err)
+	}
+	if user != currentUser.Username {
+		t.Errorf("The access log creator does not match, expected: %s, actual: %s", currentUser.Username, user)
+	}
+}
+
+func TestCountPull(t *testing.T) {
+	var err error
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
+	if err != nil {
+		t.Errorf("Error occurred in AccessLog: %v", err)
+	}
+
+	pullCount, err := CountPull(currentProject.Name + "/tomcat")
+	if err != nil {
+		t.Errorf("Error occurred in CountPull: %v", err)
+	}
+	if pullCount != 3 {
+		t.Errorf("The access log pull count does not match, expected: 3, actual: %d", pullCount)
 	}
 }
 
@@ -609,6 +706,17 @@ func TestProjectPermission(t *testing.T) {
 	}
 }
 
+func TestGetTotalOfUserRelevantProjects(t *testing.T) {
+	total, err := GetTotalOfUserRelevantProjects(currentUser.UserID, "")
+	if err != nil {
+		t.Fatalf("failed to get total of user relevant projects: %v", err)
+	}
+
+	if total != 1 {
+		t.Errorf("unexpected total: %d != 1", total)
+	}
+}
+
 func TestGetUserRelevantProjects(t *testing.T) {
 	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
 	if err != nil {
@@ -622,8 +730,19 @@ func TestGetUserRelevantProjects(t *testing.T) {
 	}
 }
 
-func TestGetAllProjects(t *testing.T) {
-	projects, err := GetAllProjects("")
+func TestGetTotalOfProjects(t *testing.T) {
+	total, err := GetTotalOfProjects("")
+	if err != nil {
+		t.Fatalf("failed to get total of projects: %v", err)
+	}
+
+	if total != 2 {
+		t.Errorf("unexpected total: %d != 2", total)
+	}
+}
+
+func TestGetProjects(t *testing.T) {
+	projects, err := GetProjects("")
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -636,7 +755,7 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetPublicProjects(t *testing.T) {
-	projects, err := GetPublicProjects("")
+	projects, err := GetProjects("", 1)
 	if err != nil {
 		t.Errorf("Error occurred in getProjects: %v", err)
 	}
@@ -672,6 +791,21 @@ func TestAddProjectMember(t *testing.T) {
 	}
 }
 
+func TestUpdateProjectMember(t *testing.T) {
+	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST)
+	if err != nil {
+		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
+	}
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	if err != nil {
+		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+	}
+	if roles[0].Name != "guest" {
+		t.Errorf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name)
+	}
+
+}
+
 func TestDeleteProjectMember(t *testing.T) {
 	err := DeleteProjectMember(currentProject.ProjectID, 1)
 	if err != nil {
@@ -685,6 +819,23 @@ func TestDeleteProjectMember(t *testing.T) {
 
 	if len(roles) != 0 {
 		t.Errorf("delete record failed from table project_member")
+	}
+}
+
+func TestGetRoleByID(t *testing.T) {
+	r, err := GetRoleByID(models.PROJECTADMIN)
+	if err != nil {
+		t.Errorf("Failed to call GetRoleByID: %v", err)
+	}
+	if r == nil || r.Name != "projectAdmin" || r.RoleCode != "MDRWS" {
+		t.Errorf("Role does not match for role id: %d, actual: %+v", models.PROJECTADMIN, r)
+	}
+	r, err = GetRoleByID(9999)
+	if err != nil {
+		t.Errorf("Failed to call GetRoleByID: %v", err)
+	}
+	if r != nil {
+		t.Errorf("Role should nil for non-exist id 9999, actual: %+v", r)
 	}
 }
 
@@ -747,57 +898,9 @@ func TestGetRecentLogs(t *testing.T) {
 }
 
 func TestGetTopRepos(t *testing.T) {
-
-	err := ToggleProjectPublicity(currentProject.ProjectID, publicityOn)
+	_, err := GetTopRepos(10)
 	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "push")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/ubuntu", repoTag2, "pull")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	topRepos, err := GetTopRepos(10)
-	if err != nil {
-		t.Errorf("error occured in getting top repos, error: %v", err)
-	}
-	if topRepos[0].RepoName != currentProject.Name+"/ubuntu" {
-		t.Errorf("error occured in get top reop's name, expected: %v, actual: %v", currentProject.Name+"/ubuntu", topRepos[0].RepoName)
-	}
-	if topRepos[0].AccessCount != 1 {
-		t.Errorf("error occured in get top reop's access count, expected: %v, actual: %v", 1, topRepos[0].AccessCount)
-	}
-	/*
-		if topRepos[0].Creator != currentUser.Username {
-			t.Errorf("error occured in get top reop's creator, expected: %v, actual: %v", currentUser.Username, topRepos[0].Creator)
-		}
-	*/
-	err = ToggleProjectPublicity(currentProject.ProjectID, publicityOff)
-	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
-	}
-	o := GetOrmer()
-	_, err = o.QueryTable("access_log").Filter("operation__in", "push,pull").Delete()
-	if err != nil {
-		t.Errorf("error occurred in deleting access logs, %v", err)
-	}
-
-}
-
-func TestDeleteUser(t *testing.T) {
-	err := DeleteUser(currentUser.UserID)
-	if err != nil {
-		t.Errorf("Error occurred in DeleteUser: %v", err)
-	}
-	user, err := GetUser(*currentUser)
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-	if user != nil {
-		t.Errorf("user is not nil after deletion, user: %+v", user)
+		t.Fatalf("error occured in getting top repos, error: %v", err)
 	}
 }
 
@@ -1180,7 +1283,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 }
 
 func TestFilterRepJobs(t *testing.T) {
-	jobs, err := FilterRepJobs(policyID, "", "", nil, nil, 1000)
+	jobs, _, err := FilterRepJobs(policyID, "", "", nil, nil, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return
@@ -1308,7 +1411,7 @@ func TestDeleteRepPolicy(t *testing.T) {
 	if err != nil && err != orm.ErrNoRows {
 		t.Errorf("Error occured in GetRepPolicy:%v", err)
 	}
-	if p != nil {
+	if p != nil && p.Deleted != 1 {
 		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
 	}
 }
@@ -1388,5 +1491,115 @@ func TestGetOrmer(t *testing.T) {
 	o := GetOrmer()
 	if o == nil {
 		t.Errorf("Error get ormer.")
+	}
+}
+
+func TestDeleteProject(t *testing.T) {
+	name := "project_for_test"
+	project := models.Project{
+		OwnerID: currentUser.UserID,
+		Name:    name,
+	}
+
+	id, err := AddProject(project)
+	if err != nil {
+		t.Fatalf("failed to add project: %v", err)
+	}
+
+	if err = DeleteProject(id); err != nil {
+		t.Fatalf("failed to delete project: %v", err)
+	}
+
+	p := &models.Project{}
+	if err = GetOrmer().Raw(`select * from project where project_id = ?`, id).
+		QueryRow(p); err != nil {
+		t.Fatalf("failed to get project: %v", err)
+	}
+
+	if p.Deleted != 1 {
+		t.Errorf("unexpeced deleted column: %d != %d", p.Deleted, 1)
+	}
+
+	deletedName := fmt.Sprintf("%s#%d", name, id)
+	if p.Name != deletedName {
+		t.Errorf("unexpected name: %s != %s", p.Name, deletedName)
+	}
+
+}
+
+func TestAddRepository(t *testing.T) {
+	repoRecord := models.RepoRecord{
+		Name:        currentProject.Name + "/" + repositoryName,
+		OwnerName:   currentUser.Username,
+		ProjectName: currentProject.Name,
+		Description: "testing repo",
+		PullCount:   0,
+		StarCount:   0,
+	}
+
+	err := AddRepository(repoRecord)
+	if err != nil {
+		t.Errorf("Error occurred in AddRepository: %v", err)
+	}
+
+	newRepoRecord, err := GetRepositoryByName(currentProject.Name + "/" + repositoryName)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
+	}
+	if newRepoRecord == nil {
+		t.Errorf("No repository found queried by repository name: %v", currentProject.Name+"/"+repositoryName)
+	}
+}
+
+var currentRepository *models.RepoRecord
+
+func TestGetRepositoryByName(t *testing.T) {
+	var err error
+	currentRepository, err = GetRepositoryByName(currentProject.Name + "/" + repositoryName)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
+	}
+	if currentRepository == nil {
+		t.Errorf("No repository found queried by repository name: %v", currentProject.Name+"/"+repositoryName)
+	}
+	if currentRepository.Name != currentProject.Name+"/"+repositoryName {
+		t.Errorf("Repository name does not match, expected: %s, actual: %s", currentProject.Name+"/"+repositoryName, currentProject.Name)
+	}
+}
+
+func TestIncreasePullCount(t *testing.T) {
+	if err := IncreasePullCount(currentRepository.Name); err != nil {
+		log.Errorf("Error happens when increasing pull count: %v", currentRepository.Name)
+	}
+
+	repository, err := GetRepositoryByName(currentRepository.Name)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
+	}
+
+	if repository.PullCount != 1 {
+		t.Errorf("repository pull count is not 1 after IncreasePullCount, expected: 1, actual: %d", repository.PullCount)
+	}
+}
+
+func TestRepositoryExists(t *testing.T) {
+	var exists bool
+	exists = RepositoryExists(currentRepository.Name)
+	if !exists {
+		t.Errorf("The repository with name: %d, does not exist", currentRepository.Name)
+	}
+}
+
+func TestDeleteRepository(t *testing.T) {
+	err := DeleteRepository(currentRepository.Name)
+	if err != nil {
+		t.Errorf("Error occurred in DeleteRepository: %v", err)
+	}
+	repository, err := GetRepositoryByName(currentRepository.Name)
+	if err != nil {
+		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
+	}
+	if repository != nil {
+		t.Errorf("repository is not nil after deletion, repository: %+v", repository)
 	}
 }

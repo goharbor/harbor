@@ -27,64 +27,55 @@
     
     vm.projectName = '';
     vm.isOpen = false;
+    vm.isProjectMember = false;
+    vm.target = $location.path().substr(1) || 'repositories';
     
-    if(getParameterByName('is_public', $location.absUrl())) {
-      vm.isPublic = getParameterByName('is_public', $location.absUrl()) === 'true' ? 1 : 0;
-      vm.publicity = (vm.isPublic === 1) ? true : false;
-    }
-
+    vm.isPublic = Number(getParameterByName('is_public', $location.absUrl()));
+      
     vm.retrieve = retrieve;
     vm.filterInput = '';
     vm.selectItem = selectItem;  
     vm.checkProjectMember = checkProjectMember;  
-       
-    $scope.$watch('vm.selectedProject', function(current, origin) {
-      if(current) {        
-        vm.selectedId = current.project_id;
-      }
-    });
-       
-    $scope.$watch('vm.publicity', function(current, origin) { 
-      vm.publicity = current ? true : false;
-      vm.isPublic =  vm.publicity ? 1 : 0;
-      vm.projectType = (vm.isPublic === 1) ? 'public_projects' : 'my_projects';
-      vm.retrieve();      
-    });
-       
+                     
     function retrieve() {
       ListProjectService(vm.projectName, vm.isPublic)
         .success(getProjectSuccess)
         .error(getProjectFailed);
     }
     
+    
+    vm.retrieve();
+    
+    $scope.$watch('vm.isPublic', function(current) {
+      vm.projectType = vm.isPublic === 0 ? 'my_project_count' : 'public_project_count';
+    });
+    
+    $scope.$watch('vm.selectedProject', function(current) {
+      if(current) {
+        vm.selectedId = current.project_id;
+      }
+    });
+    
     function getProjectSuccess(data, status) {
-      vm.projects = data;
-
-      if(vm.projects == null) {
-        vm.isPublic = 1;
-        vm.publicity = true;
-        vm.projectType = 'public_projects';
-        console.log('vm.projects is null, load public projects.');
-        return;
+      vm.projects = data || [];
+            
+      if(vm.projects.length == 0 && vm.isPublic === 0){
+        $window.location.href = '/project';  
       }
-      
-      if(angular.isArray(vm.projects) && vm.projects.length > 0) {
-        vm.selectedProject = vm.projects[0];    
-      }else{
-        $window.location.href = '/project';        
-      }
-      
+                
       if(getParameterByName('project_id', $location.absUrl())){
-        angular.forEach(vm.projects, function(value, index) {
-          if(value['project_id'] === Number(getParameterByName('project_id', $location.absUrl()))) {
-            vm.selectedProject = value;
+        for(var i in vm.projects) {
+          var project = vm.projects[i];
+          if(project['project_id'] == getParameterByName('project_id', $location.absUrl())) {
+            vm.selectedProject = project;
+            break;
           }
-        }); 
+        } 
       }
-     
+
       $location.search('project_id', vm.selectedProject.project_id);
-      
-      vm.checkProjectMember(vm.selectedProject.project_id);      
+      vm.checkProjectMember(vm.selectedProject.project_id);         
+         
       vm.resultCount = vm.projects.length;
     
       $scope.$watch('vm.filterInput', function(current, origin) {  
@@ -102,11 +93,13 @@
     function selectItem(item) {
       vm.selectedProject = item;
       $location.search('project_id', vm.selectedProject.project_id);
+      $scope.$emit('projectChanged', true);
     }       
   
     $scope.$on('$locationChangeSuccess', function(e) {
-      var projectId = getParameterByName('project_id', $location.absUrl());
-      vm.isOpen = false;   
+      vm.projectId = getParameterByName('project_id', $location.absUrl());
+      vm.isOpen = false;
+      vm.checkProjectMember(vm.selectedProject.project_id);
     });
     
     function checkProjectMember(projectId) {
@@ -121,8 +114,9 @@
     }
     
     function getCurrentProjectMemberFailed(data, status) {
-      vm.isProjectMember = false;           
+      vm.isProjectMember = false;  
       console.log('Current user has no member for the project:' + status +  ', location.url:' + $location.url());
+      vm.target = 'repositories';
     }
     
   }
@@ -132,9 +126,10 @@
       restrict: 'E',
       templateUrl: '/static/resources/js/components/details/retrieve-projects.directive.html',
       scope: {
+        'target': '=',
         'isOpen': '=',
         'selectedProject': '=',
-        'publicity': '=',
+        'isPublic': '=',
         'isProjectMember': '='
       },
       link: link,
@@ -147,7 +142,7 @@
     
     function link(scope, element, attrs, ctrl) {
       $(document).on('click', clickHandler);
-    
+      
       function clickHandler(e) {
         $('[data-toggle="popover"]').each(function () {          
           if (!$(this).is(e.target) && 

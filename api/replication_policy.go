@@ -91,15 +91,17 @@ func (pa *RepPolicyAPI) Post() {
 	policy := &models.RepPolicy{}
 	pa.DecodeJSONReqAndValidate(policy)
 
-	po, err := dao.GetRepPolicyByName(policy.Name)
-	if err != nil {
-		log.Errorf("failed to get policy %s: %v", policy.Name, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+	/*
+		po, err := dao.GetRepPolicyByName(policy.Name)
+		if err != nil {
+			log.Errorf("failed to get policy %s: %v", policy.Name, err)
+			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 
-	if po != nil {
-		pa.CustomAbort(http.StatusConflict, "name is already used")
-	}
+		if po != nil {
+			pa.CustomAbort(http.StatusConflict, "name is already used")
+		}
+	*/
 
 	project, err := dao.GetProjectByID(policy.ProjectID)
 	if err != nil {
@@ -169,18 +171,20 @@ func (pa *RepPolicyAPI) Put() {
 	policy.ProjectID = originalPolicy.ProjectID
 	pa.Validate(policy)
 
-	// check duplicate name
-	if policy.Name != originalPolicy.Name {
-		po, err := dao.GetRepPolicyByName(policy.Name)
-		if err != nil {
-			log.Errorf("failed to get policy %s: %v", policy.Name, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+	/*
+		// check duplicate name
+		if policy.Name != originalPolicy.Name {
+			po, err := dao.GetRepPolicyByName(policy.Name)
+			if err != nil {
+				log.Errorf("failed to get policy %s: %v", policy.Name, err)
+				pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
 
-		if po != nil {
-			pa.CustomAbort(http.StatusConflict, "name is already used")
+			if po != nil {
+				pa.CustomAbort(http.StatusConflict, "name is already used")
+			}
 		}
-	}
+	*/
 
 	if policy.TargetID != originalPolicy.TargetID {
 		//target of policy can not be modified when the policy is enabled
@@ -347,5 +351,43 @@ func (pa *RepPolicyAPI) UpdateEnablement() {
 				log.Infof("try to stop replication of %d", id)
 			}
 		}()
+	}
+}
+
+// Delete : policies which are disabled and have no running jobs
+// can be deleted
+func (pa *RepPolicyAPI) Delete() {
+	id := pa.GetIDFromURL()
+	policy, err := dao.GetRepPolicy(id)
+	if err != nil {
+		log.Errorf("failed to get policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if policy == nil || policy.Deleted == 1 {
+		pa.CustomAbort(http.StatusNotFound, "")
+	}
+
+	if policy.Enabled == 1 {
+		pa.CustomAbort(http.StatusPreconditionFailed, "plicy is enabled, can not be deleted")
+	}
+
+	jobs, err := dao.GetRepJobByPolicy(id)
+	if err != nil {
+		log.Errorf("failed to get jobs of policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	for _, job := range jobs {
+		if job.Status == models.JobRunning ||
+			job.Status == models.JobRetrying ||
+			job.Status == models.JobPending {
+			pa.CustomAbort(http.StatusPreconditionFailed, "policy has running/retrying/pending jobs, can not be deleted")
+		}
+	}
+
+	if err = dao.DeleteRepPolicy(id); err != nil {
+		log.Errorf("failed to delete policy %d: %v", id, err)
+		pa.CustomAbort(http.StatusInternalServerError, "")
 	}
 }

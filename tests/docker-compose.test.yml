@@ -1,0 +1,23 @@
+version: '2'
+services:
+  registry:
+    image: library/registry:2.4.0
+    restart: always
+    volumes:
+      - /data/registry:/storage
+      - ./config/registry/:/etc/registry/
+    environment:
+      - GODEBUG=netdns=cgo
+    ports:
+      - 5000:5000
+    command:
+      ["serve", "/etc/docker/registry/config.yml"]
+  mysql:
+    build: ./db/
+    restart: always
+    volumes:
+      - /data/database:/var/lib/mysql
+    env_file:
+      - ./config/db/env
+    ports:
+      - 3306:3306

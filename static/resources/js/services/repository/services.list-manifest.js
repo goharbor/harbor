@@ -25,11 +25,15 @@
   function ListManifestService($http, $log) {
     return ListManifest;
     function ListManifest(repoName, tag) {
-      return $http
-        .get('/api/repositories/manifests', {
-          'params': {
-            'repo_name': repoName,
-            'tag': tag
+      return $.ajax({
+        'url': '/api/repositories/manifests', 
+        'method': 'GET',
+        'dataType': 'json',
+        'async': false,
+        'data': {
+          'repo_name': repoName,
+          'tag': tag,
+          'version': 'v1'
           }
         });
     }

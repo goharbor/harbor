@@ -16,9 +16,9 @@
 package cache
 
 import (
-	"os"
 	"time"
 
+	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/utils/log"
 	"github.com/vmware/harbor/utils/registry"
 	"github.com/vmware/harbor/utils/registry/auth"
@@ -28,9 +28,7 @@ import (
 
 var (
 	// Cache is the global cache in system.
-	Cache    cache.Cache
-	endpoint string
-	username string
+	Cache cache.Cache
 )
 
 const catalogKey string = "catalog"
@@ -41,52 +39,17 @@ func init() {
 	if err != nil {
 		log.Errorf("Failed to initialize cache, error:%v", err)
 	}
-
-	endpoint = os.Getenv("REGISTRY_URL")
-	username = "admin"
 }
 
 // RefreshCatalogCache calls registry's API to get repository list and write it to cache.
 func RefreshCatalogCache() error {
 	log.Debug("refreshing catalog cache...")
 
-	registryClient, err := NewRegistryClient(endpoint, true, username,
-		"registry", "catalog", "*")
+	repos, err := getAllRepositories()
 	if err != nil {
 		return err
 	}
-
-	rs, err := registryClient.Catalog()
-	if err != nil {
-		return err
-	}
-	/*
-		repos := []string{}
-
-		for _, repo := range rs {
-			rc, ok := repositoryClients[repo]
-			if !ok {
-				rc, err = registry.NewRepositoryWithUsername(repo, endpoint, username)
-				if err != nil {
-					log.Errorf("error occurred while initializing repository client used by cache: %s %v", repo, err)
-					continue
-				}
-				repositoryClients[repo] = rc
-			}
-			tags, err := rc.ListTag()
-			if err != nil {
-				log.Errorf("error occurred while list tag for %s: %v", repo, err)
-				continue
-			}
-
-			if len(tags) != 0 {
-				repos = append(repos, repo)
-				log.Debugf("add %s to catalog cache", repo)
-			}
-		}
-	*/
-
-	Cache.Put(catalogKey, rs, 600*time.Second)
+	Cache.Put(catalogKey, repos, 600*time.Second)
 	return nil
 }
 
@@ -106,6 +69,18 @@ func GetRepoFromCache() ([]string, error) {
 		return nil, nil
 	}
 	return result.([]string), nil
+}
+
+func getAllRepositories() ([]string, error) {
+	var repos []string
+	rs, err := dao.GetAllRepositories()
+	if err != nil {
+		return repos, err
+	}
+	for _, e := range rs {
+		repos = append(repos, e.Name)
+	}
+	return repos, nil
 }
 
 // NewRegistryClient ...

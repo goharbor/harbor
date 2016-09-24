@@ -24,13 +24,14 @@
   
   function NavigationDetailsController($window, $location, $scope, getParameterByName) {
     var vm = this;    
+    
      
     vm.projectId = getParameterByName('project_id', $location.absUrl());
 
     $scope.$on('$locationChangeSuccess', function() {
       vm.projectId = getParameterByName('project_id', $location.absUrl());
     });
-   
+    
     vm.path = $location.path();
   }
   
@@ -51,19 +52,23 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-                 
+      
       var visited = ctrl.path.substring(1);  
-      if(visited.indexOf('?') >= 0) {
-        visited = ctrl.url.substring(1, ctrl.url.indexOf('?'));
-      }
       
       if(visited) {
         element.find('a[tag="' + visited + '"]').addClass('active');
       }else{
         element.find('a:first').addClass('active');
       }
-
-      ctrl.target = visited;
+      
+      scope.$watch('vm.target', function(current) {
+        if(current) {
+          ctrl.target = current;
+          element.find('a').removeClass('active');
+          element.find('a[tag="' + ctrl.target + '"]').addClass('active');
+        }
+      });
+      
       element.find('a').on('click', click);
             
       function click(event) {

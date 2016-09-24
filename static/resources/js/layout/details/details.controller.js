@@ -20,17 +20,17 @@
     .module('harbor.details')
     .controller('DetailsController', DetailsController);
 
-  DetailsController.$inject = ['$scope', '$timeout'];
+  DetailsController.$inject = ['$scope', '$timeout', '$window'];
 
-  function DetailsController($scope, $timeout) {
+  function DetailsController($scope, $timeout, $window) {
     var vm = this;
           
-    vm.publicity = false;
+    vm.isPublic = 0;
     vm.isProjectMember = false;
     
     vm.togglePublicity = togglePublicity;
     
-    vm.sectionDefaultHeight = {'min-height': '579px'};
+    vm.sectionHeight = {'min-height': '579px'};
     
     //Message dialog handler for details.
     $scope.$on('modalTitle', function(e, val) {
@@ -68,8 +68,16 @@
       }
     });
     
+    $scope.$on('projectChanged', function(e, val) {
+      if(val) {
+        $scope.$broadcast('retrieveData', true);
+      }
+    });
+     
     function togglePublicity(e) {      
-      vm.publicity = e.publicity;
+      vm.isPublic = e.isPublic;
+      $window.location='/project?is_public=' + vm.isPublic;
+      return;
     }
   }
   
