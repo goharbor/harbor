@@ -114,6 +114,7 @@ var locale_messages = {
   'registration_time': '注册时间',
   'system_management': '系统管理',
   'change_password': '修改密码',
+  'change_user_password': '修改 $0 的密码',
   'search_result': '搜索结果',
   'old_password': '原密码',
   'old_password_is_required': '原密码为必填项。',

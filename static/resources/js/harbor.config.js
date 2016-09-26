@@ -40,7 +40,8 @@
     .service('redirectInterceptor', RedirectInterceptorService)
     .factory('getParameterByName', getParameterByName)
     .filter('dateL', localizeDate)
-    .filter('tr', tr);
+    .filter('tr', tr)
+    .filter('enc', enc);
    
   RedirectInterceptorService.$inject = ['$q', '$window', '$location'];
   
@@ -118,5 +119,15 @@
       return result;
     }
   }  
+    
+  function enc() {
+    return enc;
+    function enc(input) {
+      if(input) {
+        return encodeURIComponent(input);
+      }
+      return '';
+    }
+  }
     
 })();

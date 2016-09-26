@@ -20,9 +20,9 @@
     .module('harbor.layout.change.password')
     .controller('ChangePasswordController', ChangePasswordController);
   
-  ChangePasswordController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
+  ChangePasswordController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser', 'getParameterByName', '$location'];
   
-  function ChangePasswordController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
+  function ChangePasswordController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser, getParameterByName, $location) {
 
     var vm = this;
     vm.isOpen = false;
@@ -35,14 +35,27 @@
     vm.confirm = confirm;
     vm.updatePassword = updatePassword;
     vm.cancel = cancel;
-    
-    $scope.user = currentUser.get();
-    if(!$scope.user) {
-      $window.location.href = '/';
-      return;
+        
+    var userId = getParameterByName('user_id', $location.absUrl());
+    var username = getParameterByName('username', $location.absUrl());
+    var returnUrl = '/admin_option';
+   
+    vm.titleChangePassword = $filter('tr')('change_user_password', [username]);
+        
+    if (!userId) {
+      $scope.user = currentUser.get();
+      if(!$scope.user) {
+        $window.location.href = '/';
+        return;
+      }
+      userId = $scope.user.user_id;
+            
+      vm.titleChangePassword = $filter('tr')('change_password', []);
+      returnUrl = '/dashboard';
     }
-    var userId = $scope.user.user_id;
-
+    
+   
+    
     //Error message dialog handler for account setting.
     $scope.$on('modalTitle', function(e, val) {
       vm.modalTitle = val;
@@ -62,6 +75,18 @@
         $scope.$broadcast('showDialog', true);
       }
     });
+    
+    
+    function getUserSuccess(response) {
+      $scope.user = response.data;
+    }
+    
+    function getUserFailed(response) {
+      vm.modalTitle = $filter('tr')('change_profile', []);
+      vm.modalMessage = $filter('tr')('failed_to_update_user', []);
+      $scope.$broadcast('showDialog', true);
+      console.log('Failed to get user.');
+    }
         
     function reset() {
       $scope.form.$setUntouched();
@@ -71,7 +96,7 @@
     }
      
     function confirm() {     
-      $window.location.href = '/dashboard';
+      $window.location.href = returnUrl;
     }    
                 
     function updatePassword(user) {
@@ -106,7 +131,7 @@
     }
     
     function cancel(form) {
-      $window.location.href = '/dashboard';
+      $window.location.href = returnUrl;
     }
     
   }

@@ -114,6 +114,7 @@ var locale_messages = {
   'registration_time': 'Registration Time',
   'system_management': 'System Management', 
   'change_password': 'Change Password',
+  'change_user_password': 'Change $0 \'s Password',
   'search_result': 'Search Result', 
   'old_password': 'Old Password',
   'old_password_is_required': 'Old password is required.',
