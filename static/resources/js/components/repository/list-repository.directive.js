@@ -144,7 +144,6 @@
     }
   
     function deleteImage() {
-      
       console.log('Delete image, repoName:' + vm.repoName + ', tag:' + vm.tag);
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = true;
       DeleteRepositoryService(vm.repoName, vm.tag)
@@ -154,7 +153,7 @@
     
     function deleteRepositorySuccess(data, status) {
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
-      vm.retrieve();
+      $scope.$broadcast('refreshTags', true);
     }
     
     function deleteRepositoryFailed(data, status) {
