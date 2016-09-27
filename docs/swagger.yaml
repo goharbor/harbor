@@ -60,6 +60,18 @@ paths:
           required: false
           type: integer
           format: int32
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -69,6 +81,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Project'
+          headers:
+            X-Total-Count:
+              description: The total count of projects
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         401:
           description: User need to log in first.
         500:
@@ -104,7 +123,7 @@ paths:
           description: New created project.
           required: true
           schema:
-            $ref: '#/definitions/Project'
+            $ref: '#/definitions/ProjectReq'
       tags:
         - Products
       responses:
@@ -136,11 +155,35 @@ paths:
         200:
           description: Return matched project information.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Project'
+            $ref: '#/definitions/Project'
         401:
           description: User need to log in first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete project by projectID
+      description: |
+        This endpoint is aimed to delete project by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID of project which will be deleted.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project is deleted successfully.
+        400:
+          description: Invalid project id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Project does not exist.
+        412:
+          description: Project contains policies, can not be deleted.
         500:
           description: Internal errors.
   /projects/{project_id}/publicity:
@@ -193,6 +236,18 @@ paths:
           schema:
             $ref: '#/definitions/AccessLogFilter'
           description: Search results of access logs.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -202,6 +257,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AccessLog'
+          headers:
+            X-Total-Count:
+              description: The total count of access logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         400:
           description: Illegal format of provided ID value.
         401:
@@ -252,7 +314,7 @@ paths:
           description: Relevant project ID.
         - name: roles
           in: body
-          description: Role members for adding to relevant project.
+          description: Role members for adding to relevant project. Only one role is supported in the role list.
           schema:
             $ref: '#/definitions/RoleParam'
       tags:
@@ -462,7 +524,7 @@ paths:
           description: Only email, realname and comment can be modified.
           required: true
           schema:
-            $ref: '#/definitions/User' 
+            $ref: '#/definitions/UserProfile' 
       tags:
         - Products
       responses:
@@ -549,6 +611,12 @@ paths:
           format: int
           required: true
           description: Registered user ID
+        - name: has_admin_role
+          in: body
+          description:  Toggle a user to admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/HasAdminRole'
       tags:
         - Products
       responses:
@@ -581,6 +649,18 @@ paths:
           type: string
           required: false
           description: Repo name for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -589,6 +669,13 @@ paths:
           schema:
             type: array
             items:
+              type: string
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
               type: string
         400:
           description: Invalid project ID.
@@ -625,7 +712,7 @@ paths:
         404:
           description: Repository or tag not found.
         403:
-          description: Forbidden.		
+          description: Forbidden.
   /repositories/tags:
     get:
       summary: Get tags of a relevant repository.
@@ -660,6 +747,11 @@ paths:
           type: string
           required: true
           description: Tag name
+        - name: version
+          in: query
+          type: string
+          required: false
+          description: The version of manifest, valid value are "v1" and "v2", default is "v2"
       tags:
         - Products
       responses:
@@ -777,13 +869,32 @@ paths:
           type: string
           required: false
           description: The respond jobs list filter by status.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
       responses:
         200:
           description: Get the required logs successfully.
           schema:
             type: array
             items:
-              $ref: '#/definitions/JobStatus'
+              $ref: '#/definitions/RepPolicy'
+          headers:
+            X-Total-Count:
+              description: The total count of jobs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
         400:
           description: Bad request because of invalid parameters.
         401:
@@ -1106,9 +1217,7 @@ paths:
         200:
           description: Get replication's target successfully.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/RepTarget'
+            $ref: '#/definitions/RepTarget'
         401:
           description: User need to log in first.
         404:
@@ -1197,18 +1306,28 @@ definitions:
   SearchRepository:
     type: object
     properties:
-      repository_name: 
-        type: string
-        description: The name of the repository
-      project_name:
-        type: string
-        description: The name of the project that the repository belongs to
       project_id:
         type: integer
         description: The ID of the project that the repository belongs to
+      project_name:
+        type: string
+        description: The name of the project that the repository belongs to
       project_public:
         type: integer
         description: The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)
+      repository_name:
+        type: string
+        description: The name of the repository
+  ProjectReq:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The name of the project.
+      public:
+        type: integer
+        format: int
+        description: The public status of the project.
   Project:
     type: object
     properties:
@@ -1220,7 +1339,7 @@ definitions:
         type: integer
         format: int32
         description: The owner ID of the project always means the creator of the project.
-      project_name:
+      name:
         type: string
         description: The name of the project.
       creation_time:
@@ -1233,18 +1352,14 @@ definitions:
         type: integer
         format: int32
         description: A deletion mark of the project (1 means it's deleted, 0 is not)
-      user_id:
-        type: integer
-        format: int32
-        description: A relation field to the user table.
       owner_name:
         type: string
-        description: The owner name of the project. 
+        description: The owner name of the project.
       public:
-        type: boolean
-        format: boolean
+        type: integer
+        format: int
         description: The public status of the project.
-      togglable:
+      Togglable:
         type: boolean
         description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
       current_user_role_id:
@@ -1256,50 +1371,48 @@ definitions:
   Repository:
     type: object
     properties:
-      id:
+      manifest:
+        type: object
+        description: The detail of manifest.
+      config:
         type: string
-        description: Repository ID
-      parent:
-        type: string
-        description: Parent of the image.
-      created:
-        type: string
-        description: Repository create time.
-      duration_days:
-        type: string
-        description: Duration days of the image.
-      author:
-        type: string
-        description: Author of the image.
-      architecture:
-        type: string
-        description: Architecture of the image.
-      docker_version:
-        type: string
-        description: Docker version of the image.
-      os:
-        type: string
-        description: OS of the image.
+        description: The config of the repository.
   User:
     type: object
     properties:
       user_id:
         type: integer
-        format: int32
+        format: int
         description: The ID of the user.
       username:
         type: string
       email:
         type: string
-      password: 
+      password:
         type: string
-      realname: 
+      realname:
         type: string
       comment:
         type: string
       deleted:
         type: integer
         format: int32
+      role_name:
+        type: string
+      role_id:
+        type: integer
+        format: int
+      has_admin_role:
+        type: integer
+        format: int
+      reset_uuid:
+        type: string
+      Salt:
+        type: string
+      creation_time:
+        type: string
+      update_time:
+        type: string
   Password:
     type: object
     properties:
@@ -1308,7 +1421,7 @@ definitions:
         description: The user's existing password.
       new_password:
         type: string
-        description: New password for marking as to be updated.	
+        description: New password for marking as to be updated.
   AccessLogFilter:
     type: object
     properties:
@@ -1357,6 +1470,8 @@ definitions:
       role_name:
         type: string
         description: Name the the role.
+      role_mask:
+        type: string
   RoleParam:
     type: object
     properties:
@@ -1375,7 +1490,7 @@ definitions:
       repo_name: 
         type: string
         description: The name of the repo 
-      access_count: 
+      count:
         type: integer
         format: int
         description: The access count of the repo
@@ -1461,9 +1576,6 @@ definitions:
         type: integer
         format: int64
         description: The target ID.
-      target_name: 
-        type: string
-        description: The target name.
       name: 
         type: string
         description: The policy name.
@@ -1489,6 +1601,8 @@ definitions:
       error_job_count:
         format: int
         description: The error job count number for the policy.
+      deleted:
+        type: integer
   RepPolicyPost:
     type: object
     properties:
@@ -1574,3 +1688,21 @@ definitions:
       password: 
         type: string
         description: The target server password.
+  HasAdminRole:
+    type: object
+    properties:
+      has_admin_role: 
+        type: integer
+        description: 1-has admin, 0-not.
+  UserProfile:
+    type: object
+    properties:
+      email:
+        type: string
+        description: The new email.
+      realname:
+        type: string
+        description: The new realname.
+      comment:
+        type: string
+        description: The new comment.

@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/dao"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/service/cache"
+	"github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 
 	"github.com/astaxie/beego"
@@ -55,11 +56,7 @@ func (n *NotificationHandler) Post() {
 	for _, event := range events {
 		repository := event.Target.Repository
 
-		project := ""
-		if strings.Contains(repository, "/") {
-			project = repository[0:strings.LastIndex(repository, "/")]
-		}
-
+		project, _ := utils.ParseRepository(repository)
 		tag := event.Target.Tag
 		action := event.Action
 
@@ -80,12 +77,32 @@ func (n *NotificationHandler) Post() {
 				}
 			}()
 
+			go func() {
+				exist := dao.RepositoryExists(repository)
+				if exist {
+					return
+				}
+				log.Debugf("Add repository %s into DB.", repository)
+				repoRecord := models.RepoRecord{Name: repository, OwnerName: user, ProjectName: project}
+				if err := dao.AddRepository(repoRecord); err != nil {
+					log.Errorf("Error happens when adding repository: %v", err)
+				}
+			}()
+
 			operation := ""
 			if action == "push" {
 				operation = models.RepOpTransfer
 			}
 
 			go api.TriggerReplicationByRepository(repository, []string{tag}, operation)
+		}
+		if action == "pull" {
+			go func() {
+				log.Debugf("Increase the repository %s pull count.", repository)
+				if err := dao.IncreasePullCount(repository); err != nil {
+					log.Errorf("Error happens when increasing pull count: %v", repository)
+				}
+			}()
 		}
 	}
 }

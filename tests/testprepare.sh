@@ -1,10 +1,9 @@
-docker pull hello-world
-docker pull docker
-docker login -u admin -p Harbor12345 127.0.0.1
+#!/bin/bash
 
-docker tag hello-world 127.0.0.1/library/hello-world
-docker push 127.0.0.1/library/hello-world
+cp tests/docker-compose.test.yml Deploy/.
 
-docker tag docker 127.0.0.1/library/docker
-docker push 127.0.0.1/library/docker
+mkdir /etc/ui
+cp Deploy/config/ui/private_key.pem /etc/ui/.
 
+mkdir conf
+cp Deploy/config/ui/app.conf conf/.

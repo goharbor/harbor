@@ -20,9 +20,9 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout'];
+  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout', 'trFilter', '$filter'];
 
-  function OptionalMenuController($window, I18nService, LogOutService, currentUser, $timeout) {
+  function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter) {
     var vm = this;
     
     vm.currentLanguage = I18nService().getCurrentLanguage();
@@ -36,6 +36,7 @@
     vm.user = currentUser.get();
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
+    vm.about = about;
         
     function setLanguage(language) {
       I18nService().setCurrentLanguage(language);
@@ -54,13 +55,25 @@
     function logOutFailed(data, status) {
       console.log('Failed to log out:' + data);
     }
+    function about() {
+      $scope.$emit('modalTitle', $filter('tr')('about_harbor'));
+      $scope.$emit('modalMessage', $filter('tr')('current_version', [vm.version || 'Unknown']));
+      var raiseInfo = {
+        'confirmOnly': true,
+        'contentType': 'text/html',
+        'action': function() {}
+      };
+      $scope.$emit('raiseInfo', raiseInfo);
+    }
   }
   
   function optionalMenu() {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/optional_menu?timestamp=' + new Date().getTime(),
-      'scope': true,
+      'scope': {
+        'version': '@'
+      },
       'controller': OptionalMenuController,
       'controllerAs': 'vm',
       'bindToController': true

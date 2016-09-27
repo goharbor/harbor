@@ -111,7 +111,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 // ToggleUserAdminRole gives a user admin role.
 func ToggleUserAdminRole(userID, hasAdmin int) error {
 	o := GetOrmer()
-        queryParams := make([]interface{}, 1)
+	queryParams := make([]interface{}, 1)
 	sql := `update user set sysadmin_flag = ? where user_id = ?`
 	queryParams = append(queryParams, hasAdmin)
 	queryParams = append(queryParams, userID)
@@ -185,37 +185,24 @@ func UpdateUserResetUUID(u models.User) error {
 func CheckUserPassword(query models.User) (*models.User, error) {
 
 	currentUser, err := GetUser(query)
-
 	if err != nil {
 		return nil, err
 	}
-
 	if currentUser == nil {
 		return nil, nil
 	}
 
-	sql := `select user_id, username, salt from user where deleted = 0`
-
+	sql := `select user_id, username, salt from user where deleted = 0 and username = ? and password = ?`
 	queryParam := make([]interface{}, 1)
-
-	if query.UserID != 0 {
-		sql += ` and password = ? and user_id = ?`
-		queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
-		queryParam = append(queryParam, query.UserID)
-	} else {
-		sql += ` and username = ? and password = ?`
-		queryParam = append(queryParam, currentUser.Username)
-		queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
-	}
+	queryParam = append(queryParam, currentUser.Username)
+	queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
 	o := GetOrmer()
 	var user []models.User
 
 	n, err := o.Raw(sql, queryParam).QueryRows(&user)
-
 	if err != nil {
 		return nil, err
 	}
-
 	if n == 0 {
 		log.Warning("User principal does not match password. Current:", currentUser)
 		return nil, nil
@@ -227,7 +214,10 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 // DeleteUser ...
 func DeleteUser(userID int) error {
 	o := GetOrmer()
-	_, err := o.Raw(`update user set deleted = 1 where user_id = ?`, userID).Exec()
+	_, err := o.Raw(`update user 
+		set deleted = 1, username = concat(username, "#", user_id),
+			email = concat(email, "#", user_id)
+		where user_id = ?`, userID).Exec()
 	return err
 }
 

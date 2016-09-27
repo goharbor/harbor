@@ -20,19 +20,6 @@ import (
 	"strings"
 )
 
-// Repository holds information about repository
-type Repository struct {
-	Name string
-}
-
-// GetProject parses the repository and return the name of project.
-func (r *Repository) GetProject() string {
-	if !strings.ContainsRune(r.Name, '/') {
-		return ""
-	}
-	return r.Name[0:strings.LastIndex(r.Name, "/")]
-}
-
 // FormatEndpoint formats endpoint
 func FormatEndpoint(endpoint string) string {
 	endpoint = strings.TrimSpace(endpoint)
@@ -54,4 +41,18 @@ func ParseEndpoint(endpoint string) (*url.URL, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+// ParseRepository splits a repository into two parts: project and rest
+func ParseRepository(repository string) (project, rest string) {
+	repository = strings.TrimLeft(repository, "/")
+	repository = strings.TrimRight(repository, "/")
+	if !strings.ContainsRune(repository, '/') {
+		rest = repository
+		return
+	}
+	index := strings.LastIndex(repository, "/")
+	project = repository[0:index]
+	rest = repository[index+1:]
+	return
 }

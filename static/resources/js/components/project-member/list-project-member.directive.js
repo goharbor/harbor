@@ -40,10 +40,13 @@
     vm.projectId = getParameterByName('project_id', $location.absUrl());
     vm.retrieve();
     
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.username = '';
-      vm.retrieve();
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        console.log('received retrieve data:' + val);
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.username = '';
+        vm.retrieve();
+      }
     });
               
     function search(e) {
@@ -91,8 +94,7 @@
            
     function getProjectMemberFailed(response) {
       console.log('Failed to get project members:' + response);
-      vm.projectMembers = [];
-      vm.target = 'repositories';    
+      vm.projectMembers = [];    
       $location.url('repositories').search('project_id', vm.projectId);
     }
     
@@ -103,8 +105,7 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project-member/list-project-member.directive.html',
       'scope': {
-        'sectionHeight': '=',
-        'target': '='
+        'sectionHeight': '='
       },
       'link': link,
       'controller': ListProjectMemberController,

@@ -17,6 +17,7 @@ package log
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Level ...
@@ -56,7 +57,7 @@ func (l Level) string() (lvl string) {
 
 func parseLevel(lvl string) (level Level, err error) {
 
-	switch lvl {
+	switch strings.ToLower(lvl) {
 	case "debug":
 		level = DebugLevel
 	case "info":

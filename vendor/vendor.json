@@ -39,6 +39,14 @@
 			"versionExact": "v1.6.1"
 		},
 		{
+			"checksumSHA1": "sHidosSzJBx644nr3tyeaqsCrSc=",
+			"path": "github.com/astaxie/beego/cache/redis",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
 			"checksumSHA1": "raJhf500jq7AzIGIclRQBo0B5+s=",
 			"path": "github.com/astaxie/beego/config",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
@@ -81,6 +89,14 @@
 		{
 			"checksumSHA1": "Zeh58fFq41Ym/YNH47O6gdm1Mh8=",
 			"path": "github.com/astaxie/beego/session",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "+W/P2deANUhWrFkdP9m4SLJ7620=",
+			"path": "github.com/astaxie/beego/session/redis",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
 			"revisionTime": "2016-03-11T03:35:24Z",
 			"version": "v1.6.1",

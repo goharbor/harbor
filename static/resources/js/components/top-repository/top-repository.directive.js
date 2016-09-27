@@ -28,7 +28,7 @@
     ListTopRepositoryService(5)
       .success(listTopRepositorySuccess)
       .error(listTopRepositoryFailed);
-      
+
     function listTopRepositorySuccess(data) {
       vm.top10Repositories = data || [];
     }
@@ -39,6 +39,7 @@
       $scope.$emit('raiseError', true);
       console.log('Failed to get top repo:' + data);
     }
+        
   }
   
   function topRepository() {

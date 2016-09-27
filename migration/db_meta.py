@@ -125,3 +125,18 @@ class ReplicationJob(Base):
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     
     __table_args__ = (sa.Index('policy', "policy_id"),)
+
+class Repository(Base):
+    __tablename__ = "repository"
+
+    repository_id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(255), nullable=False, unique=True)
+    project_id = sa.Column(sa.Integer, nullable=False)
+    owner_id = sa.Column(sa.Integer, nullable=False)
+    description = sa.Column(sa.Text)
+    pull_count = sa.Column(sa.Integer,server_default=sa.text("'0'"), nullable=False)
+    star_count = sa.Column(sa.Integer,server_default=sa.text("'0'"), nullable=False)
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+

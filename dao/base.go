@@ -16,6 +16,7 @@
 package dao
 
 import (
+	"fmt"
 	"net"
 
 	"os"
@@ -44,7 +45,7 @@ func GenerateRandomString() (string, error) {
 
 //InitDB initializes the database
 func InitDB() {
-	//	orm.Debug = true
+	// orm.Debug = true
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	addr := os.Getenv("MYSQL_HOST")
 	port := os.Getenv("MYSQL_PORT")
@@ -88,4 +89,8 @@ func GetOrmer() orm.Ormer {
 		globalOrm = orm.NewOrm()
 	})
 	return globalOrm
+}
+
+func paginateForRawSQL(sql string, limit, offset int64) string {
+	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }

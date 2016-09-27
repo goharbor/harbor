@@ -142,13 +142,22 @@ func (pma *ProjectMemberAPI) Post() {
 		return
 	}
 
-	for _, rid := range req.Roles {
-		err = dao.AddProjectMember(projectID, userID, int(rid))
-		if err != nil {
-			log.Errorf("Failed to update DB to add project user role, project id: %d, user id: %d, role id: %d", projectID, userID, rid)
-			pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
-			return
-		}
+	if len(req.Roles) <= 0 || len(req.Roles) > 1 {
+		pma.CustomAbort(http.StatusBadRequest, "only one role is supported")
+	}
+
+	rid := req.Roles[0]
+	if !(rid == models.PROJECTADMIN ||
+		rid == models.DEVELOPER ||
+		rid == models.GUEST) {
+		pma.CustomAbort(http.StatusBadRequest, "invalid role")
+	}
+
+	err = dao.AddProjectMember(projectID, userID, rid)
+	if err != nil {
+		log.Errorf("Failed to update DB to add project user role, project id: %d, user id: %d, role id: %d", projectID, userID, rid)
+		pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
+		return
 	}
 }
 

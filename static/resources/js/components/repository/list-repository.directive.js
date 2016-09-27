@@ -31,7 +31,7 @@
   
     vm.filterInput = '';
     vm.toggleInProgress = [];
-    
+       
     var hashValue = $location.hash();
     if(hashValue) {
       var slashIndex = hashValue.indexOf('/');
@@ -41,23 +41,34 @@
         vm.filterInput = hashValue;
       }
     }
-        
+    vm.page = 1;
+    vm.pageSize = 15;    
+    
     vm.retrieve = retrieve;
+    vm.searchRepo = searchRepo;
     vm.tagCount = {};
     
     vm.projectId = getParameterByName('project_id', $location.absUrl());
-    vm.retrieve(); 
         
-    $scope.$on('$locationChangeSuccess', function() {
-      vm.projectId = getParameterByName('project_id', $location.absUrl());
-      vm.filterInput = '';
-      vm.retrieve();    
+    $scope.$on('retrieveData', function(e, val) {
+      if(val) {
+        vm.projectId = getParameterByName('project_id', $location.absUrl());
+        vm.filterInput = '';
+        vm.retrieve();        
+      }
     });
-    
+     
 
     $scope.$watch('vm.repositories', function(current) {
       if(current) {
         vm.repositories = current || [];
+      }
+    });
+        
+    $scope.$watch('vm.page', function(current) {
+      if(current) {
+        vm.page = current;
+        vm.retrieve();
       }
     });
     
@@ -76,26 +87,31 @@
     $scope.$on('tags', function(e, val) {
       vm.tags = val;
     });
-                
+            
     vm.deleteByRepo = deleteByRepo;
     vm.deleteByTag = deleteByTag;
     vm.deleteImage =  deleteImage;
                 
     function retrieve(){
-      ListRepositoryService(vm.projectId, vm.filterInput)
-        .success(getRepositoryComplete)
-        .error(getRepositoryFailed);
+      console.log('retrieve repositories, project_id:' + vm.projectId);
+      ListRepositoryService(vm.projectId, vm.filterInput, vm.page, vm.pageSize)
+        .then(getRepositoryComplete, getRepositoryFailed);
     }
    
-    function getRepositoryComplete(data, status) {
-      vm.repositories = data || [];
-      $scope.$broadcast('refreshTags', true);
+    function getRepositoryComplete(response) {
+      vm.repositories = response.data || [];
+      vm.totalCount = response.headers('X-Total-Count');
     }
     
     function getRepositoryFailed(response) {
       console.log('Failed to list repositories:' + response);      
     }
    
+    function searchRepo() {
+      $scope.$broadcast('refreshTags', true);
+      vm.retrieve();
+    }
+  
     function deleteByRepo(repoName) { 
       vm.repoName = repoName;
       vm.tag = '';
