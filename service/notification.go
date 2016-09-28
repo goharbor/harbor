@@ -72,12 +72,6 @@ func (n *NotificationHandler) Post() {
 		}()
 		if action == "push" {
 			go func() {
-				if err := cache.RefreshCatalogCache(); err != nil {
-					log.Errorf("failed to refresh cache: %v", err)
-				}
-			}()
-
-			go func() {
 				exist := dao.RepositoryExists(repository)
 				if exist {
 					return
@@ -87,14 +81,11 @@ func (n *NotificationHandler) Post() {
 				if err := dao.AddRepository(repoRecord); err != nil {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}
+				if err := cache.RefreshCatalogCache(); err != nil {
+					log.Errorf("failed to refresh cache: %v", err)
+				}
 			}()
-
-			operation := ""
-			if action == "push" {
-				operation = models.RepOpTransfer
-			}
-
-			go api.TriggerReplicationByRepository(repository, []string{tag}, operation)
+			go api.TriggerReplicationByRepository(repository, []string{tag}, models.RepOpTransfer)
 		}
 		if action == "pull" {
 			go func() {
