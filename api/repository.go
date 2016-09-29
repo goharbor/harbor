@@ -241,9 +241,9 @@ func (ra *RepositoryAPI) Put() {
 	description := ra.GetString("description")
 	repo.Description = description
 
-	if err = dao.UpdateRepository(repo); err != nil {
+	if err = dao.UpdateRepository(*repo); err != nil {
 		log.Errorf("failed to update repository %s: %v", repoName, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 }
 
