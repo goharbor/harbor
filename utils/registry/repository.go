@@ -17,7 +17,6 @@ package registry
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,6 +25,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -61,16 +61,11 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 
 // NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
 func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: insecure,
-		},
-	}
 
-	transport := NewTransport(t, modifiers...)
-
+	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
 	return NewRepository(name, endpoint, &http.Client{
 		Transport: transport,
+		Timeout:   30 * time.Second,
 	})
 }
 
