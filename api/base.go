@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	defaultPageSize int64 = 10
+	defaultPageSize int64 = 100
 	maxPageSize     int64 = 100
 )
 
