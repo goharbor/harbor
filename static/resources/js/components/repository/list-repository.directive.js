@@ -154,7 +154,7 @@
     
     function deleteRepositorySuccess(data, status) {
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
-      $scope.$broadcast('refreshTags', true);
+      vm.retrieve();
     }
     
     function deleteRepositoryFailed(data, status) {

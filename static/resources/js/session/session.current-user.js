@@ -32,14 +32,7 @@
         
     function getCurrentUserComplete(response) {
       if(angular.isDefined(response)) {
-        var user = response.data;
-        currentUser.set({
-          'user_id': user.user_id,
-          'username': user.username,
-          'role_name': user.role_name,
-          'email': user.email,
-          'realname': user.realname,
-          'comment': user.comment});  
+        currentUser.set(response.data);  
         if(location.pathname === '/') {
           $window.location.href = '/dashboard';
         }
