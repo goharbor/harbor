@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/utils"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
@@ -29,6 +30,29 @@ import (
 type Registry struct {
 	Endpoint *url.URL
 	client   *http.Client
+}
+
+var secureHTTPTransport, insecureHTTPTransport *http.Transport
+
+func init() {
+	secureHTTPTransport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+		},
+	}
+	insecureHTTPTransport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+}
+
+// GetHTTPTransport returns HttpTransport based on insecure configuration
+func GetHTTPTransport(insecure bool) *http.Transport {
+	if insecure {
+		return insecureHTTPTransport
+	}
+	return secureHTTPTransport
 }
 
 // NewRegistry returns an instance of registry
@@ -48,16 +72,12 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 
 // NewRegistryWithModifiers returns an instance of Registry according to the modifiers
 func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modifier) (*Registry, error) {
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: insecure,
-		},
-	}
 
-	transport := NewTransport(t, modifiers...)
+	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
 
 	return NewRegistry(endpoint, &http.Client{
 		Transport: transport,
+		Timeout:   30 * time.Second,
 	})
 }
 

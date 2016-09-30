@@ -95,8 +95,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 }
 
 // FilterAccess modify the action list in access based on permission
-// determine if the request needs to be authenticated.
-func FilterAccess(username string, authenticated bool, a *token.ResourceActions) {
+func FilterAccess(username string, a *token.ResourceActions) {
 
 	if a.Type == "registry" && a.Name == "catalog" {
 		log.Infof("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
@@ -109,7 +108,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 		if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
 			projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
 			var permission string
-			if authenticated {
+			if len(username) > 0 {
 				isAdmin, err := dao.IsAdminRole(username)
 				if err != nil {
 					log.Errorf("Error occurred in IsAdminRole: %v", err)
@@ -152,7 +151,7 @@ func FilterAccess(username string, authenticated bool, a *token.ResourceActions)
 func GenTokenForUI(username string, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	access := GetResourceActions(scopes)
 	for _, a := range access {
-		FilterAccess(username, true, a)
+		FilterAccess(username, a)
 	}
 	return MakeToken(username, service, access)
 }

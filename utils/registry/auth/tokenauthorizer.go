@@ -16,7 +16,6 @@
 package auth
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -29,6 +28,7 @@ import (
 
 	token_util "github.com/vmware/harbor/service/token"
 	"github.com/vmware/harbor/utils/log"
+	"github.com/vmware/harbor/utils/registry"
 	registry_error "github.com/vmware/harbor/utils/registry/error"
 )
 
@@ -140,15 +140,10 @@ type standardTokenAuthorizer struct {
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
 func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType, scopeName string, scopeActions ...string) Authorizer {
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: insecure,
-		},
-	}
-
 	authorizer := &standardTokenAuthorizer{
 		client: &http.Client{
-			Transport: t,
+			Transport: registry.GetHTTPTransport(insecure),
+			Timeout:   30 * time.Second,
 		},
 		credential: credential,
 	}

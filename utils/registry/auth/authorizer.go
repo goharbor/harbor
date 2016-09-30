@@ -16,12 +16,13 @@
 package auth
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
+	"time"
 
 	au "github.com/docker/distribution/registry/client/auth"
 	"github.com/vmware/harbor/utils"
+	"github.com/vmware/harbor/utils/registry"
 )
 
 // Authorizer authorizes requests according to the schema
@@ -44,11 +45,8 @@ func NewAuthorizerStore(endpoint string, insecure bool, authorizers ...Authorize
 	endpoint = utils.FormatEndpoint(endpoint)
 
 	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: insecure,
-			},
-		},
+		Transport: registry.GetHTTPTransport(insecure),
+		Timeout:   30 * time.Second,
 	}
 
 	resp, err := client.Get(buildPingURL(endpoint))

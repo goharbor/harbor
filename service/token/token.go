@@ -38,7 +38,7 @@ type Handler struct {
 // checkes the permission agains local DB and generates jwt token.
 func (h *Handler) Get() {
 
-	var username, password string
+	var uid, password, username string
 	request := h.Ctx.Request
 	service := h.GetString("service")
 	scopes := h.GetStrings("scope")
@@ -49,15 +49,20 @@ func (h *Handler) Get() {
 		log.Debugf("Will grant all access as this request is from job service with legal secret.")
 		username = "job-service-user"
 	} else {
-		username, password, _ = request.BasicAuth()
-		authenticated := authenticate(username, password)
-
-		if len(scopes) == 0 && !authenticated {
-			log.Info("login request with invalid credentials")
-			h.CustomAbort(http.StatusUnauthorized, "")
+		uid, password, _ = request.BasicAuth()
+		log.Debugf("uid for logging: %s", uid)
+		user := authenticate(uid, password)
+		if user == nil {
+			log.Warningf("login request with invalid credentials in token service, uid: %s", uid)
+			if len(scopes) == 0 {
+				h.CustomAbort(http.StatusUnauthorized, "")
+			}
+		} else {
+			username = user.Username
 		}
+		log.Debugf("username for filtering access: %s.", username)
 		for _, a := range access {
-			FilterAccess(username, authenticated, a)
+			FilterAccess(username, a)
 		}
 	}
 	h.serveToken(username, service, access)
@@ -80,18 +85,14 @@ func (h *Handler) serveToken(username, service string, access []*token.ResourceA
 	h.ServeJSON()
 }
 
-func authenticate(principal, password string) bool {
+func authenticate(principal, password string) *models.User {
 	user, err := auth.Login(models.AuthModel{
 		Principal: principal,
 		Password:  password,
 	})
 	if err != nil {
 		log.Errorf("Error occurred in UserLogin: %v", err)
-		return false
+		return nil
 	}
-	if user == nil {
-		return false
-	}
-
-	return true
+	return user
 }
