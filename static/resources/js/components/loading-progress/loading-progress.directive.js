@@ -41,8 +41,6 @@
       
       var hideTarget = convertToBoolean(scope.hideTarget);
       
-      console.log('loading-progress, toggleInProgress:' + scope.toggleInProgress + ', hideTarget:' + hideTarget);
-      
       var pristine = element.html();
                  
       scope.$watch('toggleInProgress', function(current) {
