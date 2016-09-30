@@ -31,14 +31,20 @@
     vm.target = $location.path().substr(1) || 'repositories';
     
     vm.isPublic = Number(getParameterByName('is_public', $location.absUrl()));
+   
+    var DEFAULT_PAGE = 1;
+    var DEFAULT_PAGE_SIZE = 15;
       
+    vm.page = Number(getParameterByName('page', $location.absUrl()) || DEFAULT_PAGE);
+    vm.pageSize = Number(getParameterByName('page_size', $location.absUrl()) || DEFAULT_PAGE_SIZE);
+    
     vm.retrieve = retrieve;
     vm.filterInput = '';
     vm.selectItem = selectItem;  
     vm.checkProjectMember = checkProjectMember;  
                      
     function retrieve() {
-      ListProjectService(vm.projectName, vm.isPublic)
+      ListProjectService(vm.projectName, vm.isPublic, vm.page, vm.pageSize)
         .success(getProjectSuccess)
         .error(getProjectFailed);
     }
@@ -58,7 +64,6 @@
     
     function getProjectSuccess(data, status) {
       vm.projects = data || [];
-            
       if(vm.projects.length == 0 && vm.isPublic === 0){
         $window.location.href = '/project';  
       }
