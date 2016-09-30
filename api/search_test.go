@@ -34,16 +34,24 @@ func TestSearch(t *testing.T) {
 	}
 	ip := string(out)
 	ip = ip[0 : len(ip)-1]
-	command1 := `docker pull busybox:latest`
-	command2 := `docker tag busybox:latest ` + ip + `:5000/library/busybox:latest`
-	command3 := `docker push ` + ip + `:5000/library/busybox:latest`
-	command = command1 + ";" + command2 + ";" + command3
+	command1 := `docker login -u admin -p Harbor12345 ` + ip + `:5000`
+	command2 := `docker pull busybox:latest`
+	command3 := `docker tag busybox:latest ` + ip + `:5000/library/busybox:latest`
+	command4 := `docker push ` + ip + `:5000/library/busybox:latest`
+	command = command1 + ";" + command2 + ";" + command3 + ";" + command4
 	cmd = exec.Command("/bin/bash", "-c", command)
-	err = cmd.Run()
+	out, err = cmd.Output()
 	if err != nil {
 		t.Error("Error while push image ", err.Error())
 		t.Log(err)
 	}
+	fmt.Println(string(out))
+	if err := SyncRegistry(); err != nil {
+		t.Fatalf("failed to sync repositories from registry: %v", err)
+	}
+	//	if err := RefreshCatalogCache(); err != nil {
+	//		t.Fatalf("failed to get repositories from db")
+	//	}
 	result, err = apiTest.SearchGet("busybox")
 	if err != nil {
 		t.Error("Error while search project or repository", err.Error())
