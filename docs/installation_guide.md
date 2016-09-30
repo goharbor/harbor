@@ -5,7 +5,7 @@ Harbor can be installed by one of two installers:
 
 - **Offline installer:** Use this installer when the host does not have Internet connection. The installer contains pre-built images so its size is larger.
 
-Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and confiugure Harbor.
+Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and configure Harbor.
 
 In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Deploy Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
@@ -140,7 +140,7 @@ Starting harbor_proxy_1
 Starting harbor_jobservice_1
 ```  
 
-To change Harbor's confiugration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
+To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
 ```
 $ sudo docker-compose down
 
