@@ -288,8 +288,9 @@ func SyncRegistry() error {
 			repoRecord := models.RepoRecord{Name: repoToAdd, OwnerName: user, ProjectName: project, PullCount: pullCount}
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
+			} else {
+				log.Debugf("Add repository: %s success.", repoToAdd)
 			}
-			log.Debugf("Add repository: %s success.", repoToAdd)
 		}
 	}
 
@@ -298,8 +299,9 @@ func SyncRegistry() error {
 		for _, repoToDel := range reposToDel {
 			if err := dao.DeleteRepository(repoToDel); err != nil {
 				log.Errorf("Error happens when deleting the repository: %v", err)
+			} else {
+				log.Debugf("Delete repository: %s success.", repoToDel)
 			}
-			log.Debugf("Delete repository: %s success.", repoToDel)
 		}
 	}
 
