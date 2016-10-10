@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/job/config"
 	"github.com/vmware/harbor/job/utils"
 	"github.com/vmware/harbor/models"
+	u "github.com/vmware/harbor/utils"
 	"github.com/vmware/harbor/utils/log"
 )
 
@@ -176,46 +177,46 @@ func (rj *ReplicationJob) GetLog() {
 
 // calls the api from UI to get repo list
 func getRepoList(projectID int64) ([]string, error) {
-	/*
-		uiUser := os.Getenv("UI_USR")
-		if len(uiUser) == 0 {
-			uiUser = "admin"
-		}
-		uiPwd := os.Getenv("UI_PWD")
-		if len(uiPwd) == 0 {
-			uiPwd = "Harbor12345"
-		}
-	*/
-	uiURL := config.LocalUIURL()
+	repositories := []string{}
+
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", uiURL+"/api/repositories?project_id="+strconv.Itoa(int(projectID)), nil)
-	if err != nil {
-		log.Errorf("Error when creating request: %v", err)
-		return nil, err
-	}
-	//req.SetBasicAuth(uiUser, uiPwd)
-	req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.UISecret()})
-	//dump, err := httputil.DumpRequest(req, true)
-	//log.Debugf("req: %q", dump)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Errorf("Error when calling UI api to get repositories, error: %v", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("Unexpected status code: %d", resp.StatusCode)
-		dump, _ := httputil.DumpResponse(resp, true)
-		log.Debugf("response: %q", dump)
-		return nil, fmt.Errorf("Unexpected status code when getting repository list: %d", resp.StatusCode)
+	uiURL := config.LocalUIURL()
+	next := "/api/repositories?project_id=" + strconv.Itoa(int(projectID))
+	for len(next) != 0 {
+		req, err := http.NewRequest("GET", uiURL+next, nil)
+		if err != nil {
+			return repositories, err
+		}
+
+		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.UISecret()})
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return repositories, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			dump, _ := httputil.DumpResponse(resp, true)
+			log.Debugf("response: %q", dump)
+			return repositories, fmt.Errorf("Unexpected status code when getting repository list: %d", resp.StatusCode)
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return repositories, err
+		}
+
+		var list []string
+		if err = json.Unmarshal(body, &list); err != nil {
+			return repositories, err
+		}
+
+		repositories = append(repositories, list...)
+
+		links := u.ParseLink(resp.Header.Get(http.CanonicalHeaderKey("link")))
+		next = links.Next()
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Errorf("Failed to read the response body, error: %v", err)
-		return nil, err
-	}
-	var repoList []string
-	err = json.Unmarshal(body, &repoList)
-	return repoList, err
+	return repositories, nil
 }
