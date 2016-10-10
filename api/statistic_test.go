@@ -53,11 +53,11 @@ func TestStatisticGet(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(myProCount+1, result.MyProjectCount, "MyProjectCount should be equal")
-		assert.Equal(int32(2), result.MyRepoCount, "MyRepoCount should be equal")
+		assert.Equal(int32(3), result.MyRepoCount, "MyRepoCount should be equal")
 		assert.Equal(pubProCount+1, result.PublicProjectCount, "PublicProjectCount should be equal")
-		assert.Equal(int32(2), result.PublicRepoCount, "PublicRepoCount should be equal")
+		assert.Equal(int32(3), result.PublicRepoCount, "PublicRepoCount should be equal")
 		assert.Equal(totalProCount+1, result.TotalProjectCount, "TotalProCount should be equal")
-		assert.Equal(int32(2), result.TotalRepoCount, "TotalRepoCount should be equal")
+		assert.Equal(int32(3), result.TotalRepoCount, "TotalRepoCount should be equal")
 
 	}
 
