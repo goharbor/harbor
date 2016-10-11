@@ -5,13 +5,17 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/vmware/harbor/dao"
-	"github.com/vmware/harbor/models"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"io/ioutil"
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
+
+	"github.com/vmware/harbor/dao"
+	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/tests/apitests/apilib"
+	"github.com/vmware/harbor/utils"
+	//	"strconv"
+	//	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -52,7 +56,7 @@ type usrInfo struct {
 }
 
 func init() {
-	dao.InitDB()
+	dao.InitDatabase()
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
@@ -835,12 +839,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("User id: %d does not exist.", userID)
 	}
 	if user.Salt == "" {
-		salt, err := dao.GenerateRandomString()
-		if err != nil {
-			return fmt.Errorf("Failed to generate salt for encrypting password, %v", err)
-		}
-
-		user.Salt = salt
+		user.Salt = utils.GenerateRandomString()
 		user.Password = password
 		err = dao.ChangeUserPassword(*user)
 		if err != nil {

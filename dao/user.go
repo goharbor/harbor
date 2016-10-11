@@ -18,6 +18,7 @@ package dao
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils"
@@ -214,10 +215,20 @@ func CheckUserPassword(query models.User) (*models.User, error) {
 // DeleteUser ...
 func DeleteUser(userID int) error {
 	o := GetOrmer()
-	_, err := o.Raw(`update user 
-		set deleted = 1, username = concat(username, "#", user_id),
-			email = concat(email, "#", user_id)
-		where user_id = ?`, userID).Exec()
+
+	user, err := GetUser(models.User{
+		UserID: userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	name := fmt.Sprintf("%s#%d", user.Username, user.UserID)
+	email := fmt.Sprintf("%s#%d", user.Email, user.UserID)
+
+	_, err = o.Raw(`update user 
+		set deleted = 1, username = ?, email = ?
+		where user_id = ?`, name, email, userID).Exec()
 	return err
 }
 

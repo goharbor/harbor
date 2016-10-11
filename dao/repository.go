@@ -17,6 +17,7 @@ package dao
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
@@ -27,9 +28,10 @@ func AddRepository(repo models.RepoRecord) error {
 	o := GetOrmer()
 	sql := "insert into repository (owner_id, project_id, name, description, pull_count, star_count, creation_time, update_time) " +
 		"select (select user_id as owner_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, NOW(), NULL "
+		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, ?, NULL "
 
-	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
+	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description,
+		repo.PullCount, repo.StarCount, time.Now()).Exec()
 	return err
 }
 
@@ -62,6 +64,7 @@ func DeleteRepository(name string) error {
 // UpdateRepository ...
 func UpdateRepository(repo models.RepoRecord) error {
 	o := GetOrmer()
+	repo.UpdateTime = time.Now()
 	_, err := o.Update(&repo)
 	return err
 }
@@ -71,7 +74,8 @@ func IncreasePullCount(name string) (err error) {
 	o := GetOrmer()
 	num, err := o.QueryTable("repository").Filter("name", name).Update(
 		orm.Params{
-			"pull_count": orm.ColValue(orm.ColAdd, 1),
+			"pull_count":  orm.ColValue(orm.ColAdd, 1),
+			"update_time": time.Now(),
 		})
 	if num == 0 {
 		err = fmt.Errorf("Failed to increase repository pull count with name: %s %s", name, err.Error())

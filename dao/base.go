@@ -17,67 +17,75 @@ package dao
 
 import (
 	"fmt"
-	"net"
-
 	"os"
+	"strings"
 	"sync"
-	"time"
 
 	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql" //register mysql driver
 	"github.com/vmware/harbor/utils/log"
 )
 
 // NonExistUserID : if a user does not exist, the ID of the user will be 0.
 const NonExistUserID = 0
 
-// GenerateRandomString generates a random string
-func GenerateRandomString() (string, error) {
-	o := orm.NewOrm()
-	var uuid string
-	err := o.Raw(`select uuid() as uuid`).QueryRow(&uuid)
-	if err != nil {
-		return "", err
-	}
-	return uuid, nil
-
+// Database is an interface of different databases
+type Database interface {
+	// Name returns the name of database
+	Name() string
+	// String returns the details of database
+	String() string
+	// Register registers the database which will be used
+	Register(alias ...string) error
 }
 
-//InitDB initializes the database
-func InitDB() {
-	// orm.Debug = true
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	addr := os.Getenv("MYSQL_HOST")
-	port := os.Getenv("MYSQL_PORT")
-	username := os.Getenv("MYSQL_USR")
-	password := os.Getenv("MYSQL_PWD")
-
-	log.Debugf("db url: %s:%s, db user: %s", addr, port, username)
-	dbStr := username + ":" + password + "@tcp(" + addr + ":" + port + ")/registry"
-	ch := make(chan int, 1)
-	go func() {
-		var err error
-		var c net.Conn
-		for {
-			c, err = net.DialTimeout("tcp", addr+":"+port, 20*time.Second)
-			if err == nil {
-				c.Close()
-				ch <- 1
-			} else {
-				log.Errorf("failed to connect to db, retry after 2 seconds :%v", err)
-				time.Sleep(2 * time.Second)
-			}
-		}
-	}()
-	select {
-	case <-ch:
-	case <-time.After(60 * time.Second):
-		panic("Failed to connect to DB after 60 seconds")
-	}
-	err := orm.RegisterDataBase("default", "mysql", dbStr)
+// InitDatabase initializes the database
+func InitDatabase() {
+	database, err := getDatabase()
 	if err != nil {
 		panic(err)
 	}
+
+	log.Infof("initializing database: %s", database.String())
+	if err := database.Register(); err != nil {
+		panic(err)
+	}
+}
+
+func getDatabase() (db Database, err error) {
+	switch strings.ToLower(os.Getenv("DATABASE")) {
+	case "", "mysql":
+		host, port, usr, pwd, database := getMySQLConnInfo()
+		db = NewMySQL(host, port, usr, pwd, database)
+	case "sqlite":
+		file := getSQLiteConnInfo()
+		db = NewSQLite(file)
+	default:
+		err = fmt.Errorf("invalid database: %s", os.Getenv("DATABASE"))
+	}
+
+	return
+}
+
+// TODO read from config
+func getMySQLConnInfo() (host, port, username, password, database string) {
+	host = os.Getenv("MYSQL_HOST")
+	port = os.Getenv("MYSQL_PORT")
+	username = os.Getenv("MYSQL_USR")
+	password = os.Getenv("MYSQL_PWD")
+	database = os.Getenv("MYSQL_DATABASE")
+	if len(database) == 0 {
+		database = "registry"
+	}
+	return
+}
+
+// TODO read from config
+func getSQLiteConnInfo() string {
+	file := os.Getenv("SQLITE_FILE")
+	if len(file) == 0 {
+		file = "registry.db"
+	}
+	return file
 }
 
 var globalOrm orm.Ormer

@@ -53,11 +53,7 @@ func (cc *CommonController) SendEmail() {
 		if harborURL == "" {
 			harborURL = "localhost"
 		}
-		uuid, err := dao.GenerateRandomString()
-		if err != nil {
-			log.Errorf("Error occurred in GenerateRandomString: %v", err)
-			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
+		uuid := utils.GenerateRandomString()
 		err = messageTemplate.Execute(message, messageDetail{
 			Hint: cc.Tr("reset_email_hint"),
 			URL:  harborURL,
