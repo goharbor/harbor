@@ -27,15 +27,13 @@
     
     function ListProject(projectName, isPublic, page, pageSize) {
       $log.info('list project projectName:' + projectName, ', isPublic:' + isPublic);
-      var urlParams = '';
-      if(angular.isDefined(page, pageSize)) {
-        urlParams = '?page=' + page + '&page_size=' + pageSize;
-      }
       return $http
-        .get('/api/projects' + urlParams, {
+        .get('/api/projects', {
           'params' : {
             'is_public': isPublic,
-            'project_name': projectName
+            'project_name': projectName,
+            'page': page,
+            'page_size': pageSize 
           }
         });
       

@@ -33,11 +33,9 @@
     vm.isPublic = Number(getParameterByName('is_public', $location.absUrl()));
    
     var DEFAULT_PAGE = 1;
-    var DEFAULT_PAGE_SIZE = 15;
-      
+        
     vm.page = DEFAULT_PAGE;
-    vm.pageSize = DEFAULT_PAGE_SIZE;
-    
+       
     vm.projects = [];
     vm.retrieve = retrieve;
     vm.filterInput = '';
@@ -45,9 +43,8 @@
     vm.checkProjectMember = checkProjectMember;  
                      
     function retrieve() {
-      ListProjectService(vm.projectName, vm.isPublic, vm.page, vm.pageSize)
+      ListProjectService(vm.projectName, vm.isPublic, vm.page)
         .then(getProjectSuccess, getProjectFailed);
-     
     }
     
     $scope.$watch('vm.page', function(current) {
@@ -66,6 +63,29 @@
       }
     });
     
+    function parseNextLink(link) {
+      if(link === '') {
+        return false;
+      }
+      
+      var parts = link.split(",");
+      for(var i in parts) {
+        var groups = /^\<(.*)\>;\srel=\"(\w+)\"$/.exec($.trim(parts[i]));
+        if(groups && groups.length > 2){
+          var url = groups[1];
+          var rel = groups[2];
+          if(rel === 'next') {
+            return {
+              'page': getParameterByName('page', url),
+              'rel' : rel
+            };
+          }
+        }
+      }
+      return false;
+    }
+    
+    
     function getProjectSuccess(response) {
       
       var partialProjects = response.data || []; 
@@ -73,14 +93,10 @@
         vm.projects.push(partialProjects[i]);
       }
       
-      var link = response.headers("Link") || '';
-      var pattern = /^<\/api\/projects\?is_public=(\d+)&page\=(\d+)&page_size=(\d+)\&project_name=>; rel=\"(\w+)\"$/;
-      var groups = pattern.exec(link);
+      var nextLink = parseNextLink(response.headers("Link") || '');
       
-      if(groups && groups[4] === 'next') {
-        vm.isPublic = parseInt(groups[1]);
-        vm.page = parseInt(groups[2]);
-        vm.pageSize = parseInt(groups[3]);
+      if(nextLink) {
+        vm.page = parseInt(nextLink.page);
       } else {
         
         if(vm.projects.length == 0 && vm.isPublic === 0){
