@@ -35,9 +35,10 @@
     var DEFAULT_PAGE = 1;
     var DEFAULT_PAGE_SIZE = 15;
       
-    vm.page = Number(getParameterByName('page', $location.absUrl()) || DEFAULT_PAGE);
-    vm.pageSize = Number(getParameterByName('page_size', $location.absUrl()) || DEFAULT_PAGE_SIZE);
+    vm.page = DEFAULT_PAGE;
+    vm.pageSize = DEFAULT_PAGE_SIZE;
     
+    vm.projects = [];
     vm.retrieve = retrieve;
     vm.filterInput = '';
     vm.selectItem = selectItem;  
@@ -45,12 +46,15 @@
                      
     function retrieve() {
       ListProjectService(vm.projectName, vm.isPublic, vm.page, vm.pageSize)
-        .success(getProjectSuccess)
-        .error(getProjectFailed);
+        .then(getProjectSuccess, getProjectFailed);
+     
     }
     
-    
-    vm.retrieve();
+    $scope.$watch('vm.page', function(current) {
+      if(current) {
+        vm.retrieve();
+      }
+    });
     
     $scope.$watch('vm.isPublic', function(current) {
       vm.projectType = vm.isPublic === 0 ? 'my_project_count' : 'public_project_count';
@@ -62,33 +66,49 @@
       }
     });
     
-    function getProjectSuccess(data, status) {
-      vm.projects = data || [];
-      if(vm.projects.length == 0 && vm.isPublic === 0){
-        $window.location.href = '/project';  
+    function getProjectSuccess(response) {
+      
+      var partialProjects = response.data || []; 
+      for(var i in partialProjects) {
+        vm.projects.push(partialProjects[i]);
       }
-                
-      if(getParameterByName('project_id', $location.absUrl())){
-        for(var i in vm.projects) {
-          var project = vm.projects[i];
-          if(project['project_id'] == getParameterByName('project_id', $location.absUrl())) {
-            vm.selectedProject = project;
-            break;
-          }
-        } 
+      
+      var link = response.headers("Link") || '';
+      var pattern = /^<\/api\/projects\?is_public=(\d+)&page\=(\d+)&page_size=(\d+)\&project_name=>; rel=\"(\w+)\"$/;
+      var groups = pattern.exec(link);
+      
+      if(groups && groups[4] === 'next') {
+        vm.isPublic = parseInt(groups[1]);
+        vm.page = parseInt(groups[2]);
+        vm.pageSize = parseInt(groups[3]);
+      } else {
+        
+        if(vm.projects.length == 0 && vm.isPublic === 0){
+          $window.location.href = '/project';  
+        }
+                  
+        if(getParameterByName('project_id', $location.absUrl())){
+          for(var i in vm.projects) {
+            var project = vm.projects[i];
+            if(project['project_id'] == getParameterByName('project_id', $location.absUrl())) {
+              vm.selectedProject = project;
+              break;
+            }
+          } 
+        }
+  
+        $location.search('project_id', vm.selectedProject.project_id);
+        vm.checkProjectMember(vm.selectedProject.project_id);         
+           
+        vm.resultCount = vm.projects.length;
+      
+        $scope.$watch('vm.filterInput', function(current, origin) {  
+          vm.resultCount = $filter('name')(vm.projects, vm.filterInput, 'name').length;
+        });
       }
-
-      $location.search('project_id', vm.selectedProject.project_id);
-      vm.checkProjectMember(vm.selectedProject.project_id);         
-         
-      vm.resultCount = vm.projects.length;
-    
-      $scope.$watch('vm.filterInput', function(current, origin) {  
-        vm.resultCount = $filter('name')(vm.projects, vm.filterInput, 'name').length;
-      });
     }
     
-    function getProjectFailed(data) {
+    function getProjectFailed(response) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_get_project'));
       $scope.$emit('raiseError', true);
