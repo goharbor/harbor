@@ -32,8 +32,8 @@ import (
 )
 
 const (
-	defaultPageSize int64 = 10
-	maxPageSize     int64 = 100
+	defaultPageSize int64 = 500
+	maxPageSize     int64 = 500
 )
 
 // BaseAPI wraps common methods for controllers to host API

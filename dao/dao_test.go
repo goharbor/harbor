@@ -1623,7 +1623,7 @@ func TestRepositoryExists(t *testing.T) {
 	var exists bool
 	exists = RepositoryExists(currentRepository.Name)
 	if !exists {
-		t.Errorf("The repository with name: %d, does not exist", currentRepository.Name)
+		t.Errorf("The repository with name: %s, does not exist", currentRepository.Name)
 	}
 }
 
