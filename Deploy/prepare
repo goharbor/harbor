@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 import subprocess
+import shutil
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -21,6 +22,19 @@ if sys.version_info[:3][0] == 3:
 def validate(conf): 
     if len(conf.get("configuration", "secret_key")) != 16:
         raise Exception("Error: The length of secret key has to be 16 characters!")
+    protocol = rcp.get("configuration", "ui_url_protocol")
+    if protocol == "https":
+        if not rcp.has_option("configuration", "ssl_cert"):
+            raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
+        cert_path = rcp.get("configuration", "ssl_cert")
+        if not os.path.isfile(cert_path):
+            raise Exception("Error: The path for certificate: %s is invalid" % cert_path)
+        if not rcp.has_option("configuration", "ssl_cert_key"):
+            raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
+        cert_key_path = rcp.get("configuration", "ssl_cert_key")
+        if not os.path.isfile(cert_key_path):
+            raise Exception("Error: The path for certificate key: %s is invalid" % cert_key_path)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-conf', dest='cfgfile', default = 'harbor.cfg',type=str,help="the path of Harbor configuration file")
@@ -37,7 +51,8 @@ rcp.readfp(conf)
 validate(rcp)
 
 hostname = rcp.get("configuration", "hostname")
-ui_url = rcp.get("configuration", "ui_url_protocol") + "://" + hostname
+protocol = rcp.get("configuration", "ui_url_protocol")
+ui_url = protocol + "://" + hostname
 email_server = rcp.get("configuration", "email_server")
 email_server_port = rcp.get("configuration", "email_server_port")
 email_username = rcp.get("configuration", "email_username")
@@ -65,6 +80,9 @@ ldap_scope = rcp.get("configuration", "ldap_scope")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
 use_compressed_js = rcp.get("configuration", "use_compressed_js")
+if protocol == "https":
+    cert_path = rcp.get("configuration", "ssl_cert")
+    cert_key_path = rcp.get("configuration", "ssl_cert_key")
 customize_crt = rcp.get("configuration", "customize_crt")
 crt_country = rcp.get("configuration", "crt_country")
 crt_state = rcp.get("configuration", "crt_state")
@@ -108,14 +126,30 @@ ui_conf = os.path.join(config_dir, "ui", "app.conf")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
-
-conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env, job_conf_env ]
+nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
+cert_dir = os.path.join(config_dir, "nginx", "cert") 
+conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env, job_conf_env, nginx_conf, cert_dir ]
 def rmdir(cf):
     for f in cf:
-        if os.path.exists(f):
-            print("Clearing the configuration file: %s" % f)
-            os.remove(f)
+        if os.path.isdir(f):
+            rmdir(map(lambda x: os.path.join(f,x), os.listdir(f)))
+        elif os.path.exists(f) and os.path.basename(f) != ".gitignore":
+                print("Clearing the configuration file: %s" % f)
+                os.remove(f)
 rmdir(conf_files)
+
+if protocol == "https":
+    target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
+    shutil.copy2(cert_path,target_cert_path)
+    target_cert_key_path = os.path.join(cert_dir, os.path.basename(cert_key_path))
+    shutil.copy2(cert_key_path,target_cert_key_path)
+    render(os.path.join(templates_dir, "nginx", "nginx.https.conf"),
+            nginx_conf,
+            ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
+            ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
+else:
+    render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
+        nginx_conf)
 
 render(os.path.join(templates_dir, "ui", "env"),
         ui_conf_env,
