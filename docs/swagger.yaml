@@ -713,6 +713,34 @@ paths:
           description: Repository or tag not found.
         403:
           description: Forbidden.
+    put:
+      summary: Update the description of a repository.
+      description: |
+        This endpoint let user update the description of a repository.
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          required: true
+          description: The name of repository which will be updated.
+        - name: description
+          in: body
+          type: string
+          required: true
+          description: the description of a repository.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete repository or tag successfully.
+        400:
+          description: Invalid repo_name.
+        403:
+          description: Forbidden.
+        404:
+          description: Repository or project not found.
+        500:
+          description: Unexpected internal errors.
   /repositories/tags:
     get:
       summary: Get tags of a relevant repository.

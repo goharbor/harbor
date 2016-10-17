@@ -203,6 +203,50 @@ func (ra *RepositoryAPI) Delete() {
 	}()
 }
 
+// Put ...
+func (ra *RepositoryAPI) Put() {
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+
+	repo, err := dao.GetRepositoryByName(repoName)
+	if err != nil {
+		log.Errorf("failed to get repository %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if repo == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("repository %s not found", repoName))
+	}
+
+	projectName, _ := utils.ParseRepository(repoName)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		log.Errorf("failed to get project %s: %v", projectName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	if project == nil {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
+	}
+
+	if project.Public == 0 {
+		userID := ra.ValidateUser()
+		if !hasProjectAdminRole(userID, project.ProjectID) {
+			ra.CustomAbort(http.StatusForbidden, "")
+		}
+	}
+
+	description := ra.GetString("description")
+	repo.Description = description
+
+	if err = dao.UpdateRepository(*repo); err != nil {
+		log.Errorf("failed to update repository %s: %v", repoName, err)
+		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+}
+
 type tag struct {
 	Name string   `json:"name"`
 	Tags []string `json:"tags"`
