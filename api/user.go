@@ -321,7 +321,7 @@ func validate(user models.User) error {
 	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("Username contains illegal characters.")
 	}
-	if isIllegalLength(user.Password, 7, 20) {
+	if isIllegalLength(user.Password, 8, 20) {
 		return fmt.Errorf("Password with illegal length.")
 	}
 	if err := commonValidate(user); err != nil {
