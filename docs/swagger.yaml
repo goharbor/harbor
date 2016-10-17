@@ -1275,6 +1275,22 @@ paths:
           description: Replication's target not found
         500:
           description: Unexpected internal errors.
+  /internal/syncregistry:    
+    post:
+      summary: Sync repositories from registry to DB. 
+      description: |
+        This endpoint is for syncing all repositories of registry with database. 
+      tags:
+        - Products  
+      responses:
+        200:
+          description: Sync repositories successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.   		
 definitions:
   Search:
     type: object
