@@ -373,6 +373,24 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			needsDel = append(needsDel, repoInD)
 			j++
 		} else {
+			// TODO remove the workaround when the bug of registry is fixed
+			// TODO read it from config
+			endpoint := os.Getenv("REGISTRY_URL")
+			client, err := cache.NewRepositoryClient(endpoint, true,
+				"admin", repoInR, "repository", repoInR)
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
+
+			exist, err := repositoryExist(repoInR, client)
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
+
+			if !exist {
+				needsDel = append(needsDel, repoInD)
+			}
+
 			i++
 			j++
 		}
