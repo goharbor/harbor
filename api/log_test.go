@@ -20,7 +20,17 @@ func TestLogGet(t *testing.T) {
 	var project apilib.ProjectReq
 	project.ProjectName = "my_project"
 	project.Public = 1
+	now := fmt.Sprintf("%v", time.Now().Unix())
+	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "")
+	if err != nil {
+		t.Error("Error while get log information", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), statusCode, "Log get should return 200")
 
+	}
+	logNum := len(result)
+	fmt.Println(result)
 	//add the project first.
 	fmt.Println("add the project first.")
 	reply, err := apiTest.ProjectsPost(*admin, project)
@@ -31,14 +41,13 @@ func TestLogGet(t *testing.T) {
 		assert.Equal(int(201), reply, "Case 2: Project creation status should be 201")
 	}
 	//case 1: right parameters, expect the right output
-	now := fmt.Sprintf("%v", time.Now().Unix())
-	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "3")
+	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "1000")
 	if err != nil {
 		t.Error("Error while get log information", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(1, len(result), "lines of logs should be equal")
-		assert.Equal(int32(1), result[0].LogId, "LogId should be equal")
+		assert.Equal(logNum+1, len(result), "lines of logs should be equal")
+		assert.Equal(int32(logNum+1), result[0].LogId, "LogId should be equal")
 		assert.Equal("my_project/", result[0].RepoName, "RepoName should be equal")
 		assert.Equal("N/A", result[0].RepoTag, "RepoTag should be equal")
 		assert.Equal("create", result[0].Operation, "Operation should be equal")
@@ -89,8 +98,8 @@ func TestLogGet(t *testing.T) {
 		t.Error("Error while get log information", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(1, len(result), "lines of logs should be equal")
-		assert.Equal(int32(1), result[0].LogId, "LogId should be equal")
+		assert.Equal(logNum+1, len(result), "lines of logs should be equal")
+		assert.Equal(int32(logNum+1), result[0].LogId, "LogId should be equal")
 		assert.Equal("my_project/", result[0].RepoName, "RepoName should be equal")
 		assert.Equal("N/A", result[0].RepoTag, "RepoTag should be equal")
 		assert.Equal("create", result[0].Operation, "Operation should be equal")
