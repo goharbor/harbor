@@ -428,7 +428,13 @@ func TestResetUserPassword(t *testing.T) {
 }
 
 func TestChangeUserPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
+	user := models.User{UserID: currentUser.UserID}
+	query, err := GetUser(user)
+	if err != nil {
+		t.Errorf("Error occurred when get user salt")
+	}
+	currentUser.Salt = query.Salt
+	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
@@ -444,7 +450,14 @@ func TestChangeUserPassword(t *testing.T) {
 }
 
 func TestChangeUserPasswordWithOldPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
+	user := models.User{UserID: currentUser.UserID}
+	query, err := GetUser(user)
+	if err != nil {
+		t.Errorf("Error occurred when get user salt")
+	}
+	currentUser.Salt = query.Salt
+
+	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
