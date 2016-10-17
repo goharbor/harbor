@@ -24,8 +24,8 @@
       <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
       <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
     </div>
-    <div class="pane"> 	           
-      <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+    <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+    <div class="search-pane"> 	           
       <div class="sub-pane">   
           <div class="table-head-container">
             <table class="table table-pane table-header">
