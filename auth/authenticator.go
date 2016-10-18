@@ -17,12 +17,17 @@ package auth
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/vmware/harbor/utils/log"
+	"os"
+	"time"
 
 	"github.com/vmware/harbor/models"
 )
+
+// 1.5 seconds
+const frozenTime time.Duration = 1500 * time.Millisecond
+
+var lock = NewUserLock(frozenTime)
 
 // Authenticator provides interface to authenticate user credentials.
 type Authenticator interface {
@@ -55,5 +60,15 @@ func Login(m models.AuthModel) (*models.User, error) {
 	if !ok {
 		return nil, fmt.Errorf("Unrecognized auth_mode: %s", authMode)
 	}
-	return authenticator.Authenticate(m)
+	if lock.IsLocked(m.Principal) {
+		log.Debugf("%s is locked due to login failure, login failed", m.Principal)
+		return nil, nil
+	}
+	user, err := authenticator.Authenticate(m)
+	if user == nil && err == nil {
+		log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+		lock.Lock(m.Principal)
+		time.Sleep(frozenTime)
+	}
+	return user, err
 }
