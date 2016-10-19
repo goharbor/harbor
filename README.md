@@ -29,12 +29,12 @@ On an Internet connected host, Harbor can be easily installed via docker-compose
     ```sh
     $ git clone https://github.com/vmware/harbor
     ```
-2. Edit the file **Deploy/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
+2. Edit the file **make/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
 
 
 3. Install Harbor with the following commands. Note that the docker-compose process can take a while.
     ```sh
-    $ cd Deploy
+    $ cd make
     
     $ ./prepare
     Generated configuration file: ./config/ui/env

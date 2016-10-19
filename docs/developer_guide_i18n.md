@@ -45,14 +45,14 @@
 
 5. Add the new language to the `app.conf` file.
     
-    In the file `Deploy/config/ui/app.conf`, append a new item to the configuration section.
+    In the file `make/config/ui/app.conf`, append a new item to the configuration section.
     ```
 		 [lang]
 		 types = en-US|zh-CN|<language>-<locale>
 		 names = en-US|zh-CN|<language>-<locale>
     ```
 
-6. Next, change to `Deploy/` directory, rebuild and restart the Harbor by the below command: 
+6. Next, change to `make/` directory, rebuild and restart the Harbor by the below command: 
     ```
         docker-compose down
         docker-compose up --build -d

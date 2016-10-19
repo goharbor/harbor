@@ -12,7 +12,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 1. Log in to the machine that Harbor runs on, stop and remove existing Harbor service if it is still running:
 
     ``` 
-    cd Deploy/
+    cd make/
     docker-compose down
     ```
 
@@ -49,11 +49,11 @@ The directory **migration/** contains the tool for migration. The first step is 
     docker run -ti --rm -v /data/database:/var/lib/mysql migrate-tool up head
     ```
 
-8. Change to `Deploy/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+8. Change to `make/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
 
 9. If HTTPS has been enabled for Harbor before, restore the `nginx.conf` and key/certificate files from the backup files in Step 2. Refer to [Configuring Harbor with HTTPS Access](../docs/configure_https.md) for more info.
 
-10. Under the directory `Deploy/`, run the `./prepare` script to generate necessary config files.
+10. Under the directory `make/`, run the `./prepare` script to generate necessary config files.
  
 11. Rebuild Harbor and restart the registry service
 
@@ -67,7 +67,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 1. Stop and remove the current Harbor service if it is still running.
 
     ``` 
-    cd Deploy/
+    cd make/
     docker-compose down
     ```
 2. Restore database from backup file in `/path/to/backup` .
@@ -88,7 +88,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 
 5. Restart Harbor service using the previous configuration.
     ```sh
-    cd Deploy/
+    cd make/
     docker-compose up --build -d
     ```
     

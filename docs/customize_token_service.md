@@ -50,7 +50,7 @@ $ cp /root/cert/private_key.pem private_key.pem
 $ cp /root/cert/root.crt ../registry/root.crt
 ```
 
-5.After these, go back to the Deploy directory, you can start Harbor using following command:
+5.After these, go back to the make directory, you can start Harbor using following command:
 ```
   $ docker-compose up -d
 ```

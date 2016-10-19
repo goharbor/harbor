@@ -1,9 +1,9 @@
 #!/bin/bash
 
-cp tests/docker-compose.test.yml Deploy/.
+cp tests/docker-compose.test.yml make/.
 
 mkdir /etc/ui
-cp Deploy/config/ui/private_key.pem /etc/ui/.
+cp make/common/config/ui/private_key.pem /etc/ui/.
 
 mkdir conf
-cp Deploy/config/ui/app.conf conf/.
+cp make/common/config/ui/app.conf conf/.
