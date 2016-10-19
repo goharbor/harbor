@@ -20,8 +20,6 @@ if sys.version_info[:3][0] == 3:
     import io as StringIO
 
 def validate(conf): 
-    if len(conf.get("configuration", "secret_key")) != 16:
-        raise Exception("Error: The length of secret key has to be 16 characters!")
     protocol = rcp.get("configuration", "ui_url_protocol")
     if protocol == "https":
         if not rcp.has_option("configuration", "ssl_cert"):
@@ -35,9 +33,27 @@ def validate(conf):
         if not os.path.isfile(cert_key_path):
             raise Exception("Error: The path for certificate key: %s is invalid" % cert_key_path)
 
-
+def get_secret_key(path):
+    key_file = os.path.join(path, "secretkey")
+    if os.path.isfile(key_file):
+        with open(key_file, 'r') as f:
+            key = f.read()
+            print("loaded secret key")
+        if len(key) != 16:
+            raise Exception("secret key's length has to be 16 chars, current length: %d" % len(key))
+        return key
+    if not os.path.isdir(path):
+        os.makedirs(path, mode=0600)
+    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+    with open(key_file, 'w') as f:
+        f.write(key)
+        print("generated and saved secret key")
+    return key
+    
 parser = argparse.ArgumentParser()
-parser.add_argument('-conf', dest='cfgfile', default = 'harbor.cfg',type=str,help="the path of Harbor configuration file")
+parser.add_argument('-conf', dest='cfgfile', default='harbor.cfg',type=str,help="the path of Harbor configuration file")
+parser.add_argument('--data-volume', dest='data_volume', default='/data/',type=str,help="the path of Harbor data volume, which is set in template of docker-compose.")
+
 args = parser.parse_args()
 
 #Read configurations
@@ -94,7 +110,8 @@ crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
-secret_key = rcp.get("configuration", "secret_key")
+#secret_key = rcp.get("configuration", "secret_key")
+secret_key = get_secret_key(args.data_volume)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
