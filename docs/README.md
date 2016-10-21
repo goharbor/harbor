@@ -14,7 +14,7 @@ Configure security connection between Harbor and Docker client.
 [Upgrade and Data Migration Guide](migration_guide.md)  
 Data migration may be needed when upgrading Harbor to a newer version. 
 
-[Deploy Harbor on Kubernetes](kubernetes_deployment.md)  
+[make Harbor on Kubernetes](kubernetes_deployment.md)  
 Guide to deploy Harbor on Kubenetes. (maintained by community)
 
 ### Developer documents
@@ -31,7 +31,7 @@ How to add your local language to Harbor.
 
 [Python SDK](../contrib/sdk/harbor-py) (by community)
 
-[Deploying Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
+[makeing Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
 
 [Configuring Harbor as a local registry mirror](../contrib/Configure_mirror.md) (by community)
 
@@ -51,7 +51,7 @@ How to add your local language to Harbor.
 
 [Overall Architecture of Harbor Registry](http://www.compare-review-information.com/overall-architecture-of-harbor-registry/)
 
-[Deploying a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
+[makeing a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
 
 [Docker Private Registry Using Harbor](https://blog.imaginea.com/docker-private-registry-using-harbor-2/)
 

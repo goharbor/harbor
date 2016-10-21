@@ -45,9 +45,9 @@ If you're using **IP** to connect your registry host, you may instead run the co
   openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -extfile extfile.cnf -outdir .
 ```
 ##Configuration of Nginx
-After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, change the directory to Deploy/config/nginx in Harbor project.
+After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, change the directory to make/config/nginx in Harbor project.
 ```
-  cd Deploy/config/nginx
+  cd make/config/nginx
 ```
 Create a new directory cert/, if it does not exist. Then copy **yourdomain.com.crt** and **yourdomain.com.key** to cert/, e.g. :
 ```
@@ -87,7 +87,7 @@ Then look for the SSL section to make sure the files of your certificates match 
 Save your changes in nginx.conf.
 
 ##Installation of Harbor
-Next, edit the file Deploy/harbor.cfg , update the hostname and the protocol:
+Next, edit the file make/harbor.cfg , update the hostname and the protocol:
 ```
   #set hostname
   hostname = reg.yourdomain.com

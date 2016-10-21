@@ -5,7 +5,7 @@ services:
     restart: always
     volumes:
       - /data/registry:/storage
-      - ./config/registry/:/etc/registry/
+      - ./common/config/registry/:/etc/registry/
     environment:
       - GODEBUG=netdns=cgo
     ports:
@@ -13,11 +13,11 @@ services:
     command:
       ["serve", "/etc/docker/registry/config.yml"]
   mysql:
-    build: ./db/
+    build: ./common/db/
     restart: always
     volumes:
       - /data/database:/var/lib/mysql
     env_file:
-      - ./config/db/env
+      - ./common/config/db/env
     ports:
       - 3306:3306

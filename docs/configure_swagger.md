@@ -34,9 +34,9 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 ```sh
    ./prepare-swagger.sh
 ```
-* Change the directory to _Deploy_
+* Change the directory to _make_
 ```sh
-  cd ../Deploy
+  cd ../make
 ```
 * Edit the _docker-compose.yml_ file.
 ```sh
@@ -51,8 +51,8 @@ ui:
     - ./config/ui/app.conf:/etc/ui/app.conf
     - ./config/ui/private_key.pem:/etc/ui/private_key.pem
     ## add two lines as below ##
-    - ../static/vendors/swagger-ui-2.1.4/dist:/go/bin/static/vendors/swagger
-    - ../static/resources/yaml/swagger.yaml:/go/bin/static/resources/yaml/swagger.yaml
+    - ../../src/ui/static/vendors/swagger-ui-2.1.4/dist:/go/bin/static/vendors/swagger
+    - ../../src/ui/static/resources/yaml/swagger.yaml:/go/bin/static/resources/yaml/swagger.yaml
     ...
 ```
 * Rebuild Harbor project
