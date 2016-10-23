@@ -1,4 +1,4 @@
-Test 1-01 - DB User Registration
+Test 1-01 - User Registration (DB Mode)
 =======
 
 # Purpose:
@@ -19,7 +19,7 @@ User guide
 3. Use the username of the newly registered user to log in to the UI.
 4. Log out from the UI.
 5. Use the email of the newly registered user to log in to the UI.
-5. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by either the **username** or **email** . (check both) 
+5. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by either the **username** or **email** . (verify both) 
 6. Log out from the UI and register a another new user. Try to provide invalid values of input to see if validation works: 
 
 
