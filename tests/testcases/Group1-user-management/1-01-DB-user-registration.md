@@ -3,7 +3,7 @@ Test 1-01 - User Registration (DB Mode)
 
 # Purpose:
 
-To verify that a user can register an account (singup) when users are managed locally by Harbor (DB mode).
+To verify that a non-admin user can register an account (singup) when users are managed locally by Harbor (DB mode).
 
 # References:
 User guide
@@ -28,7 +28,7 @@ User guide
 * wrong email formatting
 * email is very long in length
 * password input does not compliant to password rule
-* two passwords not matching
+* two passwords do not match
 
 
 # Expected Outcome:
