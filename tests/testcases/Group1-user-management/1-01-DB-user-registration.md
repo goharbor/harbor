@@ -20,7 +20,7 @@ User guide
 4. Log out from the UI.
 5. Use the email of the newly registered user to log in to the UI.
 5. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by either the **username** or **email** . (verify both) 
-6. Log out from the UI and register a another new user. Try to provide invalid values of input to see if validation works: 
+6. Log out from the UI and register another new user. Try to provide invalid values of input to see if validation works: 
 
 
 * username is the same as an existing user
