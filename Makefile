@@ -325,8 +325,8 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-	- $(DOCKERRMIMAGE) -f registry:2.5.0
-	- $(DOCKERRMIMAGE) -f nginx:1.9
+	#- $(DOCKERRMIMAGE) -f registry:2.5.0
+	#- $(DOCKERRMIMAGE) -f nginx:1.9
 
 cleandockercomposefile:
 	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml"
