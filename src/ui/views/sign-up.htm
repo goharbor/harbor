@@ -45,12 +45,11 @@
               <div class="form-group">
                 <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="email" class="form-control" id="email" ng-model="user.email" name="uEmail" ng-model-options="{ updateOn: 'blur' }" required user-exists data-target="email" maxlength="50">
-                  <div class="error-message" ng-messages="(form.$submitted || form.uEmail.$touched) &&form.uEmail.$error">
+                  <input type="text" class="form-control" id="email" ng-model="user.email" name="uEmail" ng-model-options="{ updateOn: 'blur' }" required user-exists data-target="email" email>
+                  <div class="error-message" ng-messages="(form.$submitted || form.uEmail.$touched) && form.uEmail.$error">
                     <span ng-message="required">// 'email_is_required' | tr //</span>
                     <span ng-message="email">// 'email_content_illegal' | tr //</span>
                     <span ng-message="userExists">// 'email_has_been_taken' | tr //</span>
-                    <span ng-message="maxlength">// 'email_is_too_long' | tr //</span>
                   </div>
                   <p class="help-block small-size-fonts">// 'email_desc' | tr //</p>
                 </div>
