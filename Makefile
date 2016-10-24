@@ -28,7 +28,6 @@
 #			for example: make package_online -e \
 #							REGISTRYSERVER=reg-bj.eng.vmware.com \
 #							REGISTRYPROJECTNAME=harborrelease
-#				note**: DONT add "/" on end of REGISTRYSERVER. 
 #						
 # package_offline:
 #				prepare offline install package
@@ -62,6 +61,9 @@
 #				note**: If commit new code to github, the git commit TAG will \
 #				change. Better use this commond clean previous images and \
 #				files with specific TAG. 
+#   By default DEVFLAG=true, if you want to release new version of Harbor, \
+#		should setting the flag to false.
+#				make XXXX -e DEVFLAG=flase
 
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
@@ -75,6 +77,7 @@ BASEIMAGE=photon
 COMPILETAG=compile_normal
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
+DEVFLAG=true
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -128,10 +131,10 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 
 # docker image name
-DOCKERIMAGENAME_UI=$(REGISTRYPROJECTNAME)/harbor-ui
-DOCKERIMAGENAME_JOBSERVICE=$(REGISTRYPROJECTNAME)/harbor-jobservice
-DOCKERIMAGENAME_LOG=$(REGISTRYPROJECTNAME)/harbor-log
-DOCKERIMAGENAME_DB=$(REGISTRYPROJECTNAME)/harbor-db
+DOCKERIMAGENAME_UI=vmware/harbor-ui
+DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
+DOCKERIMAGENAME_LOG=vmware/harbor-log
+DOCKERIMAGENAME_DB=vmware/harbor-db
 
 
 # docker-compose files
@@ -143,7 +146,12 @@ VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
 VERSIONFILENAME=header-content.htm
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
-VERSIONTAG=$(shell $(GITTAG))
+ifeq ($(DEVFLAG), true)        
+	VERSIONTAG=dev
+else        
+	VERSIONTAG=$(shell $(GITTAG))
+endif
+
 SEDCMD=$(shell which sed)
 
 # package 
@@ -209,10 +217,10 @@ build_common: prepare version
 	$(DOCKERPULL) nginx:1.9
 	
 build_photon: build_common
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile build	
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build_ubuntu: build_common
-	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build
+	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build: build_$(BASEIMAGE)
 
@@ -230,8 +238,10 @@ install: compile build modify_composefile
 package_online: modify_composefile
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
-	@$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' $(HARBORPKG)/docker-compose.$(VERSIONTAG).yml
-	
+	@if [ -n "$(REGISTRYSERVER)" ] ; then \
+		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(HARBORPKG)/docker-compose.$(VERSIONTAG).yml ; \
+	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
@@ -274,10 +284,10 @@ package_offline: compile build modify_composefile
 
 pushimage:
 	@echo "pushing harbor images ..."
-	@$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
-	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
+	$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
-	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
