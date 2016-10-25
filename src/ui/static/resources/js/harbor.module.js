@@ -42,6 +42,7 @@
       'harbor.services.replication.policy',
       'harbor.services.replication.job',
       'harbor.services.destination',
+      'harbor.services.system.info',
       'harbor.summary',
       'harbor.user.log',
       'harbor.top.repository',

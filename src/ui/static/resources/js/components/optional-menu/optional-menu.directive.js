@@ -20,9 +20,9 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout', 'trFilter', '$filter'];
+  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout', 'trFilter', '$filter', 'GetVolumeInfoService'];
 
-  function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter) {
+  function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter, GetVolumeInfoService) {
     var vm = this;
     
     vm.currentLanguage = I18nService().getCurrentLanguage();
@@ -55,16 +55,36 @@
     function logOutFailed(data, status) {
       console.log('Failed to log out:' + data);
     }
+    
+    var raiseInfo = {
+      'confirmOnly': true,
+      'contentType': 'text/html',
+      'action': function() {}
+    };
+      
     function about() {
       $scope.$emit('modalTitle', $filter('tr')('about_harbor'));
-      $scope.$emit('modalMessage', $filter('tr')('current_version', [vm.version || 'Unknown']));
-      var raiseInfo = {
-        'confirmOnly': true,
-        'contentType': 'text/html',
-        'action': function() {}
-      };
+      vm.modalMessage = $filter('tr')('current_version', [vm.version || 'Unknown']);      
+      GetVolumeInfoService("data")
+        .then(getVolumeInfoSuccess, getVolumeInfoFailed);
+      
+    }
+    function getVolumeInfoSuccess(response) {
+      var storage = response.data;
+      vm.modalMessage += '<br/>' + $filter('tr')('current_storage',
+        [toGigaBytes(storage['harbor_storage']['free']), toGigaBytes(storage['harbor_storage']['total'])]);
+      $scope.$emit('modalMessage', vm.modalMessage);
+      $scope.$emit('raiseInfo', raiseInfo);
+      
+    }
+    function getVolumeInfoFailed(response) {
+      $scope.$emit('modalMessage', vm.modalMessage);
       $scope.$emit('raiseInfo', raiseInfo);
     }
+    function toGigaBytes(val) {
+      return Math.round(val / (1024 * 1024 * 1024));
+    }
+    
   }
   
   function optionalMenu() {
