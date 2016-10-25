@@ -26,29 +26,23 @@
     var vm = this;
     
     vm.isAdmin = (vm.hasAdminRole === 1);
-    vm.enabled = vm.isAdmin ? 0 : 1;
     vm.toggle = toggle;
     vm.editable = (vm.currentUser.user_id !== Number(vm.userId));
     
     function toggle() {
-      ToggleAdminService(vm.userId, vm.enabled)
+      ToggleAdminService(vm.userId, vm.isAdmin ? 0 : 1)
         .success(toggleAdminSuccess)
         .error(toggleAdminFailed);        
     }    
-    
-    function toggleStatus() {
-      vm.isAdmin = !vm.isAdmin;
-      vm.enabled = vm.isAdmin ? 0 : 1;
-    }
-    
+     
     function toggleAdminSuccess(data, status) {
       console.log('Toggled userId:' + vm.userId + ' to admin:' + vm.isAdmin);
-      toggleStatus();
+      vm.isAdmin = !vm.isAdmin;
     }
 
     function toggleAdminFailed(data, status) {
       console.log('Failed to toggle admin:' + data);
-      toggleStatus();
+      vm.isAdmin = !vm.isAdmin;
       $scope.$emit('modalTitle', $filter('tr')('error'));
       $scope.$emit('modalMessage', $filter('tr')('failed_to_toggle_admin'));
       $scope.$emit('raiseError', true);
