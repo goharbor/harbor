@@ -12,8 +12,8 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
 
@@ -285,7 +285,7 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 }
 
 //Search projects by projectName and isPublic
-func (a testapi) ProjectsGet(projectName string, isPublic int32) (int, []apilib.Project, error) {
+func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usrInfo) (int, []apilib.Project, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	//create api path
@@ -299,7 +299,15 @@ func (a testapi) ProjectsGet(projectName string, isPublic int32) (int, []apilib.
 
 	var successPayload []apilib.Project
 
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader)
+	var httpStatusCode int
+	var err error
+	var body []byte
+	if len(authInfo) > 0 {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader, authInfo[0])
+	} else {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader)
+	}
+
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
 	}
