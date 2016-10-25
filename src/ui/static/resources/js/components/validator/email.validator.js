@@ -18,9 +18,27 @@
   
   angular
     .module('harbor.validator')
-    .constant('INVALID_CHARS', [",","~","#", "$", "%"])
-    .constant('PASSWORD_REGEXP', /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$/)
-    .constant('PROJECT_REGEXP', /^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$/)
-    .constant('EMAIL_REGEXP', /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    .directive('email', email);
+  
+  email.$inject = ['EMAIL_REGEXP'];
     
+  function email(EMAIL_REGEXP) {
+    var directive = {
+      'require' : 'ngModel',
+      'link': link
+    };
+    return directive;
+    
+    function link (scope, element, attrs, ctrl) {
+      
+      ctrl.$validators.email = validator;
+           
+      function validator(modelValue, viewValue) {
+        
+        return EMAIL_REGEXP.test(modelValue);
+          
+      }
+    }
+  }
+  
 })();
