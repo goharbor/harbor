@@ -40,7 +40,7 @@
     }
     
     function getCurrentUserFailed(e){
-      console.log('No session of current user.');
+      console.log('Failed to get current user:' + e);
       LogOutService()
         .success(logOutSuccess)
         .error(logOutFailed);
