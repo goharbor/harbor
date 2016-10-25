@@ -85,7 +85,8 @@
         'associateId': '=',
         'repoName': '=',
         'toggleInProgress': '=',
-        'deleteByTag': '&'
+        'deleteByTag': '&',
+        'roleId': '@'
       },
       'replace': true,
       'controller': ListTagController,

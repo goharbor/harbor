@@ -26,7 +26,7 @@
     $scope.subsTabPane = 30;
     
     var vm = this;
-  
+      
     vm.sectionHeight = {'min-height': '579px'};
   
     vm.filterInput = '';
@@ -180,7 +180,8 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/repository/list-repository.directive.html',
       'scope': {
-        'sectionHeight': '='
+        'sectionHeight': '=',
+        'roleId': '@'
       },
       'link': link,
       'controller': ListRepositoryController,

@@ -60,7 +60,8 @@
       'templateUrl': '/static/resources/js/components/project/publicity-button.directive.html',
       'scope': {
         'isPublic': '=',
-        'projectId': '='
+        'projectId': '=',
+        'roleId': '@'
       },
       'link': link,
       'controller': PublicityButtonController,

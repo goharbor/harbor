@@ -48,7 +48,7 @@
                   <th width="15%" ng-if="!vm.isPublic">// 'role' | tr //</th>
                   <th width="20%">// 'creation_time' | tr //</th>
                   <th width="15%">// 'publicity' | tr //</th>
-                  <th width="10%">// 'operation' | tr //</th>
+                  <th width="10%" ng-if="p.current_user_role_id == 1">// 'operation' | tr //</th>
                 </thead>
               </table>
             </div>
@@ -63,8 +63,8 @@
                     <td width="15%">//p.repo_count//</td>
                     <td width="15%" ng-if="vm.isPublic === 0">//vm.getProjectRole(p.current_user_role_id) | tr//</td>
                     <td width="20%">//p.creation_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>
-                    <td width="15%"><publicity-button is-public="p.public" project-id="p.project_id"></publicity-button></td>
-                    <td width="10%">
+                    <td width="15%"><publicity-button is-public="p.public" project-id="p.project_id" role-id="//p.current_user_role_id//"></publicity-button></td>
+                    <td width="10%" ng-if="p.current_user_role_id == 1">
                       &nbsp;&nbsp;<a href="javascript:void(0)" ng-click="vm.confirmToDelete(p.project_id, p.name)"><span class="glyphicon glyphicon-trash"></span></a>
                     </td>
                   </tr>

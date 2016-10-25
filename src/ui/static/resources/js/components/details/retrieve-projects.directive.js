@@ -29,6 +29,7 @@
     vm.isOpen = false;
     vm.isProjectMember = false;
     vm.target = $location.path().substr(1) || 'repositories';
+    vm.roleId = 0;
     
     vm.isPublic = Number(getParameterByName('is_public', $location.absUrl()));
    
@@ -152,6 +153,9 @@
     function getCurrentProjectMemberSuccess(data, status) {
       console.log('Successful get current project member:' + status);
       vm.isProjectMember = true;
+      if(data && data['roles'] && data['roles'].length > 0) {
+        vm.roleId = data['roles'][0]['role_id'];
+      }
     }
     
     function getCurrentProjectMemberFailed(data, status) {
@@ -171,7 +175,8 @@
         'isOpen': '=',
         'selectedProject': '=',
         'isPublic': '=',
-        'isProjectMember': '='
+        'isProjectMember': '=',
+        'roleId': '='
       },
       link: link,
       controller: RetrieveProjectsController,

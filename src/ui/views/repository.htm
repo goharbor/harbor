@@ -30,13 +30,13 @@
               <navigation-details target="vm.target" ng-show="vm.isProjectMember"></navigation-details>
             </span>
     		    </div>
-          <retrieve-projects target="vm.target" is-open="vm.isOpen" selected-project="vm.selectedProject" is-project-member="vm.isProjectMember" is-public="vm.isPublic"></retrieve-projects>
+          <retrieve-projects target="vm.target" is-open="vm.isOpen" selected-project="vm.selectedProject" role-id="vm.roleId" is-project-member="vm.isProjectMember" is-public="vm.isPublic"></retrieve-projects>
           <!-- Tab panes -->
     		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
             <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
-            <list-repository ng-if="vm.target === 'repositories'" section-height="vm.sectionHeight"></list-repository>
+            <list-repository ng-if="vm.target === 'repositories'" section-height="vm.sectionHeight" role-id="//vm.roleId//"></list-repository>
             <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
-            <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight"></list-project-member>
+            <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight" role-id="//vm.roleId//"></list-project-member>
             <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight" target="vm.target"></list-log>
           </div>
         </div>

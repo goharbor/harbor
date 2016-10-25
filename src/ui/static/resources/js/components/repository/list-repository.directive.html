@@ -23,10 +23,10 @@
                 <a ng-if="vm.tagCount[repo] === 0" role="button" style="text-decoration: none;" data-toggle="collapse" data-parent=""  aria-expanded="true" aria-controls="collapse//$index+1//">
                   <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
                 </a>
-                <a ng-show="vm.tagCount[repo] > 0" class="pull-right" style="margin-right: 75px;" href="javascript:void(0)" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[repo + '|']"><span class="glyphicon glyphicon-trash"></span></a>          
+                <a ng-show="vm.tagCount[repo] > 0 && vm.roleId == 1" class="pull-right" style="margin-right: 75px;" href="javascript:void(0)" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[repo + '|']"><span class="glyphicon glyphicon-trash"></span></a>          
               </h4>
             </div>
-            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress" delete-by-tag="vm.deleteByTag()"></list-tag>
+            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress" delete-by-tag="vm.deleteByTag()" role-id="//vm.roleId//"></list-tag>
           </div>
         </div>
       </div>
