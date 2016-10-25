@@ -2,17 +2,18 @@
 #	
 # Targets:
 #
-# build: 	build harbor photon images
+# build: 	build harbor ubuntu images
 # clean:	clean ui and jobservice harbor images
 
 # common
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
-DEPLOYPATH=$(BUILDPATH)/make
-DEPLOYDEVPATH=$(DEPLOYPATH)/dev
+MAKEPATH=$(BUILDPATH)/make
+MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 CHECKENVCMD=checkenv.sh
+DEVFLAG=true
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -22,14 +23,14 @@ DOCKERIMASES=$(DOCKERCMD) images
 
 # binary 
 UISOURCECODE=$(SRCPATH)/ui
-UIBINARYPATH=$(DEPLOYDEVPATH)/ui
+UIBINARYPATH=$(MAKEDEVPATH)/ui
 UIBINARYNAME=harbor_ui
 JOBSERVICESOURCECODE=$(SRCPATH)/jobservice
-JOBSERVICEBINARYPATH=$(DEPLOYDEVPATH)/jobservice
+JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
 
-# photon dockerfile
-DOCKERFILEPATH=$(DEPLOYPATH)/photon
+# ubuntu dockerfile
+DOCKERFILEPATH=$(MAKEPATH)/ubuntu
 DOCKERFILEPATH_UI=$(DOCKERFILEPATH)/ui
 DOCKERFILENAME_UI=Dockerfile
 DOCKERIMAGENAME_UI=vmware/harbor-ui
@@ -45,26 +46,30 @@ VERSIONFILEPATH=$(SRCPATH)/views/sections
 VERSIONFILENAME=header-content.htm
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
-VERSIONTAG=$(shell $(GITTAG))
+ifeq ($(DEVFLAG), true)        
+	VERSIONTAG=dev
+else        
+	VERSIONTAG=$(shell $(GITTAG))
+endif
 
 check_environment:
-	@$(TOOLSPATH)/$(CHECKENVCMD)
+	@$(MAKEPATH)/$(CHECKENVCMD)
 
-build: 
-	@echo "building ui container for photon..."
+build:
+	@echo "building ui container for ubuntu..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_UI)/$(DOCKERFILENAME_UI) -t $(DOCKERIMAGENAME_UI):$(VERSIONTAG) .
 	@echo "Done."
 	
-	@echo "building jobservice container for photon..."
+	@echo "building jobservice container for ubuntu..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
 	@echo "Done."
 	
-	@echo "building log container for photon..."
+	@echo "building log container for ubuntu..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
 	@echo "Done."
 	
 cleanimage:
-	@echo "cleaning image for photon..."
+	@echo "cleaning image for ubuntu..."
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)

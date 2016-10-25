@@ -28,7 +28,6 @@
 #			for example: make package_online -e \
 #							REGISTRYSERVER=reg-bj.eng.vmware.com \
 #							REGISTRYPROJECTNAME=harborrelease
-#				note**: DONT add "/" on end of REGISTRYSERVER. 
 #						
 # package_offline:
 #				prepare offline install package
@@ -62,6 +61,9 @@
 #				note**: If commit new code to github, the git commit TAG will \
 #				change. Better use this commond clean previous images and \
 #				files with specific TAG. 
+#   By default DEVFLAG=true, if you want to release new version of Harbor, \
+#		should setting the flag to false.
+#				make XXXX -e DEVFLAG=flase
 
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
@@ -75,6 +77,7 @@ BASEIMAGE=photon
 COMPILETAG=compile_normal
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
+DEVFLAG=true
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -96,11 +99,13 @@ GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
 GOBUILDIMAGE=reg.mydomain.com/library/harborgo[:tag]
 GOBUILDPATH=$(GOBASEPATH)/harbor
-GOBUILDPATH_UI=$(GOBUILDPATH)/ui
-GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/jobservice
+GOIMAGEBUILDCMD=/usr/local/go/bin/go
+GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
+GOBUILDPATH_UI=$(GOBUILDPATH)/src/ui
+GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/ui
-GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/jobservice
+GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
+GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
 
 # binary 
 UISOURCECODE=$(SRCPATH)/ui
@@ -128,10 +133,10 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 
 # docker image name
-DOCKERIMAGENAME_UI=$(REGISTRYPROJECTNAME)/harbor-ui
-DOCKERIMAGENAME_JOBSERVICE=$(REGISTRYPROJECTNAME)/harbor-jobservice
-DOCKERIMAGENAME_LOG=$(REGISTRYPROJECTNAME)/harbor-log
-DOCKERIMAGENAME_DB=$(REGISTRYPROJECTNAME)/harbor-db
+DOCKERIMAGENAME_UI=vmware/harbor-ui
+DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
+DOCKERIMAGENAME_LOG=vmware/harbor-log
+DOCKERIMAGENAME_DB=vmware/harbor-db
 
 
 # docker-compose files
@@ -143,7 +148,12 @@ VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
 VERSIONFILENAME=header-content.htm
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
-VERSIONTAG=$(shell $(GITTAG))
+ifeq ($(DEVFLAG), true)        
+	VERSIONTAG=dev
+else        
+	VERSIONTAG=$(shell $(GITTAG))
+endif
+
 SEDCMD=$(shell which sed)
 
 # package 
@@ -186,11 +196,11 @@ compile_golangimage:
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
 	@echo "Done."
 	
 	@echo "compiling binary for jobservice (golang image)..."
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 	
 compile:check_environment $(COMPILETAG)
@@ -209,10 +219,10 @@ build_common: prepare version
 	$(DOCKERPULL) nginx:1.9
 	
 build_photon: build_common
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile build	
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build_ubuntu: build_common
-	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build
+	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build: build_$(BASEIMAGE)
 
@@ -230,8 +240,10 @@ install: compile build modify_composefile
 package_online: modify_composefile
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
-	@$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' $(HARBORPKG)/docker-compose.$(VERSIONTAG).yml
-	
+	@if [ -n "$(REGISTRYSERVER)" ] ; then \
+		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(HARBORPKG)/docker-compose.$(VERSIONTAG).yml ; \
+	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
@@ -258,7 +270,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.9.0 registry:2.5.0
+		nginx:1.9 registry:2.5.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
@@ -274,10 +286,10 @@ package_offline: compile build modify_composefile
 
 pushimage:
 	@echo "pushing harbor images ..."
-	@$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
-	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
+	$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
-	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
@@ -315,8 +327,8 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-	- $(DOCKERRMIMAGE) -f registry:2.5.0
-	- $(DOCKERRMIMAGE) -f nginx:1.9
+	#- $(DOCKERRMIMAGE) -f registry:2.5.0
+	#- $(DOCKERRMIMAGE) -f nginx:1.9
 
 cleandockercomposefile:
 	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml"
@@ -333,9 +345,17 @@ cleanpackage:
 	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
 	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
 	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi	
-	
-.PHONY: clean
-clean: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
+
+.PHONY: cleanall
+cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
+
+clean: 
+	@echo "  make cleanall:		remove binary, Harbor images, specific version docker-compose"
+	@echo "		file, specific version tag, online and offline install package"
+	@echo "  make cleanbinary:		remove ui and jobservice binary"
+	@echo "  make cleanimage:		remove Harbor images"
+	@echo "  make cleandockercomposefile:	remove specific version docker-compose"
+	@echo "  make cleanversiontag:		cleanpackageremove specific version tag"
+	@echo "  make cleanpackage:		remove online and offline install package"
 
 all: install
-

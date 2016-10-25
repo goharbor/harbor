@@ -354,6 +354,16 @@ func TestUsersUpdatePassword(t *testing.T) {
 		assert.Equal(200, code, "Get users status should be 200")
 		testUser0002.Password = password.NewPassword
 		testUser0002Auth.Passwd = password.NewPassword
+		//TODO: verify the new password takes effect
+	}
+	//case 6: update user2 password setting the new password same as the old
+	password.OldPassword = password.NewPassword
+	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
+	if err != nil {
+		t.Error("Error occured while change user profile", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(200, code, "When new password is same as old, update user password status should be 200")
 	}
 }
 

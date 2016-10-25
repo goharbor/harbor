@@ -13,7 +13,7 @@ var addProject *apilib.ProjectReq
 var addPID int
 
 func InitAddPro() {
-	addProject = &apilib.ProjectReq{"test_project", 1}
+	addProject = &apilib.ProjectReq{"add_project", 1}
 }
 
 func TestAddProject(t *testing.T) {
@@ -106,7 +106,49 @@ func TestProGetByName(t *testing.T) {
 	} else {
 		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 200")
 	}
-	fmt.Printf("\n")
+
+	//-------------------case 3 :  check admin project role------------------------//
+	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *admin)
+	if err != nil {
+		t.Error("Error while search project by proName and isPublic", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
+		assert.Equal(int32(1), result[0].Public, "Public is wrong")
+		assert.Equal(int32(1), result[0].CurrentUserRoleId, "User project role is wrong")
+	}
+
+	//-------------------case 4 : add project member and check his role ------------------------//
+	CommonAddUser()
+	roles := &apilib.RoleParam{[]int32{2}, TestUserName}
+	projectID := strconv.Itoa(addPID)
+	httpStatusCode, err = apiTest.AddProjectMember(*admin, projectID, *roles)
+	if err != nil {
+		t.Error("Error whihle add project role member", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	}
+	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *testUser)
+	if err != nil {
+		t.Error("Error while search project by proName and isPublic", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
+		assert.Equal(int32(1), result[0].Public, "Public is wrong")
+		assert.Equal(int32(2), result[0].CurrentUserRoleId, "User project role is wrong")
+	}
+	id := strconv.Itoa(CommonGetUserID())
+	httpStatusCode, err = apiTest.DeleteProjectMember(*admin, projectID, id)
+	if err != nil {
+		t.Error("Error whihle add project role member", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	}
+	CommonDelUser()
 }
 
 //Get project by proID

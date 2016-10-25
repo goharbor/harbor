@@ -137,11 +137,12 @@ func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 	o := GetOrmer()
 
 	var r sql.Result
+	salt := utils.GenerateRandomString()
 	if len(oldPassword) == 0 {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
-		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID).Exec()
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, salt), salt, u.UserID).Exec()
 	} else {
-		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, u.Salt), u.Salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
+		r, err = o.Raw(`update user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, salt), salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
 	}
 
 	if err != nil {

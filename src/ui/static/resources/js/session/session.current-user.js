@@ -20,9 +20,9 @@
     .module('harbor.session')
     .controller('CurrentUserController', CurrentUserController);
  
-  CurrentUserController.$inject = ['$scope', 'CurrentUserService', 'currentUser', '$window', '$document'];
+  CurrentUserController.$inject = ['$scope', 'CurrentUserService', 'currentUser', '$window', '$document', 'LogOutService'];
   
-  function CurrentUserController($scope, CurrentUserService, currentUser, $window, $document) {
+  function CurrentUserController($scope, CurrentUserService, currentUser, $window, $document, LogOutService) {
     
     var vm = this;
          
@@ -32,16 +32,27 @@
         
     function getCurrentUserComplete(response) {
       if(angular.isDefined(response)) {
-        currentUser.set(response.data);  
-        if(location.pathname === '/') {
+        currentUser.set(response.data);
+        if(location.pathname === '/') {   
           $window.location.href = '/dashboard';
         }
       }   
     }
     
     function getCurrentUserFailed(e){
-      console.log('No session of current user.');
+      console.log('Failed to get current user:' + e);
+      LogOutService()
+        .success(logOutSuccess)
+        .error(logOutFailed);
     }   
+    
+    function logOutSuccess(data, status) {
+      currentUser.unset();
+    }
+    
+    function logOutFailed(data, status) {
+      console.log('Failed to log out:' + data);
+    }
   }
  
 })();

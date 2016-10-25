@@ -29,7 +29,7 @@
             <div class="form-group">
               <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
               <div class="col-sm-7">
-                <input type="email" class="form-control" id="email" ng-model="user.email" name="uEmail"  required>
+                <input type="text" class="form-control" id="email" ng-model="user.email" name="uEmail" required email>
                 <div class="error-message" ng-messages="form.uEmail.$touched && form.uEmail.$error">
                   <span ng-message="required">// 'email_is_required' | tr //</span>
                   <span ng-message="email">// 'email_content_illegal' | tr //</span>
