@@ -56,11 +56,7 @@
     }
     
     function addProjectMember() {
-      if(vm.isOpen) {
-        vm.isOpen = false;
-      }else{
-        vm.isOpen = true;
-      }
+      vm.isOpen = !vm.isOpen;
     }
     
     function deleteProjectMember(e) {
@@ -105,7 +101,8 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project-member/list-project-member.directive.html',
       'scope': {
-        'sectionHeight': '='
+        'sectionHeight': '=',
+        'roleId': '@'
       },
       'link': link,
       'controller': ListProjectMemberController,
