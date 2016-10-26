@@ -19,6 +19,7 @@ func (omc *OptionalMenuController) Get() {
 
 	var hasLoggedIn bool
 	var allowAddNew bool
+	var allowSettingAccount bool
 
 	if sessionUserID != nil {
 		hasLoggedIn = true
@@ -34,6 +35,10 @@ func (omc *OptionalMenuController) Get() {
 		}
 		omc.Data["Username"] = u.Username
 
+		if omc.AuthMode == "db_auth" {
+			allowSettingAccount = true
+		}
+
 		isAdmin, err := dao.IsAdminRole(sessionUserID.(int))
 		if err != nil {
 			log.Errorf("Error occurred in IsAdminRole: %v", err)
@@ -45,6 +50,7 @@ func (omc *OptionalMenuController) Get() {
 		}
 	}
 	omc.Data["AddNew"] = allowAddNew
+	omc.Data["SettingAccount"] = allowSettingAccount
 	omc.Data["HasLoggedIn"] = hasLoggedIn
 	omc.TplName = "optional-menu.htm"
 	omc.Render()

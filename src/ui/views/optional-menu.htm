@@ -21,7 +21,9 @@
     {{ if eq .AddNew true }}
     <li><a href="/add_new"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;// 'add_new_title' | tr //</a></li>
     {{ end }}
+    {{ if eq .SettingAccount true }}
     <li><a href="/account_setting"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;// 'account_setting' | tr //</a></li>
+    {{ end }}
     <li class="dropdown-submenu">
       <a tabindex="-1" href="#"><span class="glyphicon glyphicon-globe"></span>&nbsp;&nbsp;//vm.languageName//</a>
       <ul class="dropdown-menu">

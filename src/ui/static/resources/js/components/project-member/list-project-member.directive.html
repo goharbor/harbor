@@ -21,23 +21,23 @@
           <button class="btn btn-primary" type="button" ng-click="vm.search({projectId: vm.projectId, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
         </span>
       </div>
-      <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
-      <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+      <button ng-if="vm.roleId == 1 && !vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+      <button ng-if="vm.roleId == 1 && vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
     </div>
-    <add-project-member ng-show="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+    <add-project-member ng-if="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
     <div class="search-pane"> 	           
       <div class="sub-pane">   
           <div class="table-head-container">
             <table class="table table-pane table-header">
               <thead>
-                <th width="30%">// 'username' | tr //</th><th width="45%">// 'role' | tr //</th><th width="25%">// 'operation' | tr //</th>
+                <th width="30%">// 'username' | tr //</th><th width="45%">// 'role' | tr //</th><th width="25%" ng-if="vm.roleId == 1">// 'operation' | tr //</th>
               </thead>
             </table>
           </div>
           <div class="table-body-container">
             <table class="table table-pane">
               <tbody>
-                <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})'></tr> 
+                <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})' current-role-id="//vm.roleId//"></tr> 
               </tbody>
             </table>
           </div>
