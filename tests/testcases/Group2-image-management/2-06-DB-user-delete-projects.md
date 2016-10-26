@@ -19,7 +19,7 @@ User guide
 **NOTE:**  
 * In below test, user A is non-admin user. User A and project X should be replaced by longer and meaningful names.
 * Must use two kinds of browsers at the same time to ensure independent sessions. For example, use Chrome and Firefox, or Chrome and Safari. 
-* DO NOT use the same browser to log in two users in different windows(tabs).
+* DO NOT use the same browser to log in two users at the same time in different windows(tabs).
 
 1. Log in to UI as user A (non-admin).
 2. Create a project X so that the user has the project admin role.

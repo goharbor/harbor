@@ -3,7 +3,7 @@ Test 2-13 - User Create Multiple Projects (LDAP Mode)
 
 # Purpose:
 
-To verify that a non-admin user can create multiple projects in (LDAP mode).
+To verify that a non-admin user can create multiple projects in LDAP mode.
 
 # References:
 User guide

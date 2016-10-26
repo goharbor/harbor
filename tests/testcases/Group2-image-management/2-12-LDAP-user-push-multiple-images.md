@@ -3,7 +3,7 @@ Test 2-12 - User Push Multiple Images (LDAP Mode)
 
 # Purpose:
 
-To verify that a non-admin user can push multiple images to a project in (LDAP mode).
+To verify that a non-admin user can push multiple images to a project in LDAP mode.
 
 # References:
 User guide
