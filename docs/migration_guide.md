@@ -28,11 +28,11 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     ```
  
 4. Before upgrading Harbor, perform database migration first.
-The directory **migration/** contains the tool for migration. The first step is to update values of `db_username`, `db_password`, `db_port`, `db_name` in **migration.cfg** so that they match your system's configuration. 
+The directory **tools/migration/** contains the tool for migration. The first step is to update values of `db_username`, `db_password`, `db_port`, `db_name` in **migration.cfg** so that they match your system's configuration. 
 
 5. The migration tool is delivered as a container, so you should build the image from its Dockerfile:
     ```
-    cd migration/
+    cd tools/migration/
     
     docker build -t migrate-tool .
     ```
