@@ -25,7 +25,7 @@
 #
 # package_online:
 #				prepare online install package
-#			for example: make package_online -e \
+#			for example: make package_online -e DEVFLAG=flase\
 #							REGISTRYSERVER=reg-bj.eng.vmware.com \
 #							REGISTRYPROJECTNAME=harborrelease
 #						
@@ -33,13 +33,13 @@
 #				prepare offline install package
 # 
 # pushimage:	push Harbor images to specific registry server
-#			for example: make pushimage -e REGISTRYUSER=admin \
+#			for example: make pushimage -e DEVFLAG=flase REGISTRYUSER=admin \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYSERVER=reg-bj.eng.vmware.com/ \
 #							REGISTRYPROJECTNAME=harborrelease
 #				note**: need add "/" on end of REGISTRYSERVER. If not setting \
 #						this value will push images directly to dockerhub.
-#						 make pushimage -e REGISTRYUSER=vmware \
+#						 make pushimage -e DEVFLAG=flase REGISTRYUSER=vmware \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYPROJECTNAME=vmware
 #
@@ -141,6 +141,7 @@ DOCKERIMAGENAME_DB=vmware/harbor-db
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
+DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 
 # version prepare
@@ -229,8 +230,8 @@ build: build_$(BASEIMAGE)
 	
 modify_composefile: 
 	@echo "preparing tag:$(VERSIONTAG) docker-compose file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml
-	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml
+	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
 install: compile build modify_composefile
 	@echo "loading harbor images..."
@@ -249,7 +250,7 @@ package_online: modify_composefile
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=docker-compose.yml \
+			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
 			  --exclude=$(HARBORPKG)/jsminify.sh \
 			  --exclude=$(HARBORPKG)/pushimage.sh \
@@ -275,7 +276,7 @@ package_offline: compile build modify_composefile
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=docker-compose.yml \
+			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
 			  --exclude=$(HARBORPKG)/jsminify.sh \
 			  --exclude=$(HARBORPKG)/pushimage.sh \
