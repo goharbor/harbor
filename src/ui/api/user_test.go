@@ -357,7 +357,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 		//TODO: verify the new password takes effect
 	}
 	//case 6: update user2 password setting the new password same as the old
-	password.NewPassword = password.OldPassword
+	password.OldPassword = password.NewPassword
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
 		t.Error("Error occured while change user profile", err.Error())

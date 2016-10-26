@@ -286,6 +286,13 @@ func (p *ProjectAPI) List() {
 		if public != 1 {
 			if isAdmin {
 				projectList[i].Role = models.PROJECTADMIN
+			} else {
+				roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
+				if err != nil {
+					log.Errorf("failed to get user's project role: %v", err)
+					p.CustomAbort(http.StatusInternalServerError, "")
+				}
+				projectList[i].Role = roles[0].RoleID
 			}
 			if projectList[i].Role == models.PROJECTADMIN {
 				projectList[i].Togglable = true

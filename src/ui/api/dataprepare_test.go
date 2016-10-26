@@ -34,8 +34,8 @@ func CommonAddUser() {
 
 	commonUser := models.User{
 		Username: TestUserName,
-		Email:    TestUserPwd,
-		Password: TestUserEmail,
+		Password: TestUserPwd,
+		Email:    TestUserEmail,
 	}
 
 	_, _ = dao.Register(commonUser)

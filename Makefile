@@ -104,8 +104,8 @@ GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
 GOBUILDPATH_UI=$(GOBUILDPATH)/src/ui
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/ui
-GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/jobservice
+GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
+GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
 
 # binary 
 UISOURCECODE=$(SRCPATH)/ui
@@ -270,7 +270,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.9.0 registry:2.5.0
+		nginx:1.9 registry:2.5.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
@@ -345,9 +345,17 @@ cleanpackage:
 	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
 	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
 	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi	
-	
-.PHONY: clean
-clean: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
+
+.PHONY: cleanall
+cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
+
+clean: 
+	@echo "  make cleanall:		remove binary, Harbor images, specific version docker-compose"
+	@echo "		file, specific version tag, online and offline install package"
+	@echo "  make cleanbinary:		remove ui and jobservice binary"
+	@echo "  make cleanimage:		remove Harbor images"
+	@echo "  make cleandockercomposefile:	remove specific version docker-compose"
+	@echo "  make cleanversiontag:		cleanpackageremove specific version tag"
+	@echo "  make cleanpackage:		remove online and offline install package"
 
 all: install
-
