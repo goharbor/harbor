@@ -35,7 +35,7 @@ type NotificationHandler struct {
 	beego.Controller
 }
 
-const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+json`
+const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
