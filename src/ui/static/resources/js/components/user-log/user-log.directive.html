@@ -32,7 +32,7 @@
         </tr>
         <tr ng-if="vm.integratedLogs.length > 0" ng-repeat="t in vm.integratedLogs">
           <td width="18%">//t.username//</td>
-          <td width="28%"><a href="javascript:void(0);" ng-click="vm.gotoLog(t.project_id, t.username)">//t.repo_name//</a></td>
+          <td width="28%"><a href="javascript:void(0);" ng-click="vm.gotoRepo(t.project_id, t.repo_name)">//t.repo_name//</a></td>
           <td width="15%">//t.repo_tag//</td>
           <td width="14%">//t.operation//</td>
           <td width="25%">//t.op_time | dateL : 'YYYY-MM-DD HH:mm:ss'//</td>

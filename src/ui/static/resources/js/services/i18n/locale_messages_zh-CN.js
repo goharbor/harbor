@@ -263,6 +263,7 @@ var locale_messages = {
   'failed_to_update_destination': '修改目标失败。',
   'failed_to_toggle_publicity_insuffient_permissions': '切换项目公开性失败，权限不足。',
   'failed_to_toggle_publicity': '切换项目公开性失败。',
+  'project_does_not_exist': '项目不存在。',
   'project_admin': '项目管理员',
   'developer': '开发人员',
   'guest': '访客',
