@@ -169,8 +169,6 @@ PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
-
-
 version:
 	@$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME)
 	
@@ -210,7 +208,7 @@ prepare:
 	@echo "preparing..."
 	$(MAKEPATH)/$(PREPARECMD) -conf $(CONFIGPATH)/$(CONFIGFILE)
 	
-build_common: prepare version
+build_common: version
 	@echo "buildging db container for photon..."
 	cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
@@ -226,16 +224,15 @@ build_ubuntu: build_common
 	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build: build_$(BASEIMAGE)
-
 	
 modify_composefile: 
 	@echo "preparing tag:$(VERSIONTAG) docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
-install: compile build modify_composefile
+install: compile build prepare modify_composefile
 	@echo "loading harbor images..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml up -d
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Install complete. You can visit harbor now."
 	
 package_online: modify_composefile
