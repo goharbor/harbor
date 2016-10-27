@@ -20,10 +20,10 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 
 	"strconv"
 	"time"
@@ -192,7 +192,8 @@ func (p *ProjectAPI) Delete() {
 		if err := dao.AddAccessLog(models.AccessLog{
 			UserID:    userID,
 			ProjectID: p.projectID,
-			RepoName:  p.projectName,
+			RepoName:  p.projectName + "/",
+			RepoTag:   "N/A",
 			Operation: "delete",
 		}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
