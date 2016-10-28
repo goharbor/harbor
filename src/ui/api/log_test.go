@@ -21,7 +21,7 @@ func TestLogGet(t *testing.T) {
 	project.ProjectName = "my_project"
 	project.Public = 1
 	now := fmt.Sprintf("%v", time.Now().Unix())
-	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "")
+	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "1000")
 	if err != nil {
 		t.Error("Error while get log information", err.Error())
 		t.Log(err)
@@ -41,6 +41,7 @@ func TestLogGet(t *testing.T) {
 		assert.Equal(int(201), reply, "Case 2: Project creation status should be 201")
 	}
 	//case 1: right parameters, expect the right output
+	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "1000")
 	if err != nil {
 		t.Error("Error while get log information", err.Error())
@@ -58,7 +59,6 @@ func TestLogGet(t *testing.T) {
 	}
 	fmt.Println("log ", result)
 	//case 2: wrong format of start_time parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "ss", now, "3")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of start_time parameter is not right.", err.Error())
@@ -77,7 +77,6 @@ func TestLogGet(t *testing.T) {
 	}
 
 	//case 4: wrong format of lines parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "s")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of lines parameter is not right.", err.Error())
@@ -87,7 +86,6 @@ func TestLogGet(t *testing.T) {
 	}
 
 	//case 5: wrong format of lines parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "-5")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of lines parameter is not right.", err.Error())
@@ -143,7 +141,6 @@ func TestLogGet(t *testing.T) {
 	}
 
 	fmt.Printf("\n")
-
 }
 
 func getLog(result []apilib.AccessLog) (int, int) {
