@@ -67,6 +67,9 @@ You can update or remove a member by clicking the icon on the right.
 
 ##Replicating images
 If you are a system administrator, you can replicate images to a remote registry, which is called destination in Harbor. Only Harbor instance is supported as a destination for now.  
+
+**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
+
 Click "Add New Policy" on the "Replication" tab, fill the necessary fields and click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately, and when a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination.  
 
 ![browse project](img/new_create_policy.png)
