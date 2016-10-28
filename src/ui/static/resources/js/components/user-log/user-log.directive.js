@@ -29,7 +29,7 @@
       .success(listIntegratedLogSuccess)
       .error(listIntegratedLogFailed);
     
-    vm.gotoLog = gotoLog;
+    vm.gotoRepo = gotoRepo;
     
     function listIntegratedLogSuccess(data) {
       vm.integratedLogs = data || [];
@@ -42,8 +42,8 @@
       console.log('Failed to get user logs:' + data);
     }
     
-    function gotoLog(projectId, username) {
-      $window.location.href = '/repository#/logs?project_id=' + projectId + '#' + encodeURIComponent(username);
+    function gotoRepo(projectId, repoName) {
+      $window.location.href = '/repository#/repositories?project_id=' + projectId + '#' + encodeURIComponent(repoName);
     }
     
   }

@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"strconv"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/tests/apitests/apilib"
-	"strconv"
 )
 
 func TestMemGet(t *testing.T) {
@@ -51,8 +52,19 @@ func TestMemGet(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "Case 3: Project creation status should be 404")
 	}
 
-	fmt.Printf("\n")
+	//------------case 4: Response Code=404, member does not exist-----------//
+	fmt.Println("case 4: Response Code=404, member does not exist")
+	projectID = "1"
+	memberID := "10000"
+	httpStatusCode, err = apiTest.GetMemByPIDUID(*admin, projectID, memberID)
+	if err != nil {
+		t.Fatalf("failed to get member %s of project %s: %v", memberID, projectID, err)
+	}
 
+	assert.Equal(int(404), httpStatusCode,
+		fmt.Sprintf("response status code should be 404 other than %d", httpStatusCode))
+
+	fmt.Printf("\n")
 }
 
 /**

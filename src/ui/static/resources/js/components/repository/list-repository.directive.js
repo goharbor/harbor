@@ -19,9 +19,9 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$filter', 'trFilter', '$location', 'getParameterByName'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$filter', 'trFilter', '$location', 'getParameterByName', '$window'];
   
-  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $filter, trFilter, $location, getParameterByName) {
+  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $filter, trFilter, $location, getParameterByName, $window) {
     
     $scope.subsTabPane = 30;
     
@@ -104,7 +104,23 @@
     }
     
     function getRepositoryFailed(response) {
-      console.log('Failed to list repositories:' + response);      
+      var errorMessage = '';
+      if(response.status === 404) {
+        errorMessage = $filter('tr')('project_does_not_exist');
+      }else{
+        errorMessage = $filter('tr')('failed_to_get_project');
+      }
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', errorMessage);
+      var emitInfo = {
+        'confirmOnly': true,
+        'contentType': 'text/html',
+        'action' : function() {
+          $window.location.href = '/dashboard';
+        }
+      };
+      $scope.$emit('raiseInfo', emitInfo);
+      console.log('Failed to list repositories:' + response.data);      
     }
    
     function searchRepo() {

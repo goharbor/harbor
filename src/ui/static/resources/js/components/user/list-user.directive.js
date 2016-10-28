@@ -98,6 +98,9 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/user/list-user.directive.html',
       'link': link,
+      'scope': {
+        'authMode': '@'
+      },
       'controller': ListUserController,
       'controllerAs': 'vm',
       'bindToController': true

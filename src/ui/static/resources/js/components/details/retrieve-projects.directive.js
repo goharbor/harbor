@@ -88,7 +88,6 @@
     
     
     function getProjectSuccess(response) {
-      
       var partialProjects = response.data || []; 
       for(var i in partialProjects) {
         vm.projects.push(partialProjects[i]);
@@ -114,11 +113,13 @@
           } 
         }
   
-        $location.search('project_id', vm.selectedProject.project_id);
-        vm.checkProjectMember(vm.selectedProject.project_id);         
-           
+        if(vm.selectedProject) {        
+          $location.search('project_id', vm.selectedProject.project_id);
+          vm.checkProjectMember(vm.selectedProject.project_id);         
+        }  
+        
         vm.resultCount = vm.projects.length;
-      
+        
         $scope.$watch('vm.filterInput', function(current, origin) {  
           vm.resultCount = $filter('name')(vm.projects, vm.filterInput, 'name').length;
         });
