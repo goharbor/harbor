@@ -33,6 +33,7 @@ On an Internet connected host, Harbor can be easily installed via docker-compose
 
 
 3. Install Harbor with the following methods. Note that the build container images process can take a while.
+    
     I: Automation Install
     ```sh
     $ make install
