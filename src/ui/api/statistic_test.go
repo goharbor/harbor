@@ -10,10 +10,6 @@ import (
 )
 
 func TestStatisticGet(t *testing.T) {
-	if err := SyncRegistry(); err != nil {
-		t.Fatalf("failed to sync repositories from registry: %v", err)
-	}
-
 	fmt.Println("Testing Statistic API")
 	assert := assert.New(t)
 
