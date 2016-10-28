@@ -233,6 +233,7 @@ var locale_messages = {
   'failed_to_get_project_member': '无法获取当前项目成员。',
   'failed_to_delete_repo': '无法删除镜像仓库。',
   'failed_to_delete_repo_insuffient_permissions': '无法删除镜像仓库，权限不足。',
+  'failed_to_get_repo': '获取镜像仓库数据失败。',
   'failed_to_get_tag': '获取标签数据失败。',
   'failed_to_get_log': '获取日志数据失败。',
   'failed_to_get_project': '获取项目数据失败。',

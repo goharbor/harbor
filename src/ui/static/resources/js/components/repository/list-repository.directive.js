@@ -104,8 +104,14 @@
     }
     
     function getRepositoryFailed(response) {
+      var errorMessage = '';
+      if(response.status === 404) {
+        errorMessage = $filter('tr')('project_does_not_exist');
+      }else{
+        errorMessage = $filter('tr')('failed_to_get_project');
+      }
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('project_does_not_exist'));
+      $scope.$emit('modalMessage', errorMessage);
       var emitInfo = {
         'confirmOnly': true,
         'contentType': 'text/html',
