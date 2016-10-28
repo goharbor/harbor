@@ -169,4 +169,4 @@ $ docker-compose start
 
 Option "--dry-run" will print the progress without removing any data.  
 
-About the details of GC, please see [GC](https://github.com/docker/distribution/blob/master/docs/garbage-collection.md).  
+About the details of GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
