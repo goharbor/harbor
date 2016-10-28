@@ -32,7 +32,13 @@ On an Internet connected host, Harbor can be easily installed via docker-compose
 2. Edit the file **make/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info.  
 
 
-3. Install Harbor with the following commands. Note that the docker-compose process can take a while.
+3. Install Harbor with the following methods. Note that the build container images process can take a while.
+    I: Automation Install
+    ```sh
+    $ make install
+    ```
+    
+    II: Manual Install
     ```sh
     $ cd make
     
@@ -41,6 +47,8 @@ On an Internet connected host, Harbor can be easily installed via docker-compose
     Generated configuration file: ./config/ui/app.conf
     Generated configuration file: ./config/registry/config.yml
     Generated configuration file: ./config/db/env
+    
+    $ cd dev
     
     $ docker-compose up -d
     ```
