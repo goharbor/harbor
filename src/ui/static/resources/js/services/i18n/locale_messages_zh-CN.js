@@ -96,6 +96,7 @@ var locale_messages = {
   'save': '保存',
   'cancel': '取消',
   'confirm': '确认',
+  'total': '总计',
   'items': '条记录',
   'add_member': '新增成员',
   'operation': '操作',
