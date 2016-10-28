@@ -24,7 +24,7 @@
           <span ng-if="vm.toggle">// 'system_management' | tr //</span>
           <a ng-if="!vm.toggle" href="#/destinations" class="title-color" ng-click="vm.toggleAdminOption({target: 'system_management'})">// 'system_management' | tr //</a>
         </h4> 
-        <list-user ng-if="vm.target === 'users'"></list-user>
+        <list-user ng-if="vm.target === 'users'" auth-mode="{{ .AuthMode }}"></list-user>
         <system-management ng-if="vm.target === 'system_management'"></system-management>
       </div>
     </div>

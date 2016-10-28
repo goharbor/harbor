@@ -19,6 +19,8 @@ func (omc *OptionalMenuController) Get() {
 
 	var hasLoggedIn bool
 	var allowAddNew bool
+
+	var isAdminForLdap bool
 	var allowSettingAccount bool
 
 	if sessionUserID != nil {
@@ -35,7 +37,11 @@ func (omc *OptionalMenuController) Get() {
 		}
 		omc.Data["Username"] = u.Username
 
-		if omc.AuthMode == "db_auth" {
+		if userID == 1 {
+			isAdminForLdap = true
+		}
+
+		if omc.AuthMode == "db_auth" || isAdminForLdap {
 			allowSettingAccount = true
 		}
 
