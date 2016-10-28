@@ -241,6 +241,12 @@ func (ua *UserAPI) Delete() {
 		return
 	}
 
+	// TODO read from conifg
+	authMode := os.Getenv("AUTH_MODE")
+	if authMode == "ldap_auth" {
+		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
+	}
+
 	if ua.currentUserID == ua.userID {
 		ua.CustomAbort(http.StatusForbidden, "can not delete yourself")
 	}
