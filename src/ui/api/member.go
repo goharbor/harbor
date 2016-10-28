@@ -16,13 +16,14 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
@@ -98,6 +99,11 @@ func (pma *ProjectMemberAPI) Get() {
 			log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
+
+		if len(roleList) == 0 {
+			pma.CustomAbort(http.StatusNotFound, fmt.Sprintf("user %d is not a member of the project", pma.memberID))
+		}
+
 		//return empty role list to indicate if a user is not a member
 		result := make(map[string]interface{})
 		user, err := dao.GetUser(models.User{UserID: pma.memberID})
