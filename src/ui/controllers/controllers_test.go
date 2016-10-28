@@ -112,20 +112,17 @@ func TestMain(t *testing.T) {
 	r, _ = http.NewRequest("GET", "/account_setting", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/account_setting' httpStatusCode should be 200")
-	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>page_title_account_setting</title>"), "http respond should have '<title>page_title_account_setting</title>'")
+	assert.Equal(int(302), w.Code, "'/account_setting' httpStatusCode should be 302")
 
 	r, _ = http.NewRequest("GET", "/change_password", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/change_password' httpStatusCode should be 200")
-	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>page_title_change_password</title>"), "http respond should have '<title>page_title_change_password</title>'")
+	assert.Equal(int(302), w.Code, "'/change_password' httpStatusCode should be 302")
 
 	r, _ = http.NewRequest("GET", "/admin_option", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/admin_option' httpStatusCode should be 200")
-	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>page_title_admin_option</title>"), "http respond should have '<title>page_title_admin_option</title>'")
+	assert.Equal(int(302), w.Code, "'/admin_option' httpStatusCode should be 302")
 
 	r, _ = http.NewRequest("GET", "/forgot_password", nil)
 	w = httptest.NewRecorder()
