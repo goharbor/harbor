@@ -1,9 +1,5 @@
 package controllers
 
-import (
-	"net/http"
-)
-
 // ChangePasswordController handles request to /change_password
 type ChangePasswordController struct {
 	BaseController
@@ -19,6 +15,6 @@ func (cpc *ChangePasswordController) Get() {
 	if cpc.AuthMode == "db_auth" || isAdminForLdap {
 		cpc.Forward("page_title_change_password", "change-password.htm")
 	} else {
-		cpc.CustomAbort(http.StatusForbidden, "")
+		cpc.Redirect("/dashboard", 302)
 	}
 }

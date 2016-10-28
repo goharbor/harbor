@@ -1,9 +1,5 @@
 package controllers
 
-import (
-	"net/http"
-)
-
 // AccountSettingController handles request to /account_setting
 type AccountSettingController struct {
 	BaseController
@@ -19,6 +15,6 @@ func (asc *AccountSettingController) Get() {
 	if asc.AuthMode == "db_auth" || isAdminForLdap {
 		asc.Forward("page_title_account_setting", "account-settings.htm")
 	} else {
-		asc.CustomAbort(http.StatusForbidden, "")
+		asc.Redirect("/dashboard", 302)
 	}
 }
