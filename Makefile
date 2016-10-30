@@ -169,10 +169,10 @@ PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
-
-
 version:
-	@$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME)
+	if [ "$(DEVFLAG)" = "false" ] ; then \
+		$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME) ; \
+	fi
 	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -210,15 +210,11 @@ prepare:
 	@echo "preparing..."
 	$(MAKEPATH)/$(PREPARECMD) -conf $(CONFIGPATH)/$(CONFIGFILE)
 	
-build_common: prepare version
+build_common: version
 	@echo "buildging db container for photon..."
 	cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
-	
-	@echo "pulling nginx and registry..."
-	$(DOCKERPULL) registry:2.5.0
-	$(DOCKERPULL) nginx:1.9
-	
+
 build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
@@ -226,16 +222,15 @@ build_ubuntu: build_common
 	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
 build: build_$(BASEIMAGE)
-
 	
 modify_composefile: 
 	@echo "preparing tag:$(VERSIONTAG) docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
-install: compile build modify_composefile
+install: compile build prepare modify_composefile
 	@echo "loading harbor images..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml up -d
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Install complete. You can visit harbor now."
 	
 package_online: modify_composefile
@@ -265,6 +260,11 @@ package_offline: compile build modify_composefile
 	
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
+			
+	@echo "pulling nginx and registry..."
+	$(DOCKERPULL) registry:2.5.0
+	$(DOCKERPULL) nginx:1.9
+	
 	@echo "saving harbor docker image"
 	$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
