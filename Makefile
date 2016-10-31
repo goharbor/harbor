@@ -25,7 +25,7 @@
 #
 # package_online:
 #				prepare online install package
-#			for example: make package_online -e DEVFLAG=flase\
+#			for example: make package_online -e DEVFLAG=false\
 #							REGISTRYSERVER=reg-bj.eng.vmware.com \
 #							REGISTRYPROJECTNAME=harborrelease
 #						
@@ -33,13 +33,13 @@
 #				prepare offline install package
 # 
 # pushimage:	push Harbor images to specific registry server
-#			for example: make pushimage -e DEVFLAG=flase REGISTRYUSER=admin \
+#			for example: make pushimage -e DEVFLAG=false REGISTRYUSER=admin \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYSERVER=reg-bj.eng.vmware.com/ \
 #							REGISTRYPROJECTNAME=harborrelease
 #				note**: need add "/" on end of REGISTRYSERVER. If not setting \
 #						this value will push images directly to dockerhub.
-#						 make pushimage -e DEVFLAG=flase REGISTRYUSER=vmware \
+#						 make pushimage -e DEVFLAG=false REGISTRYUSER=vmware \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYPROJECTNAME=vmware
 #
@@ -63,7 +63,7 @@
 #				files with specific TAG. 
 #   By default DEVFLAG=true, if you want to release new version of Harbor, \
 #		should setting the flag to false.
-#				make XXXX -e DEVFLAG=flase
+#				make XXXX -e DEVFLAG=false
 
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
