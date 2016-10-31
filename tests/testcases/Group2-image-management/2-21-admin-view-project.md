@@ -12,7 +12,7 @@ User guide
 * This test requires that a Harbor instance is running and available.
 * Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
 * A linux host with Docker CLI installed (Docker client).
-* At least a non-admin users is in Harbor. 
+* At least a non-admin user is in Harbor. 
 
 # Test Steps:
 
