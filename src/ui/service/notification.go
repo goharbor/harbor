@@ -20,12 +20,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/service/cache"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/api"
+	"github.com/vmware/harbor/src/ui/service/cache"
 
 	"github.com/astaxie/beego"
 )
@@ -36,6 +36,7 @@ type NotificationHandler struct {
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
+const vicPrefix = "vic/"
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -102,8 +103,8 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
 	for _, event := range notification.Events {
-		log.Debugf("receive an event: ID-%s, target-%s:%s, digest-%s, action-%s", event.ID, event.Target.Repository, event.Target.Tag,
-			event.Target.Digest, event.Action)
+		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s", event.ID, event.Target.Repository,
+			event.Target.Tag, event.Target.Digest, event.Action, event.Target.MediaType, event.Request.UserAgent)
 
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
 		if err != nil {
@@ -115,8 +116,9 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 			continue
 		}
 
-		//pull and push manifest by docker-client
-		if strings.HasPrefix(event.Request.UserAgent, "docker") && (event.Action == "pull" || event.Action == "push") {
+		//pull and push manifest by docker-client or vic
+		if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix)) &&
+			(event.Action == "pull" || event.Action == "push") {
 			events = append(events, &event)
 			log.Debugf("add event to collect: %s", event.ID)
 			continue
