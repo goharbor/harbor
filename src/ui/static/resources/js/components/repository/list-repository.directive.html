@@ -1,0 +1,36 @@
+<div class="tab-pane" id="repositories" element-height>
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" id="txtSearchInput" class="form-control" placeholder="" ng-model="vm.filterInput" value="" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.searchRepo()"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+    </div>
+    <div class="pane">
+      <div class="sub-pane">
+        <div ng-if="vm.repositories.length == 0" class="empty-hint">
+          <h4 style="margin-top: 120px;" class="text-muted">// 'no_repositories' | tr //</h4>
+        </div>
+        <div ng-if="vm.repositories.length > 0" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default" ng-repeat="repo in vm.repositories">
+            <div class="panel-heading" role="tab" id="heading//$index + 1//">
+              <h4 class="panel-title">
+                <a ng-show="vm.tagCount[repo] > 0" role="button" data-toggle="collapse" data-parent="" href="?project_id=//vm.projectId//#collapse//$index + 1//"  aria-expanded="true" aria-controls="collapse//$index+1//">
+                  <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
+                </a>
+                <a ng-if="vm.tagCount[repo] === 0" role="button" style="text-decoration: none;" data-toggle="collapse" data-parent=""  aria-expanded="true" aria-controls="collapse//$index+1//">
+                  <span class="glyphicon glyphicon-book"></span> &nbsp;//repo// &nbsp;&nbsp;<span class="badge">//vm.tagCount[repo]//</span>
+                </a>
+                <a ng-show="vm.tagCount[repo] > 0 && vm.roleId == 1" class="pull-right" style="margin-right: 75px;" href="javascript:void(0)" ng-click="vm.deleteByRepo(repo)" title="// 'delete_repo' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[repo + '|']"><span class="glyphicon glyphicon-trash"></span></a>          
+              </h4>
+            </div>
+            <list-tag ng-show="vm.tagCount[repo] > 0" associate-id="$index + 1" repo-name="repo" tag-count="vm.tagCount" toggle-in-progress="vm.toggleInProgress" delete-by-tag="vm.deleteByTag()" role-id="//vm.roleId//"></list-tag>
+          </div>
+        </div>
+      </div>
+      <paginator ng-if="vm.totalCount > 0" total-count="//vm.totalCount//" page-size="//vm.pageSize//" page="vm.page" display-count="5"></paginator>      
+    </div>
+  </div>
+</div>

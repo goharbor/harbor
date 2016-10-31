@@ -1,0 +1,46 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="container-fluid container-fluid-custom" element-height ng-controller="DetailsController as vm">
+  <modal-dialog action="vm.action()" content-type="//vm.contentType//" modal-title="//vm.modalTitle//" modal-message="//vm.modalMessage//" confirm-only="vm.confirmOnly"></modal-dialog>
+  <div class="container container-custom">
+    <div class="row extend-height">
+      	<div class="col-xs-12 col-md-12 extend-height">
+    	    <div class="section" ng-style="vm.sectionHeight"> 
+    		    <h4 class="page-header">
+          <span ng-if="vm.isPublic === 0">// 'my_projects' | tr //</span>
+          <a ng-if="vm.isPublic === 1" href="javascript:void(0);" class="title-color" ng-click="vm.togglePublicity({isPublic: 0})">// 'my_projects' | tr //</a>
+          <span class="gutter">|</span>
+          <span ng-if="vm.isPublic === 1">// 'public_projects' | tr //</span>
+          <a ng-if="vm.isPublic === 0" href="javascript:void(0);" class="title-color" ng-click="vm.togglePublicity({isPublic: 1})">// 'public_projects' | tr //</a></h4>
+    		    <div class="switch-pane">
+            <switch-pane-projects is-open="vm.isOpen" selected-project="vm.selectedProject"></switch-pane-projects>
+            <span> 
+              <navigation-details target="vm.target" ng-show="vm.isProjectMember"></navigation-details>
+            </span>
+    		    </div>
+          <retrieve-projects target="vm.target" is-open="vm.isOpen" selected-project="vm.selectedProject" role-id="vm.roleId" is-project-member="vm.isProjectMember" is-public="vm.isPublic"></retrieve-projects>
+          <!-- Tab panes -->
+    		    <div class="tab-content" ng-click="vm.closeRetrievePane()">
+            <input type="hidden" id="HarborRegUrl" value="{{.HarborRegUrl}}">
+            <list-repository ng-if="vm.target === 'repositories'" section-height="vm.sectionHeight" role-id="//vm.roleId//"></list-repository>
+            <list-replication ng-if="vm.target === 'replication'" section-height="vm.sectionHeight"></list-replication>
+            <list-project-member ng-if="vm.target === 'users'" section-height="vm.sectionHeight" role-id="//vm.roleId//"></list-project-member>
+            <list-log ng-if="vm.target === 'logs'" section-height="vm.sectionHeight" target="vm.target"></list-log>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

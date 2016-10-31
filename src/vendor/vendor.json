@@ -1,0 +1,327 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "appengine/cloudsql",
+			"revision": ""
+		},
+		{
+			"path": "context",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "yXrS4e4yxaRBu/MX+39X3cS4kbg=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "a283a10442df8dc09befd873fab202bf8a253d6a",
+			"revisionTime": "2016-07-16T02:56:31Z"
+		},
+		{
+			"checksumSHA1": "7zRryEqzuHHWp8J7sw1t4IUhSM4=",
+			"path": "github.com/Unknwon/goconfig",
+			"revision": "5f601ca6ef4d5cea8d52be2f8b3a420ee4b574a5",
+			"revisionTime": "2016-02-16T18:39:35Z"
+		},
+		{
+			"checksumSHA1": "G0MBhApkgOH9++JlIA8FPfU7j9Y=",
+			"path": "github.com/astaxie/beego",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "gSSu0SO0GZIZrBgQpybXeNMWSJs=",
+			"path": "github.com/astaxie/beego/cache",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "sHidosSzJBx644nr3tyeaqsCrSc=",
+			"path": "github.com/astaxie/beego/cache/redis",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "raJhf500jq7AzIGIclRQBo0B5+s=",
+			"path": "github.com/astaxie/beego/config",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "52Cnm/rmogm6vPa2jW9D6SuKm3g=",
+			"path": "github.com/astaxie/beego/context",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "PDNn16w89zWODshT9zlPzSmWZFA=",
+			"path": "github.com/astaxie/beego/grace",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "xxtx4xJs8UcrvaXNQ9A5QM9+oFg=",
+			"path": "github.com/astaxie/beego/logs",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "4X7wg7DBwdaRW4W2dBf3U0+fTHc=",
+			"path": "github.com/astaxie/beego/orm",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "Zeh58fFq41Ym/YNH47O6gdm1Mh8=",
+			"path": "github.com/astaxie/beego/session",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "+W/P2deANUhWrFkdP9m4SLJ7620=",
+			"path": "github.com/astaxie/beego/session/redis",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "Mu2lA5Jq0tRk9MjhWllyzcJD6KU=",
+			"path": "github.com/astaxie/beego/toolbox",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "x90ZIgNp0dy/saCS+4tBR3gdQ6g=",
+			"path": "github.com/astaxie/beego/utils",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "pt/trdXvFa8AvhR67iMhfvqNfDU=",
+			"path": "github.com/astaxie/beego/validation",
+			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
+			"revisionTime": "2016-03-11T03:35:24Z",
+			"version": "v1.6.1",
+			"versionExact": "v1.6.1"
+		},
+		{
+			"checksumSHA1": "EjForbTT6+KOKNBAs0Zzgm7s+IE=",
+			"path": "github.com/beego/i18n",
+			"revision": "e87155e8f0c05bf323d0b13470e1b97af0cb5652",
+			"revisionTime": "2014-06-04T03:18:26Z"
+		},
+		{
+			"checksumSHA1": "dyW7eJt0inBkevS8lV0eb0Pm6MA=",
+			"path": "github.com/docker/distribution",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "qyi/ywyMfrOzLHOFUmfptEgicyQ=",
+			"path": "github.com/docker/distribution/context",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "f1wARLDzsF/JoyN01yoxXEwFIp8=",
+			"path": "github.com/docker/distribution/digest",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "9ymKULEPvYfNX+PCqIZfq5CMP/c=",
+			"path": "github.com/docker/distribution/manifest",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "XFMuuUrVW18yXJr0Br+RNh6lpf8=",
+			"path": "github.com/docker/distribution/manifest/schema1",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "CYiLSnQezNFsLxxrnVzLBqvwD5U=",
+			"path": "github.com/docker/distribution/manifest/schema2",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "PzXRTLmmqWXxmDqdIXLcRYBma18=",
+			"path": "github.com/docker/distribution/reference",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "ClxxEM8HAe3DrneFwpUoIgoW+XA=",
+			"path": "github.com/docker/distribution/registry/api/errcode",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "nHJXXHgsdUVnkuR0SA2DUJgSLgQ=",
+			"path": "github.com/docker/distribution/registry/api/v2",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "Ew29UsY4X4DuSd/DRz3MoMsocvs=",
+			"path": "github.com/docker/distribution/registry/auth",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "k/JJaY5xB9e/fMDg14wFQQbRYe0=",
+			"path": "github.com/docker/distribution/registry/auth/token",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "oV+QvpZYx+LFW4fDbQNJeskjJmU=",
+			"path": "github.com/docker/distribution/registry/client",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "sENYoE05tfuTC38SKYC+lKCDI1s=",
+			"path": "github.com/docker/distribution/registry/client/auth",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "VDfI80dOZWOJU7+neHqv2uT5Th8=",
+			"path": "github.com/docker/distribution/registry/client/transport",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "OfCHyYvzswfb+mAswNnEJmiQSq4=",
+			"path": "github.com/docker/distribution/registry/storage/cache",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "Uly2iPDPUbNtilosM7ERs1ZrcAY=",
+			"path": "github.com/docker/distribution/registry/storage/cache/memory",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "cNp7rNReJHvdSfrIetXS9RGsLSo=",
+			"path": "github.com/docker/distribution/uuid",
+			"revision": "a9b1322edf48b1fb9aee4e5ded7a4f4ac37c6830",
+			"revisionTime": "2016-07-12T18:18:54Z",
+			"version": "v2.5.0",
+			"versionExact": "v2.5.0"
+		},
+		{
+			"checksumSHA1": "sNAU9ojYVUhO6dVXey6T3JhRQpw=",
+			"path": "github.com/docker/libtrust",
+			"revision": "aabc10ec26b754e797f9028f4589c5b7bd90dc20",
+			"revisionTime": "2016-07-08T17:25:13Z"
+		},
+		{
+			"checksumSHA1": "fTw0VmWcoz28UZuOaeidmouucEM=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "a732e14c62dde3285440047bba97581bc472ae18",
+			"revisionTime": "2014-06-03T19:46:42Z",
+			"version": "v1.2",
+			"versionExact": "v1.2"
+		},
+		{
+			"checksumSHA1": "iIUYZyoanCQQTUaWsu8b+iOSPt4=",
+			"path": "github.com/gorilla/context",
+			"revision": "aed02d124ae4a0e94fea4541c8effd05bf0c8296",
+			"revisionTime": "2016-05-25T20:33:19Z"
+		},
+		{
+			"checksumSHA1": "TfZ8ulM+No3vdOTjK6qF1y9yVlI=",
+			"path": "github.com/gorilla/mux",
+			"revision": "780415097119f6f61c55475fe59b66f3c3e9ea53",
+			"revisionTime": "2016-08-01T17:00:46Z"
+		},
+		{
+			"checksumSHA1": "ToGxRLachRwa1HbVy7ZBdJaq5Zc=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "3fb7a0e792edd47bf0cf1e919dfc14e2be412e15",
+			"revisionTime": "2016-09-07T16:20:43Z"
+		},
+		{
+			"checksumSHA1": "JPm8dTnTbiYhi1kdn4JjHc4AZd0=",
+			"path": "github.com/mqu/openldap",
+			"revision": "91bfc2150f6c4991335de476c800caf26a990324",
+			"revisionTime": "2013-12-25T09:52:30Z"
+		},
+		{
+			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
+			"path": "golang.org/x/crypto/pbkdf2",
+			"revision": "5f961cd492ac9d43fc33a8ef646bae79d113fd97",
+			"revisionTime": "2016-08-10T14:35:40Z"
+		},
+		{
+			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
+			"path": "golang.org/x/net/context",
+			"revision": "075e191f18186a8ff2becaf64478e30f4545cdad",
+			"revisionTime": "2016-08-05T06:12:51Z"
+		},
+		{
+			"path": "golang.org/x/sys/unix",
+			"revision": ""
+		}
+	],
+	"rootPath": "github.com/vmware/harbor"
+}

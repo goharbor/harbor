@@ -1,0 +1,47 @@
+<!--
+    Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        
+        http://www.apache.org/licenses/LICENSE-2.0
+        
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="tab-pane" id="users">
+  <div class="col-xs-12 col-md-12 each-tab-pane">
+    <div class="form-inline">
+      <div class="input-group">
+        <input type="text" id="txtSearchInput" class="form-control" placeholder="" ng-model="vm.username" size="30">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="vm.search({projectId: vm.projectId, username: vm.username})"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+      <button ng-if="vm.roleId == 1 && !vm.isOpen" class="btn btn-success" type="button" ng-click="vm.addProjectMember()"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+      <button ng-if="vm.roleId == 1 && vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span>// 'add_member' | tr //</button>
+    </div>
+    <add-project-member ng-if="vm.isOpen" is-open="vm.isOpen" project-id="//vm.projectId//" reload='vm.search({projectId: vm.projectId, username: vm.username})'></add-project-member>
+    <div class="search-pane"> 	           
+      <div class="sub-pane">   
+          <div class="table-head-container">
+            <table class="table table-pane table-header">
+              <thead>
+                <th width="30%">// 'username' | tr //</th><th width="45%">// 'role' | tr //</th><th width="25%" ng-if="vm.roleId == 1">// 'operation' | tr //</th>
+              </thead>
+            </table>
+          </div>
+          <div class="table-body-container">
+            <table class="table table-pane">
+              <tbody>
+                <tr ng-repeat="pr in vm.projectMembers" edit-project-member username="pr.username" project-id="vm.projectId" user-id="pr.user_id" delete="vm.deleteProjectMember({projectId: vm.projectId, userId: pr.user_id})" current-user-id="vm.user.user_id" role-name="pr.role_name" reload='vm.search({projectId: vm.projectId, username: vm.username})' current-role-id="//vm.roleId//"></tr> 
+              </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+  </div>              
+</div>

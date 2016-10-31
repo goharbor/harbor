@@ -32,12 +32,11 @@ env:
 
 before_install:
    - sudo ./tests/hostcfg.sh
-   - cd Deploy
-   - sudo ./prepare
-   - cd ..
+   - sudo ./make/prepare
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev 
+  - sudo apt-get install -y sqlite3
 #  - sudo apt-get remove -y mysql-common mysql-server-5.5 mysql-server-core-5.5 mysql-client-5.5 mysql-client-core-5.5
 #  - sudo apt-get autoremove -y
 #  - sudo apt-get install -y libaio1
@@ -70,23 +69,24 @@ install:
   
 before_script:
   # create tables and load data
-  # - mysql < ./Deploy/db/registry.sql -uroot --verbose
+  # - mysql < ./make/db/registry.sql -uroot --verbose
+  - sudo sqlite3 /registry.db < make/common/db/registry_sqlite.sql
 
 script:
   - sudo ./tests/testprepare.sh 
-  - docker-compose -f Deploy/docker-compose.test.yml up -d
+  - docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
   - ./tests/pushimage.sh 
-  - ./Deploy/coverage4gotest.sh
+  - ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
-  - docker-compose -f Deploy/docker-compose.test.yml down
+  - docker-compose -f make/docker-compose.test.yml down
   
-  - docker-compose -f Deploy/docker-compose.yml up -d
+  - docker-compose -f make/dev/docker-compose.yml up -d
   
   - docker ps
   - go run tests/startuptest.go http://localhost/
