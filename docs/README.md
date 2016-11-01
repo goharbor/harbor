@@ -32,10 +32,11 @@ Use Swagger to find out the specs of Harbor API.
 [Internationalization Guide](developer_guide_i18n.md)  
 How to add your local language to Harbor.
 
-
 [Python SDK](../contrib/sdk/harbor-py) (by community)
 
-[makeing Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
+[Harbor CLI](https://github.com/int32bit/harborclient) (by community)
+
+[Deploy Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
 
 [Configuring Harbor as a local registry mirror](../contrib/Configure_mirror.md) (by community)
 
