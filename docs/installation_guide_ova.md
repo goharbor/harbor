@@ -7,11 +7,11 @@ This guide walks you through the steps about installing and configuring Harbor o
 
 2. Log in vSphere web client. Right click on the datacenter, cluster or host which Harbor will be deployed on. Select "Deploy OVF Template" and open the import wizard.  
 
-![ova](img/ova/ova01.png)
+ ![ova](img/ova/ova01.png)
 
 3. Select the OVA file from your local disk and click "Next".  
 
-![ova](img/ova/ova02.png)
+ ![ova](img/ova/ova02.png)
 
 4. Review the OVF template details and click "Next".  
 
