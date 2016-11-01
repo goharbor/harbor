@@ -75,6 +75,8 @@ This guide walks you through the steps about installing and configuring Harbor o
 
 11. When the appliance is ready, check from vSphere Web Client for its IP address. Open a browser and type in the URL `http(s)://harbor_ip_address` or `http(s)://harbor_host_name`. Log in as the admin user and verify Harbor has been successfully installed. 
 
+12. For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md).
+
 ## Reconfiguration
 If you want to change the properties of Harbor, follow the below steps:  
 
