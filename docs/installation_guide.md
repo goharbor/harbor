@@ -1,13 +1,21 @@
 # Installation and Configuration Guide
-Harbor can be installed by one of two installers: 
+Harbor can be installed by one of three approaches: 
 
 - **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
 
 - **Offline installer:** Use this installer when the host does not have Internet connection. The installer contains pre-built images so its size is larger.
 
-Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and configure Harbor.
+- **Virtual Appliance:** If you are installing Harbor as the registry component of vSphere Integrated Containers (VIC), or using Harbor as a standalone registry on vSphere platform, download the OVA version of Harbor. 
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [make Harbor on Kubernetes](kubernetes_deployment.md) for details.
+All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
+
+To install Harbor's virtual appliance, refer to the **[Harbor Installation Guide for OVA](installation_guide_ova.md)**.
+
+This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
+
+If you run a previous version of Harbor, you may need to migrate the data to fit the new database schema. For more details, please refer to **[Data Migration Guide](migration_guide.md)**.
+
+In addition, the deployment instructions on Kubernetes has been created by the community. Refer to set up [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
