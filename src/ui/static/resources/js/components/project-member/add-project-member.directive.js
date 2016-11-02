@@ -88,8 +88,10 @@
     }
     
   }
+
+  addProjectMember.$inject = ['$timeout'];
   
-  function addProjectMember() {
+  function addProjectMember($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project-member/add-project-member.directive.html',
@@ -109,6 +111,13 @@
     function link(scope, element, attrs, ctrl) {
       scope.form.$setPristine();
       scope.form.$setUntouched();
+      scope.$watch('vm.isOpen', function(current) {
+        if(current) {
+          $timeout(function() {
+            element.find('[name=uUsername]:input').focus();
+          });
+        }
+      });
     }
   }
   
