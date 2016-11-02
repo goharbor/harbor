@@ -43,24 +43,29 @@ func (b *BaseController) Prepare() {
 
 	var lang string
 
-	langCookie, err := b.Ctx.Request.Cookie("language")
-	if err != nil {
-		log.Errorf("Error occurred in Request.Cookie: %v", err)
-	}
-	if langCookie != nil {
-		lang = langCookie.Value
-	}
-	if len(lang) == 0 {
-		sessionLang := b.GetSession("lang")
-		if sessionLang != nil {
-			b.SetSession("Lang", lang)
-			lang = sessionLang.(string)
-		} else {
-			al := b.Ctx.Request.Header.Get("Accept-Language")
-			if len(al) > 4 {
-				al = al[:5] // Only compare first 5 letters.
-				if i18n.IsExist(al) {
-					lang = al
+	langRequest := b.GetString("lang")
+	if langRequest != "" {
+		lang = langRequest
+	} else {
+		langCookie, err := b.Ctx.Request.Cookie("language")
+		if err != nil {
+			log.Errorf("Error occurred in Request.Cookie: %v", err)
+		}
+		if langCookie != nil {
+			lang = langCookie.Value
+		}
+		if lang == "" {
+			sessionLang := b.GetSession("lang")
+			if sessionLang != nil {
+				b.SetSession("lang", lang)
+				lang = sessionLang.(string)
+			} else {
+				al := b.Ctx.Request.Header.Get("Accept-Language")
+				if len(al) > 4 {
+					al = al[:5] // Only compare first 5 letters.
+					if i18n.IsExist(al) {
+						lang = al
+					}
 				}
 			}
 		}
@@ -70,8 +75,15 @@ func (b *BaseController) Prepare() {
 		lang = defaultLang //Set default language if not supported.
 	}
 
-	b.Ctx.SetCookie("language", lang, 0, "/")
-	b.SetSession("Lang", lang)
+	cookies := &http.Cookie{
+		Name:     "language",
+		Value:    lang,
+		HttpOnly: true,
+		Domain:   "/",
+	}
+	http.SetCookie(b.Ctx.ResponseWriter, cookies)
+
+	b.SetSession("lang", lang)
 
 	curLang := langType{
 		Lang: lang,

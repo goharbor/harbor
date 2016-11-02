@@ -25,21 +25,19 @@
   function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter) {
     var vm = this;
     
-    vm.currentLanguage = I18nService().getCurrentLanguage();
-    vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
-    
-    I18nService().setCurrentLanguage(vm.currentLanguage);        
-    
+    var i18n = I18nService();
+    i18n.setCurrentLanguage(vm.language);
+    vm.languageName = i18n.getLanguageName(vm.language);
     console.log('current language:' + vm.languageName);
-
-    vm.supportLanguages = I18nService().getSupportLanguages(); 
+    
+    vm.supportLanguages = i18n.getSupportLanguages(); 
     vm.user = currentUser.get();
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
     vm.about = about;
         
     function setLanguage(language) {
-      I18nService().setCurrentLanguage(language);
+      vm.languageName = i18n.getLanguageName(vm.language);
       var hash = $window.location.hash;
       $window.location.href = '/language?lang=' + language + '&hash=' + encodeURIComponent(hash);    
     }
@@ -72,7 +70,8 @@
       'restrict': 'E',
       'templateUrl': '/optional_menu?timestamp=' + new Date().getTime(),
       'scope': {
-        'version': '@'
+        'version': '@',
+        'language': '@'
       },
       'controller': OptionalMenuController,
       'controllerAs': 'vm',
