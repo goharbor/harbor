@@ -10,26 +10,28 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-type SystemInfoApi struct {
+//SystemInfoAPI handle requests for getting system info /api/systeminfo
+type SystemInfoAPI struct {
 	api.BaseAPI
 	currentUserID int
 	isAdmin       bool
 }
 
-const harbor_storage_path = "/harbor_storage"
+const harborStoragePath = "/harbor_storage"
 
+//SystemInfo models for system info.
 type SystemInfo struct {
 	HarborStorage Storage `json:"harbor_storage"`
 }
 
+//Storage models for storage.
 type Storage struct {
 	Total uint64 `json:"total"`
 	Free  uint64 `json:"free"`
 }
 
-var systemInfo SystemInfo = SystemInfo{}
-
-func (sia *SystemInfoApi) Prepare() {
+// Prepare for validating user if an admin.
+func (sia *SystemInfoAPI) Prepare() {
 	sia.currentUserID = sia.ValidateUser()
 
 	var err error
@@ -40,23 +42,27 @@ func (sia *SystemInfoApi) Prepare() {
 	}
 }
 
-func (sia *SystemInfoApi) GetVolumeInfo() {
+// GetVolumeInfo gets specific volume storage info.
+func (sia *SystemInfoAPI) GetVolumeInfo() {
 	if !sia.isAdmin {
 		sia.RenderError(http.StatusForbidden, "User does not have admin role.")
 		return
 	}
 	var stat syscall.Statfs_t
-	err := syscall.Statfs(filepath.Join("/", harbor_storage_path), &stat)
+	err := syscall.Statfs(filepath.Join("/", harborStoragePath), &stat)
 	if err != nil {
 		log.Errorf("Error occurred in syscall.Statfs: %v", err)
 		sia.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		return
 	}
-	storage := Storage{
-		Total: stat.Blocks * uint64(stat.Bsize),
-		Free:  stat.Bfree * uint64(stat.Bsize),
+
+	systemInfo := SystemInfo{
+		HarborStorage: Storage{
+			Total: stat.Blocks * uint64(stat.Bsize),
+			Free:  stat.Bfree * uint64(stat.Bsize),
+		},
 	}
-	systemInfo.HarborStorage = storage
+
 	sia.Data["json"] = systemInfo
 	sia.ServeJSON()
 }
