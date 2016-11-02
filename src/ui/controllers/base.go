@@ -42,10 +42,12 @@ var mappingLangNames map[string]string
 func (b *BaseController) Prepare() {
 
 	var lang string
+	var langHasChanged bool
 
 	langRequest := b.GetString("lang")
 	if langRequest != "" {
 		lang = langRequest
+		langHasChanged = true
 	} else {
 		langCookie, err := b.Ctx.Request.Cookie("language")
 		if err != nil {
@@ -53,37 +55,30 @@ func (b *BaseController) Prepare() {
 		}
 		if langCookie != nil {
 			lang = langCookie.Value
-		}
-		if lang == "" {
-			sessionLang := b.GetSession("lang")
-			if sessionLang != nil {
-				b.SetSession("lang", lang)
-				lang = sessionLang.(string)
-			} else {
-				al := b.Ctx.Request.Header.Get("Accept-Language")
-				if len(al) > 4 {
-					al = al[:5] // Only compare first 5 letters.
-					if i18n.IsExist(al) {
-						lang = al
-					}
+		} else {
+			al := b.Ctx.Request.Header.Get("Accept-Language")
+			if len(al) > 4 {
+				al = al[:5] // Only compare first 5 letters.
+				if i18n.IsExist(al) {
+					lang = al
 				}
 			}
+			langHasChanged = true
 		}
 	}
 
-	if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
-		lang = defaultLang //Set default language if not supported.
+	if langHasChanged {
+		if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
+			lang = defaultLang //Set default language if not supported.
+		}
+		cookies := &http.Cookie{
+			Name:     "language",
+			Value:    lang,
+			HttpOnly: true,
+			Domain:   "/",
+		}
+		http.SetCookie(b.Ctx.ResponseWriter, cookies)
 	}
-
-	cookies := &http.Cookie{
-		Name:     "language",
-		Value:    lang,
-		HttpOnly: true,
-		Domain:   "/",
-	}
-	http.SetCookie(b.Ctx.ResponseWriter, cookies)
-
-	b.SetSession("lang", lang)
 
 	curLang := langType{
 		Lang: lang,
