@@ -9,7 +9,7 @@ Harbor can be installed by one of three approaches:
 
 All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
 
-To install Harbor's virtual appliance, refer to the **[Harbor Installation Guide for OVA](installation_guide_ova.md)**.
+To install Harbor's virtual appliance, refer to the **[Harbor Installation Guide for Virtual Appliance](installation_guide_ova.md)**.
 
 This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
 
@@ -50,7 +50,7 @@ Configuration parameters are located in the file **harbor.cfg**.
 The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
 
 * **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 * **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.
 	* email_server = smtp.mydomain.com 
 	* email_server_port = 25
@@ -102,8 +102,8 @@ storage:
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
 
 
-#### Installing and starting Harbor
-Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh script```.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
+#### Finishing installation and starting Harbor
+Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ```sh
     $ sudo ./install.sh
@@ -118,10 +118,10 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 **IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. 
 
-For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md) .
+For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
 
 #### Configuring Harbor with HTTPS access
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
+Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 
 
 ### Managing Harbor's lifecycle
