@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.5 (2016-10-31)
+
+- Virtual appliance of Harbor for vSphere.
+- Refactory for new build process.
+- Easier configuration for HTTPS in prepare step.
+- Updated documents.
+- Various bug fixes.
+
+
 ## v0.4.0 (2016-09-23)
 
 - Database schema changed, data migration/upgrade is needed for previous version.
