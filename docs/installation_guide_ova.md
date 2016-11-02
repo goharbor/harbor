@@ -2,6 +2,11 @@
 
 This guide walks you through the steps about installing and configuring Harbor on vSphere as an virtual appliance (OVA). If you are installing Harbor on a Linux host, refer to this **[Installation Guide](installation_guide.md)**.
 
+## Prerequisites
+* vCenter 5.x+ and at least an ESX host. 
+* 2 vCPUs, 4GB memory and 100GB free disk space in datastore.
+* A network with DHCP capability, or a static IP address for the virtual appliance.
+
 ## Installation
 1. Download the OVA file to your local disk from the **[official release page](https://github.com/vmware/harbor/releases)**.  
 
@@ -51,7 +56,7 @@ This guide walks you through the steps about installing and configuring Harbor o
 	* **Email SSL**: Whether to enabled secure mail transmission.
 	* **SSL Cert**: Paste in the content of a certificate file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
 	* **SSL Cert Key**: Paste in the content of certificate key file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
-	* **Self Registration**: Determine whether the self-registration is allowed or not when the authentication mode is database. Set this to off to disable a user's self-registration in Harbor.
+	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD. 
 	* **Verify Remote Cert**: Determine whether the image replication should verify the certificate when it connects to a remote registry via TLS. Set this flag to off when the remote registry uses a self-signed or untrusted certificate.
 	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
 
