@@ -31,7 +31,7 @@
               <th width="20%">// 'email' | tr //</th>
               <th width="35%">// 'registration_time' | tr //</th>
               <th width="15%">// 'administrator' | tr //</th>
-              <th width="20%">// 'operation' | tr //</th>
+              <th width="20%" ng-if="vm.authMode === 'db_auth'">// 'operation' | tr //</th>
             </thead>
           </table>
         </div>
@@ -46,7 +46,7 @@
                 <td width="15%">
                   <toggle-admin current-user="vm.currentUser" has-admin-role="u.has_admin_role" user-id="//u.user_id//"></toggle-admin>
                 </td>
-                <td width="20%">
+                <td width="20%" ng-if="vm.authMode === 'db_auth'">
                   &nbsp;&nbsp;<a ng-if="vm.currentUser.user_id != u.user_id" href="javascript:void(0)" ng-click="vm.confirmToDelete(u.user_id, u.username)"><span class="glyphicon glyphicon-trash"></span></a>
                 </td>
               </tr>

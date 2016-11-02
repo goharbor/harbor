@@ -86,7 +86,7 @@ script:
 
   - docker-compose -f make/docker-compose.test.yml down
   
-  - docker-compose -f make/docker-compose.yml up -d
+  - docker-compose -f make/dev/docker-compose.yml up -d
   
   - docker ps
   - go run tests/startuptest.go http://localhost/

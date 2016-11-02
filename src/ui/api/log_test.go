@@ -21,7 +21,7 @@ func TestLogGet(t *testing.T) {
 	project.ProjectName = "my_project"
 	project.Public = 1
 	now := fmt.Sprintf("%v", time.Now().Unix())
-	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "")
+	statusCode, result, err := apiTest.LogGet(*admin, "0", now, "1000")
 	if err != nil {
 		t.Error("Error while get log information", err.Error())
 		t.Log(err)
@@ -30,8 +30,7 @@ func TestLogGet(t *testing.T) {
 
 	}
 	logNum := len(result)
-	logID := result[0].LogId
-	fmt.Println(result)
+	fmt.Println("result", result)
 	//add the project first.
 	fmt.Println("add the project first.")
 	reply, err := apiTest.ProjectsPost(*admin, project)
@@ -42,20 +41,24 @@ func TestLogGet(t *testing.T) {
 		assert.Equal(int(201), reply, "Case 2: Project creation status should be 201")
 	}
 	//case 1: right parameters, expect the right output
+	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "1000")
 	if err != nil {
 		t.Error("Error while get log information", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(logNum+1, len(result), "lines of logs should be equal")
-		assert.Equal(int32(logID+1), result[0].LogId, "LogId should be equal")
-		assert.Equal("my_project/", result[0].RepoName, "RepoName should be equal")
-		assert.Equal("N/A", result[0].RepoTag, "RepoTag should be equal")
-		assert.Equal("create", result[0].Operation, "Operation should be equal")
+		num, index := getLog(result)
+		if num != 1 {
+			assert.Equal(1, num, "add my_project log number should be 1")
+		} else {
+			assert.Equal("my_project/", result[index].RepoName, "RepoName should be equal")
+			assert.Equal("N/A", result[index].RepoTag, "RepoTag should be equal")
+			assert.Equal("create", result[index].Operation, "Operation should be equal")
+		}
 	}
-
+	fmt.Println("log ", result)
 	//case 2: wrong format of start_time parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "ss", now, "3")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of start_time parameter is not right.", err.Error())
@@ -74,7 +77,6 @@ func TestLogGet(t *testing.T) {
 	}
 
 	//case 4: wrong format of lines parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "s")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of lines parameter is not right.", err.Error())
@@ -84,7 +86,6 @@ func TestLogGet(t *testing.T) {
 	}
 
 	//case 5: wrong format of lines parameter, expect the wrong output
-	now = fmt.Sprintf("%v", time.Now().Unix())
 	statusCode, result, err = apiTest.LogGet(*admin, "0", now, "-5")
 	if err != nil {
 		t.Error("Error occured while get log information since the format of lines parameter is not right.", err.Error())
@@ -103,13 +104,17 @@ func TestLogGet(t *testing.T) {
 		if logNum+1 >= 10 {
 			logNum = 10
 		} else {
-			logNum += 1
+			logNum++
 		}
 		assert.Equal(logNum, len(result), "lines of logs should be equal")
-		assert.Equal(int32(logID+1), result[0].LogId, "LogId should be equal")
-		assert.Equal("my_project/", result[0].RepoName, "RepoName should be equal")
-		assert.Equal("N/A", result[0].RepoTag, "RepoTag should be equal")
-		assert.Equal("create", result[0].Operation, "Operation should be equal")
+		num, index := getLog(result)
+		if num != 1 {
+			assert.Equal(1, num, "add my_project log number should be 1")
+		} else {
+			assert.Equal("my_project/", result[index].RepoName, "RepoName should be equal")
+			assert.Equal("N/A", result[index].RepoTag, "RepoTag should be equal")
+			assert.Equal("create", result[index].Operation, "Operation should be equal")
+		}
 	}
 
 	//get the project
@@ -136,5 +141,15 @@ func TestLogGet(t *testing.T) {
 	}
 
 	fmt.Printf("\n")
+}
 
+func getLog(result []apilib.AccessLog) (int, int) {
+	var num, index int
+	for i := 0; i < len(result); i++ {
+		if result[i].RepoName == "my_project/" {
+			num++
+			index = i
+		}
+	}
+	return num, index
 }

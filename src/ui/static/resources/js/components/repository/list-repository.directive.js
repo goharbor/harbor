@@ -19,14 +19,14 @@
     .module('harbor.repository')
     .directive('listRepository', listRepository);   
     
-  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$filter', 'trFilter', '$location', 'getParameterByName'];
+  ListRepositoryController.$inject = ['$scope', 'ListRepositoryService', 'DeleteRepositoryService', '$filter', 'trFilter', '$location', 'getParameterByName', '$window'];
   
-  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $filter, trFilter, $location, getParameterByName) {
+  function ListRepositoryController($scope, ListRepositoryService, DeleteRepositoryService, $filter, trFilter, $location, getParameterByName, $window) {
     
     $scope.subsTabPane = 30;
     
     var vm = this;
-  
+      
     vm.sectionHeight = {'min-height': '579px'};
   
     vm.filterInput = '';
@@ -104,7 +104,23 @@
     }
     
     function getRepositoryFailed(response) {
-      console.log('Failed to list repositories:' + response);      
+      var errorMessage = '';
+      if(response.status === 404) {
+        errorMessage = $filter('tr')('project_does_not_exist');
+      }else{
+        errorMessage = $filter('tr')('failed_to_get_project');
+      }
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', errorMessage);
+      var emitInfo = {
+        'confirmOnly': true,
+        'contentType': 'text/html',
+        'action' : function() {
+          $window.location.href = '/dashboard';
+        }
+      };
+      $scope.$emit('raiseInfo', emitInfo);
+      console.log('Failed to list repositories:' + response.data);      
     }
    
     function searchRepo() {
@@ -155,6 +171,7 @@
     function deleteRepositorySuccess(data, status) {
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
       vm.retrieve();
+      $scope.$broadcast('refreshTags', true);
     }
     
     function deleteRepositoryFailed(data, status) {
@@ -180,7 +197,8 @@
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/repository/list-repository.directive.html',
       'scope': {
-        'sectionHeight': '='
+        'sectionHeight': '=',
+        'roleId': '@'
       },
       'link': link,
       'controller': ListRepositoryController,

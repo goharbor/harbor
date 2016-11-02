@@ -87,7 +87,8 @@
         'roleName': '=',
         'projectId': '=',
         'delete': '&',
-        'reload': '&'
+        'reload': '&',
+        'currentRoleId': '@'
       },
       'controller': EditProjectMemberController,
       'controllerAs': 'vm',

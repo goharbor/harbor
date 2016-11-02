@@ -2,7 +2,7 @@
 #	
 # Targets:
 #
-# build: 	build harbor ubuntu images
+# build: 	build harbor photon images
 # clean:	clean ui and jobservice harbor images
 
 # common
@@ -29,8 +29,8 @@ JOBSERVICESOURCECODE=$(SRCPATH)/jobservice
 JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
 
-# ubuntu dockerfile
-DOCKERFILEPATH=$(MAKEPATH)/ubuntu
+# photon dockerfile
+DOCKERFILEPATH=$(MAKEPATH)/photon
 DOCKERFILEPATH_UI=$(DOCKERFILEPATH)/ui
 DOCKERFILENAME_UI=Dockerfile
 DOCKERIMAGENAME_UI=vmware/harbor-ui
@@ -55,21 +55,21 @@ endif
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-build:
-	@echo "building ui container for ubuntu..."
+build: 
+	@echo "building ui container for photon..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_UI)/$(DOCKERFILENAME_UI) -t $(DOCKERIMAGENAME_UI):$(VERSIONTAG) .
 	@echo "Done."
 	
-	@echo "building jobservice container for ubuntu..."
+	@echo "building jobservice container for photon..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
 	@echo "Done."
 	
-	@echo "building log container for ubuntu..."
+	@echo "building log container for photon..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
 	@echo "Done."
 	
 cleanimage:
-	@echo "cleaning image for ubuntu..."
+	@echo "cleaning image for photon..."
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)

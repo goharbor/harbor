@@ -8,10 +8,10 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
-	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/auth"
 )
 
 // BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.

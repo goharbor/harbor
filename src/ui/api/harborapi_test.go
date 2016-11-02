@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
 
@@ -90,6 +91,11 @@ func init() {
 
 	_ = updateInitPassword(1, "Harbor12345")
 
+	//syncRegistry
+	if err := SyncRegistry(); err != nil {
+		log.Fatalf("failed to sync repositories from registry: %v", err)
+	}
+
 	//Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
@@ -119,8 +125,10 @@ func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int
 //The response includes the project and repository list in a proper display order.
 //@param q Search parameter for project and repository name.
 //@return []Search
-//func (a testapi) SearchGet (q string) (apilib.Search, error) {
-func (a testapi) SearchGet(q string) (apilib.Search, error) {
+func (a testapi) SearchGet(q string, authInfo ...usrInfo) (int, apilib.Search, error) {
+	var httpCode int
+	var body []byte
+	var err error
 
 	_sling := sling.New().Get(a.basePath)
 
@@ -134,10 +142,15 @@ func (a testapi) SearchGet(q string) (apilib.Search, error) {
 
 	_sling = _sling.QueryStruct(&QueryParams{Query: q})
 
-	_, body, err := request(_sling, jsonAcceptHeader)
+	if len(authInfo) > 0 {
+		httpCode, body, err = request(_sling, jsonAcceptHeader, authInfo[0])
+	} else {
+		httpCode, body, err = request(_sling, jsonAcceptHeader)
+	}
+
 	var successPayload = new(apilib.Search)
 	err = json.Unmarshal(body, &successPayload)
-	return *successPayload, err
+	return httpCode, *successPayload, err
 }
 
 //Create a new project.
@@ -285,7 +298,7 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 }
 
 //Search projects by projectName and isPublic
-func (a testapi) ProjectsGet(projectName string, isPublic int32) (int, []apilib.Project, error) {
+func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usrInfo) (int, []apilib.Project, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	//create api path
@@ -299,7 +312,15 @@ func (a testapi) ProjectsGet(projectName string, isPublic int32) (int, []apilib.
 
 	var successPayload []apilib.Project
 
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader)
+	var httpStatusCode int
+	var err error
+	var body []byte
+	if len(authInfo) > 0 {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader, authInfo[0])
+	} else {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader)
+	}
+
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
 	}

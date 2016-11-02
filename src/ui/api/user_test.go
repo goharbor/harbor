@@ -110,7 +110,7 @@ func TestUsersPost(t *testing.T) {
 	//case 9: register a new user with admin auth, but bad user comment, expect 400
 	testUser0002.Realname = "testUser0002"
 	testUser0002.Comment = "vmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-	fmt.Println("Register user with admin auth, but bad user comment format")
+	fmt.Println("Register user with admin auth, but user comment length is illegal")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occured while add a user", err.Error())
@@ -222,7 +222,7 @@ func TestUsersGetByID(t *testing.T) {
 	//case 3: Get user that does not exist with user2 auth, expect 404 not found.
 	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, 1000)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(404, code, "Get users status should be 404")
@@ -230,7 +230,7 @@ func TestUsersGetByID(t *testing.T) {
 	// Get user3ID in order to delete at the last of the test
 	code, users, err := apiTest.UsersGet(testUser0003.Username, *admin)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get users status should be 200")
@@ -250,7 +250,7 @@ func TestUsersPut(t *testing.T) {
 		t.Error("Error occured while change user profile", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Get users status should be 403")
+		assert.Equal(403, code, "Change user profile status should be 403")
 	}
 	//case 2: change user2 profile with user2 auth, but bad parameters format.
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
@@ -258,7 +258,7 @@ func TestUsersPut(t *testing.T) {
 		t.Error("Error occured while change user profile", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Get users status should be 400")
+		assert.Equal(400, code, "Change user profile status should be 400")
 	}
 	//case 3: change user2 profile with user2 auth, but duplicate email.
 	profile.Realname = "test user"
@@ -269,7 +269,7 @@ func TestUsersPut(t *testing.T) {
 		t.Error("Error occured while change user profile", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(409, code, "Get users status should be 409")
+		assert.Equal(409, code, "Change user profile status should be 409")
 	}
 	//case 4: change user2 profile with user2 auth, right parameters format.
 	profile.Realname = "test user"
@@ -280,7 +280,8 @@ func TestUsersPut(t *testing.T) {
 		t.Error("Error occured while change user profile", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Get users status should be 200")
+		assert.Equal(200, code, "Change user profile status should be 200")
+		testUser0002.Email = profile.Email
 	}
 }
 
@@ -291,18 +292,18 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	//case 1: toggle user2 admin role without admin auth
 	code, err := apiTest.UsersToggleAdminRole(testUser0002ID, *testUser0002Auth, int32(1))
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while toggle user admin role", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Get users status should be 403")
+		assert.Equal(403, code, "Toggle user admin role status should be 403")
 	}
 	//case 2: toggle user2 admin role with admin auth
 	code, err = apiTest.UsersToggleAdminRole(testUser0002ID, *admin, int32(1))
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while toggle user admin role", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Get users status should be 200")
+		assert.Equal(200, code, "Toggle user admin role status should be 200")
 	}
 }
 func TestUsersUpdatePassword(t *testing.T) {
@@ -321,39 +322,59 @@ func TestUsersUpdatePassword(t *testing.T) {
 	//case 2: update user2 password with admin auth, but oldpassword is empty
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while update user password", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Get users status should be 400")
+		assert.Equal(400, code, "Update user password status should be 400")
 	}
 	//case 3: update user2 password with admin auth, but oldpassword is wrong
 	password.OldPassword = "000"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while update user password", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Get users status should be 403")
+		assert.Equal(403, code, "Update user password status should be 403")
 	}
 	//case 4: update user2 password with admin auth, but newpassword is empty
 	password.OldPassword = "testUser0002"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while update user password", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Get users status should be 400")
+		assert.Equal(400, code, "Update user password status should be 400")
 	}
 	//case 5: update user2 password with admin auth, right parameters
 	password.NewPassword = "TestUser0002"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occured while update user password", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Get users status should be 200")
+		assert.Equal(200, code, "Update user password status should be 200")
 		testUser0002.Password = password.NewPassword
 		testUser0002Auth.Passwd = password.NewPassword
+		//verify the new password takes effect
+		code, user, err := apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, testUser0002ID)
+		if err != nil {
+			t.Error("Error occured while get users", err.Error())
+			t.Log(err)
+		} else {
+			assert.Equal(200, code, "Get users status should be 200")
+			assert.Equal(testUser0002.Username, user.Username, "Get users username should be equal")
+			assert.Equal(testUser0002.Email, user.Email, "Get users email should be equal")
+		}
+
+	}
+	//case 6: update user2 password setting the new password same as the old
+	password.OldPassword = password.NewPassword
+	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
+	if err != nil {
+		t.Error("Error occured while update user password", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(200, code, "When new password is same as old, update user password status should be 200")
 	}
 }
 
@@ -366,33 +387,33 @@ func TestUsersDelete(t *testing.T) {
 	//case 1:delete user without admin auth
 	code, err := apiTest.UsersDelete(testUser0002ID, *testUser0003Auth)
 	if err != nil {
-		t.Error("Error occured while delete a testUser", err.Error())
+		t.Error("Error occured while delete test user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Delete testUser status should be 403")
+		assert.Equal(403, code, "Delete test user status should be 403")
 	}
 	//case 2: delete user with admin auth, user2 has already been toggled to admin, but can not delete himself
 	code, err = apiTest.UsersDelete(testUser0002ID, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while delete a testUser", err.Error())
+		t.Error("Error occured while delete test user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Delete testUser status should be 403")
+		assert.Equal(403, code, "Delete test user status should be 403")
 	}
 	//case 3: delete user with admin auth
 	code, err = apiTest.UsersDelete(testUser0002ID, *admin)
 	if err != nil {
-		t.Error("Error occured while delete a testUser", err.Error())
+		t.Error("Error occured while delete test user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Delete testUser status should be 200")
+		assert.Equal(200, code, "Delete test user status should be 200")
 	}
 	//delete user3 with admin auth
 	code, err = apiTest.UsersDelete(testUser0003ID, *admin)
 	if err != nil {
-		t.Error("Error occured while delete a testUser", err.Error())
+		t.Error("Error occured while delete test user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Delete testUser status should be 200")
+		assert.Equal(200, code, "Delete test user status should be 200")
 	}
 }

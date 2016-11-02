@@ -23,10 +23,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -152,7 +152,7 @@ func (ua *UserAPI) Put() {
 	ua.DecodeJSONReq(&user)
 	err := commonValidate(user)
 	if err != nil {
-		log.Warning("Bad request in change user profile: %v", err)
+		log.Warningf("Bad request in change user profile: %v", err)
 		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
 		return
 	}
@@ -200,7 +200,7 @@ func (ua *UserAPI) Post() {
 	ua.DecodeJSONReq(&user)
 	err := validate(user)
 	if err != nil {
-		log.Warning("Bad request in Register: %v", err)
+		log.Warningf("Bad request in Register: %v", err)
 		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
 		return
 	}
@@ -239,6 +239,12 @@ func (ua *UserAPI) Delete() {
 		log.Warningf("current user, id: %d does not have admin role, can not remove user", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
+	}
+
+	// TODO read from conifg
+	authMode := os.Getenv("AUTH_MODE")
+	if authMode == "ldap_auth" {
+		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
 	}
 
 	if ua.currentUserID == ua.userID {

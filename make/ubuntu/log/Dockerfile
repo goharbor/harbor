@@ -1,13 +1,12 @@
 FROM library/ubuntu:14.04
 
-# run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
-RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
-	&& rm /etc/rsyslog.d/* \
-        && rm /etc/rsyslog.conf
+RUN rm /etc/rsyslog.d/* && rm /etc/rsyslog.conf
+
 ADD make/common/log/rsyslog.conf /etc/rsyslog.conf
 
-# logrotate configuration file for docker
-ADD make/common/log/logrotate_docker.conf /etc/logrotate.d/
+# rotate logs weekly
+# notes: file name cannot contain dot, or the script will not run
+ADD make/common/log/rotate.sh /etc/cron.weekly/rotate
 
 # rsyslog configuration file for docker
 ADD make/common/log/rsyslog_docker.conf /etc/rsyslog.d/

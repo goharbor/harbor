@@ -20,10 +20,10 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 
 	"strconv"
 	"time"
@@ -192,7 +192,8 @@ func (p *ProjectAPI) Delete() {
 		if err := dao.AddAccessLog(models.AccessLog{
 			UserID:    userID,
 			ProjectID: p.projectID,
-			RepoName:  p.projectName,
+			RepoName:  p.projectName + "/",
+			RepoTag:   "N/A",
 			Operation: "delete",
 		}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
@@ -286,6 +287,13 @@ func (p *ProjectAPI) List() {
 		if public != 1 {
 			if isAdmin {
 				projectList[i].Role = models.PROJECTADMIN
+			} else {
+				roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
+				if err != nil {
+					log.Errorf("failed to get user's project role: %v", err)
+					p.CustomAbort(http.StatusInternalServerError, "")
+				}
+				projectList[i].Role = roles[0].RoleID
 			}
 			if projectList[i].Role == models.PROJECTADMIN {
 				projectList[i].Togglable = true

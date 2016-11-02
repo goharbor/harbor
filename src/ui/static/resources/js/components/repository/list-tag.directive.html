@@ -5,7 +5,7 @@
         <th width="20%"><span class="glyphicon glyphicon-tags"></span> // 'tag' | tr //</th>
         <th width="15%" style="text-align: center;">// 'image_details' | tr //</th>
         <th width="40%">// 'pull_command' | tr //</th>
-        <th width="15%" style="text-align: center;">// 'operation' | tr //</th>
+        <th width="15%" ng-if="vm.roleId == 1" style="text-align: center;">// 'operation' | tr //</th>
       </thead>
       <tbody>
         <tr ng-repeat="tag in vm.tags">
@@ -14,7 +14,7 @@
           <td>
             <pull-command repo-name="//vm.repoName//" tag="//tag//"></pull-command>   
           </td>
-          <td style="text-align: center;"><a href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]"><span class="glyphicon glyphicon-trash"></span></a></td>
+          <td style="text-align: center;"><a ng-if="vm.roleId == 1" href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]"><span class="glyphicon glyphicon-trash"></span></a></td>
         </tr>
       </tbody>
     </table>

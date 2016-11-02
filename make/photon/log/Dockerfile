@@ -1,8 +1,7 @@
 FROM library/photon:latest
 
 # run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
-RUN tdnf install -y cronie rsyslog logrotate shadow\
-    && mv /etc/cron.daily/logrotate /etc/cron.hourly/ \
+RUN tdnf install -y cronie rsyslog shadow tar gzip \
 	&& mkdir /etc/rsyslog.d/ \
     && mkdir /var/spool/rsyslog \
     && groupadd syslog \
@@ -10,14 +9,12 @@ RUN tdnf install -y cronie rsyslog logrotate shadow\
     
 ADD make/common/log/rsyslog.conf /etc/rsyslog.conf
 
-COPY make/photon/log/logrotate.conf.photon /etc/logrotate.conf 
-
-# logrotate configuration file for docker
-ADD make/common/log/logrotate_docker.conf /etc/logrotate.d/
+# rotate logs weekly
+# notes: file name cannot contain dot, or the script will not run
+ADD make/common/log/rotate.sh /etc/cron.weekly/rotate
 
 # rsyslog configuration file for docker
 ADD make/common/log/rsyslog_docker.conf /etc/rsyslog.d/
-
 
 VOLUME /var/log/docker/
 
