@@ -8,7 +8,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							reg-bj.eng.vmware.com/harborrelease/harborgo:1.6.2
+#							vmware/harborgo:1.6.2
 # compile_ui, compile_jobservice: compile specific binary
 #
 # build: 		build Harbor docker images (defuault: build_photon)
@@ -52,8 +52,6 @@
 # cleanversiontag:
 #				cleanpackageremove specific version tag
 # cleanpackage: remove online/offline install package
-#  
-# all: 			install
 # 
 # other example:
 #	clean specific version binarys and images:
@@ -106,6 +104,7 @@ GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
 GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
+GOLANGDOCKERFILENAME=Dockerfile.golang
 
 # binary 
 UISOURCECODE=$(SRCPATH)/ui
@@ -170,7 +169,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 version:
-	if [ "$(DEVFLAG)" = "false" ] ; then \
+	@if [ "$(DEVFLAG)" = "false" ] ; then \
 		$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME) ; \
 	fi
 	
@@ -179,40 +178,41 @@ check_environment:
 
 compile_ui:
 	@echo "compiling binary for ui..."
-	$(GOBUILD) -o $(UIBINARYPATH)/$(UIBINARYNAME) $(UISOURCECODE)
+	@$(GOBUILD) -o $(UIBINARYPATH)/$(UIBINARYNAME) $(UISOURCECODE)
 	@echo "Done."
 	
 compile_jobservice:
 	@echo "compiling binary for jobservice..."
-	$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
+	@$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
 	@echo "Done."
 	
 compile_normal: compile_ui compile_jobservice
 
-compile_golangimage:
-	@echo "pulling golang build base image"
-	$(DOCKERPULL) $(GOBUILDIMAGE)
+compile_buildgolangimage:
+	@echo "compiling golang image for harbor ..."
+	@$(DOCKERBUILD) -t $(GOBUILDIMAGE) -f $(TOOLSPATH)/$(GOLANGDOCKERFILENAME) .
 	@echo "Done."
 
+compile_golangimage:
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
 	@echo "Done."
 	
 	@echo "compiling binary for jobservice (golang image)..."
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 	
 compile:check_environment $(COMPILETAG)
 
 prepare: 
 	@echo "preparing..."
-	$(MAKEPATH)/$(PREPARECMD) -conf $(CONFIGPATH)/$(CONFIGFILE)
+	@$(MAKEPATH)/$(PREPARECMD) -conf $(CONFIGPATH)/$(CONFIGFILE)
 	
 build_common: version
 	@echo "buildging db container for photon..."
-	cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 build_photon: build_common
@@ -224,13 +224,13 @@ build_ubuntu: build_common
 build: build_$(BASEIMAGE)
 	
 modify_composefile: 
-	@echo "preparing tag:$(VERSIONTAG) docker-compose file..."
+	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
 install: compile build prepare modify_composefile
 	@echo "loading harbor images..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
+	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Install complete. You can visit harbor now."
 	
 package_online: modify_composefile
@@ -238,7 +238,7 @@ package_online: modify_composefile
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
 		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
-		$(HARBORPKG)/docker-compose.$(VERSIONTAG).yml ; \
+		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
@@ -262,11 +262,11 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	$(DOCKERPULL) registry:2.5.0
-	$(DOCKERPULL) nginx:1.9
+	@$(DOCKERPULL) registry:2.5.0
+	@$(DOCKERPULL) nginx:1.9
 	
 	@echo "saving harbor docker image"
-	$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+	@$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -287,10 +287,10 @@ package_offline: compile build modify_composefile
 
 pushimage:
 	@echo "pushing harbor images ..."
-	$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
-	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
+	@$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
-	$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
@@ -309,7 +309,7 @@ pushimage:
 		
 start:
 	@echo "loading harbor images..."
-	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml up -d
+	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml up -d
 	@echo "Start complete. You can visit harbor now."
 	
 down:
@@ -328,12 +328,12 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-	#- $(DOCKERRMIMAGE) -f registry:2.5.0
-	#- $(DOCKERRMIMAGE) -f nginx:1.9
+#	- $(DOCKERRMIMAGE) -f registry:2.5.0
+#	- $(DOCKERRMIMAGE) -f nginx:1.9
 
 cleandockercomposefile:
-	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml"
-	@if [ -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml ] ; then rm $(DOCKERCOMPOSEFILEPATH)/docker-compose.$(VERSIONTAG).yml ; fi
+	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml"
+	@if [ -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml ] ; then rm $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml ; fi
 
 cleanversiontag:
 	@echo "cleaning version TAG"
