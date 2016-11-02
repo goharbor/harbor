@@ -185,7 +185,7 @@ Replace the first "80" to a customized port, e.g. 8888:80.
 
 ```
 proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.11.5
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx
@@ -228,7 +228,7 @@ Replace the first "443" to a customized port, e.g. 4443:443.
 
 ```
 proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.11.5
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx

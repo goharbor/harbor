@@ -7,7 +7,7 @@ make/common/config/jobservice/env
 make/common/config/nginx/nginx.conf
 make/common/config/nginx/cert/*
 make/dev/ui/harbor_ui
-make/dev//jobservice/harbor_jobservice
+make/dev/jobservice/harbor_jobservice
 src/ui/ui
 src/jobservice/jobservice
 *.pyc
