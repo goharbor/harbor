@@ -17,31 +17,31 @@ Please open an issue to track any initiative on the roadmap of Harbor. We will w
 ### 1. Notary
 The notary feature allows publishers to sign their images offline and to push the signed content to a notary server. This ensures the authenticity of images.
 
-### 1. Vulnerability Scanning
+### 2. Vulnerability Scanning
 The capability to scan images for vulnerability.
 
-### 2. Image replication between Harbor instances (Completed)
+### 3. Image replication between Harbor instances (Completed)
 Enable images to be replicated between two or more Harbor instances. This is useful to have multiple registry servers servicing a large cluster of nodes, or have distributed registry instances with identical images.
 
-### 3. Image deletion and garbage collection (Completed)
+### 4. Image deletion and garbage collection (Completed)
 a) Images can be deleted from UI. The files of deleted images are not removed immediately. 
 
 b) The files of deleted images are recycled by an administrator during system maintenance(Garbage collection). The registry service must be shut down during the process of garbage collection.
 
 
-### 4. Authentication (OAuth2) 
+### 5. Authentication (OAuth2) 
 In addition to LDAP/AD and local users, OAuth 2.0 can be used to authenticate a user.
 
-### 5. High Availability (in progress)
+### 6. High Availability (in progress)
 Support multi-node deployment of Harbor for high availability, scalability and load-balancing purposes.
 
-### 6. Statistics and description for repositories
+### 7. Statistics and description for repositories
 User can add a description to a repository. The access count of a repo can be aggregated and displayed.
 
 
-### 7. Audit all operations in the system
+### 8. Audit all operations in the system
 Currently only image related operations are logged. Other operations in Harbor, such as user creation/deletion, role changes, password reset, should be tracked as well.
 
 
-### 8. Migration tool to move from an existing registry to Harbor 
+### 9. Migration tool to move from an existing registry to Harbor 
 A tool to migrate images from a vanilla registry server to Harbor, without the need to export/import a large amount of data.
