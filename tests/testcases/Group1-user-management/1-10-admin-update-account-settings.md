@@ -15,7 +15,7 @@ User guide
 
 # Test Steps:
 
-1. Thw admin user logs in to UI.
+1. The admin user logs in to UI.
 2. The user changes his/her account settings, including email, full name and comments.
 3. The user logs out.
 4. The admin user logs in again using **new email**, and verify the account settings had been changed.
