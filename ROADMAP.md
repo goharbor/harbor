@@ -17,6 +17,9 @@ Please open an issue to track any initiative on the roadmap of Harbor. We will w
 ### 1. Notary
 The notary feature allows publishers to sign their images offline and to push the signed content to a notary server. This ensures the authenticity of images.
 
+### 1. Vulnerability Scanning
+The capability to scan images for vulnerability.
+
 ### 2. Image replication between Harbor instances (Completed)
 Enable images to be replicated between two or more Harbor instances. This is useful to have multiple registry servers servicing a large cluster of nodes, or have distributed registry instances with identical images.
 
@@ -29,7 +32,7 @@ b) The files of deleted images are recycled by an administrator during system ma
 ### 4. Authentication (OAuth2) 
 In addition to LDAP/AD and local users, OAuth 2.0 can be used to authenticate a user.
 
-### 5. High Availability 
+### 5. High Availability (in progress)
 Support multi-node deployment of Harbor for high availability, scalability and load-balancing purposes.
 
 ### 6. Statistics and description for repositories
