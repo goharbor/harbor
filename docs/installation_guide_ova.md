@@ -50,6 +50,7 @@ This guide takes you through the steps about installing and configuring Harbor o
 	* **Email SSL**: Whether to enabled secure mail transmission.
 	* **SSL Cert**: Paste in the content of a certificate file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
 	* **SSL Cert Key**: Paste in the content of certificate key file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
+	* **Self Registration**: Determine whether the self-registration is allowed or not when the authentication mode is database. Set this to off to disable a user's self-registration in Harbor.
 	* **Verify Remote Cert**: Determine whether the image replication should verify the SSL certificate when it connects to a remote registry. Set this flag to off when the remote registry uses a self-signed or untrusted certificate.
 	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up.
 

@@ -1,4 +1,4 @@
-Test 2-22 - Admin User Delete Images (DB Mode)
+Test 2-23 - Admin User Delete Images (DB Mode)
 =======
 
 # Purpose:

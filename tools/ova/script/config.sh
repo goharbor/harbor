@@ -17,6 +17,7 @@ attrs=(
 	email_ssl 
 	db_password
 	verify_remote_cert
+	self_registration
 	)
 
 base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
