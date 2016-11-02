@@ -20,9 +20,9 @@
     .module('harbor.session')
     .controller('CurrentUserController', CurrentUserController);
  
-  CurrentUserController.$inject = ['$scope', 'CurrentUserService', 'currentUser', '$window', '$document', 'LogOutService', '$timeout'];
+  CurrentUserController.$inject = ['$scope', 'CurrentUserService', 'currentUser', '$window', '$document', 'LogOutService'];
   
-  function CurrentUserController($scope, CurrentUserService, currentUser, $window, $document, LogOutService, $timeout) {
+  function CurrentUserController($scope, CurrentUserService, currentUser, $window, $document, LogOutService) {
     
     var vm = this;
          
@@ -41,11 +41,9 @@
     
     function getCurrentUserFailed(e){
       console.log('Failed to get current user:' + e);
-      $timeout(function() {
-        LogOutService()
-          .success(logOutSuccess)
-          .error(logOutFailed);        
-      }, 500);
+      LogOutService()
+        .success(logOutSuccess)
+        .error(logOutFailed);
     }   
     
     function logOutSuccess(data, status) {
