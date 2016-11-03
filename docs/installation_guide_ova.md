@@ -22,7 +22,7 @@ This guide walks you through the steps about installing and configuring Harbor o
 
  ![ova](img/ova/ova03.png)
 
-5. Spefify a name and a location for the virtual appliance.  
+5. Specify a name and a location for the virtual appliance.  
 
  ![ova](img/ova/ova04.png)
 
