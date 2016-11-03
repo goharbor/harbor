@@ -24,7 +24,7 @@ golang*               | 1.6.0 +
    ```
 
 ## Step 3: Resolving Dependencies
-Compile Harbor source code need ldap develop package and you'll have to do it manually.
+Compile Harbor source code need LDAP develop package and you'll have to do it manually.
 
 For Photon:
 
@@ -38,32 +38,38 @@ For Ubuntu:
       $ apt-get update && apt-get install -y libldap2-dev
    ```
 
-
+Other platforms please consult the relevant documentation for LDAP package install. 
 
 ## Step 4: Build and Install
 
-#### Edit the file **make/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](docs/installation_guide.md) for more info. 
+### Configuration
+
+Edit the file **make/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](installation_guide.md#configuring-harbor) for more info. 
 
    ```sh
       $ cd harbor
       $ vi make/harbor.cfg
    ```
    
-#### Compile Code with Golang Image, then Automation Build and Install 
+### Compile, Build and Install
+
+Support 3 code compile method: golang image compile, local golang compile and developer manual compile.
+
+#### I. Compile Code with Golang Image, then Automation Build and Install 
 
 * Build Compile Golang Image
 
    ```sh
-      $ make compile_buildgolangimage -e GOBUILDIMAGE=[$GOLANGIMAGE:TAG]
+      $ make compile_buildgolangimage -e GOBUILDIMAGE=harborgo:1.6.2
    ```
 
 *  Automation Build and Install
 
    ```sh
-      $ make install -e GOBUILDIMAGE=[$GOLANGIMAGE:TAG] COMPILETAG=compile_golangimage
+      $ make install -e GOBUILDIMAGE=harborgo:1.6.2 COMPILETAG=compile_golangimage
    ```
 
-#### Compile Code with Local Golang, then Automation Build and Install 
+#### II. Compile Code with Local Golang, then Automation Build and Install 
 
 * Move Code to $GOPATH
 
@@ -80,7 +86,7 @@ For Ubuntu:
       $ make install
    ```
    
-#### Manual Build and Install (Compatible with Prior Versions)
+#### III. Manual Build and Install (Compatible with Prior Versions)
 
    ```sh
       $ cd make
@@ -96,7 +102,20 @@ For Ubuntu:
       
       $ docker-compose up -d
    ```
-   
+
+### Install Success
+
+You can get this message from shell when successful complete Harbor installs.
+
+   ```sh
+      ...
+      ✔ ----Harbor has been installed and started successfully.----
+
+      Now you should be able to visit the admin portal at http://$YOURIP. 
+      For more details, please visit https://github.com/vmware/harbor .
+   ```
+Refer to [Installation and Configuration Guide](installation_guide.md#managing-harbors-lifecycle) for more info.   
+
 ## Attachments
 * Using the Makefile
 
@@ -188,3 +207,4 @@ cleanpackage        | remove online/offline install package
 ## Links
 
 ## Comments
+
