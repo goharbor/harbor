@@ -20,25 +20,19 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 ### Install & Run
 
 **System requirements:**
-Harbor only works with docker 1.10.0+ and docker-compose 1.6.0+.
+
+**On a Linux host:** docker 1.10.0+ and docker-compose 1.6.0+ .
+
+**On vSphere:** vCenter 5.x+ for deployment of Harbor's virtual appliance. 
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Confiugration Guide](docs/installation_guide.md)** to install Harbor.
 
-After installation, if everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com. Note that the default administrator username/password are admin/Harbor12345.
-
-Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (by default, the registry server listens on port 80):
-```sh
-$ docker login reg.yourdomain.com
-$ docker push reg.yourdomain.com/myproject/myrepo:mytag
-```
-
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
-
 ### Community
-**Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/) Slack group, Channel: #harbor.  
+**Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
 **Email:** harbor@ vmware.com .  
-**WeChat:** Add WeChat id *connect1688* to join WeChat discussion group. 
+**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group. 
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any qustions: harbor@ vmware.com .
