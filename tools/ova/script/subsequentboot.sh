@@ -7,8 +7,11 @@ export PATH=$PATH:/usr/local/bin
 base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $base_dir/common.sh
 
+#configure SSH
+configSSH
+
 #echo "Adding rules to iptables..."
-#addIptableRules
+addIptableRules
 
 #Stop Harbor
 echo "Shutting down Harbor..."
