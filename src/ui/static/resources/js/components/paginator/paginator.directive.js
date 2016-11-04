@@ -106,11 +106,10 @@
         if(this.time > this.minimum) {         
           if(this.time === 0) {
             ctrl.page = ctrl.displayCount;
-          }else if((ctrl.page % ctrl.displayCount) != 0) {
+          }else{
             ctrl.page =  this.time * ctrl.displayCount;
           }
           --this.time;
-          --ctrl.page;
         }
         scope.$apply();
       };

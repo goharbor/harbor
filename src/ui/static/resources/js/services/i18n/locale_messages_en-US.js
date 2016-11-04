@@ -96,6 +96,7 @@ var locale_messages = {
   'save': 'Save',
   'cancel': 'Cancel',
   'confirm': 'Confirm',
+  'total': 'Total',
   'items': 'item(s)',  
   'add_member': 'Add Member',
   'operation': 'Operation',
