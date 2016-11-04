@@ -263,8 +263,8 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.0
-	@$(DOCKERPULL) nginx:1.9
+	$(DOCKERPULL) registry:2.5.0
+	$(DOCKERPULL) nginx:1.9
 	
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
@@ -330,8 +330,8 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-	# - $(DOCKERRMIMAGE) -f registry:2.5.0
-	# - $(DOCKERRMIMAGE) -f nginx:1.9
+	#- $(DOCKERRMIMAGE) -f registry:2.5.0
+	#- $(DOCKERRMIMAGE) -f nginx:1.9
 
 cleandockercomposefile:
 	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml"
