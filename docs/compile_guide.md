@@ -1,9 +1,10 @@
 ## Introduction
 
-This is one the essential and important task of compile Harbor sourcecode for developer. Many time compiling source code files can be tedious, especially when you have to include several steps and type the compiling command everytime. Or even you can write your own Harbor code. Well, we have new method for you, here's a quick guide about how to compile binary and build container from Harbor source code. 
+This guide shows how to compile binary, build images and install Harbor instance from source code via make commands.
 
 ## Step 1: Prepare Your System for Building Harbor
-By default, OS system does not come with the tools required.  You need to install the package build-essential for making the package and checkinstall for putting it into your package manager.  These can be found on the install CD or in the repositories, searching in Package Manager Software or the command-line installer.
+
+Harbor is deployed as several Docker containers and most of the code compiled by go language. The target host requires Python, Docker, Docker Compose and golang develop environment to be installed. 
 
 Requirement:
 
@@ -11,6 +12,7 @@ Software              | Required Version
 ----------------------|--------------------------
 docker                | 1.10.0 +
 docker-compose        | 1.7.1 +
+python                | 2.7 +
 git                   | 1.9.1 +
 make                  | 3.81 +
 golang*               | 1.6.0 +
@@ -24,9 +26,9 @@ golang*               | 1.6.0 +
    ```
 
 ## Step 3: Resolving Dependencies
-Compile Harbor source code need LDAP develop package and you'll have to do it manually.
+Compile Harbor source code by local golang environment needs LDAP develop package and you'll have to do it manually. If you want to compile source code by golang image, can skip this section. 
 
-For Photon:
+For PhotonOS:
 
    ```sh
       $ tdnf install -y sed apr-util-ldap
@@ -38,7 +40,7 @@ For Ubuntu:
       $ apt-get update && apt-get install -y libldap2-dev
    ```
 
-Other platforms please consult the relevant documentation for LDAP package install. 
+Other platforms please consult the relevant documentation for LDAP package installation. 
 
 ## Step 4: Build and Install
 
@@ -105,7 +107,7 @@ Support 3 code compile method: golang image compile, local golang compile and de
 
 ### Install Success
 
-You can get this message from shell when successful complete Harbor installs.
+You can get this message from shell after successful complete Harbor installs.
 
    ```sh
       ...
@@ -114,6 +116,7 @@ You can get this message from shell when successful complete Harbor installs.
       Now you should be able to visit the admin portal at http://$YOURIP. 
       For more details, please visit https://github.com/vmware/harbor .
    ```
+
 Refer to [Installation and Configuration Guide](installation_guide.md#managing-harbors-lifecycle) for more info.   
 
 ## Attachments
@@ -145,7 +148,7 @@ compile_jobservice  | compile jobservice binary
 build               | build Harbor docker images (defuault  |   build_photon)
 build_photon        | build Harbor docker images from photon bsaeimage
 build_ubuntu        | build Harbor docker images from ubuntu baseimage
-install             | include compile binarys, build images, prepare specific version composefile and startup Harbor instance
+install             | compile binarys, build images, prepare specific version composefile and startup Harbor instance
 start               | startup Harbor instance 
 down                | shutdown Harbor instance
 package_online      | prepare online install package
@@ -155,7 +158,7 @@ clean all           | remove binary, Harbor images, specific version docker-comp
 cleanbinary         | remove ui and jobservice binary
 cleanimage          | remove Harbor images 
 cleandockercomposefile  | remove specific version docker-compose 
-cleanversiontag     | cleanpackageremove specific version tag
+cleanversiontag     | remove specific version tag
 cleanpackage        | remove online/offline install package
 
 #### EXAMPLE:
@@ -181,7 +184,7 @@ cleanpackage        | remove online/offline install package
 
    ```
 
-   note**: need add "/" on end of REGISTRYSERVER. If not setting this value will push images directly to dockerhub.
+   note**: need add "/" on end of REGISTRYSERVER. If not setting REGISTRYSERVER will push images directly to dockerhub.
 
 
    ```sh
@@ -195,7 +198,7 @@ cleanpackage        | remove online/offline install package
       $ make clean -e VERSIONTAG=[TAG]
 
    ```
-   note**: If commit new code to github, the git commit TAG will change. Better use this commond clean previous images and files with specific TAG. 
+   note**: If commit new code to github, the git commit TAG will change. Better use this command clean previous images and files for specific TAG. 
 
 #### By default DEVFLAG=true, if you want to release new version of Harbor, should setting the flag to false.
 

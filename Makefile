@@ -243,7 +243,8 @@ package_online: modify_composefile
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
+	          --exclude=$(HARBORPKG)/common/db \
+			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
@@ -263,7 +264,7 @@ package_offline: compile build modify_composefile
 			
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) registry:2.5.0
-	@$(DOCKERPULL) nginx:1.9
+	@$(DOCKERPULL) nginx:1.11.5
 	
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
@@ -271,10 +272,11 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.9 registry:2.5.0
+		nginx:1.11.5 registry:2.5.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/ubuntu \
+	          --exclude=$(HARBORPKG)/common/db \
+			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
@@ -329,7 +331,7 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
 #	- $(DOCKERRMIMAGE) -f registry:2.5.0
-#	- $(DOCKERRMIMAGE) -f nginx:1.9
+#	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
 	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml"
