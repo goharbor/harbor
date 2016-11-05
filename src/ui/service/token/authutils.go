@@ -105,8 +105,15 @@ func FilterAccess(username string, a *token.ResourceActions) {
 	//clear action list to assign to new acess element after perm check.
 	a.Actions = []string{}
 	if a.Type == "repository" {
-		if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
-			projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
+		repoSplit := strings.Split(a.Name, "/")
+		repoLength := len(repoSplit)
+		if repoLength > 0 { //Only check the permission when the requested image has a namespace, i.e. project
+			var projectName string
+			if repoLength > 2 { //If the repo contains more than 1 separation (as privateregistry.local/library/alpine) consider the second item from array (library)
+				projectName = repoSplit[1]
+			} else { // Otherwise (only library/alpine) consider the first item from array (library)
+				projectName = repoSplit[0]
+			}
 			var permission string
 			if len(username) > 0 {
 				isAdmin, err := dao.IsAdminRole(username)
