@@ -107,7 +107,7 @@ func FilterAccess(username string, a *token.ResourceActions) {
 	if a.Type == "repository" {
 		repoSplit := strings.Split(a.Name, "/")
 		repoLength := len(repoSplit)
-		if repoLength > 0 { //Only check the permission when the requested image has a namespace, i.e. project
+		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project/alpine
 			var projectName string
 			if repoLength > 2 { //If the repo contains more than 1 separation (as privateregistry.local/library/alpine) consider the second item from array (library)
 				projectName = repoSplit[1]
