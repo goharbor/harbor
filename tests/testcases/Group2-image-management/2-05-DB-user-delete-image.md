@@ -24,7 +24,7 @@ In below test, user A is non-admin user. User A and project X, Y should be repla
 3. On a Docker client, log in as User A and run `docker push` to push an image to the project X, e.g. projectX/myimage:v1.
 4. Push a second image with different tag to project X, e.g. projectX/myimage:v2 .
 5. Push an image with different name to project X, e.g. projectX/newimage:v1 .
-6. Run `docker pull` to verify images can be pushed successfully.
+6. Run `docker pull` to verify images can be pulled successfully.
 7. In UI, delete the three images one by one.
 8. On a Docker client, log in as User A and run `docker pull` to pull the three deleted images of project X.
 9. In UI, delete project X. 
