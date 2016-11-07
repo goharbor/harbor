@@ -119,8 +119,8 @@
           
     $scope.$on('addedSuccess', function(e, val) {
       vm.retrieve();
-    });
-   
+    }); 
+     
     function showAddProject() {
       vm.isOpen = vm.isOpen ? false : true;
     }
@@ -144,6 +144,12 @@
       var keyCode = $event.which || $event.keyCode;
       if(keyCode === 13) {
         vm.retrieve();
+      } else {
+        $timeout(function() {
+          if(vm.projectName.length === 0) {
+            vm.retrieve();
+          }
+        });
       }
     }
     

@@ -192,7 +192,9 @@
     
   }
   
-  function listRepository() {
+  listRepository.$inject = ['$timeout'];
+  
+  function listRepository($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/repository/list-repository.directive.html',
@@ -212,6 +214,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.retrieve();
+        } else {
+          $timeout(function() {
+            if(ctrl.filterInput.length === 0) {
+              ctrl.retrieve();
+            }        
+          });
         }
       });
     }

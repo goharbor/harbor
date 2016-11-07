@@ -290,6 +290,8 @@
   
   }
   
+  listReplication.inject = ['$timeout', 'I18nService'];
+  
   function listReplication($timeout, I18nService) {
     var directive = {
       'restrict': 'E',
@@ -398,12 +400,24 @@
       element.find('#txtSearchPolicyInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.searchReplicationPolicy();
+        } else {
+          $timeout(function() {
+            if(ctrl.replicationPolicyName.length === 0) {
+              ctrl.searchReplicationPolicy();
+            }
+          });
         }
       });
       
       element.find('#txtSearchJobInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.searchReplicationJob();
+        } else {
+          $timeout(function() {
+            if(ctrl.replicationJobName.length === 0) {
+              ctrl.searchReplicationJob();
+            }
+          });
         }
       });
       

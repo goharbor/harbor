@@ -143,7 +143,9 @@
     
   }
   
-  function listLog() {
+  listLog.$inject = ['$timeout'];
+  
+  function listLog($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/log/list-log.directive.html',
@@ -162,6 +164,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.search({'op': ctrl.op, 'username': ctrl.username});
+        } else {
+          $timeout(function() {
+            if(ctrl.username.length === 0) {
+              ctrl.search({'op': ctrl.op, 'username': ctrl.username});
+            }
+          });
         }
       });
     }
