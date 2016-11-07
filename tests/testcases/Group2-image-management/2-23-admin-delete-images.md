@@ -23,7 +23,7 @@ In below test, user A is non-admin user. User A and project X should be replaced
 2. Create a project X so that the user has the project admin role.
 3. On a Docker client, log in as User A and run `docker push` to push an image to the project X, e.g. projectX/myimage:v1.
 4. Push an image with different name to project X, e.g. projectX/newimage:v1 .
-5. Run `docker pull` to verify images can be pushed successfully.
+5. Run `docker pull` to verify images can be pulled successfully.
 6. In UI, log out user A's session. 
 7. Log in as admin user.
 8. Under project X, delete the two images one by one.

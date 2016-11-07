@@ -1,6 +1,6 @@
 #User Guide
 ##Overview
-This guide takes you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
+This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
 * Manage your projects.
 * Manage members of a project.
@@ -11,7 +11,7 @@ This guide takes you through the fundamentals of using Harbor. You'll learn how 
  + Manage destinations.
  + Manage replication policies.
 * Pull and push images using Docker client.
-* Delete repositories.
+* Delete repositories and images.
 
 
 ##Role Based Access Control
@@ -152,24 +152,30 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 
 ##Deleting repositories
 
-Repositories deletion runs in two steps.  
-First, delete repositories in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it.  
+Repository deletion runs in two steps.  
+
+First, delete a repository in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it. After the soft deletion, 
+the repository is no longer managed in Harbor, however, the files of the repository still remains in Harbor's storage.  
 
 ![browse project](img/new_delete_repository.png)
 
-**Note: If both tag A and tag B reference the same image, after deleting tag A, B will also disappear.**  
+**CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted.**  
 
-Second, delete the real data using registry's garbage colliection(GC).  
-Make sure that no one is pushing images or Harbor is not running at all before you do GC. If someone were to push an image while GC is running, there is the risk that the image's layers will be mistakenly deleted, leading to a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
+Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
 
-Run the command on the host which harbor is deployed on. 
+Run the below commands on the host which Harbor is deployed on to preview what files/images will be affect: 
 
 ```sh
 $ docker-compose stop
-$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.4.0 garbage-collect [--dry-run] /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
+```  
+**NOTE:** The above option "--dry-run" will print the progress without removing any data.  
+
+Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
+
+```sh
+$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.5.0 garbage-collect  /etc/registry/config.yml
 $ docker-compose start
 ```  
 
-Option "--dry-run" will print the progress without removing any data.  
-
-About the details of GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
