@@ -27,7 +27,6 @@ fi
 
 if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
     echo "Please backup before upgrade."
-    echo "SKIP CONFIRM: $SKIP_CONFIRM"
     read -p "Enter y to continue updating or n to abort:" ans
     case $ans in
         [Yy]* )
