@@ -25,7 +25,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 
 **On vSphere:** vCenter 5.x+ for deployment of Harbor's virtual appliance. 
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Confiugration Guide](docs/installation_guide.md)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
