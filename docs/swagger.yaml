@@ -729,6 +729,10 @@ paths:
       responses:
         200:
           description: Retrieved tags from a relevant repository successfully.
+          schema:
+            type: array
+            items:
+              type: string
         500:
           description: Unexpected internal errors.
   /repositories/manifests:
