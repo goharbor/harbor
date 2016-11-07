@@ -153,6 +153,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 ##Deleting repositories
 
 Repository deletion runs in two steps.  
+
 First, delete a repository in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it. After the soft deletion, 
 the repository is no longer managed in Harbor, however, the files of the repository still remains in Harbor's storage.  
 
@@ -160,8 +161,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted.**  
 
-Next, delete the acutual files of the repository using the registry's garbage collection(GC).  
-Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
+Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
 
 Run the below commands on the host which Harbor is deployed on to preview what files/images will be affect: 
 
