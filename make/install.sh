@@ -10,7 +10,8 @@ set -o noglob
 #
 # Set Colors
 #
-
+case "$-" in
+*i*)
 bold=$(tput bold)
 underline=$(tput sgr 0 1)
 reset=$(tput sgr0)
@@ -45,6 +46,34 @@ bold() { printf "${bold}%s${reset}\n" "$@"
 }
 note() { printf "\n${underline}${bold}${blue}Note:${reset} ${blue}%s${reset}\n" "$@"
 }
+;;
+*)
+#
+# Headers and Logging
+#
+
+underline() { printf "%s\n" "$@"
+}
+h1() { printf "\n%s}\n" "$@"
+}
+h2() { printf "\n%s\n" "$@"
+}
+debug() { printf "%s\n" "$@"
+}
+info() { printf "%s\n" "$@"
+}
+success() { printf "%s\n" "$@"
+}
+error() { printf "%s\n" "$@"
+}
+warn() { printf "%s\n" "$@"
+}
+bold() { printf "%s\n" "$@"
+}
+note() { printf "Note: %s\n" "$@"
+}
+;;
+esac
 
 set -e
 set +o noglob
