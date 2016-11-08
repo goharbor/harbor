@@ -109,7 +109,7 @@ func FilterAccess(username string, a *token.ResourceActions) {
 		repoLength := len(repoSplit)
 		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
 			var projectName string
-			registryUrl := os.Getenv("HARBOR_REG_URL")
+			registryURL := os.Getenv("HARBOR_REG_URL")
 			if repoSplit[0] == registryUrl {
 				projectName = repoSplit[1]
 				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)
