@@ -16,8 +16,11 @@ then
 	printf "$value\n$value\n" | passwd root
 fi
 
+#configure SSH
+configSSH
+
 #echo "Adding rules to iptables..."
-#addIptableRules
+addIptableRules
 
 echo "Installing docker compose..."
 installDockerCompose
