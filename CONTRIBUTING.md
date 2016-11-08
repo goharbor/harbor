@@ -23,8 +23,6 @@ Be sure to include the steps to reproduce the problem if applicable. It can help
 
 ## Contribution guidelines
 
-This section gives the contributors some tips and guidelines.
-
 ### Pull requests
 
 Pull requests (PR) are always welcome, even they are small fixes like typos or a few lines of code changes. If there will be significant effort, please first document as an issue and get the discussion going before starting to work on it.
