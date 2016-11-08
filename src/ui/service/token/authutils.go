@@ -107,11 +107,13 @@ func FilterAccess(username string, a *token.ResourceActions) {
 	if a.Type == "repository" {
 		repoSplit := strings.Split(a.Name, "/")
 		repoLength := len(repoSplit)
-		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project/alpine
+		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
 			var projectName string
-			if repoLength > 2 { //If the repo contains more than 1 separation (as privateregistry.local/library/alpine) consider the second item from array (library)
+			registryUrl := os.Getenv("HARBOR_REG_URL")
+			if repoSplit[0] == registryUrl {
 				projectName = repoSplit[1]
-			} else { // Otherwise (only library/alpine) consider the first item from array (library)
+				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)
+			} else {
 				projectName = repoSplit[0]
 			}
 			var permission string
