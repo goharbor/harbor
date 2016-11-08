@@ -1,7 +1,6 @@
 # Contributing to Harbor
 
-This page contains information about reporting issues as well as some tips and
-guidelines useful to  open source contributors.
+This guide provides information on filing issues and guidelines for open source contributors.
 
 ## Reporting issues
 
