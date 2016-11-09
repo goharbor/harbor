@@ -62,11 +62,11 @@ debug() { printf "%s\n" "$@"
 }
 info() { printf "%s\n" "$@"
 }
-success() { printf "%s\n" "$@"
+success() { printf "✔ %s\n" "$@"
 }
-error() { printf "%s\n" "$@"
+error() { printf "✖ %s\n" "$@"
 }
-warn() { printf "%s\n" "$@"
+warn() { printf "➜ %s\n" "$@"
 }
 bold() { printf "%s\n" "$@"
 }
