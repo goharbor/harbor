@@ -282,6 +282,12 @@ if customize_crt == 'on':
 
         check_private_key_stat(path=private_key_pem)
         check_certificate_stat(path=root_crt)
-
+		
+else:
+    print("Generated configuration file: %s" % ui_config_dir + "private_key.pem")
+    shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
+    print("Generated configuration file: %s" % registry_config_dir + "root.crt")
+    shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
+	
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
