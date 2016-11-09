@@ -2,10 +2,14 @@
 
 ### User documents
 
-[Installation and Configuration Guide](installation_guide.md)   
-Read this first!
+**[Installation and Configuration Guide](installation_guide.md)   
+Read this first!**  
+Guide for Harbor online installer and offline installer.
 
-[Harbor User Guide](user_guide.md)  
+**[Installation and Configuration Guide for Virtual Appliance](installation_guide_ova.md)**   
+Guide for installing Harbor on vSphere, either standalone or as part of vSphere Integrated Containers (VIC).
+
+**[Harbor User Guide](user_guide.md)**  
 How to use Harbor to manage images, projects, replications and users.
 
 [Configuring HTTPS for Harbor](configure_https.md)  
@@ -14,7 +18,7 @@ Configure security connection between Harbor and Docker client.
 [Upgrade and Data Migration Guide](migration_guide.md)  
 Data migration may be needed when upgrading Harbor to a newer version. 
 
-[make Harbor on Kubernetes](kubernetes_deployment.md)  
+[Deploy Harbor on Kubernetes](kubernetes_deployment.md)  
 Guide to deploy Harbor on Kubenetes. (maintained by community)
 
 ### Developer documents
@@ -28,10 +32,11 @@ Use Swagger to find out the specs of Harbor API.
 [Internationalization Guide](developer_guide_i18n.md)  
 How to add your local language to Harbor.
 
-
 [Python SDK](../contrib/sdk/harbor-py) (by community)
 
-[makeing Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
+[Harbor CLI](https://github.com/int32bit/harborclient) (by community)
+
+[Deploy Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
 
 [Configuring Harbor as a local registry mirror](../contrib/Configure_mirror.md) (by community)
 
@@ -43,11 +48,16 @@ How to add your local language to Harbor.
 
 [Harbor Registry Blueprint for vRA](http://www.vmtocloud.com/harbor-registry-blueprint-is-here/)
 
+[Architecture of Harbor: An Open Source Enterprise-class Registry Server](http://www.think-foundry.com/architecture-of-harbor-an-open-source-enterprise-class-registry-server/)
+
+[Private Harbor Registry Achieves High Availability based on Virtual SAN](http://www.think-foundry.com/private-docker-registry-harbor-achieves-ha-based-on-virtual-san/)
+
+[Working with Harbor Registry REST API via Swagger](http://www.think-foundry.com/working-with-harbor-registry-rest-api-via-swagger/)
+
 [Project Harbor in action](http://cormachogan.com/2016/08/05/project-harbor-action/)
 
 [Using vSphere docker volume driver to run Project Harbor on VSAN](http://cormachogan.com/2016/07/29/using-vsphere-docker-volume-driver-run-project-harbor-vsan/)
 
-[Architecture of Harbor: An Open Source Enterprise-class Registry Server](http://www.think-foundry.com/architecture-of-harbor-an-open-source-enterprise-class-registry-server/)
 
 [Overall Architecture of Harbor Registry](http://www.compare-review-information.com/overall-architecture-of-harbor-registry/)
 

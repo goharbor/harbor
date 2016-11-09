@@ -119,8 +119,8 @@
           
     $scope.$on('addedSuccess', function(e, val) {
       vm.retrieve();
-    });
-   
+    }); 
+     
     function showAddProject() {
       vm.isOpen = vm.isOpen ? false : true;
     }
@@ -144,6 +144,12 @@
       var keyCode = $event.which || $event.keyCode;
       if(keyCode === 13) {
         vm.retrieve();
+      } else {
+        $timeout(function() {
+          if(vm.projectName.length === 0) {
+            vm.retrieve();
+          }
+        });
       }
     }
     
@@ -176,7 +182,7 @@
     function deleteProjectFailed(data, status) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
       if(status === 412) {
-        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project_contains_repo'));
+        $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project'));
       }
       if(status === 403) {
         $scope.$emit('modalMessage', $filter('tr')('failed_to_delete_project_insuffient_permissions'));  

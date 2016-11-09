@@ -1,13 +1,21 @@
 # Installation and Configuration Guide
-Harbor can be installed by one of two installers: 
+Harbor can be installed by one of three approaches: 
 
 - **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
 
 - **Offline installer:** Use this installer when the host does not have Internet connection. The installer contains pre-built images so its size is larger.
 
-Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and configure Harbor.
+- **Virtual Appliance:** If you are installing Harbor as the registry component of vSphere Integrated Containers (VIC), or using Harbor as a standalone registry on vSphere platform, download the OVA version of Harbor. 
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [make Harbor on Kubernetes](kubernetes_deployment.md) for details.
+All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
+
+To install Harbor's virtual appliance, refer to the **[Harbor Installation Guide for Virtual Appliance](installation_guide_ova.md)**.
+
+This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
+
+If you run a previous version of Harbor, you may need to migrate the data to fit the new database schema. For more details, please refer to **[Data Migration Guide](migration_guide.md)**.
+
+In addition, the deployment instructions on Kubernetes has been created by the community. Refer to set up [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
@@ -42,7 +50,7 @@ Configuration parameters are located in the file **harbor.cfg**.
 The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
 
 * **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 * **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.
 	* email_server = smtp.mydomain.com 
 	* email_server_port = 25
@@ -94,8 +102,8 @@ storage:
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
 
 
-#### Installing and starting Harbor
-Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh script```.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
+#### Finishing installation and starting Harbor
+Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ```sh
     $ sudo ./install.sh
@@ -110,10 +118,10 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 **IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. 
 
-For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md) .
+For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
 
 #### Configuring Harbor with HTTPS access
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to [Configuring Harbor with HTTPS Access](configure_https.md).  
+Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 
 
 ### Managing Harbor's lifecycle
@@ -185,7 +193,7 @@ Replace the first "80" to a customized port, e.g. 8888:80.
 
 ```
 proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.11.5
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx
@@ -228,7 +236,7 @@ Replace the first "443" to a customized port, e.g. 4443:443.
 
 ```
 proxy:
-    image: library/nginx:1.9
+    image: library/nginx:1.11.5
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx

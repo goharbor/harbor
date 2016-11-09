@@ -134,7 +134,7 @@ func loadConfig() {
 		useTLS = true
 	}
 	mc = MailConfig{
-		Identity: "Mail Config",
+		Identity: config["identity"],
 		Host:     config["host"],
 		Port:     config["port"],
 		Username: config["username"],

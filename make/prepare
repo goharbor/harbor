@@ -73,6 +73,7 @@ validate(rcp)
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
+email_identity = rcp.get("configuration", "email_identity")
 email_server = rcp.get("configuration", "email_server")
 email_server_port = rcp.get("configuration", "email_server_port")
 email_username = rcp.get("configuration", "email_username")
@@ -191,6 +192,7 @@ render(os.path.join(templates_dir, "ui", "env"),
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
+        email_identity=email_identity,
         email_server=email_server,
         email_server_port=email_server_port,
         email_username=email_username,

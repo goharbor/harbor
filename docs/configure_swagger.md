@@ -36,7 +36,7 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 ```
 * Change the directory to _make_
 ```sh
-  cd ../make
+  cd ../make/dev
 ```
 * Edit the _docker-compose.yml_ file.
 ```sh

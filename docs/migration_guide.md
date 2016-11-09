@@ -27,35 +27,30 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     git clone https://github.com/vmware/harbor
     ```
  
-4. Before upgrading Harbor, perform database migration first.
-The directory **tools/migration/** contains the tool for migration. The first step is to update values of `db_username`, `db_password`, `db_port`, `db_name` in **migration.cfg** so that they match your system's configuration. 
-
-5. The migration tool is delivered as a container, so you should build the image from its Dockerfile:
-    ```
-    cd tools/migration/
-    
-    docker build -t migrate-tool .
-    ```
-
-6. Back up database to a directory such as `/path/to/backup`. You need to create the directory if it does not exist. 
+4. Before upgrading Harbor, perform database migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub:
 
     ```
-    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool backup
+    docker pull vmware/harbor-db-migrator
     ```
 
-7.  Upgrade database schema and migrate data:
+5. Back up database to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD"
 
     ```
-    docker run -ti --rm -v /data/database:/var/lib/mysql migrate-tool up head
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator backup
     ```
 
-8. Change to `make/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+6.  Upgrade database schema and migrate data:
 
-9. If HTTPS has been enabled for Harbor before, restore the `nginx.conf` and key/certificate files from the backup files in Step 2. Refer to [Configuring Harbor with HTTPS Access](../docs/configure_https.md) for more info.
+    ```
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator up head
+    ```
 
-10. Under the directory `make/`, run the `./prepare` script to generate necessary config files.
+7. Change to `make/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+
+
+8. Under the directory `make/`, run the `./prepare` script to generate necessary config files.
  
-11. Rebuild Harbor and restart the registry service
+9. Rebuild Harbor and restart the registry service
 
     ```
     docker-compose up --build -d
@@ -73,7 +68,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 2. Restore database from backup file in `/path/to/backup` .
 
     ```
-    docker run -ti --rm -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup migrate-tool restore
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator restore
     ```
 
 3. Remove current source code of Harbor.
@@ -95,9 +90,9 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 ### Migration tool reference
 - Use `help` command to show instructions of the migration tool:
 
-    ```docker run --rm migrate-tool help```
+    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx vmware/harbor-db-migrator help```
     
 - Use `test` command to test mysql connection:
 
-    ```docker run --rm -v /data/database:/var/lib/mysql migrate-tool test```
+    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator test```
 

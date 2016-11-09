@@ -106,7 +106,9 @@
     }
   }
   
-  function replication() {
+  replication.$inject = ['$timeout'];
+  
+  function replication($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/system-management/replication.directive.html',
@@ -122,6 +124,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.retrieve();
+        } else {
+          $timeout(function() {
+            if(ctrl.replicationName.length === 0) {
+              ctrl.retrieve();
+            }
+          });
         }
       });
     }
