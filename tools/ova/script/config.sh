@@ -48,23 +48,22 @@ else
 fi
 
 #Handle http/https
-protocal=http
+protocol=http
 echo "Read attribute using ovfenv: [ ssl_cert ]"
 ssl_cert=$(ovfenv -k ssl_cert)
 echo "Read attribute using ovfenv: [ ssl_cert_key ]"
 ssl_cert_key=$(ovfenv -k ssl_cert_key)
 if [ -n "$ssl_cert" ] && [ -n "$ssl_cert_key" ]
 then
-	echo "ssl_cert and ssl_cert_key are set, using HTTPS protocal"
-	protocal=https
-	sed -i -r s%"#?ui_url_protocol = .*"%"ui_url_protocol = $protocal"% $cfg
-	mkdir -p /path/to
-	echo $ssl_cert > /path/to/server.crt
-	format /path/to/server.crt
-	echo $ssl_cert_key > /path/to/server.key
-	format /path/to/server.key
+	echo "ssl_cert and ssl_cert_key are set, using HTTPS protocol"
+	protocol=https
+	sed -i -r s%"#?ui_url_protocol = .*"%"ui_url_protocol = $protocol"% $cfg
+	echo $ssl_cert > /data/server.crt
+	format /data/server.crt
+	echo $ssl_cert_key > /data/server.key
+	format /data/server.key
 else
-	echo "ssl_cert and ssl_cert_key are not set, using HTTP protocal"
+	echo "ssl_cert and ssl_cert_key are not set, using HTTP protocol"
 fi
 
 for attr in "${attrs[@]}"
