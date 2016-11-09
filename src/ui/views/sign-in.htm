@@ -20,7 +20,7 @@
   <p class="control-button"><input type="button" class="btn btn-link pull-right" value="// 'log_out' | tr //" ng-click="vm.doLogOut()"></p>
 </div>
 {{ else }}
-<form name="form" class="form-horizontal css-form" novalidate>
+<form name="form" class="form-horizontal css-form" novalidate autocomplete="off">
   <div class="form-group"> 
     <div class="col-sm-offset-1 col-sm-10">
       <input id="username"  type="text" class="form-control" placeholder="// 'username_email' | tr //" name="uPrincipal" ng-change="vm.reset()" ng-model="user.principal" required>
