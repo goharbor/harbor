@@ -130,7 +130,7 @@ Variable           | Description
 BASEIMAGE          | Container base image, default: photon
 DEVFLAG            | Build model flag, default: dev
 COMPILETAG         | Compile model flag, default: compile_normal (local golang build)
-REGISTRYSERVER     | Remote registry server address
+REGISTRYSERVER     | Remote registry server IP address
 REGISTRYUSER       | Remote registry server user name
 REGISTRYPASSWORD   | Remote registry server user password
 REGISTRYPROJECTNAME| Project name on remote registry server
@@ -139,16 +139,16 @@ REGISTRYPROJECTNAME| Project name on remote registry server
 
 Target              | Description
 --------------------|-------------
-all                 | prepare env, compile binarys, build images and install images 
+all                 | prepare env, compile binaries, build images and install images 
 prepare             | prepare env
 compile             | compile ui and jobservice code
 compile_golangimage | compile local golang image
 compile_ui          | compile ui binary
 compile_jobservice  | compile jobservice binary
-build               | build Harbor docker images (defuault  |   build_photon)
-build_photon        | build Harbor docker images from photon bsaeimage
-build_ubuntu        | build Harbor docker images from ubuntu baseimage
-install             | compile binarys, build images, prepare specific version composefile and startup Harbor instance
+build               | build Harbor docker images (default: using build_photon)
+build_photon        | build Harbor docker images from Photon OS base image
+build_ubuntu        | build Harbor docker images from Ubuntu base image
+install             | compile binaries, build images, prepare specific version of compose file and startup Harbor instance
 start               | startup Harbor instance 
 down                | shutdown Harbor instance
 package_online      | prepare online install package
