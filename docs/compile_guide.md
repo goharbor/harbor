@@ -1,12 +1,11 @@
 ## Introduction
 
-This guide shows how to compile binary, build images and install Harbor instance from source code via make commands.
+This guide provides instructions for developers to build and run Harbor from source code. 
 
-## Step 1: Prepare Your System for Building Harbor
+## Step 1: Prepare for a build environment for Harbor
 
-Harbor is deployed as several Docker containers and most of the code compiled by go language. The target host requires Python, Docker, Docker Compose and golang develop environment to be installed. 
+Harbor is deployed as several Docker containers and most of the code is written in Go language. The build host requires Python, Docker, Docker Compose and golang development environment. Please install the below prerequisites:
 
-Requirement:
 
 Software              | Required Version
 ----------------------|--------------------------
@@ -19,14 +18,16 @@ golang*               | 1.6.0 +
  *optional
 
 
-## Step 2: Getting the Source Code
+## Step 2: Getting the source code
 
    ```sh
       $ git clone https://github.com/vmware/harbor
    ```
 
-## Step 3: Resolving Dependencies
-Compile Harbor source code by local golang environment needs LDAP develop package and you'll have to do it manually. If you want to compile source code by golang image, can skip this section. 
+## Step 3: Resolving dependencies of Go language
+You can compile the source code by using a Golang dev image. In this case, you can skip this step. 
+
+If you are building Harbor using your own Go compiling environment. You need to install LDAP packages manually. 
 
 For PhotonOS:
 
@@ -40,40 +41,40 @@ For Ubuntu:
       $ apt-get update && apt-get install -y libldap2-dev
    ```
 
-Other platforms please consult the relevant documentation for LDAP package installation. 
+For other platforms, please consult the relevant documentation of installing LDAP package.
 
-## Step 4: Build and Install
+## Step 4: Building and installing Harbor
 
 ### Configuration
 
-Edit the file **make/harbor.cfg**, make necessary configuration changes such as hostname, admin password and mail server. Refer to [Installation and Configuration Guide](installation_guide.md#configuring-harbor) for more info. 
+Edit the file **make/harbor.cfg** and make necessary configuration changes such as hostname, admin password and mail server. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-harbor)** for more info. 
 
    ```sh
       $ cd harbor
       $ vi make/harbor.cfg
    ```
    
-### Compile, Build and Install
+### Compiling and Running
 
-Support 3 code compile method: golang image compile, local golang compile and developer manual compile.
+You can compile the code by one of the three approaches:
 
-#### I. Compile Code with Golang Image, then Automation Build and Install 
+#### I. Create a Golang dev image, then build Harbor
 
-* Build Compile Golang Image
+* Build Golang dev image:
 
    ```sh
       $ make compile_buildgolangimage -e GOBUILDIMAGE=harborgo:1.6.2
    ```
 
-*  Automation Build and Install
+*  Build, install and bring up Harbor:
 
    ```sh
       $ make install -e GOBUILDIMAGE=harborgo:1.6.2 COMPILETAG=compile_golangimage
    ```
 
-#### II. Compile Code with Local Golang, then Automation Build and Install 
+#### II. Compile code with your own Golang environment, then build Harbor
 
-* Move Code to $GOPATH
+* Move source code to $GOPATH
 
    ```sh
       $ mkdir $GOPATH/src/github.com/vmware/
@@ -81,14 +82,14 @@ Support 3 code compile method: golang image compile, local golang compile and de
       $ mv harbor $GOPATH/src/github.com/vmware/.
    ```
 
-*  Automation Build and Install
+*  Build, install and run Harbor
 
    ```sh
       $ cd $GOPATH/src/github.com/vmware/harbor
       $ make install
    ```
    
-#### III. Manual Build and Install (Compatible with Prior Versions)
+#### III. Manual build process (compatible with previous versions)
 
    ```sh
       $ cd make
@@ -105,25 +106,24 @@ Support 3 code compile method: golang image compile, local golang compile and de
       $ docker-compose up -d
    ```
 
-### Install Success
+### Verify your installation
 
-You can get this message from shell after successful complete Harbor installs.
+If everyting worked properly, you can get the below message:
 
    ```sh
       ...
-      âœ” ----Harbor has been installed and started successfully.----
+      a?¡± ----Harbor has been installed and started successfully.----
 
       Now you should be able to visit the admin portal at http://$YOURIP. 
       For more details, please visit https://github.com/vmware/harbor .
    ```
 
-Refer to [Installation and Configuration Guide](installation_guide.md#managing-harbors-lifecycle) for more info.   
+Refer to [Installation and Configuration Guide](installation_guide.md#managing-harbors-lifecycle) for more information about managing your Harbor instance.   
 
-## Attachments
+## Appendix
 * Using the Makefile
 
-Makefile is a special format file that together with the make utility will help developer to automagically build and manage Harbor projects.
-At the top of the makefile, there are several user-configurable parameters designed to enable the Makefile to be easily portable.
+The `Makefile` contains these configurable parameters:
 
 Variable           | Description
 -------------------|-------------
@@ -135,9 +135,9 @@ REGISTRYUSER       | Remote registry server user name
 REGISTRYPASSWORD   | Remote registry server user password
 REGISTRYPROJECTNAME| Project name on remote registry server
 
-There are also a variety of rules that help with project management and debugging...
+Predefined targets:
 
-Rule                | Description
+Target              | Description
 --------------------|-------------
 all                 | prepare env, compile binarys, build images and install images 
 prepare             | prepare env
@@ -163,28 +163,28 @@ cleanpackage        | remove online/offline install package
 
 #### EXAMPLE:
 
-#### compile from golang image: 
+#### Build a golang dev image (for building Harbor):
 
    ```sh
       $ make compile_golangimage -e GOBUILDIMAGE= [$YOURIMAGE]
 
    ```
 
-#### build Harbor docker images form ubuntu
+#### Build Harbor images based on Ubuntu
 
    ```sh
       $ make build -e BASEIMAGE=ubuntu
 
    ```
 
-#### push Harbor images to specific registry server
+#### Push Harbor images to specific registry server
 
    ```sh
       $ make pushimage -e DEVFLAG=false REGISTRYSERVER=[$SERVERADDRESS] REGISTRYUSER=[$USERNAME] REGISTRYPASSWORD=[$PASSWORD] REGISTRYPROJECTNAME=[$PROJECTNAME]
 
    ```
 
-   note**: need add "/" on end of REGISTRYSERVER. If not setting REGISTRYSERVER will push images directly to dockerhub.
+   **Note**: need add "/" on end of REGISTRYSERVER. If REGISTRYSERVER is not set, images will be pushed directly to Docker Hub.
 
 
    ```sh
@@ -192,22 +192,18 @@ cleanpackage        | remove online/offline install package
 
    ```
 
-#### clean specific version binarys and images
+#### Clean up binaries and images of a specific version
 
    ```sh
       $ make clean -e VERSIONTAG=[TAG]
 
    ```
-   note**: If commit new code to github, the git commit TAG will change. Better use this command clean previous images and files for specific TAG. 
+   **Note**: If new code had been added to Github, the git commit TAG will change. Better use this command to clean up images and files of previous TAG. 
 
-#### By default DEVFLAG=true, if you want to release new version of Harbor, should setting the flag to false.
+#### By default, the make process create a development build. To create a release build of Harbor, set the below flag to false.
 
    ```sh
       $ make XXXX -e DEVFLAG=false
 
    ```
-   
-## Links
-
-## Comments
 
