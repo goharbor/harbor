@@ -112,7 +112,7 @@ If everyting worked properly, you can get the below message:
 
    ```sh
       ...
-      a?¡± ----Harbor has been installed and started successfully.----
+      ----Harbor has been installed and started successfully.----
 
       Now you should be able to visit the admin portal at http://$YOURIP. 
       For more details, please visit https://github.com/vmware/harbor .
@@ -135,7 +135,7 @@ REGISTRYUSER       | Remote registry server user name
 REGISTRYPASSWORD   | Remote registry server user password
 REGISTRYPROJECTNAME| Project name on remote registry server
 
-Predefined targets:
+* Predefined targets:
 
 Target              | Description
 --------------------|-------------
