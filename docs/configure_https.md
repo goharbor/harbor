@@ -66,6 +66,7 @@ Next, edit the file make/harbor.cfg , update the hostname and the protocol, and 
   #set ui_url_protocol
   ui_url_protocol = https
   ......
+  #The path of cert and key files for nginx, they are applied only the protocol is set to https 
   ssl_cert = /root/cert/yourdomain.com.crt
   ssl_cert_key = /root/cert/yourdomain.com.key
 ```
