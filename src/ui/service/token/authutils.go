@@ -105,8 +105,17 @@ func FilterAccess(username string, a *token.ResourceActions) {
 	//clear action list to assign to new acess element after perm check.
 	a.Actions = []string{}
 	if a.Type == "repository" {
-		if strings.Contains(a.Name, "/") { //Only check the permission when the requested image has a namespace, i.e. project
-			projectName := a.Name[0:strings.LastIndex(a.Name, "/")]
+		repoSplit := strings.Split(a.Name, "/")
+		repoLength := len(repoSplit)
+		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
+			var projectName string
+			registryURL := os.Getenv("HARBOR_REG_URL")
+			if repoSplit[0] == registryURL {
+				projectName = repoSplit[1]
+				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)
+			} else {
+				projectName = repoSplit[0]
+			}
 			var permission string
 			if len(username) > 0 {
 				isAdmin, err := dao.IsAdminRole(username)
