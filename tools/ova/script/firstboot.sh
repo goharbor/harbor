@@ -34,9 +34,18 @@ tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
 echo "Loading images..."
 load
 
-#Configure Harbor
 echo "Configuring Harbor..."
 chmod 600 $base_dir/../harbor/harbor.cfg
+
+#Configure authentication mode 
+echo "Read attribute using ovfenv: [ auth_mode ]"
+auth_mode=$(ovfenv -k auth_mode)
+if [ -n "$auth_mode" ]
+then
+	sed -i -r s%"#?auth_mode\s*=\s*.*"%"auth_mode = $auth_mode"% $base_dir/../harbor/harbor.cfg
+fi
+
+#Configure other attrs 
 configure
 
 #Start Harbor

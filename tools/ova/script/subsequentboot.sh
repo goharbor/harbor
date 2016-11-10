@@ -15,7 +15,7 @@ addIptableRules
 
 #Stop Harbor
 echo "Shutting down Harbor..."
-down
+down || true
 
 #Garbage collection
 value=$(ovfenv -k gc_enabled)
