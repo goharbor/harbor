@@ -45,7 +45,7 @@
 
 5. Add the new language to the `app.conf` file.
     
-    In the file `make/config/ui/app.conf`, append a new item to the configuration section.
+    In the file `make/common/templates/ui/app.conf`, append a new item to the configuration section.
     ```
 		 [lang]
 		 types = en-US|zh-CN|<language>-<locale>
