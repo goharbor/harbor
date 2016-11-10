@@ -43,4 +43,8 @@ configure
 echo "Starting Harbor..."
 up
 
+echo "Removing unneeded installation packages..."
+rm $base_dir/../harbor-offline-installer*.tgz
+rm $base_dir/../harbor/harbor*.tgz
+
 echo "===================================================="
