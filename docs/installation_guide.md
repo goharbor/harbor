@@ -82,10 +82,10 @@ The parameters are described below - note that at the very least, you will need 
 
 #### Configuring storage backend (optional)
 
-By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
-using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
-What you need to update is the section of `storage` in the file `templates/registry/config.yml`. 
-For example, if you use Openstack Swift as your storage backend, the section may look like this:
+By default, Harbor stores images on your local filesystem. In a production environment you may 
+use other storage backends instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
+What you need to update is the `storage` section in the file `templates/registry/config.yml`. 
+If you use Openstack Swift as your storage backend, the `storage` section may look like this:
 
 ```
 storage:
@@ -103,7 +103,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 
 
 #### Finishing installation and starting Harbor
-Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
+Once **harbor.cfg** and the storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ```sh
     $ sudo ./install.sh
@@ -118,10 +118,10 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 **IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. 
 
-For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
+For information on how to use Harbor, please refer to the **[Harbor User Guide](user_guide.md)** .
 
 #### Configuring Harbor with HTTPS access
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+Harbor does not ship with any certificates, and by default uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 
 
 ### Managing Harbor's lifecycle
@@ -148,7 +148,7 @@ Starting harbor_proxy_1
 Starting harbor_jobservice_1
 ```  
 
-To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
+To change Harbor's configuration, first stop the existing Harbor instance, update harbor.cfg, and then run install.sh again:
 ```
 $ sudo docker-compose down
 
@@ -157,7 +157,7 @@ $ vim harbor.cfg
 $ sudo install.sh
 ``` 
 
-Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:
+Remove Harbor's containers while keeping the image data and Harbor's database files on the filesystem:
 ```
 $ sudo docker-compose rm
 Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1, harbor_jobservice_1
@@ -179,12 +179,12 @@ $ rm -r /data/registry
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
 
 ### Persistent data and log files
-By default, registry data is persisted in the target host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.  
+By default, registry data is in the target host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.  
 
-In addition, Harbor uses *rsyslog* to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host for troubleshooting.  
+In addition, Harbor uses *rsyslog* to collect the each container's logs. By default, these log files are stored in the directory `/var/log/harbor/` on the target host for troubleshooting.  
 
-## Configuring Harbor listening on a customized port
-By default, Harbor listens on port 80(HTTP) and 443(HTTPS, if configured) for both admin portal and docker commands, you can configure it with a customized one.  
+## Configuring Harbor to listen on a customized port
+By default, Harbor listens on port 80(HTTP) and 443(HTTPS, if configured) for both admin portal and docker commands. You can configure it with a custom one.  
 
 ### For HTTP protocol
 
@@ -213,7 +213,7 @@ proxy:
 ```
 
 2.Modify templates/registry/config.yml  
-Add the customized port, e.g. ":8888", after "$ui_url".  
+Add the custom port, e.g. ":8888", after "$ui_url".  
 
 ```  
 auth:
@@ -232,7 +232,7 @@ $ sudo install.sh
 ### For HTTPS protocol
 1.Enable HTTPS in Harbor by following this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md).  
 2.Modify docker-compose.yml  
-Replace the first "443" to a customized port, e.g. 4443:443.  
+Replace the first "443" to a custom port, e.g. 4443:443.  
 
 ```
 proxy:
@@ -256,7 +256,7 @@ proxy:
 ```
 
 3.Modify templates/registry/config.yml  
-Add the customized port, e.g. ":4443", after "$ui_url".  
+Add the custom port, e.g. ":4443", after "$ui_url".  
 
 ```  
 auth:
@@ -274,7 +274,7 @@ $ sudo install.sh
 ```
 
 ## Troubleshooting
-1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
+1. When Harbor does not work properly, run the commands below to find out if all of Harbor's containers are in **UP** state: 
 ```
     $ sudo docker-compose ps
        Name                      Command               State                  Ports                   
