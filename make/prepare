@@ -277,8 +277,6 @@ if customize_crt == 'on':
     if openssl_is_installed(shell_stat):
         private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
         root_crt = os.path.join(config_dir, "registry", "root.crt")
-        delfile(private_key_pem)
-        delfile(root_crt)
 
         check_private_key_stat(path=private_key_pem)
         check_certificate_stat(path=root_crt)
