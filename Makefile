@@ -247,7 +247,7 @@ package_online: modify_composefile
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db \
+	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
 			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
@@ -279,7 +279,7 @@ package_offline: compile build modify_composefile
 		nginx:1.11.5 registry:2.5.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db \
+	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
 			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
