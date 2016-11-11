@@ -39,14 +39,15 @@ On Ubuntu, the config file of openssl locates at **/etc/ssl/openssl.cnf**. Refer
 If you're using FQDN like **reg.yourdomain.com** to connect your registry host, then run this command to generate the certificate of your registry host:
 
 ```
-  openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -outdir .
+  openssl x509 -req -days 365 -in yourdomain.com.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out yourdomain.com.crt
 ```
 If you're using **IP**, say **192.168.1.101** to connect your registry host, you may instead run the command below:
 
 ```
   echo subjectAltName = IP:192.168.1.101 > extfile.cnf
 
-  openssl ca -in yourdomain.com.csr -out yourdomain.com.crt -cert ca.crt -keyfile ca.key -extfile extfile.cnf -outdir .
+  openssl x509 -req -days 365 -in yourdomain.com.csr -CA ca.crt -CAkey ca.key -CAcreateserial -extfile extfile.cnf -out yourdomain.com
+.crt
 ```
 ##Configuration and Installation
 After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, 
@@ -124,3 +125,4 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
     update-ca-trust
     ```
     
+
