@@ -25,7 +25,7 @@ User guide
 2. Create a project X so that the user has the project admin role.
 3. On a Docker client, log in as User A and run `docker push` to push an image to project X, e.g. projectX/myimage:v1.
 4. Push an image with different name to project X, e.g. projectX/newimage:v1 .
-5. Run `docker pull` to verify images can be pushed successfully.
+5. Run `docker pull` to verify images can be pulled successfully.
 6. In UI, delete project X directly. (should fail with errors)
 7. While keeping the current user A logged on, in a different browser, log in as admin user. 
 8. Under "Admin Options", create a replication policy of project X to another Harbor instance. (Do not need to activate this policy.)

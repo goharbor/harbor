@@ -25,7 +25,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 
 **On vSphere:** vCenter 5.x+ for deployment of Harbor's virtual appliance. 
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Confiugration Guide](docs/installation_guide.md)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
@@ -35,7 +35,7 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 **WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group. 
 
 ### Contribution
-We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any qustions: harbor@ vmware.com .
+We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: harbor @vmware.com .
 
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
