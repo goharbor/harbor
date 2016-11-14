@@ -131,7 +131,7 @@ func ToggleUserAdminRole(userID, hasAdmin int) error {
 // ChangeUserPassword ...
 func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 	if len(oldPassword) > 1 {
-		return errors.New("Wrong numbers of params.")
+		return errors.New("wrong numbers of params")
 	}
 
 	o := GetOrmer()
@@ -153,7 +153,7 @@ func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 		return err
 	}
 	if c == 0 {
-		return errors.New("No record has been modified, change password failed.")
+		return errors.New("no record has been modified, change password failed")
 	}
 
 	return nil
@@ -171,7 +171,7 @@ func ResetUserPassword(u models.User) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New("No record be changed, reset password failed.")
+		return errors.New("no record be changed, reset password failed")
 	}
 	return nil
 }
