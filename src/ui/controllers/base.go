@@ -75,7 +75,7 @@ func (b *BaseController) Prepare() {
 			Name:     "language",
 			Value:    lang,
 			HttpOnly: true,
-			Domain:   "/",
+			Path:     "/",
 		}
 		http.SetCookie(b.Ctx.ResponseWriter, cookies)
 	}
