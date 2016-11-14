@@ -163,18 +163,18 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
 
-Run the below commands on the host which Harbor is deployed on to preview what files/images will be affect: 
+Run the below commands on the host which Harbor is deployed on to preview what files/images will be affected: 
 
 ```sh
 $ docker-compose stop
-$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
 ```  
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
 
 Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
 
 ```sh
-$ docker run -it --name gc --rm --volumes-from deploy_registry_1 registry:2.5.0 garbage-collect  /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect  /etc/registry/config.yml
 $ docker-compose start
 ```  
 
