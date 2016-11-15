@@ -27,15 +27,8 @@ Otherwise, if you use IP address to connect your registry host, CN can be anythi
 ```
 3) Generate the certificate of your registry host:
 
-On Ubuntu, the config file of openssl locates at **/etc/ssl/openssl.cnf**. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. Let's create necessary directories and files:
+On Ubuntu, the config file of openssl locates at **/etc/ssl/openssl.cnf**. Refer to openssl document for more information. The default CA directory of openssl is called demoCA. 
 
-```
-  mkdir demoCA
-  cd demoCA
-  touch index.txt
-  echo '01' > serial
-  cd ..
-```
 If you're using FQDN like **reg.yourdomain.com** to connect your registry host, then run this command to generate the certificate of your registry host:
 
 ```
