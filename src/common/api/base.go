@@ -19,14 +19,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/auth"
 
 	"github.com/astaxie/beego"
 )
@@ -213,12 +213,5 @@ func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 
 // GetIsInsecure ...
 func GetIsInsecure() bool {
-	insecure := false
-
-	verifyRemoteCert := os.Getenv("VERIFY_REMOTE_CERT")
-	if verifyRemoteCert == "off" {
-		insecure = true
-	}
-
-	return insecure
+	return config.VerifyRemoteCert()
 }
