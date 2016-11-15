@@ -111,7 +111,8 @@ func (b *BaseController) Prepare() {
 		b.UseCompressedJS = true
 	}
 
-	if _, err := os.Stat(filepath.Join("static", "resources", "js", "harbor.app.min.js")); os.IsNotExist(err) {
+	m, err := filepath.Glob(filepath.Join("static", "resources", "js", "harbor.app.min.*.js"))
+	if err != nil || len(m) == 0 {
 		b.UseCompressedJS = false
 	}
 
