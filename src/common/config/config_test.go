@@ -95,4 +95,17 @@ func TestCommonConfig(t *testing.T) {
 	if SQLite() != sqlite {
 		t.Errorf("Expected SQLite setting: %+v, fact %+v", sqlite, SQLite())
 	}
+
+	os.Unsetenv("DATABASE")
+	os.Unsetenv("MYSQL_DATABASE")
+	os.Unsetenv("MYSQL_USR")
+	os.Unsetenv("MYSQL_PWD")
+	os.Unsetenv("MYSQL_HOST")
+	os.Unsetenv("MYSQL_PORT")
+	os.Unsetenv("SQLITE_FILE")
+	os.Unsetenv("VERIFY_REMOTE_CERT")
+	os.Unsetenv("EXT_ENDPOINT")
+	os.Unsetenv("TOKEN_ENDPOINT")
+	os.Unsetenv("LOG_LEVEL")
+
 }
