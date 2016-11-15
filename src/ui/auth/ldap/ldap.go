@@ -48,7 +48,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	ldapURL := os.Getenv("LDAP_URL")
 	if ldapURL == "" {
-		return nil, errors.New("Can not get any available LDAP_URL.")
+		return nil, errors.New("can not get any available LDAP_URL")
 	}
 	log.Debug("ldapURL:", ldapURL)
 	ldap, err := openldap.Initialize(ldapURL)
@@ -59,7 +59,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	ldapBaseDn := os.Getenv("LDAP_BASE_DN")
 	if ldapBaseDn == "" {
-		return nil, errors.New("Can not get any available LDAP_BASE_DN.")
+		return nil, errors.New("can not get any available LDAP_BASE_DN")
 	}
 	log.Debug("baseDn:", ldapBaseDn)
 

@@ -413,7 +413,7 @@ func validateProjectReq(req projectReq) error {
 	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
 	legal := validProjectName.MatchString(pn)
 	if !legal {
-		return fmt.Errorf("Project name is not in lower case or contains illegal characters!")
+		return fmt.Errorf("project name is not in lower case or contains illegal characters")
 	}
 	return nil
 }

@@ -18,39 +18,22 @@
   
   angular
     .module('harbor.app') 
-    .factory('currentUser', currentUser)
-    .factory('currentProjectMember', currentProjectMember);
+    .factory('currentUser', currentUser);
   
-  currentUser.$inject = ['$cookies', '$timeout'];
+  currentUser.$inject = ['$rootScope'];
   
-  function currentUser($cookies, $timeout) {
+  function currentUser($rootScope) {
     return {
       set: function(user) {
-        $cookies.putObject('user', user, {'path': '/'});
+        $rootScope.user = user;
       },
       get: function() {
-        return $cookies.getObject('user');
+        return $rootScope.user;
       },
       unset: function() {
-        $cookies.remove('user', {'path': '/'});
+        delete $rootScope.user;
       }
     };
   }  
-  
-  currentProjectMember.$inject = ['$cookies'];
-  
-  function currentProjectMember($cookies) {
-    return {
-      set: function(member) {
-        $cookies.putObject('member', member, {'path': '/'});
-      },
-      get: function() {
-        return $cookies.getObject('member');
-      },
-      unset: function() {
-        $cookies.remove('member', {'path': '/'});
-      }
-    };
-  }
       
 })();

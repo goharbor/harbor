@@ -64,7 +64,7 @@ func (sm *SM) EnterState(s string) (string, error) {
 	_, exist := targets[s]
 	_, isForced := sm.ForcedStates[s]
 	if !exist && !isForced {
-		return "", fmt.Errorf("Job id: %d, transition from %s to %s does not exist!", sm.JobID, sm.CurrentState, s)
+		return "", fmt.Errorf("job id: %d, transition from %s to %s does not exist", sm.JobID, sm.CurrentState, s)
 	}
 	exitHandler, ok := sm.Handlers[sm.CurrentState]
 	if ok {
