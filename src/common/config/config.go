@@ -24,7 +24,6 @@ import (
 
 // ConfLoader is the interface to load configurations
 type ConfLoader interface {
-
 	// Load will load configuration from different source into a string map, the values in the map will be parsed in to configurations.
 	Load() (map[string]string, error)
 }
