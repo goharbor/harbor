@@ -29,13 +29,13 @@ type ConfigLoader interface {
 
 // EnvConfigLoader loads the config from env vars.
 type EnvConfigLoader struct {
-	keys []string
+	Keys []string
 }
 
 // Load ...
 func (ec *EnvConfigLoader) Load() (map[string]string, error) {
 	m := make(map[string]string)
-	for _, k := range ec.keys {
+	for _, k := range ec.Keys {
 		m[k] = os.Getenv(k)
 	}
 	return m, nil
@@ -48,17 +48,17 @@ type ConfigParser interface {
 }
 
 type Config struct {
-	config map[string]interface{}
-	loader ConfigLoader
-	parser ConfigParser
+	Config map[string]interface{}
+	Loader ConfigLoader
+	Parser ConfigParser
 }
 
-func (conf *Config) load() error {
-	rawMap, err := conf.loader.Load()
+func (conf *Config) Load() error {
+	rawMap, err := conf.Loader.Load()
 	if err != nil {
 		return err
 	}
-	err = conf.parser.Parse(rawMap, conf.config)
+	err = conf.Parser.Parse(rawMap, conf.Config)
 	return err
 }
 
@@ -121,50 +121,50 @@ var commonConfig *Config
 func init() {
 	commonKeys := []string{"DATABASE", "MYSQL_DATABASE", "MYSQL_USR", "MYSQL_PWD", "MYSQL_HOST", "MYSQL_PORT", "SQLITE_FILE", "VERIFY_REMOTE_CERT", "EXT_ENDPOINT", "TOKEN_ENDPOINT", "LOG_LEVEL"}
 	commonConfig = &Config{
-		config: make(map[string]interface{}),
-		loader: &EnvConfigLoader{keys: commonKeys},
-		parser: &commonParser{},
+		Config: make(map[string]interface{}),
+		Loader: &EnvConfigLoader{Keys: commonKeys},
+		Parser: &commonParser{},
 	}
-	if err := commonConfig.load(); err != nil {
+	if err := commonConfig.Load(); err != nil {
 		panic(err)
 	}
 }
 
 // Reload will reload the configuration.
 func Reload() error {
-	return commonConfig.load()
+	return commonConfig.Load()
 }
 
 // Database returns the DB type in configuration.
 func Database() string {
-	return commonConfig.config["database"].(string)
+	return commonConfig.Config["database"].(string)
 }
 
 // MySQL returns the mysql setting in configuration.
 func MySQL() MySQLSetting {
-	return commonConfig.config["mysql"].(MySQLSetting)
+	return commonConfig.Config["mysql"].(MySQLSetting)
 }
 
 // SQLite returns the SQLite setting
 func SQLite() SQLiteSetting {
-	return commonConfig.config["sqlite"].(SQLiteSetting)
+	return commonConfig.Config["sqlite"].(SQLiteSetting)
 }
 
 // VerifyRemoteCert returns bool value.
 func VerifyRemoteCert() bool {
-	return commonConfig.config["verify_remote_cert"].(bool)
+	return commonConfig.Config["verify_remote_cert"].(bool)
 }
 
 // ExtEndpoint ...
 func ExtEndpoint() string {
-	return commonConfig.config["ext_endpoint"].(string)
+	return commonConfig.Config["ext_endpoint"].(string)
 }
 
 // TokenEndpoint returns the endpoint string of token service, which can be accessed by internal service of Harbor.
 func TokenEndpoint() string {
-	return commonConfig.config["token_endpoint"].(string)
+	return commonConfig.Config["token_endpoint"].(string)
 }
 
 func LogLevel() string {
-	return commonConfig.config["log_level"].(string)
+	return commonConfig.Config["log_level"].(string)
 }

@@ -17,11 +17,11 @@ package auth
 
 import (
 	"fmt"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"os"
 	"time"
 
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // 1.5 seconds
@@ -50,7 +50,7 @@ func Register(name string, authenticator Authenticator) {
 // Login authenticates user credentials based on setting.
 func Login(m models.AuthModel) (*models.User, error) {
 
-	var authMode = os.Getenv("AUTH_MODE")
+	var authMode = config.AuthMode()
 	if authMode == "" || m.Principal == "admin" {
 		authMode = "db_auth"
 	}
