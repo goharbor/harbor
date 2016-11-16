@@ -101,7 +101,7 @@ func ListUsers(query models.User) ([]models.User, error) {
 	queryParam := make([]interface{}, 1)
 	if query.Username != "" {
 		sql += ` and username like ? `
-		queryParam = append(queryParam, query.Username)
+		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
 	}
 	sql += ` order by user_id desc `
 
