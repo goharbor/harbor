@@ -85,7 +85,7 @@ func TestCommonConfig(t *testing.T) {
 		t.Errorf("Expected TokenEndpoint: %s, fact: %s", token, TokenEndpoint())
 	}
 	if LogLevel() != loglevel {
-		t.Errorf("Expected LogLevel: %s, fact: %s", loglevel, LogLevel)
+		t.Errorf("Expected LogLevel: %s, fact: %s", loglevel, LogLevel())
 	}
 	os.Setenv("DATABASE", "sqlite")
 	err = Reload()

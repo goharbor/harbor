@@ -139,6 +139,6 @@ func TestProjectCreationRestrict(t *testing.T) {
 
 func TestInitAdminPassword(t *testing.T) {
 	if InitialAdminPassword() != adminPassword {
-		t.Errorf("Expected adminPassword: %s, in fact: %s", adminPassword, InitialAdminPassword)
+		t.Errorf("Expected adminPassword: %s, in fact: %s", adminPassword, InitialAdminPassword())
 	}
 }
