@@ -45,7 +45,8 @@ then
 	sed -i -r s%"#?auth_mode\s*=\s*.*"%"auth_mode = $auth_mode"% $base_dir/../harbor/harbor.cfg
 fi
 
-#Configure other attrs 
+#Configure other attrs
+mkdir -p /data/cert/
 configure
 
 #Start Harbor
