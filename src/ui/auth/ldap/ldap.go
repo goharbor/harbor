@@ -18,14 +18,14 @@ package ldap
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/utils/log"
 
-	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"github.com/mqu/openldap"
 )
@@ -46,7 +46,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			return nil, fmt.Errorf("the principal contains meta char: %q", c)
 		}
 	}
-	ldapURL := os.Getenv("LDAP_URL")
+	ldapURL := config.LDAP().URL
 	if ldapURL == "" {
 		return nil, errors.New("can not get any available LDAP_URL")
 	}
@@ -57,16 +57,16 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
-	ldapBaseDn := os.Getenv("LDAP_BASE_DN")
+	ldapBaseDn := config.LDAP().BaseDn
 	if ldapBaseDn == "" {
 		return nil, errors.New("can not get any available LDAP_BASE_DN")
 	}
 	log.Debug("baseDn:", ldapBaseDn)
 
-	ldapSearchDn := os.Getenv("LDAP_SEARCH_DN")
+	ldapSearchDn := config.LDAP().SearchDn
 	if ldapSearchDn != "" {
 		log.Debug("Search DN: ", ldapSearchDn)
-		ldapSearchPwd := os.Getenv("LDAP_SEARCH_PWD")
+		ldapSearchPwd := config.LDAP().SearchPwd
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
 		if err != nil {
 			log.Debug("Bind search dn error", err)
@@ -74,8 +74,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	attrName := os.Getenv("LDAP_UID")
-	filter := os.Getenv("LDAP_FILTER")
+	attrName := config.LDAP().UID
+	filter := config.LDAP().Filter
 	if filter != "" {
 		filter = "(&" + filter + "(" + attrName + "=" + m.Principal + "))"
 	} else {
@@ -83,7 +83,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	log.Debug("one or more filter", filter)
 
-	ldapScope := os.Getenv("LDAP_SCOPE")
+	ldapScope := config.LDAP().Scope
 	var scope int
 	if ldapScope == "1" {
 		scope = openldap.LDAP_SCOPE_BASE

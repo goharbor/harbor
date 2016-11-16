@@ -21,13 +21,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
@@ -38,27 +37,10 @@ const (
 	privateKey = "/etc/ui/private_key.pem"
 )
 
-var (
-	expiration = 30 //minutes
-)
+var expiration int //minutes
 
 func init() {
-	// TODO read it from config
-	expi := os.Getenv("TOKEN_EXPIRATION")
-	if len(expi) != 0 {
-		i, err := strconv.Atoi(expi)
-		if err != nil {
-			log.Errorf("failed to parse token expiration: %v, using default value: %d minutes", err, expiration)
-			return
-		}
-
-		if i <= 0 {
-			log.Warningf("invalid token expiration, using default value: %d minutes", expiration)
-			return
-		}
-
-		expiration = i
-	}
+	expiration = config.TokenExpiration()
 	log.Infof("token expiration: %d minutes", expiration)
 }
 
@@ -109,7 +91,7 @@ func FilterAccess(username string, a *token.ResourceActions) {
 		repoLength := len(repoSplit)
 		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
 			var projectName string
-			registryURL := os.Getenv("HARBOR_REG_URL")
+			registryURL := config.ExtRegistryURL()
 			if repoSplit[0] == registryURL {
 				projectName = repoSplit[1]
 				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)

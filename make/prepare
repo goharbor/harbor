@@ -32,6 +32,10 @@ def validate(conf):
         cert_key_path = rcp.get("configuration", "ssl_cert_key")
         if not os.path.isfile(cert_key_path):
             raise Exception("Error: The path for certificate key: %s is invalid" % cert_key_path)
+    project_creation = rcp.get("configuration", "project_creation_restriction")
+
+    if project_creation != "everyone" and project_creation != "adminonly":
+        raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
 
 def get_secret_key(path):
     key_file = os.path.join(path, "secretkey")
@@ -115,6 +119,7 @@ crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
+proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 #secret_key = rcp.get("configuration", "secret_key")
 secret_key = get_secret_key(args.data_volume)
 ########
@@ -200,6 +205,7 @@ render(os.path.join(templates_dir, "ui", "env"),
         ui_secret=ui_secret,
         secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert,
+        project_creation_restriction=proj_cre_restriction,
 	token_expiration=token_expiration)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),

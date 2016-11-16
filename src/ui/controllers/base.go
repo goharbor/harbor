@@ -12,6 +12,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
@@ -99,7 +100,7 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
+	authMode := config.AuthMode()
 	if authMode == "" {
 		authMode = "db_auth"
 	}
@@ -116,11 +117,9 @@ func (b *BaseController) Prepare() {
 		b.UseCompressedJS = false
 	}
 
-	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
-	if selfRegistration == "on" {
-		b.SelfRegistration = true
-	}
-	b.Data["SelfRegistration"] = b.SelfRegistration
+	b.SelfRegistration = config.SelfRegistration()
+
+	b.Data["SelfRegistration"] = config.SelfRegistration()
 }
 
 // Forward to setup layout and template for content for a page.

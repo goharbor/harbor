@@ -22,18 +22,18 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/service/cache"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/service/cache"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
@@ -233,9 +233,8 @@ func postReplicationAction(policyID int64, acton string) error {
 func addAuthentication(req *http.Request) {
 	if req != nil {
 		req.AddCookie(&http.Cookie{
-			Name: models.UISecretCookie,
-			// TODO read secret from config
-			Value: os.Getenv("UI_SECRET"),
+			Name:  models.UISecretCookie,
+			Value: config.UISecret(),
 		})
 	}
 }
@@ -351,8 +350,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			}
 
 			// TODO remove the workaround when the bug of registry is fixed
-			// TODO read it from config
-			endpoint := os.Getenv("REGISTRY_URL")
+			endpoint := config.InternalRegistryURL()
 			client, err := cache.NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
@@ -374,8 +372,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			j++
 		} else {
 			// TODO remove the workaround when the bug of registry is fixed
-			// TODO read it from config
-			endpoint := os.Getenv("REGISTRY_URL")
+			endpoint := config.InternalRegistryURL()
 			client, err := cache.NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
@@ -425,7 +422,7 @@ func projectExists(repository string) (bool, error) {
 }
 
 func initRegistryClient() (r *registry.Registry, err error) {
-	endpoint := os.Getenv("REGISTRY_URL")
+	endpoint := config.InternalRegistryURL()
 
 	addr := endpoint
 	if strings.Contains(endpoint, "/") {
@@ -462,30 +459,18 @@ func initRegistryClient() (r *registry.Registry, err error) {
 }
 
 func buildReplicationURL() string {
-	url := getJobServiceURL()
+	url := config.InternalJobServiceURL()
 	return fmt.Sprintf("%s/api/jobs/replication", url)
 }
 
 func buildJobLogURL(jobID string) string {
-	url := getJobServiceURL()
+	url := config.InternalJobServiceURL()
 	return fmt.Sprintf("%s/api/jobs/replication/%s/log", url, jobID)
 }
 
 func buildReplicationActionURL() string {
-	url := getJobServiceURL()
+	url := config.InternalJobServiceURL()
 	return fmt.Sprintf("%s/api/jobs/replication/actions", url)
-}
-
-func getJobServiceURL() string {
-	url := os.Getenv("JOB_SERVICE_URL")
-	url = strings.TrimSpace(url)
-	url = strings.TrimRight(url, "/")
-
-	if len(url) == 0 {
-		url = "http://jobservice"
-	}
-
-	return url
 }
 
 func getReposByProject(name string, keyword ...string) ([]string, error) {

@@ -20,17 +20,17 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // TargetAPI handles request to /api/targets/ping /api/targets/{}
@@ -41,8 +41,7 @@ type TargetAPI struct {
 
 // Prepare validates the user
 func (t *TargetAPI) Prepare() {
-	//TODO:move to config
-	t.secretKey = os.Getenv("SECRET_KEY")
+	t.secretKey = config.SecretKey()
 
 	userID := t.ValidateUser()
 	isSysAdmin, err := dao.IsAdminRole(userID)

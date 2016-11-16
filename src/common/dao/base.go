@@ -17,11 +17,10 @@ package dao
 
 import (
 	"fmt"
-	"os"
-	"strings"
 	"sync"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -52,40 +51,16 @@ func InitDatabase() {
 }
 
 func getDatabase() (db Database, err error) {
-	switch strings.ToLower(os.Getenv("DATABASE")) {
+	switch config.Database() {
 	case "", "mysql":
-		host, port, usr, pwd, database := getMySQLConnInfo()
-		db = NewMySQL(host, port, usr, pwd, database)
+		db = NewMySQL(config.MySQL().Host, config.MySQL().Port, config.MySQL().User,
+			config.MySQL().Password, config.MySQL().Database)
 	case "sqlite":
-		file := getSQLiteConnInfo()
-		db = NewSQLite(file)
+		db = NewSQLite(config.SQLite().FilePath)
 	default:
-		err = fmt.Errorf("invalid database: %s", os.Getenv("DATABASE"))
-	}
-
-	return
-}
-
-// TODO read from config
-func getMySQLConnInfo() (host, port, username, password, database string) {
-	host = os.Getenv("MYSQL_HOST")
-	port = os.Getenv("MYSQL_PORT")
-	username = os.Getenv("MYSQL_USR")
-	password = os.Getenv("MYSQL_PWD")
-	database = os.Getenv("MYSQL_DATABASE")
-	if len(database) == 0 {
-		database = "registry"
+		err = fmt.Errorf("invalid database: %s", config.Database())
 	}
 	return
-}
-
-// TODO read from config
-func getSQLiteConnInfo() string {
-	file := os.Getenv("SQLITE_FILE")
-	if len(file) == 0 {
-		file = "registry.db"
-	}
-	return file
 }
 
 var globalOrm orm.Ormer
