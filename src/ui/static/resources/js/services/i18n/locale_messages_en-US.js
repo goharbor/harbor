@@ -125,6 +125,7 @@ var locale_messages = {
   'username_already_exist': 'Username already exist.',
   'username_does_not_exist': 'Username does not exist.',
   'username_or_password_is_incorrect': 'Username or password is incorrect',
+  'username_and_password_are_required': 'Both username and password are required.',
   'username_email': 'Username/Email',
   'project_name_is_required': 'Project name is required',
   'project_already_exist': 'Project already exist',
