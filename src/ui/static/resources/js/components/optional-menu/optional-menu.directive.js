@@ -70,7 +70,7 @@
     function getVolumeInfoSuccess(response) {
       var storage = response.data;
       vm.modalMessage += '<br/>' + $filter('tr')('current_storage',
-        [toGigaBytes(storage['harbor_storage']['free']), toGigaBytes(storage['harbor_storage']['total'])]);
+        [toGigaBytes(storage['storage']['free']), toGigaBytes(storage['storage']['total'])]);
       $scope.$emit('modalMessage', vm.modalMessage);
       $scope.$emit('raiseInfo', raiseInfo);
       

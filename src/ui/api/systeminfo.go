@@ -21,7 +21,7 @@ const harborStoragePath = "/harbor_storage"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
-	HarborStorage Storage `json:"harbor_storage"`
+	HarborStorage Storage `json:"storage"`
 }
 
 //Storage models for storage.
