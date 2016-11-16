@@ -17,7 +17,6 @@
   angular
     .module('harbor.app', [
       'ngMessages',
-      'ngCookies',
       'harbor.session',
       'harbor.layout.element.height',
       'harbor.layout.header',
