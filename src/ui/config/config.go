@@ -12,6 +12,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+// Package config provides methods to get configurations required by code in src/ui
 package config
 
 import (
@@ -22,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
+// LDAPSetting wraps the setting of an LDAP server
 type LDAPSetting struct {
 	URL       string
 	BaseDn    string
@@ -50,7 +53,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 		config["ldap"] = setting
 	}
 	config["auth_mode"] = mode
-	var tokenExpiration int = 30 //minutes
+	var tokenExpiration = 30 //minutes
 	if len(raw["TOKEN_EXPIRATION"]) > 0 {
 		i, err := strconv.Atoi(raw["TOKEN_EXPIRATION"])
 		if err != nil {
@@ -67,7 +70,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 	config["ui_secret"] = raw["UI_SECRET"]
 	config["secret_key"] = raw["SECRET_KEY"]
 	config["self_registration"] = raw["SELF_REGISTRATION"] != "off"
-	config["admin_create_project"] = strings.ToLower(raw["PROJECT_CREATE_RESTRICTION"]) == "adminonly"
+	config["admin_create_project"] = strings.ToLower(raw["PROJECT_CREATION_RESTRICTION"]) == "adminonly"
 	registryURL := raw["REGISTRY_URL"]
 	registryURL = strings.TrimRight(registryURL, "/")
 	config["internal_registry_url"] = registryURL
@@ -80,7 +83,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 var uiConfig *commonConfig.Config
 
 func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATE_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
+	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
 	uiConfig = &commonConfig.Config{
 		Config: make(map[string]interface{}),
 		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},
@@ -91,45 +94,62 @@ func init() {
 	}
 }
 
+// Reload ...
 func Reload() error {
 	return uiConfig.Load()
 }
 
+// AuthMode ...
 func AuthMode() string {
 	return uiConfig.Config["auth_mode"].(string)
 }
+
+// LDAP returns the setting of ldap server
 func LDAP() LDAPSetting {
 	return uiConfig.Config["ldap"].(LDAPSetting)
 }
 
+// TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration() int {
 	return uiConfig.Config["token_exp"].(int)
 }
 
+// ExtRegistryURL returns the registry URL to exposed to external client
 func ExtRegistryURL() string {
 	return uiConfig.Config["ext_reg_url"].(string)
 }
 
+// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
 func UISecret() string {
 	return uiConfig.Config["ui_secret"].(string)
 }
 
+// SecretKey returns the secret key to encrypt the password of target
 func SecretKey() string {
 	return uiConfig.Config["secret_key"].(string)
 }
 
+// SelfRegistration returns the enablement of self registration
 func SelfRegistration() bool {
 	return uiConfig.Config["self_registration"].(bool)
 }
 
+// InternalRegistryURL returns registry URL for internal communication between Harbor containers
 func InternalRegistryURL() string {
 	return uiConfig.Config["internal_registry_url"].(string)
 }
 
+// InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
 	return uiConfig.Config["internal_jobservice_url"].(string)
 }
 
+// InitialAdminPassword returns the initial password for administrator
+func InitialAdminPassword() string {
+	return uiConfig.Config["admin_password"].(string)
+}
+
+// OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject() bool {
 	return uiConfig.Config["admin_create_project"].(bool)
 }

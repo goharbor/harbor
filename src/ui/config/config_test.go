@@ -37,7 +37,7 @@ var (
 	uiSecret                   = "ffadsdfsdf"
 	secretKey                  = "keykey"
 	selfRegistration           = "off"
-	projectCreationRestriction = "everyone"
+	projectCreationRestriction = "adminonly"
 	internalRegistryURL        = "http://registry:5000"
 	jobServiceURL              = "http://jobservice"
 )
@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("UI_SECRET", uiSecret)
 	os.Setenv("SECRET_KEY", secretKey)
 	os.Setenv("SELF_REGISTRATION", selfRegistration)
-	os.Setenv("CREATE_PROJECT_RESTRICTION", projectCreationRestriction)
+	os.Setenv("PROJECT_CREATION_RESTRICTION", projectCreationRestriction)
 	os.Setenv("REGISTRY_URL", internalRegistryURL)
 	os.Setenv("JOB_SERVICE_URL", jobServiceURL)
 
@@ -132,7 +132,13 @@ func TestSecrets(t *testing.T) {
 }
 
 func TestProjectCreationRestrict(t *testing.T) {
-	if OnlyAdminCreateProject() {
-		t.Errorf("Expected OnlyAdminCreateProject to be false")
+	if !OnlyAdminCreateProject() {
+		t.Errorf("Expected OnlyAdminCreateProject to be true")
+	}
+}
+
+func TestInitAdminPassword(t *testing.T) {
+	if InitialAdminPassword() != adminPassword {
+		t.Errorf("Expected adminPassword: %s, in fact: %s", adminPassword, InitialAdminPassword)
 	}
 }

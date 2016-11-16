@@ -54,7 +54,7 @@ func getDatabase() (db Database, err error) {
 	switch config.Database() {
 	case "", "mysql":
 		db = NewMySQL(config.MySQL().Host, config.MySQL().Port, config.MySQL().User,
-			config.MySQL().Port, config.MySQL().Database)
+			config.MySQL().Password, config.MySQL().Database)
 	case "sqlite":
 		db = NewSQLite(config.SQLite().FilePath)
 	default:

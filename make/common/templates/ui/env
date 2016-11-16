@@ -26,4 +26,4 @@ EXT_ENDPOINT=$ui_url
 TOKEN_ENDPOINT=http://ui
 VERIFY_REMOTE_CERT=$verify_remote_cert
 TOKEN_EXPIRATION=$token_expiration
-CREATE_PROJECT_RESTRICTION=$create_project_restriction
+PROJECT_CREATION_RESTRICTION=$project_creation_restriction

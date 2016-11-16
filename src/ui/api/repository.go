@@ -19,23 +19,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"sort"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/ui/service/cache"
 	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/utils/registry"
 
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -361,7 +361,7 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint := os.Getenv("REGISTRY_URL")
+	endpoint := config.InternalRegistryURL()
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {

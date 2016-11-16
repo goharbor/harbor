@@ -18,7 +18,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -27,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -47,16 +47,9 @@ type passwordReq struct {
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 
-	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
-	if authMode == "" {
-		authMode = "db_auth"
-	}
-	ua.AuthMode = authMode
+	ua.AuthMode = config.AuthMode()
 
-	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
-	if selfRegistration == "on" {
-		ua.SelfRegistration = true
-	}
+	ua.SelfRegistration = config.SelfRegistration()
 
 	if ua.Ctx.Input.IsPost() {
 		sessionUserID := ua.GetSession("userId")
@@ -241,9 +234,7 @@ func (ua *UserAPI) Delete() {
 		return
 	}
 
-	// TODO read from conifg
-	authMode := os.Getenv("AUTH_MODE")
-	if authMode == "ldap_auth" {
+	if config.AuthMode() == "ldap_auth" {
 		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
 	}
 

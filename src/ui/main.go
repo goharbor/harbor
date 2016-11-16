@@ -25,11 +25,12 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 const (
@@ -76,7 +77,7 @@ func main() {
 
 	dao.InitDatabase()
 
-	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
+	if err := updateInitPassword(adminUserID, config.InitialAdminPassword()); err != nil {
 		log.Error(err)
 	}
 	initRouters()

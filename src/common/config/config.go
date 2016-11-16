@@ -12,6 +12,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+// Package config provide methods to get the configurations reqruied by code in src/common
 package config
 
 import (
@@ -20,8 +22,8 @@ import (
 	"strings"
 )
 
-// ConfigLoader is the interface to load configurations
-type ConfigLoader interface {
+// ConfLoader is the interface to load configurations
+type ConfLoader interface {
 
 	// Load will load configuration from different source into a string map, the values in the map will be parsed in to configurations.
 	Load() (map[string]string, error)
@@ -41,18 +43,22 @@ func (ec *EnvConfigLoader) Load() (map[string]string, error) {
 	return m, nil
 }
 
-// ConfigParser
-type ConfigParser interface {
+// ConfParser ...
+type ConfParser interface {
+
 	//Parse parse the input raw map into a config map
 	Parse(raw map[string]string, config map[string]interface{}) error
 }
 
+// Config wraps a map for the processed configuration values,
+// and loader parser to read configuration from external source and process the values.
 type Config struct {
 	Config map[string]interface{}
-	Loader ConfigLoader
-	Parser ConfigParser
+	Loader ConfLoader
+	Parser ConfParser
 }
 
+// Load reload the configurations
 func (conf *Config) Load() error {
 	rawMap, err := conf.Loader.Load()
 	if err != nil {
@@ -62,6 +68,7 @@ func (conf *Config) Load() error {
 	return err
 }
 
+// MySQLSetting wraps the settings of a MySQL DB
 type MySQLSetting struct {
 	Database string
 	User     string
@@ -70,6 +77,7 @@ type MySQLSetting struct {
 	Port     string
 }
 
+// SQLiteSetting wraps the settings of a SQLite DB
 type SQLiteSetting struct {
 	FilePath string
 }
@@ -165,6 +173,7 @@ func TokenEndpoint() string {
 	return commonConfig.Config["token_endpoint"].(string)
 }
 
+// LogLevel returns the log level in string format.
 func LogLevel() string {
 	return commonConfig.Config["log_level"].(string)
 }

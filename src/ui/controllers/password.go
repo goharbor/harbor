@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"net/http"
-	"os"
 	"regexp"
 	"text/template"
 
