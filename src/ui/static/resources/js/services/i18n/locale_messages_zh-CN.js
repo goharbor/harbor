@@ -231,6 +231,7 @@ var locale_messages = {
   'about': '关于',
   'about_harbor': '关于 Harbor',
   'current_version': '<label>当前版本</label>&nbsp;&nbsp;<span>$0</span>',
+  'current_storage': '<label>存储情况</label>&nbsp;&nbsp;<span>可用： $0 GB，总共： $1 GB。</span>',
   'failed_to_get_project_member': '无法获取当前项目成员。',
   'failed_to_delete_repo': '无法删除镜像仓库。',
   'failed_to_delete_repo_insuffient_permissions': '无法删除镜像仓库，权限不足。',

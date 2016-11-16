@@ -50,6 +50,7 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
+      - /data:/harbor_storage
     depends_on:
       - log
     logging:
