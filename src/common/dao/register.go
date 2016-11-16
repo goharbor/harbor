@@ -52,7 +52,7 @@ func Register(user models.User) (int64, error) {
 func UserExists(user models.User, target string) (bool, error) {
 
 	if user.Username == "" && user.Email == "" {
-		return false, errors.New("User name and email are blank.")
+		return false, errors.New("user name and email are blank")
 	}
 
 	o := GetOrmer()

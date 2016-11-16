@@ -43,7 +43,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
 	}
 	if user == nil {
-		return fmt.Errorf("User id: %d does not exist.", userID)
+		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
 		salt := utils.GenerateRandomString()

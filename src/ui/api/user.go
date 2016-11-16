@@ -323,13 +323,13 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 func validate(user models.User) error {
 
 	if isIllegalLength(user.Username, 1, 20) {
-		return fmt.Errorf("Username with illegal length.")
+		return fmt.Errorf("username with illegal length")
 	}
 	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
-		return fmt.Errorf("Username contains illegal characters.")
+		return fmt.Errorf("username contains illegal characters")
 	}
 	if isIllegalLength(user.Password, 8, 20) {
-		return fmt.Errorf("Password with illegal length.")
+		return fmt.Errorf("password with illegal length")
 	}
 	if err := commonValidate(user); err != nil {
 		return err
@@ -342,21 +342,21 @@ func commonValidate(user models.User) error {
 
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
-			return fmt.Errorf("Email with illegal format.")
+			return fmt.Errorf("email with illegal format")
 		}
 	} else {
 		return fmt.Errorf("Email can't be empty")
 	}
 
 	if isIllegalLength(user.Realname, 0, 20) {
-		return fmt.Errorf("Realname with illegal length.")
+		return fmt.Errorf("realname with illegal length")
 	}
 
 	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
-		return fmt.Errorf("Realname contains illegal characters.")
+		return fmt.Errorf("realname contains illegal characters")
 	}
 	if isIllegalLength(user.Comment, -1, 30) {
-		return fmt.Errorf("Comment with illegal length.")
+		return fmt.Errorf("comment with illegal length")
 	}
 	return nil
 
