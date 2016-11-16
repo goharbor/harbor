@@ -174,19 +174,20 @@ func (a testapi) ProjectsPost(prjUsr usrInfo, project apilib.ProjectReq) (int, e
 	return httpStatusCode, err
 }
 
-func (a testapi) StatisticGet(user usrInfo) (apilib.StatisticMap, error) {
+func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
 	path := "/api/statistics/"
-	fmt.Printf("project statistic path: %s\n", path)
+
 	_sling = _sling.Path(path)
-	var successPayload = new(apilib.StatisticMap)
-	code, body, err := request(_sling, jsonAcceptHeader, user)
-	if 200 == code && nil == err {
+	var successPayload apilib.StatisticMap
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, user)
+
+	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
 	}
-	return *successPayload, err
+	return httpStatusCode, successPayload, err
 }
 
 func (a testapi) LogGet(user usrInfo, startTime, endTime, lines string) (int, []apilib.AccessLog, error) {
@@ -857,7 +858,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
 	}
 	if user == nil {
-		return fmt.Errorf("User id: %d does not exist.", userID)
+		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
 		user.Salt = utils.GenerateRandomString()

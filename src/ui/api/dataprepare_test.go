@@ -16,18 +16,22 @@
 package api
 
 import (
+	"os"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"os"
 )
 
 const (
 	//Prepare Test info
-	TestUserName   = "testUser0001"
-	TestUserPwd    = "testUser0001"
-	TestUserEmail  = "testUser0001@mydomain.com"
-	TestProName    = "testProject0001"
-	TestTargetName = "testTarget0001"
+	TestUserName       = "testUser0001"
+	TestUserPwd        = "testUser0001"
+	TestUserEmail      = "testUser0001@mydomain.com"
+	TestProName        = "testProject0001"
+	TestTargetName     = "testTarget0001"
+	TestRepoName       = "testRepo0001"
+	AdminName          = "admin"
+	DefaultProjectName = "library"
 )
 
 func CommonAddUser() {
@@ -103,4 +107,21 @@ func CommonDelTarget() {
 
 func CommonPolicyEabled(policyID int, enabled int) {
 	_ = dao.UpdateRepPolicyEnablement(int64(policyID), enabled)
+}
+
+func CommonAddRepository() {
+	commonRepository := &models.RepoRecord{
+		RepositoryID: "1",
+		Name:         TestRepoName,
+		OwnerName:    AdminName,
+		OwnerID:      1,
+		ProjectName:  DefaultProjectName,
+		ProjectID:    1,
+		PullCount:    1,
+	}
+	_ = dao.AddRepository(*commonRepository)
+}
+
+func CommonDelRepository() {
+	_ = dao.DeleteRepository(TestRepoName)
 }

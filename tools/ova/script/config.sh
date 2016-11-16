@@ -3,7 +3,6 @@ set -e
 
 attrs=( 
 	harbor_admin_password
-	auth_mode 
 	ldap_url 
 	ldap_searchdn 
 	ldap_search_pwd 
@@ -37,34 +36,38 @@ function format {
 }
 
 #Modify hostname
-ip=$(ip addr show eth0|grep "inet "|tr -s ' '|cut -d ' ' -f 3|cut -d '/' -f 1)
-if [ -n "$ip" ]
+hostname=$(hostname --fqdn) || true
+if [ -z "$hostname" ]
 then
-	echo "Read IP address: [ IP - $ip ]"
-	sed -i -r s/"hostname = .*"/"hostname = $ip"/ $cfg
+	hostname=$(ip addr show eth0|grep "inet "|tr -s ' '|cut -d ' ' -f 3|cut -d '/' -f 1)
+fi
+
+if [ -n "$hostname" ]
+then
+	echo "Read hostname/IP: [ hostname/IP - $hostname ]"
+	sed -i -r s/"hostname\s*=\s*.*"/"hostname = $hostname"/ $cfg
 else
-	echo "Failed to get the IP address"
+	echo "Failed to get the hostname/IP"
 	exit 1
 fi
 
 #Handle http/https
-protocal=http
+protocol=http
 echo "Read attribute using ovfenv: [ ssl_cert ]"
 ssl_cert=$(ovfenv -k ssl_cert)
 echo "Read attribute using ovfenv: [ ssl_cert_key ]"
 ssl_cert_key=$(ovfenv -k ssl_cert_key)
 if [ -n "$ssl_cert" ] && [ -n "$ssl_cert_key" ]
 then
-	echo "ssl_cert and ssl_cert_key are set, using HTTPS protocal"
-	protocal=https
-	sed -i -r s%"#?ui_url_protocol = .*"%"ui_url_protocol = $protocal"% $cfg
-	mkdir -p /path/to
-	echo $ssl_cert > /path/to/server.crt
-	format /path/to/server.crt
-	echo $ssl_cert_key > /path/to/server.key
-	format /path/to/server.key
+	echo "ssl_cert and ssl_cert_key are set, using HTTPS protocol"
+	protocol=https
+	sed -i -r s%"#?ui_url_protocol\s*=\s*.*"%"ui_url_protocol = $protocol"% $cfg
+	echo $ssl_cert > /data/server.crt
+	format /data/server.crt
+	echo $ssl_cert_key > /data/server.key
+	format /data/server.key
 else
-	echo "ssl_cert and ssl_cert_key are not set, using HTTP protocal"
+	echo "ssl_cert and ssl_cert_key are not set, using HTTP protocol"
 fi
 
 for attr in "${attrs[@]}"
@@ -84,6 +87,6 @@ do
 			bs=$(echo $value | base64)
 			#value={base64}$bs
 		fi
-		sed -i -r s%"#?$attr = .*"%"$attr = $value"% $cfg
+		sed -i -r s%"#?$attr\s*=\s*.*"%"$attr = $value"% $cfg
 	fi
 done

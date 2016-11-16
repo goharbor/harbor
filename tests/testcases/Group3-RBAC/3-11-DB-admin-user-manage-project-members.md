@@ -51,17 +51,15 @@ User guide
 25. In admin's UI, change user C's role to project admin of project X.
 26. In user C's UI, verify his/her role is project admin of project X. 
 
-27. In admin's UI, remove user C's from project X.
+27. In admin's UI, remove user C from project X.
 28. Set project X's publicity to on.
 29. On a Docker client host, log in as user C. 
 30. Use `docker pull` to pull the image from project X. 
 31. Use `docker push` to push an image to project X. (should fail)
-32. In admin's UI, remove user C's from project X.
-33. Set project X's publicity to off.
-34. On a Docker client host, log in as user C. 
-35. Use `docker pull` to pull the image from project X. (should fail) 
-36. Use `docker push` to push an image to project X. (should fail)
-
+32. Set project X's publicity to off.
+33. On a Docker client host, log in as user C. 
+34. Use `docker pull` to pull the image from project X. (should fail) 
+35. Use `docker push` to push an image to project X. (should fail)
 
 # Expected Outcome:
 
@@ -72,7 +70,7 @@ User guide
 * Step 26 as described.
 * Step 30 should succeed.
 * Step 31 should fail.
-* Step 35-36 should fail.
+* Step 34-35 should fail.
 
 # Possible Problems:
 None
