@@ -85,7 +85,7 @@ func (pma *ProjectMemberAPI) Get() {
 	}
 	if pma.memberID == 0 { //member id not set return list of the members
 		username := pma.GetString("username")
-		queryUser := models.User{Username: "%" + username + "%"}
+		queryUser := models.User{Username: username}
 		userList, err := dao.GetUserByProject(pid, queryUser)
 		if err != nil {
 			log.Errorf("Failed to query database for member list, error: %v", err)
