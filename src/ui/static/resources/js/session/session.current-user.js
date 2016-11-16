@@ -40,7 +40,7 @@
     }
     
     function getCurrentUserFailed(e){
-      console.log('Failed to get current user:' + e);
+      console.log('Failed to get current user:' + e.statusText);
       LogOutService()
         .success(logOutSuccess)
         .error(logOutFailed);
