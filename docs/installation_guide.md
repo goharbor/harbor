@@ -127,25 +127,25 @@ Harbor does not ship with any certificates, and, by default, uses HTTP to serve 
 ### Managing Harbor's lifecycle
 You can use docker-compose to manage the lifecycle of Harbor. Some useful commands are listed as follows (must run in the same directory as *docker-compose.yml*).
 
-Stop Harbor:
+Stopping Harbor:
 ```
 $ sudo docker-compose stop
-Stopping harbor_proxy_1 ... done
-Stopping harbor_ui_1 ... done
-Stopping harbor_registry_1 ... done
-Stopping harbor_mysql_1 ... done
-Stopping harbor_log_1 ... done
-Stopping harbor_jobservice_1 ... done
+Stopping nginx ... done
+Stopping harbor-jobservice ... done
+Stopping harbor-ui ... done
+Stopping harbor-db ... done
+Stopping registry ... done
+Stopping harbor-log ... done
 ```  
-Restart Harbor after stopping:
+Restarting Harbor after stopping:
 ```
 $ sudo docker-compose start
-Starting harbor_log_1
-Starting harbor_mysql_1
-Starting harbor_registry_1
-Starting harbor_ui_1
-Starting harbor_proxy_1
-Starting harbor_jobservice_1
+Starting log ... done
+Starting ui ... done
+Starting mysql ... done
+Starting jobservice ... done
+Starting registry ... done
+Starting proxy ... done
 ```  
 
 To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
@@ -157,20 +157,20 @@ $ vim harbor.cfg
 $ sudo install.sh
 ``` 
 
-Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:
+Removing Harbor's containers while keeping the image data and Harbor's database files on the file system:
 ```
 $ sudo docker-compose rm
-Going to remove harbor_proxy_1, harbor_ui_1, harbor_registry_1, harbor_mysql_1, harbor_log_1, harbor_jobservice_1
+Going to remove nginx, harbor-jobservice, registry, harbor-ui, harbor-db, harbor-log
 Are you sure? [yN] y
-Removing harbor_proxy_1 ... done
-Removing harbor_ui_1 ... done
-Removing harbor_registry_1 ... done
-Removing harbor_mysql_1 ... done
-Removing harbor_log_1 ... done
-Removing harbor_jobservice_1 ... done
+Removing nginx ... done
+Removing harbor-jobservice ... done
+Removing registry ... done
+Removing harbor-ui ... done
+Removing harbor-db ... done
+Removing harbor-log ... done
 ```  
 
-Remove Harbor's database and image data (for a clean re-installation):
+Removing Harbor's database and image data (for a clean re-installation):
 ```sh
 $ rm -r /data/database
 $ rm -r /data/registry
@@ -277,14 +277,14 @@ $ sudo install.sh
 1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
 ```
     $ sudo docker-compose ps
-       Name                      Command               State                  Ports                   
+        Name                     Command               State                    Ports                   
   -----------------------------------------------------------------------------------------------------
-  harbor_jobservice_1   /harbor/harbor_jobservice        Up                                               
-  harbor_log_1          /bin/sh -c crond && rsyslo ...   Up    0.0.0.0:1514->514/tcp                    
-  harbor_mysql_1        /entrypoint.sh mysqld            Up    3306/tcp                                 
-  harbor_proxy_1        nginx -g daemon off;             Up    0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
-  harbor_registry_1     /entrypoint.sh serve /etc/ ...   Up    5000/tcp                                 
-  harbor_ui_1           /harbor/harbor_ui                Up                                               
+  harbor-db           docker-entrypoint.sh mysqld      Up      3306/tcp                                 
+  harbor-jobservice   /harbor/harbor_jobservice        Up                                               
+  harbor-log          /bin/sh -c crond && rsyslo ...   Up      0.0.0.0:1514->514/tcp                    
+  harbor-ui           /harbor/harbor_ui                Up                                               
+  nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
+  registry            /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
 ```
 If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor_ui_1``` is not running, you should look at the log file ```docker_ui.log```.  
 
