@@ -35,13 +35,12 @@
     vm.updateUser = updateUser;
     vm.cancel = cancel;
     
-    $scope.user = currentUser.get();
-    if(!$scope.user) {
-      $window.location.href = '/';
-      return;
-    }
-    var userId = $scope.user.user_id;
-
+    $scope.$watch('user', function(current) {
+      if(current) {
+         $scope.user = current;
+      }
+    });
+           
     //Error message dialog handler for account setting.
     $scope.$on('modalTitle', function(e, val) {
       vm.modalTitle = val;
@@ -61,7 +60,7 @@
         $scope.$broadcast('showDialog', true);
       }
     });
-        
+                
     function reset() {
       $scope.form.$setUntouched();
       $scope.form.$setPristine();
@@ -77,10 +76,10 @@
       vm.confirmOnly = true;
       vm.action = vm.confirm;
       if(user && angular.isDefined(user.username) && angular.isDefined(user.realname)) {
-        UpdateUserService(userId, user)
+        UpdateUserService($scope.user.user_id, user)
           .success(updateUserSuccess)
           .error(updateUserFailed); 
-        currentUser.set(user);        
+        currentUser.set($scope.user);        
       }
     }
         
