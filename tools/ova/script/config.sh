@@ -52,11 +52,11 @@ function genCert {
 	then
 		openssl req -newkey rsa:4096 -nodes -sha256 -keyout $ca_key \
 			-x509 -days 365 -out $ca_cert -subj \
-			"/C=US/ST=California/L=Palo Alto/O=VMware/OU=CA/CN=CA"
+			"/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
 	fi
 	openssl req -newkey rsa:4096 -nodes -sha256 -keyout $key \
 		-out $csr -subj \
-		"/C=US/ST=California/L=Palo Alto/O=VMware/OU=Harbor/CN=$hostname"
+		"/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=$hostname"
 	if [ "$isFQDN" = false ]
 	then
 		echo "Add subjectAltName = IP: $hostname to certificate"
