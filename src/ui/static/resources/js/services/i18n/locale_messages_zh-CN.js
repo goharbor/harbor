@@ -285,5 +285,6 @@ var locale_messages = {
   'confirm_to_toggle_enabled_policy_title': '启用策略',
   'confirm_to_toggle_enabled_policy': '启用策略后，该项目下的所有镜像仓库将复制到目标实例。请确认继续。',
   'confirm_to_toggle_disabled_policy_title': '停用策略',
-  'confirm_to_toggle_disabled_policy': '停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。'
+  'confirm_to_toggle_disabled_policy': '停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。',
+  'begin_date_is_later_than_end_date': '起始日期不能晚于结束日期。'
 };
