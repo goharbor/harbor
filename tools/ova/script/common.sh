@@ -74,3 +74,17 @@ function configSSH {
 	
 	systemctl restart sshd
 }
+
+#Configure attr in harbor.cfg
+function configureHarborCfg {
+	cfg_key=$1
+	cfg_value=$2
+
+	basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	cfg_file=$basedir/../harbor/harbor.cfg
+
+	if [ -n "$cfg_key" ]
+	then
+		sed -i -r s%"#?$cfg_key\s*=\s*.*"%"$cfg_key = $cfg_value"% $cfg_file
+	fi
+}
