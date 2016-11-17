@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"path/filepath"
 	"syscall"
 
@@ -65,4 +66,21 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 
 	sia.Data["json"] = systemInfo
 	sia.ServeJSON()
+}
+
+//GetCert gets default self-signed certificate.
+func (sia *SystemInfoAPI) GetCert() {
+	if sia.isAdmin {
+		fileName := "/harbor_storage/ca.cert"
+		if _, err := os.Stat(fileName); !os.IsNotExist(err) {
+			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.cert")
+			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, fileName)
+			return
+		} else {
+			log.Error("No certificate found.")
+			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+			return
+		}
+	}
+	sia.CustomAbort(http.StatusUnauthorized, "")
 }
