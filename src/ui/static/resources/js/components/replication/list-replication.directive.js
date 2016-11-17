@@ -105,6 +105,12 @@
     }            
     
     function refreshReplicationJob() {
+      if(vm.fromDate && vm.toDate && (getDateValue(vm.fromDate) > getDateValue(vm.toDate))) {
+        $scope.$emit('modalTitle', $filter('tr')('error'));
+        $scope.$emit('modalMessage', $filter('tr')('begin_date_is_later_than_end_date'));
+        $scope.$emit('raiseError', true);
+        return;
+      }
       if(vm.lastPolicyId !== -1) {
         vm.refreshJobTIP = true;
         vm.retrieveJob(vm.lastPolicyId, vm.page, vm.pageSize);
@@ -288,6 +294,13 @@
 			return t.getTime() / 1000;
 		}
   
+    function getDateValue(date) {
+      if(date) {
+        return new Date(date);
+      } 
+      return 0;
+    }
+
   }
   
   listReplication.inject = ['$timeout', 'I18nService'];

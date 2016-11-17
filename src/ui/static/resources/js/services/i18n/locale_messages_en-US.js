@@ -282,5 +282,6 @@ var locale_messages = {
   'confirm_to_toggle_enabled_policy_title': 'Enable Policy',
   'confirm_to_toggle_enabled_policy': 'After enabling the replication policy, all repositories under the project will be replicated to the destination registry. Please confirm to continue.',
   'confirm_to_toggle_disabled_policy_title': 'Disable Policy',
-  'confirm_to_toggle_disabled_policy': 'After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue.'
+  'confirm_to_toggle_disabled_policy': 'After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue.',
+  'begin_date_is_later_than_end_date': 'Begin date should not be later than end date.'
 };
