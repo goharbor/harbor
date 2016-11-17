@@ -175,8 +175,8 @@ delfile(config_dir)
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
-    if not os.path.exists(target_cert_path):
-        os.makedirs(target_cert_path)
+    if not os.path.exists(cert_dir):
+        os.makedirs(cert_dir)
     shutil.copy2(cert_path,target_cert_path)
     target_cert_key_path = os.path.join(cert_dir, os.path.basename(cert_key_path))
     shutil.copy2(cert_key_path,target_cert_key_path)
