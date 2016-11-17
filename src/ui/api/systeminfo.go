@@ -59,7 +59,7 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 	systemInfo := SystemInfo{
 		HarborStorage: Storage{
 			Total: stat.Blocks * uint64(stat.Bsize),
-			Free:  stat.Bfree * uint64(stat.Bsize),
+			Free:  stat.Bavail * uint64(stat.Bsize),
 		},
 	}
 
