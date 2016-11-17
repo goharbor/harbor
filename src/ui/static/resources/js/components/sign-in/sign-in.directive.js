@@ -36,14 +36,17 @@
     vm.doLogOut = doLogOut;
        
     vm.signInTIP = false;
+    
+    $scope.user = {};
         
     function reset() {
       vm.hasError = false;
       vm.errorMessage = '';
-    } 
-          
+    }    
+    
     function doSignIn(user) {    
-      if($scope.user.principal.length === 0  || $scope.user.password.length === 0) {
+      if(!$scope.user.principal || !$scope.user.password ||
+          $scope.user.principal.length === 0  || $scope.user.password.length === 0) {
         vm.hasError = true;
         vm.errorMessage = 'username_and_password_are_required';        
       } 
