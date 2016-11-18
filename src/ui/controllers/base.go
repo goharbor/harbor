@@ -31,9 +31,10 @@ type langType struct {
 }
 
 const (
-	viewPath    = "sections"
-	prefixNg    = ""
-	defaultLang = "en-US"
+	viewPath        = "sections"
+	prefixNg        = ""
+	defaultLang     = "en-US"
+	defaultRootCert = "/harbor_storage/ca-download-dir/ca.crt"
 )
 
 var supportLanguages map[string]langType
@@ -44,6 +45,8 @@ func (b *BaseController) Prepare() {
 
 	var lang string
 	var langHasChanged bool
+
+	var showDownloadCert bool
 
 	langRequest := b.GetString("lang")
 	if langRequest != "" {
@@ -120,6 +123,20 @@ func (b *BaseController) Prepare() {
 	b.SelfRegistration = config.SelfRegistration()
 
 	b.Data["SelfRegistration"] = config.SelfRegistration()
+
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID != nil {
+		isAdmin, err := dao.IsAdminRole(sessionUserID.(int))
+		if err != nil {
+			log.Errorf("Error occurred in IsAdminRole: %v", err)
+		}
+		if isAdmin {
+			if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
+				showDownloadCert = true
+			}
+		}
+	}
+	b.Data["ShowDownloadCert"] = showDownloadCert
 }
 
 // Forward to setup layout and template for content for a page.
