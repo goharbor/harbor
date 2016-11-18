@@ -233,6 +233,8 @@ var locale_messages = {
   'about_harbor': 'About Harbor',
   'current_version': '<label>Version</label>&nbsp;&nbsp;<span>$0</span>',
   'current_storage': '<label>Storage</label>&nbsp;&nbsp;<span>$0 GB available of $1 GB.</span>',
+  'default_root_cert': '<label>Default Root Cert.</label>&nbsp;&nbsp;<span><a href="$0">$1</a></span>',
+  'download': 'Download',
   'failed_to_get_project_member': 'Failed to get current project member.',
   'failed_to_delete_repo': 'Failed to delete repository. ',
   'failed_to_delete_repo_insuffient_permissions': 'Failed to delete repository, insuffient permissions.',
