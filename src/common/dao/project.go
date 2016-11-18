@@ -195,7 +195,7 @@ func GetTotalOfUserRelevantProjects(userID int, projectName string) (int64, erro
 	queryParam = append(queryParam, userID)
 	if projectName != "" {
 		sql += " and p.name like ? "
-		queryParam = append(queryParam, "%"+projectName+"%")
+		queryParam = append(queryParam, "%"+escape(projectName)+"%")
 	}
 
 	var total int64
@@ -254,7 +254,7 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 
 	if name != "" {
 		sql += ` and p.name like ? `
-		queryParam = append(queryParam, "%"+name+"%")
+		queryParam = append(queryParam, "%"+escape(name)+"%")
 	}
 
 	switch len(args) {
