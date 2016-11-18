@@ -46,8 +46,10 @@
     		          <button class="btn btn-primary" type="button" ng-click="vm.searchProject()"><span class="glyphicon glyphicon-search"></span></button>
     		        </span>
     		      </div>
+            {{ if eq .CanCreate true }}
             <button ng-if="vm.isOpen" class="btn btn-default" disabled="disabled" type="button"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>
             <button ng-if="!vm.isOpen" class="btn btn-success" type="button" ng-show="vm.showAddButton()" ng-click="vm.showAddProject()"><span class="glyphicon glyphicon-plus"></span> // 'new_project' | tr //</button>               
+            {{ end }}
     		    </div>    
         </div> 
         <add-project ng-show="vm.isOpen" is-open="vm.isOpen"></add-project>
