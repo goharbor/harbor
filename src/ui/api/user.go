@@ -102,7 +102,7 @@ func (ua *UserAPI) Get() {
 		username := ua.GetString("username")
 		userQuery := models.User{}
 		if len(username) > 0 {
-			userQuery.Username = "%" + username + "%"
+			userQuery.Username = username
 		}
 		userList, err := dao.ListUsers(userQuery)
 		if err != nil {
