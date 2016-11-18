@@ -75,11 +75,9 @@ func (sia *SystemInfoAPI) GetCert() {
 		if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
 			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
 			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
-			return
 		} else {
 			log.Error("No certificate found.")
 			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
-			return
 		}
 	}
 	sia.CustomAbort(http.StatusUnauthorized, "")
