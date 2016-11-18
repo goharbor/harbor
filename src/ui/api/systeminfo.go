@@ -19,6 +19,7 @@ type SystemInfoAPI struct {
 }
 
 const harborStoragePath = "/harbor_storage"
+const defaultRootCert = "/harbor_storage/ca-download-dir/ca.crt"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
@@ -71,10 +72,9 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 //GetCert gets default self-signed certificate.
 func (sia *SystemInfoAPI) GetCert() {
 	if sia.isAdmin {
-		fileName := "/harbor_storage/ca.cert"
-		if _, err := os.Stat(fileName); !os.IsNotExist(err) {
-			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.cert")
-			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, fileName)
+		if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
+			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
+			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
 			return
 		} else {
 			log.Error("No certificate found.")
