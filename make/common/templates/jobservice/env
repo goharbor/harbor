@@ -12,4 +12,4 @@ LOG_LEVEL=debug
 LOG_DIR=/var/log/jobs
 GODEBUG=netdns=cgo
 EXT_ENDPOINT=$ui_url
-TOKEN_URL=http://ui
+TOKEN_ENDPOINT=http://ui
