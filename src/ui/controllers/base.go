@@ -34,7 +34,7 @@ const (
 	viewPath        = "sections"
 	prefixNg        = ""
 	defaultLang     = "en-US"
-	defaultRootCert = "/harbor_storage/ca-download-dir/ca.crt"
+	defaultRootCert = "/harbor_storage/ca_download/ca.crt"
 )
 
 var supportLanguages map[string]langType

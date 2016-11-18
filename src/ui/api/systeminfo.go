@@ -19,7 +19,7 @@ type SystemInfoAPI struct {
 }
 
 const harborStoragePath = "/harbor_storage"
-const defaultRootCert = "/harbor_storage/ca-download-dir/ca.crt"
+const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
