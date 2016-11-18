@@ -35,7 +35,7 @@
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
     vm.about = about;
-        
+            
     function setLanguage(language) {
       vm.languageName = i18n.getLanguageName(vm.language);
       var hash = $window.location.hash;
@@ -62,10 +62,12 @@
       
     function about() {
       $scope.$emit('modalTitle', $filter('tr')('about_harbor'));
-      vm.modalMessage = $filter('tr')('current_version', [vm.version || 'Unknown']);      
+      vm.modalMessage = $filter('tr')('current_version', [vm.version || 'Unknown']);  
+      if(vm.showDownloadCert === 'true') {
+        appendDownloadCertLink();
+      }
       GetVolumeInfoService("data")
         .then(getVolumeInfoSuccess, getVolumeInfoFailed);
-      
     }
     function getVolumeInfoSuccess(response) {
       var storage = response.data;
@@ -79,8 +81,13 @@
       $scope.$emit('modalMessage', vm.modalMessage);
       $scope.$emit('raiseInfo', raiseInfo);
     }
+    
     function toGigaBytes(val) {
       return Math.round(val / (1024 * 1024 * 1024));
+    }
+    
+    function appendDownloadCertLink() {    
+      vm.modalMessage += '<br/>' + $filter('tr')('default_root_cert', ['/api/systeminfo/getcert', $filter('tr')('download')]);
     }
     
   }
@@ -91,7 +98,8 @@
       'templateUrl': '/optional_menu?timestamp=' + new Date().getTime(),
       'scope': {
         'version': '@',
-        'language': '@'
+        'language': '@',
+        'showDownloadCert': '@'
       },
       'controller': OptionalMenuController,
       'controllerAs': 'vm',
