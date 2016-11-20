@@ -13,11 +13,15 @@ type ProjectController struct {
 
 // Get renders project page
 func (pc *ProjectController) Get() {
+	var err error
+	isSysAdmin := false
 	uid := pc.GetSession("userId")
-	isSysAdmin, err := dao.IsAdminRole(uid)
-	if err != nil {
-		log.Warningf("Error in checking Admin Role for user, id: %d, error: %v", uid, err)
-		isSysAdmin = false
+	if uid != nil {
+		isSysAdmin, err = dao.IsAdminRole(uid)
+		if err != nil {
+			log.Warningf("Error in checking Admin Role for user, id: %d, error: %v", uid, err)
+			isSysAdmin = false
+		}
 	}
 	pc.Data["CanCreate"] = !config.OnlyAdminCreateProject() || isSysAdmin
 	pc.Forward("page_title_project", "project.htm")
