@@ -20,26 +20,24 @@
     .module('harbor.optional.menu')
     .directive('optionalMenu', optionalMenu);
 
-  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout', 'trFilter', '$filter'];
+  OptionalMenuController.$inject = ['$scope', '$window', 'I18nService', 'LogOutService', 'currentUser', '$timeout', 'trFilter', '$filter', 'GetVolumeInfoService'];
 
-  function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter) {
+  function OptionalMenuController($scope, $window, I18nService, LogOutService, currentUser, $timeoutm, trFilter, $filter, GetVolumeInfoService) {
     var vm = this;
     
-    vm.currentLanguage = I18nService().getCurrentLanguage();
-    vm.languageName = I18nService().getLanguageName(vm.currentLanguage);
-    
-    I18nService().setCurrentLanguage(vm.currentLanguage);        
-    
+    var i18n = I18nService();
+    i18n.setCurrentLanguage(vm.language);
+    vm.languageName = i18n.getLanguageName(vm.language);
     console.log('current language:' + vm.languageName);
-
-    vm.supportLanguages = I18nService().getSupportLanguages(); 
+    
+    vm.supportLanguages = i18n.getSupportLanguages(); 
     vm.user = currentUser.get();
     vm.setLanguage = setLanguage;     
     vm.logOut = logOut;
     vm.about = about;
-        
+            
     function setLanguage(language) {
-      I18nService().setCurrentLanguage(language);
+      vm.languageName = i18n.getLanguageName(vm.language);
       var hash = $window.location.hash;
       $window.location.href = '/language?lang=' + language + '&hash=' + encodeURIComponent(hash);    
     }
@@ -55,16 +53,43 @@
     function logOutFailed(data, status) {
       console.log('Failed to log out:' + data);
     }
+    
+    var raiseInfo = {
+      'confirmOnly': true,
+      'contentType': 'text/html',
+      'action': function() {}
+    };
+      
     function about() {
       $scope.$emit('modalTitle', $filter('tr')('about_harbor'));
-      $scope.$emit('modalMessage', $filter('tr')('current_version', [vm.version || 'Unknown']));
-      var raiseInfo = {
-        'confirmOnly': true,
-        'contentType': 'text/html',
-        'action': function() {}
-      };
+      vm.modalMessage = $filter('tr')('current_version', [vm.version || 'Unknown']);  
+      if(vm.showDownloadCert === 'true') {
+        appendDownloadCertLink();
+      }
+      GetVolumeInfoService("data")
+        .then(getVolumeInfoSuccess, getVolumeInfoFailed);
+    }
+    function getVolumeInfoSuccess(response) {
+      var storage = response.data;
+      vm.modalMessage += '<br/>' + $filter('tr')('current_storage',
+        [toGigaBytes(storage['storage']['free']), toGigaBytes(storage['storage']['total'])]);
+      $scope.$emit('modalMessage', vm.modalMessage);
+      $scope.$emit('raiseInfo', raiseInfo);
+      
+    }
+    function getVolumeInfoFailed(response) {
+      $scope.$emit('modalMessage', vm.modalMessage);
       $scope.$emit('raiseInfo', raiseInfo);
     }
+    
+    function toGigaBytes(val) {
+      return Math.round(val / (1024 * 1024 * 1024));
+    }
+    
+    function appendDownloadCertLink() {    
+      vm.modalMessage += '<br/>' + $filter('tr')('default_root_cert', ['/api/systeminfo/getcert', $filter('tr')('download')]);
+    }
+    
   }
   
   function optionalMenu() {
@@ -72,7 +97,9 @@
       'restrict': 'E',
       'templateUrl': '/optional_menu?timestamp=' + new Date().getTime(),
       'scope': {
-        'version': '@'
+        'version': '@',
+        'language': '@',
+        'showDownloadCert': '@'
       },
       'controller': OptionalMenuController,
       'controllerAs': 'vm',

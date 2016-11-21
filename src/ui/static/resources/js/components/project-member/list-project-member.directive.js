@@ -96,7 +96,9 @@
     
   }
   
-  function listProjectMember() {
+  listProjectMember.$inject = ['$timeout'];
+  
+  function listProjectMember($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project-member/list-project-member.directive.html',
@@ -116,6 +118,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.retrieve();
+        } else {
+          $timeout(function() {
+            if(ctrl.username.length === 0) {
+              ctrl.retrieve();
+            }
+          });
         }
       });
     }

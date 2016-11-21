@@ -507,6 +507,21 @@ paths:
           description: User registration can only be used by admin role user when self-registration is off.
         500:
           description: Unexpected internal errors.
+  /users/current:
+    get:
+      summary: Get current user info.
+      description: |
+        This endpoint is to get the current user infomation.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get current user information successfully.
+          in: body
+          schema:
+            $ref: '#/definitions/User'
+        401:
+          description: User need to log in first.
   /users/{user_id}:
     put:
       summary: Update a registered user to change his profile.

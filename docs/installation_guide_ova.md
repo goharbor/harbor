@@ -22,43 +22,55 @@ This guide walks you through the steps about installing and configuring Harbor o
 
  ![ova](img/ova/ova03.png)
 
-5. Specify a name and a location for the virtual appliance.  
+5. Accept the end user license agreements and click "Next".  
 
  ![ova](img/ova/ova04.png)
 
-6. Select the datastore and virtual disk format, click "Next".  
+6. Specify a name and a location for the virtual appliance.  
 
  ![ova](img/ova/ova05.png)
 
-7. Configure the network(s) the virtual appliance should be connected to.  
+7. Select the datastore and virtual disk format, click "Next".  
 
  ![ova](img/ova/ova06.png)
 
-8. Customize the properties of Harbor. The properties are described below. Note that at the very least, you just need to set the **Root Password**, **Harbor Admin Password** and **Database Password** properties.  
+8. Configure the network(s) the virtual appliance should be connected to.  
 
  ![ova](img/ova/ova07.png)
 
- * Harbor
-	* **Root Password**: The password of the root user. 
+9. Customize the properties of Harbor. The properties are described below. Note that at the very least, you just need to set the **Root Password**, **Harbor Admin Password** and **Database Password** properties.  
+
+ ![ova](img/ova/ova08.png)
+
+ * System
+	* **Root Password**: The initial password of the root user. Subsequent changes of password should be performed in operating system. (8-128 characters)
 	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. 
-	* **Database Password**: The password of the root user of MySQL database. 
-	* **Authentication Mode**: The default authentication mode is db_auth, i.e. the credentials are stored in a local database. Set it to ldap_auth if you want to verify the user's credential against an LDAP/AD server.
+	* **Database Password**: The initial password of the root user of MySQL database. Subsequent changes of password should be performed in operating system. (8-128 characters)
+	* **Permit Root Login**: Specifies whether root use can log in using SSH.
+	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
+	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
+
+ * Authentication
+	* **Authentication Mode**: The default authentication mode is db_auth. Set it to ldap_auth when users' credentials are stored in an LDAP or AD server. Note: this option can only be set once.
 	* **LDAP URL**: The URL of an LDAP/AD server.
 	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and LDAP Seach Password.
 	* **LDAP Search Password**: The password of the user for LDAP search.
 	* **LDAP Base DN**: The base DN from which to look up a user in LDAP/AD.
 	* **LDAP UID**: The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD server.
+
+ * Security
+	* **Protocol**: The protocol for accessing Harbor. Warning: setting it to http makes the communication insecure.
+	* **SSL Cert**: Paste in the content of a certificate file. Leave blank for a generated self-signed certificate.
+	* **SSL Cert Key**: Paste in the content of certificate key file. Leave blank for a generated key.
+	* **Verify Remote Cert**: Determine whether the image replication should verify the certificate when it connects to a remote registry via TLS. Set this flag to off when the remote registry uses a self-signed or untrusted certificate.
+
+ * Email Settings
 	* **Email Server**: The mail server to send out emails to reset password. 
 	* **Email Server Port**: The port of mail server.
 	* **Email Username**: The user from whom the password reset email is sent.
 	* **Email Password**: The password of the user from whom the password reset email is sent.
 	* **Email From**: The name of the email sender.
 	* **Email SSL**: Whether to enabled secure mail transmission.
-	* **SSL Cert**: Paste in the content of a certificate file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
-	* **SSL Cert Key**: Paste in the content of certificate key file. If SSL Cert and SSL Cert Key are both set, HTTPS will be used.
-	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD. 
-	* **Verify Remote Cert**: Determine whether the image replication should verify the certificate when it connects to a remote registry via TLS. Set this flag to off when the remote registry uses a self-signed or untrusted certificate.
-	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
 
  * Networking properties
 	* **Default Gateway**: The default gateway address for this VM. Leave blank if DHCP is desired.
@@ -68,19 +80,19 @@ This guide walks you through the steps about installing and configuring Harbor o
 	* **Network 1 IP Adress**: The IP address of this interface. Leave blank if DHCP is desired.
 	* **Network 1 Netmask**: The netmask or prefix for this interface. Leave blank if DHCP is desired.
 
- **Notes:** If you want to enable HTTPS with a self-signed certificate, refer to the "Getting a certificate" part of this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md#getting-a-certificate) for generating a certificate.  
+ **Notes:** If you want to enable HTTPS with a self-signed certificate created manually, refer to the "Getting a certificate" part of this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md#getting-a-certificate) for generating a certificate.  
 
  After you complete the properties, click "Next".  
 
-9. Review your settings and click "Finish" to complete the deployment.  
+10. Review your settings and click "Finish" to complete the deployment.  
 
- ![ova](img/ova/ova08.png)
+ ![ova](img/ova/ova09.png)
 
-10. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like netowrk address and password. 
+11. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like netowrk address and password. 
 
-11. When the appliance is ready, check from vSphere Web Client for its IP address. Open a browser and type in the URL `http(s)://harbor_ip_address` or `http(s)://harbor_host_name`. Log in as the admin user and verify Harbor has been successfully installed. 
+12. When the appliance is ready, check from vSphere Web Client for its IP address. Open a browser and type in the URL `http(s)://harbor_ip_address` or `http(s)://harbor_host_name`. Log in as the admin user and verify Harbor has been successfully installed. 
 
-12. For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md).
+13. For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md).
 
 ## Reconfiguration
 If you want to change the properties of Harbor, follow the below steps:  
@@ -96,4 +108,10 @@ If you want to change the properties of Harbor, follow the below steps:
 
 4. **Power on** the VM.  
 
-**Note:** The initial admin password, root password of the virtual appliance, MySql root password, and all networking properties can not be modified using this method after Harbor's first launch. The password of the admin user should be changed in the admin portal. The root password of virtual appliance, as well as the networking settings, can be changed by logging in the virtural appliance and doing it in the Linux operating system.
+**Notes:**  
+1. The authentication mode can only be set once on firtst boot. So subsequent modification of this option will have no effect.  
+2. The initial admin password, root password of the virtual appliance, MySQL root password, and all networking properties can not be modified using this method after Harbor's first launch. Modify them by the following steps:
+ * Harbor Admin Password: Change it in Harbor admin portal.  
+ * Root Password of Virtual Appliance: Change it by logging in the virtual appliance and doing it in the Linux operating system.  
+ * MySQL Root Password: Change it by logging in the virtual appliance and doing it in the Linux operating system.  
+ * Networking Properties: Visit `https://harbor_ip_address:5480`, login with root/password of your virtual appliance and modify networking properties. Reboot the system after you changing them.  

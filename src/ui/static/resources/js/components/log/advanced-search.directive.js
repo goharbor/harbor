@@ -20,9 +20,9 @@
     .module('harbor.log')
     .directive('advancedSearch', advancedSearch);
   
-  AdvancedSearchController.$inject = ['$scope', 'ListLogService'];
+  AdvancedSearchController.$inject = ['$scope', 'ListLogService', '$filter', 'trFilter'];
   
-  function AdvancedSearchController($scope, ListLogService) {
+  function AdvancedSearchController($scope, ListLogService, $filter, trFilter) {
     var vm = this;
    
     vm.checkOperation = checkOperation;
@@ -121,7 +121,20 @@
       if(vm.opOthers && $.trim(vm.others) !== '') {
         e.op.push(vm.others);
       }
+      if(vm.fromDate && vm.toDate && (getDateValue(vm.fromDate) > getDateValue(vm.toDate))) {
+        $scope.$emit('modalTitle', $filter('tr')('error'));
+        $scope.$emit('modalMessage', $filter('tr')('begin_date_is_later_than_end_date'));
+        $scope.$emit('raiseError', true);
+        return
+      }
       vm.search(e);
+    }
+    
+    function getDateValue(date) {
+      if(date) {
+        return new Date(date);
+      } 
+      return 0;
     }
   }
   

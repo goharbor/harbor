@@ -32,6 +32,10 @@ def validate(conf):
         cert_key_path = rcp.get("configuration", "ssl_cert_key")
         if not os.path.isfile(cert_key_path):
             raise Exception("Error: The path for certificate key: %s is invalid" % cert_key_path)
+    project_creation = rcp.get("configuration", "project_creation_restriction")
+
+    if project_creation != "everyone" and project_creation != "adminonly":
+        raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
 
 def get_secret_key(path):
     key_file = os.path.join(path, "secretkey")
@@ -73,6 +77,7 @@ validate(rcp)
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
+email_identity = rcp.get("configuration", "email_identity")
 email_server = rcp.get("configuration", "email_server")
 email_server_port = rcp.get("configuration", "email_server_port")
 email_username = rcp.get("configuration", "email_username")
@@ -114,6 +119,7 @@ crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
+proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 #secret_key = rcp.get("configuration", "secret_key")
 secret_key = get_secret_key(args.data_volume)
 ########
@@ -132,6 +138,14 @@ job_config_dir = os.path.join(config_dir, "jobservice")
 if not os.path.exists(job_config_dir):
     os.makedirs(job_config_dir)
 
+registry_config_dir = os.path.join(config_dir, "registry")
+if not os.path.exists(registry_config_dir):
+    os.makedirs(registry_config_dir)
+
+nginx_config_dir = os.path.join(config_dir, "nginx")
+if not os.path.exists(nginx_config_dir):
+    os.makedirs(nginx_config_dir)
+
 def render(src, dest, **kw):
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
@@ -140,23 +154,29 @@ def render(src, dest, **kw):
 
 ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
+jobservice_conf = os.path.join(config_dir, "jobservice", "app.conf")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert") 
-conf_files = [ ui_conf, ui_conf_env, registry_conf, db_conf_env, job_conf_env, nginx_conf, cert_dir ]
-def rmdir(cf):
-    for f in cf:
-        if os.path.isdir(f):
-            rmdir(map(lambda x: os.path.join(f,x), os.listdir(f)))
-        elif os.path.exists(f) and os.path.basename(f) != ".gitignore":
-                print("Clearing the configuration file: %s" % f)
-                os.remove(f)
-rmdir(conf_files)
+def delfile(src):
+    if os.path.isfile(src):
+        try:
+            os.remove(src)
+            print("Clearing the configuration file: %s" % src)
+        except:
+            pass
+    elif os.path.isdir(src):
+        for item in os.listdir(src):
+            itemsrc=os.path.join(src,item)
+            delfile(itemsrc)
+delfile(config_dir)
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
+    if not os.path.exists(cert_dir):
+        os.makedirs(cert_dir)
     shutil.copy2(cert_path,target_cert_path)
     target_cert_key_path = os.path.join(cert_dir, os.path.basename(cert_key_path))
     shutil.copy2(cert_key_path,target_cert_key_path)
@@ -187,10 +207,12 @@ render(os.path.join(templates_dir, "ui", "env"),
         ui_secret=ui_secret,
         secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert,
+        project_creation_restriction=proj_cre_restriction,
 	token_expiration=token_expiration)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
+        email_identity=email_identity,
         email_server=email_server,
         email_server_port=email_server_port,
         email_username=email_username,
@@ -215,6 +237,9 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         secret_key=secret_key,
         ui_url=ui_url,
         verify_remote_cert=verify_remote_cert)
+		
+print("Generated configuration file: %s" % jobservice_conf)
+shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \
@@ -262,11 +287,15 @@ if customize_crt == 'on':
     if openssl_is_installed(shell_stat):
         private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
         root_crt = os.path.join(config_dir, "registry", "root.crt")
-        crt_conf_files = [ private_key_pem, root_crt ]
-        rmdir(crt_conf_files)
 
         check_private_key_stat(path=private_key_pem)
         check_certificate_stat(path=root_crt)
-
+		
+else:
+    print("Generated configuration file: %s" % ui_config_dir + "private_key.pem")
+    shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
+    print("Generated configuration file: %s" % registry_config_dir + "root.crt")
+    shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
+	
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")

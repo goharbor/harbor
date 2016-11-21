@@ -55,7 +55,7 @@ func GetTotalOfAccessLogs(query models.AccessLog) (int64, error) {
 			left join user u 
 			on al.user_id = u.user_id 
 			where al.project_id = ? and u.username like ? `
-		queryParam = append(queryParam, "%"+query.Username+"%")
+		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
 	}
 
 	sql += genFilterClauses(query, &queryParam)
@@ -82,7 +82,7 @@ func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.Access
 
 	if query.Username != "" {
 		sql += ` and u.username like ? `
-		queryParam = append(queryParam, "%"+query.Username+"%")
+		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
 	}
 
 	sql += genFilterClauses(query, &queryParam)

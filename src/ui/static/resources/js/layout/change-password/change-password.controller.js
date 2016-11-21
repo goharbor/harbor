@@ -20,9 +20,9 @@
     .module('harbor.layout.change.password')
     .controller('ChangePasswordController', ChangePasswordController);
   
-  ChangePasswordController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window', 'currentUser'];
+  ChangePasswordController.$inject = ['ChangePasswordService', 'UpdateUserService', '$filter', 'trFilter', '$scope', '$window'];
   
-  function ChangePasswordController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window, currentUser) {
+  function ChangePasswordController(ChangePasswordService, UpdateUserService, $filter, trFilter, $scope, $window) {
 
     var vm = this;
     vm.isOpen = false;
@@ -36,14 +36,13 @@
     vm.updatePassword = updatePassword;
     vm.cancel = cancel;
     
-    $scope.user = currentUser.get();
-    if(!$scope.user) {
-      $window.location.href = '/';
-      return;
-    }
-    var userId = $scope.user.user_id;
-
-    //Error message dialog handler for account setting.
+    $scope.$watch('user', function(current) {
+      if(current) {
+        $scope.user = current;
+      }
+    });
+    
+    //Error message dialog handler for changing password.
     $scope.$on('modalTitle', function(e, val) {
       vm.modalTitle = val;
     });
@@ -62,7 +61,7 @@
         $scope.$broadcast('showDialog', true);
       }
     });
-        
+            
     function reset() {
       $scope.form.$setUntouched();
       $scope.form.$setPristine();
@@ -77,16 +76,16 @@
     function updatePassword(user) {
       if(user && angular.isDefined(user.oldPassword) && angular.isDefined(user.password)) {
         vm.action = vm.confirm;
-        ChangePasswordService(userId, user.oldPassword, user.password)
+        ChangePasswordService($scope.user.user_id, user.oldPassword, user.password)
           .success(changePasswordSuccess)
           .error(changePasswordFailed);
       }
-     
     }
     
     function changePasswordSuccess(data, status) {
       vm.modalTitle = $filter('tr')('change_password', []);
       vm.modalMessage = $filter('tr')('successful_changed_password', []);
+      vm.confirmOnly = true;
       $scope.$broadcast('showDialog', true);
     }
     

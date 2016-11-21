@@ -1,14 +1,25 @@
 <nav aria-label="Page navigation" class="pull-left">
-  <ul class="pagination" style="margin: 0;">
-    <li>
-      <a href="javascript:void(0);" ng-click="vm.previous()" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
+  <ul class="pagination" style="margin: 0 0 0 10px;">
+    <li ng-class="vm.disabledFirst" ng-show="vm.visible">
+      <a href="javascript:void(0);" ng-click="vm.gotoFirst()" aria-label="Previous">
+        <span aria-hidden="true">&lt;&lt;</span>
       </a>
     </li>
-    <li>
+    <li ng-class="vm.disabledPrevious" ng-show="vm.visible">
+      <a href="javascript:void(0);" ng-click="vm.previous()" aria-label="Previous">
+        <span aria-hidden="true">&lt;</span>
+      </a>
+    </li>
+    <li ng-class="vm.disabledNext" ng-show="vm.visible">
       <a href="javascript:void(0);" ng-click="vm.next()" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
+        <span aria-hidden="true">&gt;</span>
+      </a>
+    </li>
+    <li ng-class="vm.disabledLast" ng-show="vm.visible">
+      <a href="javascript:void(0);" ng-click="vm.gotoLast()" aria-label="Next">
+        <span aria-hidden="true">&gt;&gt;</span>
       </a>
     </li>
   </ul>
 </nav>
+<p class="pull-right" style="margin-right: 15%; margin-top: 5px;">// 'total' | tr // // vm.totalCount // // 'items' | tr //</p>

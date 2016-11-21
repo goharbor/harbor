@@ -1,6 +1,8 @@
 package controllers
 
-import "os"
+import (
+	"github.com/vmware/harbor/src/ui/config"
+)
 
 // RepositoryController handles request to /repository
 type RepositoryController struct {
@@ -9,6 +11,6 @@ type RepositoryController struct {
 
 // Get renders repository page
 func (rc *RepositoryController) Get() {
-	rc.Data["HarborRegUrl"] = os.Getenv("HARBOR_REG_URL")
+	rc.Data["HarborRegUrl"] = config.ExtRegistryURL()
 	rc.Forward("page_title_repository", "repository.htm")
 }

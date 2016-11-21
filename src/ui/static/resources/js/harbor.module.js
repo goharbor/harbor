@@ -17,7 +17,6 @@
   angular
     .module('harbor.app', [
       'ngMessages',
-      'ngCookies',
       'harbor.session',
       'harbor.layout.element.height',
       'harbor.layout.header',
@@ -42,6 +41,7 @@
       'harbor.services.replication.policy',
       'harbor.services.replication.job',
       'harbor.services.destination',
+      'harbor.services.system.info',
       'harbor.summary',
       'harbor.user.log',
       'harbor.top.repository',

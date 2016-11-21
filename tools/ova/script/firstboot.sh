@@ -16,8 +16,11 @@ then
 	printf "$value\n$value\n" | passwd root
 fi
 
+#configure SSH
+configSSH
+
 #echo "Adding rules to iptables..."
-#addIptableRules
+addIptableRules
 
 echo "Installing docker compose..."
 installDockerCompose
@@ -31,13 +34,17 @@ tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
 echo "Loading images..."
 load
 
-#Configure Harbor
 echo "Configuring Harbor..."
 chmod 600 $base_dir/../harbor/harbor.cfg
-configure
+
+$base_dir/firstboot_config.sh
 
 #Start Harbor
 echo "Starting Harbor..."
 up
+
+echo "Removing unneeded installation packages..."
+rm $base_dir/../harbor-offline-installer*.tgz
+rm $base_dir/../harbor/harbor*.tgz
 
 echo "===================================================="

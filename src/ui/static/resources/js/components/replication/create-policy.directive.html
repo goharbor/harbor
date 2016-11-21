@@ -14,7 +14,7 @@
 -->
 <div class="modal fade" data-backdrop="static" id="createPolicyModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
-    <form name="form" class="form-horizontal css-form" novalidate>
+    <form name="form" class="form-horizontal css-form" novalidate autocomplete="off">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -38,7 +38,7 @@
               <label for="name" class="col-md-3 control-label">// 'name' | tr //:</label>
               <div class="col-md-9">
                 <input type="text" class="form-control form-control-custom" id="name" ng-model="replication.policy.name" name="uName" required maxlength="20" ng-disabled="!vm.targetEditable">                 
-                <div ng-messages="form.$submitted && form.uName.$error">
+                <div class="error-message" ng-messages="form.$submitted && form.uName.$error">
                   <span ng-message="required">// 'name_is_required' | tr //</span>
                   <span ng-message="maxlength">// 'name_is_too_long' | tr //</span>
                 </div>
@@ -48,7 +48,7 @@
               <label for="description" class="col-md-3 control-label">// 'description' | tr //:</label>
               <div class="col-md-9">
                 <textarea class="form-control form-control-custom" id="description" ng-model="replication.policy.description" name="uDescription" ng-disabled="!vm.targetEditable"></textarea>                 
-                <div ng-messages="form.$submitted && form.uDescription.$error">
+                <div class="error-message" ng-messages="form.$submitted && form.uDescription.$error">
                   <span ng-message="maxlength">// 'description_is_too_long' | tr //</span>
                 </div>
               </div>
@@ -79,7 +79,7 @@
               <label for="endpoint" class="col-md-3 control-label">// 'endpoint' | tr //:</label>
               <div class="col-md-9">
                 <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="replication.destination.endpoint" name="uEndpoint" ng-value="vm.endpoint" placeholder="http://ip_address" required ng-disabled="!vm.targetEditable || !vm.checkedAddTarget">                 
-                <div ng-messages="form.$submitted && form.uEndpoint.$error">
+                <div class="error-message" ng-messages="form.$submitted && form.uEndpoint.$error">
                   <span ng-message="required">// 'endpoint_is_required' | tr //</span>
                 </div>
               </div> 
@@ -105,7 +105,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <span>// vm.pingMessage //</span>
+                <span class="error-message" >// vm.pingMessage //</span>
               </div>
             </div>
           </div>

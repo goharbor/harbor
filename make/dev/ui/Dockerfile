@@ -23,7 +23,9 @@ COPY make/jsminify.sh /tmp/jsminify.sh
 RUN chmod u+x /go/bin/harbor_ui \
     && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
     && sed -i '$a\TLS_REQCERT allow' /etc/ldap/ldap.conf \
-    && /tmp/jsminify.sh /go/bin/views/sections/script-include.htm /go/bin/static/resources/js/harbor.app.min.js /go/bin/
+    && timestamp=`date '+%s'` \
+    && /tmp/jsminify.sh /go/bin/views/sections/script-include.htm /go/bin/static/resources/js/harbor.app.min.$timestamp.js /go/bin/ \
+    && sed -i "s/harbor\.app\.min\.js/harbor\.app\.min\.$timestamp\.js/g" /go/bin/views/sections/script-min-include.htm
 
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_ui"]

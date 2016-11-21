@@ -3,11 +3,11 @@ package controllers
 import (
 	"bytes"
 	"net/http"
-	"os"
 	"regexp"
 	"text/template"
 
 	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -49,7 +49,7 @@ func (cc *CommonController) SendEmail() {
 
 		message := new(bytes.Buffer)
 
-		harborURL := os.Getenv("HARBOR_URL")
+		harborURL := config.ExtEndpoint()
 		if harborURL == "" {
 			harborURL = "localhost"
 		}

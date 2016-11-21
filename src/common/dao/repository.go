@@ -138,7 +138,7 @@ func GetTotalOfPublicRepositories(name string) (int64, error) {
 		on r.project_id = p.project_id and p.public = 1 `
 	if len(name) != 0 {
 		sql += ` where r.name like ?`
-		params = append(params, "%"+name+"%")
+		params = append(params, "%"+escape(name)+"%")
 	}
 
 	var total int64
@@ -162,7 +162,7 @@ func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) 
 	params = append(params, userID)
 	if len(name) != 0 {
 		sql += ` where r.name like ?`
-		params = append(params, "%"+name+"%")
+		params = append(params, "%"+escape(name)+"%")
 	}
 
 	var total int64

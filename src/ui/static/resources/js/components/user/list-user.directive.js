@@ -32,9 +32,7 @@
     vm.searchUser = searchUser;
     vm.deleteUser = deleteUser;
     vm.confirmToDelete = confirmToDelete;
-    vm.retrieve = retrieve;
-
-    vm.currentUser = currentUser.get();
+    vm.retrieve = retrieve;   
     
     vm.retrieve();
     
@@ -82,6 +80,7 @@
     }
     
     function listUserSuccess(data, status) {
+      vm.currentUser = currentUser.get();
       vm.users = data;
     }
     
@@ -93,7 +92,9 @@
     }      
   }
   
-  function listUser() {
+  listUser.$inject = ['$timeout'];
+  
+  function listUser($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/user/list-user.directive.html',
@@ -111,6 +112,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.retrieve();
+        } else {
+          $timeout(function() {
+            if(ctrl.username.length === 0) {
+              ctrl.retrieve();
+            }
+          });
         }
       });
     }

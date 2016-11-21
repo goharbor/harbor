@@ -97,18 +97,31 @@
     }
   }
   
-  function addProject() {
+  addProject.$inject = ['$timeout'];
+  
+  function addProject($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/project/add-project.directive.html',
       'controller': AddProjectController,
+      'link': link,
       'scope' : {
         'isOpen': '='
       },
       'controllerAs': 'vm',
       'bindToController': true
     };
-    return directive;    
+    return directive; 
+    
+    function link(scope, element, attrs, ctrl) {
+      scope.$watch('vm.isOpen', function(current) {
+        if(current) {
+          $timeout(function() {
+            element.find(':input[name=uProjectName]').focus();
+          });
+        }
+      });
+    }
   }
    
 })();

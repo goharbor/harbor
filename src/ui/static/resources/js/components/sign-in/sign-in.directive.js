@@ -37,19 +37,26 @@
        
     vm.signInTIP = false;
     
+    $scope.user = {};
+        
     function reset() {
       vm.hasError = false;
       vm.errorMessage = '';
-    } 
-      
-    function doSignIn(user) {  
-      if(user && angular.isDefined(user.principal) && angular.isDefined(user.password)) {
+    }    
+    
+    function doSignIn(user) {    
+      if(!$scope.user.principal || !$scope.user.password ||
+          $scope.user.principal.length === 0  || $scope.user.password.length === 0) {
+        vm.hasError = true;
+        vm.errorMessage = 'username_and_password_are_required';        
+      } 
+      if(user.principal && user.password) {
         vm.lastUrl = getParameterByName('last_url', $location.absUrl());
         vm.signInTIP = true;
         SignInService(user.principal, user.password)
           .success(signedInSuccess)
           .error(signedInFailed);
-      }
+      }    
     }
     
     function signedInSuccess(data, status) {
