@@ -1309,7 +1309,41 @@ paths:
         403:
           description: User does not have permission of admin role.
         500:
-          description: Unexpected internal errors.   		
+          description: Unexpected internal errors.
+  /systeminfo/volumes:
+    get:
+      summary: Get system volume info (total/free size).
+      description: |
+        This endpoint is for retrieving system volume info that only provides for admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system volumes successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /systeminfo/getcert:
+    get:
+      summary: Get default root certificate under OVA deployment.
+      description: |
+        This endpoint is for downloading a default root certificate that only provides for admin user under OVA deployment.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get default root certificate successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: Not found the default root certificate.
+        500:
+          description: Unexpected internal errors.
 definitions:
   Search:
     type: object
@@ -1741,3 +1775,22 @@ definitions:
       comment:
         type: string
         description: The new comment.
+  Storage:
+    type: object
+    properties:
+      total: 
+        type: integer
+        format: int64
+        description: Total volume size.
+      free:
+        type: integer
+        format: int64
+        description: Free volume size.
+  SystemInfo:
+    type: object
+    properties:
+      storage: 
+        type: array
+        description: The storage of system.
+        items:
+          $ref: '#/definitions/Storage'
