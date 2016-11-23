@@ -16,15 +16,21 @@ By default, Harbor stores user information in an internal database. Harbor can a
 
 ### Security 
 
-By default, Harbor uses HTTPS for secure communication. A self-signed certificate is generated at first boot. A Docker client or a VCH (Virtual Container Host) needs to trust the certificate of Harbor's CA in order to interact with Harbor. 
+By default, Harbor uses HTTPS for secure communication. A self-signed certificate is generated at first boot based on its FQDN or IP address. A Docker client or a VCH (Virtual Container Host) needs to trust the certificate of Harbor's CA in order to interact with Harbor. 
 
-The self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
+Harbor always tries to generate a self-signed certificate based on its FQDN. Therefore, its IP address must have a FQDN associated with it in the DNS server. If Harbor cannot resolve its IP address to a FQDN, it generates the self-signed certificate using its IP address. In this case, Harbor can only be accessed by IP address.
+
+When Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated. However, since the certificate of Harbor's own CA does not change, no certificate update is needed in the Docker client or VCH.  
+
+Harbor's self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
 
 Harbor can be configured to use plain HTTP for some environments such as testing and continuous integration (CI). However, it is **NOT** recommended to use HTTP for production because the communication is never secure.
 
 ### Networking
 
 Harbor can obtain IP address by DHCP. This is convenient for testing purpose. For a production system, it is recommended that static IP address and host name be used.
+
+For the purpose of generating a self-signed certificate, it is recommended that a DNS record be added to associate Harbor's IP address with a FQDN. This is necessary for both static IP address and dynamic IP address acquired from DHCP. If a DNS record is missing for Harbor's IP address, Harbor can only be accessed by its IP address.
 
 
 ## Installation
@@ -123,7 +129,7 @@ Harbor can obtain IP address by DHCP. This is convenient for testing purpose. Fo
 
 ## Getting Certificate of Harbor's CA
 
-By default, Harbor uses a self-signed certificate in HTTPS. A Docker client or a VCH needs to trust Harbor's CA certificate in order to interact with Harbor. 
+By default, Harbor uses a self-signed certificate in HTTPS. A Docker client or a VCH needs to trust the certificate of Harbor's CA in order to interact with Harbor. 
 To download the certificate of Harbor's CA and import into a Docker client, follow the below steps:
 
 1. Log in Harbor's UI as an admin user.
@@ -132,12 +138,14 @@ To download the certificate of Harbor's CA and import into a Docker client, foll
  
  ![ova](img/ova/downloadcert.png)
  
-4. Copy the certificate file to a Docker host, put it under the below directory. Replace **host_name_or_IP_of_Harbor** with the actual host name or IP address of Harbor instance. You may need to create the directory if it does not exist:
+4. Copy the certificate file to a Docker host and put it under the below directory. Replace **FQDN_or_IP_of_Harbor** with the actual FQDN or IP address of the Harbor instance. You may need to create the directory if it does not exist:
    ```
-      /etc/docker/certs.d/host_name_or_IP_of_Harbor/ca.crt
+      /etc/docker/certs.d/FQDN_or_IP_of_Harbor/ca.crt
    ```
+   **Note:** If FQDN is used in the above directory, Harbor can be accessed by FQDN. Otherwise, Harbor should be accessed via IP address. 
+   
 5. Restart Docker service.
-6. Run `docker login` to verify that HTTPS is working.
+6. Run `docker login` command to verify that HTTPS is working.
 
 To import the CA's certificate into VCH, complete Step 1-3 and refer to VCH's document for instructions.
 
