@@ -17,11 +17,12 @@ By default, Harbor stores user information in an internal database. Harbor can a
 ### Security 
 
 By default, Harbor uses HTTPS for secure communication. A self-signed certificate is generated at first boot based on its FQDN or IP address. A Docker client or a VCH (Virtual Container Host) needs to trust the certificate of Harbor's CA in order to interact with Harbor. 
+
 Harbor always tries to generate a self-signed certificate based on its FQDN. Therefore, its IP address must have a FQDN associated with it in the DNS server. If Harbor cannot resolve its IP address to a FQDN, it generates the self-signed certificate using its IP address. In this case, Harbor can only be accessed by IP address.
 
-If Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated. However, since the certificate of Harbor's own CA does not change, no certificate update is needed at the Docker client or VCH.  
+If Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated. However, since the certificate of Harbor's own CA does not change, no certificate update is needed in the Docker client or VCH.  
 
-The self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
+Harbor's self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
 
 Harbor can be configured to use plain HTTP for some environments such as testing and continuous integration (CI). However, it is **NOT** recommended to use HTTP for production because the communication is never secure.
 
@@ -137,7 +138,7 @@ To download the certificate of Harbor's CA and import into a Docker client, foll
  
  ![ova](img/ova/downloadcert.png)
  
-4. Copy the certificate file to a Docker host and put it under the below directory. Replace **FQDN_or_IP_of_Harbor** with the actual FQDN or IP address of Harbor instance. You may need to create the directory if it does not exist:
+4. Copy the certificate file to a Docker host and put it under the below directory. Replace **FQDN_or_IP_of_Harbor** with the actual FQDN or IP address of the Harbor instance. You may need to create the directory if it does not exist:
    ```
       /etc/docker/certs.d/FQDN_or_IP_of_Harbor/ca.crt
    ```
