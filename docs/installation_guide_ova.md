@@ -20,7 +20,7 @@ By default, Harbor uses HTTPS for secure communication. A self-signed certificat
 
 Harbor always tries to generate a self-signed certificate based on its FQDN. Therefore, its IP address must have a FQDN associated with it in the DNS server. If Harbor cannot resolve its IP address to a FQDN, it generates the self-signed certificate using its IP address. In this case, Harbor can only be accessed by IP address.
 
-If Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated. However, since the certificate of Harbor's own CA does not change, no certificate update is needed in the Docker client or VCH.  
+When Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated. However, since the certificate of Harbor's own CA does not change, no certificate update is needed in the Docker client or VCH.  
 
 Harbor's self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
 
