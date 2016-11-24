@@ -173,5 +173,5 @@ If you want to change the properties of Harbor, follow the below steps:
  * **Harbor Admin Password**: Change it in Harbor admin portal.  
  * **Root Password of Virtual Appliance**: Change it by logging in the virtual appliance and doing it in the Linux operating system.  
  * **MySQL Root Password**: Change it by logging in the virtual appliance and doing it in the Linux operating system.  
- * **Networking Properties**: Visit `https://harbor_ip_address:5480`, log in with root/password of your virtual appliance and modify networking properties. Be sure to reboot the system after modification to ensure Harbor's self-signed certificate gets updated.  
+ * **Networking Properties**: Visit `https://harbor_ip_address:5480`, log in with root/password of your virtual appliance and modify networking properties. Reboot the system after modification to ensure Harbor's self-signed certificate gets updated.  
  
