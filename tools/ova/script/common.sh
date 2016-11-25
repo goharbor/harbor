@@ -10,6 +10,9 @@ function down {
 function up {
 	base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 	$base_dir/start_harbor.sh
+	
+	echo "Resetting DNS and hostname using vami_ovf_process..."
+	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
 }
 
 #Configure Harbor
