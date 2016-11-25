@@ -131,20 +131,44 @@ function secure {
 	cp $ca_cert $ca_download_dir/
 }
 
+function detectHostname {
+	#echo "Read attribute using ovfenv: [ vami.domain.Harbor ]"
+	#hostname=$(ovfenv -k vami.domain.Harbor)
+	#if [ -n $hostname ]
+	#then
+	#	echo "Get hostname from ovfenv: $hostname"
+	#	return
+	#fi
+	echo "Resetting DNS and hostname using vami_ovf_process..."
+	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
+	hostname=$(hostname --fqdn) || true
+	if [ -n $hostname ]
+	then
+		if [ "$hostname" = "localhost.localdom" ]
+		then
+			hostname=""
+			return
+		fi
+		echo "Get hostname from command 'hostname --fqdn': $hostname"
+		return
+	fi
+}
+
 #Modify hostname
-hostname=$(hostname --fqdn) || true
+detectHostname
 ip_addr=$(ip addr show eth0|grep "inet "|tr -s ' '|cut -d ' ' -f 3|cut -d '/' -f 1)
 if [ -z "$hostname" ]
 then
+	echo "Hostname is null, set it to IP"
 	hostname=$ip_addr
 fi
 
 if [ -n "$hostname" ]
 then
-	echo "Read hostname/IP: [ hostname/IP - $hostname ]"
+	echo "Hostname: $hostname"
 	configureHarborCfg hostname $hostname
 else
-	echo "Failed to get the hostname/IP"
+	echo "Failed to get the hostname"
 	exit 1
 fi
 
