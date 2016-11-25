@@ -10,7 +10,7 @@ source $base_dir/common.sh
 #configure SSH
 configSSH
 
-#echo "Adding rules to iptables..."
+echo "Adding rules to iptables..."
 addIptableRules
 
 #Stop Harbor
