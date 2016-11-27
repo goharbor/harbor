@@ -39,7 +39,7 @@ function gc {
 
 #Add rules to iptables
 function addIptableRules {
-	iptables -A INPUT -p tcp --dport 5480 -j ACCEPT
+	iptables -A INPUT -p tcp --dport 5480 -j ACCEPT -w || true
 	#iptables -A INPUT -p tcp --dport 5488 -j ACCEPT
 	#iptables -A INPUT -p tcp --dport 5489 -j ACCEPT
 }
