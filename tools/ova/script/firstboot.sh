@@ -19,7 +19,7 @@ fi
 #configure SSH
 configSSH
 
-#echo "Adding rules to iptables..."
+echo "Adding rules to iptables..."
 addIptableRules
 
 echo "Installing docker compose..."
