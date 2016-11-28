@@ -269,6 +269,7 @@ var locale_messages = {
   'failed_to_update_destination': 'Failed to update destination.',
   'failed_to_toggle_publicity_insuffient_permissions': 'Failed to change project publicity: insuffient permissions.',
   'failed_to_toggle_publicity': 'Failed to change project publicity.',
+  'failed_to_sign_in': 'Failed to sign in.',
   'project_does_not_exist': 'Project does not exist.',
   'project_admin': 'Project Admin',
   'developer': 'Developer',
