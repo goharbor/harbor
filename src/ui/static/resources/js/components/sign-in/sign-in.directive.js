@@ -69,9 +69,11 @@
     
     function signedInFailed(data, status) {
       vm.signInTIP = false;
+      vm.hasError = true;
       if(status === 401) {
-        vm.hasError = true;
         vm.errorMessage = 'username_or_password_is_incorrect';
+      }else {
+        vm.errorMessage = 'failed_to_sign_in';        
       }
       console.log('Failed to sign in:' + data + ', status:' + status);     
     }
