@@ -25,8 +25,10 @@ addIptableRules
 echo "Installing docker compose..."
 installDockerCompose
 
-echo "Starting docker service..."
-systemctl start docker
+#echo "Starting docker service..."
+#systemctl start docker
+echo "Configuring docker..."
+configureDockerDNS
 
 echo "Uncompress Harbor offline instaler tar..."
 tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
