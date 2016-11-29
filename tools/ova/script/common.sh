@@ -104,7 +104,7 @@ function configureDockerDNS {
 	do
 		if [ -n "$d" ]
 		then
-			opts="--dns=$d $opts"
+			opts="$opts --dns=$d"
 		fi
 	done
 	rm /tmp/dns
@@ -112,7 +112,7 @@ function configureDockerDNS {
 	domain=$(sed -n -e 's/^domain //p' /etc/resolv.conf)
 	if [ -n "$domain" ]
 	then
-		opts="--dns-search=$domain $opts"
+		opts="$opts --dns-search=$domain"
 	fi
 	
 	search=$(sed -n -e 's/^search //p' /etc/resolv.conf)
@@ -123,7 +123,7 @@ function configureDockerDNS {
 		do
 			if [ -n "$s" ]
 			then
-				opts="--dns-search=$s $opts"
+				opts="$opts --dns-search=$s"
 			fi
 		done
 	fi
@@ -131,4 +131,16 @@ function configureDockerDNS {
 	echo Setting docker: $opts
 	echo DOCKER_OPTS=$opts > /etc/default/docker
 	systemctl restart docker
+}
+
+function pushPhoton {
+	set +e
+	basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	registry_version=$(sed -n -e 's|.*library/registry:||p' $basedir/../harbor/docker-compose.yml)
+	docker run -d --name photon_pusher -v /data/registry:/var/lib/registry -p 5000:5000 registry:$registry_version
+	docker tag photon:1.0 127.0.0.1:5000/library/photon:1.0
+	sleep 5
+	docker push 127.0.0.1:5000/library/photon:1.0
+	docker rm -f photon_pusher
+	set -e
 }

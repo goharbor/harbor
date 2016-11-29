@@ -36,6 +36,9 @@ tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
 echo "Loading images..."
 load
 
+echo "Pushing photon to project library..."
+pushPhoton
+
 echo "Configuring Harbor..."
 chmod 600 $base_dir/../harbor/harbor.cfg
 
