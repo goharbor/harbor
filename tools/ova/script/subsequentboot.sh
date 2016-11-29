@@ -33,6 +33,9 @@ fi
 echo "Configuring Harbor..."
 configure
 
+echo "Configuring docker..."
+configureDockerDNS
+
 #Start Harbor
 echo "Starting Harbor..."
 up

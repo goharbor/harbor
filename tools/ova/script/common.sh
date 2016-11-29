@@ -91,3 +91,44 @@ function configureHarborCfg {
 		sed -i -r s%"#?$cfg_key\s*=\s*.*"%"$cfg_key = $cfg_value"% $cfg_file
 	fi
 }
+
+function configureDockerDNS {
+	echo "Resetting DNS using vami_ovf_process..."
+	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
+
+	sed -n -e 's/^nameserver //p' /etc/resolv.conf > /tmp/dns
+	readarray dns < /tmp/dns
+	
+	opts=""
+	for d in "${dns[@]}"
+	do
+		if [ -n "$d" ]
+		then
+			opts="--dns=$d $opts"
+		fi
+	done
+	rm /tmp/dns
+	
+	domain=$(sed -n -e 's/^domain //p' /etc/resolv.conf)
+	if [ -n "$domain" ]
+	then
+		opts="--dns-search=$domain $opts"
+	fi
+	
+	search=$(sed -n -e 's/^search //p' /etc/resolv.conf)
+    if [ -n "$search" ]
+	then
+		searcharray=($search)
+		for s in "${searcharray[@]}"
+		do
+			if [ -n "$s" ]
+			then
+				opts="--dns-search=$s $opts"
+			fi
+		done
+	fi
+	
+	echo Setting docker: $opts
+	echo DOCKER_OPTS=$opts > /etc/default/docker
+	systemctl restart docker
+}

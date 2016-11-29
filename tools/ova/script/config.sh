@@ -139,7 +139,7 @@ function detectHostname {
 	#	echo "Get hostname from ovfenv: $hostname"
 	#	return
 	#fi
-	echo "Resetting DNS and hostname using vami_ovf_process..."
+	echo "Resetting hostname using vami_ovf_process..."
 	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
 	hostname=$(hostname --fqdn) || true
 	if [ -n $hostname ]
