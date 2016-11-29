@@ -276,7 +276,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.0
+		nginx:1.11.5 registry:2.5.0 photon:1.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
