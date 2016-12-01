@@ -20,4 +20,4 @@ VOLUME /var/log/docker/
 
 EXPOSE 514
 
-CMD crond && rsyslogd -n
+CMD crond && rm -f /var/run/rsyslogd.pid && rsyslogd -n
