@@ -37,6 +37,14 @@
       $httpProvider.defaults.headers.common = {'Accept': 'application/json, text/javascript, */*; q=0.01'};     
       $httpProvider.interceptors.push('redirectInterceptor');
     })
+    .config(function($provide) {
+       $provide.decorator('$httpBackend', function($delegate) {
+        return function(method, url, post, callback, headers, timeout, withCredentials, responseType) {
+          url = url.replace(';', '%3B');
+          $delegate(method, url, post, callback, headers, timeout, withCredentials, responseType);
+        };
+      });
+    })
     .service('redirectInterceptor', RedirectInterceptorService)
     .factory('getParameterByName', getParameterByName)
     .filter('dateL', localizeDate)
