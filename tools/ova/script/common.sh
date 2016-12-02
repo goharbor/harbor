@@ -92,7 +92,8 @@ function configureHarborCfg {
 
 	if [ -n "$cfg_key" ]
 	then
-		sed -i -r s%"#?$cfg_key\s*=\s*.*"%"$cfg_key = $cfg_value"% $cfg_file
+		cfg_value=$(echo "$cfg_value" | sed -r -e 's%[\/&%]%\\&%g')
+		sed -i -r "s%#?$cfg_key\s*=\s*.*%$cfg_key = $cfg_value%" $cfg_file
 	fi
 }
 

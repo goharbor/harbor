@@ -184,16 +184,11 @@ do
 	echo "Read attribute using ovfenv: [ $attr ]"
 	value=$(ovfenv -k $attr)
 	
-	#ldap search password and email password can be null
-	if [ -n "$value" ] || [ "$attr" = "ldap_search_pwd" ] \
-		|| [ "$attr" = "email_password" ]
-	then
-		#if [ "$attr" = ldap_search_pwd ] \
-		#	|| [ "$attr" = email_password ]
-		#then
-		#	bs=$(echo $value | base64)
-		#	value={base64}$bs
-		#fi
-		configureHarborCfg $attr $value
-	fi
+	#if [ "$attr" = ldap_search_pwd ] \
+	#	|| [ "$attr" = email_password ]
+	#then
+	#	bs=$(echo $value | base64)
+	#	value={base64}$bs
+	#fi
+	configureHarborCfg "$attr" "$value"
 done
