@@ -10,9 +10,6 @@ function down {
 function up {
 	base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 	$base_dir/start_harbor.sh
-	
-	echo "Resetting DNS and hostname using vami_ovf_process..."
-	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
 }
 
 #Configure Harbor
@@ -21,18 +18,25 @@ function configure {
 	$base_dir/config.sh
 }
 
+function getRegistryVersion {
+	registry_version=""
+	base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	registry_version=$(sed -n -e 's|.*library/registry:||p' $base_dir/../harbor/docker-compose.yml)
+	if [ -z registry_version ]
+	then
+		registry_version="latest"
+	fi
+}
+
 #Garbage collectoin
 function gc {
 	echo "======================= $(date)====================="
+
+	getRegistryVersion
 	
-	#the registry image
-	image=$1
-
-	base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 	docker run --name gc --rm --volume /data/registry:/storage \
 		--volume $base_dir/../harbor/common/config/registry/:/etc/registry/ \
-		$image garbage-collect /etc/registry/config.yml
+		registry:$registry_version garbage-collect /etc/registry/config.yml
 	
 	echo "===================================================="
 }
@@ -92,51 +96,11 @@ function configureHarborCfg {
 	fi
 }
 
-function configureDockerDNS {
-	echo "Resetting DNS using vami_ovf_process..."
-	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
-
-	sed -n -e 's/^nameserver //p' /etc/resolv.conf > /tmp/dns
-	readarray dns < /tmp/dns
-	
-	opts=""
-	for d in "${dns[@]}"
-	do
-		if [ -n "$d" ]
-		then
-			opts="$opts --dns=$d"
-		fi
-	done
-	rm /tmp/dns
-	
-	domain=$(sed -n -e 's/^domain //p' /etc/resolv.conf)
-	if [ -n "$domain" ]
-	then
-		opts="$opts --dns-search=$domain"
-	fi
-	
-	search=$(sed -n -e 's/^search //p' /etc/resolv.conf)
-    if [ -n "$search" ]
-	then
-		searcharray=($search)
-		for s in "${searcharray[@]}"
-		do
-			if [ -n "$s" ]
-			then
-				opts="$opts --dns-search=$s"
-			fi
-		done
-	fi
-	
-	echo Setting docker: $opts
-	echo DOCKER_OPTS=$opts > /etc/default/docker
-	systemctl restart docker
-}
-
 function pushPhoton {
 	set +e
-	basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-	registry_version=$(sed -n -e 's|.*library/registry:||p' $basedir/../harbor/docker-compose.yml)
+	
+	getRegistryVersion
+	
 	docker run -d --name photon_pusher -v /data/registry:/var/lib/registry -p 5000:5000 registry:$registry_version
 	docker tag photon:1.0 127.0.0.1:5000/library/photon:1.0
 	sleep 5

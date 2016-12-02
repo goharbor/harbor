@@ -132,15 +132,6 @@ function secure {
 }
 
 function detectHostname {
-	#echo "Read attribute using ovfenv: [ vami.domain.Harbor ]"
-	#hostname=$(ovfenv -k vami.domain.Harbor)
-	#if [ -n $hostname ]
-	#then
-	#	echo "Get hostname from ovfenv: $hostname"
-	#	return
-	#fi
-	echo "Resetting hostname using vami_ovf_process..."
-	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
 	hostname=$(hostname --fqdn) || true
 	if [ -n $hostname ]
 	then
