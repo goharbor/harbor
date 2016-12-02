@@ -73,6 +73,7 @@ before_script:
   - sudo sqlite3 /registry.db < make/common/db/registry_sqlite.sql
 
 script:
+  - sudo service mysql-5.6 stop
   - sudo ./tests/testprepare.sh 
   - docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
