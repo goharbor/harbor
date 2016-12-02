@@ -1,6 +1,6 @@
-#User Guide
+#User Guide of Harbor Virtual Appliance
 ##Overview
-This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
+This guide walks you through the fundamentals of using Harbor virtual appliance. You'll learn how to use Harbor to:  
 
 * Manage your projects.
 * Manage members of a project.
@@ -91,9 +91,9 @@ The function is project-oriented, and once the system administrator set a policy
 
 There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
 
-**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
-
 Start replication by creating a policy. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
+
+**Note:** Set **"Verify Remote Cert"** to off according to the [installation guide](installation_guide_ova.md) if the destination uses a self-signed or untrusted certificate. 
 
 ![browse project](img/new_create_policy.png)
 
@@ -128,13 +128,16 @@ You can list, edit, enable and disable policies in the "Replication" tab. Make s
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
-Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker:    
-*FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
-Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
-If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
-`--insecure-registry myregistrydomain.com:5000` to the daemon's arguments.  
-In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag;  
-simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com:5000/ca.crt*  
+Harbor uses HTTPS for secure communication by default. A self-signed certificate is generated at first boot based on its FQDN (Fully Qualified Domain Name) or IP address. If you use Docker client to interact with it, there are two options you can choose:  
+
+1. Trust the certificate of Harbor's CA  
+Refer to the "Getting Certificate of Harbor's CA" part of [installation guide](installation_guide_ova.md).  
+2. Set "--insecure-registry" option  
+Add "--insecure-registry" option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker.  
+	
+If Harbor is configured as using HTTP, just set the "--insecure-registry" option.  
+
+If the certificate used by Harbor is signed by a trusted authority, Docker should work without any additional configuration.  
 
 ###Pulling images
 If the project that the image belongs to is private, you should sign in first:  
@@ -185,21 +188,6 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted.**  
 
-Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
-
-Run the below commands on the host which Harbor is deployed on to preview what files/images will be affected: 
-
-```sh
-$ docker-compose stop
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
-```  
-**NOTE:** The above option "--dry-run" will print the progress without removing any data.  
-
-Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
-
-```sh
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect  /etc/registry/config.yml
-$ docker-compose start
-```  
+Next, set **"Garbage Collection"** to true according to the [installation guide](installation_guide_ova.md)(skip this step if this flag has already been set) and reboot the VM, Harbor will perform garbage collection when it boots up.  
 
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
