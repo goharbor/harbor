@@ -91,3 +91,56 @@ function configureHarborCfg {
 		sed -i -r s%"#?$cfg_key\s*=\s*.*"%"$cfg_key = $cfg_value"% $cfg_file
 	fi
 }
+
+function configureDockerDNS {
+	echo "Resetting DNS using vami_ovf_process..."
+	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
+
+	sed -n -e 's/^nameserver //p' /etc/resolv.conf > /tmp/dns
+	readarray dns < /tmp/dns
+	
+	opts=""
+	for d in "${dns[@]}"
+	do
+		if [ -n "$d" ]
+		then
+			opts="$opts --dns=$d"
+		fi
+	done
+	rm /tmp/dns
+	
+	domain=$(sed -n -e 's/^domain //p' /etc/resolv.conf)
+	if [ -n "$domain" ]
+	then
+		opts="$opts --dns-search=$domain"
+	fi
+	
+	search=$(sed -n -e 's/^search //p' /etc/resolv.conf)
+    if [ -n "$search" ]
+	then
+		searcharray=($search)
+		for s in "${searcharray[@]}"
+		do
+			if [ -n "$s" ]
+			then
+				opts="$opts --dns-search=$s"
+			fi
+		done
+	fi
+	
+	echo Setting docker: $opts
+	echo DOCKER_OPTS=$opts > /etc/default/docker
+	systemctl restart docker
+}
+
+function pushPhoton {
+	set +e
+	basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	registry_version=$(sed -n -e 's|.*library/registry:||p' $basedir/../harbor/docker-compose.yml)
+	docker run -d --name photon_pusher -v /data/registry:/var/lib/registry -p 5000:5000 registry:$registry_version
+	docker tag photon:1.0 127.0.0.1:5000/library/photon:1.0
+	sleep 5
+	docker push 127.0.0.1:5000/library/photon:1.0
+	docker rm -f photon_pusher
+	set -e
+}

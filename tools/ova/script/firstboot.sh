@@ -25,14 +25,19 @@ addIptableRules
 echo "Installing docker compose..."
 installDockerCompose
 
-echo "Starting docker service..."
-systemctl start docker
+#echo "Starting docker service..."
+#systemctl start docker
+echo "Configuring docker..."
+configureDockerDNS
 
 echo "Uncompress Harbor offline instaler tar..."
 tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
 
 echo "Loading images..."
 load
+
+echo "Pushing photon to project library..."
+pushPhoton
 
 echo "Configuring Harbor..."
 chmod 600 $base_dir/../harbor/harbor.cfg
