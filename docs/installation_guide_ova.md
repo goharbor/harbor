@@ -71,7 +71,6 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. 
 	* **Database Password**: The initial password of the root user of MySQL database. Subsequent changes of password should be performed in operating system. (8-128 characters)
 	* **Permit Root Login**: Specifies whether root user can log in using SSH.
-	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
 	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
 
  * Authentication
@@ -79,6 +78,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
     The **Authentication Mode** must be set before the first boot of Harbor. Subsequent changes to **Authentication Mode** do not have any effect. When **ldap_auth** mode is enabled, properties related to LDAP/AD must be set.
   
 	* **Authentication Mode**: The default authentication mode is **db_auth**. Set it to **ldap_auth** when users' credentials are stored in an LDAP or AD server. Note: this option can only be set once.
+	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
 	* **LDAP URL**: The URL of an LDAP/AD server.
 	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. Leave blank if your LDAP/AD server supports anonymous search, otherwise you should configure this DN and **LDAP Seach Password**.
 	* **LDAP Search Password**: The password of the user for LDAP search. Leave blank if your LDAP/AD server supports anonymous search.
