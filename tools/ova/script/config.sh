@@ -157,7 +157,7 @@ fi
 if [ -n "$hostname" ]
 then
 	echo "Hostname: $hostname"
-	configureHarborCfg hostname $hostname
+	configureHarborCfg "hostname" "$hostname"
 else
 	echo "Failed to get the hostname"
 	exit 1

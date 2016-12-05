@@ -13,7 +13,7 @@ value=$(ovfenv -k root_pwd)
 if [ -n "$value" ]
 then
 	echo "Resetting root password..."
-	printf "$value\n$value\n" | passwd root
+	printf "%s\n%s\n" "$value" "$value" | passwd root
 fi
 
 #configure SSH
