@@ -18,7 +18,7 @@ This guide walks you through the fundamentals of using Harbor virtual appliance.
 
 ![rbac](img/rbac.png)
 
-Harbor manages images through projects. Users can be added into one project as a member with three different roles:  
+In Harbor, images are group under projects. To access an image, a user should be added as a member into the project of the image. A member can have one of the three roles:  
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
@@ -85,21 +85,35 @@ You can update or remove a member by clicking the icon on the right.
 ![browse project](img/new_remove_update_member.png)
 
 ##Replicating images
-Images replication is used to replicate repositories from one Harbor instance to another.  
+Images can be replicated between Harbor instances. It can be used to transfer images from one data center to another, or from on-prem registry to an instance in the cloud.  
 
-The function is project-oriented, and once the system administrator set a policy to one project, all repositories under the project will be replicated to the remote registry. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. When a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination. The member information will not be replicated.  
+A replication policy needs to be set up on the source instance to govern the replication process. 
+One key fact about the replication is that only images are replicated between Harbor instances. 
+Users, roles and other information are not replicated. As such, always keep in mind that the user, roles and policy information is individually managed by each Harbor instance.
 
-There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
+The replication is project-based. When a system administrator sets a policy to a project, all repositories under the project will be replicated to the remote registry. A replication job will be scheduled for each repository. 
+If the project does not exist on the remote registry, a new project is created automatically.
+If the project already exists and the replication user configured in the policy has no write privilege to it, 
+the process will fail. 
 
-Start replication by creating a policy. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
+When the policy is first enabled, all images of the project are replicated to the remote registry. Images subsequently pushed to the project on the source registry
+will be incrementally replicated to the remote instance. When an image is delete from the source registry, the policy ensures that the remote registry deletes the same image as well.
+Please note, the member information will not be replicated.  
+
+Depending on the size of the images and the network condition, the replication requires some time to complete. On the remote registry, an image is not available until
+all its layers have been synchronized from the source. If replication job fails due to some network issue, the job will be scheduled for a retry after a few minutes.
+Always checks the log to see if there is any error of the replication. When a policy is disabled (stopped), Harbor tries to stop all existing jobs. It may take a while
+before all jobs finish.   
+
+To enable image replication, a policy must first be created. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
 
 **Note:** Set **"Verify Remote Cert"** to off according to the [installation guide](installation_guide_ova.md) if the destination uses a self-signed or untrusted certificate. 
 
 ![browse project](img/new_create_policy.png)
 
-You can enable, disable or delete a policy in the policy list view. Only policies which are disabled can be edited and only policies which are disabled and have no running jobs can be deleted. If a policy is disabled, the running jobs under it will be stopped.  
+You can enable, disable or delete a policy in the policy list view. Only policies which are disabled can be edited. Only policies which are disabled and have no running jobs can be deleted. If a policy is disabled, the running jobs under it will be stopped.  
 
-Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.  
+Click on a policy, jobs belonging to this policy will be listed. A job represents the progress of replicating a repository to the remote instance.  
 
 ![browse project](img/new_policy_list.png)
 
@@ -190,4 +204,4 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 Next, set **"Garbage Collection"** to true according to the [installation guide](installation_guide_ova.md)(skip this step if this flag has already been set) and reboot the VM, Harbor will perform garbage collection when it boots up.  
 
-For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+For more information about garbage collection, please see Docker's document on [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
