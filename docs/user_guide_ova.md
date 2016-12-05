@@ -18,7 +18,7 @@ This guide walks you through the fundamentals of using Harbor virtual appliance.
 
 ![rbac](img/rbac.png)
 
-In Harbor, images are group under projects. To access an image, a user should be added as a member into the project of the image. A member can have one of the three roles:  
+In Harbor, images are grouped under projects. To access an image, a user should be added as a member into the project of the image. A member can have one of the three roles:  
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
@@ -36,7 +36,7 @@ Harbor supports two authentication modes:
 
 	Users are stored in the local database.  
 	
-	A user can self register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md). When self-registration is disabled, the system administrator can add users in Harbor.  
+	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the **[installation guide](installation_guide_ova.md)**. When self-registration is disabled, the system administrator can add users in Harbor.  
 	
 	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
@@ -61,7 +61,7 @@ A project in Harbor contains all repositories of an application. No images can b
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
+You can create a project after you signed in. Enabling the "Public" checkbox makes the project public.  
 
 ![create project](img/new_create_project.png)  
 
@@ -85,7 +85,7 @@ You can update or remove a member by clicking the icon on the right.
 ![browse project](img/new_remove_update_member.png)
 
 ##Replicating images
-Images can be replicated between Harbor instances. It can be used to transfer images from one data center to another, or from on-prem registry to an instance in the cloud.  
+Images can be replicated between Harbor instances. It can be used to transfer images from one data center to another, or from an on-prem registry to an instance in the cloud.  
 
 A replication policy needs to be set up on the source instance to govern the replication process. 
 One key fact about the replication is that only images are replicated between Harbor instances. 
@@ -97,13 +97,13 @@ If the project already exists and the replication user configured in the policy 
 the process will fail. 
 
 When the policy is first enabled, all images of the project are replicated to the remote registry. Images subsequently pushed to the project on the source registry
-will be incrementally replicated to the remote instance. When an image is delete from the source registry, the policy ensures that the remote registry deletes the same image as well.
-Please note, the member information will not be replicated.  
+will be incrementally replicated to the remote instance. When an image is deleted from the source registry, the policy ensures that the remote registry deletes the same image as well.
+Please note, the user and member information will not be replicated.  
 
 Depending on the size of the images and the network condition, the replication requires some time to complete. On the remote registry, an image is not available until
-all its layers have been synchronized from the source. If replication job fails due to some network issue, the job will be scheduled for a retry after a few minutes.
+all its layers have been synchronized from the source. If a replication job fails due to some network issue, the job will be scheduled for a retry after a few minutes.
 Always checks the log to see if there is any error of the replication. When a policy is disabled (stopped), Harbor tries to stop all existing jobs. It may take a while
-before all jobs finish.   
+before all jobs finish. A policy can be restarted by disabling and then enabling it again.  
 
 To enable image replication, a policy must first be created. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
 
@@ -147,7 +147,7 @@ Harbor uses HTTPS for secure communication by default. A self-signed certificate
 1. Trust the certificate of Harbor's CA  
 Refer to the "Getting Certificate of Harbor's CA" part of [installation guide](installation_guide_ova.md).  
 2. Set "--insecure-registry" option  
-Add "--insecure-registry" option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker.  
+Add "--insecure-registry" option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker service.  
 	
 If Harbor is configured as using HTTP, just set the "--insecure-registry" option.  
 
