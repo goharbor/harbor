@@ -13,7 +13,7 @@ value=$(ovfenv -k root_pwd)
 if [ -n "$value" ]
 then
 	echo "Resetting root password..."
-	printf "$value\n$value\n" | passwd root
+	printf "%s\n%s\n" "$value" "$value" | passwd root
 fi
 
 #configure SSH
@@ -25,10 +25,8 @@ addIptableRules
 echo "Installing docker compose..."
 installDockerCompose
 
-#echo "Starting docker service..."
-#systemctl start docker
-echo "Configuring docker..."
-configureDockerDNS
+echo "Starting docker service..."
+systemctl start docker
 
 echo "Uncompress Harbor offline instaler tar..."
 tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../

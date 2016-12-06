@@ -132,15 +132,6 @@ function secure {
 }
 
 function detectHostname {
-	#echo "Read attribute using ovfenv: [ vami.domain.Harbor ]"
-	#hostname=$(ovfenv -k vami.domain.Harbor)
-	#if [ -n $hostname ]
-	#then
-	#	echo "Get hostname from ovfenv: $hostname"
-	#	return
-	#fi
-	echo "Resetting hostname using vami_ovf_process..."
-	/opt/vmware/share/vami/vami_ovf_process --setnetwork || true
 	hostname=$(hostname --fqdn) || true
 	if [ -n $hostname ]
 	then
@@ -166,7 +157,7 @@ fi
 if [ -n "$hostname" ]
 then
 	echo "Hostname: $hostname"
-	configureHarborCfg hostname $hostname
+	configureHarborCfg "hostname" "$hostname"
 else
 	echo "Failed to get the hostname"
 	exit 1
@@ -193,16 +184,11 @@ do
 	echo "Read attribute using ovfenv: [ $attr ]"
 	value=$(ovfenv -k $attr)
 	
-	#ldap search password and email password can be null
-	if [ -n "$value" ] || [ "$attr" = "ldap_search_pwd" ] \
-		|| [ "$attr" = "email_password" ]
-	then
-		#if [ "$attr" = ldap_search_pwd ] \
-		#	|| [ "$attr" = email_password ]
-		#then
-		#	bs=$(echo $value | base64)
-		#	value={base64}$bs
-		#fi
-		configureHarborCfg $attr $value
-	fi
+	#if [ "$attr" = ldap_search_pwd ] \
+	#	|| [ "$attr" = email_password ]
+	#then
+	#	bs=$(echo $value | base64)
+	#	value={base64}$bs
+	#fi
+	configureHarborCfg "$attr" "$value"
 done
