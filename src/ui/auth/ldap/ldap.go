@@ -54,8 +54,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	log.Debug("ldapURL:", ldapURL)
 
 	// This routine keeps compability with the old format used on harbor.cfg
-	splitLdapUrl := strings.Split(ldapURL, "://")
-	protocol, hostport := splitLdapUrl[0], splitLdapUrl[1]
+	splitLdapURL := strings.Split(ldapURL, "://")
+	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
 
 	var host, port string
 
