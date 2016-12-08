@@ -51,7 +51,8 @@ The parameters are described below - note that at the very least, you will need 
 
 * **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
 * **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
-* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.
+* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. If your SMTP server requires SASL for authentication, you should set **identity = `your_configuration`**, the default is `Mail Config`.
+	* email_identity = Mail Config 
 	* email_server = smtp.mydomain.com 
 	* email_server_port = 25
 	* email_username = sample_admin@mydomain.com
