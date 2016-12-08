@@ -24,7 +24,7 @@ then
 	echo "GC enabled, starting garbage collection..."
 	#If the registry contains no images, the gc will fail.
 	#So append a true to avoid failure.
-	gc registry:2.5.0 2>&1 >> /var/log/harbor/gc.log || true
+	gc 2>&1 >> /var/log/harbor/gc.log || true
 else
 	echo "GC disabled, skip garbage collection"
 fi
@@ -32,9 +32,6 @@ fi
 #Configure Harbor
 echo "Configuring Harbor..."
 configure
-
-echo "Configuring docker..."
-configureDockerDNS
 
 #Start Harbor
 echo "Starting Harbor..."
