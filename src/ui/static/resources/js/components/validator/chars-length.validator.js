@@ -18,50 +18,54 @@
   
   angular
     .module('harbor.validator')
-    .directive('userExists', userExists);
+    .directive('charsLength', charsLength);
   
-  userExists.$inject = ['UserExistService'];
+  charsLength.$inject = ['ASCII_CHARS'];
   
-  function userExists(UserExistService) {
+  function charsLength(ASCII_CHARS) {
     var directive = {
       'require': 'ngModel',
       'scope': {
-        'target': '@'
+        min: '@',
+        max: '@'
       },
       'link': link
     };
+    
     return directive;
     
     function link(scope, element, attrs, ctrl) {
-      
-      var valid = true;     
-                  
-      ctrl.$validators.userExists = validator;
+        
+      ctrl.$validators.charsLength = validator;
       
       function validator(modelValue, viewValue) {
-               
         if(ctrl.$isEmpty(modelValue)) {
           return true;
         }
         
-        UserExistService(attrs.target, modelValue)
-          .success(userExistSuccess)
-          .error(userExistFailed);   
-            
-        function userExistSuccess(data, status) {
-          valid = !data;
-          if(!valid) {
-            console.log('Model value already exists');
+        var actualLength = 0;
+        
+        if(ASCII_CHARS.test(modelValue)) {
+          actualLength = modelValue.length;
+        }else{
+          for(var i = 0; i < modelValue.length; i++) {
+            ASCII_CHARS.test(modelValue[i]) ? actualLength += 1 : actualLength += 2;
           }
         }
+                
+        if(attrs.min && actualLength < attrs.min) {
+          return false;
+        }
         
-        function userExistFailed(data, status) {
-          console.log('Failed to in retrieval:' + data);
-        }       
+        if(attrs.max && actualLength > attrs.max) {
+          return false;
+        }
         
-        return valid;
-      }  
+        return true;
+      }
+      
     }
-    
   }
+  
+  
 })();
