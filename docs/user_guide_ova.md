@@ -38,14 +38,14 @@ Harbor supports two authentication modes:
 	
 	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the **[installation guide](installation_guide_ova.md)**. When self-registration is disabled, the system administrator can add users in Harbor.  
 	
-	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters, less than 20 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
 	When you forgot your password, you can follow the below steps to reset the password:  
 
-	1. Click the link "forgot password" in the sign in page.  
+	1. Click the link "Forgot Password" in the sign in page.  
 	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
 	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Submit".  
+	4. Input your new password and click "Save".  
 	
 * **LDAP/Active Directory (ldap_auth)**  
 
