@@ -188,14 +188,13 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
+            
       $(document).on('click', clickHandler);
       
       function clickHandler(e) {
-        $('[data-toggle="popover"]').each(function () {          
-          if (!$(this).is(e.target) && 
-               $(this).has(e.target).length === 0 &&
-               $('.popover').has(e.target).length === 0) {
-             $(this).parent().popover('hide');
+        $('[data-toggle="popover"],[data-original-title]').each(function () {
+          if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {                
+              (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false;
           }
         });
         var targetId = $(e.target).attr('id');
