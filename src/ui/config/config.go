@@ -33,6 +33,7 @@ type LDAPSetting struct {
 	UID       string
 	Filter    string
 	Scope     string
+	ConnectTimeout: string
 }
 
 type uiParser struct{}

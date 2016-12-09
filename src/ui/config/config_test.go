@@ -29,6 +29,7 @@ var (
 		"cn",
 		"uid",
 		"2",
+		"5",
 	}
 	tokenExp                   = "3"
 	tokenExpRes                = 3
