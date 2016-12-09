@@ -29,6 +29,7 @@
         'helpTitle': '@',
         'content': '@'
       },
+      'replace': true,
       'link': link,
       'controller': InlineHelpController,
       'controllerAs': 'vm',

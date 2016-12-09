@@ -30,12 +30,12 @@
               <div class="form-group">
                 <label for="username" class="col-sm-3 control-label">// 'username' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="username" ng-model="user.username" name="uUsername" ng-model-options="{ updateOn: 'blur' }" required maxlength="20" invalid-chars user-exists data-target="username">                 
+                  <input type="text" class="form-control" id="username" ng-model="user.username" name="uUsername" required invalid-chars user-exists data-target="username" maxlength="20">                 
                   <div class="error-message" ng-messages="(form.$submitted || form.uUsername.$touched) && form.uUsername.$error" >
                     <span ng-message="required">// 'username_is_required' | tr //</span>
                     <span ng-message="maxlength">// 'username_is_too_long' | tr //</span>
-                    <span ng-message="invalidChars">// 'username_contains_illegal_chars' | tr //</span>
                     <span ng-message="userExists">// 'username_has_been_taken' | tr //</span>
+                    <span ng-message="invalidChars">// 'username_contains_illegal_chars' | tr //</span>
                   </div>
                 </div>
                 <div class="col-sm-2">
@@ -45,7 +45,7 @@
               <div class="form-group">
                 <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="email" ng-model="user.email" name="uEmail" ng-model-options="{ updateOn: 'blur' }" required user-exists data-target="email" email>
+                  <input type="text" class="form-control" id="email" ng-model="user.email" name="uEmail" required user-exists data-target="email" email>
                   <div class="error-message" ng-messages="(form.$submitted || form.uEmail.$touched) && form.uEmail.$error">
                     <span ng-message="required">// 'email_is_required' | tr //</span>
                     <span ng-message="email">// 'email_content_illegal' | tr //</span>
@@ -60,11 +60,11 @@
               <div class="form-group">
                 <label for="fullName" class="col-sm-3 control-label">// 'full_name' | tr //:</label>
                 <div class="col-sm-7"> 
-                  <input type="text" class="form-control" id="fullName" ng-model="user.fullName" name="uFullName" ng-model-options="{ updateOn: 'blur' }" required maxlength="20" invalid-chars>
+                  <input type="text" class="form-control" id="fullName" ng-model="user.fullName" name="uFullName" required chars-length max="20" invalid-chars>
                   <div class="error-message" ng-messages="(form.$submitted || form.uFullName.$touched) && form.uFullName.$error">
                     <span ng-message="required">// 'full_name_is_required' | tr //</span>
                     <span ng-message="invalidChars">// 'full_name_contains_illegal_chars' | tr //</span>
-                    <span ng-message="maxlength">// 'full_name_is_too_long' | tr //</span>
+                    <span ng-message="charsLength">// 'full_name_is_too_long' | tr //</span>
                   </div>
                   <p class="help-block small-size-fonts">// 'full_name_desc' | tr //</p>
                 </div>
@@ -75,7 +75,7 @@
               <div class="form-group">
                 <label for="password" class="col-sm-3 control-label">// 'password' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="password" class="form-control" id="password" ng-model="user.password" name="uPassword" ng-model-options="{ updateOn: 'blur' }" required password>
+                  <input type="password" class="form-control" id="password" ng-model="user.password" name="uPassword" required password>
                   <div class="error-message" ng-messages="(form.$submitted || form.uPassword.$touched) && form.uPassword.$error">
                     <span ng-message="required">// 'password_is_required' | tr //</span>
                     <span ng-message="password">// 'password_is_invalid' | tr //</span>
@@ -89,7 +89,7 @@
               <div class="form-group">
                 <label for="confirmPassword" class="col-sm-3 control-label">// 'confirm_password' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="password" class="form-control" id="confirmPassword" ng-model="user.confirmPassword" name="uConfirmPassword" ng-model-options="{ updateOn: 'blur' }" compare-to="user.password">
+                  <input type="password" class="form-control" id="confirmPassword" ng-model="user.confirmPassword" name="uConfirmPassword" compare-to="user.password">
                   <div class="error-message" ng-messages="(form.$submitted || form.uConfirmPassword.$touched) && form.uConfirmPassword.$error">
                     <span ng-message="compareTo">// 'password_does_not_match' | tr //</span>
                   </div>
@@ -101,9 +101,9 @@
               <div class="form-group">
                 <label for="comments" class="col-sm-3 control-label">// 'comments' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" ng-model-options="{ updateOn: 'blur' }" maxlength="20">
+                  <input type="text" class="form-control" id="comments" ng-model="user.comment" name="uComments" chars-length max="20">
                   <div class="error-message" ng-messages="(form.$submitted || form.uComments.$touched) && form.uComments.$error">
-                    <span ng-show="maxlength">// 'comment_is_too_long' | tr //</span>
+                    <span ng-message="charsLength">// 'comment_is_too_long' | tr //</span>
                   </div>
                 </div>
               </div>
