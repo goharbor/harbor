@@ -49,6 +49,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 			UID:       raw["LDAP_UID"],
 			Filter:    raw["LDAP_FILTER"],
 			Scope:     raw["LDAP_SCOPE"],
+			ConnectTimeout: raw["LDAP_CONNECT_TIMEOUT"],
 		}
 		config["ldap"] = setting
 	}
@@ -83,7 +84,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 var uiConfig *commonConfig.Config
 
 func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
+	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "LDAP_CONNECT_TIMEOUT", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
 	uiConfig = &commonConfig.Config{
 		Config: make(map[string]interface{}),
 		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},

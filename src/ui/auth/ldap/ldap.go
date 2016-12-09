@@ -28,7 +28,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 
-	openldap "github.com/go-ldap/ldap"
+	openldap "gopkg.in/ldap.v2"
 )
 
 // Auth implements Authenticator interface to authenticate against LDAP
@@ -74,8 +74,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 
 	// Sets a Dial Timeout for LDAP
-	// TODO: Make this configurable
-	openldap.DefaultTimeout = 5 * time.Second // 5 seconds to get a connect timeout is reasonable, for now
+	connectTimeout = config.LDAP().ConnectTimeout
+	if connectTimeout == "" {
+		connectTimeout = 5
+	}
+	openldap.DefaultTimeout = connectTimeout * time.Second // 5 seconds to get a connect timeout is reasonable, for now
 
 	// TODO: Make the option to use StartTLS configurable.
 	ldap, err := openldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
