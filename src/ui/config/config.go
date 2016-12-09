@@ -26,14 +26,14 @@ import (
 
 // LDAPSetting wraps the setting of an LDAP server
 type LDAPSetting struct {
-	URL       string
-	BaseDn    string
-	SearchDn  string
-	SearchPwd string
-	UID       string
-	Filter    string
-	Scope     string
-	ConnectTimeout: string
+	URL            string
+	BaseDn         string
+	SearchDn       string
+	SearchPwd      string
+	UID            string
+	Filter         string
+	Scope          string
+	ConnectTimeout string
 }
 
 type uiParser struct{}
@@ -43,13 +43,13 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 	mode := raw["AUTH_MODE"]
 	if mode == "ldap_auth" {
 		setting := LDAPSetting{
-			URL:       raw["LDAP_URL"],
-			BaseDn:    raw["LDAP_BASE_DN"],
-			SearchDn:  raw["LDAP_SEARCH_DN"],
-			SearchPwd: raw["LDAP_SEARCH_PWD"],
-			UID:       raw["LDAP_UID"],
-			Filter:    raw["LDAP_FILTER"],
-			Scope:     raw["LDAP_SCOPE"],
+			URL:            raw["LDAP_URL"],
+			BaseDn:         raw["LDAP_BASE_DN"],
+			SearchDn:       raw["LDAP_SEARCH_DN"],
+			SearchPwd:      raw["LDAP_SEARCH_PWD"],
+			UID:            raw["LDAP_UID"],
+			Filter:         raw["LDAP_FILTER"],
+			Scope:          raw["LDAP_SCOPE"],
 			ConnectTimeout: raw["LDAP_CONNECT_TIMEOUT"],
 		}
 		config["ldap"] = setting
