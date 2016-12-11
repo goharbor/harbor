@@ -24,10 +24,16 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/ui/api"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/service/cache"
 
+	commonapi "github.com/vmware/harbor/src/common/api"
+
 	"github.com/astaxie/beego"
+	"github.com/docker/distribution"
+	"github.com/vmware/harbor/src/ui/clair"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -60,6 +66,7 @@ func (n *NotificationHandler) Post() {
 		project, _ := utils.ParseRepository(repository)
 		tag := event.Target.Tag
 		action := event.Action
+		mediaType := event.Target.MediaType
 
 		user := event.Actor.Name
 		if len(user) == 0 {
@@ -87,6 +94,17 @@ func (n *NotificationHandler) Post() {
 				}
 			}()
 			go api.TriggerReplicationByRepository(repository, []string{tag}, models.RepOpTransfer)
+
+			// Analyse the image security through Clair
+			go func() {
+				manifest, err := getManifest(user, mediaType, repository, tag)
+				if err != nil {
+					log.Errorf("error occurred while getting manifest for %s:%s : %v", repository, tag, err)
+					return
+				}
+
+				clair.AnalyseImage(user, manifest, repository)
+			}()
 		}
 		if action == "pull" {
 			go func() {
@@ -133,6 +151,32 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	}
 
 	return events, nil
+}
+
+// getManifest Gets the manifest of the image to be analyzed
+func getManifest(username, mediaType, repoName, tag string) (distribution.Manifest, error) {
+	endpoint := config.InternalRegistryURL()
+
+	rc, err := cache.NewRepositoryClient(endpoint, commonapi.GetIsInsecure(), username, repoName,
+		"repository", repoName, "pull", "push", "*")
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+		return nil, err
+	}
+
+	mediaTypes := []string{mediaType}
+
+	_, mediaType, payload, err := rc.PullManifest(tag, mediaTypes)
+	if err != nil {
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
+	}
+
+	manifest, _, err := registry.UnMarshal(mediaType, payload)
+	if err != nil {
+		log.Errorf("an error occurred while parsing manifest of %s:%s: %v", repoName, tag, err)
+	}
+
+	return manifest, nil
 }
 
 // Render returns nil as it won't render any template.
