@@ -42,10 +42,10 @@ Harbor supports two authentication modes:
 	
 	When you forgot your password, you can follow the below steps to reset the password:  
 
-	1. Click the link "forgot password" in the sign in page.  
+	1. Click the link "Forgot Password" in the sign in page.  
 	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
 	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Submit".  
+	4. Input your new password and click "Save".  
 	
 * **LDAP/Active Directory (ldap_auth)**  
 
