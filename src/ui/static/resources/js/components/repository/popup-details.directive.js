@@ -27,7 +27,7 @@
   }
   
   popupDetails.$inject = ['ListManifestService', '$filter', 'dateLFilter'];
-  
+
   function popupDetails(ListManifestService, $filter, dateLFilter) {
     var directive = {
       'restrict': 'E',
@@ -46,6 +46,7 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {  
+      
       element
         .popover({
           'template': '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-title"></div><div class="popover-content"></div></div>',
@@ -68,16 +69,16 @@
              ctrl.manifest['created'] = $filter('dateL')(ctrl.manifest['created'], 'YYYY-MM-DD HH:mm:ss');
            }
         })
-        .on('inserted.bs.popover', function(e){      
-          var self = jQuery(this);                 
+        .on('inserted.bs.popover', function(e){
+          var self = jQuery(this);
           $('[type="text"]:input', self.parent())
-            .on('click', function() {
+            .on('click', function(e) {
               $(this).select();
             });
           self.parent().find('.glyphicon.glyphicon-remove-circle').on('click', function() {
-            element.trigger('click');
+            self.trigger('click');
           });
-        });      
+        });           
   
       function generateContent() {
         var content =  '<form class="form-horizontal" width="100%">' +

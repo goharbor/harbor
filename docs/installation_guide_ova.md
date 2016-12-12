@@ -1,6 +1,13 @@
 # Installing and Configuring Harbor on vSphere as Virtual Appliance
 
-This guide walks you through the steps about installing and configuring Harbor on vSphere as an virtual appliance. If you are installing Harbor on a Linux host, refer to this **[Installation Guide](installation_guide.md)**.
+* [Prerequisites](#prerequisites)
+* [Planning for installation](#planning-for-installation)
+* [Installation](#installation)
+* [Getting Certificate of Harbor's CA](#getting-certificate-of-harbors-ca)
+* [Reconfiguration](#reconfiguration)
+* [Troubleshooting](#troubleshooting)
+
+This guide walks you through the steps about installing and configuring Harbor on vSphere as a virtual appliance. If you are installing Harbor on a Linux host, refer to this **[Installation Guide](installation_guide.md)**.
 
 ## Prerequisites
 * vCenter 5.5+ and at least an ESX host. 
@@ -18,7 +25,7 @@ By default, Harbor stores user information in an internal database. Harbor can a
 
 Harbor uses HTTPS for secure communication by default. A self-signed certificate is generated at first boot based on its FQDN (Fully Qualified Domain Name) or IP address. A Docker client or a VCH (Virtual Container Host) needs to trust the certificate of Harbor's CA (Certificate Authority) in order to interact with Harbor. 
 
-Harbor always tries to generate a self-signed certificate based on its FQDN. Therefore, its IP address must have a FQDN associated with it in the DNS server. If Harbor cannot resolve its IP address to a FQDN, it generates the self-signed certificate using its IP address. In this case, Harbor can only be accessed by IP address. When Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated.  
+Harbor always tries to generate a self-signed certificate based on its FQDN. Therefore, its IP address must have a FQDN associated with it in the DNS server. If Harbor cannot resolve its IP address to a FQDN, it generates the self-signed certificate using its IP address. In this case, Harbor can only be accessed by IP address. When Harbor's IP address or FQDN is changed, the self-signed certificate will be re-generated after a reboot.  
 
 Harbor's self-generated certificate can be replaced by supplying a certificate signed by other CAs in OVA's settings. 
 
@@ -68,10 +75,9 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 
  * System
 	* **Root Password**: The initial password of the root user. Subsequent changes of password should be performed in operating system. (8-128 characters)
-	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. 
+	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. (8-20 characters) 
 	* **Database Password**: The initial password of the root user of MySQL database. Subsequent changes of password should be performed in operating system. (8-128 characters)
 	* **Permit Root Login**: Specifies whether root user can log in using SSH.
-	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
 	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
 
  * Authentication
@@ -79,8 +85,9 @@ For the purpose of generating a self-signed certificate, it is recommended that 
     The **Authentication Mode** must be set before the first boot of Harbor. Subsequent changes to **Authentication Mode** do not have any effect. When **ldap_auth** mode is enabled, properties related to LDAP/AD must be set.
   
 	* **Authentication Mode**: The default authentication mode is **db_auth**. Set it to **ldap_auth** when users' credentials are stored in an LDAP or AD server. Note: this option can only be set once.
+	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
 	* **LDAP URL**: The URL of an LDAP/AD server.
-	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. Leave blank if your LDAP/AD server supports anonymous search, otherwise you should configure this DN and **LDAP Seach Password**.
+	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. Leave blank if your LDAP/AD server supports anonymous search, otherwise you should configure this DN and **LDAP Search Password**.
 	* **LDAP Search Password**: The password of the user for LDAP search. Leave blank if your LDAP/AD server supports anonymous search.
 	* **LDAP Base DN**: The base DN of a node from which to look up a user for authentication. The search scope includes subtree of the node.
 	* **LDAP UID**: The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD server.
@@ -103,7 +110,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 	* **Email Username**: The user from whom the password reset email is sent. Usually this is a system email address.
 	* **Email Password**: The password of the user from whom the password reset email is sent.
 	* **Email From**: The name of the email sender.
-	* **Email SSL**: Whether to enabled secure mail transmission.
+	* **Email SSL**: Whether to enable secure mail transmission.
 
  * Networking properties
 	* **Default Gateway**: The default gateway address for this VM. Leave blank if DHCP is desired.
@@ -119,16 +126,16 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 
  ![ova](img/ova/ova09.png)
 
-11. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like netowrk address and password. 
+11. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like network address and password. 
 
 12. When the appliance is ready, check from vSphere Web Client for its IP address. Open a browser and type in the URL `http(s)://harbor_ip_address` or `http(s)://harbor_host_name`. Log in as the admin user and verify Harbor has been successfully installed. 
 
-13. For information on how to use Harbor, please refer to [User Guide of Harbor](user_guide.md).
+13. For information on how to use Harbor, please refer to [User Guide of Harbor Virtual Appliance](user_guide_ova.md).
 
 ## Getting Certificate of Harbor's CA
 
-By default, Harbor uses a self-signed certificate in HTTPS. A Docker client or a VCH needs to trust the certificate of Harbor's CA in order to interact with Harbor. 
-To download the certificate of Harbor's CA and import into a Docker client, follow the below steps:
+By default, Harbor uses a self-signed certificate in HTTPS. A Docker client or a VCH needs to trust the self-signed certificate of Harbor's CA in order to interact with Harbor. 
+To download the certificate of Harbor's CA and import into a Docker client, follow the below steps. If a certificate issued by a public known CA is used, the below steps are not needed. 
 
 1. Log in Harbor's UI as an admin user.
 2. Click on the admin's name at the upper left corner and select **"About"** from the drop-down menu. 
@@ -147,7 +154,7 @@ To download the certificate of Harbor's CA and import into a Docker client, foll
      cp ca.crt /etc/docker/certs.d/<Harbor_IP>/
    ```
 
-   **Note:** If you run the above two sets of commands, Harbor can be accessed by both FQDN and IP address. 
+   **Note:** If you run both of the above two sets of commands, Harbor can be accessed by either FQDN or IP address. 
    
 5. Run `docker login` command to verify that HTTPS is working.
 
@@ -165,10 +172,10 @@ If you want to change the properties of Harbor, follow the below steps:
 
  ![ova](img/ova/vapp_options.png)
 
-4. **Power on** the VM.  
+4. **Power on** the VM and Harbor will reconfigure itself based on the new settings.  
 
-**Notes:**  
-1. The authentication mode can only be set once before the firtst boot. Subsequent modification of this option does not have any effect.  
+**Note:**  
+1. The **Authentication Mode** can only be set once before the first boot. Subsequent modification of this option does not have any effect.  
 2. The initial admin password, root password of the virtual appliance, MySQL root password, and all networking properties can not be modified using this method after Harbor's first launch. Modify them by the following approach:
  * **Harbor Admin Password**: Change it in Harbor admin portal.  
  * **Root Password of Virtual Appliance**: Change it by logging in the virtual appliance and doing it in the Linux operating system.  

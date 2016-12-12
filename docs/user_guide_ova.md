@@ -1,6 +1,6 @@
-#User Guide
+#User Guide of Harbor Virtual Appliance
 ##Overview
-This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
+This guide walks you through the fundamentals of using Harbor virtual appliance. You'll learn how to use Harbor to:  
 
 * Manage your projects.
 * Manage members of a project.
@@ -18,7 +18,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 ![rbac](img/rbac.png)
 
-Harbor manages images through projects. Users can be added into one project as a member with three different roles:  
+In Harbor, images are grouped under projects. To access an image, a user should be added as a member into the project of the image. A member can have one of the three roles:  
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
@@ -36,9 +36,9 @@ Harbor supports two authentication modes:
 
 	Users are stored in the local database.  
 	
-	A user can self register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md). When self-registration is disabled, the system administrator can add users in Harbor.  
+	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the **[installation guide](installation_guide_ova.md)**. When self-registration is disabled, the system administrator can add users in Harbor.  
 	
-	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters, less than 20 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
 	When you forgot your password, you can follow the below steps to reset the password:  
 
@@ -61,7 +61,7 @@ A project in Harbor contains all repositories of an application. No images can b
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
+You can create a project after you signed in. Enabling the "Public" checkbox makes the project public.  
 
 ![create project](img/new_create_project.png)  
 
@@ -85,21 +85,35 @@ You can update or remove a member by clicking the icon on the right.
 ![browse project](img/new_remove_update_member.png)
 
 ##Replicating images
-Images replication is used to replicate repositories from one Harbor instance to another.  
+Images can be replicated between Harbor instances. It can be used to transfer images from one data center to another, or from an on-prem registry to an instance in the cloud.  
 
-The function is project-oriented, and once the system administrator set a policy to one project, all repositories under the project will be replicated to the remote registry. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. When a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination. The member information will not be replicated.  
+A replication policy needs to be set up on the source instance to govern the replication process. 
+One key fact about the replication is that only images are replicated between Harbor instances. 
+Users, roles and other information are not replicated. As such, always keep in mind that the user, roles and policy information is individually managed by each Harbor instance.
 
-There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
+The replication is project-based. When a system administrator sets a policy to a project, all repositories under the project will be replicated to the remote registry. A replication job will be scheduled for each repository. 
+If the project does not exist on the remote registry, a new project is created automatically.
+If the project already exists and the replication user configured in the policy has no write privilege to it, 
+the process will fail. 
 
-**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
+When the policy is first enabled, all images of the project are replicated to the remote registry. Images subsequently pushed to the project on the source registry
+will be incrementally replicated to the remote instance. When an image is deleted from the source registry, the policy ensures that the remote registry deletes the same image as well.
+Please note, the user and member information will not be replicated.  
 
-Start replication by creating a policy. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
+Depending on the size of the images and the network condition, the replication requires some time to complete. On the remote registry, an image is not available until
+all its layers have been synchronized from the source. If a replication job fails due to some network issue, the job will be scheduled for a retry after a few minutes.
+Always checks the log to see if there is any error of the replication. When a policy is disabled (stopped), Harbor tries to stop all existing jobs. It may take a while
+before all jobs finish. A policy can be restarted by disabling and then enabling it again.  
+
+To enable image replication, a policy must first be created. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
+
+**Note:** Set **"Verify Remote Cert"** to off according to the [installation guide](installation_guide_ova.md) if the destination uses a self-signed or untrusted certificate. 
 
 ![browse project](img/new_create_policy.png)
 
-You can enable, disable or delete a policy in the policy list view. Only policies which are disabled can be edited and only policies which are disabled and have no running jobs can be deleted. If a policy is disabled, the running jobs under it will be stopped.  
+You can enable, disable or delete a policy in the policy list view. Only policies which are disabled can be edited. Only policies which are disabled and have no running jobs can be deleted. If a policy is disabled, the running jobs under it will be stopped.  
 
-Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.  
+Click on a policy, jobs belonging to this policy will be listed. A job represents the progress of replicating a repository to the remote instance.  
 
 ![browse project](img/new_policy_list.png)
 
@@ -128,13 +142,16 @@ You can list, edit, enable and disable policies in the "Replication" tab. Make s
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
-Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker:    
-*FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
-Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
-If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
-`--insecure-registry myregistrydomain.com:5000` to the daemon's arguments.  
-In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag;  
-simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com:5000/ca.crt*  
+Harbor uses HTTPS for secure communication by default. A self-signed certificate is generated at first boot based on its FQDN (Fully Qualified Domain Name) or IP address. If you use Docker client to interact with it, there are two options you can choose:  
+
+1. Trust the certificate of Harbor's CA  
+Refer to the "Getting Certificate of Harbor's CA" part of [installation guide](installation_guide_ova.md).  
+2. Set "--insecure-registry" option  
+Add "--insecure-registry" option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker service.  
+	
+If Harbor is configured as using HTTP, just set the "--insecure-registry" option.  
+
+If the certificate used by Harbor is signed by a trusted authority, Docker should work without any additional configuration.  
 
 ###Pulling images
 If the project that the image belongs to is private, you should sign in first:  
@@ -185,21 +202,6 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted.**  
 
-Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
+Next, set **"Garbage Collection"** to true according to the [installation guide](installation_guide_ova.md)(skip this step if this flag has already been set) and reboot the VM, Harbor will perform garbage collection when it boots up.  
 
-Run the below commands on the host which Harbor is deployed on to preview what files/images will be affected: 
-
-```sh
-$ docker-compose stop
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
-```  
-**NOTE:** The above option "--dry-run" will print the progress without removing any data.  
-
-Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
-
-```sh
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect  /etc/registry/config.yml
-$ docker-compose start
-```  
-
-For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+For more information about garbage collection, please see Docker's document on [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  

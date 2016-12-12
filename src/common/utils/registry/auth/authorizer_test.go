@@ -17,6 +17,7 @@ package auth
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -64,12 +65,17 @@ func TestModify(t *testing.T) {
 		Scheme: "bearer",
 	}
 
+	ping, err := url.Parse("http://example.com/v2/")
+	if err != nil {
+		t.Fatalf("failed to parse URL: %v", err)
+	}
 	as := &AuthorizerStore{
 		authorizers: []Authorizer{authorizer},
+		ping:        ping,
 		challenges:  []auth.Challenge{challenge},
 	}
 
-	req, err := http.NewRequest("GET", "http://example.com", nil)
+	req, err := http.NewRequest("GET", "http://example.com/v2/ubuntu/manifests/14.04", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -85,5 +91,19 @@ func TestModify(t *testing.T) {
 
 	if !strings.HasPrefix(header, "Bearer") {
 		t.Fatal("\"Authorization\" header does not start with \"Bearer\"")
+	}
+
+	req, err = http.NewRequest("GET", "http://example.com", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	if err = as.Modify(req); err != nil {
+		t.Fatalf("failed to modify request: %v", err)
+	}
+
+	header = req.Header.Get("Authorization")
+	if len(header) != 0 {
+		t.Fatal("\"Authorization\" header should not be added")
 	}
 }

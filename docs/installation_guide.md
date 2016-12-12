@@ -77,14 +77,13 @@ The parameters are described below - note that at the very least, you will need 
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 
 * **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** bypasses the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
-* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token.  
-* The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** are used as parameters for generating the keys. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
+* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** are used as parameters for generating the keys. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
 
 #### Configuring storage backend (optional)
 
 By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
 using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
-What you need to update is the section of `storage` in the file `templates/registry/config.yml`. 
+What you need to update is the section of `storage` in the file `common/templates/registry/config.yml`. 
 For example, if you use Openstack Swift as your storage backend, the section may look like this:
 
 ```
@@ -103,7 +102,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 
 
 #### Finishing installation and starting Harbor
-Once **harbord.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
+Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ```sh
     $ sudo ./install.sh
@@ -159,15 +158,7 @@ $ sudo install.sh
 
 Removing Harbor's containers while keeping the image data and Harbor's database files on the file system:
 ```
-$ sudo docker-compose rm
-Going to remove nginx, harbor-jobservice, registry, harbor-ui, harbor-db, harbor-log
-Are you sure? [yN] y
-Removing nginx ... done
-Removing harbor-jobservice ... done
-Removing registry ... done
-Removing harbor-ui ... done
-Removing harbor-db ... done
-Removing harbor-log ... done
+$ sudo docker-compose down
 ```  
 
 Removing Harbor's database and image data (for a clean re-installation):
@@ -286,10 +277,16 @@ $ sudo install.sh
   nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
   registry            /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
 ```
-If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor_ui_1``` is not running, you should look at the log file ```docker_ui.log```.  
+If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor-ui``` is not running, you should look at the log file ```ui.log```.  
 
 
-2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `make/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `common/templates/nginx/nginx.http.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
+```
+And run the following commands to restart Harbor:
+```sh
+$ sudo docker-compose down
+$ sudo ./prepare
+$ sudo docker-compose up -d
 ```
