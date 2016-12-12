@@ -164,15 +164,15 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	for _, t := range tags {
-		if err := rc.DeleteTag(t); err != nil {
+		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*registry_error.Error); ok {
-				if regErr.StatusCode != http.StatusNotFound {
-					ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+				if regErr.StatusCode == http.StatusNotFound {
+					continue
 				}
-			} else {
-				log.Errorf("error occurred while deleting tag %s:%s: %v", repoName, t, err)
-				ra.CustomAbort(http.StatusInternalServerError, "internal error")
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
+			log.Errorf("error occurred while deleting tag %s:%s: %v", repoName, t, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
