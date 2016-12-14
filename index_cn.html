@@ -84,9 +84,9 @@ Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，
               <li><strong>图形化用户界面</strong> - 用户可以通过浏览器来浏览，检索当前Docker镜像仓库，管理项目和命名空间。</li>
               <li><strong>AD/LDAP 支持</strong> - Harbor可以集成企业内部已有的AD/LDAP，用于鉴权认证管理。</li>
               <li><strong>审计管理</strong> - 所有针对镜像仓库的操作都可以被记录追溯，用于审计管理。</li>
-              <li><strong>国际化</strong> - 已拥有英文、中文、德文、日文和俄文的本地化版本。更多的语言会添加进来。</li>
+              <li><strong>国际化</strong> - 已拥有英文、中文、德文、日文和俄文的本地化版本。更多的语言将会添加进来。</li>
               <li><strong>RESTful API</strong> - RESTful API 提供给管理员对于Harbor更多的操控, 使得与其它管理软件集成变得更容易。</li>
-              <li><strong>部署简单</strong> - docker-compose和离线安装。</li>
+              <li><strong>部署简单</strong> - 提供在线和离线两种安装工具， 也可以安装到vSphere平台(OVA方式)虚拟设备。</li>
             </ul>
             <p>更多信息请查看<a href="https://github.com/vmware/harbor/blob/master/README.md" target="_blank">Readme</a>文档。</p>
           </div>
@@ -99,17 +99,11 @@ Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，
           <div class='content'>
             <h2 id="getting-harbor">获取Harbor</h2>
             <p>
-            Harbor可以通过执行"docker-compose up"指令，从源代码开始进行一次完整的构建安装过程。同样地，也可以从<a href="https://github.com/vmware/harbor/releases" target="_blank">发布页</a>下载一个预编译好的安装包。
-            </p>
-
-            <ul>
-              <li><a href="https://github.com/vmware/harbor/archive/0.3.5-rc.tar.gz" target="_blank">Harbor 0.3.5-rc</a> - 最新安装包。</li>
-            </ul>
-  
+            Harbor可以安装到一台装有Linux系统的主机， 也可以通过OVA方式部署到vSphere平台虚拟设备。可以从这个<a href="https://github.com/vmware/harbor/releases" target="_blank">发布页</a>下载一个安装包。
+            </p> 
             <p>
-            这份<a href="https://github.com/vmware/harbor/blob/master/docs/installation_guide.md" target="_blank">安装指南</a>描述了如何使用这个安装包。
+            更多信息请查看<a href="https://github.com/vmware/harbor/tree/master/docs" target="_blank">Harbor相关文档</a>。
             </p>
-
           </div>
         </div>
       </div>
@@ -122,22 +116,28 @@ Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，
         </div>
         <div class="row">
           <div>
-            <p><strong>Readme文档</strong></p>
+            <p><strong>README文档</strong></p>
             <div><a href="https://github.com/vmware/harbor/blob/master/README.md" target="_blank" class="button">从这里开始</a></div>
           </div>
           <div>
-            <p><strong>安装指南</strong></p>
+            <p><strong>Harbor安装指南</strong></p>
             <div><a href="https://github.com/vmware/harbor/blob/master/docs/installation_guide.md" target="_blank" class="button">从这里开始</a></div>
+          </div>
+         </div>
+        <div class="row">
+          <div>
+            <p><strong>Harbor用户使用指南</strong></p>            
+            <div><a href="https://github.com/vmware/harbor/blob/master/docs/user_guide.md" target="_blank" class="button">从这里开始</a></div>
+          </div>
+          <div >
+            <p style="font-size: 10pt;"><strong>Harbor虚拟设备安装指南</strong></p>
+            <div><a href="https://github.com/vmware/harbor/blob/master/docs/installation_guide_ova.md" target="_blank" class="button">从这里开始</a></div>
           </div>
         </div>
         <div class="row">
-          <div>
-            <p><strong>HTTPS访问方式的配置</strong></p>
-            <div><a href="https://github.com/vmware/harbor/blob/master/docs/configure_https.md" target="_blank" class="button">从这里开始</a></div>
-          </div>
-          <div>
-            <p><strong>通过Swagger来展示和调试RESTful API</strong></p>
-            <div><a href="https://github.com/vmware/harbor/blob/master/docs/configure_swagger.md" target="_blank" class="button">从这里开始</a></div>
+          <div style="margin-left: 0;">
+            <p><strong>Harbor虚拟设备用户使用指南</strong></p>
+            <div><a href="https://github.com/vmware/harbor/blob/master/docs/user_guide_ova.md" target="_blank" class="button">从这里开始</a></div>
           </div>
         </div>
       </div>
