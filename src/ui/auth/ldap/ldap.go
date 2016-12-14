@@ -18,7 +18,6 @@ package ldap
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -29,7 +28,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 
-	openldap "gopkg.in/ldap.v2"
+	goldap "gopkg.in/ldap.v2"
 )
 
 // Auth implements Authenticator interface to authenticate against LDAP
@@ -75,13 +74,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 
 	// Sets a Dial Timeout for LDAP
-	cTimeout := config.LDAP().ConnectTimeout
-	connectTimeout, _ := strconv.Atoi(cTimeout)
-
-	openldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
+	// TODO: Make this configurable
+	goldap.DefaultTimeout = 5 * time.Second // 5 seconds to get a connect timeout is reasonable, for now
 
 	// TODO: Make the option to use StartTLS configurable.
-	ldap, err := openldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+	ldap, err := goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
 	if err != nil {
 		return nil, err
 	}
@@ -115,18 +112,18 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	ldapScope := config.LDAP().Scope
 	var scope int
 	if ldapScope == "1" {
-		scope = openldap.ScopeBaseObject
+		scope = goldap.ScopeBaseObject
 	} else if ldapScope == "2" {
-		scope = openldap.ScopeSingleLevel
+		scope = goldap.ScopeSingleLevel
 	} else {
-		scope = openldap.ScopeWholeSubtree
+		scope = goldap.ScopeWholeSubtree
 	}
 	attributes := []string{"uid", "cn", "mail", "email"}
 
-	searchRequest := openldap.NewSearchRequest(
+	searchRequest := goldap.NewSearchRequest(
 		ldapBaseDn,
 		scope,
-		openldap.NeverDerefAliases,
+		goldap.NeverDerefAliases,
 		0,     // Unlimited results. TODO: Limit this (as we expect only one result)?
 		0,     // Search Timeout. TODO: Limit this (check what is the unit of timeout) and make configurable
 		false, // Types Only
