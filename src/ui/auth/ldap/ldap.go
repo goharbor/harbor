@@ -77,7 +77,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	// Sets a Dial Timeout for LDAP
 	cTimeout := config.LDAP().ConnectTimeout
 	connectTimeout, _ := strconv.Atoi(cTimeout)
-	openldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
+	goldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
 
 	// TODO: Make the option to use StartTLS configurable.
 	ldap, err := goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
