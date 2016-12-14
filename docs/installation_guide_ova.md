@@ -7,7 +7,7 @@
 * [Reconfiguration](#reconfiguration)
 * [Troubleshooting](#troubleshooting)
 
-This guide walks you through the steps about installing and configuring Harbor on vSphere as an virtual appliance. If you are installing Harbor on a Linux host, refer to this **[Installation Guide](installation_guide.md)**.
+This guide walks you through the steps about installing and configuring Harbor on vSphere as a virtual appliance. If you are installing Harbor on a Linux host, refer to this **[Installation Guide](installation_guide.md)**.
 
 ## Prerequisites
 * vCenter 5.5+ and at least an ESX host. 
@@ -75,7 +75,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 
  * System
 	* **Root Password**: The initial password of the root user. Subsequent changes of password should be performed in operating system. (8-128 characters)
-	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. 
+	* **Harbor Admin Password**: The initial password of Harbor admin. It only works for the first time when Harbor starts. It has no effect after the first launch of Harbor. Change the admin password from UI after launching Harbor. (8-20 characters) 
 	* **Database Password**: The initial password of the root user of MySQL database. Subsequent changes of password should be performed in operating system. (8-128 characters)
 	* **Permit Root Login**: Specifies whether root user can log in using SSH.
 	* **Garbage Collection**: When setting this to true, Harbor performs garbage collection everytime it boots up. The first time setting this flag to true needs to power off the VM and power it on again.
@@ -87,7 +87,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 	* **Authentication Mode**: The default authentication mode is **db_auth**. Set it to **ldap_auth** when users' credentials are stored in an LDAP or AD server. Note: this option can only be set once.
 	* **Self Registration**: Determine whether the self-registration is allowed or not. Set this to off to disable a user's self-registration in Harbor. This flag has no effect when users are stored in LDAP or AD.
 	* **LDAP URL**: The URL of an LDAP/AD server.
-	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. Leave blank if your LDAP/AD server supports anonymous search, otherwise you should configure this DN and **LDAP Seach Password**.
+	* **LDAP Search DN**: A user's DN who has the permission to search the LDAP/AD server. Leave blank if your LDAP/AD server supports anonymous search, otherwise you should configure this DN and **LDAP Search Password**.
 	* **LDAP Search Password**: The password of the user for LDAP search. Leave blank if your LDAP/AD server supports anonymous search.
 	* **LDAP Base DN**: The base DN of a node from which to look up a user for authentication. The search scope includes subtree of the node.
 	* **LDAP UID**: The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD server.
@@ -110,7 +110,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 	* **Email Username**: The user from whom the password reset email is sent. Usually this is a system email address.
 	* **Email Password**: The password of the user from whom the password reset email is sent.
 	* **Email From**: The name of the email sender.
-	* **Email SSL**: Whether to enabled secure mail transmission.
+	* **Email SSL**: Whether to enable secure mail transmission.
 
  * Networking properties
 	* **Default Gateway**: The default gateway address for this VM. Leave blank if DHCP is desired.
@@ -126,7 +126,7 @@ For the purpose of generating a self-signed certificate, it is recommended that 
 
  ![ova](img/ova/ova09.png)
 
-11. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like netowrk address and password. 
+11. Power on the virtual appliance. It may take a few minutes for the first bootup. The virtual appliance needs to initialize itself for configuration like network address and password. 
 
 12. When the appliance is ready, check from vSphere Web Client for its IP address. Open a browser and type in the URL `http(s)://harbor_ip_address` or `http(s)://harbor_host_name`. Log in as the admin user and verify Harbor has been successfully installed. 
 
@@ -175,7 +175,7 @@ If you want to change the properties of Harbor, follow the below steps:
 4. **Power on** the VM and Harbor will reconfigure itself based on the new settings.  
 
 **Note:**  
-1. The **Authentication Mode** can only be set once before the firtst boot. Subsequent modification of this option does not have any effect.  
+1. The **Authentication Mode** can only be set once before the first boot. Subsequent modification of this option does not have any effect.  
 2. The initial admin password, root password of the virtual appliance, MySQL root password, and all networking properties can not be modified using this method after Harbor's first launch. Modify them by the following approach:
  * **Harbor Admin Password**: Change it in Harbor admin portal.  
  * **Root Password of Virtual Appliance**: Change it by logging in the virtual appliance and doing it in the Linux operating system.  
