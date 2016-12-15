@@ -55,7 +55,7 @@ var (
 		HTTPStatusCode: http.StatusForbidden,
 	})
 
-	// ErrorCodeUnavailable provides a common error to report unavailability
+	// ErrorCodeUnavailable provides a common error to report unavialability
 	// of a service or endpoint.
 	ErrorCodeUnavailable = Register("errcode", ErrorDescriptor{
 		Value:          "UNAVAILABLE",

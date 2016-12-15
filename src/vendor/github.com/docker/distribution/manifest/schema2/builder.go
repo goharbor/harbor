@@ -46,9 +46,6 @@ func (mb *builder) Build(ctx context.Context) (distribution.Manifest, error) {
 	m.Config, err = mb.bs.Stat(ctx, configDigest)
 	switch err {
 	case nil:
-		// Override MediaType, since Put always replaces the specified media
-		// type with application/octet-stream in the descriptor it returns.
-		m.Config.MediaType = MediaTypeConfig
 		return FromStruct(m)
 	case distribution.ErrBlobUnknown:
 		// nop
