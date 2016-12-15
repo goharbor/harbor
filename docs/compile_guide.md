@@ -63,13 +63,13 @@ You can compile the code by one of the three approaches:
 * Build Golang dev image:
 
    ```sh
-      $ make compile_buildgolangimage -e GOBUILDIMAGE=harborgo:1.6.2
+      $ make compile_buildgolangimage -e GOBUILDIMAGE=harborgo:1.7.3
    ```
 
 *  Build, install and bring up Harbor:
 
    ```sh
-      $ make install -e GOBUILDIMAGE=harborgo:1.6.2 COMPILETAG=compile_golangimage
+      $ make install -e GOBUILDIMAGE=harborgo:1.7.3 COMPILETAG=compile_golangimage
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
