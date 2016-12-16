@@ -1,4 +1,4 @@
-FROM golang:1.6.2
+FROM golang:1.7.3
 
 RUN apt-get update \
     && apt-get install -y libldap2-dev \

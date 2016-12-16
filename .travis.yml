@@ -3,7 +3,7 @@ sudo: true
 language: go
 
 go: 
-  - 1.6.2
+  - 1.7.3
 
 go_import_path: github.com/vmware/harbor
 
