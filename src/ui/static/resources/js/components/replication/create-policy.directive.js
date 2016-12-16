@@ -201,9 +201,9 @@
         target.name = vm1.name;
       }
       
-      vm.pingAvailable = false;
       vm.pingMessage = $filter('tr')('pinging_target');
       vm.pingTIP = true;
+      vm.isError = false;
       
       PingDestinationService(target)
         .success(pingDestinationSuccess)
@@ -319,12 +319,12 @@
       console.log('Failed to update destination:' + data);
     }
     function pingDestinationSuccess(data, status) {
-      vm.pingAvailable = true;
+      vm.isError = false;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
       vm.pingTIP = false;
     }
     function pingDestinationFailed(data, status) {
-      vm.pingAvailable = true;
+      vm.isError = true;
       if(status === 404) {
         data = '';
       }

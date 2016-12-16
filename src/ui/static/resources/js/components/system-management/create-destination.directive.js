@@ -39,7 +39,7 @@
     vm.errorMessages = [];            
         
     vm.pingTIP = false;
-      
+        
     $timeout(function(){   
       $scope.$watch('destination.endpoint', function(current) {
         if(current) {
@@ -140,6 +140,8 @@
     function pingDestination() {
       
       vm.pingTIP = true;
+      vm.pingMessage = $filter('tr')('pinging_target');
+      vm.isError = false;
       
       var target = {
         'name': vm0.name,
@@ -158,10 +160,12 @@
     }
     
     function pingDestinationSuccess(data, status) {
+      vm.isError = false;
       vm.pingTIP = false;
       vm.pingMessage = $filter('tr')('successful_ping_target', []);
     }
     function pingDestinationFailed(data, status) {
+      vm.isError = true;
       vm.pingTIP = false;
       if(status === 404) {
         data = '';
