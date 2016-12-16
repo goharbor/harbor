@@ -63,9 +63,9 @@
       
     function getTagFailed(data) {
       $scope.$emit('modalTitle', $filter('tr')('error'));
-      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_tag') + data);
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_get_tag'));
       $scope.$emit('raiseError', true);
-      console.log('Failed to get tag:' + data);
+      console.log('Failed to get tags:' + data);
     }
     
     function deleteTag(e) {
