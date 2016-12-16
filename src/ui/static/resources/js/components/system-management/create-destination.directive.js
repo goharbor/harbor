@@ -83,7 +83,7 @@
       if(status === 409) {
         vm.errorMessages.push($filter('tr')('destination_already_exists'));
       }else{
-        vm.errorMessages.push($filter('tr')('failed_to_create_destination') + data);
+        vm.errorMessages.push($filter('tr')('failed_to_create_destination'));
       }
       console.log('Failed to create destination:' + data);
     }
@@ -101,8 +101,8 @@
     }
     
     function updateDestinationFailed(data, status) {
-      vm.errorMessages.push($filter('tr')('failed_to_update_destination') + data);
-      console.log('Failed to update destination.');
+      vm.errorMessages.push($filter('tr')('failed_to_update_destination'));
+      console.log('Failed to update destination:' + data);
     }
     
     
@@ -166,7 +166,7 @@
       if(status === 404) {
         data = '';
       }
-      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + data;
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []);
       console.log("Failed to ping target:" + data);
     }
   }

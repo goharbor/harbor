@@ -95,11 +95,11 @@
       if(status === 409) {
         message = $filter('tr')('email_has_been_taken');
       }else{
-        message = $filter('tr')('failed_to_update_user') + data;
+        message = $filter('tr')('failed_to_update_user');
       }
       $scope.$emit('modalMessage', message);
       $scope.$emit('raiseError', true);
-      console.log('Failed to update user.');
+      console.log('Failed to update user:' + data);
     }
     
     function cancel(form) {
