@@ -60,7 +60,6 @@ templates_dir = os.path.join(base_dir, "common/templates")
     
 parser = argparse.ArgumentParser()
 parser.add_argument('-conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
-parser.add_argument('--data-volume', dest='data_volume', default='/data/',type=str,help="the path of Harbor data volume, which is set in template of docker-compose.")
 
 args = parser.parse_args()
 
@@ -120,8 +119,8 @@ max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
-#secret_key = rcp.get("configuration", "secret_key")
-secret_key = get_secret_key(args.data_volume)
+secretkey_path = rcp.get("configuration", "secretkey_path")
+secret_key = get_secret_key(secretkey_path)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -299,3 +298,4 @@ else:
 	
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
+
