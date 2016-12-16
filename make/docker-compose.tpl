@@ -9,7 +9,7 @@ services:
     ports:
       - 1514:514
   registry:
-    image: library/registry:2.5.0
+    image: library/registry:2.5.1
     container_name: registry
     restart: always
     volumes:

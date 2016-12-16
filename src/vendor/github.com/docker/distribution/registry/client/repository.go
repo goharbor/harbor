@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/docker/distribution"
@@ -214,35 +213,28 @@ func (t *tags) All(ctx context.Context) ([]string, error) {
 		return tags, err
 	}
 
-	for {
-		resp, err := t.client.Get(u)
+	resp, err := t.client.Get(u)
+	if err != nil {
+		return tags, err
+	}
+	defer resp.Body.Close()
+
+	if SuccessStatus(resp.StatusCode) {
+		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return tags, err
 		}
-		defer resp.Body.Close()
 
-		if SuccessStatus(resp.StatusCode) {
-			b, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return tags, err
-			}
-
-			tagsResponse := struct {
-				Tags []string `json:"tags"`
-			}{}
-			if err := json.Unmarshal(b, &tagsResponse); err != nil {
-				return tags, err
-			}
-			tags = append(tags, tagsResponse.Tags...)
-			if link := resp.Header.Get("Link"); link != "" {
-				u = strings.Trim(strings.Split(link, ";")[0], "<>")
-			} else {
-				return tags, nil
-			}
-		} else {
-			return tags, HandleErrorResponse(resp)
+		tagsResponse := struct {
+			Tags []string `json:"tags"`
+		}{}
+		if err := json.Unmarshal(b, &tagsResponse); err != nil {
+			return tags, err
 		}
+		tags = tagsResponse.Tags
+		return tags, nil
 	}
+	return tags, HandleErrorResponse(resp)
 }
 
 func descriptorFromResponse(response *http.Response) (distribution.Descriptor, error) {

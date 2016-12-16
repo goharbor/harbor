@@ -267,7 +267,7 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.0
+	@$(DOCKERPULL) registry:2.5.1
 	@$(DOCKERPULL) nginx:1.11.5
 	
 	@echo "saving harbor docker image"
@@ -276,7 +276,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.0 photon:1.0
+		nginx:1.11.5 registry:2.5.1 photon:1.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
@@ -334,7 +334,7 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-#	- $(DOCKERRMIMAGE) -f registry:2.5.0
+#	- $(DOCKERRMIMAGE) -f registry:2.5.1
 #	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
