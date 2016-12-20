@@ -76,6 +76,7 @@ validate(rcp)
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
+clair_url = rcp.get("configuration", "clair_url")
 email_identity = rcp.get("configuration", "email_identity")
 email_server = rcp.get("configuration", "email_server")
 email_server_port = rcp.get("configuration", "email_server_port")
