@@ -56,7 +56,7 @@ The parameters are described below - note that at the very least, you will need 
 	* email_server_port = 25
 	* email_username = sample_admin@mydomain.com
 	* email_password = abc
-	* email_from = admin <sample_admin@mydomain.com>  
+	* email_from = `admin \<sample_admin@mydomain.com\>`
 	* email_ssl = false
 
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
