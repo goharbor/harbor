@@ -69,7 +69,8 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <span class="error-message">// vm.pingMessage //</span>
+                <span ng-if="vm.isError" class="error-message">// vm.pingMessage //</span>
+                <span ng-if="!vm.isError">// vm.pingMessage //</span>
               </div>
             </div>
           </div>
