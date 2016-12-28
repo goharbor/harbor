@@ -16,6 +16,7 @@ LDAP_BASE_DN=$ldap_basedn
 LDAP_FILTER=$ldap_filter
 LDAP_UID=$ldap_uid
 LDAP_SCOPE=$ldap_scope
+LDAP_CONNECT_TIMEOUT=$ldap_connect_timeout
 UI_SECRET=$ui_secret
 SECRET_KEY=$secret_key
 SELF_REGISTRATION=$self_registration

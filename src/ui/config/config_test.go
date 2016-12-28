@@ -29,6 +29,7 @@ var (
 		"cn",
 		"uid",
 		"2",
+		"5",
 	}
 	tokenExp                   = "3"
 	tokenExpRes                = 3
@@ -52,6 +53,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("LDAP_UID", ldap.UID)
 	os.Setenv("LDAP_SCOPE", ldap.Scope)
 	os.Setenv("LDAP_FILTER", ldap.Filter)
+	os.Setenv("LDAP_CONNECT_TIMEOUT", ldap.ConnectTimeout)
 	os.Setenv("TOKEN_EXPIRATION", tokenExp)
 	os.Setenv("HARBOR_ADMIN_PASSWORD", adminPassword)
 	os.Setenv("EXT_REG_URL", externalRegURL)
@@ -76,6 +78,7 @@ func TestMain(m *testing.M) {
 	os.Unsetenv("LDAP_UID")
 	os.Unsetenv("LDAP_SCOPE")
 	os.Unsetenv("LDAP_FILTER")
+	os.Unsetenv("LDAP_CONNECT_TIMEOUT")
 	os.Unsetenv("TOKEN_EXPIRATION")
 	os.Unsetenv("HARBOR_ADMIN_PASSWORD")
 	os.Unsetenv("EXT_REG_URL")
