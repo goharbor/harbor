@@ -30,7 +30,7 @@
               <div class="form-group">
                 <label for="username" class="col-sm-3 control-label">// 'username' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="username" ng-model="user.username" name="uUsername" required invalid-chars user-exists data-target="username" maxlength="20">                 
+                  <input type="text" class="form-control" id="username" ng-model="user.username" ng-model-options="{ debounce: 300 }" name="uUsername" required invalid-chars user-exists data-target="username" maxlength="20">
                   <div class="error-message" ng-messages="(form.$submitted || form.uUsername.$touched) && form.uUsername.$error" >
                     <span ng-message="required">// 'username_is_required' | tr //</span>
                     <span ng-message="maxlength">// 'username_is_too_long' | tr //</span>
@@ -45,7 +45,7 @@
               <div class="form-group">
                 <label for="email" class="col-sm-3 control-label">// 'email' | tr //:</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="email" ng-model="user.email" name="uEmail" required user-exists data-target="email" email>
+                  <input type="text" class="form-control" id="email" ng-model="user.email" ng-model-options="{ debounce: 300 }" name="uEmail" required user-exists data-target="email" email>
                   <div class="error-message" ng-messages="(form.$submitted || form.uEmail.$touched) && form.uEmail.$error">
                     <span ng-message="required">// 'email_is_required' | tr //</span>
                     <span ng-message="email">// 'email_content_illegal' | tr //</span>
