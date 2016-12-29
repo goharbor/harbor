@@ -32,7 +32,7 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 ### Community
 **Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
 **Email:** harbor@ vmware.com .  
-**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group. 
+**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group.  
 More info on [partners and users](partners.md). 
 
 ### Contribution
