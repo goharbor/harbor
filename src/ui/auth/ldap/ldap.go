@@ -22,6 +22,8 @@ import (
 	"strings"
 	"time"
 
+	"crypto/tls"
+
 	"github.com/vmware/harbor/src/common/utils/log"
 
 	"github.com/vmware/harbor/src/common/dao"
@@ -37,17 +39,10 @@ type Auth struct{}
 
 const metaChars = "&|!=~*<>()"
 
-// Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
-// if the check is successful a dummy record will be inserted into DB, such that this user can
-// be associated to other entities in the system.
-func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
+// Connect checks the LDAP configuration directives, and connects to the LDAP URL
+// Returns an LDAP connection
+func Connect() (*goldap.Conn, error) {
 
-	p := m.Principal
-	for _, c := range metaChars {
-		if strings.ContainsRune(p, c) {
-			return nil, fmt.Errorf("the principal contains meta char: %q", c)
-		}
-	}
 	ldapURL := config.LDAP().URL
 	if ldapURL == "" {
 		return nil, errors.New("can not get any available LDAP_URL")
@@ -79,8 +74,37 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	connectTimeout, _ := strconv.Atoi(cTimeout)
 	goldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
 
-	// TODO: Make the option to use StartTLS configurable.
-	ldap, err := goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+	var ldap *goldap.Conn
+	var err error
+
+	switch protocol {
+	case "ldap":
+		ldap, err = goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+	case "ldaps":
+		ldap, err = goldap.DialTLS("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ldap, nil
+
+}
+
+// Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
+// if the check is successful a dummy record will be inserted into DB, such that this user can
+// be associated to other entities in the system.
+func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
+
+	p := m.Principal
+	for _, c := range metaChars {
+		if strings.ContainsRune(p, c) {
+			return nil, fmt.Errorf("the principal contains meta char: %q", c)
+		}
+	}
+
+	ldap, err := Connect()
 	if err != nil {
 		return nil, err
 	}
