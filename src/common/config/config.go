@@ -17,162 +17,119 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
-	"os"
+	"io/ioutil"
+	"net/http"
 	"strings"
+
+	"github.com/astaxie/beego/cache"
+	"github.com/vmware/harbor/src/common/utils"
 )
 
-// ConfLoader is the interface to load configurations
-type ConfLoader interface {
-	// Load will load configuration from different source into a string map, the values in the map will be parsed in to configurations.
-	Load() (map[string]string, error)
+const (
+	//auth mode
+	DB_AUTH   = "db_auth"
+	LDAP_AUTH = "ldap_auth"
+
+	//project_creation_restriction
+	PRO_CRT_RESTR_EVERYONE = "everyone"
+	PRO_CRT_RESTR_ADM_ONLY = "adminonly"
+
+	LDAP_SCOPE_BASE     = "1"
+	LDAP_SCOPE_ONELEVEL = "2"
+	LDAP_SCOPE_SUBTREE  = "3"
+
+	AUTH_MODE                    = "auth_mode"
+	SELF_REGISTRATION            = "self_registration"
+	LDAP_URL                     = "ldap_url"
+	LDAP_SEARCH_DN               = "ldap_search_dn"
+	LDAP_SEARCH_PWD              = "ldap_search_pwd"
+	LDAP_BASE_DN                 = "ldap_base_dn"
+	LDAP_UID                     = "ldap_uid"
+	LDAP_FILTER                  = "ldap_filter"
+	LDAP_SCOPE                   = "ldap_scope"
+	EMAIL_SERVER                 = "email_server"
+	EMAIL_SERVER_PORT            = "email_server_port"
+	EMAIL_USERNAME               = "email_server_username"
+	EMAIL_PWD                    = "email_server_pwd"
+	EMAIL_FROM                   = "email_from"
+	EMAIL_SSL                    = "email_ssl"
+	EMAIL_IDENTITY               = "email_identity"
+	PROJECT_CREATION_RESTRICTION = "project_creation_restriction"
+	VERIFY_REMOTE_CERT           = "verify_remote_cert"
+	MAX_JOB_WORKERS              = "max_job_workers"
+	CFG_EXPIRATION               = "cfg_expiration"
+)
+
+type Manager struct {
+	Key    string
+	Cache  cache.Cache
+	Loader *Loader
 }
 
-// EnvConfigLoader loads the config from env vars.
-type EnvConfigLoader struct {
-	Keys []string
-}
-
-// Load ...
-func (ec *EnvConfigLoader) Load() (map[string]string, error) {
-	m := make(map[string]string)
-	for _, k := range ec.Keys {
-		m[k] = os.Getenv(k)
+func NewManager(key, url string) *Manager {
+	return &Manager{
+		Key:    key,
+		Cache:  cache.NewMemoryCache(),
+		Loader: NewLoader(url),
 	}
-	return m, nil
 }
 
-// ConfParser ...
-type ConfParser interface {
-
-	//Parse parse the input raw map into a config map
-	Parse(raw map[string]string, config map[string]interface{}) error
-}
-
-// Config wraps a map for the processed configuration values,
-// and loader parser to read configuration from external source and process the values.
-type Config struct {
-	Config map[string]interface{}
-	Loader ConfLoader
-	Parser ConfParser
-}
-
-// Load reload the configurations
-func (conf *Config) Load() error {
-	rawMap, err := conf.Loader.Load()
-	if err != nil {
-		return err
+func (m *Manager) GetFromCache() interface{} {
+	value := m.Cache.Get(m.Key)
+	if value != nil {
+		return value
 	}
-	err = conf.Parser.Parse(rawMap, conf.Config)
-	return err
-}
-
-// MySQLSetting wraps the settings of a MySQL DB
-type MySQLSetting struct {
-	Database string
-	User     string
-	Password string
-	Host     string
-	Port     string
-}
-
-// SQLiteSetting wraps the settings of a SQLite DB
-type SQLiteSetting struct {
-	FilePath string
-}
-
-type commonParser struct{}
-
-// Parse parses the db settings, veryfy_remote_cert, ext_endpoint, token_endpoint
-func (cp *commonParser) Parse(raw map[string]string, config map[string]interface{}) error {
-	db := strings.ToLower(raw["DATABASE"])
-	if db == "mysql" || db == "" {
-		db = "mysql"
-		mySQLDB := raw["MYSQL_DATABASE"]
-		if len(mySQLDB) == 0 {
-			mySQLDB = "registry"
-		}
-		setting := MySQLSetting{
-			mySQLDB,
-			raw["MYSQL_USR"],
-			raw["MYSQL_PWD"],
-			raw["MYSQL_HOST"],
-			raw["MYSQL_PORT"],
-		}
-		config["mysql"] = setting
-	} else if db == "sqlite" {
-		f := raw["SQLITE_FILE"]
-		if len(f) == 0 {
-			f = "registry.db"
-		}
-		setting := SQLiteSetting{
-			f,
-		}
-		config["sqlite"] = setting
-	} else {
-		return fmt.Errorf("Invalid DB: %s", db)
-	}
-	config["database"] = db
-
-	//By default it's true
-	config["verify_remote_cert"] = raw["VERIFY_REMOTE_CERT"] != "off"
-
-	config["ext_endpoint"] = raw["EXT_ENDPOINT"]
-	config["token_endpoint"] = raw["TOKEN_ENDPOINT"]
-	config["log_level"] = raw["LOG_LEVEL"]
 	return nil
 }
 
-var commonConfig *Config
+type Loader struct {
+	url    string
+	client *http.Client
+}
 
-func init() {
-	commonKeys := []string{"DATABASE", "MYSQL_DATABASE", "MYSQL_USR", "MYSQL_PWD", "MYSQL_HOST", "MYSQL_PORT", "SQLITE_FILE", "VERIFY_REMOTE_CERT", "EXT_ENDPOINT", "TOKEN_ENDPOINT", "LOG_LEVEL"}
-	commonConfig = &Config{
-		Config: make(map[string]interface{}),
-		Loader: &EnvConfigLoader{Keys: commonKeys},
-		Parser: &commonParser{},
-	}
-	if err := commonConfig.Load(); err != nil {
-		panic(err)
+func NewLoader(url string) *Loader {
+	return &Loader{
+		url:    url,
+		client: &http.Client{},
 	}
 }
 
-// Reload will reload the configuration.
-func Reload() error {
-	return commonConfig.Load()
+func (l *Loader) Init() error {
+	addr := l.url
+	if strings.Contains(addr, "://") {
+		addr = strings.Split(addr, "://")[1]
+	}
+	return utils.TestTCPConn(addr, 60, 2)
 }
 
-// Database returns the DB type in configuration.
-func Database() string {
-	return commonConfig.Config["database"].(string)
+func (l *Loader) Load() ([]byte, error) {
+	resp, err := l.client.Get(l.url + "/api/configurations")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
-// MySQL returns the mysql setting in configuration.
-func MySQL() MySQLSetting {
-	return commonConfig.Config["mysql"].(MySQLSetting)
-}
+func (l *Loader) Upload(b []byte) error {
+	req, err := http.NewRequest("PUT", l.url+"/api/configurations", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	resp, err := l.client.Do(req)
+	if err != nil {
+		return err
+	}
 
-// SQLite returns the SQLite setting
-func SQLite() SQLiteSetting {
-	return commonConfig.Config["sqlite"].(SQLiteSetting)
-}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
+	}
 
-// VerifyRemoteCert returns bool value.
-func VerifyRemoteCert() bool {
-	return commonConfig.Config["verify_remote_cert"].(bool)
-}
-
-// ExtEndpoint ...
-func ExtEndpoint() string {
-	return commonConfig.Config["ext_endpoint"].(string)
-}
-
-// TokenEndpoint returns the endpoint string of token service, which can be accessed by internal service of Harbor.
-func TokenEndpoint() string {
-	return commonConfig.Config["token_endpoint"].(string)
-}
-
-// LogLevel returns the log level in string format.
-func LogLevel() string {
-	return commonConfig.Config["log_level"].(string)
+	return nil
 }

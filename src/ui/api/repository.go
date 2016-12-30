@@ -361,11 +361,19 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint := config.InternalRegistryURL()
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
+
+	insecure, err := api.GetIsInsecure()
+	if err != nil {
+		return nil, err
+	}
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, api.GetIsInsecure(), username, password,
+		return newRepositoryClient(endpoint, insecure, username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -374,7 +382,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, api.GetIsInsecure(), username, repoName,
+	return cache.NewRepositoryClient(endpoint, insecure, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 

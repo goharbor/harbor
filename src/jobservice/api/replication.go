@@ -25,12 +25,12 @@ import (
 
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/jobservice/job"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/utils"
 	"github.com/vmware/harbor/src/common/models"
 	u "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/job"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 // ReplicationJob handles /api/replicationJobs /api/replicationJobs/:id/log
@@ -171,7 +171,13 @@ func (rj *ReplicationJob) GetLog() {
 		rj.RenderError(http.StatusBadRequest, "Invalid job id")
 		return
 	}
-	logFile := utils.GetJobLogPath(jid)
+	logFile, err := utils.GetJobLogPath(jid)
+	if err != nil {
+		log.Errorf("failed to get log path of job %s: %v", idStr, err)
+		rj.RenderError(http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError))
+		return
+	}
 	rj.Ctx.Output.Download(logFile)
 }
 

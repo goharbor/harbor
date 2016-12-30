@@ -13,17 +13,19 @@
    limitations under the License.
 */
 
-package utils
+package email
 
 import (
 	"bytes"
 	"crypto/tls"
-	"strings"
+	//"strings"
 
 	"net/smtp"
 	"text/template"
 
-	"github.com/astaxie/beego"
+	//"github.com/astaxie/beego"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // Mail holds information about content of Email
@@ -34,24 +36,15 @@ type Mail struct {
 	Message string
 }
 
-// MailConfig holds information about Email configurations
-type MailConfig struct {
-	Identity string
-	Host     string
-	Port     string
-	Username string
-	Password string
-	TLS      bool
-}
-
-var mc MailConfig
+var mc models.Email
 
 // SendMail sends Email according to the configurations
 func (m Mail) SendMail() error {
-
-	if mc.Host == "" {
-		loadConfig()
+	mc, err := config.Email()
+	if err != nil {
+		return err
 	}
+
 	mailTemplate, err := template.ParseFiles("views/mail.tpl")
 	if err != nil {
 		return err
@@ -123,6 +116,7 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 	return client.Quit()
 }
 
+/*
 func loadConfig() {
 	config, err := beego.AppConfig.GetSection("mail")
 	if err != nil {
@@ -142,3 +136,4 @@ func loadConfig() {
 		TLS:      useTLS,
 	}
 }
+*/

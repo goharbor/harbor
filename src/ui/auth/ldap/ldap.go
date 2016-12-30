@@ -46,7 +46,13 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			return nil, fmt.Errorf("the principal contains meta char: %q", c)
 		}
 	}
-	ldapURL := config.LDAP().URL
+
+	settings, err := config.LDAP()
+	if err != nil {
+		return nil, err
+	}
+
+	ldapURL := settings.URL
 	if ldapURL == "" {
 		return nil, errors.New("can not get any available LDAP_URL")
 	}
@@ -57,16 +63,16 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
-	ldapBaseDn := config.LDAP().BaseDn
+	ldapBaseDn := settings.BaseDN
 	if ldapBaseDn == "" {
 		return nil, errors.New("can not get any available LDAP_BASE_DN")
 	}
 	log.Debug("baseDn:", ldapBaseDn)
 
-	ldapSearchDn := config.LDAP().SearchDn
+	ldapSearchDn := settings.SearchDN
 	if ldapSearchDn != "" {
 		log.Debug("Search DN: ", ldapSearchDn)
-		ldapSearchPwd := config.LDAP().SearchPwd
+		ldapSearchPwd := settings.SearchPwd
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
 		if err != nil {
 			log.Debug("Bind search dn error", err)
@@ -74,8 +80,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	attrName := config.LDAP().UID
-	filter := config.LDAP().Filter
+	attrName := settings.UID
+	filter := settings.Filter
 	if filter != "" {
 		filter = "(&" + filter + "(" + attrName + "=" + m.Principal + "))"
 	} else {
@@ -83,11 +89,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	log.Debug("one or more filter", filter)
 
-	ldapScope := config.LDAP().Scope
+	ldapScope := settings.Scope
 	var scope int
-	if ldapScope == "1" {
+	if ldapScope == 1 {
 		scope = openldap.LDAP_SCOPE_BASE
-	} else if ldapScope == "2" {
+	} else if ldapScope == 2 {
 		scope = openldap.LDAP_SCOPE_ONELEVEL
 	} else {
 		scope = openldap.LDAP_SCOPE_SUBTREE

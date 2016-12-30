@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"text/template"
 
-	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	email_util "github.com/vmware/harbor/src/common/utils/email"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 type messageDetail struct {
@@ -49,7 +49,11 @@ func (cc *CommonController) SendEmail() {
 
 		message := new(bytes.Buffer)
 
-		harborURL := config.ExtEndpoint()
+		harborURL, err := config.DomainName()
+		if err != nil {
+			log.Errorf("failed to get domain name: %v", err)
+			cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 		if harborURL == "" {
 			harborURL = "localhost"
 		}
@@ -65,14 +69,14 @@ func (cc *CommonController) SendEmail() {
 			cc.CustomAbort(http.StatusInternalServerError, "internal_error")
 		}
 
-		config, err := beego.AppConfig.GetSection("mail")
+		emailSettings, err := config.Email()
 		if err != nil {
-			log.Errorf("Can not load app.conf: %v", err)
+			log.Errorf("failed to get email configurations: %v", err)
 			cc.CustomAbort(http.StatusInternalServerError, "internal_error")
 		}
 
-		mail := utils.Mail{
-			From:    config["from"],
+		mail := email_util.Mail{
+			From:    emailSettings.From,
 			To:      []string{email},
 			Subject: cc.Tr("reset_email_subject"),
 			Message: message.String()}

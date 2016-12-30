@@ -77,7 +77,13 @@ func (p *ProjectAPI) Post() {
 	if err != nil {
 		log.Errorf("Failed to check admin role: %v", err)
 	}
-	if !isSysAdmin && config.OnlyAdminCreateProject() {
+
+	onlyAdmin, err := config.OnlyAdminCreateProject()
+	if err != nil {
+		log.Errorf("failed to determine whether only admin can create projects: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	if !isSysAdmin && onlyAdmin {
 		log.Errorf("Only sys admin can create project")
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
 		return

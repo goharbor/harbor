@@ -20,12 +20,12 @@ import (
 	"sync"
 
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/replication"
-	"github.com/vmware/harbor/src/jobservice/utils"
 	"github.com/vmware/harbor/src/common/models"
 	uti "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/replication"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 // RepJobParm wraps the parm of a job
@@ -184,14 +184,17 @@ func (sm *SM) Init() {
 }
 
 // Reset resets the state machine so it will start handling another job.
-func (sm *SM) Reset(jid int64) error {
+func (sm *SM) Reset(jid int64) (err error) {
 	//To ensure the new jobID is visible to the thread to stop the SM
 	sm.lock.Lock()
 	sm.JobID = jid
 	sm.desiredState = ""
 	sm.lock.Unlock()
 
-	sm.Logger = utils.NewLogger(sm.JobID)
+	sm.Logger, err = utils.NewLogger(sm.JobID)
+	if err != nil {
+		return
+	}
 	//init parms
 	job, err := dao.GetRepJob(sm.JobID)
 	if err != nil {
@@ -207,13 +210,22 @@ func (sm *SM) Reset(jid int64) error {
 	if policy == nil {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
+
+	regURL, err := config.LocalRegURL()
+	if err != nil {
+		return err
+	}
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		return err
+	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: config.LocalRegURL(),
+		LocalRegURL: regURL,
 		Repository:  job.Repository,
 		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
-		Insecure:    !config.VerifyRemoteCert(),
+		Insecure:    !verify,
 	}
 	if policy.Enabled == 0 {
 		//worker will cancel this job
@@ -231,7 +243,11 @@ func (sm *SM) Reset(jid int64) error {
 	pwd := target.Password
 
 	if len(pwd) != 0 {
-		pwd, err = uti.ReversibleDecrypt(pwd, config.SecretKey())
+		key, err := config.SecretKey()
+		if err != nil {
+			return err
+		}
+		pwd, err = uti.ReversibleDecrypt(pwd, key)
 		if err != nil {
 			return fmt.Errorf("failed to decrypt password: %v", err)
 		}

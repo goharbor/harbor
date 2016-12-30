@@ -22,11 +22,11 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"github.com/astaxie/beego"
 )
@@ -212,6 +212,10 @@ func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 }
 
 // GetIsInsecure ...
-func GetIsInsecure() bool {
-	return !config.VerifyRemoteCert()
+func GetIsInsecure() (bool, error) {
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		return false, err
+	}
+	return !verify, nil
 }

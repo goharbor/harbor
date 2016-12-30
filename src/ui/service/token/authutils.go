@@ -37,13 +37,6 @@ const (
 	privateKey = "/etc/ui/private_key.pem"
 )
 
-var expiration int //minutes
-
-func init() {
-	expiration = config.TokenExpiration()
-	log.Infof("token expiration: %d minutes", expiration)
-}
-
 // GetResourceActions ...
 func GetResourceActions(scopes []string) []*token.ResourceActions {
 	log.Debugf("scopes: %+v", scopes)
@@ -91,7 +84,12 @@ func FilterAccess(username string, a *token.ResourceActions) {
 		repoLength := len(repoSplit)
 		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
 			var projectName string
-			registryURL := config.ExtRegistryURL()
+			registryURL, err := config.DomainName()
+			if err != nil {
+				log.Errorf("failed to get domain name: %v", err)
+				return
+			}
+			registryURL = strings.Split(registryURL, "://")[1]
 			if repoSplit[0] == registryURL {
 				projectName = repoSplit[1]
 				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)
@@ -153,6 +151,11 @@ func MakeToken(username, service string, access []*token.ResourceActions) (token
 	if err != nil {
 		return "", 0, nil, err
 	}
+	expiration, err := config.TokenExpiration()
+	if err != nil {
+		return "", 0, nil, err
+	}
+
 	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
 	if err != nil {
 		return "", 0, nil, err

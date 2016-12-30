@@ -40,6 +40,22 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
+  adminserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/adminserver/Dockerfile
+    env_file:
+      - ../common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/harbor/
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "adminserver"
   ui:
     build:
       context: ../../
@@ -52,6 +68,8 @@ services:
       - ../common/config/ui/private_key.pem:/etc/ui/private_key.pem
     depends_on:
       - log
+      - adminserver
+      - registry
     logging:
       driver: "syslog"
       options:  
@@ -69,6 +87,7 @@ services:
       - ../common/config/jobservice/app.conf:/etc/jobservice/app.conf
     depends_on:
       - ui
+      - adminserver
     logging:
       driver: "syslog"
       options:  

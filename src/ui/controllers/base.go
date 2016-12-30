@@ -103,7 +103,12 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	authMode := config.AuthMode()
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("failed to get auth mode: %v", err)
+		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	if authMode == "" {
 		authMode = "db_auth"
 	}
@@ -120,9 +125,13 @@ func (b *BaseController) Prepare() {
 		b.UseCompressedJS = false
 	}
 
-	b.SelfRegistration = config.SelfRegistration()
+	b.SelfRegistration, err = config.SelfRegistration()
+	if err != nil {
+		log.Errorf("failed to get self registration: %v", err)
+		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-	b.Data["SelfRegistration"] = config.SelfRegistration()
+	b.Data["SelfRegistration"] = b.SelfRegistration
 
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID != nil {
