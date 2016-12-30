@@ -301,12 +301,6 @@
 			"revisionTime": "2016-09-07T16:20:43Z"
 		},
 		{
-			"checksumSHA1": "JPm8dTnTbiYhi1kdn4JjHc4AZd0=",
-			"path": "github.com/mqu/openldap",
-			"revision": "91bfc2150f6c4991335de476c800caf26a990324",
-			"revisionTime": "2013-12-25T09:52:30Z"
-		},
-		{
 			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
 			"path": "golang.org/x/crypto/pbkdf2",
 			"revision": "5f961cd492ac9d43fc33a8ef646bae79d113fd97",
@@ -321,6 +315,18 @@
 		{
 			"path": "golang.org/x/sys/unix",
 			"revision": ""
+		},
+		{
+			"checksumSHA1": "wSu8owMAP7GixsYoSZ4CmKUVhnU=",
+			"path": "gopkg.in/asn1-ber.v1",
+			"revision": "4e86f4367175e39f69d9358a5f17b4dda270378d",
+			"revisionTime": "2015-09-24T05:17:56Z"
+		},
+		{
+			"checksumSHA1": "itYnRitfdzJjy2mZlvJ+hCJZvtY=",
+			"path": "gopkg.in/ldap.v2",
+			"revision": "8168ee085ee43257585e50c6441aadf54ecb2c9f",
+			"revisionTime": "2016-12-01T20:47:33Z"
 		}
 	],
 	"rootPath": "github.com/vmware/harbor/src"

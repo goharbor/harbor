@@ -18,7 +18,7 @@ COPY ./src/favicon.ico /harbor/favicon.ico
 COPY ./make/jsminify.sh /tmp/jsminify.sh
 
 RUN chmod u+x /harbor/harbor_ui \
-    && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
+    && sed -i 's/TLS_CACERT/#TLS_CACERT/g' /etc/ldap/ldap.conf \
     && sed -i '$a\TLS_REQCERT allow' /etc/ldap/ldap.conf \
     && timestamp=`date '+%s'` \
     && /tmp/jsminify.sh /harbor/views/sections/script-include.htm /harbor/static/resources/js/harbor.app.min.$timestamp.js /harbor/ \
