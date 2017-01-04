@@ -12,20 +12,18 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 1. Log in to the machine that Harbor runs on, stop and remove existing Harbor service if it is still running:
 
     ``` 
-    cd make/
+    cd harbor
     docker-compose down
     ```
 
 2.  Back up Harbor's current source code so that you can roll back to the current version when it is necessary.
     ```sh
-    cd ../..
+    cd ..
     mv harbor /tmp/harbor
     ```
 
-3. Get the lastest source code from Github:
-    ```sh
-    git clone https://github.com/vmware/harbor
-    ```
+3. Get the lastest Harbor package from Github:
+   https://github.com/vmware/harbor/releases
  
 4. Before upgrading Harbor, perform database migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub:
 
@@ -45,24 +43,18 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator up head
     ```
 
-7. Change to `make/` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info.
+7. Unzip your new Harbor package and change to `./harbor` directory, configure Harbor by modifying the file `harbor.cfg`, you may need to refer to the configuration files you've backed up during step 2. Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info. DON'T DIRECTLY COPY `harbor.cfg` FROM PREVIOUS HARBOR DIRECTORY. The content of `harbor.cfg` maybe update in new release. 
 
 
-8. Under the directory `make/`, run the `./prepare` script to generate necessary config files.
+8. Under the directory `./harbor`, run the `./install` script to install new Harbor instance.
  
-9. Rebuild Harbor and restart the registry service
-
-    ```
-    docker-compose up --build -d
-    ```
-
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
 
 1. Stop and remove the current Harbor service if it is still running.
 
     ``` 
-    cd make/
+    cd harbor
     docker-compose down
     ```
 2. Restore database from backup file in `/path/to/backup` .
@@ -71,20 +63,26 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator restore
     ```
 
-3. Remove current source code of Harbor.
+3. Remove current Harbor package.
     ``` 
     rm -rf harbor
     ```
 
-4. Restore the source code of an older version of Harbor. 
+4. Restore the older version package of Harbor. 
     ```sh
     mv /tmp/harbor harbor
     ```
 
 5. Restart Harbor service using the previous configuration.
+    From source code:
     ```sh
-    cd make/
+    cd harbor
     docker-compose up --build -d
+    ```
+    or Harbor package:
+    ```sh
+    cd harbor
+    ./install
     ```
     
 ### Migration tool reference
