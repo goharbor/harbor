@@ -20,7 +20,7 @@ class RegistryApi(object):
     def __init__(self, username, password, registry_endpoint):
         self.username = username
         self.password = password
-        self.basic_token = base64.encodestring("%s:%s" % (str(username), str(password)))
+        self.basic_token = base64.encodestring("%s:%s" % (str(username), str(password)))[0:-1]
         self.registry_endpoint = registry_endpoint.rstrip('/')
         auth = self.pingRegistry("%s/v2/_catalog" % (self.registry_endpoint,))
         if auth is None:
@@ -142,9 +142,9 @@ class RegistryApi(object):
             return False
         return True
 
-    def getManifestWithConf(self, repository, reference="latest", v1=False):
+    def getManifestWithConf(self, repository, reference="latest"):
         """ get manifest for tag or digest """
-        manifest = self.getManifest(repository, reference, v1)
+        manifest = self.getManifest(repository, reference)
         if manifest is None:
             raise RegistryException("manifest for %s %s not exist" % (repository, reference))
         config_digest = manifest["config"]["digest"]
@@ -157,8 +157,6 @@ class RegistryApi(object):
         req.get_method = lambda: 'GET'
         req.add_header('Authorization', r'Bearer %s' % (bear_token,))
         req.add_header('Accept', 'application/vnd.docker.distribution.manifest.v2+json')
-        if v1:
-            req.add_header('Accept', 'application/vnd.docker.distribution.manifest.v1+json')
         try:
             response = urllib2.urlopen(req)
             manifest["configContent"] = json.loads(response.read())
