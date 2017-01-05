@@ -1,6 +1,6 @@
 version: 0.1
 log:
-  level: debug
+  level: $log_level
   fields:
     service: registry
 storage:
