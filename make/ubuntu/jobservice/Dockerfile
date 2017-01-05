@@ -1,9 +1,6 @@
-FROM golang:1.7.3
+FROM library/ubuntu:14.04
 
 MAINTAINER jiangd@vmware.com
-
-RUN apt-get update && apt-get install -y libldap2-dev \
-    && rm -r /var/lib/apt/lists/*
 
 RUN mkdir /harbor/
 COPY ./make/dev/jobservice/harbor_jobservice /harbor/

@@ -5,14 +5,11 @@
 # all:			prepare env, compile binarys, build images and install images 
 # prepare: 		prepare env
 # compile: 		compile ui and jobservice code
-# compile_buildgolangimage:
-#			compile local building golang image
-#			forexample : make compile_buildgolangimage -e \
-#							GOBUILDIMAGE=harborgo:1.6.2
+#
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							harborgo:1.6.2
+#							golang:1.7.3
 # compile_ui, compile_jobservice: compile specific binary
 #
 # build: 		build Harbor docker images (defuault: build_photon)
@@ -191,11 +188,6 @@ compile_jobservice:
 	@echo "Done."
 	
 compile_normal: compile_ui compile_jobservice
-
-compile_buildgolangimage:
-	@echo "compiling golang image for harbor ..."
-	@$(DOCKERBUILD) -t $(GOBUILDIMAGE) -f $(TOOLSPATH)/$(GOLANGDOCKERFILENAME) .
-	@echo "Done."
 
 compile_golangimage:
 	@echo "compiling binary for ui (golang image)..."
