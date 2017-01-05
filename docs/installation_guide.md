@@ -77,6 +77,7 @@ The parameters are described below - note that at the very least, you will need 
 
 * **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** bypasses the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. The following attributes:**crt_country**, **crt_state**, **crt_location**, **crt_organization**, **crt_organizationalunit**, **crt_commonname**, **crt_email** are used as parameters for generating the keys. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
+* **log_level**: Define which log level will be used by the services, error, warn, info or debug (default). You can change to an specific Log level, changing directly the config File in each service `common/config/ui/env` or `common/config/registry/config.yml` or `common/config/jobservice/env`.
 
 #### Configuring storage backend (optional)
 
