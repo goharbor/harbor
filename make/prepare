@@ -122,6 +122,7 @@ verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 #secret_key = rcp.get("configuration", "secret_key")
 secret_key = get_secret_key(args.data_volume)
+log_level = rcp.get("configuration", "log_level")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -208,7 +209,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         secret_key=secret_key,
 	verify_remote_cert=verify_remote_cert,
         project_creation_restriction=proj_cre_restriction,
-	token_expiration=token_expiration)
+	token_expiration=token_expiration,
+      	log_level=log_level)
 
 render(os.path.join(templates_dir, "ui", "app.conf"),
         ui_conf,
@@ -223,7 +225,8 @@ render(os.path.join(templates_dir, "ui", "app.conf"),
 
 render(os.path.join(templates_dir, "registry", "config.yml"),
         registry_conf,
-        ui_url=ui_url)
+        ui_url=ui_url,
+      	log_level=log_level)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -236,7 +239,8 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         max_job_workers=max_job_workers,
         secret_key=secret_key,
         ui_url=ui_url,
-        verify_remote_cert=verify_remote_cert)
+        verify_remote_cert=verify_remote_cert,
+      	log_level=log_level)
 		
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
