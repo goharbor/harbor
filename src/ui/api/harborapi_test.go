@@ -88,6 +88,8 @@ func init() {
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
+	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
+	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -871,4 +873,27 @@ func updateInitPassword(userID int, password string) error {
 	} else {
 	}
 	return nil
+}
+
+//Get system volume info
+func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error) {
+	_sling := sling.New().Get(a.basePath)
+	path := "/api/systeminfo/volumes"
+	_sling = _sling.Path(path)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad apilib.SystemInfo
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+
+	return httpStatusCode, successPayLoad, err
+}
+
+//Get system cert
+func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath)
+	path := "/api/systeminfo/getcert"
+	_sling = _sling.Path(path)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, body, err
 }
