@@ -15,29 +15,48 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 
 ##Role Based Access Control
-RBAC (Role Based Access Control) is provided in Harbor and there are four roles with different privileges:  
+
+![rbac](img/rbac.png)
+
+Harbor manages images through projects. Users can be added into one project as a member with three different roles:  
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
 * **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
+
+Besides the above three roles, there are two system-wide roles:  
+
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator and delete users. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
 ##User account
-As a new user, you can sign up an account by going through the self-registration process. The username and email must be unique in the Harbor system. The password must contain at least 7 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+Harbor supports two authentication modes:  
 
-If the administrator has configured LDAP/AD as authentication source, no sign-up is required. The LDAP/AD user id can be used directly to log in to Harbor.  
-  
-When you forgot your password, you can follow the below steps to reset the password:  
+* **Database(db_auth)**  
 
-1. Click the link "forgot password" in the sign in page.
-2. Input the email used when you signed up, an email will be sent out to you.
-3. After receiving the email, click on the link in the email which directs you to a password reset web page.
-4. Input your new password and click "Submit".
+	Users are stored in the local database.  
+	
+	A user can self register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md). When self-registration is disabled, the system administrator can add users in Harbor.  
+	
+	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+	
+	When you forgot your password, you can follow the below steps to reset the password:  
 
+	1. Click the link "Forgot Password" in the sign in page.  
+	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
+	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
+	4. Input your new password and click "Save".  
+	
+* **LDAP/Active Directory (ldap_auth)**  
+
+	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
+	
+	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide_ova.md). If it successes, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	
+	Self-registration, changing password and resetting password are not supported anymore under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
 ##Managing projects
-A project in Harbor contains all repositories of an application. RBAC is applied to a project. There are two types of projects in Harbor:  
+A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
 
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
@@ -66,16 +85,21 @@ You can update or remove a member by clicking the icon on the right.
 ![browse project](img/new_remove_update_member.png)
 
 ##Replicating images
-If you are a system administrator, you can replicate images to a remote registry, which is called destination in Harbor. Only Harbor instance is supported as a destination for now.  
+Images replication is used to replicate repositories from one Harbor instance to another.  
+
+The function is project-oriented, and once the system administrator set a policy to one project, all repositories under the project will be replicated to the remote registry. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. When a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination. The member information will not be replicated.  
+
+There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
 
 **Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
 
-Click "Add New Policy" on the "Replication" tab, fill the necessary fields and click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately, and when a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination.  
+Start replication by creating a policy. Click "Add New Policy" on the "Replication" tab, fill the necessary fields, if there is no destination in the list, you need to create one, and then click "OK", a policy for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
 
 ![browse project](img/new_create_policy.png)
 
-You can enable or disable a policy in the policy list view, and only the policies which are disbled can be edited.  
-Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.
+You can enable, disable or delete a policy in the policy list view. Only policies which are disabled can be edited and only policies which are disabled and have no running jobs can be deleted. If a policy is disabled, the running jobs under it will be stopped.  
+
+Click a policy, jobs which belong to this policy will be listed. A job represents the progress which will replicate a repository of one project to the remote.  
 
 ![browse project](img/new_policy_list.png)
 
@@ -104,7 +128,7 @@ You can list, edit, enable and disable policies in the "Replication" tab. Make s
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
-Harbor supports HTTP by default and Docker client trys to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos):    
+Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker:    
 *FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
 Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
@@ -155,7 +179,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 Repository deletion runs in two steps.  
 
 First, delete a repository in Harbor's UI. This is soft deletion. You can delete the entire repository or just a tag of it. After the soft deletion, 
-the repository is no longer managed in Harbor, however, the files of the repository still remains in Harbor's storage.  
+the repository is no longer managed in Harbor, however, the files of the repository still remain in Harbor's storage.  
 
 ![browse project](img/new_delete_repository.png)
 
@@ -167,14 +191,14 @@ Run the below commands on the host which Harbor is deployed on to preview what f
 
 ```sh
 $ docker-compose stop
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect --dry-run /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry registry:2.5.1 garbage-collect --dry-run /etc/registry/config.yml
 ```  
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
 
 Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
 
 ```sh
-$ docker run -it --name gc --rm --volumes-from registry registry:2.5.0 garbage-collect  /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry registry:2.5.1 garbage-collect  /etc/registry/config.yml
 $ docker-compose start
 ```  
 

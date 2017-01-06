@@ -32,9 +32,7 @@
     vm.searchUser = searchUser;
     vm.deleteUser = deleteUser;
     vm.confirmToDelete = confirmToDelete;
-    vm.retrieve = retrieve;
-
-    vm.currentUser = currentUser.get();
+    vm.retrieve = retrieve;   
     
     vm.retrieve();
     
@@ -82,6 +80,7 @@
     }
     
     function listUserSuccess(data, status) {
+      vm.currentUser = currentUser.get();
       vm.users = data;
     }
     

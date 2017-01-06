@@ -39,14 +39,11 @@
       ctrl.$validators.userExists = validator;
       
       function validator(modelValue, viewValue) {
-      
-        console.log('modelValue:' + modelValue + ', viewValue:' + viewValue);
-         
+               
         if(ctrl.$isEmpty(modelValue)) {
-          console.log('Model value is empty.');
           return true;
         }
-
+        
         UserExistService(attrs.target, modelValue)
           .success(userExistSuccess)
           .error(userExistFailed);   

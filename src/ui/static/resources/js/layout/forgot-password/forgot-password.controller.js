@@ -85,11 +85,10 @@
       vm.hasError = true;
       vm.errorMessage = data;
       
-      if(status === 500) {
-        $scope.$emit('modalTitle', $filter('tr')('error'));
-        $scope.$emit('modalMessage', $filter('tr')('failed_to_send_email'));        
-        $scope.$emit('raiseError', true);
-      }
+      $scope.$emit('modalTitle', $filter('tr')('error'));
+      $scope.$emit('modalMessage', $filter('tr')('failed_to_send_email'));        
+      $scope.$emit('raiseError', true);
+      
       console.log('Failed to send mail:' + data);
     }
     

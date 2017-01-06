@@ -71,7 +71,7 @@ func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, er
 
 	if queryUser.Username != "" {
 		sql += " and u.username like ? "
-		queryParam = append(queryParam, queryUser.Username)
+		queryParam = append(queryParam, "%"+escape(queryUser.Username)+"%")
 	}
 	sql += ` order by u.user_id `
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)

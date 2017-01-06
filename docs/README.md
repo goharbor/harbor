@@ -23,7 +23,7 @@ Guide to deploy Harbor on Kubenetes. (maintained by community)
 
 ### Developer documents
 
-[Arthitecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
+[Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
 Developers read this first.
 
 [Harbor API Specs by Swagger](configure_swagger.md)  
@@ -61,7 +61,7 @@ How to add your local language to Harbor.
 
 [Overall Architecture of Harbor Registry](http://www.compare-review-information.com/overall-architecture-of-harbor-registry/)
 
-[makeing a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
+[Making a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
 
 [Docker Private Registry Using Harbor](https://blog.imaginea.com/docker-private-registry-using-harbor-2/)
 

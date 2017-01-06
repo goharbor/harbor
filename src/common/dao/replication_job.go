@@ -90,7 +90,7 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 	sql := `select * from replication_target `
 	if len(name) != 0 {
 		sql += `where name like ? `
-		args = append(args, "%"+name+"%")
+		args = append(args, "%"+escape(name)+"%")
 	}
 	sql += `order by creation_time`
 
@@ -166,11 +166,11 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 
 	if len(name) != 0 && projectID != 0 {
 		sql += `and rp.name like ? and rp.project_id = ? `
-		args = append(args, "%"+name+"%")
+		args = append(args, "%"+escape(name)+"%")
 		args = append(args, projectID)
 	} else if len(name) != 0 {
 		sql += `and rp.name like ? `
-		args = append(args, "%"+name+"%")
+		args = append(args, "%"+escape(name)+"%")
 	} else if projectID != 0 {
 		sql += `and rp.project_id = ? `
 		args = append(args, projectID)

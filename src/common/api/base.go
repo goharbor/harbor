@@ -213,5 +213,5 @@ func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 
 // GetIsInsecure ...
 func GetIsInsecure() bool {
-	return config.VerifyRemoteCert()
+	return !config.VerifyRemoteCert()
 }

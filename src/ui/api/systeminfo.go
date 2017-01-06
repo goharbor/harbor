@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"path/filepath"
 	"syscall"
 
@@ -18,6 +19,7 @@ type SystemInfoAPI struct {
 }
 
 const harborStoragePath = "/harbor_storage"
+const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
@@ -59,10 +61,25 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 	systemInfo := SystemInfo{
 		HarborStorage: Storage{
 			Total: stat.Blocks * uint64(stat.Bsize),
-			Free:  stat.Bfree * uint64(stat.Bsize),
+			Free:  stat.Bavail * uint64(stat.Bsize),
 		},
 	}
 
 	sia.Data["json"] = systemInfo
 	sia.ServeJSON()
+}
+
+//GetCert gets default self-signed certificate.
+func (sia *SystemInfoAPI) GetCert() {
+	if sia.isAdmin {
+		if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
+			sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
+			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
+			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
+		} else {
+			log.Error("No certificate found.")
+			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+		}
+	}
+	sia.CustomAbort(http.StatusForbidden, "")
 }

@@ -1,4 +1,4 @@
-FROM library/photon:latest
+FROM library/photon:1.0
 
 RUN mkdir /harbor/
 COPY ./make/dev/jobservice/harbor_jobservice /harbor/

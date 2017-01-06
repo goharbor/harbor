@@ -5,14 +5,11 @@
 # all:			prepare env, compile binarys, build images and install images 
 # prepare: 		prepare env
 # compile: 		compile ui and jobservice code
-# compile_buildgolangimage:
-#			compile local building golang image
-#			forexample : make compile_buildgolangimage -e \
-#							GOBUILDIMAGE=harborgo:1.6.2
+#
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							harborgo:1.6.2
+#							golang:1.7.3
 # compile_ui, compile_jobservice: compile specific binary
 #
 # build: 		build Harbor docker images (defuault: build_photon)
@@ -192,11 +189,6 @@ compile_jobservice:
 	
 compile_normal: compile_ui compile_jobservice
 
-compile_buildgolangimage:
-	@echo "compiling golang image for harbor ..."
-	@$(DOCKERBUILD) -t $(GOBUILDIMAGE) -f $(TOOLSPATH)/$(GOLANGDOCKERFILENAME) .
-	@echo "Done."
-
 compile_golangimage:
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
@@ -267,7 +259,7 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.0
+	@$(DOCKERPULL) registry:2.5.1
 	@$(DOCKERPULL) nginx:1.11.5
 	
 	@echo "saving harbor docker image"
@@ -276,7 +268,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.0
+		nginx:1.11.5 registry:2.5.1 photon:1.0
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
@@ -334,7 +326,7 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-#	- $(DOCKERRMIMAGE) -f registry:2.5.0
+#	- $(DOCKERRMIMAGE) -f registry:2.5.1
 #	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
