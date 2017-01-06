@@ -416,7 +416,12 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusBadRequest, "invalid count")
 	}
 
-	repos, err := dao.GetTopRepos(count)
+	userID, _, ok := ra.GetUserIDForRequest()
+	if !ok {
+		userID = dao.NonExistUserID
+	}
+
+	repos, err := dao.GetTopRepos(userID, count)
 	if err != nil {
 		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
