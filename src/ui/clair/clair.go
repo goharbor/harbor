@@ -19,6 +19,9 @@ import (
 	clairtypes "github.com/coreos/clair/utils/types"
 )
 
+// SeverityLevels are the sorted vulnerability priorities, which classify 7 vulnerability priorities of clair into 4 levels.
+// Priorities are lower than or equal to Low priority are classified into Low priority.
+// Priorities are higher than or equal to Critical priority are classified into Critical priority.
 var SeverityLevels = []clairtypes.Priority{clairtypes.Low, clairtypes.Medium, clairtypes.High, clairtypes.Critical}
 
 const (
@@ -28,7 +31,7 @@ const (
 	getLayerFeaturesURI = "%s/layers/%s?vulnerabilities"
 )
 
-var clairClient *Clair = nil
+var clairClient *Clair
 
 // Clair represents the Clair server
 type Clair struct {
@@ -56,19 +59,21 @@ type layerEnvelope struct {
 }
 
 func init() {
-	clairUrl := config.ClairURL()
+	clairURL := config.ClairURL()
 
-	clairClient = &Clair{clairUrl}
+	clairClient = &Clair{clairURL}
 }
 
+// AnalyseImage analyses the security of the image.
 func AnalyseImage(user string, manifest distribution.Manifest, repoName string) {
 	log.Infof("Start to analyse the security for image")
-	ui_url := config.ExternalUiURL()
-	registryUrl := ui_url + "/v2"
+	uiURL := config.ExternalUIURL()
+	registryURL := uiURL + "/v2"
 
-	clairClient.Analyse(user, manifest, repoName, registryUrl)
+	clairClient.Analyse(user, manifest, repoName, registryURL)
 }
 
+// GetSecurity gets the security of the image according to its top layer digest.
 func GetSecurity(manifest distribution.Manifest) (clairapiv1.Layer, error) {
 	// Get the security according the top layer in Manifest schema2
 	topLayer := manifest.References()[0].Digest.String()
@@ -79,7 +84,7 @@ func GetSecurity(manifest distribution.Manifest) (clairapiv1.Layer, error) {
 }
 
 // Analyse Sends each layer from Docker image to Clair
-func (c *Clair) Analyse(username string, manifest distribution.Manifest, repoName, registryUrl string) {
+func (c *Clair) Analyse(username string, manifest distribution.Manifest, repoName, registryURL string) {
 	// Make the token
 	scope := fmt.Sprintf(tokenScopeTemplate, repoName)
 	access := token.GetResourceActions([]string{scope})
@@ -97,7 +102,7 @@ func (c *Clair) Analyse(username string, manifest distribution.Manifest, repoNam
 			continue
 		}
 
-		layer := newLayer(refs, i, repoName, registryUrl, token)
+		layer := newLayer(refs, i, repoName, registryURL, token)
 		err := c.pushLayer(layer)
 		if err != nil {
 			log.Errorf("Push layer %d failed: %s", i, err.Error())
@@ -139,10 +144,10 @@ func (c *Clair) pushLayer(layer *layer) error {
 }
 
 // GetLayer Gets the vulnerabilities according the layer id
-func (c *Clair) getLayer(layerId string) (clairapiv1.Layer, error) {
+func (c *Clair) getLayer(layerID string) (clairapiv1.Layer, error) {
 	emptyLayer := clairapiv1.Layer{}
 
-	response, err := http.Get(fmt.Sprintf(getLayerFeaturesURI, c.url, layerId))
+	response, err := http.Get(fmt.Sprintf(getLayerFeaturesURI, c.url, layerID))
 	if err != nil {
 		return emptyLayer, err
 	}
@@ -164,7 +169,7 @@ func (c *Clair) getLayer(layerId string) (clairapiv1.Layer, error) {
 	return *apiResponse.Layer, nil
 }
 
-func newLayer(refs []distribution.Descriptor, index int, repoName, registryUrl, token string) *layer {
+func newLayer(refs []distribution.Descriptor, index int, repoName, registryURL, token string) *layer {
 	var parentName string
 	maxIndex := len(refs) - 1
 	for i := index; i < maxIndex; i++ {
@@ -176,7 +181,7 @@ func newLayer(refs []distribution.Descriptor, index int, repoName, registryUrl, 
 
 	tmpLayer := &layer{
 		Name:       refs[index].Digest.String(),
-		Path:       strings.Join([]string{registryUrl, repoName, "blobs", refs[index].Digest.String()}, "/"),
+		Path:       strings.Join([]string{registryURL, repoName, "blobs", refs[index].Digest.String()}, "/"),
 		ParentName: parentName,
 		Format:     "Docker",
 		Headers:    headers{fmt.Sprintf("Bearer %s", token)},

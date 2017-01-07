@@ -168,7 +168,7 @@ func ClairURL() string {
 	return uiConfig.Config["clair_url"].(string)
 }
 
-// ExternalUiURL returns ui URL to exposed to external client
-func ExternalUiURL() string {
+// ExternalUIURL returns ui URL to exposed to external client
+func ExternalUIURL() string {
 	return uiConfig.Config["external_ui_url"].(string)
 }
