@@ -18,7 +18,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -27,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -47,16 +47,9 @@ type passwordReq struct {
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 
-	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
-	if authMode == "" {
-		authMode = "db_auth"
-	}
-	ua.AuthMode = authMode
+	ua.AuthMode = config.AuthMode()
 
-	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
-	if selfRegistration == "on" {
-		ua.SelfRegistration = true
-	}
+	ua.SelfRegistration = config.SelfRegistration()
 
 	if ua.Ctx.Input.IsPost() {
 		sessionUserID := ua.GetSession("userId")
@@ -109,7 +102,7 @@ func (ua *UserAPI) Get() {
 		username := ua.GetString("username")
 		userQuery := models.User{}
 		if len(username) > 0 {
-			userQuery.Username = "%" + username + "%"
+			userQuery.Username = username
 		}
 		userList, err := dao.ListUsers(userQuery)
 		if err != nil {
@@ -241,9 +234,7 @@ func (ua *UserAPI) Delete() {
 		return
 	}
 
-	// TODO read from conifg
-	authMode := os.Getenv("AUTH_MODE")
-	if authMode == "ldap_auth" {
+	if config.AuthMode() == "ldap_auth" {
 		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
 	}
 
@@ -323,13 +314,13 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 func validate(user models.User) error {
 
 	if isIllegalLength(user.Username, 1, 20) {
-		return fmt.Errorf("Username with illegal length.")
+		return fmt.Errorf("username with illegal length")
 	}
 	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
-		return fmt.Errorf("Username contains illegal characters.")
+		return fmt.Errorf("username contains illegal characters")
 	}
 	if isIllegalLength(user.Password, 8, 20) {
-		return fmt.Errorf("Password with illegal length.")
+		return fmt.Errorf("password with illegal length")
 	}
 	if err := commonValidate(user); err != nil {
 		return err
@@ -342,21 +333,21 @@ func commonValidate(user models.User) error {
 
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
-			return fmt.Errorf("Email with illegal format.")
+			return fmt.Errorf("email with illegal format")
 		}
 	} else {
 		return fmt.Errorf("Email can't be empty")
 	}
 
 	if isIllegalLength(user.Realname, 0, 20) {
-		return fmt.Errorf("Realname with illegal length.")
+		return fmt.Errorf("realname with illegal length")
 	}
 
 	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
-		return fmt.Errorf("Realname contains illegal characters.")
+		return fmt.Errorf("realname contains illegal characters")
 	}
 	if isIllegalLength(user.Comment, -1, 30) {
-		return fmt.Errorf("Comment with illegal length.")
+		return fmt.Errorf("comment with illegal length")
 	}
 	return nil
 

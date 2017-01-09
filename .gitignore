@@ -1,11 +1,5 @@
 harbor
-make/common/config/registry/config.yml
-make/common/config/ui/env
-make/common/config/ui/app.conf
-make/common/config/db/env
-make/common/config/jobservice/env
-make/common/config/nginx/nginx.conf
-make/common/config/nginx/cert/*
+make/common/config/*
 make/dev/ui/harbor_ui
 make/dev/jobservice/harbor_jobservice
 src/ui/ui

@@ -20,17 +20,18 @@
     .module('harbor.services.i18n')
     .factory('I18nService', I18nService);
   
-  I18nService.$inject = ['$cookies', '$window'];
+  I18nService.$inject = ['$window'];
   
-  function I18nService($cookies, $window) {
+  function I18nService($window) {
     
     var cookieOptions = {'path': '/'};
        
     var messages = $.extend(true, {}, eval('locale_messages'));    
     var defaultLanguage = 'en-US';
+    var currentLanguage = defaultLanguage;
     var supportLanguages = {
       'en-US': 'English',
-      'zh-CN': '中文'
+      'zh-CN': '简体中文'
     };
     var isSupportLanguage = function(language) {
       for (var i in supportLanguages) {
@@ -47,29 +48,19 @@
       
       return {
         'setCurrentLanguage': function(language) {
-          if(!angular.isDefined(language) || !isSupportLanguage(language)) {
-            language = defaultLanguage;
-          }
-          $cookies.put('language', language, cookieOptions);
-        },
-        'setDefaultLanguage': function() {
-          $cookies.put('language', defaultLanguage, cookieOptions);
+          currentLanguage = language;
         },
         'getCurrentLanguage': function() {
-          return $cookies.get('language') || defaultLanguage;
+          return currentLanguage;
         },
         'getLanguageName': function(language) {
           if(!angular.isDefined(language) || !isSupportLanguage(language)) {
             language = defaultLanguage;
           }
-          $cookies.put('language', language, cookieOptions);
           return supportLanguages[language];    
         },
         'getSupportLanguages': function() {
           return supportLanguages;
-        },
-        'unset': function(){
-          $cookies.put('language', defaultLanguage, cookieOptions);
         },
         'getValue': function(key) {
           return messages[key];

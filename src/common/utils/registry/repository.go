@@ -25,7 +25,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
+	//	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -65,7 +65,8 @@ func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers 
 	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
 	return NewRepository(name, endpoint, &http.Client{
 		Transport: transport,
-		Timeout:   30 * time.Second,
+		//  for transferring large image, OS will handle i/o timeout
+		//	Timeout:   30 * time.Second,
 	})
 }
 

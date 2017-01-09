@@ -163,7 +163,11 @@
     }
     function pingDestinationFailed(data, status) {
       vm.pingTIP = false;
-      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + (data && data.length > 0 ? ':' + data : '');
+      if(status === 404) {
+        data = '';
+      }
+      vm.pingMessage = $filter('tr')('failed_to_ping_target', []) + data;
+      console.log("Failed to ping target:" + data);
     }
   }
   

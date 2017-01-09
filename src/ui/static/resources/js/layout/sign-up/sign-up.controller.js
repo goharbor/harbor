@@ -25,7 +25,7 @@
   function SignUpController($scope, SignUpService, $window, $filter, trFilter) {
     var vm = this;
      
-    vm.user = {};
+    $scope.user = {};
     vm.signUp = signUp;
     vm.confirm = confirm;
         
@@ -77,6 +77,7 @@
       }
       vm.modalTitle = title;
       vm.modalMessage = message;
+      vm.confirmOnly = true;
       $scope.$broadcast('showDialog', true);
     }
     

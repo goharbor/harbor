@@ -112,12 +112,12 @@ func TestMain(t *testing.T) {
 	r, _ = http.NewRequest("GET", "/account_setting", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/account_setting' httpStatusCode should be 200")
+	assert.Equal(int(302), w.Code, "'/account_setting' httpStatusCode should be 302")
 
 	r, _ = http.NewRequest("GET", "/change_password", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/change_password' httpStatusCode should be 200")
+	assert.Equal(int(302), w.Code, "'/change_password' httpStatusCode should be 302")
 
 	r, _ = http.NewRequest("GET", "/admin_option", nil)
 	w = httptest.NewRecorder()

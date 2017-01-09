@@ -5,7 +5,7 @@
 
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
-Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. With Harbor, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
+Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
 
 ### Features
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
@@ -23,7 +23,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 
 **On a Linux host:** docker 1.10.0+ and docker-compose 1.6.0+ .
 
-**On vSphere:** vCenter 5.x+ for deployment of Harbor's virtual appliance. 
+**On vSphere:** vCenter 5.5+ for deployment of Harbor's virtual appliance. 
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
@@ -32,7 +32,8 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 ### Community
 **Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
 **Email:** harbor@ vmware.com .  
-**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group. 
+**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group.  
+More info on [partners and users](partners.md). 
 
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: harbor @vmware.com .
@@ -46,13 +47,3 @@ This project uses open source components which have additional licensing terms. 
 * Docker Registry 2.5: [docker image](https://hub.docker.com/_/registry/), [license](https://github.com/docker/distribution/blob/master/LICENSE)
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 * NGINX 1.11.5: [docker image](https://hub.docker.com/_/nginx/), [license](https://github.com/nginxinc/docker-nginx/blob/master/LICENSE)
-
-### Partners
-<a href="https://www.shurenyun.com/" border="0" target="_blank"><img alt="DataMan" src="docs/img/dataman.png"></a> &nbsp; &nbsp; <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamteclogo.png"></a>
-&nbsp; &nbsp; <a href="https://www.caicloud.io" border="0"><img alt="CaiCloud" src="docs/img/caicloudLogoWeb.png"></a>
-
-### Users
-<a href="https://www.madailicai.com/" border="0" target="_blank"><img alt="MaDaiLiCai" src="docs/img/UserMaDai.jpg"></a> <a href="https://www.dianrong.com/" border="0" target="_blank"><img alt="Dianrong" src="docs/img/dianrong.png"></a>
-
-### Supporting Technologies
-<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>.

@@ -103,7 +103,9 @@
     }   
   }
   
-  function destination() {
+  destination.$inject = ['$timeout'];
+  
+  function destination($timeout) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/components/system-management/destination.directive.html',
@@ -119,6 +121,12 @@
       element.find('#txtSearchInput').on('keydown', function(e) {
         if($(this).is(':focus') && e.keyCode === 13) {
           ctrl.retrieve();
+        } else {
+          $timeout(function() {
+            if(ctrl.destinationName.length === 0) {
+              ctrl.retrieve();
+            }
+          });
         }
       });
     }

@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"strconv"
 	"time"
@@ -72,11 +73,19 @@ func (p *ProjectAPI) Prepare() {
 // Post ...
 func (p *ProjectAPI) Post() {
 	p.userID = p.ValidateUser()
-
+	isSysAdmin, err := dao.IsAdminRole(p.userID)
+	if err != nil {
+		log.Errorf("Failed to check admin role: %v", err)
+	}
+	if !isSysAdmin && config.OnlyAdminCreateProject() {
+		log.Errorf("Only sys admin can create project")
+		p.RenderError(http.StatusForbidden, "Only system admin can create project")
+		return
+	}
 	var req projectReq
 	p.DecodeJSONReq(&req)
 	public := req.Public
-	err := validateProjectReq(req)
+	err = validateProjectReq(req)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
@@ -413,7 +422,7 @@ func validateProjectReq(req projectReq) error {
 	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
 	legal := validProjectName.MatchString(pn)
 	if !legal {
-		return fmt.Errorf("Project name is not in lower case or contains illegal characters!")
+		return fmt.Errorf("project name is not in lower case or contains illegal characters")
 	}
 	return nil
 }

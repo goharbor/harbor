@@ -25,11 +25,12 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 const (
@@ -43,7 +44,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
 	}
 	if user == nil {
-		return fmt.Errorf("User id: %d does not exist.", userID)
+		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
 		salt := utils.GenerateRandomString()
@@ -76,7 +77,7 @@ func main() {
 
 	dao.InitDatabase()
 
-	if err := updateInitPassword(adminUserID, os.Getenv("HARBOR_ADMIN_PASSWORD")); err != nil {
+	if err := updateInitPassword(adminUserID, config.InitialAdminPassword()); err != nil {
 		log.Error(err)
 	}
 	initRouters()

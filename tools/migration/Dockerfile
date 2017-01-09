@@ -16,6 +16,4 @@ WORKDIR /harbor-migration
 
 COPY ./ ./
 
-RUN ./prepare.sh
-
 ENTRYPOINT ["./run.sh"] 

@@ -1,4 +1,4 @@
-FROM library/photon:latest
+FROM library/photon:1.0
 
 # run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
 RUN tdnf install -y cronie rsyslog shadow tar gzip \
@@ -20,4 +20,4 @@ VOLUME /var/log/docker/
 
 EXPOSE 514
 
-CMD crond && rsyslogd -n
+CMD crond && rm -f /var/run/rsyslogd.pid && rsyslogd -n

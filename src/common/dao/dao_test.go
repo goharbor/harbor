@@ -705,7 +705,7 @@ func TestGetProjectById(t *testing.T) {
 func TestGetUserByProject(t *testing.T) {
 	pid := currentProject.ProjectID
 	u1 := models.User{
-		Username: "%%Tester%%",
+		Username: "Tester",
 	}
 	u2 := models.User{
 		Username: "nononono",

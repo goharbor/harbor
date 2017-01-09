@@ -1,15 +1,19 @@
 #!/bin/bash
 
 export PYTHONPATH=$PYTHONPATH:/harbor-migration
+if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
+    echo "DB_USR or DB_PWD not set, exiting..."
+    exit 1
+fi
 
-source ./migration.cfg
+source ./alembic.tpl > ./alembic.ini
 
 WAITTIME=60
 
-DBCNF="-hlocalhost -u${db_username}"
+DBCNF="-hlocalhost -u${DB_USR}"
 
 #prevent shell to print insecure message
-export MYSQL_PWD="${db_password}"
+export MYSQL_PWD="${DB_PWD}"
 
 if [[ $1 = "help" || $1 = "h" || $# = 0 ]]; then
     echo "Usage:"
@@ -21,7 +25,7 @@ if [[ $1 = "help" || $1 = "h" || $# = 0 ]]; then
     exit 0
 fi
 
-if [[ $1 = "up" || $1 = "upgrade" ]]; then
+if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
     echo "Please backup before upgrade."
     read -p "Enter y to continue updating or n to abort:" ans
     case $ans in
@@ -39,7 +43,7 @@ fi
 
 echo 'Trying to start mysql server...'
 DBRUN=0
-nohup mysqld 2>&1 > ./mysqld.log&
+mysqld &
 for i in $(seq 1 $WAITTIME); do
     echo "$(/usr/sbin/service mysql status)"
     if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then

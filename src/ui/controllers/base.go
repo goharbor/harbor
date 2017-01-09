@@ -12,6 +12,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
@@ -30,9 +31,10 @@ type langType struct {
 }
 
 const (
-	viewPath    = "sections"
-	prefixNg    = ""
-	defaultLang = "en-US"
+	viewPath        = "sections"
+	prefixNg        = ""
+	defaultLang     = "en-US"
+	defaultRootCert = "/harbor_storage/ca_download/ca.crt"
 )
 
 var supportLanguages map[string]langType
@@ -42,19 +44,21 @@ var mappingLangNames map[string]string
 func (b *BaseController) Prepare() {
 
 	var lang string
+	var langHasChanged bool
 
-	langCookie, err := b.Ctx.Request.Cookie("language")
-	if err != nil {
-		log.Errorf("Error occurred in Request.Cookie: %v", err)
-	}
-	if langCookie != nil {
-		lang = langCookie.Value
-	}
-	if len(lang) == 0 {
-		sessionLang := b.GetSession("lang")
-		if sessionLang != nil {
-			b.SetSession("Lang", lang)
-			lang = sessionLang.(string)
+	var showDownloadCert bool
+
+	langRequest := b.GetString("lang")
+	if langRequest != "" {
+		lang = langRequest
+		langHasChanged = true
+	} else {
+		langCookie, err := b.Ctx.Request.Cookie("language")
+		if err != nil {
+			log.Errorf("Error occurred in Request.Cookie: %v", err)
+		}
+		if langCookie != nil {
+			lang = langCookie.Value
 		} else {
 			al := b.Ctx.Request.Header.Get("Accept-Language")
 			if len(al) > 4 {
@@ -63,15 +67,22 @@ func (b *BaseController) Prepare() {
 					lang = al
 				}
 			}
+			langHasChanged = true
 		}
 	}
 
-	if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
-		lang = defaultLang //Set default language if not supported.
+	if langHasChanged {
+		if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
+			lang = defaultLang //Set default language if not supported.
+		}
+		cookies := &http.Cookie{
+			Name:     "language",
+			Value:    lang,
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(b.Ctx.ResponseWriter, cookies)
 	}
-
-	b.Ctx.SetCookie("language", lang, 0, "/")
-	b.SetSession("Lang", lang)
 
 	curLang := langType{
 		Lang: lang,
@@ -92,7 +103,7 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	authMode := strings.ToLower(os.Getenv("AUTH_MODE"))
+	authMode := config.AuthMode()
 	if authMode == "" {
 		authMode = "db_auth"
 	}
@@ -104,15 +115,28 @@ func (b *BaseController) Prepare() {
 		b.UseCompressedJS = true
 	}
 
-	if _, err := os.Stat(filepath.Join("static", "resources", "js", "harbor.app.min.js")); os.IsNotExist(err) {
+	m, err := filepath.Glob(filepath.Join("static", "resources", "js", "harbor.app.min.*.js"))
+	if err != nil || len(m) == 0 {
 		b.UseCompressedJS = false
 	}
 
-	selfRegistration := strings.ToLower(os.Getenv("SELF_REGISTRATION"))
-	if selfRegistration == "on" {
-		b.SelfRegistration = true
+	b.SelfRegistration = config.SelfRegistration()
+
+	b.Data["SelfRegistration"] = config.SelfRegistration()
+
+	sessionUserID := b.GetSession("userId")
+	if sessionUserID != nil {
+		isAdmin, err := dao.IsAdminRole(sessionUserID.(int))
+		if err != nil {
+			log.Errorf("Error occurred in IsAdminRole: %v", err)
+		}
+		if isAdmin {
+			if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
+				showDownloadCert = true
+			}
+		}
 	}
-	b.Data["SelfRegistration"] = b.SelfRegistration
+	b.Data["ShowDownloadCert"] = showDownloadCert
 }
 
 // Forward to setup layout and template for content for a page.

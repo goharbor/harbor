@@ -9,6 +9,9 @@ type AccountSettingController struct {
 func (asc *AccountSettingController) Get() {
 	var isAdminForLdap bool
 	sessionUserID, ok := asc.GetSession("userId").(int)
+	if !ok {
+		asc.Redirect("/", 302)
+	}
 	if ok && sessionUserID == 1 {
 		isAdminForLdap = true
 	}

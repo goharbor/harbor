@@ -9,6 +9,9 @@ type ChangePasswordController struct {
 func (cpc *ChangePasswordController) Get() {
 	var isAdminForLdap bool
 	sessionUserID, ok := cpc.GetSession("userId").(int)
+	if !ok {
+		cpc.Redirect("/", 302)
+	}
 	if ok && sessionUserID == 1 {
 		isAdminForLdap = true
 	}

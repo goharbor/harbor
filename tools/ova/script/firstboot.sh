@@ -13,11 +13,14 @@ value=$(ovfenv -k root_pwd)
 if [ -n "$value" ]
 then
 	echo "Resetting root password..."
-	printf "$value\n$value\n" | passwd root
+	printf "%s\n%s\n" "$value" "$value" | passwd root
 fi
 
-#echo "Adding rules to iptables..."
-#addIptableRules
+#configure SSH
+configSSH
+
+echo "Adding rules to iptables..."
+addIptableRules
 
 echo "Installing docker compose..."
 installDockerCompose
@@ -31,13 +34,20 @@ tar -zxvf $base_dir/../harbor-offline-installer*.tgz -C $base_dir/../
 echo "Loading images..."
 load
 
-#Configure Harbor
+echo "Pushing photon to project library..."
+pushPhoton
+
 echo "Configuring Harbor..."
 chmod 600 $base_dir/../harbor/harbor.cfg
-configure
+
+$base_dir/firstboot_config.sh
 
 #Start Harbor
 echo "Starting Harbor..."
 up
+
+echo "Removing unneeded installation packages..."
+rm $base_dir/../harbor-offline-installer*.tgz
+rm $base_dir/../harbor/harbor*.tgz
 
 echo "===================================================="

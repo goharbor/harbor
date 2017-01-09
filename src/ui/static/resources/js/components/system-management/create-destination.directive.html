@@ -14,7 +14,7 @@
 -->
 <div class="modal fade" data-backdrop="static" id="createDestinationModal" tabindex="-1"  role="dialog">
   <div class="modal-dialog">
-    <form name="form" class="form-horizontal css-form" novalidate>     
+    <form name="form" class="form-horizontal css-form" novalidate autocomplete="off">     
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -34,7 +34,7 @@
               <label for="name" class="col-md-3 control-label">// 'name' | tr //:</label>
               <div class="col-md-9">
                 <input type="text" class="form-control form-control-custom" id="name" ng-model="destination.name" name="uName" required ng-disabled="!vm.editable">                 
-                <div ng-messages="form.$submitted && form.uName.$error">
+                <div class="error-message" ng-messages="form.$submitted && form.uName.$error">
                   <span ng-message="required">// 'name_is_required' | tr //</span>
                 </div>
               </div> 
@@ -43,7 +43,7 @@
               <label for="description" class="col-md-3 control-label">// 'endpoint' | tr //:</label>
               <div class="col-md-9">
                 <input type="text" class="form-control form-control-custom" id="endpoint" ng-model="destination.endpoint" name="uEndpoint" required ng-disabled="!vm.editable">              
-                <div ng-messages="form.$submitted && form.uEndpoint.$error">
+                <div class="error-message" ng-messages="form.$submitted && form.uEndpoint.$error">
                   <span ng-message="required">// 'endpoint_is_required' | tr //</span>
                 </div>
               </div>
@@ -69,7 +69,7 @@
             <div class="form-group col-md-12 form-group-custom">
               <div class="col-md-3"></div>
               <div class="col-md-9">
-                <span>// vm.pingMessage //</span>
+                <span class="error-message">// vm.pingMessage //</span>
               </div>
             </div>
           </div>
