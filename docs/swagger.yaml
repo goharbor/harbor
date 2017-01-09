@@ -6,7 +6,7 @@ info:
   description: These APIs provide services for manipulating Harbor project.
   version: "0.3.0"
 # the domain of the service
-host: localhost
+host: localshot
 # array of all schemes that your API supports
 schemes:
   - http
@@ -1347,7 +1347,30 @@ paths:
         404:
           description: Not found the default root certificate.
         500:
-          description: Unexpected internal errors.  		
+          description: Unexpected internal errors.
+  /ldap/ping:
+    post:
+      summary: Ping available ldap service.
+      description: |
+        This endpoint ping the available ldap service for test related configuration parameters.
+      parameters:
+        - name: ldapconf
+          in: body
+          description: ldap configuration.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping ldap service successfully.
+        401:
+          description: Only admin has this authority.
+        403:
+          description: Inviald ldap configuration parameters.
+        500:
+          description: Unexpected internal errors.    		
 definitions:
   Search:
     type: object
@@ -1798,3 +1821,32 @@ definitions:
         description: The storage of system.
         items:
           $ref: '#/definitions/Storage'
+  LdapConf:
+    type: object
+    properties:
+      ldap_url: 
+        type: string
+        description: The url of ldap service.
+      ldap_searchdn:
+        type: string
+        description: The search dn of ldap service.
+      ldap_search_pwd:
+        type: string
+        description: The search password of ldap service.
+      ldap_basedn:
+        type: string
+        description: The base dn of ldap service.
+      ldap_filter:
+        type: string
+        description: The serach filter of ldap service.
+      ldap_uid:
+        type: string
+        description: The serach uid of ldap service.
+      ldap_scope:
+        type: integer
+        format: int64
+        description: The serach scope of ldap service.
+      ldap_connect_timeout:
+        type: integer
+        format: int64
+        description: The connect timeout of ldap service(second).
