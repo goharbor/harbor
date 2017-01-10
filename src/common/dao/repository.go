@@ -102,12 +102,22 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 }
 
 //GetTopRepos returns the most popular repositories
-func GetTopRepos(count int) ([]models.TopRepo, error) {
+func GetTopRepos(userID int, count int) ([]models.TopRepo, error) {
 	topRepos := []models.TopRepo{}
 
+	sql := `select r.name, r.pull_count from repository r
+		inner join project p on r.project_id = p.project_id
+		where (
+			p.deleted = 0 and (
+				p.public = 1 or (
+					? <> ? and exists (
+						select 1 from project_member pm
+						where pm.project_id = p.project_id and pm.user_id = ?
+		))))
+		order by r.pull_count desc, r.name limit ?`
 	repositories := []*models.RepoRecord{}
-	if _, err := GetOrmer().QueryTable(&models.RepoRecord{}).
-		OrderBy("-PullCount", "Name").Limit(count).All(&repositories); err != nil {
+	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, count).QueryRows(&repositories)
+	if err != nil {
 		return topRepos, err
 	}
 
