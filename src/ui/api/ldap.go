@@ -80,8 +80,8 @@ func validateLdapReq(ldapConfs models.LdapConf) error {
 	}
 	log.Debug("ldapURL:", ldapURL)
 
-	ldapConnectTimeout := ldapConfs.LdapConnectTimeout
-	log.Debug("ldapConnectTimeout:", ldapConnectTimeout)
+	ldapConnectionTimeout := ldapConfs.LdapConnectionTimeout
+	log.Debug("ldapConnectionTimeout:", ldapConnectionTimeout)
 
 	return nil
 
@@ -128,8 +128,8 @@ func connectTest(ldapConfs models.LdapConf) error {
 	}
 
 	// Sets a Dial Timeout for LDAP
-	connectTimeout := ldapConfs.LdapConnectTimeout
-	goldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
+	connectionTimeout := ldapConfs.LdapConnectionTimeout
+	goldap.DefaultTimeout = time.Duration(connectionTimeout) * time.Second
 
 	switch protocol {
 	case "ldap":
@@ -146,8 +146,8 @@ func connectTest(ldapConfs models.LdapConf) error {
 	ldapSearchDn := ldapConfs.LdapSearchDn
 	if ldapSearchDn != "" {
 		log.Debug("Search DN: ", ldapSearchDn)
-		ldapSearchPwd := ldapConfs.LdapSearchPwd
-		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
+		ldapSearchPassword := ldapConfs.LdapSearchPassword
+		err = ldap.Bind(ldapSearchDn, ldapSearchPassword)
 		if err != nil {
 			log.Debug("Bind search dn error", err)
 			return err

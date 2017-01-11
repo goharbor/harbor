@@ -18,11 +18,11 @@ package models
 // LdapConf holds information about repository that accessed most
 type LdapConf struct {
 	LdapURL            string `json:"ldap_url"`
-	LdapSearchDn       string `json:"ldap_searchdn"`
-	LdapSearchPwd      string `json:"ldap_search_pwd"`
-	LdapBaseDn         string `json:"ldap_basedn"`
+	LdapSearchDn       string `json:"ldap_search_dn"`
+	LdapSearchPassword string `json:"ldap_search_password"`
+	LdapBaseDn         string `json:"ldap_base_dn"`
 	LdapFilter         string `json:"ldap_filter"`
 	LdapUID            string `json:"ldap_uid"`
 	LdapScope          int    `json:"ldap_scope"`
-	LdapConnectTimeout int    `json:"ldap_connect_timeout"`
+	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
 }
