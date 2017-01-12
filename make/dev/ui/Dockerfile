@@ -2,10 +2,6 @@ FROM golang:1.7.3
 
 MAINTAINER jiangd@vmware.com
 
-RUN apt-get update \
-    && apt-get install -y libldap2-dev \
-    && rm -r /var/lib/apt/lists/*
-
 COPY src/. /go/src/github.com/vmware/harbor/src
 WORKDIR /go/src/github.com/vmware/harbor/src/ui
 
@@ -21,8 +17,6 @@ COPY src/favicon.ico /go/bin/favicon.ico
 COPY make/jsminify.sh /tmp/jsminify.sh
 
 RUN chmod u+x /go/bin/harbor_ui \
-    && sed -i 's/TLS_CACERT/#TLS_CAERT/g' /etc/ldap/ldap.conf \
-    && sed -i '$a\TLS_REQCERT allow' /etc/ldap/ldap.conf \
     && timestamp=`date '+%s'` \
     && /tmp/jsminify.sh /go/bin/views/sections/script-include.htm /go/bin/static/resources/js/harbor.app.min.$timestamp.js /go/bin/ \
     && sed -i "s/harbor\.app\.min\.js/harbor\.app\.min\.$timestamp\.js/g" /go/bin/views/sections/script-min-include.htm

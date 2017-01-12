@@ -31,6 +31,7 @@ type LDAP struct {
 	Filter    string `json:"filter"`
 	UID       string `json:"uid"`
 	Scope     int    `json:"scope"`
+	Timeout   int    `json:"timeout"` // in second
 }
 
 // Database ...

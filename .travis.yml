@@ -73,6 +73,8 @@ before_script:
   - sudo sqlite3 /registry.db < make/common/db/registry_sqlite.sql
 
 script:
+  - sudo mkdir -p /harbor_storage/ca_download
+  - sudo mv ./tests/ca.crt /harbor_storage/ca_download
   - sudo service mysql stop
   - sudo ./tests/testprepare.sh 
   - docker-compose -f ./make/docker-compose.test.yml up -d

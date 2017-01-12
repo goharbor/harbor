@@ -103,6 +103,11 @@ func initFromEnv() (*models.SystemCfg, error) {
 		return nil, err
 	}
 	cfg.Authentication.LDAP.Scope = scope
+	timeout, err := strconv.Atoi(os.Getenv("LDAP_TIMEOUT"))
+	if err != nil {
+		return nil, err
+	}
+	cfg.Authentication.LDAP.Timeout = timeout
 	cfg.Database = &models.Database{
 		Type: os.Getenv("DATABASE_TYPE"),
 		MySQL: &models.MySQL{

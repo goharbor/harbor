@@ -16,8 +16,11 @@
 package dao
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
 )
 
@@ -158,6 +161,161 @@ func TestGetTotalOfUserRelevantRepositories(t *testing.T) {
 	if n != total+1 {
 		t.Errorf("unexpected total: %d != %d", n, total+1)
 	}
+}
+
+func TestGetTopRepos(t *testing.T) {
+	var err error
+	require := require.New(t)
+
+	require.NoError(GetOrmer().Begin())
+	defer func() {
+		require.NoError(GetOrmer().Rollback())
+	}()
+
+	admin, err := GetUser(models.User{Username: "admin"})
+	require.NoError(err)
+
+	user := models.User{
+		Username: "user",
+		Password: "user",
+		Email:    "user@test.com",
+	}
+	userID, err := Register(user)
+	require.NoError(err)
+	user.UserID = int(userID)
+
+	//
+	// public project with 1 repository
+	// non-public project with 2 repositories visible by admin
+	// non-public project with 1 repository visible by admin and user
+	// deleted public project with 1 repository
+	//
+
+	project1 := models.Project{
+		OwnerID:      admin.UserID,
+		Name:         "project1",
+		CreationTime: time.Now(),
+		OwnerName:    admin.Username,
+		Public:       0,
+	}
+	project1.ProjectID, err = AddProject(project1)
+	require.NoError(err)
+
+	project2 := models.Project{
+		OwnerID:      admin.UserID,
+		Name:         "project2",
+		CreationTime: time.Now(),
+		OwnerName:    admin.Username,
+		Public:       0,
+	}
+	project2.ProjectID, err = AddProject(project2)
+	require.NoError(err)
+
+	require.NoError(AddProjectMember(project2.ProjectID, user.UserID, models.PROJECTADMIN))
+
+	err = AddRepository(*repository)
+	require.NoError(err)
+
+	repository1 := &models.RepoRecord{
+		Name:        fmt.Sprintf("%v/repository1", project1.Name),
+		OwnerName:   admin.Username,
+		ProjectName: project1.Name,
+	}
+	err = AddRepository(*repository1)
+	require.NoError(err)
+	require.NoError(IncreasePullCount(repository1.Name))
+	repository1, err = GetRepositoryByName(repository1.Name)
+	require.NoError(err)
+
+	repository2 := &models.RepoRecord{
+		Name:        fmt.Sprintf("%v/repository2", project1.Name),
+		OwnerName:   admin.Username,
+		ProjectName: project1.Name,
+	}
+	err = AddRepository(*repository2)
+	require.NoError(err)
+	require.NoError(IncreasePullCount(repository2.Name))
+	require.NoError(IncreasePullCount(repository2.Name))
+	repository2, err = GetRepositoryByName(repository2.Name)
+	require.NoError(err)
+
+	repository3 := &models.RepoRecord{
+		Name:        fmt.Sprintf("%v/repository3", project2.Name),
+		OwnerName:   admin.Username,
+		ProjectName: project2.Name,
+	}
+	err = AddRepository(*repository3)
+	require.NoError(err)
+	require.NoError(IncreasePullCount(repository3.Name))
+	require.NoError(IncreasePullCount(repository3.Name))
+	require.NoError(IncreasePullCount(repository3.Name))
+	repository3, err = GetRepositoryByName(repository3.Name)
+	require.NoError(err)
+
+	deletedPublicProject := models.Project{
+		OwnerID:      admin.UserID,
+		Name:         "public-deleted",
+		CreationTime: time.Now(),
+		OwnerName:    admin.Username,
+		Public:       1,
+	}
+	deletedPublicProject.ProjectID, err = AddProject(deletedPublicProject)
+	require.NoError(err)
+	deletedPublicRepository1 := &models.RepoRecord{
+		Name:        fmt.Sprintf("%v/repository1", deletedPublicProject.Name),
+		OwnerName:   admin.Username,
+		ProjectName: deletedPublicProject.Name,
+	}
+	err = AddRepository(*deletedPublicRepository1)
+	require.NoError(err)
+	DeleteProject(deletedPublicProject.ProjectID)
+
+	var topRepos []models.TopRepo
+
+	// anonymous should retrieve public non-deleted repositories
+	topRepos, err = GetTopRepos(NonExistUserID, 3)
+	require.NoError(err)
+	require.Len(topRepos, 1)
+	require.Equal(topRepos, []models.TopRepo{
+		models.TopRepo{
+			RepoName:    repository.Name,
+			AccessCount: repository.PullCount,
+		},
+	})
+
+	// admin should retrieve all visible repositories limited by count
+	topRepos, err = GetTopRepos(admin.UserID, 3)
+	require.NoError(err)
+	require.Len(topRepos, 3)
+	require.Equal(topRepos, []models.TopRepo{
+		models.TopRepo{
+			RepoName:    repository3.Name,
+			AccessCount: repository3.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository2.Name,
+			AccessCount: repository2.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository1.Name,
+			AccessCount: repository1.PullCount,
+		},
+	})
+
+	// user should retrieve all visible repositories
+	topRepos, err = GetTopRepos(user.UserID, 3)
+	require.NoError(err)
+	require.Len(topRepos, 2)
+	require.Equal(topRepos, []models.TopRepo{
+		models.TopRepo{
+			RepoName:    repository3.Name,
+			AccessCount: repository3.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository.Name,
+			AccessCount: repository.PullCount,
+		},
+	})
 }
 
 func addRepository(repository *models.RepoRecord) error {

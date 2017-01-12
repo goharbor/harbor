@@ -16,24 +16,74 @@
 package ldap
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/vmware/harbor/src/common/utils/log"
+	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 
-	"github.com/mqu/openldap"
+	goldap "gopkg.in/ldap.v2"
 )
 
 // Auth implements Authenticator interface to authenticate against LDAP
 type Auth struct{}
 
 const metaChars = "&|!=~*<>()"
+
+// Connect checks the LDAP configuration directives, and connects to the LDAP URL
+// Returns an LDAP connection
+func Connect(settings *models.LDAP) (*goldap.Conn, error) {
+	ldapURL := settings.URL
+	if ldapURL == "" {
+		return nil, errors.New("can not get any available LDAP_URL")
+	}
+	log.Debug("ldapURL:", ldapURL)
+
+	// This routine keeps compability with the old format used on harbor.cfg
+	splitLdapURL := strings.Split(ldapURL, "://")
+	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
+
+	var host, port string
+
+	// This tries to detect the used port, if not defined
+	if strings.Contains(hostport, ":") {
+		splitHostPort := strings.Split(hostport, ":")
+		host, port = splitHostPort[0], splitHostPort[1]
+	} else {
+		host = hostport
+		switch protocol {
+		case "ldap":
+			port = "389"
+		case "ldaps":
+			port = "636"
+		}
+	}
+
+	// Sets a Dial Timeout for LDAP
+	goldap.DefaultTimeout = time.Duration(settings.Timeout) * time.Second
+
+	var ldap *goldap.Conn
+	var err error
+	switch protocol {
+	case "ldap":
+		ldap, err = goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+	case "ldaps":
+		ldap, err = goldap.DialTLS("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ldap, nil
+
+}
 
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
@@ -52,16 +102,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 
-	ldapURL := settings.URL
-	if ldapURL == "" {
-		return nil, errors.New("can not get any available LDAP_URL")
-	}
-	log.Debug("ldapURL:", ldapURL)
-	ldap, err := openldap.Initialize(ldapURL)
+	ldap, err := Connect(settings)
 	if err != nil {
 		return nil, err
 	}
-	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
 	ldapBaseDn := settings.BaseDN
 	if ldapBaseDn == "" {
@@ -92,27 +136,42 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	ldapScope := settings.Scope
 	var scope int
 	if ldapScope == 1 {
-		scope = openldap.LDAP_SCOPE_BASE
+		scope = goldap.ScopeBaseObject
 	} else if ldapScope == 2 {
-		scope = openldap.LDAP_SCOPE_ONELEVEL
+		scope = goldap.ScopeSingleLevel
 	} else {
-		scope = openldap.LDAP_SCOPE_SUBTREE
+		scope = goldap.ScopeWholeSubtree
 	}
 	attributes := []string{"uid", "cn", "mail", "email"}
-	result, err := ldap.SearchAll(ldapBaseDn, scope, filter, attributes)
+
+	searchRequest := goldap.NewSearchRequest(
+		ldapBaseDn,
+		scope,
+		goldap.NeverDerefAliases,
+		0,     // Unlimited results. TODO: Limit this (as we expect only one result)?
+		0,     // Search Timeout. TODO: Limit this (check what is the unit of timeout) and make configurable
+		false, // Types Only
+		filter,
+		attributes,
+		nil,
+	)
+
+	result, err := ldap.Search(searchRequest)
 	if err != nil {
 		return nil, err
 	}
-	if len(result.Entries()) == 0 {
+
+	if len(result.Entries) == 0 {
 		log.Warningf("Not found an entry.")
 		return nil, nil
-	} else if len(result.Entries()) != 1 {
+	} else if len(result.Entries) != 1 {
 		log.Warningf("Found more than one entry.")
 		return nil, nil
 	}
-	en := result.Entries()[0]
-	bindDN := en.Dn()
-	log.Debug("found entry:", en)
+
+	entry := result.Entries[0]
+	bindDN := entry.DN
+	log.Debug("found entry:", bindDN)
 	err = ldap.Bind(bindDN, m.Password)
 	if err != nil {
 		log.Debug("Bind user error", err)
@@ -121,9 +180,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	defer ldap.Close()
 
 	u := models.User{}
-	for _, attr := range en.Attributes() {
-		val := attr.Values()[0]
-		switch attr.Name() {
+
+	for _, attr := range entry.Attributes {
+		val := attr.Values[0]
+		switch attr.Name {
 		case "uid":
 			u.Realname = val
 		case "cn":

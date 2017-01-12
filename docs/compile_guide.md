@@ -24,26 +24,7 @@ golang*               | 1.6.0 +
       $ git clone https://github.com/vmware/harbor
    ```
 
-## Step 3: Resolving dependencies of Go language
-You can compile the source code by using a Golang dev image. In this case, you can skip this step. 
-
-If you are building Harbor using your own Go compiling environment. You need to install LDAP packages manually. 
-
-For PhotonOS:
-
-   ```sh
-      $ tdnf install -y sed apr-util-ldap
-   ```
-
-For Ubuntu:
-
-   ```sh
-      $ apt-get update && apt-get install -y libldap2-dev
-   ```
-
-For other platforms, please consult the relevant documentation of installing LDAP package.
-
-## Step 4: Building and installing Harbor
+## Step 3: Building and installing Harbor
 
 ### Configuration
 
@@ -58,18 +39,18 @@ Edit the file **make/harbor.cfg** and make necessary configuration changes such 
 
 You can compile the code by one of the three approaches:
 
-#### I. Create a Golang dev image, then build Harbor
+#### I. Build with offical Golang image
 
-* Build Golang dev image:
+* Get offcial Golang image from docker hub:
 
    ```sh
-      $ make compile_buildgolangimage -e GOBUILDIMAGE=harborgo:1.7.3
+      $ docker pull golang:1.7.3
    ```
 
 *  Build, install and bring up Harbor:
 
    ```sh
-      $ make install -e GOBUILDIMAGE=harborgo:1.7.3 COMPILETAG=compile_golangimage
+      $ make install -e GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
@@ -142,7 +123,6 @@ Target              | Description
 all                 | prepare env, compile binaries, build images and install images 
 prepare             | prepare env
 compile             | compile ui and jobservice code
-compile_golangimage | compile local golang image
 compile_ui          | compile ui binary
 compile_jobservice  | compile jobservice binary
 build               | build Harbor docker images (default: using build_photon)
@@ -162,13 +142,6 @@ cleanversiontag     | remove specific version tag
 cleanpackage        | remove online/offline install package
 
 #### EXAMPLE:
-
-#### Build a golang dev image (for building Harbor):
-
-   ```sh
-      $ make compile_golangimage -e GOBUILDIMAGE= [$YOURIMAGE]
-
-   ```
 
 #### Build Harbor images based on Ubuntu
 

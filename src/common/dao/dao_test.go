@@ -998,13 +998,6 @@ func TestGetRecentLogs(t *testing.T) {
 	}
 }
 
-func TestGetTopRepos(t *testing.T) {
-	_, err := GetTopRepos(10)
-	if err != nil {
-		t.Fatalf("error occured in getting top repos, error: %v", err)
-	}
-}
-
 var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestAddRepTarget(t *testing.T) {
