@@ -18,94 +18,185 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/cache"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
+// const variables
 const (
-	//auth mode
-	DB_AUTH   = "db_auth"
-	LDAP_AUTH = "ldap_auth"
+	DBAuth              = "db_auth"
+	LDAPAuth            = "ldap_auth"
+	ProCrtRestrEveryone = "everyone"
+	ProCrtRestrAdmOnly  = "adminonly"
+	LDAPScopeBase       = "1"
+	LDAPScopeOnelevel   = "2"
+	LDAPScopeSubtree    = "3"
 
-	//project_creation_restriction
-	PRO_CRT_RESTR_EVERYONE = "everyone"
-	PRO_CRT_RESTR_ADM_ONLY = "adminonly"
-
-	LDAP_SCOPE_BASE     = "1"
-	LDAP_SCOPE_ONELEVEL = "2"
-	LDAP_SCOPE_SUBTREE  = "3"
-
-	AUTH_MODE                    = "auth_mode"
-	SELF_REGISTRATION            = "self_registration"
-	LDAP_URL                     = "ldap_url"
-	LDAP_SEARCH_DN               = "ldap_search_dn"
-	LDAP_SEARCH_PWD              = "ldap_search_pwd"
-	LDAP_BASE_DN                 = "ldap_base_dn"
-	LDAP_UID                     = "ldap_uid"
-	LDAP_FILTER                  = "ldap_filter"
-	LDAP_SCOPE                   = "ldap_scope"
-	EMAIL_SERVER                 = "email_server"
-	EMAIL_SERVER_PORT            = "email_server_port"
-	EMAIL_USERNAME               = "email_server_username"
-	EMAIL_PWD                    = "email_server_pwd"
-	EMAIL_FROM                   = "email_from"
-	EMAIL_SSL                    = "email_ssl"
-	EMAIL_IDENTITY               = "email_identity"
-	PROJECT_CREATION_RESTRICTION = "project_creation_restriction"
-	VERIFY_REMOTE_CERT           = "verify_remote_cert"
-	MAX_JOB_WORKERS              = "max_job_workers"
-	CFG_EXPIRATION               = "cfg_expiration"
+	AUTHMode                   = "auth_mode"
+	SelfRegistration           = "self_registration"
+	LDAPURL                    = "ldap_url"
+	LDAPSearchDN               = "ldap_search_dn"
+	LDAPSearchPwd              = "ldap_search_password"
+	LDAPBaseDN                 = "ldap_base_dn"
+	LDAPUID                    = "ldap_uid"
+	LDAPFilter                 = "ldap_filter"
+	LDAPScope                  = "ldap_scope"
+	LDAPTimeout                = "ldap_timeout"
+	EmailHost                  = "email_host"
+	EmailPort                  = "email_port"
+	EmailUsername              = "email_username"
+	EmailPassword              = "email_password"
+	EmailFrom                  = "email_from"
+	EmailSSL                   = "email_ssl"
+	EmailIdentity              = "email_identity"
+	ProjectCreationRestriction = "project_creation_restriction"
+	VerifyRemoteCert           = "verify_remote_cert"
+	MaxJobWorkers              = "max_job_workers"
+	CfgExpiration              = "cfg_expiration"
 )
 
+// Manager manages configurations
 type Manager struct {
-	Key    string
-	Cache  cache.Cache
 	Loader *Loader
+	Parser Parser
+	Cache  bool
+	cache  cache.Cache
+	key    string
 }
 
-func NewManager(key, url string) *Manager {
-	return &Manager{
-		Key:    key,
-		Cache:  cache.NewMemoryCache(),
-		Loader: NewLoader(url),
+// Parser parses []byte to a specific configuration
+type Parser interface {
+	// Parse ...
+	Parse([]byte) (interface{}, error)
+}
+
+// NewManager returns an instance of Manager
+// url: the url from which loader loads configurations
+func NewManager(url, secret string, parser Parser, enableCache bool) *Manager {
+	m := &Manager{
+		Loader: NewLoader(url, secret),
+		Parser: parser,
 	}
-}
 
-func (m *Manager) GetFromCache() interface{} {
-	value := m.Cache.Get(m.Key)
-	if value != nil {
-		return value
+	if enableCache {
+		m.Cache = true
+		m.cache = cache.NewMemoryCache()
+		m.key = "cfg"
 	}
-	return nil
+
+	return m
 }
 
+// Init loader
+func (m *Manager) Init() error {
+	return m.Loader.Init()
+}
+
+// Load configurations, if cache is enabled, cache the configurations
+func (m *Manager) Load() (interface{}, error) {
+	b, err := m.Loader.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := m.Parser.Parse(b)
+	if err != nil {
+		return nil, err
+	}
+
+	if m.Cache {
+		expi, err := parseExpiration(b)
+		if err != nil {
+			return nil, err
+		}
+		if err = m.cache.Put(m.key, c,
+			time.Duration(expi)*time.Second); err != nil {
+			return nil, err
+		}
+	}
+
+	return c, nil
+}
+
+func parseExpiration(b []byte) (int, error) {
+	expi := &struct {
+		Expi int `json:"cfg_expiration"`
+	}{}
+	if err := json.Unmarshal(b, expi); err != nil {
+		return 0, err
+	}
+	return expi.Expi, nil
+}
+
+// Get : if cache is enabled, read configurations from cache,
+// if cache is null or cache is disabled it loads configurations directly
+func (m *Manager) Get() (interface{}, error) {
+	if m.Cache {
+		c := m.cache.Get(m.key)
+		if c != nil {
+			return c, nil
+		}
+	}
+	return m.Load()
+}
+
+// Upload configurations
+func (m *Manager) Upload(b []byte) error {
+	return m.Loader.Upload(b)
+}
+
+// Loader loads and uploads configurations
 type Loader struct {
 	url    string
+	secret string
 	client *http.Client
 }
 
-func NewLoader(url string) *Loader {
+// NewLoader ...
+func NewLoader(url, secret string) *Loader {
 	return &Loader{
 		url:    url,
+		secret: secret,
 		client: &http.Client{},
 	}
 }
 
+// Init waits remote server to be ready by testing connections with it
 func (l *Loader) Init() error {
 	addr := l.url
 	if strings.Contains(addr, "://") {
 		addr = strings.Split(addr, "://")[1]
 	}
+
+	if !strings.Contains(addr, ":") {
+		addr = addr + ":80"
+	}
+
 	return utils.TestTCPConn(addr, 60, 2)
 }
 
+// Load configurations from remote server
 func (l *Loader) Load() ([]byte, error) {
-	resp, err := l.client.Get(l.url + "/api/configurations")
+	log.Debug("loading configurations...")
+	req, err := http.NewRequest("GET", l.url+"/api/configurations", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: l.secret,
+	})
+
+	resp, err := l.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -114,14 +205,22 @@ func (l *Loader) Load() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debug("configurations load completed")
 	return b, nil
 }
 
+// Upload configuratons to remote server
 func (l *Loader) Upload(b []byte) error {
 	req, err := http.NewRequest("PUT", l.url+"/api/configurations", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
+
+	req.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: l.secret,
+	})
+
 	resp, err := l.client.Do(req)
 	if err != nil {
 		return err

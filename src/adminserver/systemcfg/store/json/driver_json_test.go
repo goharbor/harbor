@@ -13,11 +13,13 @@
    limitations under the License.
 */
 
-package systemcfg
+package json
 
 import (
 	"os"
 	"testing"
+
+	"github.com/vmware/harbor/src/common/models"
 )
 
 func TestReadWrite(t *testing.T) {
@@ -32,12 +34,12 @@ func TestReadWrite(t *testing.T) {
 		}
 	}()
 
-	config := &cfg.SystemCfg{
-		Authentication: &cfg.Authentication{
-			LDAP: &cfg.LDAP{},
+	config := &models.SystemCfg{
+		Authentication: &models.Authentication{
+			LDAP: &models.LDAP{},
 		},
-		Database: &cfg.Database{
-			MySQL: &cfg.MySQL{},
+		Database: &models.Database{
+			MySQL: &models.MySQL{},
 		},
 	}
 	if err := store.Write(config); err != nil {

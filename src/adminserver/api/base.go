@@ -27,3 +27,8 @@ func handleInternalServerError(w http.ResponseWriter) {
 func handleBadRequestError(w http.ResponseWriter, error string) {
 	http.Error(w, error, http.StatusBadRequest)
 }
+
+func handleUnauthorized(w http.ResponseWriter) {
+	http.Error(w, http.StatusText(http.StatusUnauthorized),
+		http.StatusUnauthorized)
+}

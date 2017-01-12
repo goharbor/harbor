@@ -14,6 +14,7 @@
 */
 package api
 
+/*
 import (
 	"github.com/vmware/harbor/src/common/config"
 	"os"
@@ -31,3 +32,4 @@ func TestGetIsInsecure(t *testing.T) {
 	}
 	os.Unsetenv("VERIFY_REMOTE_CERT")
 }
+*/

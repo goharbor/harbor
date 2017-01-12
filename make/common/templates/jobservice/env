@@ -1,5 +1,4 @@
 LOG_LEVEL=debug
-UI_SECRET=$ui_secret
 CONFIG_PATH=/etc/jobservice/app.conf
-MAX_JOB_WORKERS=$max_job_workers
+UI_SECRET=$ui_secret
 GODEBUG=netdns=cgo

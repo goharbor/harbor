@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package systemcfg
+package store
 
 import (
 	"github.com/vmware/harbor/src/common/models"

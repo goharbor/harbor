@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package systemcfg
+package json
 
 import (
 	"encoding/json"
@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -38,11 +39,14 @@ type cfgStore struct {
 
 // NewCfgStore returns an instance of cfgStore that stores the configurations
 // in a json file. The file will be created if it does not exist.
-func NewCfgStore(path ...string) (Driver, error) {
+func NewCfgStore(path ...string) (store.Driver, error) {
 	p := defaultPath
-	if len(path) != 0 {
+	if len(path) > 0 && len(path[0]) > 0 {
 		p = path[0]
 	}
+
+	log.Debugf("path of configuration file: %s", p)
+
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		log.Infof("the configuration file %s does not exist, creating it...", p)
 		if err = os.MkdirAll(filepath.Dir(p), 0600); err != nil {

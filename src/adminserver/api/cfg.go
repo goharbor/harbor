@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 
 	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
@@ -27,8 +28,32 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
+func isAuthenticated(r *http.Request) (bool, error) {
+	secret := os.Getenv("UI_SECRET")
+	c, err := r.Cookie("secret")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return false, nil
+		}
+		return false, err
+	}
+	return c != nil && c.Value == secret, nil
+}
+
 // ListCfgs lists configurations
 func ListCfgs(w http.ResponseWriter, r *http.Request) {
+	authenticated, err := isAuthenticated(r)
+	if err != nil {
+		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+
+	if !authenticated {
+		handleUnauthorized(w)
+		return
+	}
+
 	cfg, err := cfg.GetSystemCfg()
 	if err != nil {
 		log.Errorf("failed to get system configurations: %v", err)
@@ -49,6 +74,18 @@ func ListCfgs(w http.ResponseWriter, r *http.Request) {
 
 // UpdateCfgs updates configurations
 func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
+	authenticated, err := isAuthenticated(r)
+	if err != nil {
+		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+
+	if !authenticated {
+		handleUnauthorized(w)
+		return
+	}
+
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("failed to read request body: %v", err)
@@ -62,8 +99,6 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info(m)
-
 	system, err := cfg.GetSystemCfg()
 	if err != nil {
 		handleInternalServerError(w)
@@ -76,8 +111,6 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info(system.Authentication.SelfRegistration)
-
 	if err = cfg.UpdateSystemCfg(system); err != nil {
 		log.Errorf("failed to update system configurations: %v", err)
 		handleInternalServerError(w)
@@ -87,74 +120,73 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 
 // populate attrs of cfg according to m
 func populate(cfg *models.SystemCfg, m map[string]string) error {
-	if mode, ok := m[comcfg.AUTH_MODE]; ok {
+	if mode, ok := m[comcfg.AUTHMode]; ok {
 		cfg.Authentication.Mode = mode
 	}
-	if value, ok := m[comcfg.SELF_REGISTRATION]; ok {
-		cfg.Authentication.SelfRegistration = value == "true"
+	if value, ok := m[comcfg.SelfRegistration]; ok {
+		cfg.Authentication.SelfRegistration = value == "1"
 	}
-	if url, ok := m[comcfg.LDAP_URL]; ok {
+	if url, ok := m[comcfg.LDAPURL]; ok {
 		cfg.Authentication.LDAP.URL = url
 	}
-	if dn, ok := m[comcfg.LDAP_SEARCH_DN]; ok {
+	if dn, ok := m[comcfg.LDAPSearchDN]; ok {
 		cfg.Authentication.LDAP.SearchDN = dn
 	}
-	if pwd, ok := m[comcfg.LDAP_SEARCH_PWD]; ok {
+	if pwd, ok := m[comcfg.LDAPSearchPwd]; ok {
 		cfg.Authentication.LDAP.SearchPwd = pwd
 	}
-	if dn, ok := m[comcfg.LDAP_BASE_DN]; ok {
+	if dn, ok := m[comcfg.LDAPBaseDN]; ok {
 		cfg.Authentication.LDAP.BaseDN = dn
 	}
-	if uid, ok := m[comcfg.LDAP_UID]; ok {
+	if uid, ok := m[comcfg.LDAPUID]; ok {
 		cfg.Authentication.LDAP.UID = uid
 	}
-	if filter, ok := m[comcfg.LDAP_FILTER]; ok {
+	if filter, ok := m[comcfg.LDAPFilter]; ok {
 		cfg.Authentication.LDAP.Filter = filter
 	}
-	if scope, ok := m[comcfg.LDAP_SCOPE]; ok {
+	if scope, ok := m[comcfg.LDAPScope]; ok {
 		i, err := strconv.Atoi(scope)
 		if err != nil {
 			return err
 		}
 		cfg.Authentication.LDAP.Scope = i
 	}
+	if timeout, ok := m[comcfg.LDAPTimeout]; ok {
+		i, err := strconv.Atoi(timeout)
+		if err != nil {
+			return err
+		}
+		cfg.Authentication.LDAP.Timeout = i
+	}
 
-	if value, ok := m[comcfg.EMAIL_SERVER]; ok {
+	if value, ok := m[comcfg.EmailHost]; ok {
 		cfg.Email.Host = value
 	}
-	if value, ok := m[comcfg.EMAIL_SERVER_PORT]; ok {
+	if value, ok := m[comcfg.EmailPort]; ok {
 		cfg.Email.Port = value
 	}
-	if value, ok := m[comcfg.EMAIL_USERNAME]; ok {
+	if value, ok := m[comcfg.EmailUsername]; ok {
 		cfg.Email.Username = value
 	}
-	if value, ok := m[comcfg.EMAIL_PWD]; ok {
-		cfg.Email.Host = value
-	}
-	if value, ok := m[comcfg.EMAIL_SSL]; ok {
+	if value, ok := m[comcfg.EmailPassword]; ok {
 		cfg.Email.Password = value
 	}
-	if value, ok := m[comcfg.EMAIL_FROM]; ok {
+	if value, ok := m[comcfg.EmailSSL]; ok {
+		cfg.Email.SSL = value == "1"
+	}
+	if value, ok := m[comcfg.EmailFrom]; ok {
 		cfg.Email.From = value
 	}
-	if value, ok := m[comcfg.EMAIL_IDENTITY]; ok {
+	if value, ok := m[comcfg.EmailIdentity]; ok {
 		cfg.Email.Identity = value
 	}
 
-	if value, ok := m[comcfg.PROJECT_CREATION_RESTRICTION]; ok {
+	if value, ok := m[comcfg.ProjectCreationRestriction]; ok {
 		cfg.ProjectCreationRestriction = value
 	}
 
-	if value, ok := m[comcfg.VERIFY_REMOTE_CERT]; ok {
-		cfg.VerifyRemoteCert = value == "true"
-	}
-
-	if value, ok := m[comcfg.MAX_JOB_WORKERS]; ok {
-		if i, err := strconv.Atoi(value); err != nil {
-			return err
-		} else {
-			cfg.MaxJobWorkers = i
-		}
+	if value, ok := m[comcfg.VerifyRemoteCert]; ok {
+		cfg.VerifyRemoteCert = value == "1"
 	}
 
 	return nil

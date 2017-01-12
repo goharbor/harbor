@@ -21,3 +21,14 @@ services:
       - ./common/config/db/env
     ports:
       - 3306:3306
+  adminserver:
+    build:
+      context: ../
+      dockerfile: make/dev/adminserver/Dockerfile
+    env_file:
+      - ./common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/harbor/
+    ports:
+      - 8888:80

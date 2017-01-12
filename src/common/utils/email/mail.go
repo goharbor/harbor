@@ -57,7 +57,7 @@ func (m Mail) SendMail() error {
 	content := mailContent.Bytes()
 
 	auth := smtp.PlainAuth(mc.Identity, mc.Username, mc.Password, mc.Host)
-	if mc.TLS {
+	if mc.SSL {
 		err = sendMailWithTLS(m, auth, content)
 	} else {
 		err = sendMail(m, auth, content)

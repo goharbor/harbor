@@ -18,14 +18,15 @@ package config
 import (
 	"encoding/json"
 	"os"
-	"time"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 var mg *comcfg.Manager
 
+// Configuration of UI
 type Configuration struct {
 	DomainName                 string                 `json:"domain_name"` // Harbor external URL: protocal://host:port
 	Authentication             *models.Authentication `json:"authentication"`
@@ -40,59 +41,52 @@ type Configuration struct {
 	CompressJS      bool   `json:"compress_js"`
 	TokenExpiration int    `json:"token_expiration"`
 	SecretKey       string `json:"secret_key"`
-	CfgExpiration   int    `json:"cfg_expiration`
+	CfgExpiration   int    `json:"cfg_expiration"`
 }
 
+type parser struct {
+}
+
+func (p *parser) Parse(b []byte) (interface{}, error) {
+	c := &Configuration{}
+	if err := json.Unmarshal(b, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// Init configurations
 func Init() error {
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
-		adminServerURL = "http://admin_server"
+		adminServerURL = "http://adminserver"
 	}
-	mg = comcfg.NewManager("cfg", adminServerURL)
+	log.Debugf("admin server URL: %s", adminServerURL)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
 
-	if err := mg.Loader.Init(); err != nil {
+	if err := mg.Init(); err != nil {
 		return err
 	}
 
-	if err := Load(); err != nil {
+	if _, err := mg.Load(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Get returns configurations of UI, if cache is null, it loads first
 func get() (*Configuration, error) {
-	cfg := mg.GetFromCache()
-	if cfg != nil {
-		return cfg.(*Configuration), nil
-	}
-
-	if err := Load(); err != nil {
+	c, err := mg.Get()
+	if err != nil {
 		return nil, err
 	}
-
-	return mg.GetFromCache().(*Configuration), nil
+	return c.(*Configuration), nil
 }
 
-// Load loads configurations of UI and puts them into cache
+// Load configurations
 func Load() error {
-	raw, err := mg.Loader.Load()
-	if err != nil {
-		return err
-	}
-
-	cfg := &Configuration{}
-	if err = json.Unmarshal(raw, cfg); err != nil {
-		return err
-	}
-
-	if err = mg.Cache.Put(mg.Key, cfg,
-		time.Duration(cfg.CfgExpiration)*time.Second); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := mg.Load()
+	return err
 }
 
 // Upload uploads all system configutations to admin server
@@ -101,7 +95,7 @@ func Upload(cfg map[string]string) error {
 	if err != nil {
 		return err
 	}
-	return mg.Loader.Upload(b)
+	return mg.Upload(b)
 }
 
 // GetSystemCfg returns the system configurations
@@ -195,14 +189,13 @@ func InitialAdminPassword() (string, error) {
 	return cfg.InitialAdminPwd, nil
 }
 
-// TODO
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject() (bool, error) {
 	cfg, err := get()
 	if err != nil {
 		return true, err
 	}
-	return cfg.ProjectCreationRestriction == comcfg.PRO_CRT_RESTR_ADM_ONLY, nil
+	return cfg.ProjectCreationRestriction == comcfg.ProCrtRestrAdmOnly, nil
 }
 
 // VerifyRemoteCert returns bool value.
@@ -214,6 +207,7 @@ func VerifyRemoteCert() (bool, error) {
 	return cfg.VerifyRemoteCert, nil
 }
 
+// Email returns email server settings
 func Email() (*models.Email, error) {
 	cfg, err := get()
 	if err != nil {
@@ -222,6 +216,7 @@ func Email() (*models.Email, error) {
 	return cfg.Email, nil
 }
 
+// Database returns database settings
 func Database() (*models.Database, error) {
 	cfg, err := get()
 	if err != nil {
@@ -230,8 +225,8 @@ func Database() (*models.Database, error) {
 	return cfg.Database, nil
 }
 
-// TODO
 // UISecret returns the value of UI secret cookie, used for communication between UI and JobService
+// TODO
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }

@@ -16,6 +16,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -64,7 +66,6 @@ func resumeJobs() {
 	}
 }
 
-/*
 func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
@@ -72,4 +73,3 @@ func init() {
 		beego.LoadAppConfig("ini", configPath)
 	}
 }
-*/

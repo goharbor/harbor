@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 // RequestHandlerMapping is a mapping between request and its handler
@@ -78,11 +80,11 @@ func Handler(resp *Response) func(http.ResponseWriter, *http.Request) {
 
 // NewServer creates a HTTP server for unit test
 func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
-	mux := http.NewServeMux()
+	r := mux.NewRouter()
 
 	for _, mapping := range mappings {
-		mux.Handle(mapping.Pattern, mapping)
+		r.PathPrefix(mapping.Pattern).Handler(mapping).Methods(mapping.Method)
 	}
 
-	return httptest.NewServer(mux)
+	return httptest.NewServer(r)
 }

@@ -18,16 +18,14 @@ package config
 import (
 	"encoding/json"
 	"os"
-	"time"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
-	//"github.com/vmware/harbor/src/common/utils/log"
 )
 
 var mg *comcfg.Manager
 
-// Configuration holds configurations of Jobservice
+// Configuration of Jobservice
 type Configuration struct {
 	Database         *models.Database `json:"database"`
 	Registry         *models.Registry `json:"registry"`
@@ -38,65 +36,42 @@ type Configuration struct {
 	CfgExpiration    int              `json:"cfg_expiration"`
 }
 
+type parser struct {
+}
+
+func (p *parser) Parse(b []byte) (interface{}, error) {
+	c := &Configuration{}
+	if err := json.Unmarshal(b, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// Init configurations
 func Init() error {
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
-		adminServerURL = "http://admin_server"
+		adminServerURL = "http://adminserver"
 	}
-	mg = comcfg.NewManager("cfg", adminServerURL)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
 
-	if err := mg.Loader.Init(); err != nil {
+	if err := mg.Init(); err != nil {
 		return err
 	}
 
-	if err := load(); err != nil {
-		return err
-	}
-
-	path, err := LogDir()
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(path, 0600); err != nil {
+	if _, err := mg.Load(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// get returns configurations of jobservice from cache,
-// if cache is null, it loads first
 func get() (*Configuration, error) {
-	cfg := mg.GetFromCache()
-	if cfg != nil {
-		return cfg.(*Configuration), nil
-	}
-
-	if err := load(); err != nil {
+	c, err := mg.Get()
+	if err != nil {
 		return nil, err
 	}
-
-	return mg.GetFromCache().(*Configuration), nil
-}
-
-// load loads configurations of jobservice and puts them into cache
-func load() error {
-	raw, err := mg.Loader.Load()
-	if err != nil {
-		return err
-	}
-
-	cfg := &Configuration{}
-	if err = json.Unmarshal(raw, cfg); err != nil {
-		return err
-	}
-
-	if err = mg.Cache.Put(mg.Key, cfg,
-		time.Duration(cfg.CfgExpiration)*time.Second); err != nil {
-		return err
-	}
-
-	return nil
+	return c.(*Configuration), nil
 }
 
 // VerifyRemoteCert returns bool value.
@@ -149,11 +124,6 @@ func LogDir() (string, error) {
 	return cfg.JobLogDir, nil
 }
 
-// UISecret will return the value of secret cookie for jobsevice to call UI API.
-func UISecret() string {
-	return os.Getenv("UI_SECRET")
-}
-
 // SecretKey will return the secret key for encryption/decryption password in target.
 func SecretKey() (string, error) {
 	cfg, err := get()
@@ -161,4 +131,10 @@ func SecretKey() (string, error) {
 		return "", err
 	}
 	return cfg.SecretKey, nil
+}
+
+// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
+// TODO
+func UISecret() string {
+	return os.Getenv("UI_SECRET")
 }

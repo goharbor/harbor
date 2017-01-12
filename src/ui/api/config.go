@@ -30,6 +30,7 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 )
 
+// ConfigAPI ...
 type ConfigAPI struct {
 	api.BaseAPI
 }
@@ -56,9 +57,25 @@ func (c *ConfigAPI) Get() {
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	//TODO filter attr in sys config
+	if cfg.Database.MySQL != nil {
+		cfg.Database.MySQL.Password = ""
+	}
 
-	c.Data["json"] = cfg
+	cfg.InitialAdminPwd = ""
+	cfg.SecretKey = ""
+
+	m := map[string]interface{}{}
+	m["config"] = cfg
+
+	editable, err := dao.AuthModeCanBeModified()
+	if err != nil {
+		log.Errorf("failed to determinie whether auth mode can be modified: %v", err)
+		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	m["auth_mode_editable"] = editable
+
+	c.Data["json"] = m
 	c.ServeJSON()
 }
 
@@ -70,7 +87,7 @@ func (c *ConfigAPI) Put() {
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
-	if value, ok := m[comcfg.AUTH_MODE]; ok {
+	if value, ok := m[comcfg.AUTHMode]; ok {
 		mode, err := config.AuthMode()
 		if err != nil {
 			log.Errorf("failed to get auth mode: %v", err)
@@ -87,12 +104,10 @@ func (c *ConfigAPI) Put() {
 			if !flag {
 				c.CustomAbort(http.StatusBadRequest,
 					fmt.Sprintf("%s can not be modified as new users have been inserted into database",
-						comcfg.AUTH_MODE))
+						comcfg.AUTHMode))
 			}
 		}
 	}
-
-	log.Info(m)
 
 	if err := config.Upload(m); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
@@ -105,82 +120,81 @@ func (c *ConfigAPI) Put() {
 	}
 }
 
-// TODO ldap timeout, scope value
 func validateCfg(c map[string]string) error {
-	if value, ok := c[comcfg.AUTH_MODE]; ok {
-		if value != comcfg.DB_AUTH && value != comcfg.LDAP_AUTH {
-			return fmt.Errorf("invalid %s, shoud be %s or %s", comcfg.AUTH_MODE, comcfg.DB_AUTH, comcfg.LDAP_AUTH)
+	if value, ok := c[comcfg.AUTHMode]; ok {
+		if value != comcfg.DBAuth && value != comcfg.LDAPAuth {
+			return fmt.Errorf("invalid %s, shoud be %s or %s", comcfg.AUTHMode, comcfg.DBAuth, comcfg.LDAPAuth)
 		}
 
-		if value == comcfg.LDAP_AUTH {
-			if _, ok := c[comcfg.LDAP_URL]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAP_URL)
+		if value == comcfg.LDAPAuth {
+			if _, ok := c[comcfg.LDAPURL]; !ok {
+				return fmt.Errorf("%s is missing", comcfg.LDAPURL)
 			}
-			if _, ok := c[comcfg.LDAP_BASE_DN]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAP_BASE_DN)
+			if _, ok := c[comcfg.LDAPBaseDN]; !ok {
+				return fmt.Errorf("%s is missing", comcfg.LDAPBaseDN)
 			}
-			if _, ok := c[comcfg.LDAP_UID]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAP_UID)
+			if _, ok := c[comcfg.LDAPUID]; !ok {
+				return fmt.Errorf("%s is missing", comcfg.LDAPUID)
 			}
-			if _, ok := c[comcfg.LDAP_SCOPE]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAP_SCOPE)
+			if _, ok := c[comcfg.LDAPScope]; !ok {
+				return fmt.Errorf("%s is missing", comcfg.LDAPScope)
 			}
 		}
 	}
 
-	if ldapURL, ok := c[comcfg.LDAP_URL]; ok && len(ldapURL) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAP_URL)
+	if ldapURL, ok := c[comcfg.LDAPURL]; ok && len(ldapURL) == 0 {
+		return fmt.Errorf("%s is empty", comcfg.LDAPURL)
 	}
-	if baseDN, ok := c[comcfg.LDAP_BASE_DN]; ok && len(baseDN) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAP_BASE_DN)
+	if baseDN, ok := c[comcfg.LDAPBaseDN]; ok && len(baseDN) == 0 {
+		return fmt.Errorf("%s is empty", comcfg.LDAPBaseDN)
 	}
-	if uID, ok := c[comcfg.LDAP_UID]; ok && len(uID) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAP_UID)
+	if uID, ok := c[comcfg.LDAPUID]; ok && len(uID) == 0 {
+		return fmt.Errorf("%s is empty", comcfg.LDAPUID)
 	}
-	if scope, ok := c[comcfg.LDAP_SCOPE]; ok &&
-		scope != comcfg.LDAP_SCOPE_BASE &&
-		scope != comcfg.LDAP_SCOPE_ONELEVEL &&
-		scope != comcfg.LDAP_SCOPE_SUBTREE {
+	if scope, ok := c[comcfg.LDAPScope]; ok &&
+		scope != comcfg.LDAPScopeBase &&
+		scope != comcfg.LDAPScopeOnelevel &&
+		scope != comcfg.LDAPScopeSubtree {
 		return fmt.Errorf("invalid %s, should be %s, %s or %s",
-			comcfg.LDAP_SCOPE,
-			comcfg.LDAP_SCOPE_BASE,
-			comcfg.LDAP_SCOPE_ONELEVEL,
-			comcfg.LDAP_SCOPE_SUBTREE)
+			comcfg.LDAPScope,
+			comcfg.LDAPScopeBase,
+			comcfg.LDAPScopeOnelevel,
+			comcfg.LDAPScopeSubtree)
+	}
+	if timeout, ok := c[comcfg.LDAPTimeout]; ok {
+		if t, err := strconv.Atoi(timeout); err != nil || t < 0 {
+			return fmt.Errorf("invalid %s", comcfg.LDAPTimeout)
+		}
 	}
 
-	if self, ok := c[comcfg.SELF_REGISTRATION]; ok &&
-		self != "true" && self != "false" {
+	if self, ok := c[comcfg.SelfRegistration]; ok &&
+		self != "0" && self != "1" {
 		return fmt.Errorf("%s should be %s or %s",
-			comcfg.SELF_REGISTRATION, "true", "false")
+			comcfg.SelfRegistration, "0", "1")
 	}
 
-	if port, ok := c[comcfg.EMAIL_SERVER_PORT]; ok {
+	if port, ok := c[comcfg.EmailPort]; ok {
 		if p, err := strconv.Atoi(port); err != nil || p < 0 || p > 65535 {
-			return fmt.Errorf("invalid %s", comcfg.EMAIL_SERVER_PORT)
+			return fmt.Errorf("invalid %s", comcfg.EmailPort)
 		}
 	}
 
-	if ssl, ok := c[comcfg.EMAIL_SSL]; ok && ssl != "true" && ssl != "false" {
-		return fmt.Errorf("%s should be true or false", comcfg.EMAIL_SSL)
+	if ssl, ok := c[comcfg.EmailSSL]; ok && ssl != "0" && ssl != "1" {
+		return fmt.Errorf("%s should be %s or %s", comcfg.EmailSSL, "0", "1")
 	}
 
-	if crt, ok := c[comcfg.PROJECT_CREATION_RESTRICTION]; ok &&
-		crt != comcfg.PRO_CRT_RESTR_EVERYONE &&
-		crt != comcfg.PRO_CRT_RESTR_ADM_ONLY {
+	if crt, ok := c[comcfg.ProjectCreationRestriction]; ok &&
+		crt != comcfg.ProCrtRestrEveryone &&
+		crt != comcfg.ProCrtRestrAdmOnly {
 		return fmt.Errorf("invalid %s, should be %s or %s",
-			comcfg.PROJECT_CREATION_RESTRICTION,
-			comcfg.PRO_CRT_RESTR_ADM_ONLY,
-			comcfg.PRO_CRT_RESTR_EVERYONE)
+			comcfg.ProjectCreationRestriction,
+			comcfg.ProCrtRestrAdmOnly,
+			comcfg.ProCrtRestrEveryone)
 	}
 
-	if verify, ok := c[comcfg.VERIFY_REMOTE_CERT]; ok && verify != "true" && verify != "false" {
-		return fmt.Errorf("invalid %s, should be true or false", comcfg.VERIFY_REMOTE_CERT)
-	}
-
-	if worker, ok := c[comcfg.MAX_JOB_WORKERS]; ok {
-		if w, err := strconv.Atoi(worker); err != nil || w <= 0 {
-			return fmt.Errorf("invalid %s", comcfg.MAX_JOB_WORKERS)
-		}
+	if verify, ok := c[comcfg.VerifyRemoteCert]; ok && verify != "0" && verify != "1" {
+		return fmt.Errorf("invalid %s, should be %s or %s",
+			comcfg.VerifyRemoteCert, "0", "1")
 	}
 
 	return nil

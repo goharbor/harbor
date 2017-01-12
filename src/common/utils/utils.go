@@ -75,7 +75,10 @@ func GenerateRandomString() string {
 	return string(result)
 }
 
-// timeout in second
+// TestTCPConn tests TCP connection
+// timeout: the total time before returning if something is wrong
+// with the connection, in second
+// interval: the interval time for retring after failure, in second
 func TestTCPConn(addr string, timeout, interval int) error {
 	success := make(chan int)
 	cancel := make(chan int)

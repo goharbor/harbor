@@ -46,7 +46,7 @@ type MySQL struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 	Database string `json:"database"`
 }
 
@@ -61,7 +61,7 @@ type Email struct {
 	Port     string `json:"port"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	TLS      bool   `json:"tls"`
+	SSL      bool   `json:"ssl"`
 	Identity string `json:"identity"`
 	From     string `json:"from"`
 }
@@ -88,9 +88,9 @@ type SystemCfg struct {
 	ProjectCreationRestriction string          `json:"project_creation_restriction"`
 	MaxJobWorkers              int             `json:"max_job_workers"`
 	JobLogDir                  string          `json:"job_log_dir"`
-	InitialAdminPwd            string          `json:"initial_admin_pwd"`
+	InitialAdminPwd            string          `json:"initial_admin_pwd,omitempty"`
 	CompressJS                 bool            `json:"compress_js"`      //TODO remove
 	TokenExpiration            int             `json:"token_expiration"` // in minute
-	SecretKey                  string          `json:"secret_key"`
+	SecretKey                  string          `json:"secret_key,omitempty"`
 	CfgExpiration              int             `json:"cfg_expiration"`
 }

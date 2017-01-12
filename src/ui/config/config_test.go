@@ -17,131 +17,92 @@ package config
 import (
 	"os"
 	"testing"
+
+	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-var (
-	auth = "ldap_auth"
-	ldap = LDAPSetting{
-		"ldap://test.ldap.com",
-		"ou=people",
-		"dc=whatever,dc=org",
-		"1234567",
-		"cn",
-		"uid",
-		"2",
-		"5",
-	}
-	tokenExp                   = "3"
-	tokenExpRes                = 3
-	adminPassword              = "password"
-	externalRegURL             = "127.0.0.1"
-	uiSecret                   = "ffadsdfsdf"
-	secretKey                  = "keykey"
-	selfRegistration           = "off"
-	projectCreationRestriction = "adminonly"
-	internalRegistryURL        = "http://registry:5000"
-	jobServiceURL              = "http://jobservice"
-)
-
-func TestMain(m *testing.M) {
-
-	os.Setenv("AUTH_MODE", auth)
-	os.Setenv("LDAP_URL", ldap.URL)
-	os.Setenv("LDAP_BASE_DN", ldap.BaseDn)
-	os.Setenv("LDAP_SEARCH_DN", ldap.SearchDn)
-	os.Setenv("LDAP_SEARCH_PWD", ldap.SearchPwd)
-	os.Setenv("LDAP_UID", ldap.UID)
-	os.Setenv("LDAP_SCOPE", ldap.Scope)
-	os.Setenv("LDAP_FILTER", ldap.Filter)
-	os.Setenv("LDAP_CONNECT_TIMEOUT", ldap.ConnectTimeout)
-	os.Setenv("TOKEN_EXPIRATION", tokenExp)
-	os.Setenv("HARBOR_ADMIN_PASSWORD", adminPassword)
-	os.Setenv("EXT_REG_URL", externalRegURL)
-	os.Setenv("UI_SECRET", uiSecret)
-	os.Setenv("SECRET_KEY", secretKey)
-	os.Setenv("SELF_REGISTRATION", selfRegistration)
-	os.Setenv("PROJECT_CREATION_RESTRICTION", projectCreationRestriction)
-	os.Setenv("REGISTRY_URL", internalRegistryURL)
-	os.Setenv("JOB_SERVICE_URL", jobServiceURL)
-
-	err := Reload()
+// test functions under package ui/config
+func TestConfig(t *testing.T) {
+	server, err := test.NewAdminserver()
 	if err != nil {
-		panic(err)
+		t.Fatalf("failed to create a mock admin server: %v", err)
 	}
-	rc := m.Run()
+	defer server.Close()
 
-	os.Unsetenv("AUTH_MODE")
-	os.Unsetenv("LDAP_URL")
-	os.Unsetenv("LDAP_BASE_DN")
-	os.Unsetenv("LDAP_SEARCH_DN")
-	os.Unsetenv("LDAP_SEARCH_PWD")
-	os.Unsetenv("LDAP_UID")
-	os.Unsetenv("LDAP_SCOPE")
-	os.Unsetenv("LDAP_FILTER")
-	os.Unsetenv("LDAP_CONNECT_TIMEOUT")
-	os.Unsetenv("TOKEN_EXPIRATION")
-	os.Unsetenv("HARBOR_ADMIN_PASSWORD")
-	os.Unsetenv("EXT_REG_URL")
-	os.Unsetenv("UI_SECRET")
-	os.Unsetenv("SECRET_KEY")
-	os.Unsetenv("SELF_REGISTRATION")
-	os.Unsetenv("CREATE_PROJECT_RESTRICTION")
-	os.Unsetenv("REGISTRY_URL")
-	os.Unsetenv("JOB_SERVICE_URL")
+	url := os.Getenv("ADMIN_SERVER_URL")
+	defer os.Setenv("ADMIN_SERVER_URL", url)
 
-	os.Exit(rc)
-}
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	}
 
-func TestAuth(t *testing.T) {
-	if AuthMode() != auth {
-		t.Errorf("Expected auth mode:%s, in fact: %s", auth, AuthMode())
+	if err := Init(); err != nil {
+		t.Fatalf("failed to initialize configurations: %v", err)
 	}
-	if LDAP() != ldap {
-		t.Errorf("Expected ldap setting: %+v, in fact: %+v", ldap, LDAP())
-	}
-}
 
-func TestTokenExpiration(t *testing.T) {
-	if TokenExpiration() != tokenExpRes {
-		t.Errorf("Expected token expiration: %d, in fact: %d", tokenExpRes, TokenExpiration())
+	if err := Load(); err != nil {
+		t.Fatalf("failed to load configurations: %v", err)
 	}
-}
 
-func TestURLs(t *testing.T) {
-	if InternalRegistryURL() != internalRegistryURL {
-		t.Errorf("Expected internal Registry URL: %s, in fact: %s", internalRegistryURL, InternalRegistryURL())
+	if err := Upload(map[string]string{}); err != nil {
+		t.Fatalf("failed to upload configurations: %v", err)
 	}
-	if InternalJobServiceURL() != jobServiceURL {
-		t.Errorf("Expected internal jobservice URL: %s, in fact: %s", jobServiceURL, InternalJobServiceURL())
-	}
-	if ExtRegistryURL() != externalRegURL {
-		t.Errorf("Expected External Registry URL: %s, in fact: %s", externalRegURL, ExtRegistryURL())
-	}
-}
 
-func TestSelfRegistration(t *testing.T) {
-	if SelfRegistration() {
-		t.Errorf("Expected Self Registration to be false")
+	if _, err := GetSystemCfg(); err != nil {
+		t.Fatalf("failed to get system configurations: %v", err)
 	}
-}
 
-func TestSecrets(t *testing.T) {
-	if SecretKey() != secretKey {
-		t.Errorf("Expected Secrect Key :%s, in fact: %s", secretKey, SecretKey())
+	mode, err := AuthMode()
+	if err != nil {
+		t.Fatalf("failed to get auth mode: %v", err)
 	}
-	if UISecret() != uiSecret {
-		t.Errorf("Expected UI Secret: %s, in fact: %s", uiSecret, UISecret())
+	if mode != "db_auth" {
+		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
-}
 
-func TestProjectCreationRestrict(t *testing.T) {
-	if !OnlyAdminCreateProject() {
-		t.Errorf("Expected OnlyAdminCreateProject to be true")
+	if _, err := LDAP(); err != nil {
+		t.Fatalf("failed to get ldap settings: %v", err)
 	}
-}
 
-func TestInitAdminPassword(t *testing.T) {
-	if InitialAdminPassword() != adminPassword {
-		t.Errorf("Expected adminPassword: %s, in fact: %s", adminPassword, InitialAdminPassword())
+	if _, err := TokenExpiration(); err != nil {
+		t.Fatalf("failed to get token expiration: %v", err)
 	}
+
+	if _, err := DomainName(); err != nil {
+		t.Fatalf("failed to get domain name: %v", err)
+	}
+
+	if _, err := SecretKey(); err != nil {
+		t.Fatalf("failed to get secret key: %v", err)
+	}
+
+	if _, err := SelfRegistration(); err != nil {
+		t.Fatalf("failed to get self registration: %v", err)
+	}
+
+	if _, err := RegistryURL(); err != nil {
+		t.Fatalf("failed to get registry URL: %v", err)
+	}
+
+	InternalJobServiceURL()
+
+	InitialAdminPassword()
+
+	if _, err := OnlyAdminCreateProject(); err != nil {
+		t.Fatalf("failed to get onldy admin create project: %v", err)
+	}
+
+	if _, err := VerifyRemoteCert(); err != nil {
+		t.Fatalf("failed to get verify remote cert: %v", err)
+	}
+
+	if _, err := Email(); err != nil {
+		t.Fatalf("failed to get email settings: %v", err)
+	}
+
+	if _, err := Database(); err != nil {
+		t.Fatalf("failed to get database: %v", err)
+	}
+
+	UISecret()
 }
