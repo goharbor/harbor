@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-ui-config
+data:
+  MYSQL_HOST: mysql
+  MYSQL_PORT: "3306"
+  MYSQL_USR: root
+  MYSQL_PWD: "{{db_password}}"
+  REGISTRY_URL: http://registry:5000
+  CONFIG_PATH: /etc/ui/app.conf
+  HARBOR_REG_URL: "{{hostname}}"
+  HARBOR_ADMIN_PASSWORD: "{{harbor_admin_password}}"
+  HARBOR_URL: http://ui
+  AUTH_MODE: "{{auth_mode}}"
+  LDAP_URL: "{{ldap_url}}"
+  LDAP_SEARCH_DN: "{{ldap_searchdn}}"
+  LDAP_SEARCH_PWD: "{{ldap_search_pwd}}"
+  LDAP_BASE_DN: "{{ldap_basedn}}"
+  LDAP_FILTER: "{{ldap_filter}}"
+  LDAP_UID: "{{ldap_uid}}"
+  LDAP_SCOPE: "{{ldap_scope}}"
+  LOG_LEVEL: debug
+  UI_SECRET: "{{ui_secret}}"
+  SECRET_KEY: "{{secret_key}}"
+  GODEBUG: netdns=cgo
+  EXT_ENDPOINT: "{{ui_url}}"
+  TOKEN_URL: http://ui
+  SELF_REGISTRATION: "{{self_registration}}"
+  USE_COMPRESSED_JS: "{{use_compressed_js}}"
+  VERIFY_REMOTE_CERT: "{{verify_remote_cert}}"
+  TOKEN_EXPIRATION: "{{token_expiration}}"
+  EXT_REG_URL: "{{hostname}}"
+  config: |
+    appname = registry
+    runmode = dev
+    [lang]
+    types = en-US|zh-CN
+    names = en-US|zh-CN
+    [dev]
+    httpport = 80
+    [mail]
+    host = {{email_server}}
+    port = {{email_server_port}}
+    username = {{email_username}}
+    password = {{email_password}}
+    from = {{email_from}}
+    ssl = {{email_ssl}}
+  pkey: |
+    {{4 auth_pkey}}
+
+

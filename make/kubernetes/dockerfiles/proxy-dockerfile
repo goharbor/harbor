@@ -1,3 +1,0 @@
-FROM library/nginx:1.11.5
-
-ADD ./config/nginx /etc/nginx
