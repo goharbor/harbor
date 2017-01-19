@@ -98,6 +98,7 @@ func init() {
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
+	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -904,4 +905,20 @@ func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, body, err
+}
+
+//Post ldap test
+func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, error) {
+
+	_sling := sling.New().Post(a.basePath)
+
+	// create path and map variables
+	path := "/api/ldap/ping"
+
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(ldapConf)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
 }
