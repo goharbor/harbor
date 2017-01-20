@@ -44,7 +44,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to load configurations: %v", err)
 	}
 
-	if err := Upload(map[string]string{}); err != nil {
+	if err := Upload(map[string]interface{}{}); err != nil {
 		t.Fatalf("failed to upload configurations: %v", err)
 	}
 

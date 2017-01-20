@@ -15,51 +15,43 @@
 
 package systemcfg
 
-/*
 import (
 	"os"
 	"testing"
+
+	comcfg "github.com/vmware/harbor/src/common/config"
 )
 
-
+// test functions under adminserver/systemcfg
 func TestSystemcfg(t *testing.T) {
 	key := "JSON_STORE_PATH"
-	tmpPath := "/tmp/config.json"
-	originalPath := os.Getenv(key)
-	defer func() {
-		if err := os.Remove(tmpPath); err != nil {
-			t.Errorf("failed to remove %s: %v", tmpPath, err)
+	path := "/tmp/config.json"
+	if _, err := os.Stat(path); err == nil {
+		if err := os.Remove(path); err != nil {
+			t.Fatalf("failed to remove %s: %v", path, err)
 		}
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("failed to check the existence of %s: %v", path, err)
+	}
 
-		if len(originalPath) == 0 {
-			if err := os.Unsetenv(key); err != nil {
-				t.Fatalf("failed to unset env %s: %v", key, err)
-			}
-			return
-		}
-
-		if err := os.Setenv(key, originalPath); err != nil {
-			t.Fatalf("failed to set env %s: %v", key, err)
-		}
-	}()
-
-	if err := os.Setenv(key, tmpPath); err != nil {
+	if err := os.Setenv(key, path); err != nil {
 		t.Fatalf("failed to set env %s: %v", key, err)
 	}
 
 	m := map[string]string{
+		"AUTH_MODE":        comcfg.DBAuth,
 		"LDAP_SCOPE":       "1",
 		"LDAP_TIMEOUT":     "30",
 		"MYSQL_PORT":       "3306",
 		"MAX_JOB_WORKERS":  "3",
 		"TOKEN_EXPIRATION": "30",
 		"CFG_EXPIRATION":   "5",
+		"EMAIL_PORT":       "25",
 	}
 
 	for k, v := range m {
 		if err := os.Setenv(k, v); err != nil {
-			t.Errorf("failed to set env %s: %v", k, err)
-			return
+			t.Fatalf("failed to set env %s: %v", k, err)
 		}
 	}
 
@@ -67,5 +59,46 @@ func TestSystemcfg(t *testing.T) {
 		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
+	defer func() {
+		if err := os.Remove(path); err != nil {
+			t.Fatalf("failed to remove %s: %v", path, err)
+		}
+	}()
+
+	// run Init again to make sure it works well when the configuration file
+	// already exists
+	if err := Init(); err != nil {
+		t.Errorf("failed to initialize system configurations: %v", err)
+		return
+	}
+
+	cfg, err := GetSystemCfg()
+	if err != nil {
+		t.Errorf("failed to get system configurations: %v", err)
+		return
+	}
+
+	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
+		t.Errorf("unexpected auth mode: %s != %s",
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+		return
+	}
+
+	cfg[comcfg.AUTHMode] = comcfg.LDAPAuth
+	if err = UpdateSystemCfg(cfg); err != nil {
+		t.Errorf("failed to update system configurations: %v", err)
+		return
+	}
+
+	cfg, err = GetSystemCfg()
+	if err != nil {
+		t.Errorf("failed to get system configurations: %v", err)
+		return
+	}
+
+	if cfg[comcfg.AUTHMode] != comcfg.LDAPAuth {
+		t.Errorf("unexpected auth mode: %s != %s",
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+		return
+	}
 }
-*/

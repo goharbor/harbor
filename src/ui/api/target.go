@@ -102,12 +102,12 @@ func (t *TargetAPI) Ping() {
 		password = t.GetString("password")
 	}
 
-	insecure, err := api.GetIsInsecure()
+	verify, err := config.VerifyRemoteCert()
 	if err != nil {
 		log.Errorf("failed to check whether insecure or not: %v", err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-	registry, err := newRegistryClient(endpoint, insecure, username, password,
+	registry, err := newRegistryClient(endpoint, !verify, username, password,
 		"", "", "")
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.

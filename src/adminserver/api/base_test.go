@@ -12,4 +12,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package api
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestHandleInternalServerError(t *testing.T) {
+	w := httptest.NewRecorder()
+	handleInternalServerError(w)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
+	}
+
+}

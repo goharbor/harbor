@@ -18,8 +18,6 @@ package json
 import (
 	"os"
 	"testing"
-
-	"github.com/vmware/harbor/src/common/models"
 )
 
 func TestReadWrite(t *testing.T) {
@@ -34,19 +32,21 @@ func TestReadWrite(t *testing.T) {
 		}
 	}()
 
-	config := &models.SystemCfg{
-		Authentication: &models.Authentication{
-			LDAP: &models.LDAP{},
-		},
-		Database: &models.Database{
-			MySQL: &models.MySQL{},
-		},
+	if store.Name() != "JSON" {
+		t.Errorf("unexpected name: %s != %s", store.Name(), "JSON")
+		return
+	}
+
+	config := map[string]interface{}{
+		"key": "value",
 	}
 	if err := store.Write(config); err != nil {
-		t.Fatalf("failed to write configurations to json file: %v", err)
+		t.Errorf("failed to write configurations to json file: %v", err)
+		return
 	}
 
 	if _, err = store.Read(); err != nil {
-		t.Fatalf("failed to read configurations from json file: %v", err)
+		t.Errorf("failed to read configurations from json file: %v", err)
+		return
 	}
 }

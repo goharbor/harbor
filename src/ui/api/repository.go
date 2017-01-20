@@ -366,14 +366,14 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	insecure, err := api.GetIsInsecure()
+	verify, err := config.VerifyRemoteCert()
 	if err != nil {
 		return nil, err
 	}
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, insecure, username, password,
+		return newRepositoryClient(endpoint, !verify, username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -382,7 +382,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, insecure, username, repoName,
+	return cache.NewRepositoryClient(endpoint, !verify, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 

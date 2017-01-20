@@ -40,7 +40,15 @@ const (
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
 
+	DomainName                 = "domain_name"
 	AUTHMode                   = "auth_mode"
+	DatabaseType               = "database_type"
+	MySQLHost                  = "mysql_host"
+	MySQLPort                  = "mysql_port"
+	MySQLUsername              = "mysql_username"
+	MySQLPassword              = "mysql_password"
+	MySQLDatabase              = "mysql_database"
+	SQLiteFile                 = "sqlite_file"
 	SelfRegistration           = "self_registration"
 	LDAPURL                    = "ldap_url"
 	LDAPSearchDN               = "ldap_search_dn"
@@ -50,6 +58,8 @@ const (
 	LDAPFilter                 = "ldap_filter"
 	LDAPScope                  = "ldap_scope"
 	LDAPTimeout                = "ldap_timeout"
+	TokenServiceURL            = "token_service_url"
+	RegistryURL                = "registry_url"
 	EmailHost                  = "email_host"
 	EmailPort                  = "email_port"
 	EmailUsername              = "email_username"
@@ -60,30 +70,29 @@ const (
 	ProjectCreationRestriction = "project_creation_restriction"
 	VerifyRemoteCert           = "verify_remote_cert"
 	MaxJobWorkers              = "max_job_workers"
+	TokenExpiration            = "token_expiration"
 	CfgExpiration              = "cfg_expiration"
+	JobLogDir                  = "job_log_dir"
+	UseCompressedJS            = "use_compressed_js"
+	SecretKey                  = "secret_key"
+	AdminInitialPassword       = "admin_initial_password"
 )
 
 // Manager manages configurations
 type Manager struct {
 	Loader *Loader
-	Parser Parser
+	Parser *Parser
 	Cache  bool
 	cache  cache.Cache
 	key    string
 }
 
-// Parser parses []byte to a specific configuration
-type Parser interface {
-	// Parse ...
-	Parse([]byte) (interface{}, error)
-}
-
 // NewManager returns an instance of Manager
 // url: the url from which loader loads configurations
-func NewManager(url, secret string, parser Parser, enableCache bool) *Manager {
+func NewManager(url, secret string, enableCache bool) *Manager {
 	m := &Manager{
 		Loader: NewLoader(url, secret),
-		Parser: parser,
+		Parser: &Parser{},
 	}
 
 	if enableCache {
@@ -101,7 +110,7 @@ func (m *Manager) Init() error {
 }
 
 // Load configurations, if cache is enabled, cache the configurations
-func (m *Manager) Load() (interface{}, error) {
+func (m *Manager) Load() (map[string]interface{}, error) {
 	b, err := m.Loader.Load()
 	if err != nil {
 		return nil, err
@@ -113,7 +122,7 @@ func (m *Manager) Load() (interface{}, error) {
 	}
 
 	if m.Cache {
-		expi, err := parseExpiration(b)
+		expi, err := getCfgExpiration(c)
 		if err != nil {
 			return nil, err
 		}
@@ -126,23 +135,26 @@ func (m *Manager) Load() (interface{}, error) {
 	return c, nil
 }
 
-func parseExpiration(b []byte) (int, error) {
-	expi := &struct {
-		Expi int `json:"cfg_expiration"`
-	}{}
-	if err := json.Unmarshal(b, expi); err != nil {
-		return 0, err
+func getCfgExpiration(m map[string]interface{}) (int, error) {
+	if m == nil {
+		return 0, fmt.Errorf("can not get cfg expiration as configurations are null")
 	}
-	return expi.Expi, nil
+
+	expi, ok := m[CfgExpiration]
+	if !ok {
+		return 0, fmt.Errorf("cfg expiration is not set")
+	}
+
+	return int(expi.(float64)), nil
 }
 
 // Get : if cache is enabled, read configurations from cache,
 // if cache is null or cache is disabled it loads configurations directly
-func (m *Manager) Get() (interface{}, error) {
+func (m *Manager) Get() (map[string]interface{}, error) {
 	if m.Cache {
 		c := m.cache.Get(m.key)
 		if c != nil {
-			return c, nil
+			return c.(map[string]interface{}), nil
 		}
 	}
 	return m.Load()
@@ -201,6 +213,11 @@ func (l *Loader) Load() ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%d", resp.StatusCode)
+	}
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -230,5 +247,20 @@ func (l *Loader) Upload(b []byte) error {
 		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
 	}
 
+	log.Debug("configurations uploaded")
+
 	return nil
+}
+
+// Parser parses configurations
+type Parser struct {
+}
+
+// Parse parses []byte to a map configuration
+func (p *Parser) Parse(b []byte) (map[string]interface{}, error) {
+	c := map[string]interface{}{}
+	if err := json.Unmarshal(b, &c); err != nil {
+		return nil, err
+	}
+	return c, nil
 }

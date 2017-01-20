@@ -24,14 +24,14 @@ type Authentication struct {
 
 // LDAP ...
 type LDAP struct {
-	URL       string `json:"url"`
-	SearchDN  string `json:"search_dn"`
-	SearchPwd string `json:"search_pwd"`
-	BaseDN    string `json:"base_dn"`
-	Filter    string `json:"filter"`
-	UID       string `json:"uid"`
-	Scope     int    `json:"scope"`
-	Timeout   int    `json:"timeout"` // in second
+	URL            string `json:"url"`
+	SearchDN       string `json:"search_dn"`
+	SearchPassword string `json:"search_password"`
+	BaseDN         string `json:"base_dn"`
+	Filter         string `json:"filter"`
+	UID            string `json:"uid"`
+	Scope          int    `json:"scope"`
+	Timeout        int    `json:"timeout"` // in second
 }
 
 // Database ...
@@ -58,7 +58,7 @@ type SQLite struct {
 // Email ...
 type Email struct {
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     int    `json:"port"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	SSL      bool   `json:"ssl"`

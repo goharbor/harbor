@@ -23,7 +23,6 @@ import (
 	"sync"
 
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -68,11 +67,15 @@ func (c *cfgStore) Name() string {
 }
 
 // Read ...
-func (c *cfgStore) Read() (*models.SystemCfg, error) {
+func (c *cfgStore) Read() (map[string]interface{}, error) {
 	c.RLock()
 	defer c.RUnlock()
 
-	b, err := ioutil.ReadFile(c.path)
+	return read(c.path)
+}
+
+func read(path string) (map[string]interface{}, error) {
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +85,8 @@ func (c *cfgStore) Read() (*models.SystemCfg, error) {
 		return nil, nil
 	}
 
-	config := &models.SystemCfg{}
-	if err = json.Unmarshal(b, config); err != nil {
+	config := map[string]interface{}{}
+	if err = json.Unmarshal(b, &config); err != nil {
 		return nil, err
 	}
 
@@ -91,14 +94,27 @@ func (c *cfgStore) Read() (*models.SystemCfg, error) {
 }
 
 // Write ...
-func (c *cfgStore) Write(config *models.SystemCfg) error {
-	b, err := json.MarshalIndent(config, "", "  ")
+func (c *cfgStore) Write(config map[string]interface{}) error {
+	c.Lock()
+	defer c.Unlock()
+
+	cfg, err := read(c.path)
 	if err != nil {
 		return err
 	}
 
-	c.Lock()
-	defer c.Unlock()
+	if cfg == nil {
+		cfg = config
+	} else {
+		for k, v := range config {
+			cfg[k] = v
+		}
+	}
+
+	b, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
 
 	if err = ioutil.WriteFile(c.path, b, 0600); err != nil {
 		return err
