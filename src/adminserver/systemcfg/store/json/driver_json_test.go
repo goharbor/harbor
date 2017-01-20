@@ -34,6 +34,11 @@ func TestReadWrite(t *testing.T) {
 		}
 	}()
 
+	if store.Name() != "JSON" {
+		t.Errorf("unexpected name: %s != %s", store.Name(), "JSON")
+		return
+	}
+
 	config := &models.SystemCfg{
 		Authentication: &models.Authentication{
 			LDAP: &models.LDAP{},
@@ -43,10 +48,12 @@ func TestReadWrite(t *testing.T) {
 		},
 	}
 	if err := store.Write(config); err != nil {
-		t.Fatalf("failed to write configurations to json file: %v", err)
+		t.Errorf("failed to write configurations to json file: %v", err)
+		return
 	}
 
 	if _, err = store.Read(); err != nil {
-		t.Fatalf("failed to read configurations from json file: %v", err)
+		t.Errorf("failed to read configurations from json file: %v", err)
+		return
 	}
 }

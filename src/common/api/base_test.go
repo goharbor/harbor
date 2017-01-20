@@ -13,23 +13,3 @@
    limitations under the License.
 */
 package api
-
-/*
-import (
-	"github.com/vmware/harbor/src/common/config"
-	"os"
-	"testing"
-)
-
-func TestGetIsInsecure(t *testing.T) {
-	os.Setenv("VERIFY_REMOTE_CERT", "off")
-	err := config.Reload()
-	if err != nil {
-		t.Errorf("Failed to load config, error: %v", err)
-	}
-	if !GetIsInsecure() {
-		t.Errorf("GetIsInsecure() should be true when VERIFY_REMOTE_CERT is off, in fact: false")
-	}
-	os.Unsetenv("VERIFY_REMOTE_CERT")
-}
-*/
