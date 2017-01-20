@@ -3,7 +3,13 @@
 This Document decribes how to deploy Harbor on Kubernetes.
 
 ### Prerequisite
-* You need to build docker images of Harbor. See [Installation Guide](./installation_guide.md)
+* You need to download docker images of Harbor. 
+	* Download the offline installer of Harbor from the [release](https://github.com/vmware/harbor/releases) page.
+	* Uncompress the offline installer and get the images tgz file harbor.*.tgz.
+	* Load the images into docker:  
+		```
+		docker load -i harbor.*.tgz 
+		```
 * You should have domain knowledge about Kubernetes (Replication Controller, Service, Persistent Volume, Persistent Volume Claim, Config Map). 
 
 ### Configuration
