@@ -1827,13 +1827,13 @@ definitions:
       ldap_url: 
         type: string
         description: The url of ldap service.
-      ldap_searchdn:
+      ldap_search_dn:
         type: string
         description: The search dn of ldap service.
-      ldap_search_pwd:
+      ldap_search_password:
         type: string
         description: The search password of ldap service.
-      ldap_basedn:
+      ldap_base_dn:
         type: string
         description: The base dn of ldap service.
       ldap_filter:
@@ -1846,7 +1846,7 @@ definitions:
         type: integer
         format: int64
         description: The serach scope of ldap service.
-      ldap_connect_timeout:
+      ldap_connection_timeout:
         type: integer
         format: int64
         description: The connect timeout of ldap service(second).
