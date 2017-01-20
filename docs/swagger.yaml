@@ -6,7 +6,7 @@ info:
   description: These APIs provide services for manipulating Harbor project.
   version: "0.3.0"
 # the domain of the service
-host: localshot
+host: localhost
 # array of all schemes that your API supports
 schemes:
   - http
