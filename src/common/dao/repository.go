@@ -110,13 +110,17 @@ func GetTopRepos(userID int, count int) ([]models.TopRepo, error) {
 		where (
 			p.deleted = 0 and (
 				p.public = 1 or (
-					? <> ? and exists (
-						select 1 from project_member pm
-						where pm.project_id = p.project_id and pm.user_id = ?
-		))))
+					? <> ? and (
+						exists (
+							select 1 from user u
+							where u.user_id = ? and u.sysadmin_flag = 1
+						) or exists (
+							select 1 from project_member pm
+							where pm.project_id = p.project_id and pm.user_id = ?
+		)))))
 		order by r.pull_count desc, r.name limit ?`
 	repositories := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, count).QueryRows(&repositories)
+	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, userID, count).QueryRows(&repositories)
 	if err != nil {
 		return topRepos, err
 	}
