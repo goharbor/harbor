@@ -14,6 +14,8 @@ import (
 	"github.com/astaxie/beego"
 	//"github.com/dghubble/sling"
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 //const (
@@ -29,6 +31,9 @@ import (
 //var admin *usrInfo
 
 func init() {
+	if err := config.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
 
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
@@ -63,7 +68,6 @@ func init() {
 
 	//Init user Info
 	//admin = &usrInfo{adminName, adminPwd}
-
 }
 
 // TestMain is a sample to run an endpoint test

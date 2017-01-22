@@ -16,121 +16,125 @@
 package config
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
-	"strconv"
 
-	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/src/common/utils/log"
+	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 )
 
-const defaultMaxWorkers int = 10
+var mg *comcfg.Manager
 
-var maxJobWorkers int
-var localUIURL string
-var localRegURL string
-var logDir string
-var uiSecret string
-var secretKey string
-var verifyRemoteCert string
+// Configuration of Jobservice
+type Configuration struct {
+	Database         *models.Database `json:"database"`
+	Registry         *models.Registry `json:"registry"`
+	VerifyRemoteCert bool             `json:"verify_remote_cert"`
+	MaxJobWorkers    int              `json:"max_job_workers"`
+	JobLogDir        string           `json:"job_log_dir"`
+	SecretKey        string           `json:"secret_key"`
+	CfgExpiration    int              `json:"cfg_expiration"`
+}
 
-func init() {
-	maxWorkersEnv := os.Getenv("MAX_JOB_WORKERS")
-	maxWorkers64, err := strconv.ParseInt(maxWorkersEnv, 10, 32)
-	maxJobWorkers = int(maxWorkers64)
+type parser struct {
+}
+
+func (p *parser) Parse(b []byte) (interface{}, error) {
+	c := &Configuration{}
+	if err := json.Unmarshal(b, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// Init configurations
+func Init() error {
+	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	if len(adminServerURL) == 0 {
+		adminServerURL = "http://adminserver"
+	}
+	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
+
+	if err := mg.Init(); err != nil {
+		return err
+	}
+
+	if _, err := mg.Load(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func get() (*Configuration, error) {
+	c, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to parse max works setting, error: %v, the default value: %d will be used", err, defaultMaxWorkers)
-		maxJobWorkers = defaultMaxWorkers
+		return nil, err
 	}
+	return c.(*Configuration), nil
+}
 
-	localRegURL = os.Getenv("REGISTRY_URL")
-	if len(localRegURL) == 0 {
-		localRegURL = "http://registry:5000"
-	}
-
-	localUIURL = os.Getenv("UI_URL")
-	if len(localUIURL) == 0 {
-		localUIURL = "http://ui"
-	}
-
-	logDir = os.Getenv("LOG_DIR")
-	if len(logDir) == 0 {
-		logDir = "/var/log"
-	}
-
-	f, err := os.Open(logDir)
-	defer f.Close()
+// VerifyRemoteCert returns bool value.
+func VerifyRemoteCert() (bool, error) {
+	cfg, err := get()
 	if err != nil {
-		panic(err)
+		return true, err
 	}
-	finfo, err := f.Stat()
+	return cfg.VerifyRemoteCert, nil
+}
+
+// Database ...
+func Database() (*models.Database, error) {
+	cfg, err := get()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	if !finfo.IsDir() {
-		panic(fmt.Sprintf("%s is not a direcotry", logDir))
-	}
-
-	uiSecret = os.Getenv("UI_SECRET")
-	if len(uiSecret) == 0 {
-		panic("UI Secret is not set")
-	}
-
-	verifyRemoteCert = os.Getenv("VERIFY_REMOTE_CERT")
-	if len(verifyRemoteCert) == 0 {
-		verifyRemoteCert = "on"
-	}
-
-	configPath := os.Getenv("CONFIG_PATH")
-	if len(configPath) != 0 {
-		log.Infof("Config path: %s", configPath)
-		beego.LoadAppConfig("ini", configPath)
-	}
-
-	secretKey = os.Getenv("SECRET_KEY")
-	if len(secretKey) != 16 {
-		panic("The length of secretkey has to be 16 characters!")
-	}
-
-	log.Debugf("config: maxJobWorkers: %d", maxJobWorkers)
-	log.Debugf("config: localUIURL: %s", localUIURL)
-	log.Debugf("config: localRegURL: %s", localRegURL)
-	log.Debugf("config: verifyRemoteCert: %s", verifyRemoteCert)
-	log.Debugf("config: logDir: %s", logDir)
-	log.Debugf("config: uiSecret: ******")
+	return cfg.Database, nil
 }
 
 // MaxJobWorkers ...
-func MaxJobWorkers() int {
-	return maxJobWorkers
+func MaxJobWorkers() (int, error) {
+	cfg, err := get()
+	if err != nil {
+		return 0, err
+	}
+	return cfg.MaxJobWorkers, nil
 }
 
 // LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
 func LocalUIURL() string {
-	return localUIURL
+	return "http://ui"
 }
 
 // LocalRegURL returns the local registry url, job service will use this URL to pull image from the registry
-func LocalRegURL() string {
-	return localRegURL
+func LocalRegURL() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.Registry.URL, nil
 }
 
 // LogDir returns the absolute path to which the log file will be written
-func LogDir() string {
-	return logDir
-}
-
-// UISecret will return the value of secret cookie for jobsevice to call UI API.
-func UISecret() string {
-	return uiSecret
+func LogDir() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.JobLogDir, nil
 }
 
 // SecretKey will return the secret key for encryption/decryption password in target.
-func SecretKey() string {
-	return secretKey
+func SecretKey() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.SecretKey, nil
 }
 
-// VerifyRemoteCert return the flag to tell jobservice whether or not verify the cert of remote registry
-func VerifyRemoteCert() bool {
-	return verifyRemoteCert != "off"
+// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
+// TODO
+func UISecret() string {
+	return os.Getenv("UI_SECRET")
 }

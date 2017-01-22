@@ -14,6 +14,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
@@ -57,7 +58,14 @@ type usrInfo struct {
 }
 
 func init() {
-	dao.InitDatabase()
+	if err := config.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
+	database, err := config.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configurations: %v", err)
+	}
+	dao.InitDatabase(database)
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
@@ -513,7 +521,7 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, error) {
 
 //-------------------------Targets Test---------------------------------------//
 //Create a new replication target
-func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, error) {
+func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, string, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/targets"
@@ -521,8 +529,8 @@ func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (i
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(repTarget)
 
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, string(body), err
 }
 
 //List filters targets by name

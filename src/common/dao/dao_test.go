@@ -17,10 +17,12 @@ package dao
 
 import (
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	//"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -42,7 +44,7 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 func clearUp(username string) {
 	var err error
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 	o.Begin()
 
 	err = execUpdate(o, `delete 
@@ -135,7 +137,7 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
-	databases := []string{"mysql", "sqlite"}
+	databases := []string{"mysql"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
 
@@ -156,53 +158,63 @@ func TestMain(m *testing.M) {
 }
 
 func testForMySQL(m *testing.M) int {
-	db := os.Getenv("DATABASE")
-	defer os.Setenv("DATABASE", db)
-
-	os.Setenv("DATABASE", "mysql")
-
-	dbHost := os.Getenv("DB_HOST")
+	dbHost := os.Getenv("MYSQL_HOST")
 	if len(dbHost) == 0 {
-		log.Fatalf("environment variable DB_HOST is not set")
+		log.Fatalf("environment variable MYSQL_HOST is not set")
 	}
-	dbUser := os.Getenv("DB_USR")
+	dbUser := os.Getenv("MYSQL_USR")
 	if len(dbUser) == 0 {
-		log.Fatalf("environment variable DB_USR is not set")
+		log.Fatalf("environment variable MYSQL_USR is not set")
 	}
-	dbPort := os.Getenv("DB_PORT")
-	if len(dbPort) == 0 {
-		log.Fatalf("environment variable DB_PORT is not set")
+	dbPortStr := os.Getenv("MYSQL_PORT")
+	if len(dbPortStr) == 0 {
+		log.Fatalf("environment variable MYSQL_PORT is not set")
 	}
-	dbPassword := os.Getenv("DB_PWD")
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("invalid MYSQL_PORT: %v", err)
+	}
 
-	log.Infof("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	dbPassword := os.Getenv("MYSQL_PWD")
+	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	if len(dbDatabase) == 0 {
+		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+	}
 
-	os.Setenv("MYSQL_HOST", dbHost)
-	os.Setenv("MYSQL_PORT", dbPort)
-	os.Setenv("MYSQL_USR", dbUser)
-	os.Setenv("MYSQL_PWD", dbPassword)
+	database := &models.Database{
+		Type: "mysql",
+		MySQL: &models.MySQL{
+			Host:     dbHost,
+			Port:     dbPort,
+			Username: dbUser,
+			Password: dbPassword,
+			Database: dbDatabase,
+		},
+	}
 
-	return testForAll(m)
+	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %s, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+
+	return testForAll(m, database)
 }
 
 func testForSQLite(m *testing.M) int {
-	db := os.Getenv("DATABASE")
-	defer os.Setenv("DATABASE", db)
-
-	os.Setenv("DATABASE", "sqlite")
-
 	file := os.Getenv("SQLITE_FILE")
 	if len(file) == 0 {
-		os.Setenv("SQLITE_FILE", "/registry.db")
-		defer os.Setenv("SQLITE_FILE", "")
+		log.Fatalf("environment variable SQLITE_FILE is not set")
 	}
 
-	return testForAll(m)
+	database := &models.Database{
+		Type: "sqlite",
+		SQLite: &models.SQLite{
+			File: file,
+		},
+	}
+
+	return testForAll(m, database)
 }
 
-func testForAll(m *testing.M) int {
-	os.Setenv("AUTH_MODE", "db_auth")
-	initDatabaseForTest()
+func testForAll(m *testing.M, database *models.Database) int {
+	initDatabaseForTest(database)
 	clearUp(username)
 
 	return m.Run()
@@ -210,8 +222,8 @@ func testForAll(m *testing.M) int {
 
 var defaultRegistered = false
 
-func initDatabaseForTest() {
-	database, err := getDatabase()
+func initDatabaseForTest(db *models.Database) {
+	database, err := getDatabase(db)
 	if err != nil {
 		panic(err)
 	}
@@ -225,6 +237,12 @@ func initDatabaseForTest() {
 	}
 	if err := database.Register(alias); err != nil {
 		panic(err)
+	}
+
+	if alias != "default" {
+		if err = globalOrm.Using(alias); err != nil {
+			log.Fatalf("failed to create new orm: %v", err)
+		}
 	}
 }
 
@@ -977,13 +995,6 @@ func TestGetRecentLogs(t *testing.T) {
 	}
 	if len(logs) <= 0 {
 		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
-	}
-}
-
-func TestGetTopRepos(t *testing.T) {
-	_, err := GetTopRepos(10)
-	if err != nil {
-		t.Fatalf("error occured in getting top repos, error: %v", err)
 	}
 }
 

@@ -361,11 +361,19 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint := config.InternalRegistryURL()
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
+
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		return nil, err
+	}
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, api.GetIsInsecure(), username, password,
+		return newRepositoryClient(endpoint, !verify, username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -374,7 +382,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, api.GetIsInsecure(), username, repoName,
+	return cache.NewRepositoryClient(endpoint, !verify, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 
@@ -416,7 +424,12 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusBadRequest, "invalid count")
 	}
 
-	repos, err := dao.GetTopRepos(count)
+	userID, _, ok := ra.GetUserIDForRequest()
+	if !ok {
+		userID = dao.NonExistUserID
+	}
+
+	repos, err := dao.GetTopRepos(userID, count)
 	if err != nil {
 		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")

@@ -13,145 +13,220 @@
    limitations under the License.
 */
 
-// Package config provides methods to get configurations required by code in src/ui
 package config
 
 import (
-	"strconv"
-	"strings"
+	"encoding/json"
+	"os"
 
-	commonConfig "github.com/vmware/harbor/src/common/config"
+	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// LDAPSetting wraps the setting of an LDAP server
-type LDAPSetting struct {
-	URL            string
-	BaseDn         string
-	SearchDn       string
-	SearchPwd      string
-	UID            string
-	Filter         string
-	Scope          string
-	ConnectTimeout string
+var mg *comcfg.Manager
+
+// Configuration of UI
+type Configuration struct {
+	DomainName                 string                 `json:"domain_name"` // Harbor external URL: protocal://host:port
+	Authentication             *models.Authentication `json:"authentication"`
+	Database                   *models.Database       `json:"database"`
+	TokenService               *models.TokenService   `json:"token_service"`
+	Registry                   *models.Registry       `json:"registry"`
+	Email                      *models.Email          `json:"email"`
+	VerifyRemoteCert           bool                   `json:"verify_remote_cert"`
+	ProjectCreationRestriction string                 `json:"project_creation_restriction"`
+	InitialAdminPwd            string                 `json:"initial_admin_pwd"`
+	//TODO remove
+	CompressJS      bool   `json:"compress_js"`
+	TokenExpiration int    `json:"token_expiration"`
+	SecretKey       string `json:"secret_key"`
+	CfgExpiration   int    `json:"cfg_expiration"`
 }
 
-type uiParser struct{}
+type parser struct {
+}
 
-// Parse parses the auth settings url settings and other configuration consumed by code under src/ui
-func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) error {
-	mode := raw["AUTH_MODE"]
-	if mode == "ldap_auth" {
-		setting := LDAPSetting{
-			URL:            raw["LDAP_URL"],
-			BaseDn:         raw["LDAP_BASE_DN"],
-			SearchDn:       raw["LDAP_SEARCH_DN"],
-			SearchPwd:      raw["LDAP_SEARCH_PWD"],
-			UID:            raw["LDAP_UID"],
-			Filter:         raw["LDAP_FILTER"],
-			Scope:          raw["LDAP_SCOPE"],
-			ConnectTimeout: raw["LDAP_CONNECT_TIMEOUT"],
-		}
-		config["ldap"] = setting
+func (p *parser) Parse(b []byte) (interface{}, error) {
+	c := &Configuration{}
+	if err := json.Unmarshal(b, c); err != nil {
+		return nil, err
 	}
-	config["auth_mode"] = mode
-	var tokenExpiration = 30 //minutes
-	if len(raw["TOKEN_EXPIRATION"]) > 0 {
-		i, err := strconv.Atoi(raw["TOKEN_EXPIRATION"])
-		if err != nil {
-			log.Warningf("failed to parse token expiration: %v, using default value %d", err, tokenExpiration)
-		} else if i <= 0 {
-			log.Warningf("invalid token expiration, using default value: %d minutes", tokenExpiration)
-		} else {
-			tokenExpiration = i
-		}
+	return c, nil
+}
+
+// Init configurations
+func Init() error {
+	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	if len(adminServerURL) == 0 {
+		adminServerURL = "http://adminserver"
 	}
-	config["token_exp"] = tokenExpiration
-	config["admin_password"] = raw["HARBOR_ADMIN_PASSWORD"]
-	config["ext_reg_url"] = raw["EXT_REG_URL"]
-	config["ui_secret"] = raw["UI_SECRET"]
-	config["secret_key"] = raw["SECRET_KEY"]
-	config["self_registration"] = raw["SELF_REGISTRATION"] != "off"
-	config["admin_create_project"] = strings.ToLower(raw["PROJECT_CREATION_RESTRICTION"]) == "adminonly"
-	registryURL := raw["REGISTRY_URL"]
-	registryURL = strings.TrimRight(registryURL, "/")
-	config["internal_registry_url"] = registryURL
-	jobserviceURL := raw["JOB_SERVICE_URL"]
-	jobserviceURL = strings.TrimRight(jobserviceURL, "/")
-	config["internal_jobservice_url"] = jobserviceURL
+	log.Debugf("admin server URL: %s", adminServerURL)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
+
+	if err := mg.Init(); err != nil {
+		return err
+	}
+
+	if _, err := mg.Load(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-var uiConfig *commonConfig.Config
-
-func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "LDAP_CONNECT_TIMEOUT", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
-	uiConfig = &commonConfig.Config{
-		Config: make(map[string]interface{}),
-		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},
-		Parser: &uiParser{},
+func get() (*Configuration, error) {
+	c, err := mg.Get()
+	if err != nil {
+		return nil, err
 	}
-	if err := uiConfig.Load(); err != nil {
-		panic(err)
-	}
+	return c.(*Configuration), nil
 }
 
-// Reload ...
-func Reload() error {
-	return uiConfig.Load()
+// Load configurations
+func Load() error {
+	_, err := mg.Load()
+	return err
+}
+
+// Upload uploads all system configutations to admin server
+func Upload(cfg map[string]string) error {
+	b, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	return mg.Upload(b)
+}
+
+// GetSystemCfg returns the system configurations
+func GetSystemCfg() (*models.SystemCfg, error) {
+	raw, err := mg.Loader.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &models.SystemCfg{}
+	if err = json.Unmarshal(raw, cfg); err != nil {
+		return nil, err
+	}
+	return cfg, nil
 }
 
 // AuthMode ...
-func AuthMode() string {
-	return uiConfig.Config["auth_mode"].(string)
+func AuthMode() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.Authentication.Mode, nil
 }
 
 // LDAP returns the setting of ldap server
-func LDAP() LDAPSetting {
-	return uiConfig.Config["ldap"].(LDAPSetting)
+func LDAP() (*models.LDAP, error) {
+	cfg, err := get()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.Authentication.LDAP, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
-func TokenExpiration() int {
-	return uiConfig.Config["token_exp"].(int)
+func TokenExpiration() (int, error) {
+	cfg, err := get()
+	if err != nil {
+		return 0, err
+	}
+	return cfg.TokenExpiration, nil
 }
 
-// ExtRegistryURL returns the registry URL to exposed to external client
-func ExtRegistryURL() string {
-	return uiConfig.Config["ext_reg_url"].(string)
-}
-
-// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
-func UISecret() string {
-	return uiConfig.Config["ui_secret"].(string)
+// DomainName returns the external URL of Harbor: protocal://host:port
+func DomainName() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.DomainName, nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
-func SecretKey() string {
-	return uiConfig.Config["secret_key"].(string)
+func SecretKey() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.SecretKey, nil
 }
 
 // SelfRegistration returns the enablement of self registration
-func SelfRegistration() bool {
-	return uiConfig.Config["self_registration"].(bool)
+func SelfRegistration() (bool, error) {
+	cfg, err := get()
+	if err != nil {
+		return false, err
+	}
+	return cfg.Authentication.SelfRegistration, nil
 }
 
-// InternalRegistryURL returns registry URL for internal communication between Harbor containers
-func InternalRegistryURL() string {
-	return uiConfig.Config["internal_registry_url"].(string)
+// RegistryURL ...
+func RegistryURL() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.Registry.URL, nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return uiConfig.Config["internal_jobservice_url"].(string)
+	return "http://jobservice"
 }
 
 // InitialAdminPassword returns the initial password for administrator
-func InitialAdminPassword() string {
-	return uiConfig.Config["admin_password"].(string)
+func InitialAdminPassword() (string, error) {
+	cfg, err := get()
+	if err != nil {
+		return "", err
+	}
+	return cfg.InitialAdminPwd, nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
-func OnlyAdminCreateProject() bool {
-	return uiConfig.Config["admin_create_project"].(bool)
+func OnlyAdminCreateProject() (bool, error) {
+	cfg, err := get()
+	if err != nil {
+		return true, err
+	}
+	return cfg.ProjectCreationRestriction == comcfg.ProCrtRestrAdmOnly, nil
+}
+
+// VerifyRemoteCert returns bool value.
+func VerifyRemoteCert() (bool, error) {
+	cfg, err := get()
+	if err != nil {
+		return true, err
+	}
+	return cfg.VerifyRemoteCert, nil
+}
+
+// Email returns email server settings
+func Email() (*models.Email, error) {
+	cfg, err := get()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.Email, nil
+}
+
+// Database returns database settings
+func Database() (*models.Database, error) {
+	cfg, err := get()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.Database, nil
+}
+
+// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
+// TODO
+func UISecret() string {
+	return os.Getenv("UI_SECRET")
 }

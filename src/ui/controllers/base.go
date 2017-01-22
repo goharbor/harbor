@@ -103,7 +103,12 @@ func (b *BaseController) Prepare() {
 	b.Data["CurLang"] = curLang.Name
 	b.Data["RestLangs"] = restLangs
 
-	authMode := config.AuthMode()
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("failed to get auth mode: %v", err)
+		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	if authMode == "" {
 		authMode = "db_auth"
 	}
@@ -120,9 +125,13 @@ func (b *BaseController) Prepare() {
 		b.UseCompressedJS = false
 	}
 
-	b.SelfRegistration = config.SelfRegistration()
+	b.SelfRegistration, err = config.SelfRegistration()
+	if err != nil {
+		log.Errorf("failed to get self registration: %v", err)
+		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-	b.Data["SelfRegistration"] = config.SelfRegistration()
+	b.Data["SelfRegistration"] = b.SelfRegistration
 
 	sessionUserID := b.GetSession("userId")
 	if sessionUserID != nil {
@@ -235,12 +244,13 @@ func (cc *CommonController) UserExists() {
 }
 
 func init() {
-
 	//conf/app.conf -> os.Getenv("config_path")
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		beego.LoadAppConfig("ini", configPath)
+		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+			log.Errorf("failed to load app config: %v", err)
+		}
 	}
 
 	beego.AddFuncMap("i18n", i18n.Tr)
@@ -263,5 +273,4 @@ func init() {
 			log.Errorf("Fail to set message file: %s", err.Error())
 		}
 	}
-
 }

@@ -77,10 +77,10 @@ hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
 email_identity = rcp.get("configuration", "email_identity")
-email_server = rcp.get("configuration", "email_server")
-email_server_port = rcp.get("configuration", "email_server_port")
-email_username = rcp.get("configuration", "email_username")
-email_password = rcp.get("configuration", "email_password")
+email_host = rcp.get("configuration", "email_server")
+email_port = rcp.get("configuration", "email_server_port")
+email_usr = rcp.get("configuration", "email_username")
+email_pwd = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
@@ -101,7 +101,7 @@ else:
     ldap_filter = ""
 ldap_uid = rcp.get("configuration", "ldap_uid")
 ldap_scope = rcp.get("configuration", "ldap_scope")
-ldap_connect_timeout = rcp.get("configuration", "ldap_connect_timeout")
+ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
 use_compressed_js = rcp.get("configuration", "use_compressed_js")
@@ -125,6 +125,10 @@ secret_key = get_secret_key(secretkey_path)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+
+adminserver_config_dir = os.path.join(config_dir,"adminserver")
+if not os.path.exists(adminserver_config_dir):
+    os.makedirs(os.path.join(config_dir, "adminserver"))
 
 ui_config_dir = os.path.join(config_dir,"ui")
 if not os.path.exists(ui_config_dir):
@@ -152,6 +156,7 @@ def render(src, dest, **kw):
         f.write(t.substitute(**kw))
     print("Generated configuration file: %s" % dest)
 
+adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
 jobservice_conf = os.path.join(config_dir, "jobservice", "app.conf")
@@ -187,14 +192,12 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
-
-render(os.path.join(templates_dir, "ui", "env"),
-        ui_conf_env,
-        hostname=hostname,
-        db_password=db_password,
-        ui_url=ui_url,
-        auth_mode=auth_mode,
-        harbor_admin_password=harbor_admin_password,
+		
+render(os.path.join(templates_dir, "adminserver", "env"),
+		adminserver_conf_env,
+		ui_url=ui_url,
+		auth_mode=auth_mode,
+		self_registration=self_registration,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -202,27 +205,31 @@ render(os.path.join(templates_dir, "ui", "env"),
         ldap_filter=ldap_filter,
         ldap_uid=ldap_uid,
         ldap_scope=ldap_scope,
-        ldap_connect_timeout=ldap_connect_timeout,
-	self_registration=self_registration,
-	use_compressed_js=use_compressed_js,
-        ui_secret=ui_secret,
+        ldap_timeout=ldap_timeout,
+        db_password=db_password,
+		email_host=email_host,
+		email_port=email_port,
+		email_usr=email_usr,
+		email_pwd=email_pwd,
+		email_ssl=email_ssl,
+		email_from=email_from,
+		email_identity=email_identity,
+        harbor_admin_password=harbor_admin_password,
+		project_creation_restriction=proj_cre_restriction,
+		verify_remote_cert=verify_remote_cert,
+		max_job_workers=max_job_workers,
+		ui_secret=ui_secret,
         secret_key=secret_key,
-	verify_remote_cert=verify_remote_cert,
-        project_creation_restriction=proj_cre_restriction,
-	token_expiration=token_expiration)
+		token_expiration=token_expiration,
+		use_compressed_js=use_compressed_js
+	)
 
-render(os.path.join(templates_dir, "ui", "app.conf"),
-        ui_conf,
-        email_identity=email_identity,
-        email_server=email_server,
-        email_server_port=email_server_port,
-        email_username=email_username,
-        email_password=email_password,
-        email_from=email_from,
-        email_ssl=email_ssl,
-        ui_url=ui_url)
+render(os.path.join(templates_dir, "ui", "env"), 
+		ui_conf_env, 
+		ui_secret=ui_secret)
 
-render(os.path.join(templates_dir, "registry", "config.yml"),
+render(os.path.join(templates_dir, "registry", 
+		"config.yml"),
         registry_conf,
         ui_url=ui_url)
 
@@ -232,15 +239,14 @@ render(os.path.join(templates_dir, "db", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
-        db_password=db_password,
-        ui_secret=ui_secret,
-        max_job_workers=max_job_workers,
-        secret_key=secret_key,
-        ui_url=ui_url,
-        verify_remote_cert=verify_remote_cert)
+        ui_secret=ui_secret)
 		
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
+
+print("Generated configuration file: %s" % ui_conf)
+shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \

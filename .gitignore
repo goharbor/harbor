@@ -1,8 +1,11 @@
 harbor
 make/common/config/*
+make/dev/adminserver/harbor_adminserver
 make/dev/ui/harbor_ui
 make/dev/jobservice/harbor_jobservice
+src/adminserver/adminserver
 src/ui/ui
 src/jobservice/jobservice
+src/common/dao/dao.test
 *.pyc
 jobservice/test

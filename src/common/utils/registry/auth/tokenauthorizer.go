@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vmware/harbor/src/common/config"
+	//"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
@@ -234,12 +234,15 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 // 2. the realm field returned by registry is an IP which can not reachable
 // inside Harbor
 func tokenURL(realm string) string {
-	extEndpoint := config.ExtEndpoint()
-	tokenEndpoint := config.TokenEndpoint()
-	if len(extEndpoint) != 0 && len(tokenEndpoint) != 0 &&
-		strings.Contains(realm, extEndpoint) {
-		realm = strings.TrimRight(tokenEndpoint, "/") + "/service/token"
-	}
+	//TODO
+	/*
+		extEndpoint := config.ExtEndpoint()
+		tokenEndpoint := config.TokenEndpoint()
+		if len(extEndpoint) != 0 && len(tokenEndpoint) != 0 &&
+			strings.Contains(realm, extEndpoint) {
+			realm = strings.TrimRight(tokenEndpoint, "/") + "/service/token"
+		}
+	*/
 	return realm
 }
 
