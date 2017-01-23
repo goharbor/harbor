@@ -45,11 +45,11 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 7. Unzip the new Harbor package and change to `./harbor` as the working directory. Configure Harbor by modifying the file `harbor.cfg`, 
 you may need to refer to the configuration files you've backed up during step 2. 
-Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more info. 
+Refer to [Installation & Configuration Guide ](../docs/installation_guide.md) for more information. 
 Since the content and format of `harbor.cfg` may have been changed in the new release, **DO NOT directly copy `harbor.cfg` from previous version of Harbor.**  
 
 
-8. Under the directory `./harbor`, run the `./install.sh` script to install new Harbor instance.
+8. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance.
  
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
@@ -83,7 +83,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     ./install.sh
     ```
 
-   If your previous version of Harbor were installed from source code:
+   If your previous version of Harbor was installed from source code:
     ```sh
     cd harbor
     docker-compose up --build -d
