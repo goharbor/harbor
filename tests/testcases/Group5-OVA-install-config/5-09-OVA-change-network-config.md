@@ -23,12 +23,12 @@ User guide, installation guide of Harbor OVA version.
 6. Open a browser and enter https://VM_IP_address:5480.
 7. Login as root user.
 8. Change network address settings to static ip address.
-9. Input static ip settings.
+9. Input static ip address settings.
 10. Save settings and reboot.
 11. Wait a few minutes and open a browser and enter https://VM_IP_address:5480.
 12. Login as root user and check the network status.
 13. Import a new ova.
-14. In the deployment wizard,set network address to static ip.
+14. In the deployment wizard, set network address to static IP address.
 15. Power on the VM.
 18. Open a browser and enter https://VM_IP_address:5480.
 17. Login as root user.
@@ -39,8 +39,8 @@ User guide, installation guide of Harbor OVA version.
 
 
 # Expected Outcome:
-* In Step12,network status should changed from dhcp to static ip. 
-* In Step21,network status should changed from static ip to dhcp. 
+* In Step12,network status should change from dhcp to static ip. 
+* In Step21,network status should change from static ip to dhcp. 
 
 # Possible Problems:
 None

@@ -15,7 +15,7 @@ User guide, installation guide of Harbor OVA version.
 
 # Test Steps:
 
-1. From vsphere web client, import harbor's ova onto an esx host.
+1. From vsphere web client, import harbor's ova onto an ESX host.
 2. In the deployment wizard, enter different passwords of linux root user, harbor admin user and mysql root user.
 3. Set auth mode to ldap_auth.
 4. Enter necessary ldap settings.

@@ -22,7 +22,7 @@ User guide, installation guide of Harbor OVA version.
 4. Power on the imported OVA.
 5. Wait a few minutes for the VM's booting and its IP address comes up in vCenter. (may need to refresh in Web Client)
 6. Open console from vSphere client and login root or login from ssh
-7. Run logcollect script /harbor/script/collect.sh
+7. Run log collect script /harbor/script/collect.sh
 
 # Expected Outcome:
 
