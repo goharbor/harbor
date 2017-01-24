@@ -26,6 +26,9 @@ Guide to deploy Harbor on Kubenetes. (maintained by community)
 [Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
 Developers read this first.
 
+[Build Harbor from Source](compile_guide.md)  
+How to build Harbor from source code.
+
 [Harbor API Specs by Swagger](configure_swagger.md)  
 Use Swagger to find out the specs of Harbor API.
 
