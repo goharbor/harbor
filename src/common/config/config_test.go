@@ -13,3 +13,6 @@
    limitations under the License.
 */
 package config
+
+// the functions in common/config/config.go have been tested
+// by cases in UI and Jobservice

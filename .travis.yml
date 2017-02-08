@@ -27,7 +27,7 @@ env:
   MAX_JOB_WORKERS: 3
   SECRET_KEY: 1234567890123456 
   AUTH_MODE: db_auth
-  SELF_REGISTRATION: "on"
+  SELF_REGISTRATION: on
 
 before_install:
    - sudo ./tests/hostcfg.sh
