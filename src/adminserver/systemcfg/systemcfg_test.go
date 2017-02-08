@@ -85,6 +85,7 @@ func TestSystemcfg(t *testing.T) {
 	}
 
 	cfg[comcfg.AUTHMode] = comcfg.LDAPAuth
+
 	if err = UpdateSystemCfg(cfg); err != nil {
 		t.Errorf("failed to update system configurations: %v", err)
 		return
