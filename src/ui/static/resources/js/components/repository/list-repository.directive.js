@@ -54,7 +54,7 @@
       if(val) {
         vm.projectId = getParameterByName('project_id', $location.absUrl());
         vm.filterInput = '';
-        vm.retrieve();        
+        vm.retrieve();
       }
     });
      
@@ -69,6 +69,12 @@
       if(current) {
         vm.page = current;
         vm.retrieve();
+      }
+    });
+    
+    $scope.$watch('vm.tagName', function(current) {
+      if(current) {
+        vm.selectedTags = [];
       }
     });
     
@@ -87,11 +93,20 @@
     $scope.$on('tags', function(e, val) {
       vm.tags = val;
     });
-            
+                                                
     vm.deleteByRepo = deleteByRepo;
     vm.deleteByTag = deleteByTag;
+
+    vm.deleteSelectedTagsByRepo = deleteSelectedTagsByRepo;
+    
     vm.deleteImage =  deleteImage;
-                
+    vm.deleteSelectedTags = deleteSelectedTags;
+ 
+    vm.selectAll = [];  
+    vm.selectAllTags = selectAllTags;                  
+    
+    vm.selectedTags = [];
+                              
     function retrieve(){
       console.log('retrieve repositories, project_id:' + vm.projectId);
       ListRepositoryService(vm.projectId, vm.filterInput, vm.page, vm.pageSize)
@@ -101,6 +116,8 @@
     function getRepositoryComplete(response) {
       vm.repositories = response.data || [];
       vm.totalCount = response.headers('X-Total-Count');
+      vm.selectAll[vm.repoName] = false;
+      vm.selectedTags = [];
     }
     
     function getRepositoryFailed(response) {
@@ -143,7 +160,31 @@
       
       $scope.$emit('raiseInfo', emitInfo);
     }
+        
+    function deleteSelectedTagsByRepo(repo) {
+      vm.repoName = repo;
+      $scope.$broadcast('gatherSelectedTags' + vm.repoName, true);
+      var emitInfo = {
+        'confirmOnly': false,
+        'contentType': 'text/html',
+        'action' : vm.deleteSelectedTags
+      };
+      $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title'));
+      $scope.$emit('modalMessage', $filter('tr')('alert_delete_selected_tag'));
+      $scope.$emit('raiseInfo', emitInfo);
+    }        
+                          
+    function selectAllTags(repo) {
+      vm.selectAll[repo] = !vm.selectAll[repo];
+      console.log('send to tags selectAll:' + vm.selectAll[repo]);
+      $scope.$broadcast('selectAll' + repo, {'status': vm.selectAll[repo], 'repoName': repo});
+    }
     
+    $scope.$on('selectedAll', function(e, val) {
+      console.log('received from tags selectedAll:' + angular.toJson(val));
+      vm.selectAll[val.repoName] = val.status;
+    });
+            
     function deleteByTag() {
       $scope.$emit('modalTitle', $filter('tr')('alert_delete_tag_title', [vm.tag]));
       var message;
@@ -155,26 +196,46 @@
         'contentType': 'text/html',
         'action' : vm.deleteImage
       };
-      
       $scope.$emit('raiseInfo', emitInfo);
-    }
+    }  
   
     function deleteImage() {
-      
       console.log('Delete image, repoName:' + vm.repoName + ', tag:' + vm.tag);
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = true;
       DeleteRepositoryService(vm.repoName, vm.tag)
         .success(deleteRepositorySuccess)
         .error(deleteRepositoryFailed);
     }
-    
+           
+    $scope.$on('selectedTags', function(e, val) {
+      if(val) {
+        vm.selectedTags[val.repoName] = val.tags;
+      }
+    })
+   
+    function deleteSelectedTags() {
+      console.log('Delete selected tags:' + angular.toJson(vm.selectedTags[vm.repoName]) + ' under repo:' + vm.repoName);
+      vm.toggleInProgress[vm.repoName + '|'] = true;
+      for(var i in vm.selectedTags[vm.repoName] || []) {
+        var tag = vm.selectedTags[vm.repoName][i];
+        if(tag !== '') {
+          vm.toggleInProgress[vm.repoName + '|' + tag] = true;
+          DeleteRepositoryService(vm.repoName, tag)
+            .success(deleteRepositorySuccess)
+            .error(deleteRepositoryFailed);
+        }
+      }
+    }      
+            
     function deleteRepositorySuccess(data, status) {
+      vm.toggleInProgress[vm.repoName + '|'] = false;
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;
       vm.retrieve();
       $scope.$broadcast('refreshTags', true);
     }
     
     function deleteRepositoryFailed(data, status) {
+      vm.toggleInProgress[vm.repoName + '|'] = false;
       vm.toggleInProgress[vm.repoName + '|' + vm.tag] = false;  
         
       $scope.$emit('modalTitle', $filter('tr')('error'));
