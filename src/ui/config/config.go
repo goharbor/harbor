@@ -26,35 +26,6 @@ import (
 
 var mg *comcfg.Manager
 
-// Configuration of UI
-type Configuration struct {
-	DomainName                 string                 `json:"domain_name"` // Harbor external URL: protocal://host:port
-	Authentication             *models.Authentication `json:"authentication"`
-	Database                   *models.Database       `json:"database"`
-	TokenService               *models.TokenService   `json:"token_service"`
-	Registry                   *models.Registry       `json:"registry"`
-	Email                      *models.Email          `json:"email"`
-	VerifyRemoteCert           bool                   `json:"verify_remote_cert"`
-	ProjectCreationRestriction string                 `json:"project_creation_restriction"`
-	InitialAdminPwd            string                 `json:"initial_admin_pwd"`
-	//TODO remove
-	CompressJS      bool   `json:"compress_js"`
-	TokenExpiration int    `json:"token_expiration"`
-	SecretKey       string `json:"secret_key"`
-	CfgExpiration   int    `json:"cfg_expiration"`
-}
-
-type parser struct {
-}
-
-func (p *parser) Parse(b []byte) (interface{}, error) {
-	c := &Configuration{}
-	if err := json.Unmarshal(b, c); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
 // Init configurations
 func Init() error {
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
@@ -62,7 +33,7 @@ func Init() error {
 		adminServerURL = "http://adminserver"
 	}
 	log.Debugf("admin server URL: %s", adminServerURL)
-	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), true)
 
 	if err := mg.Init(); err != nil {
 		return err
@@ -75,14 +46,6 @@ func Init() error {
 	return nil
 }
 
-func get() (*Configuration, error) {
-	c, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
-	return c.(*Configuration), nil
-}
-
 // Load configurations
 func Load() error {
 	_, err := mg.Load()
@@ -90,7 +53,7 @@ func Load() error {
 }
 
 // Upload uploads all system configutations to admin server
-func Upload(cfg map[string]string) error {
+func Upload(cfg map[string]interface{}) error {
 	b, err := json.Marshal(cfg)
 	if err != nil {
 		return err
@@ -99,80 +62,92 @@ func Upload(cfg map[string]string) error {
 }
 
 // GetSystemCfg returns the system configurations
-func GetSystemCfg() (*models.SystemCfg, error) {
+func GetSystemCfg() (map[string]interface{}, error) {
 	raw, err := mg.Loader.Load()
 	if err != nil {
 		return nil, err
 	}
 
-	cfg := &models.SystemCfg{}
-	if err = json.Unmarshal(raw, cfg); err != nil {
+	c, err := mg.Parser.Parse(raw)
+	if err != nil {
 		return nil, err
 	}
-	return cfg, nil
+
+	return c, nil
 }
 
 // AuthMode ...
 func AuthMode() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.Authentication.Mode, nil
+	return cfg[comcfg.AUTHMode].(string), nil
 }
 
 // LDAP returns the setting of ldap server
 func LDAP() (*models.LDAP, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
-	return cfg.Authentication.LDAP, nil
+
+	ldap := &models.LDAP{}
+	ldap.URL = cfg[comcfg.LDAPURL].(string)
+	ldap.SearchDN = cfg[comcfg.LDAPSearchDN].(string)
+	ldap.SearchPassword = cfg[comcfg.LDAPSearchPwd].(string)
+	ldap.BaseDN = cfg[comcfg.LDAPBaseDN].(string)
+	ldap.UID = cfg[comcfg.LDAPUID].(string)
+	ldap.Filter = cfg[comcfg.LDAPFilter].(string)
+	ldap.Scope = int(cfg[comcfg.LDAPScope].(float64))
+	ldap.Timeout = int(cfg[comcfg.LDAPTimeout].(float64))
+
+	return ldap, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration() (int, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return 0, err
 	}
-	return cfg.TokenExpiration, nil
+	return int(cfg[comcfg.TokenExpiration].(float64)), nil
 }
 
 // DomainName returns the external URL of Harbor: protocal://host:port
 func DomainName() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.DomainName, nil
+	return cfg[comcfg.DomainName].(string), nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
 func SecretKey() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.SecretKey, nil
+	return cfg[comcfg.SecretKey].(string), nil
 }
 
 // SelfRegistration returns the enablement of self registration
 func SelfRegistration() (bool, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return false, err
 	}
-	return cfg.Authentication.SelfRegistration, nil
+	return cfg[comcfg.SelfRegistration].(bool), nil
 }
 
 // RegistryURL ...
 func RegistryURL() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.Registry.URL, nil
+	return cfg[comcfg.RegistryURL].(string), nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
@@ -182,47 +157,70 @@ func InternalJobServiceURL() string {
 
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.InitialAdminPwd, nil
+	return cfg[comcfg.AdminInitialPassword].(string), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject() (bool, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return true, err
 	}
-	return cfg.ProjectCreationRestriction == comcfg.ProCrtRestrAdmOnly, nil
+	return cfg[comcfg.ProjectCreationRestriction].(string) == comcfg.ProCrtRestrAdmOnly, nil
 }
 
 // VerifyRemoteCert returns bool value.
 func VerifyRemoteCert() (bool, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return true, err
 	}
-	return cfg.VerifyRemoteCert, nil
+	return cfg[comcfg.VerifyRemoteCert].(bool), nil
 }
 
 // Email returns email server settings
 func Email() (*models.Email, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
-	return cfg.Email, nil
+
+	email := &models.Email{}
+	email.Host = cfg[comcfg.EmailHost].(string)
+	email.Port = int(cfg[comcfg.EmailPort].(float64))
+	email.Username = cfg[comcfg.EmailUsername].(string)
+	email.Password = cfg[comcfg.EmailPassword].(string)
+	email.SSL = cfg[comcfg.EmailSSL].(bool)
+	email.From = cfg[comcfg.EmailFrom].(string)
+	email.Identity = cfg[comcfg.EmailIdentity].(string)
+
+	return email, nil
 }
 
 // Database returns database settings
 func Database() (*models.Database, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
-	return cfg.Database, nil
+	database := &models.Database{}
+	database.Type = cfg[comcfg.DatabaseType].(string)
+	mysql := &models.MySQL{}
+	mysql.Host = cfg[comcfg.MySQLHost].(string)
+	mysql.Port = int(cfg[comcfg.MySQLPort].(float64))
+	mysql.Username = cfg[comcfg.MySQLUsername].(string)
+	mysql.Password = cfg[comcfg.MySQLPassword].(string)
+	mysql.Database = cfg[comcfg.MySQLDatabase].(string)
+	database.MySQL = mysql
+	sqlite := &models.SQLite{}
+	sqlite.File = cfg[comcfg.SQLiteFile].(string)
+	database.SQLite = sqlite
+
+	return database, nil
 }
 
 // UISecret returns the value of UI secret cookie, used for communication between UI and JobService

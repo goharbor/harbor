@@ -46,6 +46,7 @@ func TestSystemcfg(t *testing.T) {
 		"MAX_JOB_WORKERS":  "3",
 		"TOKEN_EXPIRATION": "30",
 		"CFG_EXPIRATION":   "5",
+		"EMAIL_PORT":       "25",
 	}
 
 	for k, v := range m {
@@ -77,13 +78,14 @@ func TestSystemcfg(t *testing.T) {
 		return
 	}
 
-	if cfg.Authentication.Mode != comcfg.DBAuth {
+	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
-			cfg.Authentication.Mode, comcfg.DBAuth)
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
 		return
 	}
 
-	cfg.Authentication.Mode = comcfg.LDAPAuth
+	cfg[comcfg.AUTHMode] = comcfg.LDAPAuth
+
 	if err = UpdateSystemCfg(cfg); err != nil {
 		t.Errorf("failed to update system configurations: %v", err)
 		return
@@ -95,9 +97,9 @@ func TestSystemcfg(t *testing.T) {
 		return
 	}
 
-	if cfg.Authentication.Mode != comcfg.LDAPAuth {
+	if cfg[comcfg.AUTHMode] != comcfg.LDAPAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
-			cfg.Authentication.Mode, comcfg.DBAuth)
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
 		return
 	}
 }

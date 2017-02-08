@@ -20,17 +20,49 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/config"
 )
 
 // NewAdminserver returns a mock admin server
 func NewAdminserver() (*httptest.Server, error) {
 	m := []*RequestHandlerMapping{}
-	b, err := json.Marshal(&models.SystemCfg{
-		Authentication: &models.Authentication{
-			Mode: "db_auth",
-		},
-		Registry: &models.Registry{},
+	b, err := json.Marshal(map[string]interface{}{
+		config.DomainName:                 "host01.com",
+		config.AUTHMode:                   config.DBAuth,
+		config.DatabaseType:               "mysql",
+		config.MySQLHost:                  "127.0.0.1",
+		config.MySQLPort:                  3306,
+		config.MySQLUsername:              "user01",
+		config.MySQLPassword:              "password",
+		config.MySQLDatabase:              "registry",
+		config.SQLiteFile:                 "/tmp/registry.db",
+		config.SelfRegistration:           true,
+		config.LDAPURL:                    "ldap://127.0.0.1",
+		config.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
+		config.LDAPSearchPwd:              "password",
+		config.LDAPBaseDN:                 "ou=people,dc=mydomain,dc=com",
+		config.LDAPUID:                    "uid",
+		config.LDAPFilter:                 "",
+		config.LDAPScope:                  3,
+		config.LDAPTimeout:                30,
+		config.TokenServiceURL:            "http://token_service",
+		config.RegistryURL:                "http://registry",
+		config.EmailHost:                  "127.0.0.1",
+		config.EmailPort:                  25,
+		config.EmailUsername:              "user01",
+		config.EmailPassword:              "password",
+		config.EmailFrom:                  "from",
+		config.EmailSSL:                   true,
+		config.EmailIdentity:              "",
+		config.ProjectCreationRestriction: config.ProCrtRestrAdmOnly,
+		config.VerifyRemoteCert:           false,
+		config.MaxJobWorkers:              3,
+		config.TokenExpiration:            30,
+		config.CfgExpiration:              5,
+		config.JobLogDir:                  "/var/log/jobs",
+		config.UseCompressedJS:            true,
+		config.SecretKey:                  "secret",
+		config.AdminInitialPassword:       "password",
 	})
 	if err != nil {
 		return nil, err

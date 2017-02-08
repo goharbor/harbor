@@ -30,6 +30,41 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 )
 
+// keys of attrs which user can modify
+var validKeys = []string{
+	comcfg.AUTHMode,
+	comcfg.EmailFrom,
+	comcfg.EmailHost,
+	comcfg.EmailIdentity,
+	comcfg.EmailPassword,
+	comcfg.EmailPort,
+	comcfg.EmailSSL,
+	comcfg.EmailUsername,
+	comcfg.LDAPBaseDN,
+	comcfg.LDAPFilter,
+	comcfg.LDAPScope,
+	comcfg.LDAPSearchDN,
+	comcfg.LDAPSearchPwd,
+	comcfg.LDAPTimeout,
+	comcfg.LDAPUID,
+	comcfg.LDAPURL,
+	comcfg.ProjectCreationRestriction,
+	comcfg.SelfRegistration,
+	comcfg.VerifyRemoteCert,
+}
+
+var numKeys = []string{
+	comcfg.EmailPort,
+	comcfg.LDAPScope,
+	comcfg.LDAPTimeout,
+}
+
+var boolKeys = []string{
+	comcfg.EmailSSL,
+	comcfg.SelfRegistration,
+	comcfg.VerifyRemoteCert,
+}
+
 // ConfigAPI ...
 type ConfigAPI struct {
 	api.BaseAPI
@@ -49,6 +84,11 @@ func (c *ConfigAPI) Prepare() {
 	}
 }
 
+type value struct {
+	Value    interface{} `json:"value"`
+	Editable bool        `json:"editable"`
+}
+
 // Get returns configurations
 func (c *ConfigAPI) Get() {
 	cfg, err := config.GetSystemCfg()
@@ -57,23 +97,11 @@ func (c *ConfigAPI) Get() {
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if cfg.Database.MySQL != nil {
-		cfg.Database.MySQL.Password = ""
-	}
-
-	cfg.InitialAdminPwd = ""
-	cfg.SecretKey = ""
-
-	m := map[string]interface{}{}
-	m["config"] = cfg
-
-	editable, err := dao.AuthModeCanBeModified()
+	m, err := convertForGet(cfg)
 	if err != nil {
-		log.Errorf("failed to determinie whether auth mode can be modified: %v", err)
+		log.Errorf("failed to convert configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-
-	m["auth_mode_editable"] = editable
 
 	c.Data["json"] = m
 	c.ServeJSON()
@@ -83,11 +111,19 @@ func (c *ConfigAPI) Get() {
 func (c *ConfigAPI) Put() {
 	m := map[string]string{}
 	c.DecodeJSONReq(&m)
-	if err := validateCfg(m); err != nil {
+
+	cfg := map[string]string{}
+	for _, k := range validKeys {
+		if v, ok := m[k]; ok {
+			cfg[k] = v
+		}
+	}
+
+	if err := validateCfg(cfg); err != nil {
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
-	if value, ok := m[comcfg.AUTHMode]; ok {
+	if value, ok := cfg[comcfg.AUTHMode]; ok {
 		mode, err := config.AuthMode()
 		if err != nil {
 			log.Errorf("failed to get auth mode: %v", err)
@@ -109,7 +145,13 @@ func (c *ConfigAPI) Put() {
 		}
 	}
 
-	if err := config.Upload(m); err != nil {
+	result, err := convertForPut(cfg)
+	if err != nil {
+		log.Errorf("failed to convert configurations: %v", err)
+		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if err := config.Upload(result); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
@@ -200,48 +242,60 @@ func validateCfg(c map[string]string) error {
 	return nil
 }
 
-/*
-func convert() ([]*models.Config, error) {
-	cfgs := []*models.Config{}
-	var err error
-	pwdKeys := []string{config.LDAP_SEARCH_PWD, config.EMAIL_PWD}
-	for _, pwdKey := range pwdKeys {
-		if pwd, ok := c[pwdKey]; ok && len(pwd) != 0 {
-			c[pwdKey], err = utils.ReversibleEncrypt(pwd, ui_cfg.SecretKey())
-			if err != nil {
-				return nil, err
+//encode passwords and convert map[string]string to map[string]interface{}
+func convertForPut(m map[string]string) (map[string]interface{}, error) {
+	cfg := map[string]interface{}{}
+
+	/*
+		pwdKeys := []string{config.LDAP_SEARCH_PWD, config.EMAIL_PWD}
+		for _, pwdKey := range pwdKeys {
+			if pwd, ok := c[pwdKey]; ok && len(pwd) != 0 {
+				c[pwdKey], err = utils.ReversibleEncrypt(pwd, ui_cfg.SecretKey())
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
+	*/
+	for k, v := range m {
+		cfg[k] = v
 	}
 
-	for _, key := range configKeys {
-		if value, ok := c[key]; ok {
-			cfgs = append(cfgs, &models.Config{
-				Key:   key,
-				Value: value,
-			})
+	for _, k := range numKeys {
+		v, err := strconv.Atoi(cfg[k].(string))
+		if err != nil {
+			return nil, err
 		}
+		cfg[k] = v
 	}
 
-	return cfgs, nil
+	for _, k := range boolKeys {
+		cfg[k] = cfg[k] == "1"
+	}
+
+	return cfg, nil
 }
-*/
-/*
-//[]*models.Config >> cfgForGet
-func convert(cfg *config.Configuration) (map[string]interface{}, error) {
-	result := map[string]interface{}{}
 
-	for _, config := range configs {
-		cfg[config.Key] = &value{
-			Value:    config.Value,
-			Editable: true,
-		}
-	}
+// delete sensitive attrs and add editable field to every attr
+func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
+	result := map[string]*value{}
 
-	dels := []string{config.LDAP_SEARCH_PWD, config.EMAIL_PWD}
+	dels := []string{
+		comcfg.AdminInitialPassword,
+		comcfg.EmailPassword,
+		comcfg.LDAPSearchPwd,
+		comcfg.MySQLPassword,
+		comcfg.SecretKey}
 	for _, del := range dels {
 		if _, ok := cfg[del]; ok {
 			delete(cfg, del)
+		}
+	}
+
+	for k, v := range cfg {
+		result[k] = &value{
+			Value:    v,
+			Editable: true,
 		}
 	}
 
@@ -249,11 +303,11 @@ func convert(cfg *config.Configuration) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg[config.AUTH_MODE].Editable = flag
+	result[comcfg.AUTHMode].Editable = flag
 
-	return cfgForGet(cfg), nil
+	return result, nil
 }
-*/
+
 func authModeCanBeModified() (bool, error) {
 	return dao.AuthModeCanBeModified()
 }

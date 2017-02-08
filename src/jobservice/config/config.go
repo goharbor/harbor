@@ -16,7 +16,6 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
@@ -25,35 +24,13 @@ import (
 
 var mg *comcfg.Manager
 
-// Configuration of Jobservice
-type Configuration struct {
-	Database         *models.Database `json:"database"`
-	Registry         *models.Registry `json:"registry"`
-	VerifyRemoteCert bool             `json:"verify_remote_cert"`
-	MaxJobWorkers    int              `json:"max_job_workers"`
-	JobLogDir        string           `json:"job_log_dir"`
-	SecretKey        string           `json:"secret_key"`
-	CfgExpiration    int              `json:"cfg_expiration"`
-}
-
-type parser struct {
-}
-
-func (p *parser) Parse(b []byte) (interface{}, error) {
-	c := &Configuration{}
-	if err := json.Unmarshal(b, c); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
 // Init configurations
 func Init() error {
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
-	mg = comcfg.NewManager(adminServerURL, UISecret(), &parser{}, true)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), true)
 
 	if err := mg.Init(); err != nil {
 		return err
@@ -66,39 +43,44 @@ func Init() error {
 	return nil
 }
 
-func get() (*Configuration, error) {
-	c, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
-	return c.(*Configuration), nil
-}
-
 // VerifyRemoteCert returns bool value.
 func VerifyRemoteCert() (bool, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return true, err
 	}
-	return cfg.VerifyRemoteCert, nil
+	return cfg[comcfg.VerifyRemoteCert].(bool), nil
 }
 
 // Database ...
 func Database() (*models.Database, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
-	return cfg.Database, nil
+	database := &models.Database{}
+	database.Type = cfg[comcfg.DatabaseType].(string)
+	mysql := &models.MySQL{}
+	mysql.Host = cfg[comcfg.MySQLHost].(string)
+	mysql.Port = int(cfg[comcfg.MySQLPort].(float64))
+	mysql.Username = cfg[comcfg.MySQLUsername].(string)
+	mysql.Password = cfg[comcfg.MySQLPassword].(string)
+	mysql.Database = cfg[comcfg.MySQLDatabase].(string)
+	database.MySQL = mysql
+	sqlite := &models.SQLite{}
+	sqlite.File = cfg[comcfg.SQLiteFile].(string)
+	database.SQLite = sqlite
+
+	return database, nil
 }
 
 // MaxJobWorkers ...
 func MaxJobWorkers() (int, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return 0, err
 	}
-	return cfg.MaxJobWorkers, nil
+	return int(cfg[comcfg.MaxJobWorkers].(float64)), nil
 }
 
 // LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
@@ -108,29 +90,29 @@ func LocalUIURL() string {
 
 // LocalRegURL returns the local registry url, job service will use this URL to pull image from the registry
 func LocalRegURL() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.Registry.URL, nil
+	return cfg[comcfg.RegistryURL].(string), nil
 }
 
 // LogDir returns the absolute path to which the log file will be written
 func LogDir() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.JobLogDir, nil
+	return cfg[comcfg.JobLogDir].(string), nil
 }
 
 // SecretKey will return the secret key for encryption/decryption password in target.
 func SecretKey() (string, error) {
-	cfg, err := get()
+	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg.SecretKey, nil
+	return cfg[comcfg.SecretKey].(string), nil
 }
 
 // UISecret returns the value of UI secret cookie, used for communication between UI and JobService

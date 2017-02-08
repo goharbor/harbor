@@ -18,8 +18,6 @@ package json
 import (
 	"os"
 	"testing"
-
-	"github.com/vmware/harbor/src/common/models"
 )
 
 func TestReadWrite(t *testing.T) {
@@ -39,13 +37,8 @@ func TestReadWrite(t *testing.T) {
 		return
 	}
 
-	config := &models.SystemCfg{
-		Authentication: &models.Authentication{
-			LDAP: &models.LDAP{},
-		},
-		Database: &models.Database{
-			MySQL: &models.MySQL{},
-		},
+	config := map[string]interface{}{
+		"key": "value",
 	}
 	if err := store.Write(config); err != nil {
 		t.Errorf("failed to write configurations to json file: %v", err)

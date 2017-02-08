@@ -18,6 +18,7 @@ package email
 import (
 	"bytes"
 	"crypto/tls"
+	"strconv"
 	//"strings"
 
 	"net/smtp"
@@ -67,11 +68,11 @@ func (m Mail) SendMail() error {
 }
 
 func sendMail(m Mail, auth smtp.Auth, content []byte) error {
-	return smtp.SendMail(mc.Host+":"+mc.Port, auth, m.From, m.To, content)
+	return smtp.SendMail(mc.Host+":"+strconv.Itoa(mc.Port), auth, m.From, m.To, content)
 }
 
 func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
-	conn, err := tls.Dial("tcp", mc.Host+":"+mc.Port, nil)
+	conn, err := tls.Dial("tcp", mc.Host+":"+strconv.Itoa(mc.Port), nil)
 	if err != nil {
 		return err
 	}

@@ -116,7 +116,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	ldapSearchDn := settings.SearchDN
 	if ldapSearchDn != "" {
 		log.Debug("Search DN: ", ldapSearchDn)
-		ldapSearchPwd := settings.SearchPwd
+		ldapSearchPwd := settings.SearchPassword
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
 		if err != nil {
 			log.Debug("Bind search dn error", err)

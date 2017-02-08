@@ -20,11 +20,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 
 	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
-	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -93,31 +90,20 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m := &map[string]string{}
-	if err = json.Unmarshal(b, m); err != nil {
+	m := map[string]interface{}{}
+	if err = json.Unmarshal(b, &m); err != nil {
 		handleBadRequestError(w, err.Error())
 		return
 	}
 
-	system, err := cfg.GetSystemCfg()
-	if err != nil {
-		handleInternalServerError(w)
-		return
-	}
-
-	if err := populate(system, *m); err != nil {
-		log.Errorf("failed to populate system configurations: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-
-	if err = cfg.UpdateSystemCfg(system); err != nil {
+	if err = cfg.UpdateSystemCfg(m); err != nil {
 		log.Errorf("failed to update system configurations: %v", err)
 		handleInternalServerError(w)
 		return
 	}
 }
 
+/*
 // populate attrs of cfg according to m
 func populate(cfg *models.SystemCfg, m map[string]string) error {
 	if mode, ok := m[comcfg.AUTHMode]; ok {
@@ -133,7 +119,7 @@ func populate(cfg *models.SystemCfg, m map[string]string) error {
 		cfg.Authentication.LDAP.SearchDN = dn
 	}
 	if pwd, ok := m[comcfg.LDAPSearchPwd]; ok {
-		cfg.Authentication.LDAP.SearchPwd = pwd
+		cfg.Authentication.LDAP.SearchPassword = pwd
 	}
 	if dn, ok := m[comcfg.LDAPBaseDN]; ok {
 		cfg.Authentication.LDAP.BaseDN = dn
@@ -191,3 +177,4 @@ func populate(cfg *models.SystemCfg, m map[string]string) error {
 
 	return nil
 }
+*/
