@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -234,15 +235,12 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 // 2. the realm field returned by registry is an IP which can not reachable
 // inside Harbor
 func tokenURL(realm string) string {
-	//TODO
-	/*
-		extEndpoint := config.ExtEndpoint()
-		tokenEndpoint := config.TokenEndpoint()
-		if len(extEndpoint) != 0 && len(tokenEndpoint) != 0 &&
-			strings.Contains(realm, extEndpoint) {
-			realm = strings.TrimRight(tokenEndpoint, "/") + "/service/token"
-		}
-	*/
+
+	domainName := os.Getenv("DOMAIN_NAME")
+	if len(domainName) != 0 && strings.Contains(realm, domainName) {
+		realm = "http://ui/service/token"
+	}
+
 	return realm
 }
 

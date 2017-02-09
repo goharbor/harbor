@@ -20,6 +20,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/api"
@@ -340,6 +341,15 @@ func (t *TargetAPI) Delete() {
 func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	credential := auth.NewBasicAuthCredential(username, password)
+
+	domain, err := config.DomainName()
+	if err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("DOMAIN_NAME", domain); err != nil {
+		return nil, err
+	}
+
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)

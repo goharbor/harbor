@@ -120,3 +120,12 @@ func SecretKey() (string, error) {
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }
+
+// DomainName ...
+func DomainName() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.DomainName].(string), nil
+}

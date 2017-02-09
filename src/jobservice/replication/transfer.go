@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -33,6 +34,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/jobservice/config"
 )
 
 const (
@@ -459,6 +461,14 @@ func (m *ManifestPusher) enter() (string, error) {
 
 func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
+
+	domain, err := config.DomainName()
+	if err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("DOMAIN_NAME", domain); err != nil {
+		return nil, err
+	}
 
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
 

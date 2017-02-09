@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sort"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -442,6 +443,15 @@ func newRepositoryClient(endpoint string, insecure bool, username, password, rep
 	scopeActions ...string) (*registry.Repository, error) {
 
 	credential := auth.NewBasicAuthCredential(username, password)
+
+	domain, err := config.DomainName()
+	if err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("DOMAIN_NAME", domain); err != nil {
+		return nil, err
+	}
+
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)

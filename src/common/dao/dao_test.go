@@ -137,7 +137,7 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
-	databases := []string{"mysql"}
+	databases := []string{"mysql", "sqlite"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
 
