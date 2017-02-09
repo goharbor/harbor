@@ -15,12 +15,14 @@
 
 package models
 
+/*
 // Authentication ...
 type Authentication struct {
 	Mode             string `json:"mode"`
 	SelfRegistration bool   `json:"self_registration"`
 	LDAP             *LDAP  `json:"ldap,omitempty"`
 }
+*/
 
 // LDAP ...
 type LDAP struct {
@@ -66,6 +68,7 @@ type Email struct {
 	From     string `json:"from"`
 }
 
+/*
 // Registry ...
 type Registry struct {
 	URL string `json:"url"`
@@ -94,3 +97,4 @@ type SystemCfg struct {
 	SecretKey                  string          `json:"secret_key,omitempty"`
 	CfgExpiration              int             `json:"cfg_expiration"`
 }
+*/

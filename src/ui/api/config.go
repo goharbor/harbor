@@ -262,6 +262,10 @@ func convertForPut(m map[string]string) (map[string]interface{}, error) {
 	}
 
 	for _, k := range numKeys {
+		if _, ok := cfg[k]; !ok {
+			continue
+		}
+
 		v, err := strconv.Atoi(cfg[k].(string))
 		if err != nil {
 			return nil, err
@@ -270,6 +274,10 @@ func convertForPut(m map[string]string) (map[string]interface{}, error) {
 	}
 
 	for _, k := range boolKeys {
+		if _, ok := cfg[k]; !ok {
+			continue
+		}
+
 		cfg[k] = cfg[k] == "1"
 	}
 
