@@ -202,16 +202,14 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 
 	project2 := models.Project{
-		OwnerID:      admin.UserID,
+		OwnerID:      user.UserID,
 		Name:         "project2",
 		CreationTime: time.Now(),
-		OwnerName:    admin.Username,
+		OwnerName:    user.Username,
 		Public:       0,
 	}
 	project2.ProjectID, err = AddProject(project2)
 	require.NoError(err)
-
-	require.NoError(AddProjectMember(project2.ProjectID, user.UserID, models.PROJECTADMIN))
 
 	err = AddRepository(*repository)
 	require.NoError(err)
@@ -268,12 +266,13 @@ func TestGetTopRepos(t *testing.T) {
 	}
 	err = AddRepository(*deletedPublicRepository1)
 	require.NoError(err)
-	DeleteProject(deletedPublicProject.ProjectID)
+	err = DeleteProject(deletedPublicProject.ProjectID)
+	require.NoError(err)
 
 	var topRepos []models.TopRepo
 
 	// anonymous should retrieve public non-deleted repositories
-	topRepos, err = GetTopRepos(NonExistUserID, 3)
+	topRepos, err = GetTopRepos(NonExistUserID, 100)
 	require.NoError(err)
 	require.Len(topRepos, 1)
 	require.Equal(topRepos, []models.TopRepo{
@@ -283,7 +282,45 @@ func TestGetTopRepos(t *testing.T) {
 		},
 	})
 
-	// admin should retrieve all visible repositories limited by count
+	// admin should retrieve all repositories
+	topRepos, err = GetTopRepos(admin.UserID, 100)
+	require.NoError(err)
+	require.Len(topRepos, 4)
+	require.Equal(topRepos, []models.TopRepo{
+		models.TopRepo{
+			RepoName:    repository3.Name,
+			AccessCount: repository3.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository2.Name,
+			AccessCount: repository2.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository1.Name,
+			AccessCount: repository1.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository.Name,
+			AccessCount: repository.PullCount,
+		},
+	})
+
+	// user should retrieve visible repositories
+	topRepos, err = GetTopRepos(user.UserID, 100)
+	require.NoError(err)
+	require.Len(topRepos, 2)
+	require.Equal(topRepos, []models.TopRepo{
+		models.TopRepo{
+			RepoName:    repository3.Name,
+			AccessCount: repository3.PullCount,
+		},
+		models.TopRepo{
+			RepoName:    repository.Name,
+			AccessCount: repository.PullCount,
+		},
+	})
+
+	// limit by count
 	topRepos, err = GetTopRepos(admin.UserID, 3)
 	require.NoError(err)
 	require.Len(topRepos, 3)
@@ -299,21 +336,6 @@ func TestGetTopRepos(t *testing.T) {
 		models.TopRepo{
 			RepoName:    repository1.Name,
 			AccessCount: repository1.PullCount,
-		},
-	})
-
-	// user should retrieve all visible repositories
-	topRepos, err = GetTopRepos(user.UserID, 3)
-	require.NoError(err)
-	require.Len(topRepos, 2)
-	require.Equal(topRepos, []models.TopRepo{
-		models.TopRepo{
-			RepoName:    repository3.Name,
-			AccessCount: repository3.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
 		},
 	})
 }
