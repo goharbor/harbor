@@ -12,65 +12,224 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<form name="form" class="form-horizontal" ng-submit="form.$valid && vm.changeSettings(system)" autocomplete="off">     
-  <div class="col-md-12">
-    <h5>System Settings</h5>
-    <hr/>
-  </div>
-  <div class="col-md-12 col-md-off-set-1 main-content">
-    <div class="form-group">
-      <label for="hostName" class="col-sm-3 control-label">Host Name:</label>
-      <div class="col-sm-7">
-        <input type="text" class="form-control" id="hostName" ng-model="system.hostName" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.system.hostName" name="uHostName" required>                 
-        <div ng-messages="form.$dirty && form.uHostName.$error">
-          <span ng-message="required">Host name is required.</span>
+<div class="row">
+  <ul id="ulTabHeader" class="nav nav-pills nav-stacked col-md-2 col-xs-12">
+    <li role="presentation"><a href="#auth" aria-controls="auth" role="tab" data-toggle="tab">// 'authentication' | tr //</a></li>
+    <li role="presentation"><a href="#email" aria-controls="email" role="tab" data-toggle="tab">// 'email_settings' | tr //</a></li>
+    <li role="presentation"><a href="#system" aria-controls="system" role="tab" data-toggle="tab">// 'system_settings' | tr //</a></li>
+  </ul>
+  <!-- Tab panes -->
+  <div id="tabConfigurations" class="tab-content col-md-10 col-xs-12">
+    <div role="tabpanel" class="tab-pane" id="auth">
+      <form name="authForm" class="form-horizontal" no-validate autocomplete="off">
+        <div class="form-group">    
+          <label for="selAuth" class="col-sm-3 control-label">// 'authentication_mode' | tr //<span ng-if="vm.warning['auth.authMode']">*</span></label>
+          <div class="col-sm-2">
+            <select id="selAuth" class="form-control" ng-model="auth.authMode.data" ng-options="r as r.name for r in vm.supportedAuths track by r.value" ng-disabled="!vm.editable['auth.authMode']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'authentication_mode' | tr //" content="// 'authentication_mode_desc' | tr //"></inline-help>
+          </div>
         </div>
-      </div> 
+        <div class="form-group" ng-if="auth.authMode.data.value !== 'ldap_auth'">
+          <label for="selfRegistration" class="col-sm-3 control-label">// 'self_registration' | tr //<span ng-if="vm.warning['auth.selfRegistration']">*</span></label>
+          <div class="col-sm-5">
+            <select class="form-control" ng-model="auth.selfRegistration.data" ng-options="r as r.name for r in vm.toggleBooleans track by r.value" ng-disabled="!vm.editable['auth.selfRegistration']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'self_registration' | tr //" content="// 'self_registration_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapURL" class="col-sm-3 control-label">// 'ldap_url' | tr //<span ng-if="vm.warning['auth.ldapURL']">*</span></label>
+          <div class="col-sm-5">
+            <input id="ldapURL" type="text" class="form-control" ng-model="auth.ldapURL.data" ng-disabled="!vm.editable['auth.ldapURL']">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_url' | tr //" content="// 'ldap_url_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapSearchDN" class="col-sm-3 control-label">// 'ldap_search_dn' | tr //<span ng-if="vm.warning['auth.ldapSearchDN']">*</span></label>
+          <div class="col-sm-5 clearfix">
+            <input id="ldapSearchDN" type="text" class="form-control" ng-model="auth.ldapSearchDN.data" ng-disabled="!vm.editable['auth.ldapSearchDN']">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_search_dn' | tr //" content="// 'ldap_search_dn_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapSearchPassword" class="col-sm-3 control-label">// 'ldap_search_password' | tr //<span ng-if="vm.warning['auth.ldapSearchPassword']">*</span></label>
+          <div class="col-sm-5">
+            <input id="ldapSearchPassword" type="password" class="form-control" ng-model="auth.ldapSearchPassword.data" ng-click="vm.clearUp(auth.ldapSearchPassword)" ng-change="vm.hasChanged(auth.ldapSearchPassword)" ng-blur="vm.setMaskPassword(auth.ldapSearchPassword)">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_search_password' | tr //" content="// 'ldap_search_password_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapBaseDN" class="col-sm-3 control-label">// 'ldap_base_dn' | tr //<span ng-if="vm.warning['auth.ldapBaseDN']">*</span></label>
+          <div class="col-sm-5">
+            <input id="ldapBaseDN" type="text" class="form-control" ng-model="auth.ldapBaseDN.data" ng-disabled="!vm.editable['auth.ldapBaseDN']">
+          </div>  
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_base_dn' | tr //" content="// 'ldap_base_dn_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapUID" class="col-sm-3 control-label">// 'ldap_uid' | tr //<span ng-if="vm.warning['auth.ldapUID']">*</span></label>
+          <div class="col-sm-5">
+            <input id="ldapUID" type="text" class="form-control" ng-model="auth.ldapUID.data" ng-disabled="!vm.editable['auth.ldapUID']">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_uid' | tr //" content="// 'ldap_uid_desc' | tr //"></inline-help>
+          </div>
+        </div>    
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapFilter" class="col-sm-3 control-label">// 'ldap_filter' | tr //<span ng-if="vm.warning['auth.ldapFilter']">*</span></label>
+          <div class="col-sm-5 clearfix">
+            <input id="ldapFilter" type="text" class="form-control" ng-model="auth.ldapFilter.data" ng-disabled="!vm.editable['auth.ldapFilter']">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_filter' | tr //" content="// 'ldap_filter_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <label for="ldapTimeout" class="col-sm-3 control-label">// 'ldap_connection_timeout' | tr //<span ng-if="vm.warning['auth.ldapConnectionTimeout']">*</span></label>
+          <div class="col-sm-2 clearfix">
+            <input id="ldapConnectionTimeout" type="number" class="form-control" name="ldapConnectionTimeout" ng-model="auth.ldapConnectionTimeout.data" ng-disabled="!vm.editable['auth.ldapConnectionTimeout']" min="1" max="60" required>
+            <div class="error-message" ng-messages="authForm.ldapConnectionTimeout.$error" >
+              <span ng-message="required">// 'timeout_is_required' | tr //</span>
+              <span ng-message="min">// 'invalid_timeout' | tr //</span>
+              <span ng-message="max">// 'invalid_timeout' | tr //</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">    
+          <label for="selLDAPScope" class="col-sm-3 control-label">// 'ldap_scope' | tr //<span ng-if="vm.warning['auth.ldapScope']">*</span></label>
+          <div class="col-sm-4">
+            <select id="selLDAPScope" class="form-control" ng-model="auth.ldapScope.data" ng-options="item for item in [1, 2, 3]" ng-disabled="!vm.editable['auth.ldapScope']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'ldap_scope' | tr //" content="// 'ldap_scope_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group" ng-if="auth.authMode.data.value === 'ldap_auth'">
+          <div class="col-sm-7 col-sm-offset-3">
+            <span ng-if="vm.isError" class="error-message" >// vm.pingMessage //</span>
+            <span ng-if="!vm.isError">// vm.pingMessage //</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-5">
+            <div class="pull-right">
+              <button type="submit" class="btn btn-link" ng-if="vm.changed"  ng-click="vm.undo()">// 'undo' | tr //</button>
+              <button type="button" class="btn btn-default" ng-if="auth.authMode.data.value === 'ldap_auth'" ng-disabled="authForm.$invalid" ng-click="vm.pingLDAP(auth)" loading-progress hide-target="false" toggle-in-progress="vm.pingTIP">// 'test_connection' | tr //</button>
+              <button type="submit" class="btn btn-success" ng-disabled="authForm.$invalid" ng-click="vm.saveAuthConf(auth)">// 'save' | tr //</button>
+            </div>
+          </div>
+        </div>        
+      </form>
     </div>
-    <div class="form-group">
-      <label for="urlProtocol" class="col-sm-3 control-label">URL Protocol:</label>
-      <div class="col-sm-7">
-        <input type="text" class="form-control" id="urlProtocol" ng-model="system.urlProtocol" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.system.urlProtocol" name="uUrlProtocol" required>                 
-        <div ng-messages="form.$dirty && form.uUrlProtocol.$error">
-          <span ng-message="required">Url protocol is required.</span>
+    <div role="tabpanel" class="tab-pane" id="email">
+      <form name="emailForm" class="form-horizontal" novalidate autocomplete="off">
+        <div class="form-group">
+          <label for="emailServer" class="col-sm-3 control-label">// 'email_server' | tr //<span ng-if="vm.warning['email.server']">*</span></label>
+          <div class="col-sm-5">
+            <input id="emailServer" type="text" class="form-control" ng-model="email.server.data" ng-disabled="!vm.editable['email.server']">
+          </div>  
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_server' | tr //" content="// 'email_server_desc' | tr //"></inline-help>
+          </div>       
         </div>
-      </div>
-    </div>          
-    <div class="form-group">
-      <label for="emailServer" class="col-sm-3 control-label">Email server:</label>
-      <div class="col-sm-7">
-        <input type="text" class="form-control" id="emailServer" ng-model="system.emailServer" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.system.emailServer" name="uEmailServer" required>                 
-        <div ng-messages="form.$dirty && form.uEmailServer.$error">
-          <span ng-message="required">Email server is required.</span>
+        <div class="form-group">
+          <label for="emailServerPort" class="col-sm-3 control-label">// 'email_server_port' | tr //<span ng-if="vm.warning['email.serverPort']">*</span></label>
+          <div class="col-sm-5">
+            <input id="emailServerPort" type="number" class="form-control" ng-model="email.serverPort.data" name="emailServerPort" ng-disabled="!vm.editable['email.serverPort']" min="1" max="65535">
+            <div class="error-message" ng-messages="emailForm.emailServerPort.$error" >
+              <span ng-message="min">// 'invalid_port_number' | tr //</span>
+              <span ng-message="max">// 'invalid_port_number' | tr //</span>
+            </div>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_server_port' | tr //" content="// 'email_server_port_desc' | tr //"></inline-help>
+          </div>
         </div>
-      </div>
+        <div class="form-group">
+          <label for="emailUsername" class="col-sm-3 control-label">// 'email_username' | tr //<span ng-if="vm.warning['email.username']">*</span></label>
+          <div class="col-sm-5">
+            <input id="emailServerPort" type="text" class="form-control" ng-model="email.username.data" ng-disabled="!vm.editable['email.username']">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_username' | tr //" content="// 'email_username_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="emailPassword" class="col-sm-3 control-label">// 'email_password' | tr //<span ng-if="vm.warning['email.password']">*</span></label>
+          <div class="col-sm-5">
+            <input id="emailPassword" type="password" class="form-control" ng-model="email.password.data"  ng-click="vm.clearUp(email.password)" ng-change="vm.hasChanged(email.password)" ng-blur="vm.setMaskPassword(email.password)">
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_password' | tr //" content="// 'email_password_desc' | tr //"></inline-help>
+          </div>          
+        </div>
+        <div class="form-group">
+          <label for="emailFrom" class="col-sm-3 control-label">// 'email_from' | tr //<span ng-if="vm.warning['email.from']">*</span></label>
+          <div class="col-sm-5">
+            <input id="emailFrom" type="text" class="form-control" ng-model="email.from.data" ng-disabled="!vm.editable['email.from']">
+          </div> 
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_from' | tr //" content="// 'email_from_desc' | tr //"></inline-help>
+          </div>         
+        </div>
+        <div class="form-group">
+          <label for="emailSSL" class="col-sm-3 control-label">// 'email_ssl' | tr //<span ng-if="vm.warning['email.SSL']">*</span></label>
+          <div class="col-sm-5">
+            <select class="form-control" ng-model="email.SSL.data" ng-options="r as r.name for r in vm.toggleBooleans track by r.value" ng-disabled="!vm.editable['email.SSL']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'email_ssl' | tr //" content="// 'email_ssl_desc' | tr //"></inline-help>
+          </div>    
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-5">
+            <div class="pull-right">
+              <button type="submit" class="btn btn-link" ng-if="vm.changed"  ng-click="vm.undo()">// 'undo' | tr //</button>
+              <button type="submit" class="btn btn-success" ng-disabled="emailForm.$invalid" ng-click="vm.saveEmailConf(email)">// 'save' | tr //</button>
+            </div>
+          </div>
+        </div>     
+      </form>
     </div>
-    <div class="form-group">
-      <label for="ldapUrl" class="col-sm-3 control-label">LDAP URL:</label>
-      <div class="col-sm-7">
-        <input type="text" class="form-control" id="ldapUrl" ng-model="system.ldapUrl" ng-model-options="{ updateOn: 'blur' }" ng-value="vm.system.ldapUrl" name="uLdapUrl" required>                 
-        <div ng-messages="form.$dirty && form.uLdapUrl.$error">
-          <span ng-message="required">LDAP URL is required.</span>
+    <div role="tabpanel" class="tab-pane" id="system">
+      <form name="systemForm" class="form-horizontal" no-validate autocomplete="off">
+        <div class="form-group">
+          <label for="projectCreationRestriction" class="col-sm-3 control-label">// 'project_creation_restriction' | tr //<span ng-if="vm.warning['system.projectCreationRestriction']">*</span></label>
+          <div class="col-sm-5">
+            <select id="projectCreationRestriction" class="form-control" ng-model="system.projectCreationRestriction.data" ng-options="r as r.name for r in vm.toggleCustoms track by r.value" ng-disabled="!vm.editable['system.projectCreationRestriction']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'project_creation_restriction' | tr //" content="// 'project_creation_restriction_desc' | tr //"></inline-help>
+          </div>
         </div>
-      </div>
+        <div class="form-group">
+          <label for="verifyRemoteCert" class="col-sm-3 control-label">// 'verify_remote_cert' | tr //<span ng-if="vm.warning['system.verifyRemoteCert']">*</span></label>
+          <div class="col-sm-5">
+            <select id="verifyRemoteCert" class="form-control" ng-model="system.verifyRemoteCert.data" ng-options="r as r.name for r in vm.toggleBooleans track by r.value" ng-disabled="!vm.editable['system.verifyRemoteCert']"></select>
+          </div>
+          <div class="inline-help-config">
+            <inline-help help-title="// 'verify_remote_cert' | tr //" content="// 'verify_remote_cert_desc' | tr //"></inline-help>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-5">
+            <div class="pull-right">
+              <button type="submit" class="btn btn-link" ng-if="vm.changed"  ng-click="vm.undo()">// 'undo' | tr //</button>
+              <button type="submit" class="btn btn-success" ng-disabled="systemForm.$invalid" ng-click="vm.saveSystemConf(system)">// 'save' | tr //</button>
+            </div>
+          </div>
+        </div>  
+      </form>
     </div>
   </div>
-  <div class="col-md-12">
-  <h5>Registration</h5>
-  <hr/>
-  </div>
-  <div class="col-md-12 col-md-off-set-1 main-content">
-    <div class="form-group">
-       <label for="registration" class="col-sm-3 control-label">Registration:</label>
-       <div class="col-sm-7">
-         <select class="form-control" ng-model="vm.currentRegistration" ng-options="r as r.name for r in vm.registrationOptions track by r.value" ng-click="vm.selectRegistration()"></select>
-       </div>
-    </div>  
-    <div class="form-group">
-      <div class="col-md-offset-7 col-md-10">
-        <input type="submit" class="btn btn-primary" ng-disabled="form.$invalid" value="Save">                    
-        <input type="submit" class="btn btn-default" ng-click="vm.cancel()" value="Cancel">
-      </div>
-    </div>          
-  </div>
-</form>
+</div>

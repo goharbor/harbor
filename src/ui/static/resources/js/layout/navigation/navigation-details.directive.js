@@ -35,7 +35,9 @@
     vm.path = $location.path();
   }
   
-  function navigationDetails() {
+  navigationDetails.$inject = ['I18nService'];
+  
+  function navigationDetails(I18nService) {
     var directive = {
       restrict: 'E',
       templateUrl: '/navigation_detail?timestamp=' + new Date().getTime(),
@@ -52,6 +54,13 @@
     return directive;
     
     function link(scope, element, attrs, ctrl) {
+      
+      var lang = I18nService().getCurrentLanguage();
+      ctrl.customPos = {};
+      
+      if(lang === 'zh-CN') {
+        ctrl.customPos = {'position': 'relative', 'left': '8%'};
+      }
       
       var visited = ctrl.path.substring(1);  
       
