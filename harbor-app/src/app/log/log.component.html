@@ -1,0 +1,24 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <div class="row flex-items-xs-between">
+      <div class="col-md-2 push-md-8">
+        <input type="text" placeholder="Search for user">
+      </div>
+    </div>
+    <clr-datagrid>
+      <clr-dg-column>Username</clr-dg-column>
+      <clr-dg-column>Repository Name</clr-dg-column>
+      <clr-dg-column>Tag</clr-dg-column>
+      <clr-dg-column>Operation</clr-dg-column>
+      <clr-dg-column>Timestamp</clr-dg-column>
+      <clr-dg-row *ngFor="let l of logs">
+        <clr-dg-cell>{{l.username}}</clr-dg-cell>
+        <clr-dg-cell>{{l.repoName}}</clr-dg-cell>
+        <clr-dg-cell>{{l.tag}}</clr-dg-cell>
+        <clr-dg-cell>{{l.operation}}</clr-dg-cell>
+        <clr-dg-cell>{{l.timestamp}}</clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{logs.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>

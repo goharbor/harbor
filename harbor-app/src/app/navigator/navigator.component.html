@@ -1,0 +1,40 @@
+<clr-header class="header-4 header">
+  <div class="branding">
+    <a href="#" class="nav-link">
+      <clr-icon shape="vm-bug"></clr-icon>
+      <span class="title">Harbor</span>
+    </a>
+  </div>
+  <div class="divider"></div>
+  <div class="header-nav">
+      <a class="nav-link" id="dashboard-link" [routerLink]="['/harbor', 'dashboard']" routerLinkActive="active">
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a class="nav-link" id="dashboard-link" [routerLink]="['/harbor', 'project']" routerLinkActive="active">
+        <span class="nav-text">Project</span>
+      </a>
+  </div>
+  <div class="header-actions">
+    <clr-dropdown class="dropdown bottom-right">        
+      <button class="nav-text" clrDropdownToggle>
+          Administrator
+          <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <div class="dropdown-menu">
+        <a href="javascript:void(0)" clrDropdownItem>Add User</a>
+        <a href="javascript:void(0)" clrDropdownItem (click)="account_settings_opened = true">Account Setting</a>
+        <a href="javascript:void(0)" clrDropdownItem>About</a>
+      </div>
+    </clr-dropdown>
+    <global-search></global-search>
+    <clr-dropdown class="dropdown bottom-right">
+      <button class="nav-text" clrDropdownToggle>
+          <clr-icon shape="cog"></clr-icon>
+      </button>
+      <div class="dropdown-menu">
+        <a href="javascript:void(0)" clrDropdownItem>Preferences</a>
+        <a href="javascript:void(0)" clrDropdownItem>Log out</a>
+      </div>
+    </clr-dropdown>
+  </div>
+</clr-header>

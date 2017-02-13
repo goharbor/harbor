@@ -1,0 +1,40 @@
+<clr-main-container>
+  <clr-modal [(clrModalOpen)]="account_settings_opened">
+    <h3 class="modal-title">Accout Settings</h3>
+    <div class="modal-body">
+      <form>
+        <section class="form-block">
+          <div class="form-group">
+            <label for="account_settings_username" class="col-md-4">Username</label>
+            <input type="text" class="col-md-8" id="account_settings_username" size="20"> 
+          </div>
+          <div class="form-group">
+            <label for="account_settings_email" class="col-md-4">Email</label>
+            <input type="text" class="col-md-8" id="account_settings_email" size="20"> 
+          </div>
+          <div class="form-group">
+            <label for="account_settings_full_name" class="col-md-4">Full name</label>
+            <input type="text" class="col-md-8" id="account_settings_full_name" size="20"> 
+          </div>
+          <div class="form-group">
+            <label for="account_settings_comments" class="col-md-4">Comments</label>
+            <input type="text" class="col-md-8" id="account_settings_comments" size="20"> 
+          </div>
+          <div class="form-group">
+            <button type="button" class="col-md-4" class="btn btn-outline">Change Password</button>
+          </div>
+        </section>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="account_settings_opened = false">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="account_settings_opened = false">Ok</button>
+    </div>
+  </clr-modal>
+  <navigator></navigator>
+  <div class="content-container">
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</clr-main-container>

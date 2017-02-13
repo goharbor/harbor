@@ -1,0 +1,19 @@
+<clr-datagrid>
+  <clr-dg-column>Name</clr-dg-column>
+  <clr-dg-column>Public/Private</clr-dg-column>
+  <clr-dg-column>Repositories</clr-dg-column>
+  <clr-dg-column>Creation time</clr-dg-column>
+  <clr-dg-column>Destination</clr-dg-column>
+  <clr-dg-column>Owner</clr-dg-column>
+  <clr-dg-column>Description</clr-dg-column>
+  <clr-dg-row *ngFor="let p of projects">
+    <clr-dg-cell><a [routerLink]="['/projects', p.id, 'repository']" >{{p.name}}</a></clr-dg-cell>
+    <clr-dg-cell>{{p.isPublic ? 'Public': 'Private'}}</clr-dg-cell>
+    <clr-dg-cell>{{p.repoCount}}</clr-dg-cell>
+    <clr-dg-cell>{{p.creationTime}}</clr-dg-cell>
+    <clr-dg-cell>{{p.destination}}</clr-dg-cell>
+    <clr-dg-cell>{{p.owner}}</clr-dg-cell>
+    <clr-dg-cell>{{p.description}}</clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{projects.length}} item(s)</clr-dg-footer>
+</clr-datagrid>
