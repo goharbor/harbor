@@ -40,7 +40,7 @@ const (
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
 
-	DomainName                 = "domain_name"
+	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
 	DatabaseType               = "database_type"
 	MySQLHost                  = "mysql_host"

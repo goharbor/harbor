@@ -114,13 +114,13 @@ func TokenExpiration() (int, error) {
 	return int(cfg[comcfg.TokenExpiration].(float64)), nil
 }
 
-// DomainName returns the external URL of Harbor: protocal://host:port
-func DomainName() (string, error) {
+// ExtEndpoint returns the external URL of Harbor: protocal://host:port
+func ExtEndpoint() (string, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.DomainName].(string), nil
+	return cfg[comcfg.ExtEndpoint].(string), nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
@@ -153,6 +153,11 @@ func RegistryURL() (string, error) {
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
 	return "http://jobservice"
+}
+
+// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
+func InternalTokenServiceEndpoint() string {
+	return "http://ui/service/token"
 }
 
 // InitialAdminPassword returns the initial password for administrator

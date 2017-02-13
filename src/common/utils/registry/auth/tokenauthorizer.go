@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -134,19 +133,24 @@ func (t *tokenAuthorizer) updateCachedToken(token string, expiresIn int) {
 // Implements interface Authorizer
 type standardTokenAuthorizer struct {
 	tokenAuthorizer
-	client     *http.Client
-	credential Credential
+	client               *http.Client
+	credential           Credential
+	tokenServiceEndpoint string
 }
 
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
-func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType, scopeName string, scopeActions ...string) Authorizer {
+// If tokenServiceEndpoint is set, the token request will be sent to it instead of the server get from authorizer
+// The usage please refer to the function tokenURL
+func NewStandardTokenAuthorizer(credential Credential, insecure bool,
+	tokenServiceEndpoint string, scopeType, scopeName string, scopeActions ...string) Authorizer {
 	authorizer := &standardTokenAuthorizer{
 		client: &http.Client{
 			Transport: registry.GetHTTPTransport(insecure),
 			Timeout:   30 * time.Second,
 		},
-		credential: credential,
+		credential:           credential,
+		tokenServiceEndpoint: tokenServiceEndpoint,
 	}
 
 	if len(scopeType) != 0 || len(scopeName) != 0 {
@@ -163,7 +167,7 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType,
 }
 
 func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	realm = tokenURL(realm)
+	realm = s.tokenURL(realm)
 
 	u, err := url.Parse(realm)
 	if err != nil {
@@ -230,17 +234,15 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 
 // when the registry client is used inside Harbor, the token request
 // can be posted to token service directly rather than going through nginx.
-// this solution can resolve two problems:
+// If realm is set as the internal url of token service, this can resolve
+// two problems:
 // 1. performance issue
 // 2. the realm field returned by registry is an IP which can not reachable
 // inside Harbor
-func tokenURL(realm string) string {
-
-	domainName := os.Getenv("DOMAIN_NAME")
-	if len(domainName) != 0 && strings.Contains(realm, domainName) {
-		realm = "http://ui/service/token"
+func (s *standardTokenAuthorizer) tokenURL(realm string) string {
+	if len(s.tokenServiceEndpoint) != 0 {
+		return s.tokenServiceEndpoint
 	}
-
 	return realm
 }
 

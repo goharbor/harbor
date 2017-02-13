@@ -119,7 +119,14 @@ func (c *ConfigAPI) Put() {
 		}
 	}
 
-	if err := validateCfg(cfg); err != nil {
+	isSysErr, err := validateCfg(cfg)
+
+	if err != nil {
+		if isSysErr {
+			log.Errorf("failed to validate configurations: %v", err)
+			c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
@@ -162,42 +169,68 @@ func (c *ConfigAPI) Put() {
 	}
 }
 
-func validateCfg(c map[string]string) error {
+func validateCfg(c map[string]string) (bool, error) {
+	isSysErr := false
+
+	mode, err := config.AuthMode()
+	if err != nil {
+		isSysErr = true
+		return isSysErr, err
+	}
+
 	if value, ok := c[comcfg.AUTHMode]; ok {
 		if value != comcfg.DBAuth && value != comcfg.LDAPAuth {
-			return fmt.Errorf("invalid %s, shoud be %s or %s", comcfg.AUTHMode, comcfg.DBAuth, comcfg.LDAPAuth)
+			return isSysErr, fmt.Errorf("invalid %s, shoud be %s or %s", comcfg.AUTHMode, comcfg.DBAuth, comcfg.LDAPAuth)
+		}
+		mode = value
+	}
+
+	if mode == comcfg.LDAPAuth {
+		ldap, err := config.LDAP()
+		if err != nil {
+			isSysErr = true
+			return isSysErr, err
 		}
 
-		if value == comcfg.LDAPAuth {
+		if len(ldap.URL) == 0 {
 			if _, ok := c[comcfg.LDAPURL]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAPURL)
+				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPURL)
 			}
+		}
+
+		if len(ldap.BaseDN) == 0 {
 			if _, ok := c[comcfg.LDAPBaseDN]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAPBaseDN)
+				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPBaseDN)
 			}
+		}
+		if len(ldap.UID) == 0 {
 			if _, ok := c[comcfg.LDAPUID]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAPUID)
+				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPUID)
 			}
+		}
+		if ldap.Scope == 0 {
 			if _, ok := c[comcfg.LDAPScope]; !ok {
-				return fmt.Errorf("%s is missing", comcfg.LDAPScope)
+				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPScope)
 			}
 		}
 	}
+
+	log.Infof("===========%v", c)
 
 	if ldapURL, ok := c[comcfg.LDAPURL]; ok && len(ldapURL) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAPURL)
+		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPURL)
 	}
 	if baseDN, ok := c[comcfg.LDAPBaseDN]; ok && len(baseDN) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAPBaseDN)
+		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPBaseDN)
 	}
 	if uID, ok := c[comcfg.LDAPUID]; ok && len(uID) == 0 {
-		return fmt.Errorf("%s is empty", comcfg.LDAPUID)
+		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPUID)
 	}
 	if scope, ok := c[comcfg.LDAPScope]; ok &&
 		scope != comcfg.LDAPScopeBase &&
 		scope != comcfg.LDAPScopeOnelevel &&
 		scope != comcfg.LDAPScopeSubtree {
-		return fmt.Errorf("invalid %s, should be %s, %s or %s",
+		return isSysErr, fmt.Errorf("invalid %s, should be %s, %s or %s",
 			comcfg.LDAPScope,
 			comcfg.LDAPScopeBase,
 			comcfg.LDAPScopeOnelevel,
@@ -205,41 +238,41 @@ func validateCfg(c map[string]string) error {
 	}
 	if timeout, ok := c[comcfg.LDAPTimeout]; ok {
 		if t, err := strconv.Atoi(timeout); err != nil || t < 0 {
-			return fmt.Errorf("invalid %s", comcfg.LDAPTimeout)
+			return isSysErr, fmt.Errorf("invalid %s", comcfg.LDAPTimeout)
 		}
 	}
 
 	if self, ok := c[comcfg.SelfRegistration]; ok &&
 		self != "0" && self != "1" {
-		return fmt.Errorf("%s should be %s or %s",
+		return isSysErr, fmt.Errorf("%s should be %s or %s",
 			comcfg.SelfRegistration, "0", "1")
 	}
 
 	if port, ok := c[comcfg.EmailPort]; ok {
 		if p, err := strconv.Atoi(port); err != nil || p < 0 || p > 65535 {
-			return fmt.Errorf("invalid %s", comcfg.EmailPort)
+			return isSysErr, fmt.Errorf("invalid %s", comcfg.EmailPort)
 		}
 	}
 
 	if ssl, ok := c[comcfg.EmailSSL]; ok && ssl != "0" && ssl != "1" {
-		return fmt.Errorf("%s should be %s or %s", comcfg.EmailSSL, "0", "1")
+		return isSysErr, fmt.Errorf("%s should be %s or %s", comcfg.EmailSSL, "0", "1")
 	}
 
 	if crt, ok := c[comcfg.ProjectCreationRestriction]; ok &&
 		crt != comcfg.ProCrtRestrEveryone &&
 		crt != comcfg.ProCrtRestrAdmOnly {
-		return fmt.Errorf("invalid %s, should be %s or %s",
+		return isSysErr, fmt.Errorf("invalid %s, should be %s or %s",
 			comcfg.ProjectCreationRestriction,
 			comcfg.ProCrtRestrAdmOnly,
 			comcfg.ProCrtRestrEveryone)
 	}
 
 	if verify, ok := c[comcfg.VerifyRemoteCert]; ok && verify != "0" && verify != "1" {
-		return fmt.Errorf("invalid %s, should be %s or %s",
+		return isSysErr, fmt.Errorf("invalid %s, should be %s or %s",
 			comcfg.VerifyRemoteCert, "0", "1")
 	}
 
-	return nil
+	return isSysErr, nil
 }
 
 //encode passwords and convert map[string]string to map[string]interface{}

@@ -49,7 +49,7 @@ func (cc *CommonController) SendEmail() {
 
 		message := new(bytes.Buffer)
 
-		harborURL, err := config.DomainName()
+		harborURL, err := config.ExtEndpoint()
 		if err != nil {
 			log.Errorf("failed to get domain name: %v", err)
 			cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

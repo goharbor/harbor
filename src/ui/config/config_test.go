@@ -23,7 +23,7 @@ import (
 
 // test functions under package ui/config
 func TestConfig(t *testing.T) {
-	server, err := test.NewAdminserver()
+	server, err := test.NewAdminserver(nil)
 	if err != nil {
 		t.Fatalf("failed to create a mock admin server: %v", err)
 	}
@@ -68,7 +68,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get token expiration: %v", err)
 	}
 
-	if _, err := DomainName(); err != nil {
+	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get domain name: %v", err)
 	}
 
@@ -84,9 +84,17 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get registry URL: %v", err)
 	}
 
-	InternalJobServiceURL()
+	if len(InternalJobServiceURL()) == 0 {
+		t.Error("the internal job service url is null")
+	}
 
-	InitialAdminPassword()
+	if len(InternalTokenServiceEndpoint()) == 0 {
+		t.Error("the internal token service endpoint is null")
+	}
+
+	if _, err := InitialAdminPassword(); err != nil {
+		t.Fatalf("failed to get initial admin password: %v", err)
+	}
 
 	if _, err := OnlyAdminCreateProject(); err != nil {
 		t.Fatalf("failed to get onldy admin create project: %v", err)
@@ -103,6 +111,4 @@ func TestConfig(t *testing.T) {
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
 	}
-
-	UISecret()
 }

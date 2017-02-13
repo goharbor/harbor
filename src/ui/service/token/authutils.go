@@ -84,7 +84,7 @@ func FilterAccess(username string, a *token.ResourceActions) {
 		repoLength := len(repoSplit)
 		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
 			var projectName string
-			registryURL, err := config.DomainName()
+			registryURL, err := config.ExtEndpoint()
 			if err != nil {
 				log.Errorf("failed to get domain name: %v", err)
 				return
