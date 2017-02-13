@@ -1,18 +1,30 @@
 import { NgModule } from '@angular/core';
-import { ProjectComponent } from './project.component';
-import { ProjectListComponent } from './project-list.component';
+
 import { SharedModule } from '../shared.module';
-import { RouterModule } from '@angular/router';
+import { ProjectDetailModule } from './project-detail/project-detail.module';
+
+import { ProjectComponent } from './project.component';
+import { CreateProjectComponent } from './create-project/create-project.component';
+import { SearchProjectComponent } from './search-project/search-project.component';
+import { FilterProjectComponent } from './filter-project/filter-project.component';
+import { ListProjectComponent } from './list-project/list-project.component';
+import { ProjectDetailComponent } from './project-detail/project-detail.component';
+import { ProjectRoutingModule } from './project-routing.module';
+
 
 @NgModule({
   imports: [ 
     SharedModule,
-    RouterModule
+    ProjectDetailModule,
+    ProjectRoutingModule
   ],
   declarations: [ 
     ProjectComponent,
-    ProjectListComponent
+    CreateProjectComponent,
+    SearchProjectComponent,
+    FilterProjectComponent,
+    ListProjectComponent   
   ],
-  exports: [ ProjectComponent ]
+  exports: [ ListProjectComponent ]
 })
 export class ProjectModule {}

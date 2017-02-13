@@ -1,0 +1,25 @@
+<clr-modal [(clrModalOpen)]="create_project_opened">
+  <h3 class="modal-title">New Project</h3>
+  <div class="modal-body">
+    <form>
+      <section class="form-block">
+        <div class="form-group">
+          <label for="create_project_username" class="col-md-4">Project Name</label>
+          <input type="text" class="col-md-8" id="create_project_username" size="20"> 
+        </div>
+        <div class="form-group">
+          <label class="col-md-4">Public</label>
+          <div class="checkbox-inline">
+            <input type="checkbox" id="create_project_public">
+            <label for="create_project_public"></label>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="create_project_opened = false">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="create_project_opened = false">Ok</button>
+  </div>
+</clr-modal>
+<button class="btn btn-sm" (click)="create_project_opened = true">New Project</button>

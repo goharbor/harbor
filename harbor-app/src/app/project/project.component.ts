@@ -8,9 +8,6 @@ import { Router }  from '@angular/router';
     styleUrls: [ 'project.css' ]
 })
 export class ProjectComponent implements OnInit {
-
-   
-
     ngOnInit(): void {
        
     }

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Project } from './project';
+import { Project } from '../project';
 
 
 @Component({
-  selector: 'project-list',
-  templateUrl: 'project-list.component.html'
+  selector: 'list-project',
+  templateUrl: 'list-project.component.html'
 })
-export class ProjectListComponent implements OnInit {
+export class ListProjectComponent implements OnInit {
    projects: Project[];
 
    ngOnInit(): void {

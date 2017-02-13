@@ -1,35 +1,31 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { HarborShellComponent } from './harbor-shell.component';
+import { BaseComponent } from './base.component';
 
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { ProjectComponent } from '../project/project.component';
-import { ProjectListComponent } from '../project/project-list.component';
 
-import { ProjectDetailComponent } from '../project-detail/project-detail.component';
+import { ProjectDetailComponent } from '../project/project-detail/project-detail.component';
 import { RepositoryComponent } from '../repository/repository.component';
 import { ReplicationComponent } from '../replication/replication.component';
 import { MemberComponent } from '../member/member.component';
 import { LogComponent } from '../log/log.component';
 
-const harborShellRoutes: Routes = [
+const baseRoutes: Routes = [
   { 
-    path: 'harbor',
-    component: HarborShellComponent, 
+    path: 'harbor', component: BaseComponent,
     children: [
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'project', component: ProjectComponent }
+      { path: 'projects', component: ProjectComponent }
     ]
-  }
-];
+  }];
 
 @NgModule({
   imports: [
-    RouterModule.forChild(harborShellRoutes)
+    RouterModule.forChild(baseRoutes)
   ],
   exports: [ RouterModule ]
 })
-export class HarborShellRoutingModule {
+export class BaseRoutingModule {
 
 }

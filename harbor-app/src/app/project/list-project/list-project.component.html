@@ -7,7 +7,7 @@
   <clr-dg-column>Owner</clr-dg-column>
   <clr-dg-column>Description</clr-dg-column>
   <clr-dg-row *ngFor="let p of projects">
-    <clr-dg-cell><a [routerLink]="['/projects', p.id, 'repository']" >{{p.name}}</a></clr-dg-cell>
+    <clr-dg-cell><a [routerLink]="['/harbor', 'projects', p.id, 'repository']" >{{p.name}}</a></clr-dg-cell>
     <clr-dg-cell>{{p.isPublic ? 'Public': 'Private'}}</clr-dg-cell>
     <clr-dg-cell>{{p.repoCount}}</clr-dg-cell>
     <clr-dg-cell>{{p.creationTime}}</clr-dg-cell>

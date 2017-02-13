@@ -5,7 +5,9 @@ import { HttpModule } from '@angular/http';
 import { ClarityModule } from 'clarity-angular';
 import { AppComponent } from './app.component';
 import { AccountModule } from './account/account.module';
-import { HarborShellModule } from './harbor-shell/harbor.shell.module';
+
+import { BaseModule } from './base/base.module';
+
 import { HarborRoutingModule } from './harbor-routing.module';
 import { SharedModule } from './shared.module';
 
@@ -16,7 +18,7 @@ import { SharedModule } from './shared.module';
     imports: [
         SharedModule,
         AccountModule,
-        HarborShellModule,
+        BaseModule,
         HarborRoutingModule
     ],
     providers: [],
