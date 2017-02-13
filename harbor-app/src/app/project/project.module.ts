@@ -1,7 +1,10 @@
 import { NgModule } from '@angular/core';
 
 import { SharedModule } from '../shared.module';
-import { ProjectDetailModule } from './project-detail/project-detail.module';
+import { RepositoryModule } from '../repository/repository.module';
+import { ReplicationModule } from '../replication/replication.module';
+import { MemberModule} from '../member/member.module';
+import { LogModule } from '../log/log.module';
 
 import { ProjectComponent } from './project.component';
 import { CreateProjectComponent } from './create-project/create-project.component';
@@ -15,7 +18,10 @@ import { ProjectRoutingModule } from './project-routing.module';
 @NgModule({
   imports: [ 
     SharedModule,
-    ProjectDetailModule,
+    RepositoryModule,
+    ReplicationModule,
+    MemberModule,
+    LogModule,
     ProjectRoutingModule
   ],
   declarations: [ 
@@ -23,7 +29,8 @@ import { ProjectRoutingModule } from './project-routing.module';
     CreateProjectComponent,
     SearchProjectComponent,
     FilterProjectComponent,
-    ListProjectComponent   
+    ListProjectComponent,
+    ProjectDetailComponent
   ],
   exports: [ ListProjectComponent ]
 })

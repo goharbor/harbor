@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { BaseComponent } from '../base/base.component';
 
+import { HarborShellComponent} from '../base/harbor-shell/harbor-shell.component';
 import { ProjectComponent } from './project.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 
@@ -12,7 +12,7 @@ import { LogComponent } from '../log/log.component';
 
 const projectRoutes: Routes = [
   { path: 'harbor', 
-    component: BaseComponent, 
+    component: HarborShellComponent, 
     children: [
       { path: 'projects', component: ProjectComponent },
       { 
