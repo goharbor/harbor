@@ -24,7 +24,7 @@ import (
 
 // test functions under package jobservice/config
 func TestConfig(t *testing.T) {
-	server, err := test.NewAdminserver()
+	server, err := test.NewAdminserver(nil)
 	if err != nil {
 		t.Fatalf("failed to create a mock admin server: %v", err)
 	}
@@ -53,8 +53,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get max job workers: %v", err)
 	}
 
-	LocalUIURL()
-
 	if _, err := LocalRegURL(); err != nil {
 		t.Fatalf("failed to get registry URL: %v", err)
 	}
@@ -67,5 +65,11 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get secret key: %v", err)
 	}
 
-	UISecret()
+	if len(InternalTokenServiceEndpoint()) == 0 {
+		t.Error("the internal token service endpoint is null")
+	}
+
+	if _, err := ExtEndpoint(); err != nil {
+		t.Fatalf("failed to get ext endpoint: %v", err)
+	}
 }

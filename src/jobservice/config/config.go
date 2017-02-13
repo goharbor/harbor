@@ -121,11 +121,16 @@ func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }
 
-// DomainName ...
-func DomainName() (string, error) {
+// ExtEndpoint ...
+func ExtEndpoint() (string, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.DomainName].(string), nil
+	return cfg[comcfg.ExtEndpoint].(string), nil
+}
+
+// InternalTokenServiceEndpoint ...
+func InternalTokenServiceEndpoint() string {
+	return "http://ui/service/token"
 }
