@@ -211,7 +211,7 @@
       if(val) {
         vm.selectedTags[val.repoName] = val.tags;
       }
-    })
+    });
    
     function deleteSelectedTags() {
       console.log('Delete selected tags:' + angular.toJson(vm.selectedTags[vm.repoName]) + ' under repo:' + vm.repoName);

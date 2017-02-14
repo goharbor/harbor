@@ -28,14 +28,14 @@
     vm.tags = [];
     vm.retrieve = retrieve;
     
-    vm.selected = []
+    vm.selected = [];
     vm.selected[vm.repoName] = [];
     
     vm.selectedTags = [];
     
     $scope.$watch('vm.repoName', function(current, origin) {    
       if(current) {
-        console.log('vm.repoName triggered tags retrieval.')
+        console.log('vm.repoName triggered tags retrieval.');
         vm.retrieve();
       }
     });
@@ -61,7 +61,7 @@
         console.log('RECEIVED gatherSelectedTags:' + val);
         gatherSelectedTags();
       }
-    })
+    });
                     
     $scope.$on('selectAll' + vm.repoName, function(e, val) {      
       (val.status) ? vm.selectedCount[val.repoName] = vm.tags.length : vm.selectedCount[val.repoName] = 0;
