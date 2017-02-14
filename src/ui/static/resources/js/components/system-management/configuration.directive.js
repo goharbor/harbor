@@ -68,7 +68,7 @@
       'ldap_base_dn': { type: 'auth', attr: 'ldapBaseDN' },
       'ldap_uid': { type: 'auth', attr: 'ldapUID' },
       'ldap_filter': { type: 'auth', attr: 'ldapFilter' },
-      'ldap_connection_timeout': { type: 'auth', attr: 'ldapConnectionTimeout' },
+      'ldap_timeout': { type: 'auth', attr: 'ldapConnectionTimeout' },
       'ldap_scope': { type: 'auth', attr: 'ldapScope' },
       'email_host': { type: 'email', attr: 'server' },
       'email_port': { type: 'email', attr: 'serverPort' },

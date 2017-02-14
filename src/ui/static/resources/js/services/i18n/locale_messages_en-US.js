@@ -332,12 +332,12 @@ var locale_messages = {
   'please_save_changes': 'Please save changes before leaving this page.',
   'undo': 'Undo',
   'invalid_port_number': 'Invalid port number.',
-  'max_job_workers_is_required': 'Maxystem job workers number is required.',
+  'max_job_workers_is_required': 'Max job workers number is required.',
   'timeout_is_required': 'Timeout value is required.',
   'invalid_timeout': 'Invalid timeout value.',
   'ldap_scope_is_required': 'Scope is required.',
   'invalid_ldap_scope': 'Invalid Scope value.',
-  'update_configuration_title': 'Update Configuration',
-  'successful_update_configuration': 'Update configurations successfully.',
+  'update_configuration_title': 'Update Configuration(s)',
+  'successful_update_configuration': 'Configuration(s) updated successfully.',
   'failed_to_update_configuration': 'Failed to update configuration.'
 };
