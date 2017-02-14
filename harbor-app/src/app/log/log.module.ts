@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
-import { LogComponent } from './log.component';
-import { SharedModule } from '../shared.module';
+import { AuditLogComponent } from './audit-log.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [ SharedModule ],
-  declarations: [ LogComponent ],
-  exports: [ LogComponent ]
+  declarations: [ AuditLogComponent ],
+  exports: [ AuditLogComponent ]
 })
 export class LogModule {}

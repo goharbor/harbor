@@ -1,4 +1,4 @@
-export class Log {
+export class AuditLog {
   username: string;
   repoName: string;
   tag: string;

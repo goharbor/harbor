@@ -7,8 +7,8 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 
 import { RepositoryComponent } from '../repository/repository.component';
 import { ReplicationComponent } from '../replication/replication.component';
-import { MemberComponent } from '../member/member.component';
-import { LogComponent } from '../log/log.component';
+import { MemberComponent } from './member/member.component';
+import { AuditLogComponent } from '../log/audit-log.component';
 
 const projectRoutes: Routes = [
   { path: 'harbor', 
@@ -22,7 +22,7 @@ const projectRoutes: Routes = [
           { path: 'repository', component: RepositoryComponent },
           { path: 'replication', component: ReplicationComponent },
           { path: 'member', component: MemberComponent },
-          { path: 'log', component: LogComponent }
+          { path: 'log', component: AuditLogComponent }
         ]
       }
     ]

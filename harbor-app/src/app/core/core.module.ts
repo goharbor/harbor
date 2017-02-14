@@ -3,8 +3,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { ClarityModule } from 'clarity-angular';
-import { AppComponent } from './app.component';
-import { AccountModule } from './account/account.module';
 
 @NgModule({
   imports: [

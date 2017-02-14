@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../shared.module';
+import { SharedModule } from '../shared/shared.module';
 
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { ProjectModule } from '../project/project.module';
+import { UserModule } from '../user/user.module';
 
 import { NavigatorComponent } from './navigator/navigator.component';
 import { GlobalSearchComponent } from './global-search/global-search.component';
@@ -16,6 +17,7 @@ import { BaseRoutingModule } from './base-routing.module';
     SharedModule,
     DashboardModule,
     ProjectModule,
+    UserModule,
     BaseRoutingModule
   ],
   declarations: [

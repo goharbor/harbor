@@ -11,14 +11,14 @@
       <clr-dg-column>Tag</clr-dg-column>
       <clr-dg-column>Operation</clr-dg-column>
       <clr-dg-column>Timestamp</clr-dg-column>
-      <clr-dg-row *ngFor="let l of logs">
+      <clr-dg-row *ngFor="let l of auditLogs">
         <clr-dg-cell>{{l.username}}</clr-dg-cell>
         <clr-dg-cell>{{l.repoName}}</clr-dg-cell>
         <clr-dg-cell>{{l.tag}}</clr-dg-cell>
         <clr-dg-cell>{{l.operation}}</clr-dg-cell>
         <clr-dg-cell>{{l.timestamp}}</clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{logs.length}} item(s)</clr-dg-footer>
+      <clr-dg-footer>{{auditLogs.length}} item(s)</clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

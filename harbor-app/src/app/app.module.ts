@@ -9,14 +9,14 @@ import { AccountModule } from './account/account.module';
 import { BaseModule } from './base/base.module';
 
 import { HarborRoutingModule } from './harbor-routing.module';
-import { SharedModule } from './shared.module';
+import { CoreModule } from './core/core.module';
 
 @NgModule({
     declarations: [
         AppComponent,
     ],
     imports: [
-        SharedModule,
+        CoreModule,
         AccountModule,
         BaseModule,
         HarborRoutingModule
