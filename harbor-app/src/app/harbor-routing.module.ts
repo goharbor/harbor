@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 
 import { RouterModule, Routes } from '@angular/router';
 
-import { SignInComponent } from './account/sign-in.component';
+import { SignInComponent } from './account/sign-in/sign-in.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
