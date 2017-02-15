@@ -20,11 +20,21 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/vmware/harbor/src/adminserver/config"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+// Keys need to be encrypted or decrypted
+var Keys = []string{
+	comcfg.EmailPassword,
+	comcfg.LDAPSearchPwd,
+	comcfg.MySQLPassword,
+	comcfg.AdminInitialPassword,
+}
 
 var cfgStore store.Driver
 
@@ -43,7 +53,7 @@ func Init() (err error) {
 	}
 
 	log.Infof("configuration store driver: %s", cfgStore.Name())
-	cfg, err := cfgStore.Read()
+	cfg, err := GetSystemCfg()
 	if err != nil {
 		return err
 	}
@@ -61,7 +71,7 @@ func Init() (err error) {
 	}
 
 	//sync configurations into cfg store
-	if err = cfgStore.Write(cfg); err != nil {
+	if err = UpdateSystemCfg(cfg); err != nil {
 		return err
 	}
 
@@ -102,7 +112,6 @@ func readFromEnv(cfg map[string]interface{}) error {
 	cfg[comcfg.JobLogDir] = os.Getenv("LOG_DIR")
 	//TODO remove
 	cfg[comcfg.UseCompressedJS] = os.Getenv("USE_COMPRESSED_JS") == "on"
-	cfg[comcfg.SecretKey] = os.Getenv("SECRET_KEY")
 	cfgExpi, err := strconv.Atoi(os.Getenv("CFG_EXPIRATION"))
 	if err != nil {
 		return err
@@ -162,10 +171,64 @@ func initFromEnv() (map[string]interface{}, error) {
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	return cfgStore.Read()
+	m, err := cfgStore.Read()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = decrypt(m, Keys, config.SecretKey()); err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 // UpdateSystemCfg updates the system configurations
 func UpdateSystemCfg(cfg map[string]interface{}) error {
+
+	if err := encrypt(cfg, Keys, config.SecretKey()); err != nil {
+		return err
+	}
+
 	return cfgStore.Write(cfg)
+}
+
+func encrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		cipherText, err := utils.ReversibleEncrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = cipherText
+	}
+	return nil
+}
+
+func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		text, err := utils.ReversibleDecrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = text
+	}
+	return nil
 }

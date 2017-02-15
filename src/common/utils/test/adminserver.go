@@ -24,7 +24,7 @@ import (
 )
 
 var adminServerDefaultConfig = map[string]interface{}{
-	config.ExtEndpoint:                 "host01.com",
+	config.ExtEndpoint:                "host01.com",
 	config.AUTHMode:                   config.DBAuth,
 	config.DatabaseType:               "mysql",
 	config.MySQLHost:                  "127.0.0.1",
@@ -58,7 +58,6 @@ var adminServerDefaultConfig = map[string]interface{}{
 	config.CfgExpiration:              5,
 	config.JobLogDir:                  "/var/log/jobs",
 	config.UseCompressedJS:            true,
-	config.SecretKey:                  "secret",
 	config.AdminInitialPassword:       "password",
 }
 

@@ -16,16 +16,55 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
+	//"github.com/vmware/harbor/src/common/utils"
+	//"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const defaultKeyPath string = "/harbor/secretkey"
 
 var mg *comcfg.Manager
 
+var (
+	secret    string
+	secretKey string
+)
+
+func initSecretAndKey() error {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	secretKey = string(b)
+
+	secret = os.Getenv("UI_SECRET")
+
+	/*
+		secretCipherText := os.Getenv("UI_SECRET")
+
+		secret, err = utils.ReversibleDecrypt(secretCipherText, secretKey)
+		if err != nil {
+			log.Errorf("failed to decrypt secret: %v", err)
+		}
+	*/
+	return nil
+}
+
 // Init configurations
 func Init() error {
+	if err := initSecretAndKey(); err != nil {
+		return err
+	}
+
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
@@ -108,17 +147,13 @@ func LogDir() (string, error) {
 
 // SecretKey will return the secret key for encryption/decryption password in target.
 func SecretKey() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return cfg[comcfg.SecretKey].(string), nil
+	return secretKey, nil
 }
 
-// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
-// TODO
+// UISecret returns a secret used for communication of UI, JobService
+// and Adminserver
 func UISecret() string {
-	return os.Getenv("UI_SECRET")
+	return secret
 }
 
 // ExtEndpoint ...

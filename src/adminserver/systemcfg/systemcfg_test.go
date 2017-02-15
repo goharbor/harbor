@@ -39,14 +39,18 @@ func TestSystemcfg(t *testing.T) {
 	}
 
 	m := map[string]string{
-		"AUTH_MODE":        comcfg.DBAuth,
-		"LDAP_SCOPE":       "1",
-		"LDAP_TIMEOUT":     "30",
-		"MYSQL_PORT":       "3306",
-		"MAX_JOB_WORKERS":  "3",
-		"TOKEN_EXPIRATION": "30",
-		"CFG_EXPIRATION":   "5",
-		"EMAIL_PORT":       "25",
+		"AUTH_MODE":             comcfg.DBAuth,
+		"LDAP_SCOPE":            "1",
+		"LDAP_TIMEOUT":          "30",
+		"MYSQL_PORT":            "3306",
+		"MAX_JOB_WORKERS":       "3",
+		"TOKEN_EXPIRATION":      "30",
+		"CFG_EXPIRATION":        "5",
+		"EMAIL_PORT":            "25",
+		"MYSQL_PWD":             "",
+		"LDAP_SEARCH_PWD":       "",
+		"EMAIL_PWD":             "",
+		"HARBOR_ADMIN_PASSWORD": "",
 	}
 
 	for k, v := range m {

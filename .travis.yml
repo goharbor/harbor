@@ -25,9 +25,9 @@ env:
   HARBOR_ADMIN_PASSWD: Harbor12345 
   UI_SECRET: tempString  
   MAX_JOB_WORKERS: 3
-  SECRET_KEY: 1234567890123456 
   AUTH_MODE: db_auth
   SELF_REGISTRATION: on
+  KEY_PATH: /data/secretkey
 
 before_install:
    - sudo ./tests/hostcfg.sh

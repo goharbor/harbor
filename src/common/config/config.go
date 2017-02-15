@@ -74,7 +74,6 @@ const (
 	CfgExpiration              = "cfg_expiration"
 	JobLogDir                  = "job_log_dir"
 	UseCompressedJS            = "use_compressed_js"
-	SecretKey                  = "secret_key"
 	AdminInitialPassword       = "admin_initial_password"
 )
 

@@ -215,8 +215,6 @@ func validateCfg(c map[string]string) (bool, error) {
 		}
 	}
 
-	log.Infof("===========%v", c)
-
 	if ldapURL, ok := c[comcfg.LDAPURL]; ok && len(ldapURL) == 0 {
 		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPURL)
 	}
@@ -325,8 +323,7 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 		comcfg.AdminInitialPassword,
 		comcfg.EmailPassword,
 		comcfg.LDAPSearchPwd,
-		comcfg.MySQLPassword,
-		comcfg.SecretKey}
+		comcfg.MySQLPassword}
 	for _, del := range dels {
 		if _, ok := cfg[del]; ok {
 			delete(cfg, del)
