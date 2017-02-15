@@ -1,0 +1,7 @@
+.progress-size-small {
+    height: 0.5em !important;
+}
+
+.visibility-hidden {
+    visibility: hidden;
+}
