@@ -9,7 +9,7 @@ import { ClarityModule } from 'clarity-angular';
       BrowserModule,
       FormsModule,
       HttpModule,
-      ClarityModule
+      ClarityModule.forRoot()
   ],
   exports: [
       BrowserModule,
