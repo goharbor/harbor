@@ -8,12 +8,12 @@
   <clr-dg-column>Description</clr-dg-column>
   <clr-dg-row *ngFor="let p of projects">
     <clr-dg-cell><a [routerLink]="['/harbor', 'projects', p.id, 'repository']" >{{p.name}}</a></clr-dg-cell>
-    <clr-dg-cell>{{p.isPublic ? 'Public': 'Private'}}</clr-dg-cell>
-    <clr-dg-cell>{{p.repoCount}}</clr-dg-cell>
-    <clr-dg-cell>{{p.creationTime}}</clr-dg-cell>
-    <clr-dg-cell>{{p.destination}}</clr-dg-cell>
+    <clr-dg-cell>{{p.public == 1 ? 'Public': 'Private'}}</clr-dg-cell>
+    <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
+    <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
+    <clr-dg-cell>--</clr-dg-cell>
     <clr-dg-cell>{{p.owner}}</clr-dg-cell>
     <clr-dg-cell>{{p.description}}</clr-dg-cell>
   </clr-dg-row>
-  <clr-dg-footer>{{projects.length}} item(s)</clr-dg-footer>
+  <clr-dg-footer>{{ (projects ? projects.length : 0) }} item(s)</clr-dg-footer>
 </clr-datagrid>

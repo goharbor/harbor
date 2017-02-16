@@ -1,16 +1,21 @@
-<clr-modal [(clrModalOpen)]="create_project_opened">
+<clr-modal [(clrModalOpen)]="createProjectOpened">
   <h3 class="modal-title">New Project</h3>
   <div class="modal-body">
     <form>
       <section class="form-block">
         <div class="form-group">
-          <label for="create_project_username" class="col-md-4">Project Name</label>
-          <input type="text" class="col-md-8" id="create_project_username" size="20"> 
+          <label for="create_project_name" class="col-md-4">Project Name</label>
+          <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="hasError" [class.valid]="!hasError" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+            <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="20" (keyup)="hasError=false;">
+            <span class="tooltip-content">
+              {{errorMessage}}
+            </span>
+          </label>
         </div>
         <div class="form-group">
           <label class="col-md-4">Public</label>
           <div class="checkbox-inline">
-            <input type="checkbox" id="create_project_public">
+            <input type="checkbox" id="create_project_public" [(ngModel)]="project.public" name="public">
             <label for="create_project_public"></label>
           </div>
         </div>
@@ -18,8 +23,8 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="create_project_opened = false">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="create_project_opened = false">Ok</button>
+    <button type="button" class="btn btn-outline" (click)="createProjectOpened = false">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="onSubmit()">Ok</button>
   </div>
 </clr-modal>
-<button class="btn btn-sm" (click)="create_project_opened = true">New Project</button>
+<button class="btn btn-sm" (click)="newProject()">New Project</button>
