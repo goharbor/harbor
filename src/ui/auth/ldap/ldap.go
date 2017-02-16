@@ -21,7 +21,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/ldap"
+	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 )
@@ -43,21 +43,21 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	ldapConfs, err := ldap.GetSystemLdapConf()
+	ldapConfs, err := ldapUtils.GetSystemLdapConf()
 
 	if err != nil {
 		return nil, fmt.Errorf("can't load system configuration: %v", err)
 	}
 
-	ldapConfs, err = ldap.ValidateLdapConf(ldapConfs)
+	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
 
 	if err != nil {
 		return nil, fmt.Errorf("invalid ldap request: %v", err)
 	}
 
-	ldapConfs.LdapFilter = ldap.MakeFilter(p, ldapConfs.LdapFilter, ldapConfs.LdapUID)
+	ldapConfs.LdapFilter = ldapUtils.MakeFilter(p, ldapConfs.LdapFilter, ldapConfs.LdapUID)
 
-	ldapUsers, err := ldap.SearchUser(ldapConfs)
+	ldapUsers, err := ldapUtils.SearchUser(ldapConfs)
 
 	if err != nil {
 		return nil, fmt.Errorf("ldap search fail: %v", err)
@@ -93,10 +93,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		//		if u.Email == "" {
 		//			u.Email = u.Username + "@placeholder.com"
 		//		}
-		userID, errMsg := ldap.ImportUser(ldapUsers[0])
-		if errMsg != "" {
-			log.Errorf("Can't import user %s, error: %s", ldapUsers[0].Username, errMsg)
-			return nil, fmt.Errorf("can't import user %s, error: %s", ldapUsers[0].Username, errMsg)
+		userID, err := ldapUtils.ImportUser(ldapUsers[0])
+		if err != nil {
+			log.Errorf("Can't import user %s, error: %v", ldapUsers[0].Username, err)
+			return nil, fmt.Errorf("can't import user %s, error: %v", ldapUsers[0].Username, err)
 		}
 		u.UserID = int(userID)
 	}

@@ -136,7 +136,7 @@ func ConnectTest(ldapConfs models.LdapConf) error {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dailLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
 
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dailLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
 
 	if err != nil {
 		return nil, err
@@ -254,7 +254,7 @@ func formatLdapURL(ldapURL string) (string, error) {
 }
 
 // ImportUser ...
-func ImportUser(user models.LdapUser) (int64, string) {
+func ImportUser(user models.LdapUser) (int64, error) {
 	var u models.User
 	u.Username = user.Username
 	u.Email = user.Email
@@ -264,21 +264,21 @@ func ImportUser(user models.LdapUser) (int64, string) {
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
 		log.Errorf("system checking user %s failed, error: %v", user.Username, err)
-		return 0, "internal_error"
+		return 0, fmt.Errorf("internal_error")
 	}
 
 	if exist {
-		return 0, "duplicate_username"
+		return 0, fmt.Errorf("duplicate_username")
 	}
 
 	exist, err = dao.UserExists(u, "email")
 	if err != nil {
 		log.Errorf("system checking %s mailbox failed, error: %v", user.Username, err)
-		return 0, "internal_error"
+		return 0, fmt.Errorf("internal_error")
 	}
 
 	if exist {
-		return 0, "duplicate_mailbox"
+		return 0, fmt.Errorf("duplicate_mailbox")
 	}
 
 	u.Password = "12345678AbC"
@@ -290,13 +290,13 @@ func ImportUser(user models.LdapUser) (int64, string) {
 	UserID, err := dao.Register(u)
 	if err != nil {
 		log.Errorf("system register user %s failed, error: %v", user.Username, err)
-		return 0, "registe_user_error"
+		return 0, fmt.Errorf("registe_user_error")
 	}
 
-	return UserID, ""
+	return UserID, nil
 }
 
-func dailLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error) {
+func dialLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error) {
 	var err error
 
 	//log.Debug("ldapConfs.LdapURL:", ldapConfs.LdapURL)
@@ -315,10 +315,7 @@ func dailLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error
 		ldap, err = goldap.DialTLS("tcp", hostport, &tls.Config{InsecureSkipVerify: true})
 	}
 
-	if err != nil {
-		return ldap, err
-	}
-	return ldap, nil
+	return ldap, err
 }
 
 func bindLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) error {
