@@ -14,6 +14,7 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { MemberComponent } from './member/member.component';
 import { ProjectRoutingModule } from './project-routing.module';
 
+import { ProjectService } from './project.service';
 
 @NgModule({
   imports: [ 
@@ -32,6 +33,9 @@ import { ProjectRoutingModule } from './project-routing.module';
     ProjectDetailComponent,
     MemberComponent
   ],
-  exports: [ ListProjectComponent ]
+  exports: [ ListProjectComponent ],
+  providers: [ ProjectService ]
 })
-export class ProjectModule {}
+export class ProjectModule {
+  
+}

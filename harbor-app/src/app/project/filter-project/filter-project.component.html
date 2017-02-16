@@ -1,10 +1,9 @@
 <clr-dropdown [clrMenuPosition]="'bottom-left'">
   <button class="btn btn-sm btn-outline-primary" clrDropdownToggle>
-    My Projects
+    {{currentType.value}}
     <clr-icon shape="caret down"></clr-icon>
   </button>
   <div class="dropdown-menu">
-    <a href="javascript:void(0)" clrDropdownItem>My Projects</a>
-    <a href="javascript:void(0)" clrDropdownItem>Public Projects</a>
+    <a href="javascript:void(0)" clrDropdownItem *ngFor="let p of types" (click)="doFilter(p.key)">{{p.value}}</a>
   </div>
 </clr-dropdown>
