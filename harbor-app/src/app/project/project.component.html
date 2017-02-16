@@ -1,20 +1,11 @@
 <h3>Projects</h3>
 <div class="row flex-items-xs-between">
   <div class="col-xs-4">
-    <create-project></create-project>
+    <create-project (create)="createProject($event)"></create-project>
   </div>
   <div class="col-xs-4">
-    <clr-dropdown [clrMenuPosition]="'bottom-left'">
-      <button class="btn btn-sm btn-outline-primary" clrDropdownToggle>
-        My Projects
-        <clr-icon shape="caret down"></clr-icon>
-      </button>
-      <div class="dropdown-menu">
-        <a href="javascript:void(0)" clrDropdownItem>My Projects</a>
-        <a href="javascript:void(0)" clrDropdownItem>Public Projects</a>
-      </div>
-    </clr-dropdown>
-    <search-project></search-project>
+    <filter-project (filter)="filterProjects($event)"></filter-project>
+    <search-project (search)="searchProjects($event)"></search-project>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <list-project></list-project>
