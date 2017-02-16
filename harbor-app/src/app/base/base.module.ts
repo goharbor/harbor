@@ -9,6 +9,7 @@ import { NavigatorComponent } from './navigator/navigator.component';
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { FooterComponent } from './footer/footer.component';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
+import { BaseSettingsComponent } from './base-settings/base-settings.component';
 
 import { BaseRoutingModule } from './base-routing.module';
 
@@ -23,6 +24,7 @@ import { BaseRoutingModule } from './base-routing.module';
   declarations: [
     NavigatorComponent,
     GlobalSearchComponent,
+    BaseSettingsComponent,
     FooterComponent,
     HarborShellComponent
   ],

@@ -5,6 +5,7 @@ import { NgForm } from '@angular/forms';
 
 import { SignInService } from './sign-in.service';
 import { SignInCredential } from './sign-in-credential'
+import { SessionService } from '../../shared/session.service';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -35,7 +36,8 @@ export class SignInComponent implements AfterViewChecked {
 
     constructor(
         private signInService: SignInService,
-        private router: Router
+        private router: Router,
+        private session: SessionService
     ) { }
 
     //For template accessing
@@ -51,6 +53,15 @@ export class SignInComponent implements AfterViewChecked {
     private validate(): boolean {
         return true;
         //return this.signInForm.valid;
+    }
+
+    //General error handler
+    private handleError(error) {
+        //Set error status
+        this.signInStatus = signInStatusError;
+
+        let message = error.status ? error.status + ":" + error.statusText : error;
+        console.error("An error occurred when signing in:", message);
     }
 
     //Hande form values changes
@@ -100,17 +111,16 @@ export class SignInComponent implements AfterViewChecked {
                 //Set status
                 this.signInStatus = signInStatusNormal;
 
-                //Routing to the right location
-                let nextRoute = ["/harbor", "dashboard"];
-                this.router.navigate(nextRoute);
+                //Validate the sign-in session
+                this.session.retrieveUser()
+                    .then(() => {
+                        //Routing to the right location
+                        let nextRoute = ["/harbor", "dashboard"];
+                        this.router.navigate(nextRoute);
+                    })
+                    .catch(this.handleError);
             })
-            .catch(error => {
-                //Set error status
-                this.signInStatus = signInStatusError;
-
-                let message = error.status ? error.status + ":" + error.statusText : error;
-                console.error("An error occurred when signing in:", message);
-            });
+            .catch(this.handleError);
     }
 
     //Help user navigate to the sign up
