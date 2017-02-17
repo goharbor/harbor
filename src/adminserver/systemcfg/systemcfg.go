@@ -78,7 +78,7 @@ func getCfgStore() string {
 
 //read the following attrs from env every time boots up
 func readFromEnv(cfg map[string]interface{}) error {
-	cfg[comcfg.DomainName] = os.Getenv("EXT_ENDPOINT")
+	cfg[comcfg.ExtEndpoint] = os.Getenv("EXT_ENDPOINT")
 
 	cfg[comcfg.DatabaseType] = os.Getenv("DATABASE_TYPE")
 	cfg[comcfg.MySQLHost] = os.Getenv("MYSQL_HOST")

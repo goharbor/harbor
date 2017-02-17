@@ -27,6 +27,6 @@ func AuthModeCanBeModified() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	return c == 1, nil
+	// admin and anonymous
+	return c == 2, nil
 }

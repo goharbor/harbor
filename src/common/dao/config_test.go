@@ -27,7 +27,7 @@ func TestAuthModeCanBeModified(t *testing.T) {
 		t.Fatalf("failed to count users: %v", err)
 	}
 
-	if c == 1 {
+	if c == 2 {
 		flag, err := AuthModeCanBeModified()
 		if err != nil {
 			t.Fatalf("failed to determine whether auth mode can be modified: %v", err)

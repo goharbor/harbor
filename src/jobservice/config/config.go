@@ -120,3 +120,17 @@ func SecretKey() (string, error) {
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }
+
+// ExtEndpoint ...
+func ExtEndpoint() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.ExtEndpoint].(string), nil
+}
+
+// InternalTokenServiceEndpoint ...
+func InternalTokenServiceEndpoint() string {
+	return "http://ui/service/token"
+}

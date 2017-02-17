@@ -15,7 +15,7 @@ type RepositoryController struct {
 
 // Get renders repository page
 func (rc *RepositoryController) Get() {
-	url, err := config.DomainName()
+	url, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("failed to get domain name: %v", err)
 		rc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

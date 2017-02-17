@@ -340,7 +340,9 @@ func (t *TargetAPI) Delete() {
 func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	credential := auth.NewBasicAuthCredential(username, password)
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
+		"", scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {

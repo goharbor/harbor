@@ -3,7 +3,7 @@ services:
   log:
     build:
       context: ../../
-      dockerfile: make/ubuntu/log/Dockerfile
+      dockerfile: make/photon/log/Dockerfile
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/

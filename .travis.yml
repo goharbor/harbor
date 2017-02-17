@@ -70,6 +70,7 @@ before_script:
   # create tables and load data
   # - mysql < ./make/db/registry.sql -uroot --verbose
   - sudo sqlite3 /tmp/registry.db < make/common/db/registry_sqlite.sql
+  - sudo chmod 777 /tmp/registry.db
 
 script:
   - sudo mkdir -p /harbor_storage/ca_download
