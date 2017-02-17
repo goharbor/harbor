@@ -144,7 +144,7 @@ func ConnectTest(ldapConfs models.LdapConf) error {
 	defer ldapConn.Close()
 
 	if ldapConfs.LdapSearchDn != "" {
-		err = bindLDAP(ldapConfs, ldapConn)
+		err = bindLDAPSearchDN(ldapConfs, ldapConn)
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 	defer ldapConn.Close()
 
 	if ldapConfs.LdapSearchDn != "" {
-		err = bindLDAP(ldapConfs, ldapConn)
+		err = bindLDAPSearchDN(ldapConfs, ldapConn)
 		if err != nil {
 			return nil, err
 		}
@@ -318,7 +318,7 @@ func dialLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error
 	return ldap, err
 }
 
-func bindLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) error {
+func bindLDAPSearchDN(ldapConfs models.LdapConf, ldap *goldap.Conn) error {
 
 	var err error
 
