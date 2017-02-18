@@ -8,6 +8,7 @@ import { BaseService } from '../service/base.service';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class ProjectService extends BaseService {
@@ -29,10 +30,23 @@ export class ProjectService extends BaseService {
   createProject(name: string, isPublic: number): Observable<any> {
     return this.http
                .post(`/ng/api/projects`,
-                JSON.stringify({'project_name': name, 'public': (isPublic ? 1 : 0)})
+                JSON.stringify({'project_name': name, 'public': isPublic})
                 , this.options)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
+  toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
+    return this.http 
+               .put(`/ng/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
+  deleteProject(projectId: number): Observable<any> {
+    return this.http
+               .delete(`/ng/api/projects/${projectId}`)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
 }

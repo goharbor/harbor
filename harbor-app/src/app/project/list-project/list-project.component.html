@@ -1,19 +1,27 @@
-<clr-datagrid>
+<clr-datagrid [(clrDgSelected)]="selected">
   <clr-dg-column>Name</clr-dg-column>
   <clr-dg-column>Public/Private</clr-dg-column>
   <clr-dg-column>Repositories</clr-dg-column>
   <clr-dg-column>Creation time</clr-dg-column>
-  <clr-dg-column>Destination</clr-dg-column>
-  <clr-dg-column>Owner</clr-dg-column>
-  <clr-dg-column>Description</clr-dg-column>
-  <clr-dg-row *ngFor="let p of projects">
+  <clr-dg-column>Description</clr-dg-column> 
+  <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p" [(clrDgSelected)]="p.selected">
+    <!--<clr-dg-action-overflow>
+      <button class="action-item" (click)="onEdit(p)">Edit</button>
+      <button class="action-item" (click)="onDelete(p)">Delete</button>
+    </clr-dg-action-overflow>-->
     <clr-dg-cell><a [routerLink]="['/harbor', 'projects', p.id, 'repository']" >{{p.name}}</a></clr-dg-cell>
     <clr-dg-cell>{{p.public == 1 ? 'Public': 'Private'}}</clr-dg-cell>
     <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
     <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
-    <clr-dg-cell>--</clr-dg-cell>
-    <clr-dg-cell>{{p.owner}}</clr-dg-cell>
-    <clr-dg-cell>{{p.description}}</clr-dg-cell>
+    <clr-dg-cell>
+      {{p.description}}
+      <span style="float: right;">
+        <action-project (togglePublic)="toggleProject($event)" (deleteProject)="deleteProject($event)" [project]="p"></action-project>
+      </span>
+    </clr-dg-cell>
+  
+    
+  
   </clr-dg-row>
   <clr-dg-footer>{{ (projects ? projects.length : 0) }} item(s)</clr-dg-footer>
 </clr-datagrid>
