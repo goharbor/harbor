@@ -5,7 +5,7 @@
             <span class="title">Harbor</span>
         </a>
     </div>
-    <global-search></global-search>
+    <global-search (searchEvt)="transferSearchEvent($event)"></global-search>
     <div class="header-actions">
         <clr-dropdown [clrMenuPosition]="'bottom-right'" class="dropdown">
             <button class="nav-text" clrDropdownToggle>

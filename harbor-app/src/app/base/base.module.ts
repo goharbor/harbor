@@ -10,6 +10,7 @@ import { GlobalSearchComponent } from './global-search/global-search.component';
 import { FooterComponent } from './footer/footer.component';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
+import { SearchResultComponent } from './global-search/search-result.component';
 
 import { BaseRoutingModule } from './base-routing.module';
 
@@ -26,7 +27,8 @@ import { BaseRoutingModule } from './base-routing.module';
     GlobalSearchComponent,
     FooterComponent,
     HarborShellComponent,
-    AccountSettingsModalComponent
+    AccountSettingsModalComponent,
+    SearchResultComponent
   ],
   exports: [ HarborShellComponent ]
 })

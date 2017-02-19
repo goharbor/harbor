@@ -1,11 +1,13 @@
 <clr-main-container>
-    <navigator (showAccountSettingsModal)="openModal($event)"></navigator>
+    <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)"></navigator>
     <global-message></global-message>
     <div class="content-container">
-        <div class="content-area">
+        <div class="content-area" [class.container-override]="showSearch">
+            <!-- Only appear when searching -->
+            <search-result (closeEvt)="searchClose($event)"></search-result>
             <router-outlet></router-outlet>
         </div>
-        <nav class="sidenav">
+        <nav class="sidenav" [class.side-nav-override]="showSearch">
             <section class="sidenav-content">
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">
                     Projects

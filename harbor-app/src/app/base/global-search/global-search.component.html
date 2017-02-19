@@ -1,5 +1,5 @@
 <form class="search">
     <label for="search_input">
-      <input id="search_input" type="text" placeholder="Search Harbor...">
+      <input #globalSearchBox id="search_input" type="text" (keyup)="search(globalSearchBox.value)" placeholder="Search Harbor...">
     </label>
 </form>
