@@ -10,9 +10,6 @@ import argparse
 import subprocess
 import shutil
 from io import open
-import base64
-from Crypto import Random
-from Crypto.Cipher import AES
 
 if sys.version_info[:3][0] == 2:
     import ConfigParser as ConfigParser
@@ -56,11 +53,6 @@ def get_secret_key(path):
         f.write(key)
         print("generated and saved secret key")
     return key
-
-def aesEncrypt(key, raw):
-    iv = Random.new().read(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CFB, iv)
-    return base64.b64encode(iv + cipher.encrypt(raw))
 
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "common/config")
@@ -133,7 +125,6 @@ secret_key = get_secret_key(secretkey_path)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
-#ui_secret = aesEncrypt(secret_key, ui_secret_raw)
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):

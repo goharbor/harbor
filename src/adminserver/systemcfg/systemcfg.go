@@ -38,8 +38,9 @@ var Keys = []string{
 
 var cfgStore store.Driver
 
-// Init system configurations. Read from config store first, if null read from env
-func Init() (err error) {
+// Init system configurations. If reset is true or config store
+// is null, it reads from env
+func Init(reset bool) (err error) {
 	s := getCfgStore()
 	switch s {
 	case "json":
@@ -53,20 +54,31 @@ func Init() (err error) {
 	}
 
 	log.Infof("configuration store driver: %s", cfgStore.Name())
-	cfg, err := GetSystemCfg()
-	if err != nil {
-		return err
-	}
 
-	if cfg == nil {
-		log.Info("configurations read from store driver are null, initializing system from environment variables...")
-		cfg, err = initFromEnv()
+	var cfg map[string]interface{}
+
+	if reset {
+		log.Info("reset flag is set, initializing system from environment variables...")
+		cfg, err = getCfgFromEnv()
 		if err != nil {
 			return err
 		}
 	} else {
-		if err := readFromEnv(cfg); err != nil {
+		cfg, err = GetSystemCfg()
+		if err != nil {
 			return err
+		}
+
+		if cfg == nil {
+			log.Info("configurations read from store driver are null, initializing system from environment variables...")
+			cfg, err = getCfgFromEnv()
+			if err != nil {
+				return err
+			}
+		} else {
+			if err := readFromEnv(cfg); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -126,7 +138,7 @@ func readFromEnv(cfg map[string]interface{}) error {
 	return nil
 }
 
-func initFromEnv() (map[string]interface{}, error) {
+func getCfgFromEnv() (map[string]interface{}, error) {
 	cfg := map[string]interface{}{}
 
 	if err := readFromEnv(cfg); err != nil {
@@ -191,6 +203,17 @@ func UpdateSystemCfg(cfg map[string]interface{}) error {
 	}
 
 	return cfgStore.Write(cfg)
+}
+
+// ResetSystemCfgFromEnv reads system configurations from environment
+// variables and updates them into store
+func ResetSystemCfgFromEnv() error {
+	m, err := getCfgFromEnv()
+	if err != nil {
+		return err
+	}
+
+	return UpdateSystemCfg(m)
 }
 
 func encrypt(m map[string]interface{}, keys []string, secretKey string) error {

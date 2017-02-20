@@ -49,7 +49,8 @@ func main() {
 	log.Info("load completed")
 
 	log.Info("initializing system configurations...")
-	if err := syscfg.Init(); err != nil {
+	reset := os.Getenv("RESET")
+	if err := syscfg.Init(reset == "true"); err != nil {
 		log.Fatalf("failed to initialize the system: %v", err)
 	}
 	log.Info("system initialization completed")

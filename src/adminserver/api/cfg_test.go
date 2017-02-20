@@ -67,6 +67,7 @@ func TestConfigAPI(t *testing.T) {
 		"LDAP_SEARCH_PWD":       "",
 		"EMAIL_PWD":             "",
 		"HARBOR_ADMIN_PASSWORD": "",
+		"AUTH_MODE":             comcfg.DBAuth,
 	}
 
 	for k, v := range envs {
@@ -81,7 +82,7 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	if err := systemcfg.Init(); err != nil {
+	if err := systemcfg.Init(false); err != nil {
 		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
@@ -178,6 +179,54 @@ func TestConfigAPI(t *testing.T) {
 	mode := m[comcfg.AUTHMode].(string)
 	if mode != comcfg.LDAPAuth {
 		t.Errorf("unexpected ldap scope: %s != %s", mode, comcfg.LDAPAuth)
+		return
+	}
+
+	// reset configurations
+	w = httptest.NewRecorder()
+	r, err = http.NewRequest("POST", "", nil)
+	if err != nil {
+		t.Errorf("failed to create request: %v", err)
+		return
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: secret,
+	})
+
+	ResetCfgs(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
+		return
+	}
+
+	// confirm the reset is done
+	r, err = http.NewRequest("GET", "", nil)
+	if err != nil {
+		t.Errorf("failed to create request: %v", err)
+		return
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: secret,
+	})
+	w = httptest.NewRecorder()
+	ListCfgs(w, r)
+	if w.Code != http.StatusOK {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
+		return
+	}
+
+	m, err = parse(w.Body)
+	if err != nil {
+		t.Errorf("failed to parse response body: %v", err)
+		return
+	}
+
+	mode = m[comcfg.AUTHMode].(string)
+	if mode != comcfg.DBAuth {
+		t.Errorf("unexpected ldap scope: %s != %s", mode, comcfg.DBAuth)
 		return
 	}
 }

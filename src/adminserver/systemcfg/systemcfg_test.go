@@ -59,7 +59,7 @@ func TestSystemcfg(t *testing.T) {
 		}
 	}
 
-	if err := Init(); err != nil {
+	if err := Init(false); err != nil {
 		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
@@ -71,7 +71,7 @@ func TestSystemcfg(t *testing.T) {
 
 	// run Init again to make sure it works well when the configuration file
 	// already exists
-	if err := Init(); err != nil {
+	if err := Init(false); err != nil {
 		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
@@ -102,6 +102,24 @@ func TestSystemcfg(t *testing.T) {
 	}
 
 	if cfg[comcfg.AUTHMode] != comcfg.LDAPAuth {
+		t.Errorf("unexpected auth mode: %s != %s",
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+		return
+	}
+
+	// reset configurations
+	if err := Init(true); err != nil {
+		t.Errorf("failed to initialize system configurations: %v", err)
+		return
+	}
+
+	cfg, err = GetSystemCfg()
+	if err != nil {
+		t.Errorf("failed to get system configurations: %v", err)
+		return
+	}
+
+	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
 			cfg[comcfg.AUTHMode], comcfg.DBAuth)
 		return

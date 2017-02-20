@@ -13,47 +13,34 @@
    limitations under the License.
 */
 
+// Package config provide methods to get the configurations reqruied by code in src/common
 package config
 
 import (
+	"io/ioutil"
 	"os"
-
-	comcfg "github.com/vmware/harbor/src/common/config"
+	"testing"
 )
 
-const defaultKeyPath string = "/harbor/secretkey"
+func TestGetOfKeyFileProvider(t *testing.T) {
+	path := "/tmp/secretkey"
+	key := "secretkey"
 
-var (
-	secret    string
-	secretKey string
-)
-
-// Init configurations used by adminserver
-func Init() error {
-	path := os.Getenv("KEY_PATH")
-	if len(path) == 0 {
-		path = defaultKeyPath
+	if err := ioutil.WriteFile(path, []byte(key), 0777); err != nil {
+		t.Errorf("failed to write to file %s: %v", path, err)
+		return
 	}
+	defer os.Remove(path)
 
-	keyProvider := comcfg.NewKeyFileProvider(path)
-
-	key, err := keyProvider.Get()
+	provider := NewKeyFileProvider(path)
+	k, err := provider.Get()
 	if err != nil {
-		return err
+		t.Errorf("failed to get key from the file provider: %v", err)
+		return
 	}
 
-	secretKey = key
-	secret = os.Getenv("UI_SECRET")
-
-	return nil
-}
-
-// Secret is used by API to authenticate requests
-func Secret() string {
-	return secret
-}
-
-// SecretKey is used to encrypt or decrypt
-func SecretKey() string {
-	return secretKey
+	if k != key {
+		t.Errorf("unexpected key: %s != %s", k, key)
+		return
+	}
 }

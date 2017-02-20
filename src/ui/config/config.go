@@ -17,12 +17,10 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
-	//"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -41,20 +39,16 @@ func initSecretAndKey() error {
 		path = defaultKeyPath
 	}
 
-	b, err := ioutil.ReadFile(path)
+	keyProvider := comcfg.NewKeyFileProvider(path)
+
+	key, err := keyProvider.Get()
 	if err != nil {
 		return err
 	}
-	secretKey = string(b)
 
+	secretKey = key
 	secret = os.Getenv("UI_SECRET")
-	/*
-		secretCipherText := os.Getenv("UI_SECRET")
-		secret, err = utils.ReversibleDecrypt(secretCipherText, secretKey)
-		if err != nil {
-			return err
-		}
-	*/
+
 	return nil
 }
 
@@ -95,6 +89,11 @@ func Upload(cfg map[string]interface{}) error {
 		return err
 	}
 	return mg.Upload(b)
+}
+
+// Reset sends reset system configutations request to admin server
+func Reset() error {
+	return mg.Reset()
 }
 
 // GetSystemCfg returns the system configurations

@@ -164,6 +164,11 @@ func (m *Manager) Upload(b []byte) error {
 	return m.Loader.Upload(b)
 }
 
+// Reset configurations
+func (m *Manager) Reset() error {
+	return m.Loader.Reset()
+}
+
 // Loader loads and uploads configurations
 type Loader struct {
 	url    string
@@ -247,6 +252,32 @@ func (l *Loader) Upload(b []byte) error {
 	}
 
 	log.Debug("configurations uploaded")
+
+	return nil
+}
+
+// Reset sends reset configuratons  request to remote server
+func (l *Loader) Reset() error {
+	req, err := http.NewRequest("POST", l.url+"/api/configurations/reset", nil)
+	if err != nil {
+		return err
+	}
+
+	req.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: l.secret,
+	})
+
+	resp, err := l.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
+	}
+
+	log.Debug("system configurations is reset")
 
 	return nil
 }
