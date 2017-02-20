@@ -1,0 +1,61 @@
+version: '2'
+services:
+  ui:
+    networks:
+      - harbor-notary
+  proxy:
+    networks:
+      - harbor-notary
+  notary-server:
+    image: jiangd/notary:server-0.5.0-fix
+    container_name: notary-server
+    networks:
+      - notary-mdb
+      - notary-sig
+      - harbor-notary
+    volumes:
+      - ./common/config/notary:/config
+    entrypoint: /usr/bin/env sh
+    command: -c "notary-server -config=/config/server-config.json -logf=logfmt"
+    depends_on:
+      - notary-db
+      - notary-signer
+  notary-signer:
+    image: notary:signer-0.5.0
+    container_name: notary-signer
+    networks:
+      notary-mdb:
+      notary-sig:
+        aliases:
+          - notarysigner
+    volumes:
+      - ./common/config/notary:/config
+    env_file:
+      - ./common/config/notary/signer_env
+    entrypoint: /usr/bin/env sh
+    command: -c "notary-signer -config=/config/signer-config.json -logf=logfmt"
+    depends_on:
+      - notary-db
+  notary-db:
+    image: mariadb:10.1.10
+    container_name: notary-db
+    networks:
+      notary-mdb:
+        aliases:
+          - mysql
+    volumes:
+      - ./common/config/notary/mysql-initdb.d:/docker-entrypoint-initdb.d
+      - /data/notary-db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - TERM=dumb
+      - MYSQL_ALLOW_EMPTY_PASSWORD="true"
+    command: mysqld --innodb_file_per_table
+networks:
+  harbor-notary:
+    external: false
+  notary-mdb:
+    external: false
+  notary-sig:
+    external: false
