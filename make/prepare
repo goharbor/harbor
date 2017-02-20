@@ -59,7 +59,7 @@ config_dir = os.path.join(base_dir, "common/config")
 templates_dir = os.path.join(base_dir, "common/templates")
     
 parser = argparse.ArgumentParser()
-parser.add_argument('-conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
+parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
 
 args = parser.parse_args()
 
