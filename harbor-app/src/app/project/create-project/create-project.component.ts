@@ -4,6 +4,7 @@ import { Response } from '@angular/http';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
+import { MessageService } from '../../global-message/message.service';
 
 @Component({
   selector: 'create-project',
@@ -19,13 +20,13 @@ export class CreateProjectComponent {
   hasError: boolean;
   
   @Output() create = new EventEmitter<boolean>();
-
-  constructor(private projectService: ProjectService) {}
+  
+  constructor(private projectService: ProjectService, private messageService: MessageService) {}
 
   onSubmit() {
     this.hasError = false;
     this.projectService
-        .createProject(this.project.name, this.project.public)
+        .createProject(this.project.name, this.project.public ? 1 : 0)
         .subscribe(
           status=>{
             this.create.emit(true);
@@ -33,7 +34,7 @@ export class CreateProjectComponent {
           },
           error=>{
             this.hasError = true;
-            if (error instanceof Response) {
+            if (error instanceof Response) { 
               switch(error.status) {
               case 409:
                 this.errorMessage = 'Project name already exists.'; break;
@@ -41,6 +42,7 @@ export class CreateProjectComponent {
                 this.errorMessage = 'Project name is illegal.'; break;
               default:
                 this.errorMessage = 'Unknown error for project name.';
+                this.messageService.announceMessage(this.errorMessage);
               }
             }
           }); 
