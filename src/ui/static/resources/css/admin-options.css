@@ -14,7 +14,7 @@
 */
 .switch-pane-admin-options {
   display: inline;
-  width: 245px;
+  width: 340px;
   float: right;
   list-style-type: none;
 }
@@ -28,4 +28,8 @@
 .switch-pane-admin-options li .active {
   border-bottom: 2px solid rgb(0, 84, 190);
   font-weight: bold;
+}
+
+.inline-help-config {
+  padding: 6px;
 }

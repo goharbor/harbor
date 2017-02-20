@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -462,15 +461,6 @@ func (m *ManifestPusher) enter() (string, error) {
 func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
 	tokenServiceEndpoint, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
-
-	domain, err := config.ExtEndpoint()
-	if err != nil {
-		return nil, err
-	}
-	if err := os.Setenv("DOMAIN_NAME", domain); err != nil {
-		return nil, err
-	}
-
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
 		tokenServiceEndpoint, scopeType, scopeName, scopeActions...)
 

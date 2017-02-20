@@ -140,7 +140,7 @@ type standardTokenAuthorizer struct {
 
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
-// If tokenServiceURL is set, the token request will be sent to it instead of the server get from authorizer
+// If tokenServiceEndpoint is set, the token request will be sent to it instead of the server get from authorizer
 // The usage please refer to the function tokenURL
 func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 	tokenServiceEndpoint string, scopeType, scopeName string, scopeActions ...string) Authorizer {
