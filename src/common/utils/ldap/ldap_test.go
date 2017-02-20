@@ -30,10 +30,10 @@ import (
 func TestMain(t *testing.T) {
 	os.Setenv("AUTH_MODE", "ldap_auth")
 	os.Setenv("LDAP_URL", "ldap://127.0.0.1")
-	os.Setenv("LDAP_BASE_DN", "ou=people")
-	os.Setenv("LDAP_SEARCH_DN", "dc=whatever,dc=org")
-	os.Setenv("LDAP_SEARCH_PWD", "1234567")
-	os.Setenv("LDAP_UID", "cn")
+	os.Setenv("LDAP_BASE_DN", "dc=example,dc=com")
+	os.Setenv("LDAP_SEARCH_DN", "cn=admin,dc=example,dc=com")
+	os.Setenv("LDAP_SEARCH_PWD", "admin")
+	os.Setenv("LDAP_UID", "uid")
 	os.Setenv("LDAP_SCOPE", "3")
 	os.Setenv("LDAP_FILTER", "")
 	os.Setenv("LDAP_CONNECT_TIMEOUT", "1")
@@ -109,14 +109,14 @@ func TestMakeFilter(t *testing.T) {
 	tempUsername := ""
 
 	tempFilter := MakeFilter(tempUsername, testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
-	if tempFilter != "(&(ou=people)(cn=*))" {
-		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(cn=*)")
+	if tempFilter != "(&(ou=people)(uid=*))" {
+		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(uid=*))")
 	}
 
 	tempUsername = "user0001"
 	tempFilter = MakeFilter(tempUsername, testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
-	if tempFilter != "(&(ou=people)(cn=user0001))" {
-		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(cn=user0001)")
+	if tempFilter != "(&(ou=people)(uid=user0001))" {
+		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(uid=user0001)")
 	}
 }
 
@@ -188,14 +188,30 @@ func TestConnectTest(t *testing.T) {
 		t.Fatalf("failed to get system ldap config %v", err)
 	}
 
-	testLdapConfig.LdapURL = "ldap://127.0.0.1:389"
-
-	if err != nil {
-		t.Errorf("failed to format Ldap URL %v", err)
-	}
+	testLdapConfig.LdapURL = "ldap://localhost:389"
 
 	err = ConnectTest(testLdapConfig)
-	if err.Error() != "LDAP Result Code 200 \"\": dial tcp 127.0.0.1:389: getsockopt: connection refused" {
-		t.Errorf("unexpected ldap connect fail: %s", err.Error())
+	if err != nil {
+		t.Errorf("unexpected ldap connect fail: %v", err)
+	}
+}
+
+func TestSearchUser(t *testing.T) {
+
+	testLdapConfig, err := GetSystemLdapConf()
+
+	if err != nil {
+		t.Fatalf("failed to get system ldap config %v", err)
+	}
+	testLdapConfig.LdapURL = "ldap://localhost:389"
+	testLdapConfig.LdapFilter = MakeFilter("", testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
+
+	ldapUsers, err := SearchUser(testLdapConfig)
+	if err != nil {
+		t.Errorf("unexpected ldap search fail: %v", err)
+	}
+
+	if ldapUsers[0].Username != "test" {
+		t.Errorf("unexpected ldap user search result: %s = %s", "ldapUsers[0].Username", ldapUsers[0].Username)
 	}
 }

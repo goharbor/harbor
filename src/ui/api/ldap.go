@@ -61,6 +61,7 @@ func (l *LdapAPI) Ping() {
 		if err != nil {
 			log.Errorf("Can't load system configuration, error: %v", err)
 			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+			return
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
@@ -93,6 +94,7 @@ func (l *LdapAPI) Search() {
 		if err != nil {
 			log.Errorf("Can't load system configuration, error: %v", err)
 			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+			return
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
@@ -163,8 +165,14 @@ func (l *LdapAPI) ImportUser() {
 		return
 	}
 
-	l.Data["json"] = ldapFailedImportUsers
-	l.ServeJSON()
+	if len(ldapFailedImportUsers) > 0 {
+		log.Errorf("Import ldap user have internal error")
+		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("import ldap user have internal error"))
+		l.Data["json"] = ldapFailedImportUsers
+		l.ServeJSON()
+		return
+	}
+
 }
 
 func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.LdapFailedImportUser, error) {
@@ -223,5 +231,6 @@ func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.
 		}
 
 	}
+
 	return failedImportUser, nil
 }

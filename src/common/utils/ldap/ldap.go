@@ -121,12 +121,11 @@ func MakeFilter(username string, ldapFilter string, ldapUID string) string {
 		if !strings.Contains(ldapFilter, ldapUID+"=") {
 			ldapFilter = "(&" + ldapFilter + "(" + ldapUID + "=" + filterTag + "))"
 		} else {
-			ldapFilter = strings.Replace(ldapFilter, ldapUID+"=*", ldapUID+"="+username, -1)
+			ldapFilter = strings.Replace(ldapFilter, ldapUID+"=*", ldapUID+"="+filterTag, -1)
 		}
 	}
 
 	log.Debug("one or more ldapFilter: ", ldapFilter)
-
 	return ldapFilter
 }
 
