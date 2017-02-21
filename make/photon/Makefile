@@ -3,7 +3,7 @@
 # Targets:
 #
 # build: 	build harbor photon images
-# clean:	clean ui and jobservice harbor images
+# clean:	clean adminserver, ui and jobservice harbor images
 
 # common
 SHELL := /bin/bash
@@ -22,6 +22,9 @@ DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMASES=$(DOCKERCMD) images
 
 # binary 
+ADMINSERVERSOURCECODE=$(SRCPATH)/adminserver
+ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
+ADMINSERVERBINARYNAME=harbor_adminserver
 UISOURCECODE=$(SRCPATH)/ui
 UIBINARYPATH=$(MAKEDEVPATH)/ui
 UIBINARYNAME=harbor_ui
@@ -31,6 +34,9 @@ JOBSERVICEBINARYNAME=harbor_jobservice
 
 # photon dockerfile
 DOCKERFILEPATH=$(MAKEPATH)/photon
+DOCKERFILEPATH_ADMINSERVER=$(DOCKERFILEPATH)/adminserver
+DOCKERFILENAME_ADMINSERVER=Dockerfile
+DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
 DOCKERFILEPATH_UI=$(DOCKERFILEPATH)/ui
 DOCKERFILENAME_UI=Dockerfile
 DOCKERIMAGENAME_UI=vmware/harbor-ui
@@ -56,6 +62,10 @@ check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
 build: 
+	@echo "building adminserver container for photon..."
+	$(DOCKERBUILD) -f $(DOCKERFILEPATH_ADMINSERVER)/$(DOCKERFILENAME_ADMINSERVER) -t $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) .
+	@echo "Done."
+
 	@echo "building ui container for photon..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_UI)/$(DOCKERFILENAME_UI) -t $(DOCKERIMAGENAME_UI):$(VERSIONTAG) .
 	@echo "Done."
@@ -70,6 +80,7 @@ build:
 	
 cleanimage:
 	@echo "cleaning image for photon..."
+	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
