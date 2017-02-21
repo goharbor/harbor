@@ -13,19 +13,34 @@
    limitations under the License.
 */
 
-package main
+// Package config provide methods to get the configurations reqruied by code in src/common
+package config
 
 import (
-	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/vmware/harbor/src/adminserver/api"
+	"io/ioutil"
+	"os"
+	"testing"
 )
 
-func newHandler() http.Handler {
-	r := mux.NewRouter()
-	r.HandleFunc("/api/configurations", api.ListCfgs).Methods("GET")
-	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
-	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
-	return r
+func TestGetOfKeyFileProvider(t *testing.T) {
+	path := "/tmp/secretkey"
+	key := "secretkey"
+
+	if err := ioutil.WriteFile(path, []byte(key), 0777); err != nil {
+		t.Errorf("failed to write to file %s: %v", path, err)
+		return
+	}
+	defer os.Remove(path)
+
+	provider := NewKeyFileProvider(path)
+	k, err := provider.Get()
+	if err != nil {
+		t.Errorf("failed to get key from the file provider: %v", err)
+		return
+	}
+
+	if k != key {
+		t.Errorf("unexpected key: %s != %s", k, key)
+		return
+	}
 }

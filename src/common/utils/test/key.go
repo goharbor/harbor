@@ -13,19 +13,29 @@
    limitations under the License.
 */
 
-package main
+package test
 
 import (
-	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/vmware/harbor/src/adminserver/api"
+	"crypto/aes"
+	"crypto/rand"
+	"fmt"
+	"io/ioutil"
 )
 
-func newHandler() http.Handler {
-	r := mux.NewRouter()
-	r.HandleFunc("/api/configurations", api.ListCfgs).Methods("GET")
-	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
-	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
-	return r
+// GenerateKey generates aes key
+func GenerateKey(path string) (string, error) {
+	data := make([]byte, aes.BlockSize)
+	n, err := rand.Read(data)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %v", err)
+	}
+	if n != aes.BlockSize {
+		return "", fmt.Errorf("the length of random bytes %d != %d", n, aes.BlockSize)
+	}
+
+	if err = ioutil.WriteFile(path, data, 0777); err != nil {
+		return "", fmt.Errorf("failed write secret key to file %s: %v", path, err)
+	}
+
+	return string(data), nil
 }

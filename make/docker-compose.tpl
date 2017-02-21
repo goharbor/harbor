@@ -49,6 +49,7 @@ services:
     restart: always
     volumes:
       - /data/config/:/etc/harbor/
+      - /data/secretkey:/harbor/secretkey
     depends_on:
       - log
     logging:
@@ -66,6 +67,7 @@ services:
       - ./common/config/ui/app.conf:/etc/ui/app.conf
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
       - /data:/harbor_storage
+      - /data/secretkey:/harbor/secretkey
     depends_on:
       - log
       - adminserver
@@ -84,6 +86,7 @@ services:
     volumes:
       - /data/job_logs:/var/log/jobs
       - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf
+      - /data/secretkey:/harbor/secretkey
     depends_on:
       - ui
       - adminserver

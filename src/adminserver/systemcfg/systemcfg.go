@@ -20,16 +20,27 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/vmware/harbor/src/adminserver/config"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
+// Keys need to be encrypted or decrypted
+var Keys = []string{
+	comcfg.EmailPassword,
+	comcfg.LDAPSearchPwd,
+	comcfg.MySQLPassword,
+	comcfg.AdminInitialPassword,
+}
+
 var cfgStore store.Driver
 
-// Init system configurations. Read from config store first, if null read from env
-func Init() (err error) {
+// Init system configurations. If reset is true or config store
+// is null, it reads from env
+func Init(reset bool) (err error) {
 	s := getCfgStore()
 	switch s {
 	case "json":
@@ -43,25 +54,36 @@ func Init() (err error) {
 	}
 
 	log.Infof("configuration store driver: %s", cfgStore.Name())
-	cfg, err := cfgStore.Read()
-	if err != nil {
-		return err
-	}
 
-	if cfg == nil {
-		log.Info("configurations read from store driver are null, initializing system from environment variables...")
-		cfg, err = initFromEnv()
+	var cfg map[string]interface{}
+
+	if reset {
+		log.Info("reset flag is set, initializing system from environment variables...")
+		cfg, err = getCfgFromEnv()
 		if err != nil {
 			return err
 		}
 	} else {
-		if err := readFromEnv(cfg); err != nil {
+		cfg, err = GetSystemCfg()
+		if err != nil {
 			return err
+		}
+
+		if cfg == nil {
+			log.Info("configurations read from store driver are null, initializing system from environment variables...")
+			cfg, err = getCfgFromEnv()
+			if err != nil {
+				return err
+			}
+		} else {
+			if err := readFromEnv(cfg); err != nil {
+				return err
+			}
 		}
 	}
 
 	//sync configurations into cfg store
-	if err = cfgStore.Write(cfg); err != nil {
+	if err = UpdateSystemCfg(cfg); err != nil {
 		return err
 	}
 
@@ -102,7 +124,6 @@ func readFromEnv(cfg map[string]interface{}) error {
 	cfg[comcfg.JobLogDir] = os.Getenv("LOG_DIR")
 	//TODO remove
 	cfg[comcfg.UseCompressedJS] = os.Getenv("USE_COMPRESSED_JS") == "on"
-	cfg[comcfg.SecretKey] = os.Getenv("SECRET_KEY")
 	cfgExpi, err := strconv.Atoi(os.Getenv("CFG_EXPIRATION"))
 	if err != nil {
 		return err
@@ -117,7 +138,7 @@ func readFromEnv(cfg map[string]interface{}) error {
 	return nil
 }
 
-func initFromEnv() (map[string]interface{}, error) {
+func getCfgFromEnv() (map[string]interface{}, error) {
 	cfg := map[string]interface{}{}
 
 	if err := readFromEnv(cfg); err != nil {
@@ -162,10 +183,75 @@ func initFromEnv() (map[string]interface{}, error) {
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	return cfgStore.Read()
+	m, err := cfgStore.Read()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = decrypt(m, Keys, config.SecretKey()); err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 // UpdateSystemCfg updates the system configurations
 func UpdateSystemCfg(cfg map[string]interface{}) error {
+
+	if err := encrypt(cfg, Keys, config.SecretKey()); err != nil {
+		return err
+	}
+
 	return cfgStore.Write(cfg)
+}
+
+// ResetSystemCfgFromEnv reads system configurations from environment
+// variables and updates them into store
+func ResetSystemCfgFromEnv() error {
+	m, err := getCfgFromEnv()
+	if err != nil {
+		return err
+	}
+
+	return UpdateSystemCfg(m)
+}
+
+func encrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		cipherText, err := utils.ReversibleEncrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = cipherText
+	}
+	return nil
+}
+
+func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		text, err := utils.ReversibleDecrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = text
+	}
+	return nil
 }

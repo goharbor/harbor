@@ -61,10 +61,53 @@ func TestPutConfig(t *testing.T) {
 
 	code, err := apiTest.PutConfig(*admin, cfg)
 	if err != nil {
-		t.Fatalf("failed to get configurations: %v", err)
+		t.Fatalf("failed to modify configurations: %v", err)
 	}
 
 	if !assert.Equal(200, code, "the status code of modifying configurations with admin user should be 200") {
 		return
 	}
+}
+
+func TestResetConfig(t *testing.T) {
+	fmt.Println("Testing resetting configurations")
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	m := map[string]string{
+		config.VerifyRemoteCert: "0",
+	}
+
+	// modify configurations
+	code, err := apiTest.PutConfig(*admin, m)
+	if err != nil {
+		t.Fatalf("failed to modify configurations: %v", err)
+	}
+
+	if !assert.Equal(200, code, "the status code of modifying configurations with admin user should be 200") {
+		return
+	}
+
+	//reset configurations
+	code, err = apiTest.ResetConfig(*admin)
+	if err != nil {
+		t.Fatalf("failed to reset configurations: %v", err)
+	}
+
+	if !assert.Equal(200, code, "the status code of resetting configurations with admin user should be 200") {
+		return
+	}
+
+	// verify result
+	code, cfg, err := apiTest.GetConfig(*admin)
+	if err != nil {
+		t.Fatalf("failed to get configurations: %v", err)
+	}
+
+	if !assert.Equal(200, code, "the status code of getting configurations with admin user should be 200") {
+		return
+	}
+
+	verify := cfg[config.VerifyRemoteCert].Value.(bool)
+	assert.Equal(true, verify, fmt.Sprint("the verify_remote_cert should be true"))
 }

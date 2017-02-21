@@ -461,7 +461,6 @@ func (m *ManifestPusher) enter() (string, error) {
 func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
 	tokenServiceEndpoint, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
-
 	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
 		tokenServiceEndpoint, scopeType, scopeName, scopeActions...)
 

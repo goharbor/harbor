@@ -19,14 +19,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 
+	"github.com/vmware/harbor/src/adminserver/config"
 	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 func isAuthenticated(r *http.Request) (bool, error) {
-	secret := os.Getenv("UI_SECRET")
 	c, err := r.Cookie("secret")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -34,7 +33,7 @@ func isAuthenticated(r *http.Request) (bool, error) {
 		}
 		return false, err
 	}
-	return c != nil && c.Value == secret, nil
+	return c != nil && c.Value == config.Secret(), nil
 }
 
 // ListCfgs lists configurations
@@ -98,6 +97,27 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 
 	if err = cfg.UpdateSystemCfg(m); err != nil {
 		log.Errorf("failed to update system configurations: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+}
+
+// ResetCfgs resets system configurations from envs
+func ResetCfgs(w http.ResponseWriter, r *http.Request) {
+	authenticated, err := isAuthenticated(r)
+	if err != nil {
+		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+
+	if !authenticated {
+		handleUnauthorized(w)
+		return
+	}
+
+	if err = cfg.ResetSystemCfgFromEnv(); err != nil {
+		log.Errorf("failed to reset system configurations: %v", err)
 		handleInternalServerError(w)
 		return
 	}

@@ -30,6 +30,7 @@ services:
     restart: always
     volumes:
       - /data/config/:/etc/harbor/
+      - /data/secretkey:/harbor/secretkey
     ports:
       - 8888:80
   ldap:

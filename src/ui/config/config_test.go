@@ -29,11 +29,20 @@ func TestConfig(t *testing.T) {
 	}
 	defer server.Close()
 
-	url := os.Getenv("ADMIN_SERVER_URL")
-	defer os.Setenv("ADMIN_SERVER_URL", url)
-
 	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
 		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	}
+
+	secretKeyPath := "/tmp/secretkey"
+	_, err = test.GenerateKey(secretKeyPath)
+	if err != nil {
+		t.Errorf("failed to generate secret key: %v", err)
+		return
+	}
+	defer os.Remove(secretKeyPath)
+
+	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
+		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
 	if err := Init(); err != nil {
