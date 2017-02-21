@@ -35,6 +35,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/ui/clair"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -311,6 +312,7 @@ func (ra *RepositoryAPI) GetManifests() {
 	result := struct {
 		Manifest interface{} `json:"manifest"`
 		Config   interface{} `json:"config,omitempty" `
+		Security interface{} `json:"security,omitempty"`
 	}{}
 
 	mediaTypes := []string{}
@@ -355,6 +357,32 @@ func (ra *RepositoryAPI) GetManifests() {
 
 		result.Config = string(b)
 	}
+
+	// TODO (robin) Support schema1 manifest by converting it to schema2 manifest
+	_, _, v2Payload, err := rc.PullManifest(tag, []string{schema2.MediaTypeManifest})
+	if err != nil {
+		if regErr, ok := err.(*registry_error.Error); ok {
+			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+		}
+
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+
+	v2Manifest, _, err := registry.UnMarshal(schema2.MediaTypeManifest, v2Payload)
+	if err != nil {
+		log.Errorf("an error occurred while parsing manifest of %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	// Get the security for the image according its schema2 Manifest
+	security, err := clair.GetSecurity(v2Manifest)
+	if err != nil {
+		log.Errorf("an error occurred while getting security for %s:%s: %v", repoName, tag, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	result.Security = security
 
 	ra.Data["json"] = result
 	ra.ServeJSON()

@@ -133,6 +133,87 @@
 			"revisionTime": "2014-06-04T03:18:26Z"
 		},
 		{
+			"checksumSHA1": "0SQcBJ2JD1jEXr5uhmG/RNMa6t0=",
+			"origin": "github.com/coreos/clair/vendor/github.com/beorn7/perks/quantile",
+			"path": "github.com/beorn7/perks/quantile",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "Gt1T2vnRpU+zRRMzRsvAq0e5Eoc=",
+			"path": "github.com/coreos/clair",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "XXL31Ex3kV6CbI9Lp5SPj67SWxo=",
+			"path": "github.com/coreos/clair/api/context",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "DIwHgYOv4WyuzN1/Qo7ljPTYtwY=",
+			"path": "github.com/coreos/clair/api/v1",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "eKHfRGd6gilaq/hA4ObZ7ykti6Q=",
+			"path": "github.com/coreos/clair/config",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "2QngiI6B6Jkxy/s0LP/v3C0xvPQ=",
+			"path": "github.com/coreos/clair/database",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "dV2F+bMmYWiilGSV6KDEp5BVjrk=",
+			"path": "github.com/coreos/clair/utils",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "mPfiXbYBx0QKFXA8rzgvkiDcb+E=",
+			"path": "github.com/coreos/clair/utils/errors",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "hrOLVQo4yXCctFMFWq/cdZdsbEc=",
+			"path": "github.com/coreos/clair/utils/types",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "paSW8WhbhXHqb3p0UYkvMWVNtZ8=",
+			"path": "github.com/coreos/clair/worker",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "mTZdEsLe6KgvmPCgQFmJKAmDNOQ=",
+			"path": "github.com/coreos/clair/worker/detectors",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "geGBUoGZxyl2slyLV4FYGb6kP/I=",
+			"origin": "github.com/coreos/clair/vendor/github.com/coreos/go-systemd/journal",
+			"path": "github.com/coreos/go-systemd/journal",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "uIAI4CfBy915MnanDLamCFxpi9Q=",
+			"origin": "github.com/coreos/clair/vendor/github.com/coreos/pkg/capnslog",
+			"path": "github.com/coreos/pkg/capnslog",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
 			"checksumSHA1": "dyW7eJt0inBkevS8lV0eb0Pm6MA=",
 			"path": "github.com/docker/distribution",
 			"revision": "12acdf0a6c1e56d965ac6eb395d2bce687bf22fc",
@@ -275,12 +356,26 @@
 			"revisionTime": "2016-07-08T17:25:13Z"
 		},
 		{
+			"checksumSHA1": "8MhH37pYq97LlCFiqzjpOoHnVas=",
+			"origin": "github.com/coreos/clair/vendor/github.com/fernet/fernet-go",
+			"path": "github.com/fernet/fernet-go",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
 			"checksumSHA1": "fTw0VmWcoz28UZuOaeidmouucEM=",
 			"path": "github.com/go-sql-driver/mysql",
 			"revision": "a732e14c62dde3285440047bba97581bc472ae18",
 			"revisionTime": "2014-06-03T19:46:42Z",
 			"version": "v1.2",
 			"versionExact": "v1.2"
+		},
+		{
+			"checksumSHA1": "hXKVVq9g+runcg7y4qyFEcqdIkw=",
+			"origin": "github.com/coreos/clair/vendor/github.com/golang/protobuf/proto",
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
 		},
 		{
 			"checksumSHA1": "iIUYZyoanCQQTUaWsu8b+iOSPt4=",
@@ -295,10 +390,78 @@
 			"revisionTime": "2016-08-01T17:00:46Z"
 		},
 		{
+			"checksumSHA1": "JZzcImb/9DScBYZC2MVeEcpMlCA=",
+			"origin": "github.com/coreos/clair/vendor/github.com/julienschmidt/httprouter",
+			"path": "github.com/julienschmidt/httprouter",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
 			"checksumSHA1": "ToGxRLachRwa1HbVy7ZBdJaq5Zc=",
 			"path": "github.com/mattn/go-sqlite3",
 			"revision": "3fb7a0e792edd47bf0cf1e919dfc14e2be412e15",
 			"revisionTime": "2016-09-07T16:20:43Z"
+		},
+		{
+			"checksumSHA1": "yIp3Wl85yREueog1smSUX0RsxGQ=",
+			"origin": "github.com/coreos/clair/vendor/github.com/matttproud/golang_protobuf_extensions/pbutil",
+			"path": "github.com/matttproud/golang_protobuf_extensions/pbutil",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "JPm8dTnTbiYhi1kdn4JjHc4AZd0=",
+			"path": "github.com/mqu/openldap",
+			"revision": "91bfc2150f6c4991335de476c800caf26a990324",
+			"revisionTime": "2013-12-25T09:52:30Z"
+		},
+		{
+			"checksumSHA1": "W6jMKSABB+J78zu0QCXZkGBNVOY=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/client_golang/prometheus",
+			"path": "github.com/prometheus/client_golang/prometheus",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "g9zAgPn3Y7+KmPOVsBTkCztn8nk=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/client_model/go",
+			"path": "github.com/prometheus/client_model/go",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "2mUtpQ/hbyOQUI0c9yoAhH6qvkA=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/common/expfmt",
+			"path": "github.com/prometheus/common/expfmt",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "5ZLUh5QIuJSJZJvrdWajRGiqY1E=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg",
+			"path": "github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "mvvCWbY5xx3QTwMiX3I2Azhes1E=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/common/model",
+			"path": "github.com/prometheus/common/model",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "lKcrCixt4OlVPXxzRvPjJB7DZnM=",
+			"origin": "github.com/coreos/clair/vendor/github.com/prometheus/procfs",
+			"path": "github.com/prometheus/procfs",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
+		},
+		{
+			"checksumSHA1": "/T51EfvOzvC55+3zA16MZouE2UA=",
+			"path": "github.com/vmware/harbor/tests/apitests/apilib",
+			"revision": "fac0bd9a302ed3230901a4fc86365f3dd350cc15",
+			"revisionTime": "2016-12-02T13:51:44Z"
 		},
 		{
 			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
@@ -327,6 +490,13 @@
 			"path": "gopkg.in/ldap.v2",
 			"revision": "8168ee085ee43257585e50c6441aadf54ecb2c9f",
 			"revisionTime": "2016-12-01T20:47:33Z"
+		},
+		{
+			"checksumSHA1": "BPhxcRGzP5KuS6cpeaYdADaRV4k=",
+			"origin": "github.com/coreos/clair/vendor/gopkg.in/yaml.v2",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "94bcf91cdf3886452ba329cb3a3857190f24e68f",
+			"revisionTime": "2016-11-13T12:25:08Z"
 		}
 	],
 	"rootPath": "github.com/vmware/harbor/src"

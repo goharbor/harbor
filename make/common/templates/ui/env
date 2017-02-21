@@ -28,3 +28,4 @@ TOKEN_ENDPOINT=http://ui
 VERIFY_REMOTE_CERT=$verify_remote_cert
 TOKEN_EXPIRATION=$token_expiration
 PROJECT_CREATION_RESTRICTION=$project_creation_restriction
+CLAIR_URL=$clair_url

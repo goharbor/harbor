@@ -79,13 +79,20 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 	jobserviceURL := raw["JOB_SERVICE_URL"]
 	jobserviceURL = strings.TrimRight(jobserviceURL, "/")
 	config["internal_jobservice_url"] = jobserviceURL
+	extEndpoint := raw["EXT_ENDPOINT"]
+	extEndpoint = strings.TrimRight(extEndpoint, "/")
+	config["external_ui_url"] = extEndpoint
+	clairURL := raw["CLAIR_URL"]
+	clairURL = strings.TrimRight(clairURL, "/")
+	config["clair_url"] = clairURL
+
 	return nil
 }
 
 var uiConfig *commonConfig.Config
 
 func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "LDAP_CONNECT_TIMEOUT", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
+	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "LDAP_CONNECT_TIMEOUT", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL", "CLAIR_URL"}
 	uiConfig = &commonConfig.Config{
 		Config: make(map[string]interface{}),
 		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},
@@ -154,4 +161,14 @@ func InitialAdminPassword() string {
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject() bool {
 	return uiConfig.Config["admin_create_project"].(bool)
+}
+
+// ClairURL returns clair URL for image security
+func ClairURL() string {
+	return uiConfig.Config["clair_url"].(string)
+}
+
+// ExternalUIURL returns ui URL to exposed to external client
+func ExternalUIURL() string {
+	return uiConfig.Config["external_ui_url"].(string)
 }
