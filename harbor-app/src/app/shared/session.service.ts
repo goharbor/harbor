@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SessionUser } from './session-user';
+import { SignInCredential } from './sign-in-credential';
 
+const signInUrl = '/login';
 const currentUserEndpint = "/api/users/current";
 const signOffEndpoint = "/log_out";
 const accountEndpoint = "/api/users/:id";
@@ -21,7 +23,30 @@ export class SessionService {
         "Content-Type": 'application/json'
     });
 
+    private formHeaders = new Headers({
+        "Content-Type": 'application/x-www-form-urlencoded'
+    });
+
     constructor(private http: Http) {}
+
+    //Handle the related exceptions
+    private handleError(error: any): Promise<any>{
+        return Promise.reject(error.message || error);
+    }
+
+    //Submit signin form to backend (NOT restful service)
+    signIn(signInCredential: SignInCredential): Promise<any>{
+        //Build the form package
+        const body = new URLSearchParams();
+        body.set('principal', signInCredential.principal);
+        body.set('password', signInCredential.password);
+
+        //Trigger Http
+        return this.http.post(signInUrl, body.toString(), { headers: this.formHeaders })
+        .toPromise()
+        .then(()=>null)
+        .catch(error => this.handleError(error));
+    }
 
     /**
      * Get the related information of current signed in user from backend
@@ -36,10 +61,7 @@ export class SessionService {
                 this.currentUser = response.json() as SessionUser;
                 return this.currentUser;
             })
-            .catch(error => {
-                console.log("An error occurred when getting current user ", error);//TODO
-                return Promise.reject(error);
-            })
+            .catch(error => this.handleError(error))
     }
 
     /**
@@ -58,10 +80,7 @@ export class SessionService {
             //Destroy current session cache
             this.currentUser = null;
         }) //Nothing returned
-        .catch(error => {
-            console.log("An error occurred when signing off ", error);//TODO
-            return Promise.reject(error);
-        })
+        .catch(error => this.handleError(error))
     }
 
     /**
@@ -84,8 +103,6 @@ export class SessionService {
             //Retrieve current session user
             return this.retrieveUser();
         })
-        .catch(error => {
-            return Promise.reject(error);
-        })
+        .catch(error => this.handleError(error))
     }
 }

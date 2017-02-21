@@ -5,7 +5,7 @@ import { ModalEvent } from '../modal-event';
 import { SearchEvent } from '../search-event';
 import { modalAccountSettings, modalPasswordSetting } from '../modal-events.const';
 
-import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
+import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
 import { SearchResultComponent } from '../global-search/search-result.component';
 import { PasswordSettingComponent } from '../../account/password/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';

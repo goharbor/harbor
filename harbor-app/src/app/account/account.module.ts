@@ -4,6 +4,7 @@ import { CoreModule } from '../core/core.module';
 
 import { SignInComponent } from './sign-in/sign-in.component';
 import { PasswordSettingComponent } from './password/password-setting.component';
+import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 
 import { PasswordSettingService } from './password/password-setting.service';
 
@@ -12,8 +13,8 @@ import { PasswordSettingService } from './password/password-setting.service';
     CoreModule,
     RouterModule
   ],
-  declarations: [SignInComponent, PasswordSettingComponent],
-  exports: [SignInComponent, PasswordSettingComponent],
+  declarations: [SignInComponent, PasswordSettingComponent, AccountSettingsModalComponent],
+  exports: [SignInComponent, PasswordSettingComponent, AccountSettingsModalComponent],
   
   providers: [PasswordSettingService]
 })
