@@ -6,6 +6,7 @@ import { SessionUser } from './session-user';
 
 const currentUserEndpint = "/api/users/current";
 const signOffEndpoint = "/log_out";
+const accountEndpoint = "/api/users/:id";
 /**
  * Define related methods to handle account and session corresponding things
  * 
@@ -59,6 +60,31 @@ export class SessionService {
         }) //Nothing returned
         .catch(error => {
             console.log("An error occurred when signing off ", error);//TODO
+            return Promise.reject(error);
+        })
+    }
+
+    /**
+     * 
+     * Update accpunt settings
+     * 
+     * @param {SessionUser} account
+     * @returns {Promise<any>}
+     * 
+     * @memberOf SessionService
+     */
+    updateAccountSettings(account: SessionUser): Promise<any>{
+        if(!account){
+            return Promise.reject("Invalid account settings");
+        }
+        console.info(account);
+        let putUrl = accountEndpoint.replace(":id", account.user_id+"");
+        return this.http.put(putUrl, JSON.stringify(account), { headers: this.headers }).toPromise()
+        .then(() => {
+            //Retrieve current session user
+            return this.retrieveUser();
+        })
+        .catch(error => {
             return Promise.reject(error);
         })
     }
