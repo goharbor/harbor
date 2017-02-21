@@ -10,6 +10,8 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
+const url_prefix = '/ng';
+
 @Injectable()
 export class ProjectService extends BaseService {
   
@@ -22,14 +24,14 @@ export class ProjectService extends BaseService {
 
   listProjects(name: string, isPublic: number): Observable<Project[]>{    
     return this.http
-               .get(`/ng/api/projects?project_name=${name}&is_public=${isPublic}`, this.options)
+               .get(url_prefix + `/api/projects?project_name=${name}&is_public=${isPublic}`, this.options)
                .map(response=>response.json())
                .catch(this.handleError);
   }
 
   createProject(name: string, isPublic: number): Observable<any> {
     return this.http
-               .post(`/ng/api/projects`,
+               .post(url_prefix + `/api/projects`,
                 JSON.stringify({'project_name': name, 'public': isPublic})
                 , this.options)
                .map(response=>response.status)
@@ -38,14 +40,14 @@ export class ProjectService extends BaseService {
 
   toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
     return this.http 
-               .put(`/ng/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
+               .put(url_prefix + `/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
   deleteProject(projectId: number): Observable<any> {
     return this.http
-               .delete(`/ng/api/projects/${projectId}`)
+               .delete(url_prefix + `/api/projects/${projectId}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
