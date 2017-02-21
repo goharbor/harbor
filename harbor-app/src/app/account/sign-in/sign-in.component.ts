@@ -3,9 +3,8 @@ import { Router } from '@angular/router';
 import { Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { SignInService } from './sign-in.service';
-import { SignInCredential } from './sign-in-credential'
 import { SessionService } from '../../shared/session.service';
+import { SignInCredential } from '../../shared/sign-in-credential';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -15,9 +14,7 @@ export const signInStatusError = -1;
 @Component({
     selector: 'sign-in',
     templateUrl: "sign-in.component.html",
-    styleUrls: ['sign-in.component.css'],
-
-    providers: [SignInService]
+    styleUrls: ['sign-in.component.css']
 })
 
 export class SignInComponent implements AfterViewChecked {
@@ -35,7 +32,6 @@ export class SignInComponent implements AfterViewChecked {
     };
 
     constructor(
-        private signInService: SignInService,
         private router: Router,
         private session: SessionService
     ) { }
@@ -105,7 +101,7 @@ export class SignInComponent implements AfterViewChecked {
         this.signInStatus = signInStatusOnGoing;
 
         //Call the service to send out the http request
-        this.signInService.signIn(this.signInCredential)
+        this.session.signIn(this.signInCredential)
             .then(() => {
                 //Set status
                 this.signInStatus = signInStatusNormal;
