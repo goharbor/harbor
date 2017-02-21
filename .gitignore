@@ -9,3 +9,14 @@ src/jobservice/jobservice
 src/common/dao/dao.test
 *.pyc
 jobservice/test
+
+make/dev/nodeclarity/coverage/
+make/dev/nodeclarity/dist/
+make/dev/nodeclarity/html-report/
+make/dev/nodeclarity/node_modules/
+make/dev/nodeclarity/typings/
+**/*npm-debug.log.*
+**/*yarn-error.log.*
+.idea/
+.DS_Store
+

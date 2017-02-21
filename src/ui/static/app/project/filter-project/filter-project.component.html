@@ -1,0 +1,9 @@
+<clr-dropdown [clrMenuPosition]="'bottom-left'">
+  <button class="btn btn-sm btn-link" clrDropdownToggle>
+    {{currentType.value}}
+    <clr-icon shape="caret down"></clr-icon>
+  </button>
+  <div class="dropdown-menu">
+    <a href="javascript:void(0)" clrDropdownItem *ngFor="let p of types" (click)="doFilter(p.key)">{{p.value}}</a>
+  </div>
+</clr-dropdown>

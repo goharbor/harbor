@@ -1,0 +1,35 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <div class="row flex-items-xs-between">
+      <div class="col-xs-4">
+        <button class="btn btn-sm">new user</button>
+      </div>
+      <div class="col-xs-4">
+        <input type="text" placeholder="Search for users">
+      </div>
+    </div>
+    <clr-datagrid>
+      <clr-dg-column>Name</clr-dg-column>
+      <clr-dg-column>Role</clr-dg-column>
+      <clr-dg-column>Action</clr-dg-column>
+      <clr-dg-row *ngFor="let u of members">
+        <clr-dg-cell>{{u.name}}</clr-dg-cell>
+        <clr-dg-cell>{{u.role}}</clr-dg-cell>
+        <clr-dg-cell>
+          <clr-dropdown [clrMenuPosition]="'bottom-left'">
+            <button class="btn btn-sm btn-link" clrDropdownToggle>
+              Actions
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <div class="dropdown-menu">
+              <a href="javascript:void(0)" clrDropdownItem>Project Admin</a>
+              <a href="javascript:void(0)" clrDropdownItem>Developer</a>
+              <a href="javascript:void(0)" clrDropdownItem>Guest</a>
+            </div>
+          </clr-dropdown>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{members.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>
