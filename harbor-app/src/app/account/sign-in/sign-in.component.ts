@@ -97,8 +97,7 @@ export class SignInComponent implements AfterViewChecked {
     //Trigger the signin action
     signIn(): void {
         //Should validate input firstly
-        if (!this.validate()) {
-            console.info("return");
+        if (!this.validate() || this.signInStatus === signInStatusOnGoing) {
             return;
         }
 
@@ -113,14 +112,18 @@ export class SignInComponent implements AfterViewChecked {
 
                 //Validate the sign-in session
                 this.session.retrieveUser()
-                    .then(() => {
+                    .then(user => {
                         //Routing to the right location
-                        let nextRoute = ["/harbor", "dashboard"];
+                        let nextRoute = ["/harbor", "projects"];
                         this.router.navigate(nextRoute);
                     })
-                    .catch(this.handleError);
+                    .catch(error => {
+                        this.handleError(error);
+                    });
             })
-            .catch(this.handleError);
+            .catch(error => {
+                this.handleError(error);
+            });
     }
 
     //Help user navigate to the sign up

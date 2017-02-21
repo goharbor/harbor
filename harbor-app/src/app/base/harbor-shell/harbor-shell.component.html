@@ -1,5 +1,5 @@
 <clr-main-container>
-    <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)"></navigator>
+    <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <global-message></global-message>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch">
@@ -27,3 +27,4 @@
     </div>
 </clr-main-container>
 <account-settings-modal></account-settings-modal>
+<password-setting (pwdChange)="watchPwdChange($event)"></password-setting>

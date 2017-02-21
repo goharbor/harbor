@@ -4,25 +4,23 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { ClarityModule } from 'clarity-angular';
 import { AppComponent } from './app.component';
-import { AccountModule } from './account/account.module';
 
 import { BaseModule } from './base/base.module';
 
 import { HarborRoutingModule } from './harbor-routing.module';
-import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
     declarations: [
         AppComponent,
     ],
     imports: [
-        CoreModule,
-        AccountModule,
+        SharedModule,
         BaseModule,
         HarborRoutingModule
     ],
     providers: [],
-    bootstrap: [ AppComponent ]
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }
