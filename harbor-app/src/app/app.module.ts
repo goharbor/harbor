@@ -6,9 +6,9 @@ import { ClarityModule } from 'clarity-angular';
 import { AppComponent } from './app.component';
 
 import { BaseModule } from './base/base.module';
-
 import { HarborRoutingModule } from './harbor-routing.module';
 import { SharedModule } from './shared/shared.module';
+import { AccountModule } from './account/account.module';
 
 @NgModule({
     declarations: [
@@ -17,6 +17,7 @@ import { SharedModule } from './shared/shared.module';
     imports: [
         SharedModule,
         BaseModule,
+        AccountModule,
         HarborRoutingModule
     ],
     providers: [],

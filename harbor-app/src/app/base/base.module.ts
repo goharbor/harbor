@@ -4,6 +4,7 @@ import { SharedModule } from '../shared/shared.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { ProjectModule } from '../project/project.module';
 import { UserModule } from '../user/user.module';
+import { AccountModule } from '../account/account.module';
 
 import { NavigatorComponent } from './navigator/navigator.component';
 import { GlobalSearchComponent } from './global-search/global-search.component';
@@ -19,7 +20,8 @@ import { BaseRoutingModule } from './base-routing.module';
     DashboardModule,
     ProjectModule,
     UserModule,
-    BaseRoutingModule
+    BaseRoutingModule,
+    AccountModule
   ],
   declarations: [
     NavigatorComponent,
