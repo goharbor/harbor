@@ -54,17 +54,12 @@ export class NavigatorComponent implements OnInit {
     }
 
     //Log out system
-    logOut(reSignIn: boolean): void {
+    logOut(): void {
         this.session.signOff()
             .then(() => {
                 this.sessionUser = null;
-                if (reSignIn) {
-                    //Naviagte to the sign in route
-                    this.router.navigate(["/sign-in"]);
-                } else {
-                    //Naviagte to the default route
-                    this.router.navigate(["/harbor"]);
-                }
+                //Naviagte to the sign in route
+                this.router.navigate(["/sign-in"]);
             })
             .catch()//TODO:
     }

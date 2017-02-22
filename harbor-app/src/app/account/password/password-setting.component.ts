@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewChecked, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, AfterViewChecked } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
@@ -20,9 +20,6 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
-
-    @Output() private pwdChange = new EventEmitter<any>();
-
     constructor(private passwordService: PasswordSettingService, private session: SessionService){}
 
     //If form is valid
@@ -90,9 +87,6 @@ export class PasswordSettingComponent implements AfterViewChecked {
         })
         .then(() => {
             this.onCalling = false;
-            //Tell shell to reset current view
-            this.pwdChange.emit(true);
-
             this.close();
         })
         .catch(error => {

@@ -21,7 +21,7 @@
                 <div class="form-group">
                     <label for="account_settings_full_name" class="col-md-4 required">Full name</label>
                     <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
-                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLength="20" maxLengthExt="20" id="account_settings_full_name" size="48">
+                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="48">
                       <span class="tooltip-content">
                           Max length of full name is 20
                       </span>
@@ -36,7 +36,7 @@
         <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [hidden]='errorMessage === ""'>
             <div class="alert-item">
                 <span class="alert-text">
-                   This alert indicates success.
+                   {{errorMessage}}
                 </span>
             </div>
         </clr-alert>

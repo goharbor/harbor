@@ -16,7 +16,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
 
         for (var i = 0; i < len; i++) {
             if (regExp.test(value[i])) {
-                count += 2;
+                count += 3;
             } else {
                 count++;
             }
