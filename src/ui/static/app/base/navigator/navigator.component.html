@@ -1,40 +1,51 @@
-<clr-header class="header-4 header">
+<clr-header class="header-5 header">
     <div class="branding">
         <a href="#" class="nav-link">
             <clr-icon shape="vm-bug"></clr-icon>
             <span class="title">Harbor</span>
         </a>
     </div>
-    <div class="divider"></div>
-    <div class="header-nav">
-        <a class="nav-link" id="dashboard-link" [routerLink]="['/harbor', 'dashboard']" routerLinkActive="active">
-            <span class="nav-text">Dashboard</span>
-        </a>
-        <a class="nav-link" id="dashboard-link" [routerLink]="['/harbor', 'projects']" routerLinkActive="active">
-            <span class="nav-text">Project</span>
-        </a>
-    </div>
+    <global-search (searchEvt)="transferSearchEvent($event)"></global-search>
     <div class="header-actions">
-        <clr-dropdown [clrMenuPosition]="'bottom-right'">
-            <!--<clr-icon shape="user" class="is-inverse" size="24"></clr-icon>-->
+        <div *ngIf="!isSessionValid">
+            <a href="javascript:void(0)" class="nav-link nav-text sign-in-override" routerLink="/sign-in" routerLinkActive="active">Sign In</a>
+            <span class="custom-divider"></span>
+            <a href="javascript:void(0)" class="nav-link nav-text sign-up-override" routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
+        </div>
+        <clr-dropdown [clrMenuPosition]="'bottom-left'" class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
+              <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
               <span>Administrator</span>
               <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
-                <a href="javascript:void(0)" clrDropdownItem>Add User</a>
-                <a href="javascript:void(0)" clrDropdownItem>Account Setting</a>
-                <a href="javascript:void(0)" clrDropdownItem>About</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">Account Settings</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">Change Password</a>
+                <div class="dropdown-divider"></div>
+                <a href="javascript:void(0)" clrDropdownItem (click)="logOut(false)">Log out</a>
             </div>
         </clr-dropdown>
-        <global-search></global-search>
+        <clr-dropdown class="dropdown bottom-left">
+            <button class="nav-icon" clrDropdownToggle style="width: 90px;">
+                <clr-icon shape="world" style="left:-5px;"></clr-icon>
+                <span>English</span>
+                <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <div class="dropdown-menu">
+                <a href="javascript:void(0)" clrDropdownItem>English</a>
+                <a href="javascript:void(0)" clrDropdownItem>中文简体</a>
+                <a href="javascript:void(0)" clrDropdownItem>中文繁體</a>
+            </div>
+        </clr-dropdown>
         <clr-dropdown class="dropdown bottom-right">
-            <button class="nav-text" clrDropdownToggle>
+            <button class="nav-icon" clrDropdownToggle>
                 <clr-icon shape="cog"></clr-icon>
+                <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
                 <a href="javascript:void(0)" clrDropdownItem>Preferences</a>
-                <a href="javascript:void(0)" clrDropdownItem>Log out</a>
+                <a href="javascript:void(0)" clrDropdownItem>Add User</a>
+                <a href="javascript:void(0)" clrDropdownItem>About</a>
             </div>
         </clr-dropdown>
     </div>

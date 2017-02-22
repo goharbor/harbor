@@ -1,20 +1,26 @@
 import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
+import { AccountModule } from '../account/account.module';
 
 import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';
 import { MessageService } from '../global-message/message.service';
+import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
 
 @NgModule({
   imports: [
-    CoreModule
+    CoreModule,
+    AccountModule
   ],
   declarations: [
-    MessageComponent
+    MessageComponent,
+    MaxLengthExtValidatorDirective
   ],
   exports: [
     CoreModule,
-    MessageComponent
+    AccountModule,
+    MessageComponent,
+    MaxLengthExtValidatorDirective
   ],
   providers: [SessionService, MessageService]
 })

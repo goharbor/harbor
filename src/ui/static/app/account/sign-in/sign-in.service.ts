@@ -4,7 +4,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { SignInCredential } from './sign-in-credential';
 
-const url_prefix = '';
+const url_prefix = '/ng';
 const signInUrl = url_prefix + '/login';
 /**
  * 
