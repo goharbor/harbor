@@ -1,0 +1,11 @@
+<div class="search-overlay" *ngIf="state">
+    <div class="search-header">
+        <span class="search-title">Search results</span>
+        <span class="search-close" (mouseover)="mouseAction(true)" (mouseout)="mouseAction(false)">
+            <clr-icon shape="close" [class.is-highlight]="hover" size="36" (click)="close()"></clr-icon>
+        </span>
+    </div>
+    <!-- spinner -->
+    <div class="spinner spinner-lg search-spinner" [hidden]="done">Search...</div>
+    <div>Results is showing here!</div>
+</div>

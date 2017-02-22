@@ -1,0 +1,49 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Accout Settings</h3>
+    <div class="modal-body">
+        <form #accountSettingsFrom="ngForm" class="form">
+            <section class="form-block">
+                <div class="form-group">
+                    <label for="account_settings_username" class="col-md-4">Username</label>
+                    <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="51">
+                </div>
+                <div class="form-group">
+                    <label for="account_settings_email" class="col-md-4 required">Email</label>
+                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="eamilInput.invalid && (eamilInput.dirty || eamilInput.touched)">
+                      <input name="account_settings_email" type="text" #eamilInput="ngModel" [(ngModel)]="account.email" 
+                      required 
+                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="account_settings_email" size="48">
+                      <span class="tooltip-content">
+                          Email should be a valid email address like name@example.com
+                      </span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="account_settings_full_name" class="col-md-4 required">Full name</label>
+                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLength="20" maxLengthExt="20" id="account_settings_full_name" size="48">
+                      <span class="tooltip-content">
+                          Max length of full name is 20
+                      </span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="account_settings_comments" class="col-md-4">Comments</label>
+                    <input type="text" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="51">
+                </div>
+            </section>
+        </form>
+        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [hidden]='errorMessage === ""'>
+            <div class="alert-item">
+                <span class="alert-text">
+                   This alert indicates success.
+                </span>
+            </div>
+        </clr-alert>
+    </div>
+    <div class="modal-footer">
+        <span class="spinner spinner-inline" style="top:8px;" [hidden]="showProgress === false"></span>
+        <button type="button" class="btn btn-outline" (click)="close()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress" (click)="submit()">Ok</button>
+    </div>
+</clr-modal>

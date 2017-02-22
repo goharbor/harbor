@@ -5,12 +5,21 @@ import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { ProjectComponent } from '../project/project.component';
 
+import { BaseRoutingResolver } from './base-routing-resolver.service';
+
 const baseRoutes: Routes = [
-  { 
-    path: 'harbor', component: HarborShellComponent,
+  {
+    path: 'harbor',
+    component: HarborShellComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'projects', component: ProjectComponent }
+      {
+        path: 'dashboard',
+        component: DashboardComponent
+      },
+      {
+        path: 'projects',
+        component: ProjectComponent
+      }
     ]
   }];
 
@@ -18,7 +27,9 @@ const baseRoutes: Routes = [
   imports: [
     RouterModule.forChild(baseRoutes)
   ],
-  exports: [ RouterModule ]
+  exports: [RouterModule],
+
+  providers: [BaseRoutingResolver]
 })
 export class BaseRoutingModule {
 

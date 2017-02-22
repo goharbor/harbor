@@ -14,10 +14,11 @@ import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 
 import { MemberComponent } from './member/member.component';
+import { AddMemberComponent } from './member/add-member/add-member.component';
 import { ProjectRoutingModule } from './project-routing.module';
 
 import { ProjectService } from './project.service';
-import { DATAGRID_DIRECTIVES } from 'clarity-angular';
+import { MemberService } from './member/member.service';
 
 @NgModule({
   imports: [ 
@@ -35,10 +36,11 @@ import { DATAGRID_DIRECTIVES } from 'clarity-angular';
     ActionProjectComponent,
     ListProjectComponent,
     ProjectDetailComponent,
-    MemberComponent 
+    MemberComponent,
+    AddMemberComponent
   ],
   exports: [ ListProjectComponent ],
-  providers: [ ProjectService ]
+  providers: [ ProjectService, MemberService ]
 })
 export class ProjectModule {
   
