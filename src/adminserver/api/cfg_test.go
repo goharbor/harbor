@@ -25,7 +25,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vmware/harbor/src/adminserver/config"
 	"github.com/vmware/harbor/src/adminserver/systemcfg"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/test"
@@ -43,17 +42,9 @@ func TestConfigAPI(t *testing.T) {
 	defer os.Remove(secretKeyPath)
 
 	secret := "secret"
-	/*
-		secretPlaintext := "secret"
-		secretCiphertext, err := utils.ReversibleEncrypt(secretPlaintext, string(data))
-		if err != nil {
-			t.Errorf("failed to encrypt secret: %v", err)
-			return
-		}
-	*/
 	envs := map[string]string{
 
-		"JSON_STORE_PATH":       configPath,
+		"JSON_CFG_STORE_PATH":   configPath,
 		"KEY_PATH":              secretKeyPath,
 		"UI_SECRET":             secret,
 		"MYSQL_PORT":            "3306",
@@ -71,15 +62,11 @@ func TestConfigAPI(t *testing.T) {
 
 	for k, v := range envs {
 		if err := os.Setenv(k, v); err != nil {
-			t.Fatalf("failed to set env %s: %v", k, err)
+			t.Errorf("failed to set env %s: %v", k, err)
+			return
 		}
 	}
 	defer os.Remove(configPath)
-
-	if err := config.Init(); err != nil {
-		t.Errorf("failed to load configurations of adminserver: %v", err)
-		return
-	}
 
 	if err := systemcfg.Init(); err != nil {
 		t.Errorf("failed to initialize system configurations: %v", err)

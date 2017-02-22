@@ -29,8 +29,8 @@ services:
       - ./common/config/adminserver/env
     restart: always
     volumes:
-      - /data/config/:/etc/harbor/
-      - /data/secretkey:/harbor/secretkey
+      - /data/config/:/etc/adminserver/
+      - /data/secretkey:/etc/adminserver/key
     ports:
       - 8888:80
   ldap:

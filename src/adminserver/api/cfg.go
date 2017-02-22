@@ -19,13 +19,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 
-	"github.com/vmware/harbor/src/adminserver/config"
 	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 func isAuthenticated(r *http.Request) (bool, error) {
+	secret := os.Getenv("UI_SECRET")
 	c, err := r.Cookie("secret")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -33,7 +34,7 @@ func isAuthenticated(r *http.Request) (bool, error) {
 		}
 		return false, err
 	}
-	return c != nil && c.Value == config.Secret(), nil
+	return c != nil && c.Value == secret, nil
 }
 
 // ListCfgs lists configurations

@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/vmware/harbor/src/adminserver/config"
 	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -41,13 +40,6 @@ func (s *Server) Serve() error {
 }
 
 func main() {
-
-	log.Info("loading configurations of adminserver...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to load configurations of adminserver: %v", err)
-	}
-	log.Info("load completed")
-
 	log.Info("initializing system configurations...")
 	if err := syscfg.Init(); err != nil {
 		log.Fatalf("failed to initialize the system: %v", err)

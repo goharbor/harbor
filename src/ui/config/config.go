@@ -17,52 +17,24 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
-	//"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-const defaultKeyPath string = "/harbor/secretkey"
-
-var mg *comcfg.Manager
+const defaultKeyPath string = "/etc/ui/key"
 
 var (
-	secret    string
-	secretKey string
+	mg          *comcfg.Manager
+	keyProvider comcfg.KeyProvider
 )
-
-func initSecretAndKey() error {
-	path := os.Getenv("KEY_PATH")
-	if len(path) == 0 {
-		path = defaultKeyPath
-	}
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	secretKey = string(b)
-
-	secret = os.Getenv("UI_SECRET")
-	/*
-		secretCipherText := os.Getenv("UI_SECRET")
-		secret, err = utils.ReversibleDecrypt(secretCipherText, secretKey)
-		if err != nil {
-			return err
-		}
-	*/
-	return nil
-}
 
 // Init configurations
 func Init() error {
-	if err := initSecretAndKey(); err != nil {
-		return err
-	}
+	//init key provider
+	initKeyProvider()
 
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
@@ -80,6 +52,16 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func initKeyProvider() {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+	log.Infof("key path: %s", path)
+
+	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
 // Load configurations
@@ -161,7 +143,7 @@ func ExtEndpoint() (string, error) {
 
 // SecretKey returns the secret key to encrypt the password of target
 func SecretKey() (string, error) {
-	return secretKey, nil
+	return keyProvider.Get(nil)
 }
 
 // SelfRegistration returns the enablement of self registration
@@ -263,5 +245,5 @@ func Database() (*models.Database, error) {
 // UISecret returns a secret used for communication of UI, JobService
 // and Adminserver
 func UISecret() string {
-	return secret
+	return os.Getenv("UI_SECRET")
 }

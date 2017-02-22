@@ -20,22 +20,37 @@ import (
 	"testing"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-// test functions under adminserver/systemcfg
+// test functions in adminserver/systemcfg/systemcfg.go
 func TestSystemcfg(t *testing.T) {
-	key := "JSON_STORE_PATH"
-	path := "/tmp/config.json"
-	if _, err := os.Stat(path); err == nil {
-		if err := os.Remove(path); err != nil {
-			t.Fatalf("failed to remove %s: %v", path, err)
+	configPath := "/tmp/config.json"
+	if _, err := os.Stat(configPath); err == nil {
+		if err := os.Remove(configPath); err != nil {
+			t.Errorf("failed to remove %s: %v", configPath, err)
+			return
 		}
 	} else if !os.IsNotExist(err) {
-		t.Fatalf("failed to check the existence of %s: %v", path, err)
+		t.Errorf("failed to check the existence of %s: %v", configPath, err)
+		return
 	}
 
-	if err := os.Setenv(key, path); err != nil {
-		t.Fatalf("failed to set env %s: %v", key, err)
+	if err := os.Setenv("JSON_CFG_STORE_PATH", configPath); err != nil {
+		t.Errorf("failed to set env: %v", err)
+		return
+	}
+
+	keyPath := "/tmp/secretkey"
+	if _, err := test.GenerateKey(keyPath); err != nil {
+		t.Errorf("failed to generate key: %v", err)
+		return
+	}
+	defer os.Remove(keyPath)
+
+	if err := os.Setenv("KEY_PATH", keyPath); err != nil {
+		t.Errorf("failed to set env: %v", err)
+		return
 	}
 
 	m := map[string]string{
@@ -63,11 +78,7 @@ func TestSystemcfg(t *testing.T) {
 		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
-	defer func() {
-		if err := os.Remove(path); err != nil {
-			t.Fatalf("failed to remove %s: %v", path, err)
-		}
-	}()
+	defer os.Remove(configPath)
 
 	// run Init again to make sure it works well when the configuration file
 	// already exists
