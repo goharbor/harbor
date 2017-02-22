@@ -126,6 +126,7 @@ func MakeFilter(username string, ldapFilter string, ldapUID string) string {
 	}
 
 	log.Debug("one or more ldapFilter: ", ldapFilter)
+
 	return ldapFilter
 }
 
