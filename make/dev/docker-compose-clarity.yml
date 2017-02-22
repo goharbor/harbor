@@ -3,7 +3,7 @@ services:
   log:
     build:
       context: ../../
-      dockerfile: make/photon/log/Dockerfile
+      dockerfile: make/ubuntu/log/Dockerfile
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/
@@ -111,3 +111,10 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+  nodeclarity:
+    image : reg-bj.eng.vmware.com/sharedrepo/node-clarity:0.8.0
+    volumes:
+      - ../../src/ui/static/dist:/clarity-seed/dist
+      - ../../src/ui/static/app:/clarity-seed/src/app
+    depends_on:
+      - ui
