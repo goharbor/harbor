@@ -9,7 +9,7 @@ import 'rxjs/add/observable/throw';
 import { BaseService } from '../../service/base.service';
 import { Member } from './member';
 
-export const urlPrefix = '/ng';
+export const urlPrefix = '';
 
 @Injectable()
 export class MemberService extends BaseService {

@@ -5,7 +5,7 @@ import 'rxjs/add/operator/toPromise';
 import { SessionUser } from './session-user';
 import { SignInCredential } from './sign-in-credential';
 
-const urlPrefix = '/ng';
+const urlPrefix = '';
 const signInUrl = urlPrefix + '/login';
 const currentUserEndpint = urlPrefix + "/api/users/current";
 const signOffEndpoint = urlPrefix + "/log_out";

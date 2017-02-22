@@ -10,7 +10,7 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
-const url_prefix = '/ng';
+const url_prefix = '';
 
 @Injectable()
 export class ProjectService extends BaseService {
