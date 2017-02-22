@@ -1,0 +1,67 @@
+{
+    "project": {
+        "version": "1.0.0-beta.20-4",
+        "name": "clarity-seed"
+    },
+    "apps": [
+        {
+            "root": "src",
+            "outDir": "dist",
+            "assets": [
+                "images",
+                "favicon.ico"
+            ],
+            "index": "index.html",
+            "main": "main.ts",
+            "test": "test.ts",
+            "tsconfig": "tsconfig.json",
+            "prefix": "app",
+            "mobile": false,
+            "styles": [
+                "../node_modules/clarity-icons/clarity-icons.min.css",
+                "../node_modules/clarity-ui/clarity-ui.min.css",
+                "styles.css"
+            ],
+            "scripts": [
+                "../node_modules/core-js/client/shim.min.js",
+                "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
+                "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+                "../node_modules/clarity-icons/clarity-icons.min.js",
+                "../node_modules/web-animations-js/web-animations.min.js"
+            ],
+            "environmentSource": "environments/environment.ts",
+            "environments": {
+                "dev": "environments/environment.ts",
+                "prod": "environments/environment.prod.ts"
+            }
+        }
+    ],
+    "addons": [],
+    "packages": [],
+    "e2e": {
+        "protractor": {
+            "config": "./protractor.config.js"
+        }
+    },
+    "test": {
+        "karma": {
+            "config": "./karma.conf.js"
+        }
+    },
+    "defaults": {
+        "styleExt": "scss",
+        "prefixInterfaces": false,
+        "inline": {
+            "style": false,
+            "template": false
+        },
+        "spec": {
+            "class": false,
+            "component": true,
+            "directive": true,
+            "module": false,
+            "pipe": true,
+            "service": true
+        }
+    }
+}

@@ -111,3 +111,12 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+  nodeclarity:
+    build:
+      context: ../../
+      dockerfile: make/dev/nodeclarity/Dockerfile
+    volumes:
+      - ../../src/ui/static/dist:/clarity-seed/dist
+      - ../../src/ui/static/app:/clarity-seed/src/app
+    depends_on:
+      - ui
