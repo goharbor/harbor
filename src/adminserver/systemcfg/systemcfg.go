@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
@@ -34,6 +35,9 @@ const (
 )
 
 var (
+	cfgStore    store.Driver
+	keyProvider comcfg.KeyProvider
+
 	// attrs need to be encrypted or decrypted
 	attrs = []string{
 		comcfg.EmailPassword,
@@ -41,11 +45,98 @@ var (
 		comcfg.MySQLPassword,
 		comcfg.AdminInitialPassword,
 	}
-	cfgStore    store.Driver
-	keyProvider comcfg.KeyProvider
+
+	// envs are configurations need read from environment variables
+	envs = map[string]interface{}{
+		comcfg.ExtEndpoint: "EXT_ENDPOINT",
+		comcfg.AUTHMode:    "AUTH_MODE",
+		comcfg.SelfRegistration: &parser{
+			env:   "SELF_REGISTRATION",
+			parse: parseStringToBool,
+		},
+		comcfg.DatabaseType: "DATABASE_TYPE",
+		comcfg.MySQLHost:    "MYSQL_HOST",
+		comcfg.MySQLPort: &parser{
+			env:   "MYSQL_PORT",
+			parse: parseStringToInt,
+		},
+		comcfg.MySQLUsername: "MYSQL_USR",
+		comcfg.MySQLPassword: "MYSQL_PWD",
+		comcfg.MySQLDatabase: "MYSQL_DATABASE",
+		comcfg.SQLiteFile:    "SQLITE_FILE",
+		comcfg.LDAPURL:       "LDAP_URL",
+		comcfg.LDAPSearchDN:  "LDAP_SEARCH_DN",
+		comcfg.LDAPSearchPwd: "LDAP_SEARCH_PWD",
+		comcfg.LDAPBaseDN:    "LDAP_BASE_DN",
+		comcfg.LDAPFilter:    "LDAP_FILTER",
+		comcfg.LDAPUID:       "LDAP_UID",
+		comcfg.LDAPScope: &parser{
+			env:   "LDAP_SCOPE",
+			parse: parseStringToInt,
+		},
+		comcfg.LDAPTimeout: &parser{
+			env:   "LDAP_TIMEOUT",
+			parse: parseStringToInt,
+		},
+		comcfg.EmailHost: "EMAIL_HOST",
+		comcfg.EmailPort: &parser{
+			env:   "EMAIL_PORT",
+			parse: parseStringToInt,
+		},
+		comcfg.EmailUsername: "EMAIL_USR",
+		comcfg.EmailPassword: "EMAIL_PWD",
+		comcfg.EmailSSL: &parser{
+			env:   "EMAIL_SSL",
+			parse: parseStringToBool,
+		},
+		comcfg.EmailFrom:     "EMAIL_FROM",
+		comcfg.EmailIdentity: "EMAIL_IDENTITY",
+		comcfg.RegistryURL:   "REGISTRY_URL",
+		comcfg.TokenExpiration: &parser{
+			env:   "TOKEN_EXPIRATION",
+			parse: parseStringToInt,
+		},
+		comcfg.JobLogDir: "LOG_DIR",
+		comcfg.UseCompressedJS: &parser{
+			env:   "USE_COMPRESSED_JS",
+			parse: parseStringToBool,
+		},
+		comcfg.CfgExpiration: &parser{
+			env:   "CFG_EXPIRATION",
+			parse: parseStringToInt,
+		},
+		comcfg.MaxJobWorkers: &parser{
+			env:   "MAX_JOB_WORKERS",
+			parse: parseStringToInt,
+		},
+		comcfg.VerifyRemoteCert: &parser{
+			env:   "VERIFY_REMOTE_CERT",
+			parse: parseStringToBool,
+		},
+		comcfg.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
+		comcfg.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+	}
 )
 
-// Init system configurations. Read from config store first, if null read from env
+type parser struct {
+	// the name of env
+	env string
+	// parse the value of env, e.g. parse string to int or
+	// parse string to bool
+	parse func(string) (interface{}, error)
+}
+
+func parseStringToInt(str string) (interface{}, error) {
+	return strconv.Atoi(str)
+}
+
+func parseStringToBool(str string) (interface{}, error) {
+	return strings.ToLower(str) == "true" ||
+		strings.ToLower(str) == "on", nil
+}
+
+// Init system configurations. Read from config store first,
+// if null read from env
 func Init() (err error) {
 	//init configuation store
 	if err = initCfgStore(); err != nil {
@@ -60,24 +151,18 @@ func Init() (err error) {
 		return err
 	}
 
-	if cfg == nil {
-		log.Info("configurations read from store driver are null, initializing system from environment variables...")
-		cfg, err = initFromEnv()
-		if err != nil {
-			return err
-		}
-	} else {
-		if err := readFromEnv(cfg); err != nil {
-			return err
-		}
+	if cfg != nil {
+		return nil
 	}
 
-	//sync configurations into cfg store
-	if err = UpdateSystemCfg(cfg); err != nil {
+	log.Info("configurations read from store driver are null, initializing system from environment variables...")
+	cfg, err = loadFromEnv()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	//sync configurations into cfg store
+	return UpdateSystemCfg(cfg)
 }
 
 func initCfgStore() (err error) {
@@ -113,85 +198,27 @@ func initKeyProvider() {
 	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
-//read the following attrs from env every time boots up
-func readFromEnv(cfg map[string]interface{}) error {
-	cfg[comcfg.ExtEndpoint] = os.Getenv("EXT_ENDPOINT")
-
-	cfg[comcfg.DatabaseType] = os.Getenv("DATABASE_TYPE")
-	cfg[comcfg.MySQLHost] = os.Getenv("MYSQL_HOST")
-	port, err := strconv.Atoi(os.Getenv("MYSQL_PORT"))
-	if err != nil {
-		return err
-	}
-	cfg[comcfg.MySQLPort] = port
-	cfg[comcfg.MySQLUsername] = os.Getenv("MYSQL_USR")
-	cfg[comcfg.MySQLPassword] = os.Getenv("MYSQL_PWD")
-	cfg[comcfg.MySQLDatabase] = os.Getenv("MYSQL_DATABASE")
-	cfg[comcfg.SQLiteFile] = os.Getenv("SQLITE_FILE")
-	cfg[comcfg.TokenServiceURL] = os.Getenv("TOKEN_SERVICE_URL")
-	tokenExpi, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRATION"))
-	if err != nil {
-		return err
-	}
-	cfg[comcfg.TokenExpiration] = tokenExpi
-	cfg[comcfg.RegistryURL] = os.Getenv("REGISTRY_URL")
-	//TODO remove
-	cfg[comcfg.JobLogDir] = os.Getenv("LOG_DIR")
-	//TODO remove
-	cfg[comcfg.UseCompressedJS] = os.Getenv("USE_COMPRESSED_JS") == "on"
-	cfgExpi, err := strconv.Atoi(os.Getenv("CFG_EXPIRATION"))
-	if err != nil {
-		return err
-	}
-	cfg[comcfg.CfgExpiration] = cfgExpi
-	workers, err := strconv.Atoi(os.Getenv("MAX_JOB_WORKERS"))
-	if err != nil {
-		return err
-	}
-	cfg[comcfg.MaxJobWorkers] = workers
-
-	return nil
-}
-
-func initFromEnv() (map[string]interface{}, error) {
+//load the configurations from env
+func loadFromEnv() (map[string]interface{}, error) {
 	cfg := map[string]interface{}{}
 
-	if err := readFromEnv(cfg); err != nil {
-		return nil, err
-	}
+	for k, v := range envs {
+		if str, ok := v.(string); ok {
+			cfg[k] = os.Getenv(str)
+			continue
+		}
 
-	cfg[comcfg.AUTHMode] = os.Getenv("AUTH_MODE")
-	cfg[comcfg.SelfRegistration] = os.Getenv("SELF_REGISTRATION") == "on"
-	cfg[comcfg.LDAPURL] = os.Getenv("LDAP_URL")
-	cfg[comcfg.LDAPSearchDN] = os.Getenv("LDAP_SEARCH_DN")
-	cfg[comcfg.LDAPSearchPwd] = os.Getenv("LDAP_SEARCH_PWD")
-	cfg[comcfg.LDAPBaseDN] = os.Getenv("LDAP_BASE_DN")
-	cfg[comcfg.LDAPFilter] = os.Getenv("LDAP_FILTER")
-	cfg[comcfg.LDAPUID] = os.Getenv("LDAP_UID")
-	scope, err := strconv.Atoi(os.Getenv("LDAP_SCOPE"))
-	if err != nil {
-		return nil, err
+		if parser, ok := v.(*parser); ok {
+			i, err := parser.parse(os.Getenv(parser.env))
+			if err != nil {
+				return nil, err
+			}
+			cfg[k] = i
+			continue
+		}
+
+		return nil, fmt.Errorf("%v is not string or parse type", v)
 	}
-	cfg[comcfg.LDAPScope] = scope
-	timeout, err := strconv.Atoi(os.Getenv("LDAP_TIMEOUT"))
-	if err != nil {
-		return nil, err
-	}
-	cfg[comcfg.LDAPTimeout] = timeout
-	cfg[comcfg.EmailHost] = os.Getenv("EMAIL_HOST")
-	port, err := strconv.Atoi(os.Getenv("EMAIL_PORT"))
-	if err != nil {
-		return nil, err
-	}
-	cfg[comcfg.EmailPort] = port
-	cfg[comcfg.EmailUsername] = os.Getenv("EMAIL_USR")
-	cfg[comcfg.EmailPassword] = os.Getenv("EMAIL_PWD")
-	cfg[comcfg.EmailSSL] = os.Getenv("EMAIL_SSL") == "true"
-	cfg[comcfg.EmailFrom] = os.Getenv("EMAIL_FROM")
-	cfg[comcfg.EmailIdentity] = os.Getenv("EMAIL_IDENTITY")
-	cfg[comcfg.VerifyRemoteCert] = os.Getenv("VERIFY_REMOTE_CERT") == "on"
-	cfg[comcfg.ProjectCreationRestriction] = os.Getenv("PROJECT_CREATION_RESTRICTION")
-	cfg[comcfg.AdminInitialPassword] = os.Getenv("HARBOR_ADMIN_PASSWORD")
 
 	return cfg, nil
 }
