@@ -7,6 +7,8 @@ import { ProjectService } from './project.service';
 
 import { CreateProjectComponent } from './create-project/create-project.component';
 
+import { ListProjectComponent } from './list-project/list-project.component';
+
 import { MessageService } from '../global-message/message.service';
 
 export const types: {} = { 0: 'My Projects', 1: 'Public Projects'};
@@ -19,11 +21,14 @@ export const types: {} = { 0: 'My Projects', 1: 'Public Projects'};
 export class ProjectComponent implements OnInit {
     
   selected = [];
-  projects: Project[];
+  changedProjects: Project[];
   projectTypes = types;
   
   @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
+
+  @ViewChild(ListProjectComponent)
+  listProject: ListProjectComponent;
 
   currentFilteredType: number = 0;
   lastFilteredType: number = 0;
@@ -38,7 +43,7 @@ export class ProjectComponent implements OnInit {
     this.projectService
         .listProjects(name, isPublic)
         .subscribe(
-          response => this.projects = response,
+          response => this.changedProjects = response,
           error => this.messageService.announceMessage(error));
   }
 
@@ -85,7 +90,4 @@ export class ProjectComponent implements OnInit {
         );
   }
 
-  deleteSelectedProjects() {
-    this.selected.forEach(p=>this.deleteProject(p));
-  }
 }
