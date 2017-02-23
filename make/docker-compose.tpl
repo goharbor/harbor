@@ -47,6 +47,26 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
+  etcd:
+    container_name: etcd0
+    image: quay.io/coreos/etcd:v3.0.15
+    command: >
+       /usr/local/bin/etcd
+       -name etcd0
+       -advertise-client-urls http://${HOSTIP}:2379,http://${HOSTIP}:4001
+       -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001
+       -initial-advertise-peer-urls http://${HOSTIP}:2380
+       -listen-peer-urls http://0.0.0.0:2380
+       -initial-cluster-token etcd-cluster-1
+       -initial-cluster etcd0=http://${HOSTIP}:2380
+       -initial-cluster-state new
+    volumes:
+      - /data/certs/:/etc/ssl/certs
+    ports:
+     - "2380:2380"
+     - "2379:2379"
+     - "4001:4001"
+
   ui:
     image: vmware/harbor-ui
     container_name: harbor-ui
