@@ -6,21 +6,25 @@ import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';
 import { MessageService } from '../global-message/message.service';
 import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
+import { FilterComponent } from './filter/filter.component';
+import { DatagridActionOverflow } from './clg-dg-action-overflow/datagrid-action-overflow';
 
 @NgModule({
   imports: [
-    CoreModule,
-    //AccountModule
+    CoreModule
   ],
   declarations: [
     MessageComponent,
-    MaxLengthExtValidatorDirective
+    MaxLengthExtValidatorDirective,
+    FilterComponent,
+    DatagridActionOverflow
   ],
   exports: [
     CoreModule,
-   // AccountModule,
     MessageComponent,
-    MaxLengthExtValidatorDirective
+    MaxLengthExtValidatorDirective,
+    FilterComponent,
+    DatagridActionOverflow
   ],
   providers: [SessionService, MessageService]
 })
