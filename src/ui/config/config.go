@@ -242,8 +242,14 @@ func Database() (*models.Database, error) {
 	return database, nil
 }
 
-// UISecret returns a secret used for communication of UI, JobService
-// and Adminserver
+// UISecret returns a secret to mark UI when communicate with
+// other component
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
+}
+
+// JobserviceSecret returns a secret to mark Jobservice when communicate with
+// other component
+func JobserviceSecret() string {
+	return os.Getenv("JOBSERVICE_SECRET")
 }

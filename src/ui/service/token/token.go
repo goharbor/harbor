@@ -19,10 +19,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/common/models"
-	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
+	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/registry/auth/token"
@@ -45,7 +46,7 @@ func (h *Handler) Get() {
 	access := GetResourceActions(scopes)
 	log.Infof("request url: %v", request.URL.String())
 
-	if svc_utils.VerifySecret(request) {
+	if svc_utils.VerifySecret(request, config.JobserviceSecret()) {
 		log.Debugf("Will grant all access as this request is from job service with legal secret.")
 		username = "job-service-user"
 	} else {

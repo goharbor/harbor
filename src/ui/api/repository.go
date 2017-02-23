@@ -66,7 +66,7 @@ func (ra *RepositoryAPI) Get() {
 	if project.Public == 0 {
 		var userID int
 
-		if svc_utils.VerifySecret(ra.Ctx.Request) {
+		if svc_utils.VerifySecret(ra.Ctx.Request, config.JobserviceSecret()) {
 			userID = 1
 		} else {
 			userID = ra.ValidateUser()

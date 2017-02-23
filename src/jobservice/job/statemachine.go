@@ -285,7 +285,7 @@ func addTestTransition(sm *SM) error {
 }
 
 func addImgTransferTransition(sm *SM) {
-	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
+	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.JobserviceSecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
 

@@ -194,7 +194,7 @@ func getRepoList(projectID int64) ([]string, error) {
 			return repositories, err
 		}
 
-		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.UISecret()})
+		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()})
 
 		resp, err := client.Do(req)
 		if err != nil {
