@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"os"
 
-	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
+	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -41,7 +41,7 @@ func (s *Server) Serve() error {
 
 func main() {
 	log.Info("initializing system configurations...")
-	if err := cfg.Init(); err != nil {
+	if err := syscfg.Init(); err != nil {
 		log.Fatalf("failed to initialize the system: %v", err)
 	}
 	log.Info("system initialization completed")

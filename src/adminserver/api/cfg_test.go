@@ -26,34 +26,50 @@ import (
 	"testing"
 
 	"github.com/vmware/harbor/src/adminserver/systemcfg"
-	"github.com/vmware/harbor/src/common/config"
+	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/utils/test"
 )
 
 func TestConfigAPI(t *testing.T) {
-	path := "/tmp/config.json"
-	secret := "secret"
+	configPath := "/tmp/config.json"
+	secretKeyPath := "/tmp/secretkey"
 
+	_, err := test.GenerateKey(secretKeyPath)
+	if err != nil {
+		t.Errorf("failed to generate secret key: %v", err)
+		return
+	}
+	defer os.Remove(secretKeyPath)
+
+	secret := "secret"
 	envs := map[string]string{
-		"JSON_STORE_PATH":  path,
-		"UI_SECRET":        secret,
-		"MYSQL_PORT":       "3306",
-		"TOKEN_EXPIRATION": "30",
-		"CFG_EXPIRATION":   "5",
-		"MAX_JOB_WORKERS":  "3",
-		"LDAP_SCOPE":       "3",
-		"LDAP_TIMEOUT":     "30",
-		"EMAIL_PORT":       "25",
+
+		"JSON_CFG_STORE_PATH":   configPath,
+		"KEY_PATH":              secretKeyPath,
+		"UI_SECRET":             secret,
+		"MYSQL_PORT":            "3306",
+		"TOKEN_EXPIRATION":      "30",
+		"CFG_EXPIRATION":        "5",
+		"MAX_JOB_WORKERS":       "3",
+		"LDAP_SCOPE":            "3",
+		"LDAP_TIMEOUT":          "30",
+		"EMAIL_PORT":            "25",
+		"MYSQL_PWD":             "",
+		"LDAP_SEARCH_PWD":       "",
+		"EMAIL_PWD":             "",
+		"HARBOR_ADMIN_PASSWORD": "",
 	}
 
 	for k, v := range envs {
 		if err := os.Setenv(k, v); err != nil {
-			t.Fatalf("failed to set env %s: %v", k, err)
+			t.Errorf("failed to set env %s: %v", k, err)
+			return
 		}
 	}
-	defer os.Remove(path)
+	defer os.Remove(configPath)
 
 	if err := systemcfg.Init(); err != nil {
-		t.Errorf("failed to initialize systemconfigurations: %v", err)
+		t.Errorf("failed to initialize system configurations: %v", err)
 		return
 	}
 
@@ -88,7 +104,7 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	scope := int(m[config.LDAPScope].(float64))
+	scope := int(m[comcfg.LDAPScope].(float64))
 	if scope != 3 {
 		t.Errorf("unexpected ldap scope: %d != %d", scope, 3)
 		return
@@ -96,7 +112,7 @@ func TestConfigAPI(t *testing.T) {
 
 	// modify configurations
 	c := map[string]interface{}{
-		config.AUTHMode: config.LDAPAuth,
+		comcfg.AUTHMode: comcfg.LDAPAuth,
 	}
 
 	b, err := json.Marshal(c)
@@ -146,9 +162,9 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	mode := m[config.AUTHMode].(string)
-	if mode != config.LDAPAuth {
-		t.Errorf("unexpected ldap scope: %s != %s", mode, config.LDAPAuth)
+	mode := m[comcfg.AUTHMode].(string)
+	if mode != comcfg.LDAPAuth {
+		t.Errorf("unexpected ldap scope: %s != %s", mode, comcfg.LDAPAuth)
 		return
 	}
 }

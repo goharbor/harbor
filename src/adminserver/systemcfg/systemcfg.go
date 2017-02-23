@@ -23,27 +23,39 @@ import (
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-var cfgStore store.Driver
+const (
+	defaultCfgStoreDriver   string = "json"
+	defaultJSONCfgStorePath string = "/etc/adminserver/config.json"
+	defaultKeyPath          string = "/etc/adminserver/key"
+)
+
+var (
+	// attrs need to be encrypted or decrypted
+	attrs = []string{
+		comcfg.EmailPassword,
+		comcfg.LDAPSearchPwd,
+		comcfg.MySQLPassword,
+		comcfg.AdminInitialPassword,
+	}
+	cfgStore    store.Driver
+	keyProvider comcfg.KeyProvider
+)
 
 // Init system configurations. Read from config store first, if null read from env
 func Init() (err error) {
-	s := getCfgStore()
-	switch s {
-	case "json":
-		path := os.Getenv("JSON_STORE_PATH")
-		cfgStore, err = json.NewCfgStore(path)
-		if err != nil {
-			return
-		}
-	default:
-		return fmt.Errorf("unsupported configuration store driver %s", s)
+	//init configuation store
+	if err = initCfgStore(); err != nil {
+		return err
 	}
 
-	log.Infof("configuration store driver: %s", cfgStore.Name())
-	cfg, err := cfgStore.Read()
+	//init key provider
+	initKeyProvider()
+
+	cfg, err := GetSystemCfg()
 	if err != nil {
 		return err
 	}
@@ -61,19 +73,44 @@ func Init() (err error) {
 	}
 
 	//sync configurations into cfg store
-	if err = cfgStore.Write(cfg); err != nil {
+	if err = UpdateSystemCfg(cfg); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getCfgStore() string {
-	t := os.Getenv("CFG_STORE_TYPE")
+func initCfgStore() (err error) {
+	t := os.Getenv("CFG_STORE_DRIVER")
 	if len(t) == 0 {
-		t = "json"
+		t = defaultCfgStoreDriver
 	}
-	return t
+	log.Infof("configuration store driver: %s", t)
+
+	switch t {
+	case "json":
+		path := os.Getenv("JSON_CFG_STORE_PATH")
+		if len(path) == 0 {
+			path = defaultJSONCfgStorePath
+		}
+		log.Infof("json configuration store path: %s", path)
+
+		cfgStore, err = json.NewCfgStore(path)
+	default:
+		err = fmt.Errorf("unsupported configuration store driver %s", t)
+	}
+
+	return err
+}
+
+func initKeyProvider() {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+	log.Infof("key path: %s", path)
+
+	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
 //read the following attrs from env every time boots up
@@ -102,7 +139,6 @@ func readFromEnv(cfg map[string]interface{}) error {
 	cfg[comcfg.JobLogDir] = os.Getenv("LOG_DIR")
 	//TODO remove
 	cfg[comcfg.UseCompressedJS] = os.Getenv("USE_COMPRESSED_JS") == "on"
-	cfg[comcfg.SecretKey] = os.Getenv("SECRET_KEY")
 	cfgExpi, err := strconv.Atoi(os.Getenv("CFG_EXPIRATION"))
 	if err != nil {
 		return err
@@ -162,10 +198,74 @@ func initFromEnv() (map[string]interface{}, error) {
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	return cfgStore.Read()
+	m, err := cfgStore.Read()
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := keyProvider.Get(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get key: %v", err)
+	}
+
+	if err = decrypt(m, attrs, key); err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 // UpdateSystemCfg updates the system configurations
 func UpdateSystemCfg(cfg map[string]interface{}) error {
+
+	key, err := keyProvider.Get(nil)
+	if err != nil {
+		return fmt.Errorf("failed to get key: %v", err)
+	}
+
+	if err := encrypt(cfg, attrs, key); err != nil {
+		return err
+	}
+
 	return cfgStore.Write(cfg)
+}
+
+func encrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		cipherText, err := utils.ReversibleEncrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = cipherText
+	}
+	return nil
+}
+
+func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
+	for _, key := range keys {
+		v, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		if len(v.(string)) == 0 {
+			continue
+		}
+
+		text, err := utils.ReversibleDecrypt(v.(string), secretKey)
+		if err != nil {
+			return err
+		}
+		m[key] = text
+	}
+	return nil
 }

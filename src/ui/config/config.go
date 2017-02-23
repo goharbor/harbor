@@ -24,10 +24,18 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-var mg *comcfg.Manager
+const defaultKeyPath string = "/etc/ui/key"
+
+var (
+	mg          *comcfg.Manager
+	keyProvider comcfg.KeyProvider
+)
 
 // Init configurations
 func Init() error {
+	//init key provider
+	initKeyProvider()
+
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
@@ -44,6 +52,16 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func initKeyProvider() {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+	log.Infof("key path: %s", path)
+
+	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
 // Load configurations
@@ -125,11 +143,7 @@ func ExtEndpoint() (string, error) {
 
 // SecretKey returns the secret key to encrypt the password of target
 func SecretKey() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return cfg[comcfg.SecretKey].(string), nil
+	return keyProvider.Get(nil)
 }
 
 // SelfRegistration returns the enablement of self registration
@@ -228,8 +242,8 @@ func Database() (*models.Database, error) {
 	return database, nil
 }
 
-// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
-// TODO
+// UISecret returns a secret used for communication of UI, JobService
+// and Adminserver
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }

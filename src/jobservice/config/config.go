@@ -20,12 +20,23 @@ import (
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-var mg *comcfg.Manager
+const (
+	defaultKeyPath string = "/etc/jobservice/key"
+)
+
+var (
+	mg          *comcfg.Manager
+	keyProvider comcfg.KeyProvider
+)
 
 // Init configurations
 func Init() error {
+	//init key provider
+	initKeyProvider()
+
 	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
@@ -41,6 +52,16 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func initKeyProvider() {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+	log.Infof("key path: %s", path)
+
+	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
 // VerifyRemoteCert returns bool value.
@@ -108,15 +129,11 @@ func LogDir() (string, error) {
 
 // SecretKey will return the secret key for encryption/decryption password in target.
 func SecretKey() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return cfg[comcfg.SecretKey].(string), nil
+	return keyProvider.Get(nil)
 }
 
-// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
-// TODO
+// UISecret returns a secret used for communication of UI, JobService
+// and Adminserver
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
 }
