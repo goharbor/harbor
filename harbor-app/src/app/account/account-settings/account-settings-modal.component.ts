@@ -14,6 +14,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     staticBackdrop: boolean = true;
     account: SessionUser;
     error: any;
+    alertClose: boolean = true;
 
     private isOnCalling: boolean = false;
     private formValueChanged: boolean = false;
@@ -37,7 +38,16 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get errorMessage(): string {
-        return this.error ? (this.error.message ? this.error.message : this.error) : "";
+        if(this.error){
+            if(this.error.message){
+                return this.error.message;
+            }else{
+                if(this.error._body){
+                    return this.error._body;
+                }
+            }
+        }
+        return "";
     }
 
     ngAfterViewChecked(): void {
@@ -85,7 +95,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             })
             .catch(error => {
                 this.isOnCalling = false;
-                this.error = error
+                this.error = error;
+                this.alertClose = false;
             });
     }
 

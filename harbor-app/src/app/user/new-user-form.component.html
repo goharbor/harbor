@@ -1,0 +1,72 @@
+<div>
+    <form #newUserFrom="ngForm" class="form">
+        <section class="form-block">
+            <div class="form-group">
+                <label for="username" class="col-md-4 required">Username</label>
+                <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+                <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="46">
+                <span class="tooltip-content">
+                    Username is required and should match the following rules:Not contain '"~#$%"' and length less than 20
+                </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="email" class="col-md-4 required">Email</label>
+                <label for="email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="eamilInput.invalid && (eamilInput.dirty || eamilInput.touched)">
+                      <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" 
+                      required 
+                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="email" size="46">
+                      <span class="tooltip-content">
+                          Email should be a valid email address like name@example.com
+                      </span>
+                    </label>
+            </div>
+            <div class="form-group">
+                <label for="realname" class="col-md-4 required">Full name</label>
+                <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="46">
+                      <span class="tooltip-content">
+                          Max length of full name is 20
+                      </span>
+                    </label>
+            </div>
+            <div class="form-group">
+                <label for="newPassword" class="required">New Password</label>
+                <label for="newPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="newPassInput.invalid && (newPassInput.dirty || newPassInput.touched)">
+                <input type="password" id="newPassword" placeholder="Enter new password"
+                    required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{7,}$"
+                    name="newPassword"
+                    [(ngModel)]="newUser.password"
+                    #newPassInput="ngModel" size="46">
+                <span class="tooltip-content">
+                    Password should be at least 7 characters with 1 uppercase, 1 lowercase letter and 1 number
+                </span>
+            </label>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword" class="required">Confirm Password</label>
+                <label for="confirmPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="(confirmPassInput.invalid && (confirmPassInput.dirty || confirmPassInput.touched)) || (!confirmPassInput.invalid && confirmPassInput.value != newPassInput.value)">
+                <input type="password" id="confirmPassword" placeholder="Confirm new password"
+                    required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{7,}$"
+                    name="confirmPassword"
+                    [(ngModel)]="confirmedPwd"
+                    #confirmPassInput="ngModel" size="46">
+                <span class="tooltip-content">
+                    Password should be at least 7 characters with 1 uppercase, 1 lowercase letter and 1 number and same with new password
+                </span>
+            </label>
+            </div>
+            <div class="form-group">
+                <label for="comment" class="col-md-4">Comments</label>
+                <label for="comment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="46">
+                <span class="tooltip-content">
+                    Length of comment should be less than 20
+                </span>
+                </label>
+            </div>
+        </section>
+    </form>
+</div>

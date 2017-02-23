@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalSize]="'lg'">
-    <h3 class="modal-title">Accout Settings</h3>
-    <div class="modal-body">
+    <h3 class="modal-title">User Profile</h3>
+    <div class="modal-body" style="overflow-y: hidden;">
         <form #accountSettingsFrom="ngForm" class="form">
             <section class="form-block">
                 <div class="form-group">
@@ -29,11 +29,17 @@
                 </div>
                 <div class="form-group">
                     <label for="account_settings_comments" class="col-md-4">Comments</label>
-                    <input type="text" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="51">
+                    <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                    <input type="text" #commentInput="ngModel" maxLengthExt="20" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="48">
+                    <span class="tooltip-content">
+                        Length of comment should be less than 20
+                    </span>
+                    </label>
                 </div>
             </section>
         </form>
-        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [hidden]='errorMessage === ""'>
+        <div style="height: 30px;"></div>
+        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [(clrAlertClosed)]="alertClose">
             <div class="alert-item">
                 <span class="alert-text">
                    {{errorMessage}}

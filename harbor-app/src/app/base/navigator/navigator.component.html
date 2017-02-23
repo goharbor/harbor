@@ -12,20 +12,6 @@
             <span class="custom-divider"></span>
             <a href="javascript:void(0)" class="nav-link nav-text sign-up-override" routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
         </div>
-        <clr-dropdown [clrMenuPosition]="'bottom-left'" class="dropdown" *ngIf="isSessionValid">
-            <button class="nav-text" clrDropdownToggle>
-              <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
-              <span>Administrator</span>
-              <clr-icon shape="caret down"></clr-icon>
-            </button>
-            <div class="dropdown-menu">
-                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">User Profile</a>
-                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">Change Password</a>
-                <a href="javascript:void(0)" clrDropdownItem>About</a>
-                <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">Log out</a>
-            </div>
-        </clr-dropdown>
         <clr-dropdown class="dropdown bottom-left">
             <button class="nav-icon" clrDropdownToggle style="width: 90px;">
                 <clr-icon shape="world" style="left:-5px;"></clr-icon>
@@ -36,6 +22,20 @@
                 <a href="javascript:void(0)" clrDropdownItem>English</a>
                 <a href="javascript:void(0)" clrDropdownItem>中文简体</a>
                 <a href="javascript:void(0)" clrDropdownItem>中文繁體</a>
+            </div>
+        </clr-dropdown>
+        <clr-dropdown [clrMenuPosition]="'bottom-left'" class="dropdown" *ngIf="isSessionValid">
+            <button class="nav-text" clrDropdownToggle>
+              <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
+              <span>{{accountName}}</span>
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <div class="dropdown-menu">
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">User Profile</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">Change Password</a>
+                <a href="javascript:void(0)" clrDropdownItem>About</a>
+                <div class="dropdown-divider"></div>
+                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">Log out</a>
             </div>
         </clr-dropdown>
     </div>

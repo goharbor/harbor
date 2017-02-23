@@ -32,6 +32,10 @@ export class NavigatorComponent implements OnInit {
         return this.sessionUser != null;
     }
 
+    public get accountName(): string {
+        return this.sessionUser?this.sessionUser.username: "";
+    }
+
     //Open the account setting dialog
     openAccountSettingsModal(): void {
         this.showAccountSettingsModal.emit({

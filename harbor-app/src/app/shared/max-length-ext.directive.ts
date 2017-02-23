@@ -7,7 +7,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
         const value: string = control.value
         if (!value || value.trim() === "") {
-            return { 'maxLengthExt': 0 };
+            return null;
         }
 
         const regExp = new RegExp(assiiChars, 'i');
@@ -42,7 +42,6 @@ export class MaxLengthExtValidatorDirective implements Validator, OnChanges {
         } else {
             this.valFn = Validators.nullValidator;
         }
-        console.info(changes, this.maxLengthExt);
     }
 
     validate(control: AbstractControl): { [key: string]: any } {
