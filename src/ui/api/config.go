@@ -19,51 +19,78 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	//"strings"
 
 	"github.com/vmware/harbor/src/common/api"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
-	//"github.com/vmware/harbor/src/common/models"
-	//"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
-// keys of attrs which user can modify
-var validKeys = []string{
-	comcfg.AUTHMode,
-	comcfg.EmailFrom,
-	comcfg.EmailHost,
-	comcfg.EmailIdentity,
-	comcfg.EmailPassword,
-	comcfg.EmailPort,
-	comcfg.EmailSSL,
-	comcfg.EmailUsername,
-	comcfg.LDAPBaseDN,
-	comcfg.LDAPFilter,
-	comcfg.LDAPScope,
-	comcfg.LDAPSearchDN,
-	comcfg.LDAPSearchPwd,
-	comcfg.LDAPTimeout,
-	comcfg.LDAPUID,
-	comcfg.LDAPURL,
-	comcfg.ProjectCreationRestriction,
-	comcfg.SelfRegistration,
-	comcfg.VerifyRemoteCert,
-}
+var (
+	// valid keys of configurations which user can modify
+	validKeys = []string{
+		comcfg.ExtEndpoint,
+		comcfg.AUTHMode,
+		comcfg.DatabaseType,
+		comcfg.MySQLHost,
+		comcfg.MySQLPort,
+		comcfg.MySQLUsername,
+		comcfg.MySQLPassword,
+		comcfg.MySQLDatabase,
+		comcfg.SQLiteFile,
+		comcfg.SelfRegistration,
+		comcfg.LDAPURL,
+		comcfg.LDAPSearchDN,
+		comcfg.LDAPSearchPwd,
+		comcfg.LDAPBaseDN,
+		comcfg.LDAPUID,
+		comcfg.LDAPFilter,
+		comcfg.LDAPScope,
+		comcfg.LDAPTimeout,
+		comcfg.TokenServiceURL,
+		comcfg.RegistryURL,
+		comcfg.EmailHost,
+		comcfg.EmailPort,
+		comcfg.EmailUsername,
+		comcfg.EmailPassword,
+		comcfg.EmailFrom,
+		comcfg.EmailSSL,
+		comcfg.EmailIdentity,
+		comcfg.ProjectCreationRestriction,
+		comcfg.VerifyRemoteCert,
+		comcfg.MaxJobWorkers,
+		comcfg.TokenExpiration,
+		comcfg.CfgExpiration,
+		comcfg.JobLogDir,
+		comcfg.UseCompressedJS,
+		comcfg.AdminInitialPassword,
+	}
 
-var numKeys = []string{
-	comcfg.EmailPort,
-	comcfg.LDAPScope,
-	comcfg.LDAPTimeout,
-}
+	numKeys = []string{
+		comcfg.EmailPort,
+		comcfg.LDAPScope,
+		comcfg.LDAPTimeout,
+		comcfg.MySQLPort,
+		comcfg.MaxJobWorkers,
+		comcfg.TokenExpiration,
+		comcfg.CfgExpiration,
+	}
 
-var boolKeys = []string{
-	comcfg.EmailSSL,
-	comcfg.SelfRegistration,
-	comcfg.VerifyRemoteCert,
-}
+	boolKeys = []string{
+		comcfg.EmailSSL,
+		comcfg.SelfRegistration,
+		comcfg.VerifyRemoteCert,
+		comcfg.UseCompressedJS,
+	}
+
+	passwordKeys = []string{
+		comcfg.AdminInitialPassword,
+		comcfg.EmailPassword,
+		comcfg.LDAPSearchPwd,
+		comcfg.MySQLPassword,
+	}
+)
 
 // ConfigAPI ...
 type ConfigAPI struct {
@@ -234,26 +261,34 @@ func validateCfg(c map[string]string) (bool, error) {
 			comcfg.LDAPScopeOnelevel,
 			comcfg.LDAPScopeSubtree)
 	}
-	if timeout, ok := c[comcfg.LDAPTimeout]; ok {
-		if t, err := strconv.Atoi(timeout); err != nil || t < 0 {
-			return isSysErr, fmt.Errorf("invalid %s", comcfg.LDAPTimeout)
+
+	for _, k := range boolKeys {
+		v, ok := c[k]
+		if !ok {
+			continue
+		}
+
+		if v != "0" && v != "1" {
+			return isSysErr, fmt.Errorf("%s should be %s or %s",
+				k, "0", "1")
 		}
 	}
 
-	if self, ok := c[comcfg.SelfRegistration]; ok &&
-		self != "0" && self != "1" {
-		return isSysErr, fmt.Errorf("%s should be %s or %s",
-			comcfg.SelfRegistration, "0", "1")
-	}
-
-	if port, ok := c[comcfg.EmailPort]; ok {
-		if p, err := strconv.Atoi(port); err != nil || p < 0 || p > 65535 {
-			return isSysErr, fmt.Errorf("invalid %s", comcfg.EmailPort)
+	for _, k := range numKeys {
+		v, ok := c[k]
+		if !ok {
+			continue
 		}
-	}
 
-	if ssl, ok := c[comcfg.EmailSSL]; ok && ssl != "0" && ssl != "1" {
-		return isSysErr, fmt.Errorf("%s should be %s or %s", comcfg.EmailSSL, "0", "1")
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 0 {
+			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
+		}
+
+		if (k == comcfg.EmailPort ||
+			k == comcfg.MySQLPort) && n > 65535 {
+			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
+		}
 	}
 
 	if crt, ok := c[comcfg.ProjectCreationRestriction]; ok &&
@@ -265,29 +300,13 @@ func validateCfg(c map[string]string) (bool, error) {
 			comcfg.ProCrtRestrEveryone)
 	}
 
-	if verify, ok := c[comcfg.VerifyRemoteCert]; ok && verify != "0" && verify != "1" {
-		return isSysErr, fmt.Errorf("invalid %s, should be %s or %s",
-			comcfg.VerifyRemoteCert, "0", "1")
-	}
-
 	return isSysErr, nil
 }
 
-//encode passwords and convert map[string]string to map[string]interface{}
+//convert map[string]string to map[string]interface{}
 func convertForPut(m map[string]string) (map[string]interface{}, error) {
 	cfg := map[string]interface{}{}
 
-	/*
-		pwdKeys := []string{config.LDAP_SEARCH_PWD, config.EMAIL_PWD}
-		for _, pwdKey := range pwdKeys {
-			if pwd, ok := c[pwdKey]; ok && len(pwd) != 0 {
-				c[pwdKey], err = utils.ReversibleEncrypt(pwd, ui_cfg.SecretKey())
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-	*/
 	for k, v := range m {
 		cfg[k] = v
 	}
@@ -319,14 +338,9 @@ func convertForPut(m map[string]string) (map[string]interface{}, error) {
 func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	result := map[string]*value{}
 
-	dels := []string{
-		comcfg.AdminInitialPassword,
-		comcfg.EmailPassword,
-		comcfg.LDAPSearchPwd,
-		comcfg.MySQLPassword}
-	for _, del := range dels {
-		if _, ok := cfg[del]; ok {
-			delete(cfg, del)
+	for _, k := range passwordKeys {
+		if _, ok := cfg[k]; ok {
+			delete(cfg, k)
 		}
 	}
 
