@@ -1,15 +1,23 @@
 <h3>Projects</h3>
 <div class="row flex-items-xs-between">
   <div class="col-xs-4">
-    <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon>New Project</button>
-    <button class="btn btn-link" (click)="deleteSelectedProjects()"><clr-icon shape="close"></clr-icon>Delete</button>
+    <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> New Project</button>
     <create-project (create)="createProject($event)" (openModal)="openModal($event)"></create-project>
   </div>
-  <div class="col-xs-4">
-    <filter-project (filter)="filterProjects($event)"></filter-project>
-    <search-project (search)="searchProjects($event)"></search-project>
+  <div class="col-xs-5">
+    <clr-dropdown [clrMenuPosition]="'bottom-left'">
+      <button class="btn btn-sm btn-link" clrDropdownToggle>
+        {{projectTypes[currentFilteredType]}}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <div class="dropdown-menu">
+        <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(0)">{{projectTypes[0]}}</a>
+        <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(1)">{{projectTypes[1]}}</a>
+      </div>
+    </clr-dropdown>
+    <clr-icon shape="filter" style="position: relative; left: 15px;"></clr-icon><input style="padding-left: 20px;" type="text" placeholder="Search for projects" #searchProject (keyup.enter)="doSearchProjects(searchProject.value)" >
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <list-project (actionPerform)="actionPerform($event)"></list-project>
+    <list-project [projects]="changedProjects" (toggle)="toggleProject($event)" (delete)="deleteProject($event)"></list-project>
   </div>
 </div>

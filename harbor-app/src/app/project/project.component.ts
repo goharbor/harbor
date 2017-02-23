@@ -2,8 +2,16 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { Router }  from '@angular/router';
 
-import { ListProjectComponent } from './list-project/list-project.component';
+import { Project } from './project';
+import { ProjectService } from './project.service';
+
 import { CreateProjectComponent } from './create-project/create-project.component';
+
+import { ListProjectComponent } from './list-project/list-project.component';
+
+import { MessageService } from '../global-message/message.service';
+
+export const types: {} = { 0: 'My Projects', 1: 'Public Projects'};
 
 @Component({
     selector: 'project',
@@ -12,45 +20,74 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 })
 export class ProjectComponent implements OnInit {
     
-    @ViewChild(ListProjectComponent)
-    listProjects: ListProjectComponent;
+  selected = [];
+  changedProjects: Project[];
+  projectTypes = types;
+  
+  @ViewChild(CreateProjectComponent)
+  creationProject: CreateProjectComponent;
 
-    @ViewChild(CreateProjectComponent)
-    creationProject: CreateProjectComponent;
+  @ViewChild(ListProjectComponent)
+  listProject: ListProjectComponent;
 
-    lastFilteredType: number = 0;
+  currentFilteredType: number = 0;
+  lastFilteredType: number = 0;
 
-    openModal(): void {
-      this.creationProject.newProject();
+  constructor(private projectService: ProjectService, private messageService: MessageService){}
+
+  ngOnInit(): void {
+    this.retrieve('', this.lastFilteredType);
+  }
+
+  retrieve(name: string, isPublic: number): void {
+    this.projectService
+        .listProjects(name, isPublic)
+        .subscribe(
+          response => this.changedProjects = response,
+          error => this.messageService.announceMessage(error));
+  }
+
+  openModal(): void {
+    this.creationProject.newProject();
+  }
+  
+  createProject(created: boolean) {
+    if(created) {
+      this.retrieve('', this.lastFilteredType);
     }
+  }
 
-    deleteSelectedProjects(): void {
-      this.listProjects.deleteSelectedProjects();
-    }
+  doSearchProjects(projectName: string): void {
+    console.log('Search for project name:' + projectName);
+    this.retrieve(projectName, this.lastFilteredType);
+  }
 
-    createProject(created: boolean): void {
-      console.log('Project has been created:' + created);
-      this.listProjects.retrieve('', 0);
-    }
+  doFilterProjects(filteredType: number): void {
+    console.log('Filter projects with type:' + types[filteredType]);
+    this.lastFilteredType = filteredType;
+    this.currentFilteredType = filteredType;
+    this.retrieve('', this.lastFilteredType);
+  }
 
-    filterProjects(type: number): void {
-      this.lastFilteredType = type;
-      this.listProjects.retrieve('', type);
-      console.log('Projects were filtered by:' + type);
-      
-    }
+  toggleProject(p: Project) {
+    this.projectService
+        .toggleProjectPublic(p.project_id, p.public)
+        .subscribe(
+          response=>console.log('Successful toggled project_id:' + p.project_id),
+          error=>this.messageService.announceMessage(error)
+        );
+  }
 
-    searchProjects(projectName: string): void {
-      console.log('Search for project name:' + projectName);
-      this.listProjects.retrieve(projectName, this.lastFilteredType);
-    }
-
-    actionPerform(performed: boolean): void {
-      this.listProjects.retrieve('', 0);
-    }
-
-    ngOnInit(): void {
-      this.listProjects.retrieve('', 0); 
-    }
+  deleteProject(p: Project) {
+    this.projectService
+        .deleteProject(p.project_id)
+        .subscribe(
+          response=>{
+            console.log('Successful delete project_id:' + p.project_id);
+            this.retrieve('', this.lastFilteredType);
+          },
+          error=>console.log(error)
+        );
+  }
 
 }
