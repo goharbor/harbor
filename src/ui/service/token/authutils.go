@@ -33,14 +33,15 @@ import (
 )
 
 const (
-	issuer     = "registry-token-issuer"
-	privateKey = "/etc/ui/private_key.pem"
+	issuer = "registry-token-issuer"
 )
 
 var expiration int //minutes
+var privateKey string
 
 func init() {
 	expiration = config.TokenExpiration()
+	privateKey = "/etc/ui/private_key.pem"
 	log.Infof("token expiration: %d minutes", expiration)
 }
 
