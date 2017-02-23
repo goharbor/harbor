@@ -1,12 +1,12 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-between">
-      <div class="col-xs-4">
-        <button class="btn btn-sm" (click)="openAddMemberModal()">new user</button>
+      <div class="col-xs-4 flex-xs-middle">
+        <button class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> new user</button>
         <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
       </div>
-      <div class="col-xs-4">
-        <input type="text" placeholder="Search for users" #searchMember (keyup.enter)="doSearch(searchMember.value)">
+      <div class="col-xs-4 flex-xs-middle">
+        <clr-icon shape="filter" style="position: relative; left: 15px;"></clr-icon><input style="padding-left: 20px;" type="text" placeholder="Search for users" #searchMember (keyup.enter)="doSearch(searchMember.value)">
       </div>
     </div>
     <clr-datagrid>

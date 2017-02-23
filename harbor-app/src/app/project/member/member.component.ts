@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 
 import { SessionUser } from '../../shared/session-user';
 import { Member } from './member';
@@ -30,7 +30,7 @@ export class MemberComponent implements OnInit {
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
-  constructor(private route: ActivatedRoute, private memberService: MemberService, private messageService: MessageService) {
+  constructor(private route: ActivatedRoute, private router: Router, private memberService: MemberService, private messageService: MessageService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['memberResolver']);    
   }
@@ -40,7 +40,10 @@ export class MemberComponent implements OnInit {
         .listMembers(projectId, username)
         .subscribe(
           response=>this.members = response,
-          error=>console.log(error)
+          error=>{
+            this.router.navigate(['/harbor', 'projects']);
+            this.messageService.announceMessage('Failed to get project member with project ID:' + projectId);
+          }
         );
   }
 
