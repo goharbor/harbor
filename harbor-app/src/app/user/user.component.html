@@ -23,11 +23,11 @@
                 <clr-dg-cell>{{user.email}}</clr-dg-cell>
                 <clr-dg-cell>
                     {{user.creation_time}}
-                    <clr-dg-action-overflow>
+                    <harbor-action-overflow>
                         <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{user.has_admin_role?"Disable administrator":"Enable administrator"}}</a>
                         <div class="dropdown-divider"></div>
                         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user.user_id)">Delete</a>
-                    </clr-dg-action-overflow>
+                    </harbor-action-overflow>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{users.length}} users</clr-dg-footer>
