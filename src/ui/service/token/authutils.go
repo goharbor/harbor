@@ -33,9 +33,24 @@ import (
 )
 
 const (
-	issuer     = "registry-token-issuer"
-	privateKey = "/etc/ui/private_key.pem"
+	issuer                 = "registry-token-issuer"
+	defaultTokenExpiration = 30
 )
+
+var expiration int //minutes
+var privateKey string
+
+func init() {
+	var err error
+	expiration, err = config.TokenExpiration()
+	if err != nil {
+		log.Errorf("failed to get token expiration: %v, will use the default value %d",
+			err, defaultTokenExpiration)
+		expiration = defaultTokenExpiration
+	}
+	privateKey = "/etc/ui/private_key.pem"
+	log.Infof("token expiration: %d minutes", expiration)
+}
 
 // GetResourceActions ...
 func GetResourceActions(scopes []string) []*token.ResourceActions {

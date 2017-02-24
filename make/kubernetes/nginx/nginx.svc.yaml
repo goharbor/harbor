@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  ports:
+    - name: http
+      port: 80
+    - name: https
+      port: 443
+  selector:
+    name: nginx-apps

@@ -19,8 +19,10 @@ if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
 
-def validate(conf): 
+def validate(conf, args): 
     protocol = rcp.get("configuration", "ui_url_protocol")
+    if protocol != "https" and args.notary_mode:
+        raise Exception("Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
         if not rcp.has_option("configuration", "ssl_cert"):
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
@@ -54,15 +56,39 @@ def get_secret_key(path):
         print("generated and saved secret key")
     return key
 
+def prep_conf_dir(root, name):
+    absolute_path = os.path.join(root, name)
+    if not os.path.exists(absolute_path):
+        os.makedirs(absolute_path)
+    return absolute_path
+
+def render(src, dest, **kw):
+    t = Template(open(src, 'r').read())
+    with open(dest, 'w') as f:
+        f.write(t.substitute(**kw))
+    print("Generated configuration file: %s" % dest)
+
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "common/config")
 templates_dir = os.path.join(base_dir, "common/templates")
-    
-parser = argparse.ArgumentParser()
-parser.add_argument('-conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
+def delfile(src):
+    if os.path.isfile(src):
+        try:
+            os.remove(src)
+            print("Clearing the configuration file: %s" % src)
+        except:
+            pass
+    elif os.path.isdir(src):
+        for item in os.listdir(src):
+            itemsrc=os.path.join(src,item)
+            delfile(itemsrc)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
+parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 args = parser.parse_args()
 
+delfile(config_dir)
 #Read configurations
 conf = StringIO.StringIO()
 conf.write("[configuration]\n")
@@ -71,7 +97,7 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
-validate(rcp)
+validate(rcp, args)
 
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
@@ -131,31 +157,12 @@ adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):
     os.makedirs(os.path.join(config_dir, "adminserver"))
 
-ui_config_dir = os.path.join(config_dir,"ui")
-if not os.path.exists(ui_config_dir):
-    os.makedirs(os.path.join(config_dir, "ui"))
-
-db_config_dir = os.path.join(config_dir, "db")
-if not os.path.exists(db_config_dir):
-    os.makedirs(os.path.join(config_dir, "db"))
-
-job_config_dir = os.path.join(config_dir, "jobservice")
-if not os.path.exists(job_config_dir):
-    os.makedirs(job_config_dir)
-
-registry_config_dir = os.path.join(config_dir, "registry")
-if not os.path.exists(registry_config_dir):
-    os.makedirs(registry_config_dir)
-
-nginx_config_dir = os.path.join(config_dir, "nginx")
-if not os.path.exists(nginx_config_dir):
-    os.makedirs(nginx_config_dir)
-
-def render(src, dest, **kw):
-    t = Template(open(src, 'r').read())
-    with open(dest, 'w') as f:
-        f.write(t.substitute(**kw))
-    print("Generated configuration file: %s" % dest)
+ui_config_dir = prep_conf_dir(config_dir,"ui")
+db_config_dir = prep_conf_dir(config_dir, "db")
+job_config_dir = prep_conf_dir(config_dir, "jobservice")
+registry_config_dir = prep_conf_dir(config_dir, "registry")
+nginx_config_dir = prep_conf_dir (config_dir, "nginx")
+nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 
 adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
@@ -166,18 +173,6 @@ db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert") 
-def delfile(src):
-    if os.path.isfile(src):
-        try:
-            os.remove(src)
-            print("Clearing the configuration file: %s" % src)
-        except:
-            pass
-    elif os.path.isdir(src):
-        for item in os.listdir(src):
-            itemsrc=os.path.join(src,item)
-            delfile(itemsrc)
-delfile(config_dir)
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -300,7 +295,6 @@ if customize_crt == 'on':
 
         check_private_key_stat(path=private_key_pem)
         check_certificate_stat(path=root_crt)
-		
 else:
     print("Generated configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
@@ -308,5 +302,31 @@ else:
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 	
 FNULL.close()
+if args.notary_mode:
+    notary_config_dir = prep_conf_dir(config_dir, "notary")
+    notary_temp_dir = os.path.join(templates_dir, "notary") 
+    print("Copying sql file for notary DB")
+    if os.path.exists(os.path.join(notary_config_dir, "mysql-initdb.d")):
+        shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
+    shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
+    #TODO:generate certs?
+    print ("Copying certs for notary signer")
+    shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
+    shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
+    shutil.copy2(os.path.join(notary_temp_dir, "root-ca.crt"), notary_config_dir)
+
+    shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
+    print ("Copying notary signer configuration file")
+    shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
+    render(os.path.join(notary_temp_dir, "server-config.json"),
+        os.path.join(notary_config_dir, "server-config.json"),
+        token_endpoint=ui_url)
+
+    print ("Copying nginx configuration file for notary")
+    shutil.copy2(os.path.join(templates_dir, "nginx", "nginx.notary.conf"), nginx_conf_d)
+
+    default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
+    render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
+
 print("The configuration files are ready, please use docker-compose to start the service.")
 

@@ -8,6 +8,8 @@ services:
       - /var/log/harbor/:/var/log/docker/
     ports:
       - 1514:514
+    networks:
+      - harbor
   registry:
     image: library/registry:2.5.1
     container_name: registry
@@ -15,6 +17,8 @@ services:
     volumes:
       - /data/registry:/storage
       - ./common/config/registry/:/etc/registry/
+    networks:
+      - harbor
     environment:
       - GODEBUG=netdns=cgo
     command:
@@ -32,6 +36,8 @@ services:
     restart: always
     volumes:
       - /data/database:/var/lib/mysql
+    networks:
+      - harbor
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -68,6 +74,8 @@ services:
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
       - /data:/harbor_storage
       - /data/secretkey:/etc/ui/key
+    networks:
+      - harbor
     depends_on:
       - log
       - adminserver
@@ -87,6 +95,8 @@ services:
       - /data/job_logs:/var/log/jobs
       - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf
       - /data/secretkey:/etc/jobservice/key
+    networks:
+      - harbor
     depends_on:
       - ui
       - adminserver
@@ -101,6 +111,8 @@ services:
     restart: always
     volumes:
       - ./common/config/nginx:/etc/nginx
+    networks:
+      - harbor
     ports:
       - 80:80
       - 443:443
@@ -114,3 +126,7 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+networks:
+  harbor:
+    external: false
+

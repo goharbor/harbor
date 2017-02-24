@@ -66,10 +66,10 @@ func TestParseRepository(t *testing.T) {
 
 	repository = "library/test/ubuntu"
 	project, rest = ParseRepository(repository)
-	if project != "library/test" {
+	if project != "library" {
 		t.Errorf("unexpected project: %s != %s", project, "library/test")
 	}
-	if rest != "ubuntu" {
+	if rest != "test/ubuntu" {
 		t.Errorf("unexpected rest: %s != %s", rest, "ubuntu")
 	}
 

@@ -219,7 +219,7 @@ compile:check_environment $(COMPILETAG)
 
 prepare: 
 	@echo "preparing..."
-	@$(MAKEPATH)/$(PREPARECMD) -conf $(CONFIGPATH)/$(CONFIGFILE)
+	@$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE)
 	
 build_common: version
 	@echo "buildging db container for photon..."

@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-nginx-config
+data:
+  config: |
+    worker_processes auto;
+
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        tcp_nodelay on;
+
+        # this is necessary for us to be able to disable request buffering in all cases
+        proxy_http_version 1.1;
+
+
+        upstream registry {
+            server registry:5000;
+        }
+
+        upstream ui {
+            server ui:80;
+        }
+
+
+        server {
+            listen 443 ssl;
+            server_name {{hostname}};
+
+            # SSL
+            ssl_certificate /etc/nginx/https.crt;
+            ssl_certificate_key /etc/nginx/https.key;
+
+            # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+            ssl_protocols TLSv1.1 TLSv1.2;
+            ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
+            ssl_prefer_server_ciphers on;
+            ssl_session_cache shared:SSL:10m;
+
+            # disable any limits to avoid HTTP 413 for large image uploads
+            client_max_body_size 0;
+
+            # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)
+            chunked_transfer_encoding on;
+
+            location / {
+                proxy_pass http://ui/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+            
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+
+            location /v1/ {
+                return 404;
+            }
+
+            location /v2/ {
+                proxy_pass http://registry/v2/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                proxy_buffering off;
+                proxy_request_buffering off;
+
+            }
+
+            location /service/ {
+                proxy_pass http://ui/service/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+            
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+        }
+        server {
+            listen 80;
+            server_name {{hostname}};
+
+            # disable any limits to avoid HTTP 413 for large image uploads
+            client_max_body_size 0;
+
+            # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)
+            chunked_transfer_encoding on;
+
+            # rewrite ^/(.*) https://$server_name:443/$1 permanent;
+
+            location / {
+                proxy_pass http://ui/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+            
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+
+            location /v1/ {
+                return 404;
+            }
+
+            location /v2/ {
+                proxy_pass http://registry/v2/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                proxy_buffering off;
+                proxy_request_buffering off;
+
+            }
+
+            location /service/ {
+                proxy_pass http://ui/service/;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            
+                # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
+                proxy_set_header X-Forwarded-Proto $scheme;
+            
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+        }
+    }
+  pkey: |
+    {{4 https_pkey}}
+  cert: |
+    {{4 https_cert}}

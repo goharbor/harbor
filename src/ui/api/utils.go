@@ -149,7 +149,7 @@ func TriggerReplication(policyID int64, repository string,
 func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
 	repository = strings.TrimSpace(repository)
 	repository = strings.TrimRight(repository, "/")
-	projectName := repository[:strings.LastIndex(repository, "/")]
+	projectName, _ := utils.ParseRepository(repository)
 
 	project, err := dao.GetProjectByName(projectName)
 	if err != nil {

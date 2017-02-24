@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: mysql-rc
+  labels:
+    name: mysql-rc
+spec:
+  replicas: 1
+  selector:
+    name: mysql-apps
+  template:
+    metadata:
+      labels:
+        name: mysql-apps
+    spec:
+      containers:
+      - name: mysql-app
+        image: harbor/mysql
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-mysql-config
+               key: MYSQL_ROOT_PASSWORD
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: storage-pvc 

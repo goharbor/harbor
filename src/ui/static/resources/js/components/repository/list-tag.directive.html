@@ -1,6 +1,6 @@
 <div id="collapse//vm.associateId//" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading//vm.associateId//">
-  <div class="panel-body">
-    <table class="repository-table">
+  <div class="panel-body table-responsive">
+    <table class="table" style="margin-bottom: 0;">
       <thead>
         <th width="20%"><span class="glyphicon glyphicon-tags"></span> // 'tag' | tr //</th>
         <th width="15%" style="text-align: center;">// 'image_details' | tr //</th>
@@ -14,7 +14,11 @@
           <td>
             <pull-command repo-name="//vm.repoName//" tag="//tag//"></pull-command>   
           </td>
-          <td style="text-align: center;"><a ng-if="vm.roleId == 1" href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]"><span class="glyphicon glyphicon-trash"></span></a></td>
+          <td style="padding: 2px; padding-left: 6%;">
+            &nbsp;&nbsp;
+            <input ng-if="vm.roleId == 1" type="checkbox" ng-checked="vm.selected[vm.repoName][$index]" ng-click="vm.selectOne($index, tag)">
+            <a ng-show="vm.roleId == 1 && vm.selected[vm.repoName][$index]" href="javascript:void(0);" ng-click="vm.deleteTag({repoName: vm.repoName, tag: tag})" title="// 'delete_tag' | tr //" loading-progress hide-target="true" toggle-in-progress="vm.toggleInProgress[vm.repoName +'|'+ tag]"><span class="glyphicon glyphicon-trash"></span></a>
+          </td>
         </tr>
       </tbody>
     </table>

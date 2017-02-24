@@ -133,6 +133,20 @@
 			"revisionTime": "2014-06-04T03:18:26Z"
 		},
 		{
+			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
+			"revisionTime": "2016-10-29T20:57:26Z"
+		},
+		{
+			"checksumSHA1": "D37uI+U+FYvTJIdG2TTozXe7i7U=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "d2709f9f1f31ebcda9651b03077758c1f3a0018c",
+			"revisionTime": "2016-06-16T19:15:56Z",
+			"version": "v3.0.0",
+			"versionExact": "v3.0.0"
+		},
+		{
 			"checksumSHA1": "dyW7eJt0inBkevS8lV0eb0Pm6MA=",
 			"path": "github.com/docker/distribution",
 			"revision": "12acdf0a6c1e56d965ac6eb395d2bce687bf22fc",
@@ -301,6 +315,36 @@
 			"revisionTime": "2016-09-07T16:20:43Z"
 		},
 		{
+			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
+			"checksumSHA1": "K0crHygPTP42i1nLKWphSlvOQJw=",
+			"path": "github.com/stretchr/objx",
+			"revision": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94",
+			"revisionTime": "2015-09-28T12:21:52Z"
+		},
+		{
+			"checksumSHA1": "JXUVA1jky8ZX8w09p2t5KLs97Nc=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
+			"checksumSHA1": "fg3TzS9/QK3wZbzei3Z6O8XPLHg=",
+			"path": "github.com/stretchr/testify/http",
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
+			"checksumSHA1": "WGwMB6WljaeGKzuNCX5M4E8LADE=",
+			"path": "github.com/stretchr/testify/mock",
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
 			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
 			"path": "golang.org/x/crypto/pbkdf2",
 			"revision": "5f961cd492ac9d43fc33a8ef646bae79d113fd97",
@@ -327,6 +371,12 @@
 			"path": "gopkg.in/ldap.v2",
 			"revision": "8168ee085ee43257585e50c6441aadf54ecb2c9f",
 			"revisionTime": "2016-12-01T20:47:33Z"
+		},
+		{
+			"checksumSHA1": "4GRl0rg8N/CYMv8aadrBXVe0JSo=",
+			"path": "gopkg.in/stretchr/testify.v1",
+			"revision": "69483b4bd14f5845b5a1e55bca19e954e827f1d0",
+			"revisionTime": "2016-09-25T01:54:16Z"
 		}
 	],
 	"rootPath": "github.com/vmware/harbor/src"
