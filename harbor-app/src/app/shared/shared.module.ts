@@ -7,7 +7,7 @@ import { MessageComponent } from '../global-message/message.component';
 import { MessageService } from '../global-message/message.service';
 import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
 import { FilterComponent } from './filter/filter.component';
-import { DatagridActionOverflow } from './clg-dg-action-overflow/datagrid-action-overflow';
+import { HarborActionOverflow } from './harbor-action-overflow/harbor-action-overflow';
 
 @NgModule({
   imports: [
@@ -17,14 +17,14 @@ import { DatagridActionOverflow } from './clg-dg-action-overflow/datagrid-action
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    DatagridActionOverflow
+    HarborActionOverflow
   ],
   exports: [
     CoreModule,
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    DatagridActionOverflow
+    HarborActionOverflow
   ],
   providers: [SessionService, MessageService]
 })
