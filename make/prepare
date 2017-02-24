@@ -125,6 +125,7 @@ secret_key = get_secret_key(secretkey_path)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):
@@ -219,14 +220,15 @@ render(os.path.join(templates_dir, "adminserver", "env"),
 		verify_remote_cert=verify_remote_cert,
 		max_job_workers=max_job_workers,
 		ui_secret=ui_secret,
-        secret_key=secret_key,
+		jobservice_secret=jobservice_secret,
 		token_expiration=token_expiration,
 		use_compressed_js=use_compressed_js
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
 		ui_conf_env, 
-		ui_secret=ui_secret)
+		ui_secret=ui_secret,
+		jobservice_secret=jobservice_secret,)
 
 render(os.path.join(templates_dir, "registry", 
 		"config.yml"),
@@ -239,7 +241,8 @@ render(os.path.join(templates_dir, "db", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
-        ui_secret=ui_secret)
+        ui_secret=ui_secret,
+		jobservice_secret=jobservice_secret)
 		
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)

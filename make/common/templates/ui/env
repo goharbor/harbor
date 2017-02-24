@@ -1,4 +1,5 @@
 LOG_LEVEL=debug
 CONFIG_PATH=/etc/ui/app.conf
 UI_SECRET=$ui_secret
+JOBSERVICE_SECRET=$jobservice_secret
 GODEBUG=netdns=cgo

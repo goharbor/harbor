@@ -41,7 +41,7 @@ func Init() error {
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
-	mg = comcfg.NewManager(adminServerURL, UISecret(), true)
+	mg = comcfg.NewManager(adminServerURL, JobserviceSecret(), true)
 
 	if err := mg.Init(); err != nil {
 		return err
@@ -132,10 +132,16 @@ func SecretKey() (string, error) {
 	return keyProvider.Get(nil)
 }
 
-// UISecret returns a secret used for communication of UI, JobService
-// and Adminserver
+// UISecret returns a secret to mark UI when communicate with other
+// component
 func UISecret() string {
 	return os.Getenv("UI_SECRET")
+}
+
+// JobserviceSecret returns a secret to mark Jobservice when communicate with
+// other component
+func JobserviceSecret() string {
+	return os.Getenv("JOBSERVICE_SECRET")
 }
 
 // ExtEndpoint ...

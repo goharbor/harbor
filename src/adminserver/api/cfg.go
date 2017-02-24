@@ -26,7 +26,8 @@ import (
 )
 
 func isAuthenticated(r *http.Request) (bool, error) {
-	secret := os.Getenv("UI_SECRET")
+	uiSecret := os.Getenv("UI_SECRET")
+	jobserviceSecret := os.Getenv("JOBSERVICE_SECRET")
 	c, err := r.Cookie("secret")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -34,7 +35,8 @@ func isAuthenticated(r *http.Request) (bool, error) {
 		}
 		return false, err
 	}
-	return c != nil && c.Value == secret, nil
+	return c != nil && (c.Value == uiSecret ||
+		c.Value == jobserviceSecret), nil
 }
 
 // ListCfgs lists configurations
