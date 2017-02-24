@@ -77,11 +77,4 @@ export class HarborShellComponent implements OnInit {
             this.isSearchResultsOpened = false;
         }
     }
-
-    //Watch password whether changed
-    watchPwdChange(event: any): void {
-        if (event) {
-            this.navigator.logOut(true);
-        }
-    }
 }

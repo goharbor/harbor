@@ -11,6 +11,7 @@ import { MemberComponent } from './member/member.component';
 import { AuditLogComponent } from '../log/audit-log.component';
 
 import { BaseRoutingResolver } from '../base/base-routing-resolver.service';
+import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 const projectRoutes: Routes = [
   {
@@ -31,7 +32,7 @@ const projectRoutes: Routes = [
         path: 'projects/:id',
         component: ProjectDetailComponent,
         resolve: {
-          projectResolver: BaseRoutingResolver
+          projectResolver: ProjectRoutingResolver
         },
         children: [
           { path: 'repository', component: RepositoryComponent },
@@ -42,7 +43,12 @@ const projectRoutes: Routes = [
               memberResolver: BaseRoutingResolver
             }
           },
-          { path: 'log', component: AuditLogComponent }
+          { 
+            path: 'log', component: AuditLogComponent,
+            resolve: {
+              auditLogResolver: BaseRoutingResolver
+            }   
+          }
         ]
       }
     ]

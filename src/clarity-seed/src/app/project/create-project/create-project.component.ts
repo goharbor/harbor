@@ -37,9 +37,11 @@ export class CreateProjectComponent {
             if (error instanceof Response) { 
               switch(error.status) {
               case 409:
-                this.errorMessage = 'Project name already exists.'; break;
+                this.errorMessage = 'Project name already exists.'; 
+                break;
               case 400:
-                this.errorMessage = 'Project name is illegal.'; break;
+                this.errorMessage = 'Project name is illegal.'; 
+                break;
               default:
                 this.errorMessage = 'Unknown error for project name.';
                 this.messageService.announceMessage(this.errorMessage);

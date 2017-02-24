@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
@@ -9,53 +9,17 @@ import { ProjectService } from '../project.service';
 })
 export class ListProjectComponent {
 
-   projects: Project[];
-   errorMessage: string;
+   @Input() projects: Project[];
 
-   selected = [];
-
-   @Output() actionPerform = new EventEmitter<boolean>();
-
-   constructor(private projectService: ProjectService) {}
-
-   retrieve(name: string, isPublic: number): void {
-     this.projectService
-         .listProjects(name, isPublic)
-         .subscribe(
-           response => this.projects = response,
-           error => this.errorMessage = <any>error);
-   }
+   @Output() toggle = new EventEmitter<Project>();
+   @Output() delete = new EventEmitter<Project>();
 
    toggleProject(p: Project) {
-     this.projectService
-         .toggleProjectPublic(p.project_id, p.public)
-         .subscribe(
-           response=>console.log(response),
-           error=>console.log(error)
-         );
+     this.toggle.emit(p);
    }
 
    deleteProject(p: Project) {
-     this.projectService
-         .deleteProject(p.project_id)
-         .subscribe(
-           response=>{
-             console.log(response);
-             this.actionPerform.emit(true);
-           },
-           error=>console.log(error)
-         );
+     this.delete.emit(p);
    }
 
-   deleteSelectedProjects() {
-     this.selected.forEach(p=>this.deleteProject(p));
-   }
-
-   onEdit(p: Project) {
-
-   }
-
-   onDelete(p: Project) {
-
-   }
 }

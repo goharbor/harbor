@@ -22,6 +22,14 @@ export class ProjectService extends BaseService {
     super();
   }
 
+  getProject(projectId: number): Promise<Project> {
+    return this.http
+               .get(url_prefix + `/api/projects/${projectId}`)
+               .toPromise()
+               .then(response=>response.json() as Project)
+               .catch(error=>Observable.throw(error));
+  }
+
   listProjects(name: string, isPublic: number): Observable<Project[]>{    
     return this.http
                .get(url_prefix + `/api/projects?project_name=${name}&is_public=${isPublic}`, this.options)

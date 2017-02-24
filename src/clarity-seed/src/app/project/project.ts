@@ -29,5 +29,4 @@ export class Project {
     update_time: Date;
     current_user_role_id: number;
     repo_count: number;
-    selected: boolean;
 }

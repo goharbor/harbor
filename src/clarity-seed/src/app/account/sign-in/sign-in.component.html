@@ -31,8 +31,7 @@
             <div [class.visibility-hidden]="signInStatus != statusError" class="error active">
                 Invalid user name or password
             </div>
-            <button [class.visibility-hidden]="signInStatus === statusOnGoing" [disabled]="signInStatus === statusOnGoing" type="submit" class="btn btn-primary" (click)="signIn()">LOG IN</button>
-            <div [class.visibility-hidden]="signInStatus != statusOnGoing" class="progress loop progress-size-small"><progress></progress></div>
+            <button [disabled]="signInStatus === statusOnGoing" type="submit" class="btn btn-primary" (click)="signIn()">LOG IN</button>
             <a href="javascript:void(0)" class="signup" (click)="signUp()">Sign up for an account</a>
         </div>
     </form>

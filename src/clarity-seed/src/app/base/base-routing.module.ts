@@ -4,6 +4,7 @@ import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { ProjectComponent } from '../project/project.component';
+import { UserComponent } from '../user/user.component';
 
 import { BaseRoutingResolver } from './base-routing-resolver.service';
 
@@ -19,6 +20,13 @@ const baseRoutes: Routes = [
       {
         path: 'projects',
         component: ProjectComponent
+      },
+      {
+        path: 'users',
+        component: UserComponent,
+        resolve: {
+          projectsResolver: BaseRoutingResolver
+        }
       }
     ]
   }];
