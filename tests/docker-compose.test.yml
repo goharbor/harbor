@@ -21,3 +21,46 @@ services:
       - ./common/config/db/env
     ports:
       - 3306:3306
+  adminserver:
+    build:
+      context: ../
+      dockerfile: make/dev/adminserver/Dockerfile
+    env_file:
+      - ./common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/adminserver/
+      - /data/secretkey:/etc/adminserver/key
+    ports:
+      - 8888:80
+  ldap:
+    image: osixia/openldap:1.1.7
+    restart: always
+    environment:
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_BASE_DN: ""
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_PASSWORD: "config"
+      LDAP_READONLY_USER: "false"                                                                              
+      LDAP_BACKEND: "hdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    volumes:
+      - /var/lib/ldap
+      - /etc/ldap/slapd.d
+      - /container/service/slapd/assets/certs/
+    hostname: "example.org"
+    ports:
+      - 389:389
+      - 636:636

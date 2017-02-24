@@ -33,6 +33,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/jobservice/config"
 )
 
 const (
@@ -137,7 +138,7 @@ func (i *Initializer) enter() (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	srcClient, err := newRepositoryClient(i.srcURL, i.insecure, srcCred,
-		i.repository, "repository", i.repository, "pull", "push", "*")
+		config.InternalTokenServiceEndpoint(), i.repository, "repository", i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return "", err
@@ -146,7 +147,7 @@ func (i *Initializer) enter() (string, error) {
 
 	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
 	dstClient, err := newRepositoryClient(i.dstURL, i.insecure, dstCred,
-		i.repository, "repository", i.repository, "pull", "push", "*")
+		"", i.repository, "repository", i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return "", err
@@ -457,10 +458,11 @@ func (m *ManifestPusher) enter() (string, error) {
 	return StatePullManifest, nil
 }
 
-func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
+func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
+	tokenServiceEndpoint, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
-
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
+		tokenServiceEndpoint, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {

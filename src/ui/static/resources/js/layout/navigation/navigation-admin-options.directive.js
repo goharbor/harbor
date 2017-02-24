@@ -27,7 +27,9 @@
     vm.path = $location.path();
   }
   
-  function navigationAdminOptions() {
+  navigationAdminOptions.$inject = ['I18nService'];
+  
+  function navigationAdminOptions(I18nService) {
     var directive = {
       'restrict': 'E',
       'templateUrl': '/static/resources/js/layout/navigation/navigation-admin-options.directive.html',
@@ -44,7 +46,14 @@
     function link(scope, element, attrs, ctrl) {
       var visited = ctrl.path.substring(1);  
       console.log('visited:' + visited);
-
+      
+      var lang = I18nService().getCurrentLanguage();
+      ctrl.customPos = {};
+      
+      if(lang === 'zh-CN') {
+        ctrl.customPos = {'position': 'relative', 'left': '14%'};
+      }
+      
       if(visited) {
         element.find('a[tag="' + visited + '"]').addClass('active');
       }else{

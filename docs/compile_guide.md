@@ -127,7 +127,6 @@ compile_ui          | compile ui binary
 compile_jobservice  | compile jobservice binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
-build_ubuntu        | build Harbor docker images from Ubuntu base image
 install             | compile binaries, build images, prepare specific version of compose file and startup Harbor instance
 start               | startup Harbor instance 
 down                | shutdown Harbor instance
@@ -142,13 +141,6 @@ cleanversiontag     | remove specific version tag
 cleanpackage        | remove online/offline install package
 
 #### EXAMPLE:
-
-#### Build Harbor images based on Ubuntu
-
-   ```sh
-      $ make build -e BASEIMAGE=ubuntu
-
-   ```
 
 #### Push Harbor images to specific registry server
 

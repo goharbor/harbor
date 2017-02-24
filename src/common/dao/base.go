@@ -17,11 +17,12 @@ package dao
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -39,27 +40,32 @@ type Database interface {
 }
 
 // InitDatabase initializes the database
-func InitDatabase() {
-	database, err := getDatabase()
+func InitDatabase(database *models.Database) error {
+	db, err := getDatabase(database)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	log.Infof("initializing database: %s", database.String())
-	if err := database.Register(); err != nil {
-		panic(err)
+	log.Infof("initializing database: %s", db.String())
+	if err := db.Register(); err != nil {
+		return err
 	}
+	log.Info("initialize database completed")
+	return nil
 }
 
-func getDatabase() (db Database, err error) {
-	switch config.Database() {
+func getDatabase(database *models.Database) (db Database, err error) {
+	switch database.Type {
 	case "", "mysql":
-		db = NewMySQL(config.MySQL().Host, config.MySQL().Port, config.MySQL().User,
-			config.MySQL().Password, config.MySQL().Database)
+		db = NewMySQL(database.MySQL.Host,
+			strconv.Itoa(database.MySQL.Port),
+			database.MySQL.Username,
+			database.MySQL.Password,
+			database.MySQL.Database)
 	case "sqlite":
-		db = NewSQLite(config.SQLite().FilePath)
+		db = NewSQLite(database.SQLite.File)
 	default:
-		err = fmt.Errorf("invalid database: %s", config.Database())
+		err = fmt.Errorf("invalid database: %s", database.Type)
 	}
 	return
 }

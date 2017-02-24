@@ -40,7 +40,7 @@ func TestAuthorizeOfStandardTokenAuthorizer(t *testing.T) {
 	})
 	defer server.Close()
 
-	authorizer := NewStandardTokenAuthorizer(nil, false, "repository", "library/ubuntu", "pull")
+	authorizer := NewStandardTokenAuthorizer(nil, false, "", "repository", "library/ubuntu", "pull")
 	req, err := http.NewRequest("GET", "http://registry", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)

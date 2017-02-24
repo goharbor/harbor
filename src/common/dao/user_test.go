@@ -38,6 +38,11 @@ func TestDeleteUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to register user: %v", err)
 	}
+	defer func(id int64) {
+		if err := deleteUser(id); err != nil {
+			t.Fatalf("failed to delete user %d: %v", id, err)
+		}
+	}(id)
 
 	err = DeleteUser(int(id))
 	if err != nil {
@@ -66,4 +71,12 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("unexpected email: %s != %s", user.Email,
 			expected)
 	}
+}
+
+func deleteUser(id int64) error {
+	if _, err := GetOrmer().QueryTable(&models.User{}).
+		Filter("UserID", id).Delete(); err != nil {
+		return err
+	}
+	return nil
 }

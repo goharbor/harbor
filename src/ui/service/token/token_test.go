@@ -14,9 +14,16 @@ import (
 	"path"
 	"runtime"
 	"testing"
+
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 func TestMain(m *testing.M) {
+	if err := config.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
+
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
@@ -73,7 +80,6 @@ func TestMakeToken(t *testing.T) {
 	pk, crt := getKeyAndCertPath()
 	//overwrite the config values for testing.
 	privateKey = pk
-	expiration = 10
 	ra := []*token.ResourceActions{&token.ResourceActions{
 		Type:    "repository",
 		Name:    "10.117.4.142/notary-test/hello-world-2",

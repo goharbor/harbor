@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -23,6 +25,11 @@ func (pc *ProjectController) Get() {
 			isSysAdmin = false
 		}
 	}
-	pc.Data["CanCreate"] = !config.OnlyAdminCreateProject() || isSysAdmin
+	onlyAdmin, err := config.OnlyAdminCreateProject()
+	if err != nil {
+		log.Errorf("failed to determine whether only admin can create projects: %v", err)
+		pc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	pc.Data["CanCreate"] = !onlyAdmin || isSysAdmin
 	pc.Forward("page_title_project", "project.htm")
 }

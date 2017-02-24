@@ -4,18 +4,17 @@
 #
 # all:			prepare env, compile binarys, build images and install images 
 # prepare: 		prepare env
-# compile: 		compile ui and jobservice code
+# compile: 		compile adminserver, ui and jobservice code
 #
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
 #							golang:1.7.3
-# compile_ui, compile_jobservice: compile specific binary
+# compile_adminserver, compile_ui, compile_jobservice: compile specific binary
 #
 # build: 		build Harbor docker images (defuault: build_photon)
 #			for example: make build -e BASEIMAGE=photon
-# build_photon:	build Harbor docker images from photon bsaeimage
-# build_ubuntu: build Harbor docker images from ubuntu baseimage
+# build_photon:	build Harbor docker images from photon baseimage
 # 
 # install:		include compile binarys, build images, prepare specific \ 
 #				version composefile and startup Harbor instance
@@ -46,7 +45,7 @@
 #
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
-# cleanbinary:	remove ui and jobservice binary
+# cleanbinary:	remove adminserver, ui and jobservice binary
 # cleanimage: 	remove Harbor images 
 # cleandockercomposefile:	
 #				remove specific version docker-compose 
@@ -100,14 +99,19 @@ GOBUILDIMAGE=reg.mydomain.com/library/harborgo[:tag]
 GOBUILDPATH=$(GOBASEPATH)/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
 GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
+GOBUILDPATH_ADMINSERVER=$(GOBUILDPATH)/src/adminserver
 GOBUILDPATH_UI=$(GOBUILDPATH)/src/ui
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
+GOBUILDMAKEPATH_ADMINSERVER=$(GOBUILDMAKEPATH)/dev/adminserver
 GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
 GOLANGDOCKERFILENAME=Dockerfile.golang
 
 # binary 
+ADMINSERVERSOURCECODE=$(SRCPATH)/adminserver
+ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
+ADMINSERVERBINARYNAME=harbor_adminserver
 UISOURCECODE=$(SRCPATH)/ui
 UIBINARYPATH=$(MAKEDEVPATH)/ui
 UIBINARYNAME=harbor_ui
@@ -125,7 +129,6 @@ CONFIGFILE=harbor.cfg
 
 # makefile
 MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
-MAKEFILEPATH_UBUNTU=$(MAKEPATH)/ubuntu
 
 # common dockerfile
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
@@ -133,6 +136,7 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 
 # docker image name
+DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
 DOCKERIMAGENAME_UI=vmware/harbor-ui
 DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
@@ -177,6 +181,11 @@ version:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
+compile_adminserver:
+	@echo "compiling binary for adminserver..."
+	@$(GOBUILD) -o $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) $(ADMINSERVERSOURCECODE)
+	@echo "Done."
+
 compile_ui:
 	@echo "compiling binary for ui..."
 	@$(GOBUILD) -o $(UIBINARYPATH)/$(UIBINARYNAME) $(UISOURCECODE)
@@ -187,9 +196,15 @@ compile_jobservice:
 	@$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
 	@echo "Done."
 	
-compile_normal: compile_ui compile_jobservice
+compile_normal: compile_adminserver compile_ui compile_jobservice
 
 compile_golangimage:
+	@echo "compiling binary for adminserver (golang image)..."
+	@echo $(GOBASEPATH)
+	@echo $(GOBUILDPATH)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
+	@echo "Done."
+
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
@@ -214,9 +229,6 @@ build_common: version
 build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
 	
-build_ubuntu: build_common
-	make -f $(MAKEFILEPATH_UBUNTU)/Makefile build -e DEVFLAG=$(DEVFLAG)
-	
 build: build_$(BASEIMAGE)
 	
 modify_composefile: 
@@ -240,7 +252,6 @@ package_online: modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
@@ -264,6 +275,7 @@ package_offline: compile build modify_composefile
 	
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -272,7 +284,6 @@ package_offline: compile build modify_composefile
 
 	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
 			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
 			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
 			  --exclude=$(HARBORPKG)/checkenv.sh \
@@ -285,6 +296,11 @@ package_offline: compile build modify_composefile
 
 pushimage:
 	@echo "pushing harbor images ..."
+	@$(DOCKERTAG) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
+	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
+	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
+
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
@@ -317,11 +333,13 @@ down:
 
 cleanbinary:
 	@echo "cleaning binary..."
+	@if [ -f $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ] ; then rm $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ; fi
 	@if [ -f $(UIBINARYPATH)/$(UIBINARYNAME) ] ; then rm $(UIBINARYPATH)/$(UIBINARYNAME) ; fi
 	@if [ -f $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ] ; then rm $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ; fi
 
 cleanimage:
 	@echo "cleaning image for photon..."
+	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)

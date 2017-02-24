@@ -29,6 +29,7 @@
     switch(currentTarget) {
     case 'destinations':
     case 'replication':
+    case 'configuration':
       $location.path('/' + currentTarget);
       vm.target = currentTarget;
       break;

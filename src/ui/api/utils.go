@@ -20,11 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -242,7 +240,7 @@ func addAuthentication(req *http.Request) {
 // SyncRegistry syncs the repositories of registry with database.
 func SyncRegistry() error {
 
-	log.Debugf("Start syncing repositories from registry to DB... ")
+	log.Infof("Start syncing repositories from registry to DB... ")
 
 	reposInRegistry, err := catalog()
 	if err != nil {
@@ -304,7 +302,7 @@ func SyncRegistry() error {
 		}
 	}
 
-	log.Debugf("Sync repositories from registry to DB is done.")
+	log.Infof("Sync repositories from registry to DB is done.")
 	return nil
 }
 
@@ -350,7 +348,10 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			}
 
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint := config.InternalRegistryURL()
+			endpoint, err := config.RegistryURL()
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
 			client, err := cache.NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
@@ -372,7 +373,10 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			j++
 		} else {
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint := config.InternalRegistryURL()
+			endpoint, err := config.RegistryURL()
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
 			client, err := cache.NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
@@ -422,32 +426,18 @@ func projectExists(repository string) (bool, error) {
 }
 
 func initRegistryClient() (r *registry.Registry, err error) {
-	endpoint := config.InternalRegistryURL()
-
-	addr := endpoint
-	if strings.Contains(endpoint, "/") {
-		addr = endpoint[strings.LastIndex(endpoint, "/")+1:]
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
 	}
 
-	ch := make(chan int, 1)
-	go func() {
-		var err error
-		var c net.Conn
-		for {
-			c, err = net.DialTimeout("tcp", addr, 20*time.Second)
-			if err == nil {
-				c.Close()
-				ch <- 1
-			} else {
-				log.Errorf("failed to connect to registry client, retry after 2 seconds :%v", err)
-				time.Sleep(2 * time.Second)
-			}
-		}
-	}()
-	select {
-	case <-ch:
-	case <-time.After(60 * time.Second):
-		panic("Failed to connect to registry client after 60 seconds")
+	addr := endpoint
+	if strings.Contains(endpoint, "://") {
+		addr = strings.Split(endpoint, "://")[1]
+	}
+
+	if err := utils.TestTCPConn(addr, 60, 2); err != nil {
+		return nil, err
 	}
 
 	registryClient, err := cache.NewRegistryClient(endpoint, true, "admin",

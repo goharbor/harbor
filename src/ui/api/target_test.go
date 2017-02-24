@@ -30,17 +30,18 @@ func TestTargetsPost(t *testing.T) {
 
 	//-------------------case 1 : response code = 201------------------------//
 	fmt.Println("case 1 : response code = 201")
-	httpStatusCode, err = apiTest.AddTargets(*admin, *repTargets)
+	httpStatusCode, body, err := apiTest.AddTargets(*admin, *repTargets)
 	if err != nil {
 		t.Error("Error whihle add targets", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(201), httpStatusCode, "httpStatusCode should be 201")
+		t.Log(body)
 	}
 
 	//-----------case 2 : response code = 409,name is already used-----------//
 	fmt.Println("case 2 : response code = 409,name is already used")
-	httpStatusCode, err = apiTest.AddTargets(*admin, *repTargets)
+	httpStatusCode, _, err = apiTest.AddTargets(*admin, *repTargets)
 	if err != nil {
 		t.Error("Error whihle add targets", err.Error())
 		t.Log(err)
@@ -51,7 +52,7 @@ func TestTargetsPost(t *testing.T) {
 	//-----------case 3 : response code = 409,name is already used-----------//
 	fmt.Println("case 3 : response code = 409,endPoint is already used")
 	repTargets.Username = "errName"
-	httpStatusCode, err = apiTest.AddTargets(*admin, *repTargets)
+	httpStatusCode, _, err = apiTest.AddTargets(*admin, *repTargets)
 	if err != nil {
 		t.Error("Error whihle add targets", err.Error())
 		t.Log(err)
@@ -61,7 +62,7 @@ func TestTargetsPost(t *testing.T) {
 
 	//--------case 4 : response code = 401,User need to log in first.--------//
 	fmt.Println("case 4 : response code = 401,User need to log in first.")
-	httpStatusCode, err = apiTest.AddTargets(*unknownUsr, *repTargets)
+	httpStatusCode, _, err = apiTest.AddTargets(*unknownUsr, *repTargets)
 	if err != nil {
 		t.Error("Error whihle add targets", err.Error())
 		t.Log(err)

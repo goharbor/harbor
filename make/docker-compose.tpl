@@ -47,6 +47,24 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
+  adminserver:
+    image: vmware/harbor-adminserver
+    container_name: harbor-adminserver
+    env_file:
+      - ./common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/adminserver/
+      - /data/secretkey:/etc/adminserver/key
+    networks:
+      - harbor
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "adminserver"
   ui:
     image: vmware/harbor-ui
     container_name: harbor-ui
@@ -57,10 +75,13 @@ services:
       - ./common/config/ui/app.conf:/etc/ui/app.conf
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
       - /data:/harbor_storage
+      - /data/secretkey:/etc/ui/key
     networks:
       - harbor
     depends_on:
       - log
+      - adminserver
+      - registry
     logging:
       driver: "syslog"
       options:  
@@ -75,10 +96,12 @@ services:
     volumes:
       - /data/job_logs:/var/log/jobs
       - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf
+      - /data/secretkey:/etc/jobservice/key
     networks:
       - harbor
     depends_on:
       - ui
+      - adminserver
     logging:
       driver: "syslog"
       options:  

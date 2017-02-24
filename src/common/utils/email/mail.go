@@ -13,17 +13,20 @@
    limitations under the License.
 */
 
-package utils
+package email
 
 import (
 	"bytes"
 	"crypto/tls"
-	"strings"
+	"strconv"
+	//"strings"
 
 	"net/smtp"
 	"text/template"
 
-	"github.com/astaxie/beego"
+	//"github.com/astaxie/beego"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // Mail holds information about content of Email
@@ -34,24 +37,15 @@ type Mail struct {
 	Message string
 }
 
-// MailConfig holds information about Email configurations
-type MailConfig struct {
-	Identity string
-	Host     string
-	Port     string
-	Username string
-	Password string
-	TLS      bool
-}
-
-var mc MailConfig
+var mc models.Email
 
 // SendMail sends Email according to the configurations
 func (m Mail) SendMail() error {
-
-	if mc.Host == "" {
-		loadConfig()
+	mc, err := config.Email()
+	if err != nil {
+		return err
 	}
+
 	mailTemplate, err := template.ParseFiles("views/mail.tpl")
 	if err != nil {
 		return err
@@ -64,7 +58,7 @@ func (m Mail) SendMail() error {
 	content := mailContent.Bytes()
 
 	auth := smtp.PlainAuth(mc.Identity, mc.Username, mc.Password, mc.Host)
-	if mc.TLS {
+	if mc.SSL {
 		err = sendMailWithTLS(m, auth, content)
 	} else {
 		err = sendMail(m, auth, content)
@@ -74,11 +68,11 @@ func (m Mail) SendMail() error {
 }
 
 func sendMail(m Mail, auth smtp.Auth, content []byte) error {
-	return smtp.SendMail(mc.Host+":"+mc.Port, auth, m.From, m.To, content)
+	return smtp.SendMail(mc.Host+":"+strconv.Itoa(mc.Port), auth, m.From, m.To, content)
 }
 
 func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
-	conn, err := tls.Dial("tcp", mc.Host+":"+mc.Port, nil)
+	conn, err := tls.Dial("tcp", mc.Host+":"+strconv.Itoa(mc.Port), nil)
 	if err != nil {
 		return err
 	}
@@ -123,6 +117,7 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 	return client.Quit()
 }
 
+/*
 func loadConfig() {
 	config, err := beego.AppConfig.GetSection("mail")
 	if err != nil {
@@ -142,3 +137,4 @@ func loadConfig() {
 		TLS:      useTLS,
 	}
 }
+*/

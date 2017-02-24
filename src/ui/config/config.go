@@ -13,145 +13,243 @@
    limitations under the License.
 */
 
-// Package config provides methods to get configurations required by code in src/ui
 package config
 
 import (
-	"strconv"
-	"strings"
+	"encoding/json"
+	"os"
 
-	commonConfig "github.com/vmware/harbor/src/common/config"
+	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// LDAPSetting wraps the setting of an LDAP server
-type LDAPSetting struct {
-	URL            string
-	BaseDn         string
-	SearchDn       string
-	SearchPwd      string
-	UID            string
-	Filter         string
-	Scope          string
-	ConnectTimeout string
-}
+const defaultKeyPath string = "/etc/ui/key"
 
-type uiParser struct{}
+var (
+	mg          *comcfg.Manager
+	keyProvider comcfg.KeyProvider
+)
 
-// Parse parses the auth settings url settings and other configuration consumed by code under src/ui
-func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) error {
-	mode := raw["AUTH_MODE"]
-	if mode == "ldap_auth" {
-		setting := LDAPSetting{
-			URL:            raw["LDAP_URL"],
-			BaseDn:         raw["LDAP_BASE_DN"],
-			SearchDn:       raw["LDAP_SEARCH_DN"],
-			SearchPwd:      raw["LDAP_SEARCH_PWD"],
-			UID:            raw["LDAP_UID"],
-			Filter:         raw["LDAP_FILTER"],
-			Scope:          raw["LDAP_SCOPE"],
-			ConnectTimeout: raw["LDAP_CONNECT_TIMEOUT"],
-		}
-		config["ldap"] = setting
+// Init configurations
+func Init() error {
+	//init key provider
+	initKeyProvider()
+
+	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	if len(adminServerURL) == 0 {
+		adminServerURL = "http://adminserver"
 	}
-	config["auth_mode"] = mode
-	var tokenExpiration = 30 //minutes
-	if len(raw["TOKEN_EXPIRATION"]) > 0 {
-		i, err := strconv.Atoi(raw["TOKEN_EXPIRATION"])
-		if err != nil {
-			log.Warningf("failed to parse token expiration: %v, using default value %d", err, tokenExpiration)
-		} else if i <= 0 {
-			log.Warningf("invalid token expiration, using default value: %d minutes", tokenExpiration)
-		} else {
-			tokenExpiration = i
-		}
+	log.Debugf("admin server URL: %s", adminServerURL)
+	mg = comcfg.NewManager(adminServerURL, UISecret(), true)
+
+	if err := mg.Init(); err != nil {
+		return err
 	}
-	config["token_exp"] = tokenExpiration
-	config["admin_password"] = raw["HARBOR_ADMIN_PASSWORD"]
-	config["ext_reg_url"] = raw["EXT_REG_URL"]
-	config["ui_secret"] = raw["UI_SECRET"]
-	config["secret_key"] = raw["SECRET_KEY"]
-	config["self_registration"] = raw["SELF_REGISTRATION"] != "off"
-	config["admin_create_project"] = strings.ToLower(raw["PROJECT_CREATION_RESTRICTION"]) == "adminonly"
-	registryURL := raw["REGISTRY_URL"]
-	registryURL = strings.TrimRight(registryURL, "/")
-	config["internal_registry_url"] = registryURL
-	jobserviceURL := raw["JOB_SERVICE_URL"]
-	jobserviceURL = strings.TrimRight(jobserviceURL, "/")
-	config["internal_jobservice_url"] = jobserviceURL
+
+	if _, err := mg.Load(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-var uiConfig *commonConfig.Config
+func initKeyProvider() {
+	path := os.Getenv("KEY_PATH")
+	if len(path) == 0 {
+		path = defaultKeyPath
+	}
+	log.Infof("key path: %s", path)
 
-func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "LDAP_CONNECT_TIMEOUT", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
-	uiConfig = &commonConfig.Config{
-		Config: make(map[string]interface{}),
-		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},
-		Parser: &uiParser{},
-	}
-	if err := uiConfig.Load(); err != nil {
-		panic(err)
-	}
+	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
-// Reload ...
-func Reload() error {
-	return uiConfig.Load()
+// Load configurations
+func Load() error {
+	_, err := mg.Load()
+	return err
+}
+
+// Upload uploads all system configutations to admin server
+func Upload(cfg map[string]interface{}) error {
+	b, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	return mg.Upload(b)
+}
+
+// GetSystemCfg returns the system configurations
+func GetSystemCfg() (map[string]interface{}, error) {
+	raw, err := mg.Loader.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := mg.Parser.Parse(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // AuthMode ...
-func AuthMode() string {
-	return uiConfig.Config["auth_mode"].(string)
+func AuthMode() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.AUTHMode].(string), nil
 }
 
 // LDAP returns the setting of ldap server
-func LDAP() LDAPSetting {
-	return uiConfig.Config["ldap"].(LDAPSetting)
+func LDAP() (*models.LDAP, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	ldap := &models.LDAP{}
+	ldap.URL = cfg[comcfg.LDAPURL].(string)
+	ldap.SearchDN = cfg[comcfg.LDAPSearchDN].(string)
+	ldap.SearchPassword = cfg[comcfg.LDAPSearchPwd].(string)
+	ldap.BaseDN = cfg[comcfg.LDAPBaseDN].(string)
+	ldap.UID = cfg[comcfg.LDAPUID].(string)
+	ldap.Filter = cfg[comcfg.LDAPFilter].(string)
+	ldap.Scope = int(cfg[comcfg.LDAPScope].(float64))
+	ldap.Timeout = int(cfg[comcfg.LDAPTimeout].(float64))
+
+	return ldap, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
-func TokenExpiration() int {
-	return uiConfig.Config["token_exp"].(int)
+func TokenExpiration() (int, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return 0, err
+	}
+	return int(cfg[comcfg.TokenExpiration].(float64)), nil
 }
 
-// ExtRegistryURL returns the registry URL to exposed to external client
-func ExtRegistryURL() string {
-	return uiConfig.Config["ext_reg_url"].(string)
-}
-
-// UISecret returns the value of UI secret cookie, used for communication between UI and JobService
-func UISecret() string {
-	return uiConfig.Config["ui_secret"].(string)
+// ExtEndpoint returns the external URL of Harbor: protocal://host:port
+func ExtEndpoint() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.ExtEndpoint].(string), nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
-func SecretKey() string {
-	return uiConfig.Config["secret_key"].(string)
+func SecretKey() (string, error) {
+	return keyProvider.Get(nil)
 }
 
 // SelfRegistration returns the enablement of self registration
-func SelfRegistration() bool {
-	return uiConfig.Config["self_registration"].(bool)
+func SelfRegistration() (bool, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return false, err
+	}
+	return cfg[comcfg.SelfRegistration].(bool), nil
 }
 
-// InternalRegistryURL returns registry URL for internal communication between Harbor containers
-func InternalRegistryURL() string {
-	return uiConfig.Config["internal_registry_url"].(string)
+// RegistryURL ...
+func RegistryURL() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.RegistryURL].(string), nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return uiConfig.Config["internal_jobservice_url"].(string)
+	return "http://jobservice"
+}
+
+// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
+func InternalTokenServiceEndpoint() string {
+	return "http://ui/service/token"
 }
 
 // InitialAdminPassword returns the initial password for administrator
-func InitialAdminPassword() string {
-	return uiConfig.Config["admin_password"].(string)
+func InitialAdminPassword() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[comcfg.AdminInitialPassword].(string), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
-func OnlyAdminCreateProject() bool {
-	return uiConfig.Config["admin_create_project"].(bool)
+func OnlyAdminCreateProject() (bool, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return true, err
+	}
+	return cfg[comcfg.ProjectCreationRestriction].(string) == comcfg.ProCrtRestrAdmOnly, nil
+}
+
+// VerifyRemoteCert returns bool value.
+func VerifyRemoteCert() (bool, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return true, err
+	}
+	return cfg[comcfg.VerifyRemoteCert].(bool), nil
+}
+
+// Email returns email server settings
+func Email() (*models.Email, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	email := &models.Email{}
+	email.Host = cfg[comcfg.EmailHost].(string)
+	email.Port = int(cfg[comcfg.EmailPort].(float64))
+	email.Username = cfg[comcfg.EmailUsername].(string)
+	email.Password = cfg[comcfg.EmailPassword].(string)
+	email.SSL = cfg[comcfg.EmailSSL].(bool)
+	email.From = cfg[comcfg.EmailFrom].(string)
+	email.Identity = cfg[comcfg.EmailIdentity].(string)
+
+	return email, nil
+}
+
+// Database returns database settings
+func Database() (*models.Database, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return nil, err
+	}
+	database := &models.Database{}
+	database.Type = cfg[comcfg.DatabaseType].(string)
+	mysql := &models.MySQL{}
+	mysql.Host = cfg[comcfg.MySQLHost].(string)
+	mysql.Port = int(cfg[comcfg.MySQLPort].(float64))
+	mysql.Username = cfg[comcfg.MySQLUsername].(string)
+	mysql.Password = cfg[comcfg.MySQLPassword].(string)
+	mysql.Database = cfg[comcfg.MySQLDatabase].(string)
+	database.MySQL = mysql
+	sqlite := &models.SQLite{}
+	sqlite.File = cfg[comcfg.SQLiteFile].(string)
+	database.SQLite = sqlite
+
+	return database, nil
+}
+
+// UISecret returns a secret to mark UI when communicate with
+// other component
+func UISecret() string {
+	return os.Getenv("UI_SECRET")
+}
+
+// JobserviceSecret returns a secret to mark Jobservice when communicate with
+// other component
+func JobserviceSecret() string {
+	return os.Getenv("JOBSERVICE_SECRET")
 }

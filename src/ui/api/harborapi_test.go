@@ -14,6 +14,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
@@ -57,7 +58,14 @@ type usrInfo struct {
 }
 
 func init() {
-	dao.InitDatabase()
+	if err := config.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
+	database, err := config.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configurations: %v", err)
+	}
+	dao.InitDatabase(database)
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
@@ -90,6 +98,8 @@ func init() {
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
+	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
+	beego.Router("/api/configurations", &ConfigAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -512,7 +522,7 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, error) {
 
 //-------------------------Targets Test---------------------------------------//
 //Create a new replication target
-func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, error) {
+func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, string, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/targets"
@@ -520,8 +530,8 @@ func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (i
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(repTarget)
 
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, string(body), err
 }
 
 //List filters targets by name
@@ -896,4 +906,40 @@ func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, body, err
+}
+
+//Post ldap test
+func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, error) {
+
+	_sling := sling.New().Post(a.basePath)
+
+	// create path and map variables
+	path := "/api/ldap/ping"
+
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(ldapConf)
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
+	_sling := sling.New().Base(a.basePath).Get("/api/configurations")
+
+	cfg := map[string]*value{}
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err == nil && code == 200 {
+		err = json.Unmarshal(body, &cfg)
+	}
+	return code, cfg, err
+}
+
+func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]string) (int, error) {
+	_sling := sling.New().Base(a.basePath).Put("/api/configurations").BodyJSON(cfg)
+
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return code, err
 }

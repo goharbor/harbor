@@ -66,7 +66,7 @@ func (ra *RepositoryAPI) Get() {
 	if project.Public == 0 {
 		var userID int
 
-		if svc_utils.VerifySecret(ra.Ctx.Request) {
+		if svc_utils.VerifySecret(ra.Ctx.Request, config.JobserviceSecret()) {
 			userID = 1
 		} else {
 			userID = ra.ValidateUser()
@@ -361,11 +361,19 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint := config.InternalRegistryURL()
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
+
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		return nil, err
+	}
 
 	username, password, ok := ra.Ctx.Request.BasicAuth()
 	if ok {
-		return newRepositoryClient(endpoint, api.GetIsInsecure(), username, password,
+		return newRepositoryClient(endpoint, !verify, username, password,
 			repoName, "repository", repoName, "pull", "push", "*")
 	}
 
@@ -374,7 +382,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, api.GetIsInsecure(), username, repoName,
+	return cache.NewRepositoryClient(endpoint, !verify, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 
@@ -434,7 +442,9 @@ func newRepositoryClient(endpoint string, insecure bool, username, password, rep
 	scopeActions ...string) (*registry.Repository, error) {
 
 	credential := auth.NewBasicAuthCredential(username, password)
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
+		config.InternalTokenServiceEndpoint(), scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {

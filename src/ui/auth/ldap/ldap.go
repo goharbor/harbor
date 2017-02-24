@@ -16,18 +16,15 @@
 package ldap
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
-	"crypto/tls"
-
-	"github.com/vmware/harbor/src/common/utils/log"
-
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 
@@ -41,9 +38,8 @@ const metaChars = "&|!=~*<>()"
 
 // Connect checks the LDAP configuration directives, and connects to the LDAP URL
 // Returns an LDAP connection
-func Connect() (*goldap.Conn, error) {
-
-	ldapURL := config.LDAP().URL
+func Connect(settings *models.LDAP) (*goldap.Conn, error) {
+	ldapURL := settings.URL
 	if ldapURL == "" {
 		return nil, errors.New("can not get any available LDAP_URL")
 	}
@@ -70,13 +66,10 @@ func Connect() (*goldap.Conn, error) {
 	}
 
 	// Sets a Dial Timeout for LDAP
-	cTimeout := config.LDAP().ConnectTimeout
-	connectTimeout, _ := strconv.Atoi(cTimeout)
-	goldap.DefaultTimeout = time.Duration(connectTimeout) * time.Second
+	goldap.DefaultTimeout = time.Duration(settings.Timeout) * time.Second
 
 	var ldap *goldap.Conn
 	var err error
-
 	switch protocol {
 	case "ldap":
 		ldap, err = goldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
@@ -104,21 +97,26 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	ldap, err := Connect()
+	settings, err := config.LDAP()
 	if err != nil {
 		return nil, err
 	}
 
-	ldapBaseDn := config.LDAP().BaseDn
+	ldap, err := Connect(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	ldapBaseDn := settings.BaseDN
 	if ldapBaseDn == "" {
 		return nil, errors.New("can not get any available LDAP_BASE_DN")
 	}
 	log.Debug("baseDn:", ldapBaseDn)
 
-	ldapSearchDn := config.LDAP().SearchDn
+	ldapSearchDn := settings.SearchDN
 	if ldapSearchDn != "" {
 		log.Debug("Search DN: ", ldapSearchDn)
-		ldapSearchPwd := config.LDAP().SearchPwd
+		ldapSearchPwd := settings.SearchPassword
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
 		if err != nil {
 			log.Debug("Bind search dn error", err)
@@ -126,8 +124,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	attrName := config.LDAP().UID
-	filter := config.LDAP().Filter
+	attrName := settings.UID
+	filter := settings.Filter
 	if filter != "" {
 		filter = "(&" + filter + "(" + attrName + "=" + m.Principal + "))"
 	} else {
@@ -135,11 +133,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	log.Debug("one or more filter", filter)
 
-	ldapScope := config.LDAP().Scope
+	ldapScope := settings.Scope
 	var scope int
-	if ldapScope == "1" {
+	if ldapScope == 1 {
 		scope = goldap.ScopeBaseObject
-	} else if ldapScope == "2" {
+	} else if ldapScope == 2 {
 		scope = goldap.ScopeSingleLevel
 	} else {
 		scope = goldap.ScopeWholeSubtree

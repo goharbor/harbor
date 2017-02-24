@@ -1347,7 +1347,70 @@ paths:
         404:
           description: Not found the default root certificate.
         500:
-          description: Unexpected internal errors.  		
+          description: Unexpected internal errors.
+  /ldap/ping:
+    post:
+      summary: Ping available ldap service.
+      description: |
+        This endpoint ping the available ldap service for test related configuration parameters.
+      parameters:
+        - name: ldapconf
+          in: body
+          description: ldap configuration.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping ldap service successfully.
+        401:
+          description: Only admin has this authority.
+        403:
+          description: Inviald ldap configuration parameters.
+        500:
+          description: Unexpected internal errors.    		
+  /configurations:
+    get:
+      summary: Get system configurations.
+      description: |
+        This endpoint is for retrieving system configurations that only provides for admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system configurations successfully. The response body is a map.
+          schema:
+            type: object
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+    put:
+      summary: Modify system configurations.
+      description: |
+        This endpoint is for modifying system configurations that only provides for admin user.
+      tags:
+        - Products
+      parameters:
+        - name: configurations
+          in: body
+          required: true 
+          schema:
+            type: object
+          description: The configurations map need to be modified, the following are keys "auth_mode", "email_from", "email_host", "email_identity", "email_password", "email_port", "email_ssl", "email_username", "ldap_base_dn", "ldap_filter", "ldap_scope", "ldap_search_dn", "ldap_search_password", "ldap_timeout", "ldap_uid", "ldap_url", "project_creation_restriction", "self_registration", "verify_remote_cert".
+      responses:
+        200:
+          description: Modify system configurations successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
 definitions:
   Search:
     type: object
@@ -1798,3 +1861,32 @@ definitions:
         description: The storage of system.
         items:
           $ref: '#/definitions/Storage'
+  LdapConf:
+    type: object
+    properties:
+      ldap_url: 
+        type: string
+        description: The url of ldap service.
+      ldap_search_dn:
+        type: string
+        description: The search dn of ldap service.
+      ldap_search_password:
+        type: string
+        description: The search password of ldap service.
+      ldap_base_dn:
+        type: string
+        description: The base dn of ldap service.
+      ldap_filter:
+        type: string
+        description: The serach filter of ldap service.
+      ldap_uid:
+        type: string
+        description: The serach uid of ldap service.
+      ldap_scope:
+        type: integer
+        format: int64
+        description: The serach scope of ldap service.
+      ldap_connection_timeout:
+        type: integer
+        format: int64
+        description: The connect timeout of ldap service(second).

@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"net/http"
+	"strings"
+
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -11,6 +15,11 @@ type RepositoryController struct {
 
 // Get renders repository page
 func (rc *RepositoryController) Get() {
-	rc.Data["HarborRegUrl"] = config.ExtRegistryURL()
+	url, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("failed to get domain name: %v", err)
+		rc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	rc.Data["HarborRegUrl"] = strings.Split(url, "://")[1]
 	rc.Forward("page_title_repository", "repository.htm")
 }
