@@ -28,10 +28,11 @@ func initRouters() {
 
 	beego.SetStaticPath("static/resources", "static/resources")
 	beego.SetStaticPath("static/vendors", "static/vendors")
-	beego.SetStaticPath("/ng", "static/dist")
-	beego.SetStaticPath("/ng/harbor", "static/dist")
-	beego.SetStaticPath("/ng/harbor/dashboard", "static/dist")
-	beego.SetStaticPath("/ng/harbor/projects", "static/dist")
+	beego.SetStaticPath("/ng", "./static/new-ui")
+	beego.SetStaticPath("/ng/harbor", "./static/new-ui")
+	beego.SetStaticPath("/ng/harbor/dashboard", "./static/new-ui")
+	beego.SetStaticPath("/ng/harbor/projects", "./static/new-ui")
+	beego.SetStaticPath("/ng/harbor/users", "./static/new-ui")
 
 	//Page Controllers:
 	beego.Router("/", &controllers.IndexController{})

@@ -1,0 +1,132 @@
+<clr-modal [(clrModalOpen)]="create_policy_opened">
+  <h3 class="modal-title">Add Policy</h3>
+  <div class="modal-body">
+    <form>
+      <section class="form-block">
+        <div class="form-group">
+          <label for="policy_name" class="col-md-4">Name</label>
+          <input type="text" class="col-md-8" id="policy_name" size="20"> 
+        </div>
+        <div class="form-group">
+          <label for="policy_description" class="col-md-4">Description</label>
+          <input type="text" class="col-md-8" id="policy_description" size="20"> 
+        </div>
+        <div class="form-group">
+          <label class="col-md-4">Enable</label>
+          <div class="checkbox-inline">
+            <input type="checkbox" id="policy_enable">
+            <label for="policy_enable"></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="destination_name" class="col-md-4">Destination name</label>
+          <div class="select">
+            <select id="destination_name">
+              <option>10.117.5.114</option>
+              <option>10.117.5.61</option>
+            </select>
+          </div>
+          <div class="checkbox-inline">
+            <input type="checkbox" id="check_new">
+            <label for="check_new">New destination</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="destination_url" class="col-md-4">Destination URL</label>
+          <input type="text" class="col-md-8" id="destination_url" size="20">
+        </div>
+        <div class="form-group">
+          <label for="destination_username" class="col-md-4">Username</label>
+          <input type="text" class="col-md-8" id="destination_username" size="20">
+        </div>
+        <div class="form-group">
+          <label for="destination_password" class="col-md-4">Password</label>
+          <input type="text" class="col-md-8" id="destination_password" size="20">
+        </div>
+      </section>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-outline">Test Connection</button>
+      <button type="button" class="btn btn-outline" (click)="create_policy_opened = false">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="create_policy_opened = false">Ok</button>
+  </div>
+</clr-modal>
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="row flex-items-xs-between">
+      <div class="col-xs-4">
+        <button class="btn btn-sm" (click)="create_policy_opened = true">New Policy</button>
+      </div>
+      <div class="col-xs-4">
+        <input type="text" placeholder="Search for policies">
+      </div>
+    </div>
+    <clr-datagrid>
+      <clr-dg-column>Name</clr-dg-column>
+      <clr-dg-column>Status</clr-dg-column>
+      <clr-dg-column>Destination</clr-dg-column>      
+      <clr-dg-column>Last start time</clr-dg-column>
+      <clr-dg-column>Description</clr-dg-column>
+      <clr-dg-column>Action</clr-dg-column>
+      <clr-dg-row *ngFor="let p of policies">
+        <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.status}}</clr-dg-cell>
+        <clr-dg-cell>{{p.destination}}</clr-dg-cell>
+        <clr-dg-cell>{{p.lastStartTime}}</clr-dg-cell>
+        <clr-dg-cell>{{p.description}}</clr-dg-cell>
+        <clr-dg-cell>
+          <clr-dropdown [clrMenuPosition]="'bottom-left'">
+              <button class="btn btn-sm btn-link" clrDropdownToggle>
+                Actions
+                <clr-icon shape="caret down"></clr-icon>
+              </button>
+              <div class="dropdown-menu">
+                <a href="javascript:void(0)" clrDropdownItem>Enable</a>
+                <a href="javascript:void(0)" clrDropdownItem>Disable</a>
+              </div>
+            </clr-dropdown>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{policies.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>
+    <div class="row flex-items-xs-between flex-items-xs-bottom">
+      <div class="col-xs-4">
+        <span>Replication Jobs for 'project01/sync_01'</span>
+      </div>
+      <div class="col-xs-4">
+        <clr-dropdown [clrMenuPosition]="'bottom-left'">
+          <button class="btn btn-sm btn-outline-primary" clrDropdownToggle>
+            All
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <div class="dropdown-menu">
+            <a href="javascript:void(0)" clrDropdownItem>Finished</a>            
+            <a href="javascript:void(0)" clrDropdownItem>Running</a>
+            <a href="javascript:void(0)" clrDropdownItem>Error</a>
+            <a href="javascript:void(0)" clrDropdownItem>Stopped</a>
+            <a href="javascript:void(0)" clrDropdownItem>Retrying</a>
+          </div>
+        </clr-dropdown>
+        <input type="text" placeholder="Search for jobs">
+      </div>
+    </div>
+    <clr-datagrid>
+      <clr-dg-column>Name</clr-dg-column>
+      <clr-dg-column>Status</clr-dg-column>
+      <clr-dg-column>Operation</clr-dg-column>      
+      <clr-dg-column>Creation time</clr-dg-column>
+      <clr-dg-column>End time</clr-dg-column>
+      <clr-dg-column>Logs</clr-dg-column>
+      <clr-dg-row *ngFor="let j of jobs">
+        <clr-dg-cell>{{j.name}}</clr-dg-cell>
+        <clr-dg-cell>{{j.status}}</clr-dg-cell>
+        <clr-dg-cell>{{j.operation}}</clr-dg-cell>
+        <clr-dg-cell>{{j.creationTime}}</clr-dg-cell>
+        <clr-dg-cell>{{j.endTime}}</clr-dg-cell>
+        <clr-dg-cell></clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{jobs.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>     
+  </div>
+</div>

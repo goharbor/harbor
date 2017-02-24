@@ -1,0 +1,11 @@
+.display-in-line {
+    display: inline-block;
+}
+
+.project-title {
+    margin-left: 10px; 
+}
+
+.pull-right {
+    float: right !important;
+}

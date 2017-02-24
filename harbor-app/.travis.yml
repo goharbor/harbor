@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "6.0"
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
