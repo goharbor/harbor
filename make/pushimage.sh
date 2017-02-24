@@ -9,16 +9,25 @@ echo "Usage: #./pushimage [imgae tag] [registry username] [registry password]  [
 #
 # Set Colors
 #
-
-bold=$(tput bold)
-underline=$(tput sgr 0 1)
-reset=$(tput sgr0)
-
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-white=$(tput setaf 7)
-tan=$(tput setaf 202)
-blue=$(tput setaf 25)
+if type "tput" > /dev/null; then
+	bold=$(tput bold)
+	underline=$(tput sgr 0 1)
+	reset=$(tput sgr0)
+	red=$(tput setaf 1)
+ 	green=$(tput setaf 76)
+  	white=$(tput setaf 7)
+  	tan=$(tput setaf 202)
+  	blue=$(tput setaf 25)
+else
+  	bold= 
+  	underline=
+  	reset=
+  	red=
+  	green=
+  	white=
+  	tan=
+  	blue=
+fi
 
 #
 # Headers and Logging
