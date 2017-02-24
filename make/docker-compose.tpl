@@ -56,6 +56,8 @@ services:
     volumes:
       - /data/config/:/etc/adminserver/
       - /data/secretkey:/etc/adminserver/key
+    networks:
+      - harbor
     depends_on:
       - log
     logging:
