@@ -89,6 +89,8 @@ func initRouters() {
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
 	beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
+	beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
+	beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})

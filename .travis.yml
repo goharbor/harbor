@@ -83,7 +83,10 @@ script:
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
-  - ./tests/pushimage.sh 
+  - ./tests/pushimage.sh
+  - cd tests
+  - sudo ./ldapprepare.sh 
+  - cd .. 
   - ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 

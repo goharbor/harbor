@@ -1352,12 +1352,12 @@ paths:
     post:
       summary: Ping available ldap service.
       description: |
-        This endpoint ping the available ldap service for test related configuration parameters.
+        This endpoint ping the available ldap service for test related configuration parameters. 
       parameters:
         - name: ldapconf
           in: body
-          description: ldap configuration.
-          required: true
+          description: ldap configuration. support input ldap service configuration. If it's a empty request, will load current configuration from the system.
+          required: false
           schema:
             $ref: '#/definitions/LdapConf'
       tags:
@@ -1365,12 +1365,76 @@ paths:
       responses:
         200:
           description: Ping ldap service successfully.
-        401:
-          description: Only admin has this authority.
-        403:
+        400:
           description: Inviald ldap configuration parameters.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
         500:
-          description: Unexpected internal errors.    		
+          description: Unexpected internal errors.        
+  /ldap/users/search:
+    post:
+      summary: Search available ldap users.
+      description: |
+        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Registered user ID
+        - name: ldap_conf
+          in: body
+          description: ldap search configuration. ldapconf field can input ldap service configuration. If this item are blank, will load default configuration will load current configuration from the system. 
+          required: false
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Search ldap users successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapUsers'
+        400:
+          description: Inviald ldap configuration parameters.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Unexpected internal errors. 
+  /ldap/users/import:
+    post:
+      summary: Import selected available ldap users.
+      description: |
+        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. 
+        If have errors when import user, will return the list of importing failed uid and the failed reason.
+      parameters:
+        - name: uid_list
+          in: body
+          description: The uid listed for importing. This list will check users validity of ldap service based on configuration from the system.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapImportUsers'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Add ldap users successfully.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Failed import some users. 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapFailedImportUsers'
   /configurations:
     get:
       summary: Get system configurations.
@@ -1881,7 +1945,7 @@ definitions:
         description: The serach filter of ldap service.
       ldap_uid:
         type: string
-        description: The serach uid of ldap service.
+        description: The serach uid from ldap service attributes.
       ldap_scope:
         type: integer
         format: int64
@@ -1890,3 +1954,32 @@ definitions:
         type: integer
         format: int64
         description: The connect timeout of ldap service(second).
+  LdapUsers:
+    type: object
+    properties:
+      ldap_username: 
+        type: string
+        description: search ldap user name based on ldapconf.
+      ldap_realname:
+        type: string
+        description: system will try to guess the user realname form "uid" or "cn" attribute.
+      ldap_email:
+        type: string
+        description: system will try to guess the user email address form "mail" or "email" attribute.
+  LdapImportUsers:
+    type: object
+    properties:
+      ldap_uid_list:
+        type: array
+        description: selected uid list
+        items:
+          type: string
+  LdapFailedImportUsers:
+    type: object
+    properties:
+      ldap_uid:
+        type: string
+        description: the uid can't add to system.
+      error:
+        type: string
+        description: fail reason.
