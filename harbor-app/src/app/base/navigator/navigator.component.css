@@ -14,3 +14,7 @@
     vertical-align: middle;
     height: 24px;
 }
+
+.lang-selected {
+    font-weight: bold;
+}
