@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-// import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { CookieService } from 'angular2-cookie/core';
+
+import { supportedLangs, enLang, zhLang } from './shared/shared.const';
 
 @Component({
     selector: 'harbor-app',
@@ -7,6 +10,24 @@ import { Component } from '@angular/core';
     styleUrls: []
 })
 export class AppComponent {
-    // constructor(private router: Router) {
-    // }
+    constructor(
+        private translate: TranslateService,
+        private cookie: CookieService) {
+        translate.addLangs(supportedLangs);
+        translate.setDefaultLang(enLang);
+
+        //If user has selected lang, then directly use it
+        let langSetting = this.cookie.get("harbor-lang");
+        if (!langSetting || langSetting.trim() === "") {
+            //Use browser lang
+            langSetting = translate.getBrowserLang();
+        }
+        translate.use(this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang);
+    }
+
+    private isLangMatch(browserLang: string, supportedLangs: string[]) {
+        if (supportedLangs && supportedLangs.length > 0) {
+            return supportedLangs.find(lang => lang === browserLang);
+        }
+    }
 }
