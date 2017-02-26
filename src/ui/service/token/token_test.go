@@ -94,7 +94,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := MakeToken(u, svc, ra)
+	tokenJSON, err := makeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
@@ -138,6 +138,10 @@ type parserTestRec struct {
 	input       string
 	expect      image
 	expectError bool
+}
+
+func TestInit(t *testing.T) {
+	InitCreators()
 }
 
 func TestBasicParser(t *testing.T) {

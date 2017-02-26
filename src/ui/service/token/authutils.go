@@ -116,20 +116,18 @@ func MakeRawToken(username, service string, access []*token.ResourceActions) (to
 	return rs, expiresIn, issuedAt, nil
 }
 
-// TokenJSON represents the json to be returned to docker/notary client
-type TokenJSON struct {
-	Token     string `json: token`
-	ExpiresIn int    `json: expires_in`
-	issuedAt  string `json: issued_at`
+type tokenJSON struct {
+	Token     string `json:"token"`
+	ExpiresIn int    `json:"expires_in"`
+	IssuedAt  string `json:"issued_at"`
 }
 
-// MakeToken returns a json that can be consumed by docker/notary client
-func MakeToken(username, service string, access []*token.ResourceActions) (*TokenJSON, error) {
+func makeToken(username, service string, access []*token.ResourceActions) (*tokenJSON, error) {
 	raw, expires, issued, err := MakeRawToken(username, service, access)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenJSON{raw, expires, issued.Format(time.RFC3339)}, nil
+	return &tokenJSON{raw, expires, issued.Format(time.RFC3339)}, nil
 }
 
 func permToActions(p string) []string {

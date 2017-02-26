@@ -31,7 +31,6 @@ type Handler struct {
 // Get handles GET request, it checks the http header for user credentials
 // and parse service and scope based on docker registry v2 standard,
 // checkes the permission agains local DB and generates jwt token.
-
 func (h *Handler) Get() {
 	request := h.Ctx.Request
 	log.Debugf("URL for token request: %s", request.URL.String())
@@ -42,7 +41,7 @@ func (h *Handler) Get() {
 		log.Errorf(errMsg)
 		h.CustomAbort(http.StatusBadRequest, errMsg)
 	}
-	token, err := tokenCreator.create(request)
+	token, err := tokenCreator.Create(request)
 	if err != nil {
 		if _, ok := err.(*unauthorizedError); ok {
 			h.CustomAbort(http.StatusUnauthorized, "")

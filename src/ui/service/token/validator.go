@@ -30,7 +30,7 @@ type userInfo struct {
 	allPerm bool
 }
 
-//Validate request based on different rules and returns userInfo
+//ReqValidator validates request based on different rules and returns userInfo
 type ReqValidator interface {
 	validate(req *http.Request) (*userInfo, error)
 }

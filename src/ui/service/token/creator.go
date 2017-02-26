@@ -25,7 +25,7 @@ import (
 	"strings"
 )
 
-var creatorMap map[string]TokenCreator
+var creatorMap map[string]Creator
 
 const (
 	notary   = "harbor-notary"
@@ -34,12 +34,12 @@ const (
 
 //InitCreators initialize the token creators for different services
 func InitCreators() {
-	creatorMap = make(map[string]TokenCreator)
+	creatorMap = make(map[string]Creator)
 	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Warningf("Failed to get ext enpoint, err: %v, the token service will not be functional with notary requests", err)
 	} else {
-		creatorMap[notary] = &generalTokenCreator{
+		creatorMap[notary] = &generalCreator{
 			validators: []ReqValidator{
 				&basicAuthValidator{},
 			},
@@ -54,7 +54,7 @@ func InitCreators() {
 		}
 	}
 
-	creatorMap[registry] = &generalTokenCreator{
+	creatorMap[registry] = &generalCreator{
 		validators: []ReqValidator{
 			&secretValidator{config.JobserviceSecret()},
 			&basicAuthValidator{},
@@ -72,9 +72,9 @@ func InitCreators() {
 	}
 }
 
-// TokenCreator creates a token ready to be served based on the http request.
-type TokenCreator interface {
-	create(r *http.Request) (*TokenJSON, error)
+// Creator creates a token ready to be served based on the http request.
+type Creator interface {
+	Create(r *http.Request) (*tokenJSON, error)
 }
 
 type imageParser interface {
@@ -108,9 +108,8 @@ func (e endpointParser) parse(s string) (*image, error) {
 			return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
 		}
 		return parseImg(repo[1])
-	} else {
-		return parseImg(s)
 	}
+	return parseImg(s)
 }
 
 //build Image accepts a string like library/ubuntu:14.04 and build a image struct
@@ -187,7 +186,7 @@ func (rep repositoryFilter) filter(user userInfo, a *token.ResourceActions) erro
 	return nil
 }
 
-type generalTokenCreator struct {
+type generalCreator struct {
 	validators []ReqValidator
 	service    string
 	filterMap  map[string]accessFilter
@@ -199,7 +198,7 @@ func (e *unauthorizedError) Error() string {
 	return "Unauthorized"
 }
 
-func (g generalTokenCreator) create(r *http.Request) (*TokenJSON, error) {
+func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 	var user *userInfo
 	var err error
 	var scopes []string
@@ -234,5 +233,5 @@ func (g generalTokenCreator) create(r *http.Request) (*TokenJSON, error) {
 			return nil, err
 		}
 	}
-	return MakeToken(user.name, g.service, access)
+	return makeToken(user.name, g.service, access)
 }
