@@ -20,8 +20,8 @@
         "type": "token",
         "options": {
             "realm": "$token_endpoint/service/token",
-            "service": "token-service",
-            "issuer": "registry-token-issuer",
+            "service": "harbor-registry",
+            "issuer": "harbor-token-issuer",
             "rootcertbundle": "/config/root.crt"
         }
     }

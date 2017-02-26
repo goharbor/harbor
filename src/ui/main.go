@@ -31,6 +31,7 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/service/token"
 )
 
 const (
@@ -78,7 +79,7 @@ func main() {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 	log.Info("configurations initialization completed")
-
+	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
