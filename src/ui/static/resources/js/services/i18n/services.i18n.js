@@ -31,7 +31,8 @@
     var currentLanguage = defaultLanguage;
     var supportLanguages = {
       'en-US': 'English',
-      'zh-CN': '简体中文'
+      'zh-CN': '简体中文',
+      'es-ES': 'Español'
     };
     var isSupportLanguage = function(language) {
       for (var i in supportLanguages) {
