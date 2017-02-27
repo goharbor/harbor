@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Response } from '@angular/http';
 
 import { SessionUser } from '../../shared/session-user';
 import { Member } from './member';
@@ -8,6 +9,7 @@ import { MemberService } from './member.service';
 import { AddMemberComponent } from './add-member/add-member.component';
 
 import { MessageService } from '../../global-message/message.service';
+import { AlertType } from '../../shared/shared.const';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
@@ -42,7 +44,7 @@ export class MemberComponent implements OnInit {
           response=>this.members = response,
           error=>{
             this.router.navigate(['/harbor', 'projects']);
-            this.messageService.announceMessage('Failed to get project member with project ID:' + projectId);
+            this.messageService.announceMessage(error.status, 'Failed to get project member with project ID:' + projectId, AlertType.DANGER);
           }
         );
   }
@@ -71,7 +73,7 @@ export class MemberComponent implements OnInit {
             console.log('Successful change role with user ' + userId + ' to roleId ' + roleId);
             this.retrieve(this.projectId, '');
           },
-          error => this.messageService.announceMessage('Failed to change role with user ' + userId + ' to roleId ' + roleId)
+          error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + userId + ' to roleId ' + roleId, AlertType.DANGER)
         );
   }
 
@@ -83,7 +85,7 @@ export class MemberComponent implements OnInit {
             console.log('Successful change role with user ' + userId);
             this.retrieve(this.projectId, '');
           },
-          error => this.messageService.announceMessage('Failed to change role with user ' + userId)
+          error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + userId, AlertType.DANGER)
         );
   }
   

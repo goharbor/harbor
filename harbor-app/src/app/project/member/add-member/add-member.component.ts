@@ -2,6 +2,8 @@ import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { Response } from '@angular/http';
 import { MemberService } from '../member.service';
 import { MessageService } from '../../../global-message/message.service';
+import { AlertType } from '../../../shared/shared.const';
+
 import { Member } from '../member';
 
 @Component({
@@ -43,7 +45,7 @@ export class AddMemberComponent {
                 break;
               default:
                 this.errorMessage = 'Unknow error occurred while adding member.';
-                this.messageService.announceMessage(this.errorMessage);
+                this.messageService.announceMessage(error.status, this.errorMessage, AlertType.DANGER);
               }
             }
             console.log('Failed to add member of project:' + this.projectId, ' with error:' + error);

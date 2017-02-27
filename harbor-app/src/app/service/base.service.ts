@@ -1,10 +1,11 @@
-import { Http, Response} from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import { Http, Response,} from '@angular/http';
 
-export abstract class BaseService {
-  protected handleError(error: Response | any) {
+export class BaseService {
+
+  protected handleError(error: Response | any): Promise<any> {
      // In a real world app, we might use a remote logging infrastructure
-    let errMsg: string;
+    let errMsg: string;    
+    console.log(typeof error);
     if (error instanceof Response) {
       const body = error.json() || '';
       const err = body.error || JSON.stringify(body);
@@ -12,7 +13,6 @@ export abstract class BaseService {
     } else {
       errMsg = error.message ? error.message : error.toString();
     }
-    console.error(errMsg);
-    return Observable.throw(errMsg);
+    return Promise.reject(error);
   }
 }

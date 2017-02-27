@@ -7,6 +7,7 @@ import { SessionUser } from '../shared/session-user';
 import { AuditLogService } from './audit-log.service';
 import { SessionService } from '../shared/session.service';
 import { MessageService } from '../global-message/message.service';
+import { AlertType } from '../shared/shared.const';
 
 export const optionalSearch: {} = {0: 'Advanced', 1: 'Simple'};
 
@@ -69,7 +70,7 @@ export class AuditLogComponent implements OnInit {
           response=>this.auditLogs = response,
           error=>{
             this.router.navigate(['/harbor', 'projects']);
-            this.messageService.announceMessage('Failed to list audit logs with project ID:' + queryParam.project_id);
+            this.messageService.announceMessage(error.status, 'Failed to list audit logs with project ID:' + queryParam.project_id, AlertType.DANGER);
           }
         );
   }

@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
 
 import { MessageService } from '../global-message/message.service';
+import { AlertType } from '../shared/shared.const';
+
 import { ReplicationService } from './replication.service';
 
 import { SessionUser } from '../shared/session-user';
@@ -50,7 +52,7 @@ export class ReplicationComponent implements OnInit {
                this.fetchPolicyJobs(this.changedPolicies[0].id);
              }
            },
-           error=>this.messageService.announceMessage('Failed to get policies with project ID:' + this.projectId)
+           error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)
          );
    }
 
@@ -65,7 +67,7 @@ export class ReplicationComponent implements OnInit {
          .listJobs(policyId)
          .subscribe(
            response=>this.changedJobs = response,
-           error=>this.messageService.announceMessage('Failed to fetch jobs with policy ID:' + policyId)
+           error=>this.messageService.announceMessage(error.status, 'Failed to fetch jobs with policy ID:' + policyId, AlertType.DANGER)
          );
    }
 }
