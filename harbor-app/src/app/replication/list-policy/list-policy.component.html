@@ -1,0 +1,29 @@
+<clr-datagrid>
+  <clr-dg-column>Name</clr-dg-column>
+  <clr-dg-column>Description</clr-dg-column>
+  <clr-dg-column>Destination</clr-dg-column>      
+  <clr-dg-column>Last start time</clr-dg-column>
+  <clr-dg-column>Activation</clr-dg-column>
+  <clr-dg-column>Action</clr-dg-column>
+  <clr-dg-row *ngFor="let p of policies" (click)="selectPolicy(p)">
+    <clr-dg-cell>{{p.name}}</clr-dg-cell>
+    <clr-dg-cell>{{p.description}}</clr-dg-cell>
+    <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
+    <clr-dg-cell>{{p.start_time}}</clr-dg-cell>
+    <clr-dg-cell>{{p.enabled}}</clr-dg-cell>
+    <clr-dg-cell>
+      <clr-dropdown [clrMenuPosition]="'bottom-left'">
+          <button class="btn btn-sm btn-link" clrDropdownToggle>
+            Actions
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <div class="dropdown-menu">
+            <a href="javascript:void(0)" clrDropdownItem>Enable</a>
+            <a href="javascript:void(0)" clrDropdownItem>Disable</a>
+          </div>
+        </clr-dropdown>
+    </clr-dg-cell>
+  </clr-dg-row>
+  
+  <clr-dg-footer>{{ (policies ? policies.length : 0) }} item(s)</clr-dg-footer>
+</clr-datagrid>
