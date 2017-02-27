@@ -5,6 +5,7 @@ import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
 import { MessageService } from '../../global-message/message.service';
+import { AlertType } from '../../shared/shared.const';
 
 @Component({
   selector: 'create-project',
@@ -44,7 +45,7 @@ export class CreateProjectComponent {
                 break;
               default:
                 this.errorMessage = 'Unknown error for project name.';
-                this.messageService.announceMessage(this.errorMessage);
+                this.messageService.announceMessage(error.status, this.errorMessage, AlertType.DANGER);
               }
             }
           }); 
