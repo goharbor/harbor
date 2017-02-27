@@ -30,11 +30,11 @@
               <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
-                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">User Profile</a>
-                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">Change Password</a>
-                <a href="javascript:void(0)" clrDropdownItem>About</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem>{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
                 <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">Log out</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </div>
         </clr-dropdown>
     </div>

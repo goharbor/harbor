@@ -1,6 +1,71 @@
 {
     "LOG_IN": "登录",
     "SIGN_UP": "注册账号",
-    "SYS_USERS": "用户管理",
-    "SYS_USER": "用户"
+    "BUTTON": {
+        "CANCEL": "取消",
+        "OK": "确定"
+    },
+    "TOOLTIP": {
+        "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
+        "USER_NAME": "不能包含\"~#$%特殊字符且长度不能超过20",
+        "FULL_NAME": "长度不能超过20",
+        "COMMENT": "长度不能超过20",
+        "CURRENT_PWD": "当前密码必需",
+        "PASSWORD": "密码长度至少为7且需包含至少一个大写字符，一个小写字符和一个数字",
+        "CONFIRM_PWD": "当前密码须与上述输入密码一致"
+    },
+    "PLACEHOLDER": {
+        "CURRENT_PWD": "输入当前密码",
+        "NEW_PWD": "输入新密码",
+        "CONFIRM_PWD": "确认新密码",
+        "USER_NAME": "输入用户名称",
+        "MAIL": "输入邮箱地址",
+        "FULL_NAME": "输入全名"
+    },
+    "PROFILE": {
+        "TITLE": "用户设置",
+        "USER_NAME": "用户名",
+        "EMAIL": "邮箱",
+        "FULL_NAME": "全名",
+        "COMMENT": "注释",
+        "PASSWORD": "密码"
+    },
+    "CHANGE_PWD": {
+        "TITLE": "修改密码",
+        "CURRENT_PWD": "当前密码",
+        "NEW_PWD": "新密码",
+        "CONFIRM_PWD": "确认密码"
+    },
+    "ACCOUNT_SETTINGS": {
+        "PROFILE": "用户设置",
+        "CHANGE_PWD": "修改密码",
+        "ABOUT": "关于",
+        "LOGOUT": "退出"
+    },
+    "GLOBAL_SEARCH": {
+        "PLACEHOLDER": "搜索 Harbor..."
+    },
+    "SIDE_NAV": {
+        "PROJECTS": "项目",
+        "SYSTEM_MGMT": {
+            "NAME": "系统管理",
+            "USERS": "用户管理",
+            "REPLICATIONS": "复制管理",
+            "CONFIGS": "配置管理"
+        }
+    },
+    "USER": {
+        "ADD_ACTION": "用户",
+        "ENABLE_ADMIN_ACTION": "设置为管理员",
+        "DISABLE_ADMIN_ACTION": "取消管理员",
+        "DEL_ACTION": "删除",
+        "FILTER_PLACEHOLDER": "过滤用户",
+        "COLUMN_NAME": "用户名",
+        "COLUMN_ADMIN": "管理员",
+        "COLUMN_EMAIL": "邮件",
+        "COLUMN_REG_NAME": "注册时间",
+        "IS_ADMIN": "是",
+        "IS_NOT_ADMIN": "否",
+        "ADD_USER_TITLE": "添加用户"
+    }
 }
