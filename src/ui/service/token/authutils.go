@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	issuer = "registry-token-issuer"
+	issuer = "harbor-token-issuer"
 )
 
 var privateKey string
@@ -74,84 +74,31 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 	return res
 }
 
-// FilterAccess modify the action list in access based on permission
-func FilterAccess(username string, a *token.ResourceActions) {
-
-	if a.Type == "registry" && a.Name == "catalog" {
-		log.Infof("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
-		return
-	}
-
-	//clear action list to assign to new acess element after perm check.
-	a.Actions = []string{}
-	if a.Type == "repository" {
-		repoSplit := strings.Split(a.Name, "/")
-		repoLength := len(repoSplit)
-		if repoLength > 1 { //Only check the permission when the requested image has a namespace, i.e. project
-			var projectName string
-			registryURL, err := config.ExtEndpoint()
-			if err != nil {
-				log.Errorf("failed to get domain name: %v", err)
-				return
-			}
-			registryURL = strings.Split(registryURL, "://")[1]
-			if repoSplit[0] == registryURL {
-				projectName = repoSplit[1]
-				log.Infof("Detected Registry URL in Project Name. Assuming this is a notary request and setting Project Name as %s\n", projectName)
-			} else {
-				projectName = repoSplit[0]
-			}
-			var permission string
-			if len(username) > 0 {
-				isAdmin, err := dao.IsAdminRole(username)
-				if err != nil {
-					log.Errorf("Error occurred in IsAdminRole: %v", err)
-				}
-				if isAdmin {
-					exist, err := dao.ProjectExists(projectName)
-					if err != nil {
-						log.Errorf("Error occurred in CheckExistProject: %v", err)
-						return
-					}
-					if exist {
-						permission = "RWM"
-					} else {
-						permission = ""
-						log.Infof("project %s does not exist, set empty permission for admin\n", projectName)
-					}
-				} else {
-					permission, err = dao.GetPermission(username, projectName)
-					if err != nil {
-						log.Errorf("Error occurred in GetPermission: %v", err)
-						return
-					}
-				}
-			}
-			if strings.Contains(permission, "W") {
-				a.Actions = append(a.Actions, "push")
-			}
-			if strings.Contains(permission, "M") {
-				a.Actions = append(a.Actions, "*")
-			}
-			if strings.Contains(permission, "R") || dao.IsProjectPublic(projectName) {
-				a.Actions = append(a.Actions, "pull")
-			}
-		}
-	}
-	log.Infof("current access, type: %s, name:%s, actions:%v \n", a.Type, a.Name, a.Actions)
-}
-
 // GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func GenTokenForUI(username string, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+func GenTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
+	isAdmin, err := dao.IsAdminRole(username)
+	if err != nil {
+		return "", 0, nil, err
+	}
+	f := &repositoryFilter{
+		parser: &basicParser{},
+	}
+	u := userInfo{
+		name:    username,
+		allPerm: isAdmin,
+	}
 	access := GetResourceActions(scopes)
 	for _, a := range access {
-		FilterAccess(username, a)
+		err = f.filter(u, a)
+		if err != nil {
+			return "", 0, nil, err
+		}
 	}
-	return MakeToken(username, service, access)
+	return MakeRawToken(username, service, access)
 }
 
-// MakeToken makes a valid jwt token based on parms.
-func MakeToken(username, service string, access []*token.ResourceActions) (token string, expiresIn int, issuedAt *time.Time, err error) {
+// MakeRawToken makes a valid jwt token based on parms.
+func MakeRawToken(username, service string, access []*token.ResourceActions) (token string, expiresIn int, issuedAt *time.Time, err error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {
 		return "", 0, nil, err
@@ -167,6 +114,34 @@ func MakeToken(username, service string, access []*token.ResourceActions) (token
 	}
 	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
 	return rs, expiresIn, issuedAt, nil
+}
+
+type tokenJSON struct {
+	Token     string `json:"token"`
+	ExpiresIn int    `json:"expires_in"`
+	IssuedAt  string `json:"issued_at"`
+}
+
+func makeToken(username, service string, access []*token.ResourceActions) (*tokenJSON, error) {
+	raw, expires, issued, err := MakeRawToken(username, service, access)
+	if err != nil {
+		return nil, err
+	}
+	return &tokenJSON{raw, expires, issued.Format(time.RFC3339)}, nil
+}
+
+func permToActions(p string) []string {
+	res := []string{}
+	if strings.Contains(p, "W") {
+		res = append(res, "push")
+	}
+	if strings.Contains(p, "M") {
+		res = append(res, "*")
+	}
+	if strings.Contains(p, "R") {
+		res = append(res, "pull")
+	}
+	return res
 }
 
 //make token core

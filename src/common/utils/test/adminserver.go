@@ -24,7 +24,7 @@ import (
 )
 
 var adminServerDefaultConfig = map[string]interface{}{
-	config.ExtEndpoint:                "host01.com",
+	config.ExtEndpoint:                "https://host01.com",
 	config.AUTHMode:                   config.DBAuth,
 	config.DatabaseType:               "mysql",
 	config.MySQLHost:                  "127.0.0.1",

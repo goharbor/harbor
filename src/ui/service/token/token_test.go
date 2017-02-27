@@ -9,21 +9,28 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/ui/config"
 	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
 	"testing"
-
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
 )
 
 func TestMain(m *testing.M) {
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
+	server, err := test.NewAdminserver(nil)
+	if err != nil {
+		panic(err)
 	}
+	defer server.Close()
 
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		panic(err)
+	}
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
@@ -87,10 +94,11 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenString, _, _, err := MakeToken(u, svc, ra)
+	tokenJSON, err := makeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
+	tokenString := tokenJSON.Token
 	//t.Logf("privatekey: %s, crt: %s", tokenString, crt)
 	pubKey, err := getPublicKey(crt)
 	if err != nil {
@@ -102,13 +110,78 @@ func TestMakeToken(t *testing.T) {
 		}
 		return pubKey, nil
 	})
-	t.Logf("validity: %v", tok.Valid)
+	t.Logf("Token validity: %v", tok.Valid)
 	if err != nil {
 		t.Errorf("Error while parsing the token: %v", err)
 	}
 	claims := tok.Claims.(*harborClaims)
-	t.Logf("claims: %+v", *claims)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
 	assert.Equal(t, claims.Audience, svc, "Audience mismatch")
+}
 
+func TestPermToActions(t *testing.T) {
+	perm1 := "RWM"
+	perm2 := "MRR"
+	perm3 := ""
+	expect1 := []string{"push", "*", "pull"}
+	expect2 := []string{"*", "pull"}
+	expect3 := []string{}
+	res1 := permToActions(perm1)
+	res2 := permToActions(perm2)
+	res3 := permToActions(perm3)
+	assert.Equal(t, res1, expect1, fmt.Sprintf("actions mismatch for permission: %s", perm1))
+	assert.Equal(t, res2, expect2, fmt.Sprintf("actions mismatch for permission: %s", perm2))
+	assert.Equal(t, res3, expect3, fmt.Sprintf("actions mismatch for permission: %s", perm3))
+}
+
+type parserTestRec struct {
+	input       string
+	expect      image
+	expectError bool
+}
+
+func TestInit(t *testing.T) {
+	InitCreators()
+}
+
+func TestBasicParser(t *testing.T) {
+	testList := []parserTestRec{parserTestRec{"library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
+		parserTestRec{"test/hello", image{"test", "hello", ""}, false},
+		parserTestRec{"myimage:14.04", image{}, true},
+		parserTestRec{"org/team/img", image{"org", "team/img", ""}, false},
+	}
+
+	p := &basicParser{}
+	for _, rec := range testList {
+		r, err := p.parse(rec.input)
+		if rec.expectError {
+			assert.Error(t, err, "Expected error for input: %s", rec.input)
+		} else {
+			assert.Nil(t, err, "Expected no error for input: %s", rec.input)
+			assert.Equal(t, rec.expect, *r, "result mismatch for input: %s", rec.input)
+		}
+	}
+}
+
+func TestEndpointParser(t *testing.T) {
+	p := &endpointParser{
+		"10.117.4.142:5000",
+	}
+	testList := []parserTestRec{parserTestRec{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
+		parserTestRec{"myimage:14.04", image{}, true},
+		//Test the temp workaround
+		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{"10.117.4.142:80", "library/myimage", "14.04"}, false},
+		parserTestRec{"library/myimage:14.04", image{"library", "myimage", "14.04"}, false},
+		parserTestRec{"10.117.4.142:5000/myimage:14.04", image{}, true},
+		parserTestRec{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},
+	}
+	for _, rec := range testList {
+		r, err := p.parse(rec.input)
+		if rec.expectError {
+			assert.Error(t, err, "Expected error for input: %s", rec.input)
+		} else {
+			assert.Nil(t, err, "Expected no error for input: %s", rec.input)
+			assert.Equal(t, rec.expect, *r, "result mismatch for input: %s", rec.input)
+		}
+	}
 }
