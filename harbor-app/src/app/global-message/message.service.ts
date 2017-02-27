@@ -7,10 +7,16 @@ import { AlertType } from '../shared/shared.const';
 export class MessageService {
 
   private messageAnnouncedSource = new Subject<Message>();
+  private appLevelAnnouncedSource = new Subject<Message>();
 
   messageAnnounced$ = this.messageAnnouncedSource.asObservable();
+  appLevelAnnounced$ = this.appLevelAnnouncedSource.asObservable();
  
-  announceMessage(statusCode: number, message: string, alertType: AlertType, isAppLevel?: boolean) {
-    this.messageAnnouncedSource.next(Message.newMessage(statusCode, message, alertType, (isAppLevel) ? isAppLevel : false));
+  announceMessage(statusCode: number, message: string, alertType: AlertType) {
+    this.messageAnnouncedSource.next(Message.newMessage(statusCode, message, alertType));
+  }
+
+  announceAppLevelMessage(statusCode: number, message: string, alertType: AlertType) {
+    this.appLevelAnnouncedSource.next(Message.newMessage(statusCode, message, alertType));
   }
 }

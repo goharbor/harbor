@@ -1,6 +1,7 @@
 <clr-main-container>
+    <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)" (showPwdChangeModal)="openModal($event)"></navigator>
-    <global-message></global-message>
+    <global-message [isAppLevel]="false"></global-message>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch">
             <!-- Only appear when searching -->

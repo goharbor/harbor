@@ -11,17 +11,29 @@ import { AlertType, dismissInterval } from '../shared/shared.const';
 })
 export class MessageComponent {
   
-  globalMessageOpened: boolean;
+  @Input() isAppLevel: boolean;
+  
   globalMessage: Message = new Message();
+  globalMessageOpened: boolean;
   
   constructor(messageService: MessageService) {
+    
+    messageService.appLevelAnnounced$.subscribe(
+      message=>{
+        this.globalMessageOpened = this.isAppLevel && true;
+        this.globalMessage = message;
+        console.log('received app level message:' + message);
+      }
+    )
+  
     messageService.messageAnnounced$.subscribe(
       message=>{ 
-        this.globalMessageOpened = true;
+        this.globalMessageOpened = !this.isAppLevel && true;
         this.globalMessage = message;
         console.log('received message:' + message);
       }
     );
+    
     // Make the message alert bar dismiss after several intervals.
     setInterval(()=>this.onClose(), dismissInterval);
   }

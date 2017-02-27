@@ -4,7 +4,6 @@ export class Message {
   statusCode: number;
   message: string;
   alertType: AlertType;
-  isAppLevel: boolean;
 
   get type(): string {
     switch(this.alertType) {
@@ -23,12 +22,11 @@ export class Message {
 
   constructor() {}
 
-  static newMessage (statusCode: number, message: string, alertType: AlertType, isAppLevel: boolean): Message {
+  static newMessage (statusCode: number, message: string, alertType: AlertType): Message {
     let m = new Message();
     m.statusCode = statusCode;
     m.message = message;
     m.alertType = alertType;
-    m.isAppLevel = isAppLevel;
     return m;
   }
   
@@ -36,7 +34,6 @@ export class Message {
   toString(): string {
     return 'Message with statusCode:' + this.statusCode +
      ', message:' + this.message + 
-     ', alert type:' + this.type +
-     ', isAppLevel: ' + this.isAppLevel;
+     ', alert type:' + this.type;
   }
 }
