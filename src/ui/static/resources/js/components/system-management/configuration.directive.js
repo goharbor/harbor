@@ -300,6 +300,7 @@
       var keyset = [
         {'name': 'ldapURL'     , 'attr': 'ldap_url'}, 
         {'name': 'ldapSearchDN', 'attr': 'ldap_search_dn'},
+        {'name': 'ldapScope'   , 'attr': 'ldap_scope'},
         {'name': 'ldapSearchPassword'   , 'attr': 'ldap_search_password'},
         {'name': 'ldapConnectionTimeout', 'attr': 'ldap_connection_timeout'}
       ];
