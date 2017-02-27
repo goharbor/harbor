@@ -79,15 +79,17 @@ export class UserComponent implements OnInit {
     }
 
     //Value copy
-    let updatedUser: User = Object.assign({}, user);
+    let updatedUser: User = {
+      user_id: user.user_id
+    };
 
-    if (updatedUser.has_admin_role === 0) {
+    if (user.has_admin_role === 0) {
       updatedUser.has_admin_role = 1;//Set as admin
     } else {
       updatedUser.has_admin_role = 0;//Set as none admin
     }
 
-    this.userService.updateUser(updatedUser)
+    this.userService.updateUserRole(updatedUser)
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
