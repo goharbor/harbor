@@ -4,6 +4,7 @@ import 'rxjs/add/operator/toPromise';
 import { UserService } from './user.service';
 import { User } from './user';
 import { NewUserModalComponent } from './new-user-modal.component';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'harbor-user',
@@ -17,14 +18,36 @@ export class UserComponent implements OnInit {
   users: User[] = [];
   originalUsers: Promise<User[]>;
   private onGoing: boolean = false;
+  private adminMenuText: string = "";
+  private adminColumn: string = "";
 
   @ViewChild(NewUserModalComponent)
   private newUserDialog: NewUserModalComponent;
 
-  constructor(private userService: UserService) { }
+  constructor(
+    private userService: UserService,
+    private translate: TranslateService) { }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
+  }
+
+  isSystemAdmin(u: User): string {
+    if(!u){
+      return "{{MISS}}";
+    }
+    let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+    this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
+    return this.adminColumn;
+  }
+
+  adminActions(u: User): string {
+    if(!u){
+      return "{{MISS}}";
+    }
+    let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
+    this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
+    return this.adminMenuText;
   }
 
   public get inProgress(): boolean {
