@@ -48,7 +48,7 @@ export class ProjectComponent implements OnInit {
         .listProjects(name, isPublic)
         .subscribe(
           response => this.changedProjects = <Project[]>response,
-          error => this.messageService.announceMessage(error.status, error, AlertType.DANGER, true)
+          error => this.messageService.announceMessage(error.status, error, AlertType.WARNING)
         );
   }
 
