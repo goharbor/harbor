@@ -3,9 +3,9 @@
     <clr-icon shape="ellipses-vertical"></clr-icon>
   </button>
   <div class="dropdown-menu">
-    <a href="javascript:void(0)" clrDropdownItem>New Policy</a>
-    <a href="javascript:void(0)" clrDropdownItem (click)="toggle()">Make {{project.public === 0 ? 'Public' : 'Private'}} </a>
+    <a href="javascript:void(0)" clrDropdownItem>{{'PROJECT.NEW_POLICY' | translate}}</a>
+    <a href="javascript:void(0)" clrDropdownItem (click)="toggle()">{{'PROJECT.MAKE' | translate}}{{(project.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </a>
     <div class="dropdown-divider"></div>
-    <a href="javascript:void(0)" clrDropdownItem (click)="delete()">Delete</a>
+    <a href="javascript:void(0)" clrDropdownItem (click)="delete()">{{'PROJECT.DELETE' | translate}}</a>
   </div>
 </clr-dropdown>
