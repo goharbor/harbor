@@ -9,7 +9,7 @@ import { SessionService } from '../shared/session.service';
 import { MessageService } from '../global-message/message.service';
 import { AlertType } from '../shared/shared.const';
 
-export const optionalSearch: {} = {0: 'Advanced', 1: 'Simple'};
+export const optionalSearch: {} = {0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE'};
 
 
 export class FilterOption {
@@ -43,12 +43,12 @@ export class AuditLogComponent implements OnInit {
   toggleName = optionalSearch;
   currentOption: number = 0;
   filterOptions: FilterOption[] = [ 
-    new FilterOption('all', 'All Operations', true),
-    new FilterOption('pull', 'Pull', true),
-    new FilterOption('push', 'Push', true),
-    new FilterOption('create', 'Create', true),
-    new FilterOption('delete', 'Delete', true),
-    new FilterOption('others', 'Others', true) 
+    new FilterOption('all', 'AUDIT_LOG.ALL_OPERATIONS', true),
+    new FilterOption('pull', 'AUDIT_LOG.PULL', true),
+    new FilterOption('push', 'AUDIT_LOG.PUSH', true),
+    new FilterOption('create', 'AUDIT_LOG.CREATE', true),
+    new FilterOption('delete', 'AUDIT_LOG.DELETE', true),
+    new FilterOption('others', 'AUDIT_LOG.OTHERS', true) 
  ];
 
   constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageService: MessageService) {
