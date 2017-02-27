@@ -101,4 +101,15 @@ export class NavigatorComponent implements OnInit {
             console.error('Language '+lang.trim()+' is not suppoted');
         }
     }
+
+    //Handle the home action
+    homeAction(): void {
+        if(this.sessionUser != null){
+            //Navigate to default page
+            this.router.navigate(['harbor','projects']);
+        }else{
+            //Naviagte to signin page
+            this.router.navigate(['sign-in']);
+        }
+    }
 }

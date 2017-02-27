@@ -3,7 +3,8 @@
     "SIGN_UP": "Sign up for an account",
     "BUTTON": {
         "CANCEL": "Cancel",
-        "OK": "Ok"
+        "OK": "Ok",
+        "DELETE": "DELETE"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
