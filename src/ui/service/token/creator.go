@@ -63,9 +63,7 @@ func InitCreators() {
 		filterMap: map[string]accessFilter{
 			"repository": &repositoryFilter{
 				//Workaround, had to use same service for both notary and registry
-				parser: &endpointParser{
-					endpoint: ext,
-				},
+				parser: &basicParser{},
 			},
 			"registry": &registryFilter{},
 		},
@@ -102,15 +100,10 @@ func (e endpointParser) parse(s string) (*image, error) {
 	if len(repo) < 2 {
 		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
 	}
-	//Workaround, need to use endpoint Parser to handle both cases.
-	if strings.ContainsRune(repo[0], '.') {
-		if repo[0] != e.endpoint {
-			log.Warningf("Mismatch endpoint from string: %s, expected endpoint: %s, fallback to basic parser", s, e.endpoint)
-			return parseImg(s)
-		}
-		return parseImg(repo[1])
+	if repo[0] != e.endpoint {
+		return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
 	}
-	return parseImg(s)
+	return parseImg(repo[1])
 }
 
 //build Image accepts a string like library/ubuntu:14.04 and build a image struct
