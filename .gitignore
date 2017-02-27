@@ -9,3 +9,16 @@ src/jobservice/jobservice
 src/common/dao/dao.test
 *.pyc
 jobservice/test
+
+src/ui/static/dist/
+
+src/clarity-seed/coverage/
+src/clarity-seed/dist/
+src/clarity-seed/html-report/
+src/clarity-seed/node_modules/
+src/clarity-seed/typings/
+**/*npm-debug.log.*
+**/*yarn-error.log.*
+.idea/
+.DS_Store
+

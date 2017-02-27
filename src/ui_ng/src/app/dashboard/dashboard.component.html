@@ -1,0 +1,54 @@
+<h3>Dashboard</h3>
+<div class="row">
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-block">
+                <h1 class="card-title">Why user Harbor?</h1>
+                <p class="card-text">
+                    Project Harbor is an enterprise-class registry server, which extends the open source Docker Registry server by adding the functionality usually required by an enterprise, such as security, control, and management. Harbor is primarily designed to be a private registry - providing the needed security and control that enterprises require. It also helps minimize ...
+                </p>
+            </div>
+            <div class="card-footer">
+                <a href="..." class="btn btn-sm btn-link">View all</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-block">
+                <h1 class="card-title">Getting started</h1>
+                  <ul class="list" style="list-style-type: none;">
+                     <li><img src="../../images/Step1.png" style="width: 19%; height: auto;"/><a style="margin: 30px;" href="">Anonymous repository access</a></li>
+                     <li><img src="../../images/Step2.png" style="width: 19%; height: auto;"/><a style="margin: 30px;" href="">Repositories managed by project</a></li>
+                     <li><img src="../../images/Step3.png" style="width: 19%; height: auto;"/><a style="margin: 30px;" href="">Role based access control</a></li>
+                  </ul>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-block">
+                <h1 class="card-title">Activities</h1>
+                <p class="card-text">
+                    ...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+  <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+    <clr-datagrid>
+        <clr-dg-column>Name</clr-dg-column>
+        <clr-dg-column>Version</clr-dg-column>
+        <clr-dg-column>Count</clr-dg-column>
+        <clr-dg-row *ngFor="let r of repositories">
+        <clr-dg-cell>{{r.name}}</clr-dg-cell>
+        <clr-dg-cell>{{r.version}}</clr-dg-cell>
+        <clr-dg-cell>{{r.count}}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>{{repositories.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>

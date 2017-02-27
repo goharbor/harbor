@@ -1,0 +1,38 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <div class="row flex-items-lg-right">
+      <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+        <clr-dropdown [clrMenuPosition]="'bottom-left'">
+          <button class="btn btn-sm btn-outline-primary" clrDropdownToggle>
+            My Projects
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <div class="dropdown-menu">
+            <a href="#/project" clrDropdownItem>My Projects</a>
+            <a href="#/project" clrDropdownItem>Public Projects</a>
+          </div>
+        </clr-dropdown>
+        <input type="text" placeholder="Search for projects">
+      </div>
+    </div>
+    <clr-datagrid>
+      <clr-dg-column>Name</clr-dg-column>
+      <clr-dg-column>Status</clr-dg-column>
+      <clr-dg-column>Tag</clr-dg-column>
+      <clr-dg-column>Author</clr-dg-column>
+      <clr-dg-column>Docker version</clr-dg-column>
+      <clr-dg-column>Created</clr-dg-column>
+      <clr-dg-column>Pull Command</clr-dg-column>
+      <clr-dg-row *ngFor="let r of repos">
+        <clr-dg-cell>{{r.name}}</clr-dg-cell>
+        <clr-dg-cell>{{r.status}}</clr-dg-cell>
+        <clr-dg-cell>{{r.tag}}</clr-dg-cell>
+        <clr-dg-cell>{{r.author}}</clr-dg-cell>
+        <clr-dg-cell>{{r.dockerVersion}}</clr-dg-cell>
+        <clr-dg-cell>{{r.created}}</clr-dg-cell>
+        <clr-dg-cell>{{r.pullCommand}}</clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{repos.length}} item(s)</clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>

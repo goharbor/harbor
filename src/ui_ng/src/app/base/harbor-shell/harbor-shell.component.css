@@ -1,0 +1,7 @@
+.side-nav-override {
+    box-shadow: 6px 0px 0px 0px #ccc;
+}
+
+.container-override {
+    position: relative !important;
+}
