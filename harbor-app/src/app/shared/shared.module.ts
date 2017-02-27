@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
-//import { AccountModule } from '../account/account.module';
+import { CookieService } from 'angular2-cookie/core';
 
 import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';
@@ -8,10 +8,12 @@ import { MessageService } from '../global-message/message.service';
 import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
 import { FilterComponent } from './filter/filter.component';
 import { HarborActionOverflow } from './harbor-action-overflow/harbor-action-overflow';
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
   imports: [
-    CoreModule
+    CoreModule,
+    TranslateModule
   ],
   declarations: [
     MessageComponent,
@@ -24,9 +26,13 @@ import { HarborActionOverflow } from './harbor-action-overflow/harbor-action-ove
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    HarborActionOverflow
+    HarborActionOverflow,
+    TranslateModule
   ],
-  providers: [SessionService, MessageService]
+  providers: [
+    SessionService, 
+    MessageService,
+    CookieService]
 })
 export class SharedModule {
 
