@@ -115,6 +115,6 @@ services:
     image : danieljt/harbor-clarity-base:0.8.0 
     volumes:
       - ../../src/ui/static/new-ui:/clarity-seed/dist
-      - ../../src/clarity-seed/src/app:/clarity-seed/src/app
+      - ../../src/ui_ng/src/app:/clarity-seed/src/app
     depends_on:
       - ui
