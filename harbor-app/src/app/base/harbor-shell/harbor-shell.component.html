@@ -10,7 +10,7 @@
         <nav class="sidenav" [class.side-nav-override]="showSearch">
             <section class="sidenav-content">
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
-                <section class="nav-group collapsible">
+                <section class="nav-group collapsible" *ngIf="isSystemAdmin">
                     <input id="tabsystem" type="checkbox">
                     <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
                     <ul class="nav-list">
@@ -25,3 +25,4 @@
 </clr-main-container>
 <account-settings-modal></account-settings-modal>
 <password-setting></password-setting>
+<deletion-dialog></deletion-dialog>

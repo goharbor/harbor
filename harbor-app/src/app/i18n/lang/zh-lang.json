@@ -3,7 +3,8 @@
     "SIGN_UP": "注册账号",
     "BUTTON": {
         "CANCEL": "取消",
-        "OK": "确定"
+        "OK": "确定",
+        "DELETE": "删除"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",

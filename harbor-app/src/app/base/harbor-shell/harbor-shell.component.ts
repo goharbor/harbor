@@ -9,6 +9,7 @@ import { AccountSettingsModalComponent } from '../../account/account-settings/ac
 import { SearchResultComponent } from '../global-search/search-result.component';
 import { PasswordSettingComponent } from '../../account/password/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';
+import { SessionService } from '../../shared/session.service';
 
 @Component({
     selector: 'harbor-shell',
@@ -34,7 +35,9 @@ export class HarborShellComponent implements OnInit {
     //We need to use this property to do some overriding work
     private isSearchResultsOpened: boolean = false;
 
-    constructor(private route: ActivatedRoute) { }
+    constructor(
+        private route: ActivatedRoute,
+        private session: SessionService) { }
 
     ngOnInit() {
         this.route.data.subscribe(data => {
@@ -44,6 +47,11 @@ export class HarborShellComponent implements OnInit {
 
     public get showSearch(): boolean {
         return this.isSearchResultsOpened;
+    }
+
+    public get isSystemAdmin(): boolean {
+        let account = this.session.getCurrentUser();
+        return account != null && account.has_admin_role>0;
     }
 
     //Open modal dialog

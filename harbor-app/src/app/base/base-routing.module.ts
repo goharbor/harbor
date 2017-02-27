@@ -7,11 +7,15 @@ import { ProjectComponent } from '../project/project.component';
 import { UserComponent } from '../user/user.component';
 
 import { BaseRoutingResolver } from './base-routing-resolver.service';
+import { AuthGuard } from './auth-guard.service';
 
 const baseRoutes: Routes = [
   {
     path: 'harbor',
     component: HarborShellComponent,
+    resolve: {
+      rootResolver: BaseRoutingResolver
+    },
     children: [
       {
         path: 'dashboard',
@@ -24,9 +28,7 @@ const baseRoutes: Routes = [
       {
         path: 'users',
         component: UserComponent,
-        resolve: {
-          projectsResolver: BaseRoutingResolver
-        }
+        canActivate: [AuthGuard]
       }
     ]
   }];
@@ -37,7 +39,7 @@ const baseRoutes: Routes = [
   ],
   exports: [RouterModule],
 
-  providers: [BaseRoutingResolver]
+  providers: [BaseRoutingResolver, AuthGuard]
 })
 export class BaseRoutingModule {
 
