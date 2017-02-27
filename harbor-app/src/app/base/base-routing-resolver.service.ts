@@ -12,6 +12,7 @@ export class BaseRoutingResolver implements Resolve<SessionUser> {
     constructor(private session: SessionService, private router: Router) { }
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<SessionUser> {
+        console.info("resolver....");
         return this.session.retrieveUser()
             .then(sessionUser => {
                 return sessionUser;

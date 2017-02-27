@@ -5,6 +5,8 @@ import { UserService } from './user.service';
 import { User } from './user';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
+import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
 
 @Component({
   selector: 'harbor-user',
@@ -26,7 +28,12 @@ export class UserComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private translate: TranslateService) { }
+    private translate: TranslateService,
+    private deletionDialogService: DeletionDialogService) {
+      deletionDialogService.deletionConfirm$.subscribe(confirmed => {
+        this.delUser(confirmed);
+      });
+    }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
@@ -79,15 +86,17 @@ export class UserComponent implements OnInit {
     }
 
     //Value copy
-    let updatedUser: User = Object.assign({}, user);
+    let updatedUser: User = {
+      user_id: user.user_id
+    };
 
-    if (updatedUser.has_admin_role === 0) {
+    if (user.has_admin_role === 0) {
       updatedUser.has_admin_role = 1;//Set as admin
     } else {
       updatedUser.has_admin_role = 0;//Set as none admin
     }
 
-    this.userService.updateUser(updatedUser)
+    this.userService.updateUserRole(updatedUser)
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
@@ -96,17 +105,26 @@ export class UserComponent implements OnInit {
   }
 
   //Delete the specified user
-  deleteUser(userId: number): void {
-    if (userId === 0) {
+  deleteUser(user: User): void {
+    if (!user) {
       return;
     }
 
-    this.userService.deleteUser(userId)
+    //Confirm deletion
+    let msg: DeletionMessage = new DeletionMessage(
+      "Confirm user deletion",
+      "Do you want to delete user "+user.username+"?",
+      user);
+    this.deletionDialogService.openComfirmDialog(msg);
+  }
+
+  private delUser(user: User): void {
+    this.userService.deleteUser(user.user_id)
       .then(() => {
         //Remove it from current user list
         //and then view refreshed
         this.originalUsers.then(users => {
-          this.users = users.filter(user => user.user_id != userId);
+          this.users = users.filter(u => u.user_id != user.user_id);
         });
       })
       .catch(error => console.error(error));//TODO:

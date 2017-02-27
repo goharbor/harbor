@@ -10,7 +10,12 @@ import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
 import { FilterComponent } from './filter/filter.component';
 import { HarborActionOverflow } from './harbor-action-overflow/harbor-action-overflow';
 import { TranslateModule } from "@ngx-translate/core";
+
 import { RouterModule } from '@angular/router';
+
+import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.component';
+import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
+
 
 @NgModule({
   imports: [
@@ -22,7 +27,8 @@ import { RouterModule } from '@angular/router';
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    HarborActionOverflow
+    HarborActionOverflow,
+    DeletionDialogComponent
   ],
   exports: [
     CoreModule,
@@ -30,12 +36,14 @@ import { RouterModule } from '@angular/router';
     MaxLengthExtValidatorDirective,
     FilterComponent,
     HarborActionOverflow,
-    TranslateModule
+    TranslateModule,
+    DeletionDialogComponent
   ],
   providers: [
-    SessionService, 
+    SessionService,
     MessageService,
-    CookieService]
+    CookieService,
+    DeletionDialogService]
 })
 export class SharedModule {
 

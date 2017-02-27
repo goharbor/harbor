@@ -26,7 +26,7 @@
                     <harbor-action-overflow>
                         <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</a>
                         <div class="dropdown-divider"></div>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user.user_id)">{{'USER.DEL_ACTION' | translate}}</a>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</a>
                     </harbor-action-overflow>
                 </clr-dg-cell>
             </clr-dg-row>

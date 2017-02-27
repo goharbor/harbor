@@ -3,6 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'angular2-cookie/core';
 
 import { supportedLangs, enLang, zhLang } from './shared/shared.const';
+import { SessionService } from './shared/session.service';
 
 @Component({
     selector: 'harbor-app',
@@ -12,7 +13,8 @@ import { supportedLangs, enLang, zhLang } from './shared/shared.const';
 export class AppComponent {
     constructor(
         private translate: TranslateService,
-        private cookie: CookieService) {
+        private cookie: CookieService,
+        private session: SessionService) {
         translate.addLangs(supportedLangs);
         translate.setDefaultLang(enLang);
 
