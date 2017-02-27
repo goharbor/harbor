@@ -169,8 +169,8 @@ func TestEndpointParser(t *testing.T) {
 	}
 	testList := []parserTestRec{parserTestRec{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
 		parserTestRec{"myimage:14.04", image{}, true},
-		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{}, true},
 		//Test the temp workaround
+		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{"10.117.4.142:80", "library/myimage", "14.04"}, false},
 		parserTestRec{"library/myimage:14.04", image{"library", "myimage", "14.04"}, false},
 		parserTestRec{"10.117.4.142:5000/myimage:14.04", image{}, true},
 		parserTestRec{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},

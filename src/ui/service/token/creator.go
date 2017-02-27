@@ -105,7 +105,8 @@ func (e endpointParser) parse(s string) (*image, error) {
 	//Workaround, need to use endpoint Parser to handle both cases.
 	if strings.ContainsRune(repo[0], '.') {
 		if repo[0] != e.endpoint {
-			return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
+			log.Warningf("Mismatch endpoint from string: %s, expected endpoint: %s, fallback to basic parser", s, e.endpoint)
+			return parseImg(s)
 		}
 		return parseImg(repo[1])
 	}
@@ -209,11 +210,11 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 	log.Debugf("scopes: %v", scopes)
 	for _, v := range g.validators {
 		user, err = v.validate(r)
-		if user != nil {
-			break
-		}
 		if err != nil {
 			return nil, err
+		}
+		if user != nil {
+			break
 		}
 	}
 	if user == nil {
@@ -227,6 +228,7 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 		f, ok := g.filterMap[a.Type]
 		if !ok {
 			log.Warningf("No filter found for access type: %s, skip.", a.Type)
+			continue
 		}
 		err = f.filter(*user, a)
 		if err != nil {
