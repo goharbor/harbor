@@ -102,4 +102,8 @@ export class MemberComponent implements OnInit {
   doSearch(searchMember) {
     this.retrieve(this.projectId, searchMember);
   }
+
+  refresh() {
+    this.retrieve(this.projectId, '');
+  }
 }

@@ -4,7 +4,7 @@
     <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon>{{'PROJECT.NEW_PROJECT' | translate}}</button>
     <create-project (create)="createProject($event)"></create-project>
   </div>
-  <div class="col-xs-5">
+  <div class="col-xs-5 push-xs-1">
     <clr-dropdown [clrMenuPosition]="'bottom-left'">
       <button class="btn btn-sm btn-link" clrDropdownToggle>
         {{projectTypes[currentFilteredType] | translate}}
@@ -15,7 +15,8 @@
         <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(1)">{{projectTypes[1] | translate}}</a>
       </div>
     </clr-dropdown>
-    <grid-filter class="filter-pos" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)"></grid-filter>
+    <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)"></grid-filter>
+    <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <list-project [projects]="changedProjects" (toggle)="toggleProject($event)" (delete)="deleteProject($event)"></list-project>

@@ -15,9 +15,7 @@
     <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
     <clr-dg-cell>
       {{p.description}}
-      <span style="float: right;">
-        <action-project (togglePublic)="toggleProject($event)" (deleteProject)="deleteProject($event)" [project]="p"></action-project>
-      </span>
+      <action-project (togglePublic)="toggleProject($event)" (deleteProject)="deleteProject($event)" [project]="p"></action-project>
     </clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>{{ (projects ? projects.length : 0) }} {{'PROJECT.ITEMS' | translate}}</clr-dg-footer>
