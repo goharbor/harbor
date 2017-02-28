@@ -36,7 +36,12 @@ const projectRoutes: Routes = [
         },
         children: [
           { path: 'repository', component: RepositoryComponent },
-          { path: 'replication', component: ReplicationComponent },
+          { 
+            path: 'replication', component: ReplicationComponent,
+            resolve: {
+              replicationResolver: BaseRoutingResolver
+            } 
+          },
           { 
             path: 'member', component: MemberComponent, 
             resolve: {

@@ -2,37 +2,37 @@
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-between">
       <div class="col-xs-4 flex-xs-middle">
-        <button class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> new user</button>
+        <button class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon>{{'MEMBER.NEW_MEMBER' | translate }}</button>
         <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
       </div>
       <div class="col-xs-4 flex-xs-middle">
-        <clr-icon shape="filter" style="position: relative; left: 15px;"></clr-icon><input style="padding-left: 20px;" type="text" placeholder="Search for users" #searchMember (keyup.enter)="doSearch(searchMember.value)">
+        <grid-filter class="filter-pos" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)"></grid-filter>
       </div>
     </div>
     <clr-datagrid>
-      <clr-dg-column>Name</clr-dg-column>
-      <clr-dg-column>Role</clr-dg-column>
-      <clr-dg-column>Action</clr-dg-column>
+      <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'MEMBER.ACTIONS' | translate}}</clr-dg-column>
       <clr-dg-row *ngFor="let u of members">
         <clr-dg-cell>{{u.username}}</clr-dg-cell>
-        <clr-dg-cell>{{roleInfo[u.role_id]}}</clr-dg-cell>
+        <clr-dg-cell>{{roleInfo[u.role_id] | translate}}</clr-dg-cell>
         <clr-dg-cell>
           <clr-dropdown [clrMenuPosition]="'bottom-left'" [hidden]="u.user_id === currentUser.user_id">
             <button class="btn btn-sm btn-link" clrDropdownToggle>
-              Actions
+              {{'MEMBER.ACTIONS' | translate}}
               <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 1)">Project Admin</a>
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 2)">Developer</a>
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 3)">Guest</a>
+              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</a>
+              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</a>
+              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</a>
               <div class="dropdown-divider"></div>
-              <a href="javascript:void(0)" clrDropdownItem (click)="deleteMember(u.user_id)">Delete Member</a>
+              <a href="javascript:void(0)" clrDropdownItem (click)="deleteMember(u.user_id)">{{'MEMBER.DELETE' | translate}}</a>
             </div>
           </clr-dropdown>
         </clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{ (members ? members.length : 0) }} item(s)</clr-dg-footer>
+      <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

@@ -1,0 +1,133 @@
+{
+    "LOG_IN": "LOG IN",
+    "SIGN_UP": "Sign up for an account",
+    "BUTTON": {
+        "CANCEL": "Cancel",
+        "OK": "Ok",
+        "DELETE": "DELETE"
+    },
+    "TOOLTIP": {
+        "EMAIL": "Email should be a valid email address like name@example.com",
+        "USER_NAME": "Can not contain \"~#$% and max length should be less than 20",
+        "FULL_NAME": "Max length should be less than 20",
+        "COMMENT": "Length of comment should be less than 20",
+        "CURRENT_PWD": "Current password is Required",
+        "PASSWORD": "Password should be at least 7 characters with 1 uppercase, 1 lowercase letter and 1 number",
+        "CONFIRM_PWD": "Password input here should be same with above password"
+    },
+    "PLACEHOLDER": {
+        "CURRENT_PWD": "Enter current password",
+        "NEW_PWD": "Enter new password",
+        "CONFIRM_PWD": "Confirm new password",
+        "USER_NAME": "Enter username",
+        "MAIL": "Enter email address",
+        "FULL_NAME": "Enter full name"
+    },
+    "PROFILE": {
+        "TITLE": "User Profile",
+        "USER_NAME": "Username",
+        "EMAIL": "Email",
+        "FULL_NAME": "Full name",
+        "COMMENT": "Comments",
+        "PASSWORD": "Password"
+    },
+    "CHANGE_PWD": {
+        "TITLE": "Change Password",
+        "CURRENT_PWD": "Current Password",
+        "NEW_PWD": "New Password",
+        "CONFIRM_PWD": "Confirm Password"
+    },
+    "ACCOUNT_SETTINGS": {
+        "PROFILE": "User Profile",
+        "CHANGE_PWD": "Change Password",
+        "ABOUT": "About",
+        "LOGOUT": "Log Out"
+    },
+    "GLOBAL_SEARCH": {
+        "PLACEHOLDER": "Search Harbor..."
+    },
+    "SIDE_NAV": {
+        "PROJECTS": "Projects",
+        "SYSTEM_MGMT": {
+            "NAME": "System Managements",
+            "USERS": "Users",
+            "REPLICATIONS": "Replications",
+            "CONFIGS": "Configurations"
+        }
+    },
+    "USER": {
+        "ADD_ACTION": "USER",
+        "ENABLE_ADMIN_ACTION": "Enable administrator",
+        "DISABLE_ADMIN_ACTION": "Disable administrator",
+        "DEL_ACTION": "Delete",
+        "FILTER_PLACEHOLDER": "Filter users",
+        "COLUMN_NAME": "Name",
+        "COLUMN_ADMIN": "Administrator",
+        "COLUMN_EMAIL": "Email",
+        "COLUMN_REG_NAME": "Registration time",
+        "IS_ADMIN": "Yes",
+        "IS_NOT_ADMIN": "No",
+        "ADD_USER_TITLE": "Add User"
+    },
+    "PROJECT": {
+        "PROJECTS": "Projects",
+        "NAME": "Project Name",
+        "PUBLIC_OR_PRIVATE": "Public/Private",
+        "REPO_COUNT": "Repositories Count",
+        "CREATION_TIME": "Creation Time",
+        "DESCRIPTION": "Description",
+        "PUBLIC": "Public",
+        "PRIVATE": "Private",
+        "MAKE": "Make",
+        "NEW_POLICY": "New Policy",
+        "DELETE": "Delete",
+        "MY_PROJECTS": "My Projects",
+        "PUBLIC_PROJECTS": "Public Projects",
+        "NEW_PROJECT": "New Project",
+        "NAME_ALREADY_EXISTS": "Project name already exists.",
+        "NAME_IS_ILLEGAL": "Project name is illegal.",
+        "UNKNOWN_ERROR": "Unknown error occurred while creating project.",
+        "ITEMS": "item(s)",
+        "DELETE_TITLE": "Delete Project",
+        "DELETE_MESSAGE": "Are you sure to delete the project?",
+        "FILTER_PLACEHOLDER": "Filter Projects"
+    },
+    "PROJECT_DETAIL": {
+        "REPOSITORIES": "Repositories",
+        "REPLICATION": "Replication",
+        "USERS": "Users",
+        "LOGS": "Logs"
+    },
+    "MEMBER": {
+        "NEW_MEMBER": "New Member",
+        "NAME": "Name",
+        "ROLE": "Role",
+        "PROJECT_ADMIN": "Project Admin",
+        "DEVELOPER": "Developer",
+        "GUEST": "Guest",
+        "DELETE": "Delete",
+        "ITEMS": "item(s)",
+        "ACTIONS": "Actions",
+        "USERNAME_DOES_NOT_EXISTS": "Username does not exist.",
+        "USERNAME_ALREADY_EXISTS": "Username already exists.",
+        "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
+        "FILTER_PLACEHOLDER": "Filter Members"
+    },
+    "AUDIT_LOG": {
+        "USERNAME": "Username",
+        "REPOSITORY_NAME": "Repository Name",
+        "TAGS": "Tags",
+        "OPERATION": "Operation",
+        "TIMESTAMP": "Timestamp",
+        "ALL_OPERATIONS": "All Operations",
+        "PULL": "Pull",
+        "PUSH": "Push",
+        "CREATE": "Create",
+        "DELETE": "Delete",
+        "OTHERS": "Others",
+        "ADVANCED": "Advanced",
+        "SIMPLE": "Simple",
+        "ITEMS": "item(s)",
+        "FILTER_PLACEHOLDER": "Filter Logs"
+    }
+}

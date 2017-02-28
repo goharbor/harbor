@@ -10,8 +10,12 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 import { ListProjectComponent } from './list-project/list-project.component';
 
 import { MessageService } from '../global-message/message.service';
+import { Message } from '../global-message/message';
 
-export const types: {} = { 0: 'My Projects', 1: 'Public Projects'};
+export const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS'};
+
+import { AlertType } from '../shared/shared.const';
+import { Response } from '@angular/http';
 
 @Component({
     selector: 'project',
@@ -43,8 +47,9 @@ export class ProjectComponent implements OnInit {
     this.projectService
         .listProjects(name, isPublic)
         .subscribe(
-          response => this.changedProjects = response,
-          error => this.messageService.announceMessage(error));
+          response => this.changedProjects = <Project[]>response,
+          error => this.messageService.announceAppLevelMessage(error.status, error, AlertType.WARNING)
+        );
   }
 
   openModal(): void {
@@ -74,7 +79,7 @@ export class ProjectComponent implements OnInit {
         .toggleProjectPublic(p.project_id, p.public)
         .subscribe(
           response=>console.log('Successful toggled project_id:' + p.project_id),
-          error=>this.messageService.announceMessage(error)
+          error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
         );
   }
 
@@ -86,7 +91,7 @@ export class ProjectComponent implements OnInit {
             console.log('Successful delete project_id:' + p.project_id);
             this.retrieve('', this.lastFilteredType);
           },
-          error=>console.log(error)
+          error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
         );
   }
 

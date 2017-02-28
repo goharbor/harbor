@@ -1,6 +1,7 @@
 <clr-main-container>
+    <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)" (showPwdChangeModal)="openModal($event)"></navigator>
-    <global-message></global-message>
+    <global-message [isAppLevel]="false"></global-message>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch">
             <!-- Only appear when searching -->
@@ -9,17 +10,14 @@
         </div>
         <nav class="sidenav" [class.side-nav-override]="showSearch">
             <section class="sidenav-content">
-                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">
-                    Projects
-                </a>
-                <section class="nav-group collapsible">
+                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
+                <section class="nav-group collapsible" *ngIf="isSystemAdmin">
                     <input id="tabsystem" type="checkbox">
-                    <label for="tabsystem">System Managements</label>
+                    <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">Users</a></li>
-                        <li><a class="nav-link">Replications</a></li>
-                        <li><a class="nav-link">Quarantine[*]</a></li>
-                        <li><a class="nav-link">Configurations[*]</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</a></li>
+                        <li><a class="nav-link">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATIONS' | translate}}</a></li>
+                        <li><a class="nav-link">{{'SIDE_NAV.SYSTEM_MGMT.CONFIGS' | translate}}</a></li>
                     </ul>
                 </section>
             </section>
@@ -28,3 +26,4 @@
 </clr-main-container>
 <account-settings-modal></account-settings-modal>
 <password-setting></password-setting>
+<deletion-dialog></deletion-dialog>

@@ -2,21 +2,21 @@
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-right">
       <div class="col-xs-3 push-md-2 flex-xs-middle">
-        <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption]}}</button>
+        <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
       </div>
       <div class="col-xs-3 flex-xs-middle">
-        <clr-icon shape="filter" style="position: relative; left: 15px;"></clr-icon><input style="padding-left: 20px;" type="text" placeholder="Filter logs" #searchUsername (keyup.enter)="doSearchAuditLogs(searchUsername.value)">
+        <grid-filter class="filter-pos" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
       </div>
     </div>
     <div class="row flex-items-xs-right advance-option" [hidden]="currentOption === 0">
       <div class="col-xs-2 push-md-1">
         <clr-dropdown [clrMenuPosition]="'bottom-left'" >
           <button class="btn btn-link" clrDropdownToggle>
-            All Operations
+            {{'AUDIT_LOG.ALL_OPERATIONS' | translate}}
             <clr-icon shape="caret down"></clr-icon>
           </button>
           <div class="dropdown-menu">
-            <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description}}</a>
+            <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description | translate}}</a>
           </div>
         </clr-dropdown>
       </div>
@@ -26,11 +26,11 @@
       </div>
     </div>
     <clr-datagrid>
-      <clr-dg-column>Username</clr-dg-column>
-      <clr-dg-column>Repository Name</clr-dg-column>
-      <clr-dg-column>Tag</clr-dg-column>
-      <clr-dg-column>Operation</clr-dg-column>
-      <clr-dg-column>Timestamp</clr-dg-column>
+      <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
       <clr-dg-row *ngFor="let l of auditLogs">
         <clr-dg-cell>{{l.username}}</clr-dg-cell>
         <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
@@ -38,7 +38,7 @@
         <clr-dg-cell>{{l.operation}}</clr-dg-cell>
         <clr-dg-cell>{{l.op_time}}</clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{ (auditLogs ? auditLogs.length : 0) }} item(s)</clr-dg-footer>
+      <clr-dg-footer>{{ (auditLogs ? auditLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

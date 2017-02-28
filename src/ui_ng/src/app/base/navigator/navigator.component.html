@@ -1,6 +1,6 @@
 <clr-header class="header-5 header">
     <div class="branding">
-        <a href="#" class="nav-link">
+        <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <clr-icon shape="vm-bug"></clr-icon>
             <span class="title">Harbor</span>
         </a>
@@ -14,14 +14,13 @@
         </div>
         <clr-dropdown class="dropdown bottom-left">
             <button class="nav-icon" clrDropdownToggle style="width: 90px;">
-                <clr-icon shape="world" style="left:-5px;"></clr-icon>
-                <span>English</span>
+                <clr-icon shape="world" style="left:-8px;"></clr-icon>
+                <span>{{currentLang}}</span>
                 <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
-                <a href="javascript:void(0)" clrDropdownItem>English</a>
-                <a href="javascript:void(0)" clrDropdownItem>中文简体</a>
-                <a href="javascript:void(0)" clrDropdownItem>中文繁體</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en")' [class.lang-selected]='matchLang("en")'>English</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh")' [class.lang-selected]='matchLang("zh")'>中文简体</a>
             </div>
         </clr-dropdown>
         <clr-dropdown [clrMenuPosition]="'bottom-right'" class="dropdown" *ngIf="isSessionValid">
@@ -31,11 +30,11 @@
               <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">
-                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">User Profile</a>
-                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">Change Password</a>
-                <a href="javascript:void(0)" clrDropdownItem>About</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem>{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
                 <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">Log out</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </div>
         </clr-dropdown>
     </div>
