@@ -37,18 +37,17 @@ export class SignInComponent implements AfterViewChecked {
     ) { }
 
     //For template accessing
-    get statusError(): number {
-        return signInStatusError;
+    public get isError(): boolean {
+        return this.signInStatus === signInStatusError;
     }
 
-    get statusOnGoing(): number {
-        return signInStatusOnGoing;
+    public get isOnGoing(): boolean {
+        return this.signInStatus === signInStatusOnGoing;
     }
 
     //Validate the related fields
-    private validate(): boolean {
-        return true;
-        //return this.signInForm.valid;
+    public get isValid(): boolean {
+        return this.currentForm.form.valid;
     }
 
     //General error handler
@@ -93,7 +92,7 @@ export class SignInComponent implements AfterViewChecked {
     //Trigger the signin action
     signIn(): void {
         //Should validate input firstly
-        if (!this.validate() || this.signInStatus === signInStatusOnGoing) {
+        if (!this.isValid || this.isOnGoing) {
             return;
         }
 
