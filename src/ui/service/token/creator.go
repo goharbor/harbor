@@ -62,7 +62,6 @@ func InitCreators() {
 		service: registry,
 		filterMap: map[string]accessFilter{
 			"repository": &repositoryFilter{
-				//Workaround, had to use same service for both notary and registry
 				parser: &basicParser{},
 			},
 			"registry": &registryFilter{},
