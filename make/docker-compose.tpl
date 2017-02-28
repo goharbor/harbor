@@ -11,7 +11,7 @@ services:
     networks:
       - harbor
   registry:
-    image: library/registry:2.5.1
+    image: registry:2.5.1
     container_name: registry
     restart: always
     volumes:
