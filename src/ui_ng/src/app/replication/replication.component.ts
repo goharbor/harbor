@@ -1,24 +1,73 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
+
+import { MessageService } from '../global-message/message.service';
+import { AlertType } from '../shared/shared.const';
+
+import { ReplicationService } from './replication.service';
+
+import { SessionUser } from '../shared/session-user';
 import { Policy } from './policy';
 import { Job } from './job';
+import { Target } from './target';
 
 @Component({
   selector: 'replicaton',
   templateUrl: 'replication.component.html'
 })
 export class ReplicationComponent implements OnInit {
-   policies: Policy[];
-   jobs: Job[];
+   
+   currentUser: SessionUser;
+   projectId: number;
+
+   policyName: string;
+   
+   policy: Policy;
+  
+   changedPolicies: Policy[];
+   changedJobs: Job[];
+
+   @ViewChild(CreateEditPolicyComponent) 
+   createEditPolicyComponent: CreateEditPolicyComponent
+
+   constructor(private route: ActivatedRoute, private messageService: MessageService, private replicationService: ReplicationService) {
+     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data);
+   }
 
    ngOnInit(): void {
-     this.policies = [
-       { name: 'sync_01', status: 'Disabled', destination: '10.117.5.135', lastStartTime: '2016-12-21 17:52:35', description: 'test'},
-       { name: 'sync_02', status: 'Enabled', destination: '10.117.5.117', lastStartTime: '2016-12-21 12:22:47', description: 'test'},
-     ];
-     this.jobs = [
-       { name: 'project01/ubuntu:14.04', status: 'Finished', operation: 'Transfer', creationTime: '2016-12-21 17:53:50', endTime: '2016-12-21 17:55:01'},
-       { name: 'project01/mysql:5.6', status: 'Finished', operation: 'Transfer', creationTime: '2016-12-21 17:54:20', endTime: '2016-12-21 17:55:05'},
-       { name: 'project01/photon:latest', status: 'Finished', operation: 'Transfer', creationTime: '2016-12-21 17:54:50', endTime: '2016-12-21 17:55:15'}
-     ];
+     this.projectId = +this.route.snapshot.parent.params['id'];
+     console.log('Get projectId from route params snapshot:' + this.projectId);
+     this.retrievePolicies();
+   }
+
+   retrievePolicies(): void {
+     this.replicationService
+         .listPolicies(this.projectId, this.policyName)
+         .subscribe(
+           response=>{
+             this.changedPolicies = response;
+             if(this.changedPolicies && this.changedPolicies.length > 0) {
+               this.fetchPolicyJobs(this.changedPolicies[0].id);
+             }
+           },
+           error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)
+         );
+   }
+
+   openModal(): void {
+     this.createEditPolicyComponent.openCreateEditPolicy();
+     console.log('Clicked open create-edit policy.');
+   }
+
+   fetchPolicyJobs(policyId: number) {
+     console.log('Received policy ID ' + policyId + ' by clicked row.');
+     this.replicationService
+         .listJobs(policyId)
+         .subscribe(
+           response=>this.changedJobs = response,
+           error=>this.messageService.announceMessage(error.status, 'Failed to fetch jobs with policy ID:' + policyId, AlertType.DANGER)
+         );
    }
 }

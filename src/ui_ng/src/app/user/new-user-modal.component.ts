@@ -58,11 +58,11 @@ export class NewUserModalComponent {
     }
 
     open(): void {
+        this.newUserForm.reset();//Reset form
         this.opened = true;
     }
 
     close(): void {
-        this.newUserForm.reset();//Reset form
         this.opened = false;
     }
 

@@ -1,7 +1,8 @@
-<clr-alert [clrAlertType]="'alert-danger'" [clrAlertAppLevel]="true" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
+<clr-alert [clrAlertType]="globalMessage.type" [clrAlertAppLevel]="isAppLevel" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
   <div class="alert-item">
     <span class="alert-text">
-      {{globalMessage}}
+      {{globalMessage.message}}
     </span>
+    <a *ngIf="globalMessage.statusCode === 401" [routerLink]="['/sign-in']" style="color: #ffffff;">Sign In</a>
   </div>
 </clr-alert>

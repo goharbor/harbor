@@ -30,30 +30,38 @@ export class UserService {
     //Get the user list
     getUsers(): Promise<User[]> {
         return this.http.get(userMgmtEndpoint, this.httpOptions).toPromise()
-        .then(response => response.json() as User[])
-        .catch(error => this.handleError(error));
+            .then(response => response.json() as User[])
+            .catch(error => this.handleError(error));
     }
 
     //Add new user
     addUser(user: User): Promise<any> {
         return this.http.post(userMgmtEndpoint, JSON.stringify(user), this.httpOptions).toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error));
+            .then(() => null)
+            .catch(error => this.handleError(error));
     }
 
     //Delete the specified user
     deleteUser(userId: number): Promise<any> {
-        return this.http.delete(userMgmtEndpoint+"/"+userId, this.httpOptions)
-        .toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error));
+        return this.http.delete(userMgmtEndpoint + "/" + userId, this.httpOptions)
+            .toPromise()
+            .then(() => null)
+            .catch(error => this.handleError(error));
     }
 
     //Update user to enable/disable the admin role
     updateUser(user: User): Promise<any> {
-        return this.http.put(userMgmtEndpoint+"/"+user.user_id, JSON.stringify(user), this.httpOptions)
-        .toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error));
+        return this.http.put(userMgmtEndpoint + "/" + user.user_id, JSON.stringify(user), this.httpOptions)
+            .toPromise()
+            .then(() => null)
+            .catch(error => this.handleError(error));
+    }
+
+    //Set user admin role
+    updateUserRole(user: User): Promise<any> {
+        return this.http.put(userMgmtEndpoint + "/" + user.user_id + "/sysadmin", JSON.stringify(user), this.httpOptions)
+            .toPromise()
+            .then(() => null)
+            .catch(error => this.handleError(error));
     }
 }

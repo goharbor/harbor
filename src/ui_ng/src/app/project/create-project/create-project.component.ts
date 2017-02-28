@@ -4,7 +4,11 @@ import { Response } from '@angular/http';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
+
 import { MessageService } from '../../global-message/message.service';
+import { AlertType } from '../../shared/shared.const';
+
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'create-project',
@@ -21,7 +25,9 @@ export class CreateProjectComponent {
   
   @Output() create = new EventEmitter<boolean>();
   
-  constructor(private projectService: ProjectService, private messageService: MessageService) {}
+  constructor(private projectService: ProjectService, 
+              private messageService: MessageService,
+              private translateService: TranslateService) {}
 
   onSubmit() {
     this.hasError = false;
@@ -37,14 +43,16 @@ export class CreateProjectComponent {
             if (error instanceof Response) { 
               switch(error.status) {
               case 409:
-                this.errorMessage = 'Project name already exists.'; 
+                this.translateService.get('PROJECT.NAME_ALREADY_EXISTS').subscribe(res=>this.errorMessage = res);
                 break;
               case 400:
-                this.errorMessage = 'Project name is illegal.'; 
+                this.translateService.get('PROJECT.NAME_IS_ILLEGAL').subscribe(res=>this.errorMessage = res); 
                 break;
               default:
-                this.errorMessage = 'Unknown error for project name.';
-                this.messageService.announceMessage(this.errorMessage);
+                this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res=>{
+                  this.errorMessage = res;
+                  this.messageService.announceMessage(error.status, this.errorMessage, AlertType.DANGER);
+                });
               }
             }
           }); 

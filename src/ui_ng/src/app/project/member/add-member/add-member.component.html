@@ -1,10 +1,10 @@
 <clr-modal [(clrModalOpen)]="addMemberOpened">
-  <h3 class="modal-title">Add Member</h3>
+  <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
   <div class="modal-body">
     <form>
       <section class="form-block">
         <div class="form-group">
-          <label for="member_name" class="col-md-4">Username</label>
+          <label for="member_name" class="col-md-4">{{'MEMBER.NAME' | translate}}</label>
           <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="hasError" [class.valid]="!hasError" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="member_name"  [(ngModel)]="member.username" name="name" size="20" (keyup)="hasError=false;">
             <span class="tooltip-content">
@@ -13,25 +13,25 @@
           </label>
         </div>
         <div class="form-group">
-          <label class="col-md-4">Role</label>
+          <label class="col-md-4">{{'MEMBER.ROLE' | translate}}</label>
           <div class="radio">
             <input type="radio" name="roleRadios" id="checkrads_project_admin" (click)="member.role_id = 1" [checked]="member.role_id === 1">
-            <label for="checkrads_project_admin">Project Admin</label>
+            <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
           </div>
           <div class="radio">
             <input type="radio" name="roleRadios" id="checkrads_developer"  (click)="member.role_id = 2" [checked]="member.role_id === 2">
-            <label for="checkrads_developer">Developer</label>
+            <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
           </div>
           <div class="radio">
             <input type="radio" name="roleRadios" id="checkrads_guest" (click)="member.role_id = 3" [checked]="member.role_id === 3">
-            <label for="checkrads_guest">Guest</label>
+            <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
           </div>
         </div>
       </section>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="addMemberOpened = false">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="onSubmit()">Ok</button>
+    <button type="button" class="btn btn-outline" (click)="addMemberOpened = false">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-primary" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
