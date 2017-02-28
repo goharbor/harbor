@@ -20,7 +20,7 @@
         "type": "token",
         "options": {
             "realm": "$token_endpoint/service/token",
-            "service": "harbor-registry",
+            "service": "harbor-notary",
             "issuer": "harbor-token-issuer",
             "rootcertbundle": "/config/root.crt"
         }
