@@ -136,4 +136,7 @@ export class AuditLogComponent implements OnInit {
     }
     this.doSearchByOptions();
   }
+  refresh(): void {
+    this.retrieve(this.queryParam);
+  }
 }

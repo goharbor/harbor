@@ -95,4 +95,8 @@ export class ProjectComponent implements OnInit {
         );
   }
 
+  refresh(): void {
+    this.retrieve('', this.lastFilteredType);
+  }
+
 }
