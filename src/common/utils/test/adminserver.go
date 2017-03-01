@@ -56,7 +56,6 @@ var adminServerDefaultConfig = map[string]interface{}{
 	config.MaxJobWorkers:              3,
 	config.TokenExpiration:            30,
 	config.CfgExpiration:              5,
-	config.JobLogDir:                  "/var/log/jobs",
 	config.UseCompressedJS:            true,
 	config.AdminInitialPassword:       "password",
 }

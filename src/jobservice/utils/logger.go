@@ -65,10 +65,6 @@ func GetJobLogPath(jobID int64) (string, error) {
 
 		p = filepath.Join(d, p)
 	}
-	base, err := config.LogDir()
-	if err != nil {
-		return "", err
-	}
-	p = filepath.Join(base, p, f)
+	p = filepath.Join(config.LogDir(), p, f)
 	return p, nil
 }
