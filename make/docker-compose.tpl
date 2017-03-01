@@ -5,7 +5,7 @@ services:
     container_name: harbor-log 
     restart: always
     volumes:
-      - /var/log/harbor/:/var/log/docker/
+      - /var/log/harbor/:/var/log/docker/:z
     ports:
       - 1514:514
   registry:
@@ -13,8 +13,8 @@ services:
     container_name: registry
     restart: always
     volumes:
-      - /data/registry:/storage
-      - ./common/config/registry/:/etc/registry/
+      - /data/registry:/storage:z
+      - ./common/config/registry/:/etc/registry/:z
     environment:
       - GODEBUG=netdns=cgo
     command:
@@ -31,7 +31,7 @@ services:
     container_name: harbor-db
     restart: always
     volumes:
-      - /data/database:/var/lib/mysql
+      - /data/database:/var/lib/mysql:z
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -48,9 +48,9 @@ services:
       - ./common/config/ui/env
     restart: always
     volumes:
-      - ./common/config/ui/app.conf:/etc/ui/app.conf
-      - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
-      - /data:/harbor_storage
+      - ./common/config/ui/app.conf:/etc/ui/app.conf:z
+      - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
+      - /data:/harbor_storage:z
     depends_on:
       - log
     logging:
@@ -65,8 +65,8 @@ services:
       - ./common/config/jobservice/env
     restart: always
     volumes:
-      - /data/job_logs:/var/log/jobs
-      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf
+      - /data/job_logs:/var/log/jobs:z
+      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf:z
     depends_on:
       - ui
     logging:
@@ -79,7 +79,7 @@ services:
     container_name: nginx
     restart: always
     volumes:
-      - ./common/config/nginx:/etc/nginx
+      - ./common/config/nginx:/etc/nginx:z
     ports:
       - 80:80
       - 443:443
