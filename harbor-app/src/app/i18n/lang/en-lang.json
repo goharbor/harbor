@@ -1,10 +1,14 @@
 {
-    "LOG_IN": "LOG IN",
-    "SIGN_UP": "Sign up for an account",
+    "SIGN_IN": {
+        "REMEMBER": "Remember me",
+        "INVALID_MSG": "Invalid user name or password"
+    },
     "BUTTON": {
         "CANCEL": "Cancel",
         "OK": "Ok",
-        "DELETE": "DELETE"
+        "DELETE": "DELETE",
+        "LOG_IN": "LOG IN",
+        "SIGN_UP": "Sign up for an account"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -13,7 +17,9 @@
         "COMMENT": "Length of comment should be less than 20",
         "CURRENT_PWD": "Current password is Required",
         "PASSWORD": "Password should be at least 7 characters with 1 uppercase, 1 lowercase letter and 1 number",
-        "CONFIRM_PWD": "Password input here should be same with above password"
+        "CONFIRM_PWD": "Password input here should be same with above password",
+        "SIGN_IN_USERNAME": "Username is required",
+        "SIGN_IN_PWD": "Password is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -21,7 +27,9 @@
         "CONFIRM_PWD": "Confirm new password",
         "USER_NAME": "Enter username",
         "MAIL": "Enter email address",
-        "FULL_NAME": "Enter full name"
+        "FULL_NAME": "Enter full name",
+        "SIGN_IN_NAME": "Username",
+        "SIGN_IN_PWD": "Password"
     },
     "PROFILE": {
         "TITLE": "User Profile",
@@ -29,13 +37,15 @@
         "EMAIL": "Email",
         "FULL_NAME": "Full name",
         "COMMENT": "Comments",
-        "PASSWORD": "Password"
+        "PASSWORD": "Password",
+        "SAVE_SUCCESS": "Save user profile successfully"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
         "CURRENT_PWD": "Current Password",
         "NEW_PWD": "New Password",
-        "CONFIRM_PWD": "Confirm Password"
+        "CONFIRM_PWD": "Confirm Password",
+        "SAVE_SUCCESS": "Change user password successfully"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
@@ -67,7 +77,11 @@
         "COLUMN_REG_NAME": "Registration time",
         "IS_ADMIN": "Yes",
         "IS_NOT_ADMIN": "No",
-        "ADD_USER_TITLE": "Add User"
+        "ADD_USER_TITLE": "Add User",
+        "SAVE_SUCCESS": "Add new user successfully",
+        "DELETION_TITLE": "Confirm user deletion",
+        "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
+        "DELETE_SUCCESS": "Delete user successfully"
     },
     "PROJECT": {
         "PROJECTS": "Projects",
@@ -88,8 +102,8 @@
         "NAME_IS_ILLEGAL": "Project name is illegal.",
         "UNKNOWN_ERROR": "Unknown error occurred while creating project.",
         "ITEMS": "item(s)",
-        "DELETE_TITLE": "Delete Project",
-        "DELETE_MESSAGE": "Are you sure to delete the project?",
+        "DELETION_TITLE": "Confirm project deletion",
+        "DELETION_SUMMARY": "Do you want to delete project {{param}}?",
         "FILTER_PLACEHOLDER": "Filter Projects"
     },
     "PROJECT_DETAIL": {
@@ -111,7 +125,9 @@
         "USERNAME_DOES_NOT_EXISTS": "Username does not exist.",
         "USERNAME_ALREADY_EXISTS": "Username already exists.",
         "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
-        "FILTER_PLACEHOLDER": "Filter Members"
+        "FILTER_PLACEHOLDER": "Filter Members",
+        "DELETION_TITLE": "Confirm project member deletion",
+        "DELETION_SUMMARY": "Do you want to delete project member {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -129,5 +145,7 @@
         "SIMPLE": "Simple",
         "ITEMS": "item(s)",
         "FILTER_PLACEHOLDER": "Filter Logs"
-    }
+    },
+    "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
+    "UNAUTHORIZED_ERROR": "You need to sign in to continue the operation"
 }

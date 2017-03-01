@@ -3,6 +3,9 @@ import { NgForm } from '@angular/forms';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
+import { MessageService } from '../../global-message/message.service';
+import { AlertType } from '../../shared/shared.const';
+import { errorHandler } from '../../shared/shared.utils';
 
 @Component({
     selector: "account-settings-modal",
@@ -13,7 +16,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     opened: boolean = false;
     staticBackdrop: boolean = true;
     account: SessionUser;
-    error: any;
+    error: any = null;
     alertClose: boolean = true;
 
     private isOnCalling: boolean = false;
@@ -22,7 +25,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
 
-    constructor(private session: SessionService) { }
+    constructor(
+        private session: SessionService,
+        private msgService: MessageService) { }
 
     ngOnInit(): void {
         //Value copy
@@ -30,7 +35,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get isValid(): boolean {
-        return this.accountForm && this.accountForm.valid;
+        return this.accountForm && this.accountForm.valid && this.error === null;
     }
 
     public get showProgress(): boolean {
@@ -38,16 +43,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get errorMessage(): string {
-        if(this.error){
-            if(this.error.message){
-                return this.error.message;
-            }else{
-                if(this.error._body){
-                    return this.error._body;
-                }
-            }
-        }
-        return "";
+        return errorHandler(this.error);
     }
 
     ngAfterViewChecked(): void {
@@ -58,6 +54,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     if (this.error) {
                         this.error = null;
                     }
+                    this.alertClose = true;
                     this.formValueChanged = true;
                 });
             }
@@ -92,6 +89,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .then(() => {
                 this.isOnCalling = false;
                 this.close();
+                this.msgService.announceMessage(200, "PROFILE.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {
                 this.isOnCalling = false;

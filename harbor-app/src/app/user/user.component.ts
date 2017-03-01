@@ -7,6 +7,9 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
 import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
 import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
+import { DeletionTargets, AlertType } from '../shared/shared.const'
+import { errorHandler } from '../shared/shared.utils';
+import { MessageService }  from '../global-message/message.service';
 
 @Component({
   selector: 'harbor-user',
@@ -29,18 +32,21 @@ export class UserComponent implements OnInit {
   constructor(
     private userService: UserService,
     private translate: TranslateService,
-    private deletionDialogService: DeletionDialogService) {
-      deletionDialogService.deletionConfirm$.subscribe(confirmed => {
-        this.delUser(confirmed);
-      });
-    }
+    private deletionDialogService: DeletionDialogService,
+    private msgService: MessageService) {
+    deletionDialogService.deletionConfirm$.subscribe(confirmed => {
+      if (confirmed && confirmed.targetId === DeletionTargets.USER) {
+        this.delUser(confirmed.data);
+      }
+    });
+  }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
   }
 
   isSystemAdmin(u: User): string {
-    if(!u){
+    if (!u) {
       return "{{MISS}}";
     }
     let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
@@ -49,7 +55,7 @@ export class UserComponent implements OnInit {
   }
 
   adminActions(u: User): string {
-    if(!u){
+    if (!u) {
       return "{{MISS}}";
     }
     let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
@@ -101,7 +107,9 @@ export class UserComponent implements OnInit {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
       })
-      .catch(error => console.error(error))//TODO:
+      .catch(error => {
+        this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+      })//TODO:
   }
 
   //Delete the specified user
@@ -112,9 +120,12 @@ export class UserComponent implements OnInit {
 
     //Confirm deletion
     let msg: DeletionMessage = new DeletionMessage(
-      "Confirm user deletion",
-      "Do you want to delete user "+user.username+"?",
-      user);
+      "USER.DELETION_TITLE",
+      "USER.DELETION_SUMMARY",
+      user.username,
+      user,
+      DeletionTargets.USER
+    );
     this.deletionDialogService.openComfirmDialog(msg);
   }
 
@@ -125,9 +136,10 @@ export class UserComponent implements OnInit {
         //and then view refreshed
         this.originalUsers.then(users => {
           this.users = users.filter(u => u.user_id != user.user_id);
+          this.msgService.announceMessage(500, "USER.DELETE_SUCCESS", AlertType.SUCCESS);
         });
       })
-      .catch(error => console.error(error));//TODO:
+      .catch(error => this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER) );//TODO:
   }
 
   //Refresh the user list
@@ -144,7 +156,7 @@ export class UserComponent implements OnInit {
       })
       .catch(error => {
         this.onGoing = false;
-        console.error(error);//TODO:
+        this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
       });
   }
 

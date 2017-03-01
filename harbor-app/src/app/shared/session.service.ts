@@ -98,7 +98,6 @@ export class SessionService {
         if(!account){
             return Promise.reject("Invalid account settings");
         }
-        console.info(account);
         let putUrl = accountEndpoint.replace(":id", account.user_id+"");
         return this.http.put(putUrl, JSON.stringify(account), { headers: this.headers }).toPromise()
         .then(() => {
