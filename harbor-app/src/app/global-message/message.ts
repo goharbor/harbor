@@ -4,6 +4,7 @@ export class Message {
   statusCode: number;
   message: string;
   alertType: AlertType;
+  isAppLevel: boolean = false;
 
   get type(): string {
     switch (this.alertType) {

@@ -23,7 +23,7 @@ export class SignInComponent implements AfterViewChecked {
     @ViewChild('signInForm') currentForm: NgForm;
 
     //Status flag
-    signInStatus: number = 0;
+    signInStatus: number = signInStatusNormal;
 
     //Initialize sign in credential
     @Input() signInCredential: SignInCredential = {
