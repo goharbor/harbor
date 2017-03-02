@@ -130,5 +130,9 @@
         "SIMPLE": "简单检索",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志"
+    },
+    "REPLICATION": {
+        "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
+        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
     }
 }

@@ -129,5 +129,9 @@
         "SIMPLE": "Simple",
         "ITEMS": "item(s)",
         "FILTER_PLACEHOLDER": "Filter Logs"
+    },
+    "REPLICATION": {
+        "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
+        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
     }
 }
