@@ -19,3 +19,7 @@ export const errorHandler = function (error: any): string {
 
     return "UNKNOWN_ERROR";
 }
+
+export const errorProcesser = function(error: any): void {
+    
+}

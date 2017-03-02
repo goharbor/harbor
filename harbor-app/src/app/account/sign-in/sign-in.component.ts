@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
@@ -17,7 +17,8 @@ export const signInStatusError = -1;
     styleUrls: ['sign-in.component.css']
 })
 
-export class SignInComponent implements AfterViewChecked {
+export class SignInComponent implements AfterViewChecked, OnInit {
+    private redirectUrl: string = "";
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -33,8 +34,16 @@ export class SignInComponent implements AfterViewChecked {
 
     constructor(
         private router: Router,
-        private session: SessionService
+        private session: SessionService,
+        private route: ActivatedRoute
     ) { }
+
+    ngOnInit(): void {
+        this.route.queryParams
+            .subscribe(params => {
+                this.redirectUrl = params["redirect_url"] || "";
+            });
+    }
 
     //For template accessing
     public get isError(): boolean {
@@ -105,16 +114,14 @@ export class SignInComponent implements AfterViewChecked {
                 //Set status
                 this.signInStatus = signInStatusNormal;
 
-                //Validate the sign-in session
-                this.session.retrieveUser()
-                    .then(user => {
-                        //Routing to the right location
-                        let nextRoute = ["/harbor", "projects"];
-                        this.router.navigate(nextRoute);
-                    })
-                    .catch(error => {
-                        this.handleError(error);
-                    });
+                //Redirect to the right route
+                if (this.redirectUrl === "") {
+                    //Routing to the default location
+                    let nextRoute = ["/harbor"];
+                    this.router.navigate(nextRoute);
+                }else{
+                    this.router.navigateByUrl(this.redirectUrl);
+                }
             })
             .catch(error => {
                 this.handleError(error);
