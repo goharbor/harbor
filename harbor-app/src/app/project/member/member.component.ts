@@ -13,6 +13,7 @@ import { AlertType, DeletionTargets } from '../../shared/shared.const';
 
 import { DeletionDialogService } from '../../shared/deletion-dialog/deletion-dialog.service';
 import { DeletionMessage } from '../../shared/deletion-dialog/deletion-message';
+import { SessionService } from '../../shared/session.service';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
@@ -37,9 +38,10 @@ export class MemberComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, private router: Router,
     private memberService: MemberService, private messageService: MessageService,
-    private deletionDialogService: DeletionDialogService) {
+    private deletionDialogService: DeletionDialogService,
+    session:SessionService) {
     //Get current user from registered resolver.
-    this.route.data.subscribe(data => this.currentUser = <SessionUser>data['memberResolver']);
+    this.currentUser = session.getCurrentUser();
     deletionDialogService.deletionConfirm$.subscribe(message => {
       if (message && message.targetId === DeletionTargets.PROJECT_MEMBER) {
         this.memberService

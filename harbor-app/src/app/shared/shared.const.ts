@@ -16,3 +16,4 @@ export const httpStatusCode = {
 export const enum DeletionTargets {
   EMPTY, PROJECT, PROJECT_MEMBER, USER
 };
+export const harborRootRoute = "/harbor";

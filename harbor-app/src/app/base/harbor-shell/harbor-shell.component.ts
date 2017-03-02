@@ -54,6 +54,11 @@ export class HarborShellComponent implements OnInit {
         return account != null && account.has_admin_role>0;
     }
 
+    public get isUserExisting(): boolean {
+        let account = this.session.getCurrentUser();
+        return account != null;
+    }
+
     //Open modal dialog
     openModal(event: ModalEvent): void {
         switch (event.modalName) {
@@ -84,5 +89,11 @@ export class HarborShellComponent implements OnInit {
         if (event) {
             this.isSearchResultsOpened = false;
         }
+    }
+
+    //Close serch result panel if existing
+    watchClickEvt(): void {
+        this.searchResultComponet.close();
+        this.isSearchResultsOpened = false;
     }
 }
