@@ -17,6 +17,8 @@ import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.compo
 import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
 import { BaseRoutingResolver } from './route/base-routing-resolver.service';
 import { SystemAdminGuard } from './route/system-admin-activate.service';
+import { NewUserFormComponent } from './new-user-form/new-user-form.component';
+import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
 @NgModule({
   imports: [
@@ -29,7 +31,9 @@ import { SystemAdminGuard } from './route/system-admin-activate.service';
     MaxLengthExtValidatorDirective,
     FilterComponent,
     HarborActionOverflow,
-    DeletionDialogComponent
+    DeletionDialogComponent,
+    NewUserFormComponent,
+    InlineAlertComponent
   ],
   exports: [
     CoreModule,
@@ -38,7 +42,9 @@ import { SystemAdminGuard } from './route/system-admin-activate.service';
     FilterComponent,
     HarborActionOverflow,
     TranslateModule,
-    DeletionDialogComponent
+    DeletionDialogComponent,
+    NewUserFormComponent,
+    InlineAlertComponent
   ],
   providers: [
     SessionService,

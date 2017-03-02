@@ -6,7 +6,8 @@ import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
 import { AlertType } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
-import { errorHandler } from '../../shared/shared.utils';
+import { errorHandler, isEmptyForm } from '../../shared/shared.utils';
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'password-setting',
@@ -17,7 +18,6 @@ export class PasswordSettingComponent implements AfterViewChecked {
     oldPwd: string = "";
     newPwd: string = "";
     reNewPwd: string = "";
-    alertClose: boolean = true;
     error: any = null;
 
     private formValueChanged: boolean = false;
@@ -25,6 +25,9 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
+    @ViewChild(InlineAlertComponent)
+    private inlineAlert: InlineAlertComponent;
+
     constructor(
         private passwordService: PasswordSettingService,
         private session: SessionService,
@@ -48,10 +51,6 @@ export class PasswordSettingComponent implements AfterViewChecked {
         return this.onCalling;
     }
 
-    public get errorMessage(): string {
-        return errorHandler(this.error);
-    }
-
     ngAfterViewChecked() {
         if (this.pwdFormRef != this.pwdForm) {
             this.pwdFormRef = this.pwdForm;
@@ -59,7 +58,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
                 this.pwdFormRef.valueChanges.subscribe(data => {
                     this.formValueChanged = true;
                     this.error = null;
-                    this.alertClose = true;
+                    this.inlineAlert.close();
                 });
             }
         }
@@ -69,10 +68,26 @@ export class PasswordSettingComponent implements AfterViewChecked {
     open(): void {
         this.opened = true;
         this.pwdForm.reset();
+        this.formValueChanged = false;
     }
 
     //Close the moal dialog
     close(): void {
+        if (this.formValueChanged) {
+            if (isEmptyForm(this.pwdForm)) {
+                this.opened = false;
+            } else {
+                //Need user confirmation
+                this.inlineAlert.showInlineConfirmation({
+                    message: "Form value changed, confirm to cancel?"
+                });
+            }
+        } else {
+            this.opened = false;
+        }
+    }
+
+    confirmCancel(): void {
         this.opened = false;
     }
 
@@ -108,7 +123,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             .catch(error => {
                 this.onCalling = false;
                 this.error = error;
-                this.alertClose = false;
+                this.inlineAlert.showInlineError(error);
             });
     }
 }

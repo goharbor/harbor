@@ -6,6 +6,7 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { PasswordSettingComponent } from './password/password-setting.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { SharedModule } from '../shared/shared.module';
+import { SignUpComponent } from './sign-up/sign-up.component';
 
 import { PasswordSettingService } from './password/password-setting.service';
 
@@ -15,9 +16,17 @@ import { PasswordSettingService } from './password/password-setting.service';
     RouterModule,
     SharedModule
   ],
-  declarations: [SignInComponent, PasswordSettingComponent, AccountSettingsModalComponent],
-  exports: [SignInComponent, PasswordSettingComponent, AccountSettingsModalComponent],
-  
+  declarations: [
+    SignInComponent,
+    PasswordSettingComponent,
+    AccountSettingsModalComponent,
+    SignUpComponent],
+  exports: [
+    SignInComponent,
+    PasswordSettingComponent,
+    AccountSettingsModalComponent,
+    SignUpComponent],
+
   providers: [PasswordSettingService]
 })
 export class AccountModule { }

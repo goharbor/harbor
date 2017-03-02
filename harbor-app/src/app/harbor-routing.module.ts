@@ -16,11 +16,12 @@ import { AuditLogComponent } from './log/audit-log.component';
 import { BaseRoutingResolver } from './shared/route/base-routing-resolver.service';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
-
+import { SignUpComponent } from './account/sign-up/sign-up.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
+  { path: 'sign-up', component: SignUpComponent},
   {
     path: 'harbor',
     component: HarborShellComponent,
