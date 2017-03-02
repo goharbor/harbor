@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 
+import { TranslateService } from '@ngx-translate/core';
+
 import { DeletionDialogService } from './deletion-dialog.service';
+import { DeletionMessage } from './deletion-message';
 
 @Component({
     selector: 'deletion-dialog',
@@ -12,13 +15,18 @@ export class DeletionDialogComponent{
     opened: boolean = false;
     dialogTitle: string = "";
     dialogContent: string = "";
-    data: any;
+    message: DeletionMessage;
 
-    constructor(private delService: DeletionDialogService){
+    constructor(
+        private delService: DeletionDialogService,
+        private translate: TranslateService){
        delService.deletionAnnouced$.subscribe(msg => {
            this.dialogTitle = msg.title;
            this.dialogContent = msg.message;
-           this.data = msg.data;
+           this.message = msg;
+
+           this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res );
+           this.translate.get(this.dialogContent, {'param': msg.param}).subscribe((res: string) => this.dialogContent = res );
            //Open dialog
            this.open();
        });
@@ -33,7 +41,7 @@ export class DeletionDialogComponent{
     }
 
     confirm(): void {
-        this.delService.confirmDeletion(this.data);
+        this.delService.confirmDeletion(this.message);
         this.close();
     }
 }

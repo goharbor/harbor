@@ -7,11 +7,6 @@
     </div>
     <global-search (searchEvt)="transferSearchEvent($event)"></global-search>
     <div class="header-actions">
-        <div *ngIf="!isSessionValid">
-            <a href="javascript:void(0)" class="nav-link nav-text sign-in-override" routerLink="/sign-in" routerLinkActive="active">Sign In</a>
-            <span class="custom-divider"></span>
-            <a href="javascript:void(0)" class="nav-link nav-text sign-up-override" routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
-        </div>
         <clr-dropdown class="dropdown bottom-left">
             <button class="nav-icon" clrDropdownToggle style="width: 90px;">
                 <clr-icon shape="world" style="left:-8px;"></clr-icon>

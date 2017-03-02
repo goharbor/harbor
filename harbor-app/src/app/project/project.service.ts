@@ -12,8 +12,6 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
-const url_prefix = '';
-
 @Injectable()
 export class ProjectService {
   
@@ -24,7 +22,7 @@ export class ProjectService {
 
   getProject(projectId: number): Promise<Project> {
     return this.http
-               .get(url_prefix + `/api/projects/${projectId}`)
+               .get(`/api/projects/${projectId}`)
                .toPromise()
                .then(response=>response.json() as Project)
                .catch(error=>Observable.throw(error));
@@ -32,14 +30,14 @@ export class ProjectService {
 
   listProjects(name: string, isPublic: number): Observable<any>{    
     return this.http
-               .get(url_prefix + `/api/projects?project_name=${name}&is_public=${isPublic}`, this.options)
+               .get(`/api/projects?project_name=${name}&is_public=${isPublic}`, this.options)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
 
   createProject(name: string, isPublic: number): Observable<any> {
     return this.http
-               .post(url_prefix + `/api/projects`,
+               .post(`/api/projects`,
                 JSON.stringify({'project_name': name, 'public': isPublic})
                 , this.options)
                .map(response=>response.status)
@@ -48,14 +46,14 @@ export class ProjectService {
 
   toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
     return this.http 
-               .put(url_prefix + `/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
+               .put(`/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
   deleteProject(projectId: number): Observable<any> {
     return this.http
-               .delete(url_prefix + `/api/projects/${projectId}`)
+               .delete(`/api/projects/${projectId}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

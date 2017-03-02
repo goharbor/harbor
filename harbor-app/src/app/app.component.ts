@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, zhLang } from './shared/shared.const';
+import { supportedLangs, enLang } from './shared/shared.const';
 import { SessionService } from './shared/session.service';
 
 @Component({

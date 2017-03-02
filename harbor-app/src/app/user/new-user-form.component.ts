@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewChecked, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, AfterViewChecked, Output, EventEmitter, Input } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { User } from './user';
@@ -11,6 +11,7 @@ import { User } from './user';
 export class NewUserFormComponent implements AfterViewChecked {
     newUser: User = new User();
     confirmedPwd: string = "";
+    @Input() isModal: boolean = true;
 
     newUserFormRef: NgForm;
     @ViewChild("newUserFrom") newUserForm: NgForm;

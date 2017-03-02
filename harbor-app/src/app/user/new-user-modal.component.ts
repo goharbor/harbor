@@ -1,4 +1,4 @@
-import { Component, ViewChild, Output,EventEmitter } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { NewUserFormComponent } from './new-user-form.component';
@@ -6,6 +6,9 @@ import { User } from './user';
 
 import { SessionService } from '../shared/session.service';
 import { UserService } from './user.service';
+import { errorHandler } from '../shared/shared.utils';
+import { MessageService }  from '../global-message/message.service';
+import { AlertType } from '../shared/shared.const';
 
 @Component({
     selector: "new-user-modal",
@@ -21,7 +24,8 @@ export class NewUserModalComponent {
     @Output() addNew = new EventEmitter<User>();
 
     constructor(private session: SessionService,
-        private userService: UserService) { }
+        private userService: UserService,
+        private msgService: MessageService) { }
 
     @ViewChild(NewUserFormComponent)
     private newUserForm: NewUserFormComponent;
@@ -35,25 +39,19 @@ export class NewUserModalComponent {
     }
 
     public get isValid(): boolean {
-        return this.newUserForm.isValid;
+        return this.newUserForm.isValid && this.error == null;
     }
 
     public get errorMessage(): string {
-        if (this.error) {
-            if (this.error.message) {
-                return this.error.message;
-            } else {
-                if (this.error._body) {
-                    return this.error._body;
-                }
-            }
-        }
-        return "";
+        return errorHandler(this.error);
     }
 
     formValueChange(flag: boolean): void {
         if (!this.alertClose) {
             this.alertClose = true;//If alert is shown, then close it
+        }
+        if(this.error != null){
+            this.error = null;//clear error
         }
     }
 
@@ -70,19 +68,19 @@ export class NewUserModalComponent {
     create(): void {
         //Double confirm everything is ok
         //Form is valid
-        if(!this.isValid){
+        if (!this.isValid) {
             return;
         }
 
         //We have new user data
         let u = this.getNewUser();
-        if(!u){
+        if (!u) {
             return;
         }
 
         //Session is ok and role is matched
         let account = this.session.getCurrentUser();
-        if(!account || account.has_admin_role === 0){
+        if (!account || account.has_admin_role === 0) {
             return;
         }
 
@@ -90,17 +88,19 @@ export class NewUserModalComponent {
         this.onGoing = true;
 
         this.userService.addUser(u)
-        .then(() => {
-            this.onGoing = false;
-            //TODO:
-            //As no response data returned, can not add it to list directly
+            .then(() => {
+                this.onGoing = false;
+                //TODO:
+                //As no response data returned, can not add it to list directly
 
-            this.addNew.emit(u);
-            this.close();
-        })
-        .catch(error => {
-            this.onGoing = false;
-            this.error = error;
-        });
+                this.addNew.emit(u);
+                this.close();
+                this.msgService.announceMessage(200, "USER.SAVE_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.onGoing = false;
+                this.error = error;
+                this.alertClose = false;
+            });
     }
 }

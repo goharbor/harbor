@@ -5,11 +5,10 @@ import 'rxjs/add/operator/toPromise';
 import { SessionUser } from './session-user';
 import { SignInCredential } from './sign-in-credential';
 
-const urlPrefix = '';
-const signInUrl = urlPrefix + '/login';
-const currentUserEndpint = urlPrefix + "/api/users/current";
-const signOffEndpoint = urlPrefix + "/log_out";
-const accountEndpoint = urlPrefix + "/api/users/:id";
+const signInUrl = '/login';
+const currentUserEndpint = "/api/users/current";
+const signOffEndpoint = "/log_out";
+const accountEndpoint = "/api/users/:id";
 
 /**
  * Define related methods to handle account and session corresponding things
@@ -98,7 +97,6 @@ export class SessionService {
         if(!account){
             return Promise.reject("Invalid account settings");
         }
-        console.info(account);
         let putUrl = accountEndpoint.replace(":id", account.user_id+"");
         return this.http.put(putUrl, JSON.stringify(account), { headers: this.headers }).toPromise()
         .then(() => {
