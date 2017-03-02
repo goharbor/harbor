@@ -15,7 +15,8 @@ import { RouterModule } from '@angular/router';
 
 import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.component';
 import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
-
+import { BaseRoutingResolver } from './route/base-routing-resolver.service';
+import { SystemAdminGuard } from './route/system-admin-activate.service';
 
 @NgModule({
   imports: [
@@ -43,7 +44,9 @@ import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service
     SessionService,
     MessageService,
     CookieService,
-    DeletionDialogService]
+    DeletionDialogService,
+    BaseRoutingResolver,
+    SystemAdminGuard]
 })
 export class SharedModule {
 

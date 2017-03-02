@@ -4,16 +4,66 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { SignInComponent } from './account/sign-in/sign-in.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
+import { ProjectComponent } from './project/project.component';
+import { UserComponent } from './user/user.component';
+import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
-import { BaseRoutingResolver } from './base/base-routing-resolver.service';
+import { RepositoryComponent } from './repository/repository.component';
+import { ReplicationComponent } from './replication/replication.component';
+import { MemberComponent } from './project/member/member.component';
+import { AuditLogComponent } from './log/audit-log.component';
+
+import { BaseRoutingResolver } from './shared/route/base-routing-resolver.service';
+import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
+import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
+
 
 const harborRoutes: Routes = [
+  { path: '', redirectTo: '/harbor', pathMatch: 'full' },
+  { path: 'sign-in', component: SignInComponent },
   {
     path: 'harbor',
-    component: HarborShellComponent
-  },
-  { path: '', redirectTo: '/harbor', pathMatch: 'full' },
-  { path: 'sign-in', component: SignInComponent }
+    component: HarborShellComponent,
+    resolve: {
+      authResolver: BaseRoutingResolver
+    },
+    children: [
+      {
+        path: 'projects',
+        component: ProjectComponent
+      },
+      {
+        path: 'users',
+        component: UserComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'projects/:id',
+        component: ProjectDetailComponent,
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+        children: [
+          {
+            path: 'repository',
+            component: RepositoryComponent
+          },
+          {
+            path: 'replication',
+            component: ReplicationComponent
+          },
+          {
+            path: 'member',
+            component: MemberComponent
+          },
+          {
+            path: 'log',
+            component: AuditLogComponent
+          }
+        ]
+      }
+    ]
+  }
 ];
 
 @NgModule({

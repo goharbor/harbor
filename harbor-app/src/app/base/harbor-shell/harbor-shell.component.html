@@ -8,7 +8,7 @@
             <search-result (closeEvt)="searchClose($event)"></search-result>
             <router-outlet></router-outlet>
         </div>
-        <nav class="sidenav" [class.side-nav-override]="showSearch">
+        <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
             <section class="sidenav-content">
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
                 <section class="nav-group collapsible" *ngIf="isSystemAdmin">

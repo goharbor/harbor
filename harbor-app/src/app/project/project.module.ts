@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 
+import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { RepositoryModule } from '../repository/repository.module';
 import { ReplicationModule } from '../replication/replication.module';
@@ -15,21 +16,19 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { MemberComponent } from './member/member.component';
 import { AddMemberComponent } from './member/add-member/add-member.component';
 
-import { ProjectRoutingModule } from './project-routing.module';
-
 import { ProjectService } from './project.service';
 import { MemberService } from './member/member.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 @NgModule({
-  imports: [ 
+  imports: [
     SharedModule,
     RepositoryModule,
     ReplicationModule,
     LogModule,
-    ProjectRoutingModule
+    RouterModule
   ],
-  declarations: [ 
+  declarations: [
     ProjectComponent,
     CreateProjectComponent,
     ActionProjectComponent,
@@ -38,9 +37,9 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
     MemberComponent,
     AddMemberComponent
   ],
-  exports: [ ProjectComponent ],
-  providers: [ ProjectRoutingResolver, ProjectService, MemberService ]
+  exports: [ProjectComponent],
+  providers: [ProjectRoutingResolver, ProjectService, MemberService]
 })
 export class ProjectModule {
-  
+
 }
