@@ -9,8 +9,6 @@ import 'rxjs/add/observable/throw';
 import { BaseService } from '../../service/base.service';
 import { Member } from './member';
 
-export const urlPrefix = '';
-
 @Injectable()
 export class MemberService extends BaseService {
   
@@ -21,7 +19,7 @@ export class MemberService extends BaseService {
   listMembers(projectId: number, username: string): Observable<Member[]> {
     console.log('Get member from project_id:' + projectId + ', username:' + username);
     return this.http
-               .get(urlPrefix + `/api/projects/${projectId}/members?username=${username}`)
+               .get(`/api/projects/${projectId}/members?username=${username}`)
                .map(response=>response.json())
                .catch(error=>this.handleError(error));            
   }
@@ -29,7 +27,7 @@ export class MemberService extends BaseService {
   addMember(projectId: number, username: string, roleId: number): Observable<any> {
     console.log('Adding member with username:' + username + ', roleId:' + roleId + ' under projectId:' + projectId);
     return this.http
-               .post(urlPrefix + `/api/projects/${projectId}/members`, { username: username, roles: [ roleId ] })
+               .post(`/api/projects/${projectId}/members`, { username: username, roles: [ roleId ] })
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
@@ -37,7 +35,7 @@ export class MemberService extends BaseService {
   changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
     console.log('Changing member role with userId:' + ' to roleId:' + roleId + ' under projectId:' + projectId);
     return this.http
-               .put(urlPrefix + `/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]})
+               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]})
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
@@ -45,7 +43,7 @@ export class MemberService extends BaseService {
   deleteMember(projectId: number, userId: number): Observable<any> {
     console.log('Deleting member role with userId:' + userId + ' under projectId:' + projectId);
     return this.http
-               .delete(urlPrefix + `/api/projects/${projectId}/members/${userId}`)
+               .delete(`/api/projects/${projectId}/members/${userId}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

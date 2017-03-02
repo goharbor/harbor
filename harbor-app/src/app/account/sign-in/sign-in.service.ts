@@ -4,8 +4,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { SignInCredential } from '../../shared/sign-in-credential';
 
-const url_prefix = '/ng';
-const signInUrl = url_prefix + '/login';
+const signInUrl = '/login';
 /**
  * 
  * Define a service to provide sign in methods

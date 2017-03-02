@@ -146,6 +146,10 @@
         "ITEMS": "item(s)",
         "FILTER_PLACEHOLDER": "Filter Logs"
     },
+    "REPLICATION": {
+        "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
+        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
+    },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "You need to sign in to continue the operation"
 }

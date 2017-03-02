@@ -10,8 +10,6 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
-export const urlPrefix = '';
-
 @Injectable()
 export class AuditLogService extends BaseService {
   
@@ -21,7 +19,7 @@ export class AuditLogService extends BaseService {
 
   listAuditLogs(queryParam: AuditLog): Observable<AuditLog[]> {
     return this.http
-               .post(urlPrefix + `/api/projects/${queryParam.project_id}/logs/filter`, {
+               .post(`/api/projects/${queryParam.project_id}/logs/filter`, {
                   begin_timestamp: queryParam.begin_timestamp,
                   end_timestamp: queryParam.end_timestamp,
                   keywords: queryParam.keywords,
