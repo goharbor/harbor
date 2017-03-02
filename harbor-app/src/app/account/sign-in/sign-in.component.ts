@@ -6,6 +6,9 @@ import { NgForm } from '@angular/forms';
 import { SessionService } from '../../shared/session.service';
 import { SignInCredential } from '../../shared/sign-in-credential';
 
+import { SignUpComponent } from '../sign-up/sign-up.component';
+import { harborRootRoute } from '../../shared/shared.const';
+
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
 export const signInStatusOnGoing = 1;
@@ -22,6 +25,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
+    @ViewChild('signupDialog') signUpDialog: SignUpComponent;
 
     //Status flag
     signInStatus: number = signInStatusNormal;
@@ -117,8 +121,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 //Redirect to the right route
                 if (this.redirectUrl === "") {
                     //Routing to the default location
-                    let nextRoute = ["/harbor"];
-                    this.router.navigate(nextRoute);
+                    this.router.navigateByUrl(harborRootRoute);
                 }else{
                     this.router.navigateByUrl(this.redirectUrl);
                 }
@@ -128,9 +131,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             });
     }
 
-    //Help user navigate to the sign up
+    //Open sign up dialog
     signUp(): void {
-        let nextRoute = ["/harbor", "signup"];
-        this.router.navigate(nextRoute);
+        this.signUpDialog.open();
     }
 }

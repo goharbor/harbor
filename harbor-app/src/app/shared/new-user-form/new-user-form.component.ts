@@ -1,17 +1,19 @@
 import { Component, ViewChild, AfterViewChecked, Output, EventEmitter, Input } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { User } from './user';
+import { User } from '../../user/user';
+import { isEmptyForm } from '../../shared/shared.utils';
 
 @Component({
     selector: 'new-user-form',
-    templateUrl: 'new-user-form.component.html'
+    templateUrl: 'new-user-form.component.html',
+    styleUrls: ['new-user-form.component.css']
 })
 
 export class NewUserFormComponent implements AfterViewChecked {
     newUser: User = new User();
     confirmedPwd: string = "";
-    @Input() isModal: boolean = true;
+    @Input() isSelfRegistration: boolean = false;
 
     newUserFormRef: NgForm;
     @ViewChild("newUserFrom") newUserForm: NgForm;
@@ -21,12 +23,12 @@ export class NewUserFormComponent implements AfterViewChecked {
 
     public get isValid(): boolean {
         let pwdEqualStatus = true;
-        if(this.newUserForm.controls["confirmPassword"] && 
-        this.newUserForm.controls["newPassword"]){
+        if (this.newUserForm.controls["confirmPassword"] &&
+            this.newUserForm.controls["newPassword"]) {
             pwdEqualStatus = this.newUserForm.controls["confirmPassword"].value === this.newUserForm.controls["newPassword"].value;
         }
-        return this.newUserForm && 
-        this.newUserForm.valid && pwdEqualStatus;
+        return this.newUserForm &&
+            this.newUserForm.valid && pwdEqualStatus;
     }
 
     ngAfterViewChecked(): void {
@@ -45,9 +47,15 @@ export class NewUserFormComponent implements AfterViewChecked {
         return this.newUser;
     }
 
+    //Reset form
     reset(): void {
-        if(this.newUserForm){
+        if (this.newUserForm) {
             this.newUserForm.reset();
         }
+    }
+
+    //To check if form is empty
+    isEmpty(): boolean {
+        return isEmptyForm(this.newUserForm);
     }
 }

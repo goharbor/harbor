@@ -6,6 +6,7 @@ import { SessionService } from '../../shared/session.service';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType } from '../../shared/shared.const';
 import { errorHandler } from '../../shared/shared.utils';
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 @Component({
     selector: "account-settings-modal",
@@ -17,13 +18,15 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     staticBackdrop: boolean = true;
     account: SessionUser;
     error: any = null;
-    alertClose: boolean = true;
+    originalStaticData: SessionUser;
 
     private isOnCalling: boolean = false;
     private formValueChanged: boolean = false;
 
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
+    @ViewChild(InlineAlertComponent)
+    private inlineAlert: InlineAlertComponent;
 
     constructor(
         private session: SessionService,
@@ -34,16 +37,30 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.account = Object.assign({}, this.session.getCurrentUser());
     }
 
+    private isUserDataChange(): boolean {
+        if(!this.originalStaticData || !this.account){
+            return false;
+        }
+
+        for(var prop in this.originalStaticData){
+            if(this.originalStaticData[prop]){
+                if(this.account[prop]){
+                    if(this.originalStaticData[prop] != this.account[prop]){
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public get isValid(): boolean {
         return this.accountForm && this.accountForm.valid && this.error === null;
     }
 
     public get showProgress(): boolean {
         return this.isOnCalling;
-    }
-
-    public get errorMessage(): string {
-        return errorHandler(this.error);
     }
 
     ngAfterViewChecked(): void {
@@ -54,14 +71,16 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     if (this.error) {
                         this.error = null;
                     }
-                    this.alertClose = true;
                     this.formValueChanged = true;
+                    this.inlineAlert.close();
                 });
             }
         }
     }
 
     open() {
+        //Keep the initial data for future diff
+        this.originalStaticData = Object.assign({}, this.session.getCurrentUser());
         this.account = Object.assign({}, this.session.getCurrentUser());
         this.formValueChanged = false;
 
@@ -69,7 +88,18 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     close() {
-        this.opened = false;
+        if (this.formValueChanged) {
+            if (!this.isUserDataChange()) {
+                this.opened = false;
+            } else {
+                //Need user confirmation
+                this.inlineAlert.showInlineConfirmation({
+                    message: "Form value changed, confirm to cancel?"
+                });
+            }
+        } else {
+            this.opened = false;
+        }
     }
 
     submit() {
@@ -94,8 +124,13 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .catch(error => {
                 this.isOnCalling = false;
                 this.error = error;
-                this.alertClose = false;
+                this.inlineAlert.showInlineError(error);
             });
+    }
+
+    confirmCancel(): void {
+        this.inlineAlert.close();
+        this.opened = false;
     }
 
 }

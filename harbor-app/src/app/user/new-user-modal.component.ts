@@ -1,14 +1,15 @@
 import { Component, ViewChild, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { NewUserFormComponent } from './new-user-form.component';
+import { NewUserFormComponent } from '../shared/new-user-form/new-user-form.component';
 import { User } from './user';
 
 import { SessionService } from '../shared/session.service';
 import { UserService } from './user.service';
 import { errorHandler } from '../shared/shared.utils';
-import { MessageService }  from '../global-message/message.service';
+import { MessageService } from '../global-message/message.service';
 import { AlertType } from '../shared/shared.const';
+import { InlineAlertComponent } from '../shared/inline-alert/inline-alert.component';
 
 @Component({
     selector: "new-user-modal",
@@ -17,9 +18,9 @@ import { AlertType } from '../shared/shared.const';
 
 export class NewUserModalComponent {
     opened: boolean = false;
-    alertClose: boolean = true;
     private error: any;
     private onGoing: boolean = false;
+    private formValueChanged: boolean = false;
 
     @Output() addNew = new EventEmitter<User>();
 
@@ -29,6 +30,8 @@ export class NewUserModalComponent {
 
     @ViewChild(NewUserFormComponent)
     private newUserForm: NewUserFormComponent;
+    @ViewChild(InlineAlertComponent)
+    private inlineAlert: InlineAlertComponent;
 
     private getNewUser(): User {
         return this.newUserForm.getData();
@@ -47,20 +50,36 @@ export class NewUserModalComponent {
     }
 
     formValueChange(flag: boolean): void {
-        if (!this.alertClose) {
-            this.alertClose = true;//If alert is shown, then close it
-        }
-        if(this.error != null){
+        if (this.error != null) {
             this.error = null;//clear error
         }
+
+        this.formValueChanged = true;
+        this.inlineAlert.close();
     }
 
     open(): void {
         this.newUserForm.reset();//Reset form
+        this.formValueChanged = false;
         this.opened = true;
     }
 
     close(): void {
+        if (this.formValueChanged) {
+            if (this.newUserForm.isEmpty()) {
+                this.opened = false;
+            } else {
+                //Need user confirmation
+                this.inlineAlert.showInlineConfirmation({
+                    message: "Form value changed, confirm to cancel?"
+                });
+            }
+        } else {
+            this.opened = false;
+        }
+    }
+
+    confirmCancel(event: boolean): void {
         this.opened = false;
     }
 
@@ -100,7 +119,7 @@ export class NewUserModalComponent {
             .catch(error => {
                 this.onGoing = false;
                 this.error = error;
-                this.alertClose = false;
+                this.inlineAlert.showInlineError(error);
             });
     }
 }
