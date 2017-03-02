@@ -11,11 +11,17 @@ export class ListPolicyComponent {
   
   @Input() policies: Policy[];
   @Output() selectOne = new EventEmitter<number>();
+  @Output() editOne = new EventEmitter<number>();
 
   constructor(private replicationService: ReplicationService){}
 
   selectPolicy(policy: Policy): void {
     console.log('Select policy ID:' + policy.id);
     this.selectOne.emit(policy.id);
+  }
+
+  editPolicy(policy: Policy): void {
+    console.log('Edit policy ID:' + policy.id);
+    this.editOne.emit(policy.id);
   }
 }
