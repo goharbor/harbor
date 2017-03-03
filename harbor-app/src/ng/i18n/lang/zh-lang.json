@@ -13,7 +13,8 @@
         "LOG_IN": "登录",
         "SIGN_UP_LINK": "注册账号",
         "SIGN_UP": "注册",
-        "CONFIRM": "确定"
+        "CONFIRM": "确定",
+        "SEND": "发送"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -160,6 +161,13 @@
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"
+    },
+    "RESET_PWD": {
+        "TITLE": "重置密码",
+        "CAPTION": "输入用来重置密码的邮箱",
+        "EMAIL": "邮箱",
+        "SUCCESS": "重置密码邮件已成功发送",
+        "CAPTION2": "请输入您的新密码"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

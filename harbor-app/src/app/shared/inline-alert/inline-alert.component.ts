@@ -47,6 +47,19 @@ export class InlineAlertComponent {
         this.useAppLevelStyle = true;
     }
 
+    //Show inline sccess info
+    public showInlineSuccess(info: any): void {
+        this.displayedText = "";
+        if(info && info.message){
+            this.translate.get(info.message).subscribe((res: string) => this.displayedText = res);
+        }
+        this.inlineAlertType = 'alert-success';
+        this.showCancelAction = false;
+        this.inlineAlertClosable = true;
+        this.alertClose = false;
+        this.useAppLevelStyle = false;
+    }
+
     //Close alert
     public close(): void {
         this.alertClose = true;

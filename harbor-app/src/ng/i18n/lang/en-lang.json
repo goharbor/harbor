@@ -13,7 +13,8 @@
         "LOG_IN": "LOG IN",
         "SIGN_UP_LINK": "Sign up for an account",
         "SIGN_UP": "SIGN UP",
-        "CONFIRM": "Confirm"
+        "CONFIRM": "Confirm",
+        "SEND": "SEND"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -159,6 +160,13 @@
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"
+    },
+    "RESET_PWD": {
+        "TITLE": "Reset Password",
+        "CAPTION": "Enter your email to reset your password",
+        "EMAIL": "Email",
+        "SUCCESS": "Mail of resetting password is successfully send to your mail box",
+        "CAPTION2": "Enter your new password"
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",

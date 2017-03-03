@@ -113,7 +113,7 @@ export class NewUserModalComponent {
                 //As no response data returned, can not add it to list directly
 
                 this.addNew.emit(u);
-                this.close();
+                this.opened = false;
                 this.msgService.announceMessage(200, "USER.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {
