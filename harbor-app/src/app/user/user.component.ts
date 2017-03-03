@@ -7,9 +7,9 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
 import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
 import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
-import { DeletionTargets, AlertType } from '../shared/shared.const'
-import { errorHandler } from '../shared/shared.utils';
-import { MessageService }  from '../global-message/message.service';
+import { DeletionTargets, AlertType, httpStatusCode } from '../shared/shared.const'
+import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
+import { MessageService } from '../global-message/message.service';
 
 @Component({
   selector: 'harbor-user',
@@ -108,8 +108,10 @@ export class UserComponent implements OnInit {
         user.has_admin_role = updatedUser.has_admin_role;
       })
       .catch(error => {
-        this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-      })//TODO:
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
+      })
   }
 
   //Delete the specified user
@@ -139,7 +141,11 @@ export class UserComponent implements OnInit {
           this.msgService.announceMessage(500, "USER.DELETE_SUCCESS", AlertType.SUCCESS);
         });
       })
-      .catch(error => this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER) );//TODO:
+      .catch(error => {
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
+      });
   }
 
   //Refresh the user list
@@ -156,7 +162,9 @@ export class UserComponent implements OnInit {
       })
       .catch(error => {
         this.onGoing = false;
-        this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
       });
   }
 

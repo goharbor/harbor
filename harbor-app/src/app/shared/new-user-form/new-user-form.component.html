@@ -24,7 +24,7 @@
                 <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
                     <clr-icon shape="info" class="is-info" size="24"></clr-icon>
                     <span class="tooltip-content">
-                        Email is only used for resetting your password
+                        {{'TOOLTIP.SIGN_UP_MAIL' | translate}}
                     </span>
                 </label>
             </div>
@@ -39,7 +39,7 @@
                 <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
                     <clr-icon shape="info" class="is-info" size="24"></clr-icon>
                     <span class="tooltip-content">
-                        First name and last name
+                        {{'TOOLTIP.SIGN_UP_REAL_NAME' | translate}}
                     </span>
                 </label>
             </div>
@@ -59,7 +59,7 @@
                 <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
                     <clr-icon shape="info" class="is-info" size="24"></clr-icon>
                     <span class="tooltip-content">
-                        At least 8 characters with 1 uppercase, 1 lower case and 1 number
+                        {{'TOOLTIP.PASSWORD' | translate}}
                     </span>
                 </label>
             </div>
@@ -89,4 +89,4 @@
         </section>
     </form>
 </div>
-<div style="height: 10px;"></div>
+<div style="height: 15px;"></div>

@@ -3,12 +3,17 @@
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确"
     },
+    "SIGN_UP": {
+        "TITLE": "注册"
+    },
     "BUTTON": {
         "CANCEL": "取消",
         "OK": "确定",
         "DELETE": "删除",
         "LOG_IN": "登录",
-        "SIGN_UP": "注册账号"
+        "SIGN_UP_LINK": "注册账号",
+        "SIGN_UP": "注册",
+        "CONFIRM": "确定"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -16,10 +21,12 @@
         "FULL_NAME": "长度不能超过20",
         "COMMENT": "长度不能超过20",
         "CURRENT_PWD": "当前密码必需",
-        "PASSWORD": "密码长度至少为7且需包含至少一个大写字符，一个小写字符和一个数字",
+        "PASSWORD": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字",
         "CONFIRM_PWD": "当前密码须与上述输入密码一致",
         "SIGN_IN_USERNAME": "用户名必需",
-        "SIGN_IN_PWD": "密码必需"
+        "SIGN_IN_PWD": "密码必需",
+        "SIGN_UP_MAIL": "邮件地址仅用来重置您的密码",
+        "SIGN_UP_REAL_NAME": "全名"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -148,9 +155,13 @@
         "FILTER_PLACEHOLDER": "过滤日志"
     },
     "REPLICATION": {
-        "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
-        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
+        "FILTER_POLICIES_PLACEHOLDER": "过滤策略",
+        "FILTER_JOBS_PLACEHOLDER": "过滤任务"
+    },
+    "ALERT": {
+        "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
-    "UNAUTHORIZED_ERROR": "未授权或者禁止访问，请登录后再试"
+    "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
+    "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限"
 }
