@@ -65,7 +65,7 @@ export class SignUpComponent {
             } else {
                 //Need user confirmation
                 this.inlienAlert.showInlineConfirmation({
-                    message: "Form value changed, confirm to cancel?"
+                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
         } else {

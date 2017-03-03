@@ -3,12 +3,17 @@
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password"
     },
+    "SIGN_UP": {
+        "TITLE": "Sign Up"
+    },
     "BUTTON": {
         "CANCEL": "Cancel",
         "OK": "Ok",
         "DELETE": "DELETE",
         "LOG_IN": "LOG IN",
-        "SIGN_UP": "Sign up for an account"
+        "SIGN_UP_LINK": "Sign up for an account",
+        "SIGN_UP": "SIGN UP",
+        "CONFIRM": "Confirm"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -16,10 +21,12 @@
         "FULL_NAME": "Max length should be less than 20",
         "COMMENT": "Length of comment should be less than 20",
         "CURRENT_PWD": "Current password is Required",
-        "PASSWORD": "Password should be at least 7 characters with 1 uppercase, 1 lowercase letter and 1 number",
+        "PASSWORD": "Password should be at least 8 characters with 1 uppercase, 1 lower case and 1 number",
         "CONFIRM_PWD": "Password input here should be same with above password",
         "SIGN_IN_USERNAME": "Username is required",
-        "SIGN_IN_PWD": "Password is required"
+        "SIGN_IN_PWD": "Password is required",
+        "SIGN_UP_MAIL": "Email is only used for resetting your password",
+        "SIGN_UP_REAL_NAME": "First name and last name"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -150,6 +157,10 @@
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
     },
+    "ALERT": {
+        "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"
+    },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
-    "UNAUTHORIZED_ERROR": "You need to sign in to continue the operation"
+    "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",
+    "FORBIDDEN_ERROR": "You are not allowed to trigger the operation"
 }

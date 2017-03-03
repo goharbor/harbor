@@ -4,9 +4,9 @@ import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
-import { AlertType } from '../../shared/shared.const';
+import { AlertType, httpStatusCode } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
-import { errorHandler, isEmptyForm } from '../../shared/shared.utils';
+import { errorHandler, isEmptyForm, accessErrorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 @Component({
@@ -79,7 +79,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             } else {
                 //Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "Form value changed, confirm to cancel?"
+                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
         } else {
@@ -123,7 +123,11 @@ export class PasswordSettingComponent implements AfterViewChecked {
             .catch(error => {
                 this.onCalling = false;
                 this.error = error;
-                this.inlineAlert.showInlineError(error);
+                if(accessErrorHandler(error, this.msgService)){
+                    this.opened = false;
+                }else{
+                    this.inlineAlert.showInlineError(error);
+                }
             });
     }
 }
