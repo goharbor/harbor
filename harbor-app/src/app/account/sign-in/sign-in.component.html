@@ -25,6 +25,7 @@
             <div class="checkbox">
                 <input type="checkbox" id="rememberme">
                 <label for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
+                <a href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">Forgot password</a>
             </div>
             <div [class.visibility-hidden]="!isError" class="error active">
                 {{ 'SIGN_IN.INVALID_MSG' | translate }}
@@ -34,4 +35,5 @@
         </div>
     </form>
 </div>
-<sign-up #signupDialog></sign-up>
+<sign-up #signupDialog></sign-up>>
+<forgot-password #forgotPwdDialog></forgot-password>
