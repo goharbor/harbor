@@ -110,7 +110,7 @@ func (e *EmailAPI) Ping() {
 	addr := net.JoinHostPort(settings.Host, strconv.Itoa(settings.Port))
 	if err := email.Ping(
 		addr, settings.Identity, settings.Username,
-		settings.Password, pingEmailTimeout, settings.SSL, true, false); err != nil {
+		settings.Password, pingEmailTimeout, settings.SSL, false); err != nil {
 		log.Debugf("ping %s failed: %v", addr, err)
 		e.CustomAbort(http.StatusBadRequest, err.Error())
 	}

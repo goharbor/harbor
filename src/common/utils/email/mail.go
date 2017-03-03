@@ -119,14 +119,13 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 }
 
 // Ping tests the connection and authentication with email server
-// If tls is true, a secure connection is established, or the
-// connection is insecure, and if starttls is true, Ping trys to
-// upgrate the insecure connection to a secure one if email server
-// supports it.
-// Ping doesn't verify the server's certificate and hostname
-// if the parameter insecure is ture when the connection is insecure
+// If tls is true, a secure connection is established, or Ping
+// trys to upgrate the insecure connection to a secure one if
+// email server supports it.
+// Ping doesn't verify the server's certificate and hostname when
+// needed if the parameter insecure is ture
 func Ping(addr, identity, username, password string,
-	timeout int, tls, starttls, insecure bool) (err error) {
+	timeout int, tls, insecure bool) (err error) {
 	log.Debugf("establishing TCP connection with %s ...", addr)
 	conn, err := net.DialTimeout("tcp", addr,
 		time.Duration(timeout)*time.Second)
@@ -161,8 +160,8 @@ func Ping(addr, identity, username, password string,
 	}
 	defer client.Close()
 
-	//swith to SSL/TLS
-	if !tls && starttls {
+	//try to swith to SSL/TLS
+	if !tls {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)
 			if err = client.StartTLS(&tlspkg.Config{

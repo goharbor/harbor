@@ -1475,6 +1475,31 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors.
+  /email/ping:
+    post:
+      summary: Test connection and authentication with email server.
+      description: |
+        Test connection and authentication with email server. 
+      parameters:
+        - name: settings
+          in: body
+          description: Email server settings, if some of the settings are not assigned, they will be read from system configuration.
+          required: false
+          schema:
+            $ref: '#/definitions/EmailServerSetting'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping email server successfully.
+        400:
+          description: Inviald email server settings.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Unexpected internal errors.        
 definitions:
   Search:
     type: object
@@ -1983,3 +2008,24 @@ definitions:
       error:
         type: string
         description: fail reason.
+  EmailServerSetting:
+    type: object
+    properties:
+      email_host: 
+        type: string
+        description: The host of email server.
+      email_port:
+        type: string
+        description: The port of email server.
+      email_username:
+        type: string
+        description: The username of email server.
+      email_password:
+        type: string
+        description: The password of email server.
+      email_ssl:
+        type: string
+        description: Use ssl/tls or not.
+      email_identity:
+        type: string
+        description: The dentity of email server.

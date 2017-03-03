@@ -100,6 +100,7 @@ func init() {
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
 	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
 	beego.Router("/api/configurations", &ConfigAPI{})
+	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 
 	_ = updateInitPassword(1, "Harbor12345")
 
@@ -942,4 +943,12 @@ func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]string) (int, error)
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
 
 	return code, err
+}
+
+func (a testapi) PingEmail(authInfo usrInfo, settings map[string]string) (int, string, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/email/ping").BodyJSON(settings)
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+
+	return code, string(body), err
 }
