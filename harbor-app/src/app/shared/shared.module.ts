@@ -20,6 +20,9 @@ import { SystemAdminGuard } from './route/system-admin-activate.service';
 import { NewUserFormComponent } from './new-user-form/new-user-form.component';
 import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
+import { ListPolicyComponent } from './list-policy/list-policy.component';
+import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -33,7 +36,9 @@ import { InlineAlertComponent } from './inline-alert/inline-alert.component';
     HarborActionOverflow,
     DeletionDialogComponent,
     NewUserFormComponent,
-    InlineAlertComponent
+    InlineAlertComponent,
+    ListPolicyComponent,
+    CreateEditPolicyComponent
   ],
   exports: [
     CoreModule,
@@ -44,7 +49,9 @@ import { InlineAlertComponent } from './inline-alert/inline-alert.component';
     TranslateModule,
     DeletionDialogComponent,
     NewUserFormComponent,
-    InlineAlertComponent
+    InlineAlertComponent,
+    ListPolicyComponent,
+    CreateEditPolicyComponent
   ],
   providers: [
     SessionService,

@@ -19,7 +19,7 @@
         <a href="javascript:void(0)" (click)="refreshPolicies()"><clr-icon shape="refresh"></clr-icon></a>
       </div>
     </div>
-    <list-policy [policies]="changedPolicies" (selectOne)="fetchPolicyJobs($event)" (editOne)="editPolicy($event)"></list-policy>
+    <list-policy [policies]="changedPolicies" [projectless]="false" (selectOne)="selectOne($event)" (editOne)="openEditPolicy($event)" (reload)="reloadPolicies($event)"></list-policy>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
       <div class="col-xs-4">
         <span>Replication Jobs</span>

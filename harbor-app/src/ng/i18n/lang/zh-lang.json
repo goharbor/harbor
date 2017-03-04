@@ -149,7 +149,9 @@
     },
     "REPLICATION": {
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
-        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
+        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
+        "DELETION_TITLE": "删除策略确认",
+        "DELETION_SUMMARY": "确认删除策略 {{param}}?"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "未授权或者禁止访问，请登录后再试"

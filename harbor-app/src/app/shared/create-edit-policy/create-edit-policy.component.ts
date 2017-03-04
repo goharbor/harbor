@@ -1,13 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, HostBinding } from '@angular/core';
 
 import { CreateEditPolicy } from './create-edit-policy';
 
-import { ReplicationService } from '../replication.service';
+import { ReplicationService } from '../../replication/replication.service';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType } from '../../shared/shared.const';
 
-import { Policy } from '../policy';
-import { Target } from '../target';
+import { Policy } from '../../replication/policy';
+import { Target } from '../../replication/target';
 
 @Component({
   selector: 'create-edit-policy',
@@ -28,6 +28,10 @@ export class CreateEditPolicyComponent implements OnInit {
 
   targets: Target[];
   
+  pingTestMessage: string;
+  testOngoing: boolean;
+  pingStatus: boolean;
+
   constructor(private replicationService: ReplicationService,
               private messageService: MessageService) {}
   
@@ -56,8 +60,14 @@ export class CreateEditPolicyComponent implements OnInit {
     console.log('createEditPolicyOpened:' + this.createEditPolicyOpened);
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
+    this.isCreateDestination = false;
     this.errorMessageOpened = false;
     this.errorMessage = '';
+    
+    this.pingTestMessage = '';
+    this.pingStatus = true;
+    this.testOngoing = false;  
+
     this.prepareTargets();
     if(policyId) {
       this.replicationService
@@ -77,6 +87,10 @@ export class CreateEditPolicyComponent implements OnInit {
   newDestination(checkedAddNew: boolean): void {
     console.log('CheckedAddNew:' + checkedAddNew);
     this.isCreateDestination = checkedAddNew;
+    this.createEditPolicy.targetName = '';
+    this.createEditPolicy.endpointUrl = '';
+    this.createEditPolicy.username = '';
+    this.createEditPolicy.password = '';
   }
 
   selectTarget(): void {
@@ -156,5 +170,29 @@ export class CreateEditPolicyComponent implements OnInit {
     }
     this.errorMessageOpened = false;
     this.errorMessage = '';
+  }
+
+  testConnection() {
+    this.pingStatus = true;
+    this.pingTestMessage = 'Testing connection...';
+    this.testOngoing = !this.testOngoing;
+    let pingTarget = new Target();
+    pingTarget.endpoint = this.createEditPolicy.endpointUrl;
+    pingTarget.username = this.createEditPolicy.username;
+    pingTarget.password = this.createEditPolicy.password;
+    this.replicationService
+        .pingTarget(pingTarget)
+        .subscribe(
+          response=>{
+            this.testOngoing = !this.testOngoing;
+            this.pingTestMessage = 'Connection tested successfully.';
+            this.pingStatus = true;
+          },
+          error=>{
+            this.testOngoing = !this.testOngoing;
+            this.pingTestMessage = 'Failed to ping target.';
+            this.pingStatus = false;
+          }
+        );
   }
 }

@@ -19,7 +19,10 @@ export class ReplicationService extends BaseService {
     super();
   }
 
-  listPolicies(projectId: number, policyName: string): Observable<Policy[]> {
+  listPolicies(policyName: string, projectId?: any): Observable<Policy[]> {
+    if(!projectId) {
+      projectId = '';
+    }
     console.log('Get policies with project ID:' + projectId + ', policy name:' + policyName);
     return this.http
                .get(`/api/policies/replication?project_id=${projectId}&name=${policyName}`)
@@ -80,6 +83,22 @@ export class ReplicationService extends BaseService {
                .catch(error=>Observable.throw(error));
   }
 
+  enablePolicy(policyId: number, enabled: number): Observable<any> {
+    console.log('Enable or disable policy ID:' + policyId + ' with activation status:' + enabled);
+    return this.http
+               .put(`/api/policies/replication/${policyId}/enablement`, {enabled: enabled})
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
+  deletePolicy(policyId: number): Observable<any> {
+    console.log('Delete policy ID:' + policyId);
+    return this.http
+               .delete(`/api/policies/replication/${policyId}`)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
   // /api/jobs/replication/?page=1&page_size=20&end_time=&policy_id=1&start_time=&status=&repository=
   listJobs(policyId: number, status: string = '', repoName: string = '', startTime: string = '', endTime: string = ''): Observable<Job[]> {
     console.log('Get jobs under policy ID:' + policyId);
@@ -96,4 +115,17 @@ export class ReplicationService extends BaseService {
                .map(response=>response.json() as Target[])
                .catch(error=>Observable.throw(error));
   }
+
+  pingTarget(target: Target): Observable<any> {
+    console.log('Ping target.');
+    let body = new URLSearchParams();
+    body.set('endpoint', target.endpoint);
+    body.set('username', target.username);
+    body.set('password', target.password);
+    return this.http
+               .post(`/api/targets/ping`, body)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
 }
