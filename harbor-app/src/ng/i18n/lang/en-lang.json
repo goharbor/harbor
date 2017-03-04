@@ -156,7 +156,9 @@
     },
     "REPLICATION": {
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
-        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs"
+        "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
+        "DELETION_TITLE": "Confirm Policy Deletion",
+        "DELETION_SUMMARY": "Do you want to delete policy {{param}}?"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"

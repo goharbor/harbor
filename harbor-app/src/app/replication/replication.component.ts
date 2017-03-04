@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
+import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-edit-policy.component';
 
 import { MessageService } from '../global-message/message.service';
 import { AlertType } from '../shared/shared.const';
@@ -52,7 +52,6 @@ export class ReplicationComponent implements OnInit {
    currentUser: SessionUser;
    projectId: number;
 
-   currentPolicy: Policy;
    search: SearchOption;
 
    ruleStatus = ruleStatus;
@@ -71,7 +70,7 @@ export class ReplicationComponent implements OnInit {
    currentJobSearchOption: number;
 
    @ViewChild(CreateEditPolicyComponent) 
-   createEditPolicyComponent: CreateEditPolicyComponent
+   createEditPolicyComponent: CreateEditPolicyComponent;
 
    constructor(
      private sessionService: SessionService, 
@@ -93,14 +92,15 @@ export class ReplicationComponent implements OnInit {
 
    retrievePolicies(): void {
      this.replicationService
-         .listPolicies(this.projectId, this.search.policyName)
+         .listPolicies(this.search.policyName, this.projectId)
          .subscribe(
            response=>{
              this.changedPolicies = response;
              this.policies = this.changedPolicies;
-             console.log(this.changedPolicies);
              if(this.changedPolicies && this.changedPolicies.length > 0) {
                this.fetchPolicyJobs(this.changedPolicies[0].id);
+             } else {
+               this.changedJobs = [];
              }
            },
            error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)
@@ -108,8 +108,13 @@ export class ReplicationComponent implements OnInit {
    }
 
    openModal(): void {
-     this.createEditPolicyComponent.openCreateEditPolicy();
      console.log('Open modal to create policy.');
+     this.createEditPolicyComponent.openCreateEditPolicy();
+   }
+
+   openEditPolicy(policyId: number) {
+     console.log('Open modal to edit policy ID:' + policyId);
+     this.createEditPolicyComponent.openCreateEditPolicy(policyId);
    }
 
    fetchPolicyJobs(policyId: number) { 
@@ -126,13 +131,10 @@ export class ReplicationComponent implements OnInit {
          );
    }
 
-   selectOne(policyId: number) {
-     this.fetchPolicyJobs(policyId);
-   }
-
-   editPolicy(policyId: number) {
-     this.createEditPolicyComponent.openCreateEditPolicy(policyId);
-     console.log('Open modal to edit policy.');
+   selectOne(policy: Policy) {
+     if(policy) {
+      this.fetchPolicyJobs(policy.id);
+     }
    }
 
    doSearchPolicies(policyName: string) {

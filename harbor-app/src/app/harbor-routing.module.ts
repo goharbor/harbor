@@ -6,6 +6,11 @@ import { SignInComponent } from './account/sign-in/sign-in.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
 import { ProjectComponent } from './project/project.component';
 import { UserComponent } from './user/user.component';
+import { ReplicationManagementComponent } from './replication/replication-management/replication-management.component';
+
+import { TotalReplicationComponent } from './replication/total-replication/total-replication.component';
+import { DestinationComponent } from './replication/destination/destination.component';
+
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
 import { RepositoryComponent } from './repository/repository.component';
@@ -39,6 +44,21 @@ const harborRoutes: Routes = [
         path: 'users',
         component: UserComponent,
         canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'replications',
+        component: ReplicationManagementComponent,
+        canActivate: [SystemAdminGuard],
+        children: [
+          {
+            path: 'rules',
+            component: TotalReplicationComponent
+          },
+          {
+            path: 'endpoints',
+            component: DestinationComponent
+          }
+        ]
       },
       {
         path: 'projects/:id',
