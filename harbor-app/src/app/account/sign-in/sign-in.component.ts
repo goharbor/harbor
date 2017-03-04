@@ -8,6 +8,7 @@ import { SignInCredential } from '../../shared/sign-in-credential';
 
 import { SignUpComponent } from '../sign-up/sign-up.component';
 import { harborRootRoute } from '../../shared/shared.const';
+import { ForgotPasswordComponent } from '../password/forgot-password.component';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -26,6 +27,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
     @ViewChild('signupDialog') signUpDialog: SignUpComponent;
+    @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
 
     //Status flag
     signInStatus: number = signInStatusNormal;
@@ -134,5 +136,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     //Open sign up dialog
     signUp(): void {
         this.signUpDialog.open();
+    }
+
+    //Open forgot password dialog
+    forgotPassword(): void {
+        this.forgotPwdDialog.open();
     }
 }

@@ -4,8 +4,8 @@ import { NgForm } from '@angular/forms';
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
-import { errorHandler } from '../../shared/shared.utils';
+import { AlertType, httpStatusCode } from '../../shared/shared.const';
+import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 @Component({
@@ -38,14 +38,14 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     private isUserDataChange(): boolean {
-        if(!this.originalStaticData || !this.account){
+        if (!this.originalStaticData || !this.account) {
             return false;
         }
 
-        for(var prop in this.originalStaticData){
-            if(this.originalStaticData[prop]){
-                if(this.account[prop]){
-                    if(this.originalStaticData[prop] != this.account[prop]){
+        for (var prop in this.originalStaticData) {
+            if (this.originalStaticData[prop]) {
+                if (this.account[prop]) {
+                    if (this.originalStaticData[prop] != this.account[prop]) {
                         return true;
                     }
                 }
@@ -94,7 +94,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             } else {
                 //Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "Form value changed, confirm to cancel?"
+                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
         } else {
@@ -124,7 +124,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .catch(error => {
                 this.isOnCalling = false;
                 this.error = error;
-                this.inlineAlert.showInlineError(error);
+                if(accessErrorHandler(error, this.msgService)){
+                    this.opened = false;
+                }else{
+                    this.inlineAlert.showInlineError(error);
+                }
             });
     }
 

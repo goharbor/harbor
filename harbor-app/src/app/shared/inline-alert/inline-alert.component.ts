@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 import { errorHandler } from '../shared.utils';
 
@@ -10,19 +11,21 @@ export class InlineAlertComponent {
     private inlineAlertType: string = 'alert-danger';
     private inlineAlertClosable: boolean = true;
     private alertClose: boolean = true;
-    private errorText: string = "";
+    private displayedText: string = "";
     private showCancelAction: boolean = false;
     private useAppLevelStyle: boolean = false;
 
     @Output() confirmEvt = new EventEmitter<boolean>();
 
+    constructor(private translate: TranslateService){}
+
     public get errorMessage(): string {
-        return this.errorText;
+        return this.displayedText;
     }
 
     //Show error message inline
     public showInlineError(error: any): void {
-        this.errorText = errorHandler(error);
+        this.displayedText = errorHandler(error);
 
         this.inlineAlertType = 'alert-danger';
         this.showCancelAction = false;
@@ -33,12 +36,28 @@ export class InlineAlertComponent {
 
     //Show confirmation info with action button
     public showInlineConfirmation(warning: any): void {
-        this.errorText = errorHandler(warning);
+        this.displayedText = "";
+        if(warning && warning.message){
+            this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
+        }
         this.inlineAlertType = 'alert-warning';
         this.showCancelAction = true;
         this.inlineAlertClosable = true;
         this.alertClose = false;
         this.useAppLevelStyle = true;
+    }
+
+    //Show inline sccess info
+    public showInlineSuccess(info: any): void {
+        this.displayedText = "";
+        if(info && info.message){
+            this.translate.get(info.message).subscribe((res: string) => this.displayedText = res);
+        }
+        this.inlineAlertType = 'alert-success';
+        this.showCancelAction = false;
+        this.inlineAlertClosable = true;
+        this.alertClose = false;
+        this.useAppLevelStyle = false;
     }
 
     //Close alert

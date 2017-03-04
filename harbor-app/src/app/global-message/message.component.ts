@@ -71,9 +71,12 @@ export class MessageComponent implements OnInit {
     }
 
     //Override key for HTTP 401 and 403
-    if (this.globalMessage.statusCode === httpStatusCode.Unauthorized ||
-      this.globalMessage.statusCode === httpStatusCode.Forbidden) {
+    if (this.globalMessage.statusCode === httpStatusCode.Unauthorized) {
       key = "UNAUTHORIZED_ERROR";
+    }
+
+    if (this.globalMessage.statusCode === httpStatusCode.Forbidden) {
+      key = "FORBIDDEN_ERROR";
     }
 
     this.translate.get(key).subscribe((res: string) => this.messageText = res);

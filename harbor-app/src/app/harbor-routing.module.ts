@@ -22,11 +22,13 @@ import { BaseRoutingResolver } from './shared/route/base-routing-resolver.servic
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
+import { ResetPasswordComponent } from './account/password/reset-password.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
   { path: 'sign-up', component: SignUpComponent},
+  { path: 'reset_password', component: ResetPasswordComponent},
   {
     path: 'harbor',
     component: HarborShellComponent,
@@ -44,7 +46,7 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard]
       },
       {
-        path: 'replicationmanagement',
+        path: 'replications',
         component: ReplicationManagementComponent,
         canActivate: [SystemAdminGuard],
         children: [

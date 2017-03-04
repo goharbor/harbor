@@ -7,6 +7,8 @@ import { PasswordSettingComponent } from './password/password-setting.component'
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { SharedModule } from '../shared/shared.module';
 import { SignUpComponent } from './sign-up/sign-up.component';
+import { ForgotPasswordComponent } from './password/forgot-password.component';
+import { ResetPasswordComponent } from './password/reset-password.component';
 
 import { PasswordSettingService } from './password/password-setting.service';
 
@@ -20,12 +22,14 @@ import { PasswordSettingService } from './password/password-setting.service';
     SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
-    SignUpComponent],
+    SignUpComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent],
   exports: [
     SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
-    SignUpComponent],
+    ResetPasswordComponent],
 
   providers: [PasswordSettingService]
 })

@@ -25,13 +25,15 @@
             <div class="checkbox">
                 <input type="checkbox" id="rememberme">
                 <label for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
+                <a href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">Forgot password</a>
             </div>
             <div [class.visibility-hidden]="!isError" class="error active">
                 {{ 'SIGN_IN.INVALID_MSG' | translate }}
             </div>
             <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
-            <a href="javascript:void(0)" class="signup" (click)="signUp()">{{ 'BUTTON.SIGN_UP' | translate }}</a>
+            <a href="javascript:void(0)" class="signup" (click)="signUp()">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
         </div>
     </form>
 </div>
-<sign-up #signupDialog></sign-up>
+<sign-up #signupDialog></sign-up>>
+<forgot-password #forgotPwdDialog></forgot-password>

@@ -52,7 +52,6 @@ export class ReplicationComponent implements OnInit {
    currentUser: SessionUser;
    projectId: number;
 
-   currentPolicy: Policy;
    search: SearchOption;
 
    ruleStatus = ruleStatus;
@@ -100,6 +99,8 @@ export class ReplicationComponent implements OnInit {
              this.policies = this.changedPolicies;
              if(this.changedPolicies && this.changedPolicies.length > 0) {
                this.fetchPolicyJobs(this.changedPolicies[0].id);
+             } else {
+               this.changedJobs = [];
              }
            },
            error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)

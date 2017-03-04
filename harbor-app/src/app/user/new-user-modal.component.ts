@@ -6,9 +6,9 @@ import { User } from './user';
 
 import { SessionService } from '../shared/session.service';
 import { UserService } from './user.service';
-import { errorHandler } from '../shared/shared.utils';
+import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
 import { MessageService } from '../global-message/message.service';
-import { AlertType } from '../shared/shared.const';
+import { AlertType, httpStatusCode } from '../shared/shared.const';
 import { InlineAlertComponent } from '../shared/inline-alert/inline-alert.component';
 
 @Component({
@@ -71,7 +71,7 @@ export class NewUserModalComponent {
             } else {
                 //Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "Form value changed, confirm to cancel?"
+                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
         } else {
@@ -113,13 +113,17 @@ export class NewUserModalComponent {
                 //As no response data returned, can not add it to list directly
 
                 this.addNew.emit(u);
-                this.close();
+                this.opened = false;
                 this.msgService.announceMessage(200, "USER.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {
                 this.onGoing = false;
                 this.error = error;
-                this.inlineAlert.showInlineError(error);
+                if(accessErrorHandler(error, this.msgService)){
+                    this.opened = false;
+                }else{
+                    this.inlineAlert.showInlineError(error);
+                }
             });
     }
 }
