@@ -37,11 +37,12 @@ type Mail struct {
 	Message string
 }
 
-var mc models.Email
+var mc *models.Email
 
 // SendMail sends Email according to the configurations
 func (m Mail) SendMail() error {
-	mc, err := config.Email()
+	var err error
+	mc, err = config.Email()
 	if err != nil {
 		return err
 	}
