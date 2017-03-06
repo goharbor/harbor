@@ -271,6 +271,6 @@ func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, sc
 }
 
 func (u *usernameTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
+	token, expiresIn, issuedAt, err = token_util.RegistryTokenForUI(u.username, service, scopes)
 	return
 }
