@@ -9,6 +9,7 @@ import { BaseModule } from './base/base.module';
 import { HarborRoutingModule } from './harbor-routing.module';
 import { SharedModule } from './shared/shared.module';
 import { AccountModule } from './account/account.module';
+import { ConfigurationModule } from './config/config.module';
 
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from "@ngx-translate/core";
 import { MyMissingTranslationHandler } from './i18n/missing-trans.handler';
@@ -28,6 +29,7 @@ export function HttpLoaderFactory(http: Http) {
         BaseModule,
         AccountModule,
         HarborRoutingModule,
+        ConfigurationModule,
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,

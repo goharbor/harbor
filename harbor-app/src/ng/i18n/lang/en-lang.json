@@ -14,7 +14,9 @@
         "SIGN_UP_LINK": "Sign up for an account",
         "SIGN_UP": "SIGN UP",
         "CONFIRM": "Confirm",
-        "SEND": "SEND"
+        "SEND": "SEND",
+        "SAVE": "SAVE",
+        "TEST_MAIL": "TEST MAIL SERVER"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -27,7 +29,8 @@
         "SIGN_IN_USERNAME": "Username is required",
         "SIGN_IN_PWD": "Password is required",
         "SIGN_UP_MAIL": "Email is only used for resetting your password",
-        "SIGN_UP_REAL_NAME": "First name and last name"
+        "SIGN_UP_REAL_NAME": "First name and last name",
+        "ITEM_REQUIRED": "Field is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -175,6 +178,30 @@
     "RECENT_LOG": {
         "SUB_TITLE": "Show recent",
         "SUB_TITLE_SUFIX": "logs"
+    },
+    "CONFIG": {
+        "TITLE": "Configuration",
+        "AUTH": "Authentication",
+        "REPLICATION": "Replication",
+        "EMAIL": "Email",
+        "SYSTEM": "System Settings",
+        "CONFIRM_TITLE": "Confirm to cancel",
+        "CONFIRM_SUMMARY": "Some changes happend, confirm to cancel?",
+        "SAVE_SUCCESS": "Configurations are successfully saved",
+        "MAIL_SERVER": "Email Server",
+        "MAIL_SERVER_PORT": "Email Server Port",
+        "MAIL_USERNAME": "Email Username",
+        "MAIL_PASSWORD": "Email Password",
+        "MAIL_FROM": "Email From",
+        "MAIL_SSL": "Email SSL",
+        "SSL_TOOLTIP": "Enable SSL for email server connection",
+        "VERIFY_REMOTE_CERT": "Verify Remote Certificate",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self -signed or untrusted certificate.",
+        "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
+        "AUTH_MODE": "Authentication",
+        "PRO_CREATION_RESTRICTION": "Project Creation Restriction",
+        "SELF_REGISTRATION": "Self Registration",
+        "SELF_REGISTRATION_TOOLTIP": "Enable sign up"
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",
