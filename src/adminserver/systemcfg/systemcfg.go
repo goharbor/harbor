@@ -46,8 +46,8 @@ var (
 		comcfg.AdminInitialPassword,
 	}
 
-	// envs are configurations need read from environment variables
-	envs = map[string]interface{}{
+	// all configurations need read from environment variables
+	allEnvs = map[string]interface{}{
 		comcfg.ExtEndpoint: "EXT_ENDPOINT",
 		comcfg.AUTHMode:    "AUTH_MODE",
 		comcfg.SelfRegistration: &parser{
@@ -96,7 +96,6 @@ var (
 			env:   "TOKEN_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.JobLogDir: "LOG_DIR",
 		comcfg.UseCompressedJS: &parser{
 			env:   "USE_COMPRESSED_JS",
 			parse: parseStringToBool,
@@ -115,6 +114,26 @@ var (
 		},
 		comcfg.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
 		comcfg.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+	}
+
+	// configurations need read from environment variables
+	// every time the system startup
+	repeatLoadEnvs = map[string]interface{}{
+		comcfg.ExtEndpoint:   "EXT_ENDPOINT",
+		comcfg.MySQLPassword: "MYSQL_PWD",
+		comcfg.MaxJobWorkers: &parser{
+			env:   "MAX_JOB_WORKERS",
+			parse: parseStringToInt,
+		},
+		// TODO remove this config?
+		comcfg.UseCompressedJS: &parser{
+			env:   "USE_COMPRESSED_JS",
+			parse: parseStringToBool,
+		},
+		comcfg.CfgExpiration: &parser{
+			env:   "CFG_EXPIRATION",
+			parse: parseStringToInt,
+		},
 	}
 )
 
@@ -152,16 +171,19 @@ func Init() (err error) {
 	}
 
 	if cfg != nil {
-		return nil
-	}
-
-	log.Info("configurations read from store driver are null, initializing system from environment variables...")
-	cfg, err = loadFromEnv()
-	if err != nil {
-		return err
+		if err = loadFromEnv(cfg, false); err != nil {
+			return err
+		}
+	} else {
+		log.Info("configurations read from store driver are null, initializing system from environment variables...")
+		cfg = make(map[string]interface{})
+		if err = loadFromEnv(cfg, true); err != nil {
+			return err
+		}
 	}
 
 	//sync configurations into cfg store
+	log.Info("updating system configurations...")
 	return UpdateSystemCfg(cfg)
 }
 
@@ -198,9 +220,13 @@ func initKeyProvider() {
 	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
-//load the configurations from env
-func loadFromEnv() (map[string]interface{}, error) {
-	cfg := map[string]interface{}{}
+// load the configurations from allEnvs, if all is false, it just loads
+// the repeatLoadEnvs
+func loadFromEnv(cfg map[string]interface{}, all bool) error {
+	envs := repeatLoadEnvs
+	if all {
+		envs = allEnvs
+	}
 
 	for k, v := range envs {
 		if str, ok := v.(string); ok {
@@ -211,16 +237,16 @@ func loadFromEnv() (map[string]interface{}, error) {
 		if parser, ok := v.(*parser); ok {
 			i, err := parser.parse(os.Getenv(parser.env))
 			if err != nil {
-				return nil, err
+				return err
 			}
 			cfg[k] = i
 			continue
 		}
 
-		return nil, fmt.Errorf("%v is not string or parse type", v)
+		return fmt.Errorf("%v is not string or parse type", v)
 	}
 
-	return cfg, nil
+	return nil
 }
 
 // GetSystemCfg returns the system configurations
