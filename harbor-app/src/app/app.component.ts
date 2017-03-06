@@ -24,7 +24,10 @@ export class AppComponent {
             //Use browser lang
             langSetting = translate.getBrowserLang();
         }
-        translate.use(this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang);
+
+        let selectedLang = this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang;
+        translate.use(selectedLang);
+        //this.session.switchLanguage(selectedLang).catch(error => console.error(error));
     }
 
     private isLangMatch(browserLang: string, supportedLangs: string[]) {

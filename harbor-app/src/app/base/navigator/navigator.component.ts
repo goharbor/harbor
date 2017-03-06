@@ -100,6 +100,8 @@ export class NavigatorComponent implements OnInit {
             //TODO:
             console.error('Language '+lang.trim()+' is not suppoted');
         }
+        //Try to switch backend lang
+        //this.session.switchLanguage(lang).catch(error => console.error(error));
     }
 
     //Handle the home action
