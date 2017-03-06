@@ -71,7 +71,8 @@
             "USERS": "Users",
             "REPLICATIONS": "Replications",
             "CONFIGS": "Configurations"
-        }
+        },
+        "LOGS": "Logs"
     },
     "USER": {
         "ADD_ACTION": "USER",
@@ -168,7 +169,12 @@
         "CAPTION": "Enter your email to reset your password",
         "EMAIL": "Email",
         "SUCCESS": "Mail of resetting password is successfully send to your mail box",
-        "CAPTION2": "Enter your new password"
+        "CAPTION2": "Enter your new password",
+        "RESET_OK": "Password is successfully reset, click OK button to login with new password"
+    },
+    "RECENT_LOG": {
+        "SUB_TITLE": "Show recent",
+        "SUB_TITLE_SUFIX": "logs"
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",

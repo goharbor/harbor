@@ -71,7 +71,8 @@
             "USERS": "用户管理",
             "REPLICATIONS": "复制管理",
             "CONFIGS": "配置管理"
-        }
+        },
+        "LOGS": "日志"
     },
     "USER": {
         "ADD_ACTION": "用户",
@@ -169,7 +170,12 @@
         "CAPTION": "输入用来重置密码的邮箱",
         "EMAIL": "邮箱",
         "SUCCESS": "重置密码邮件已成功发送",
-        "CAPTION2": "请输入您的新密码"
+        "CAPTION2": "请输入您的新密码",
+        "RESET_OK": "密码重置成功,点击确定按钮前往登录页登录"
+    },
+    "RECENT_LOG": {
+        "SUB_TITLE": "显示最近",
+        "SUB_TITLE_SUFIX": "条日志记录"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
