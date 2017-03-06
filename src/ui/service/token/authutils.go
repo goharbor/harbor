@@ -74,25 +74,49 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 	return res
 }
 
-// GenTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func GenTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
+//filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
+func filterAccess(access []*token.ResourceActions, u userInfo, filters map[string]accessFilter) error {
+	var err error
+	for _, a := range access {
+		f, ok := filters[a.Type]
+		if !ok {
+			a.Actions = []string{}
+			log.Warningf("No filter found for access type: %s, skip filter, the access of resource '%s' will be set empty.", a.Type, a.Name)
+			continue
+		}
+		err = f.filter(u, a)
+		log.Debugf("user: %s, access: %v", u.name, a)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+//RegistryTokenForUI calls genTokenForUI to get raw token for registry
+func RegistryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
+	return genTokenForUI(username, service, scopes, registryFilterMap)
+}
+
+//NotaryTokenForUI calls genTokenForUI to get raw token for notary
+func NotaryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
+	return genTokenForUI(username, service, scopes, notaryFilterMap)
+}
+
+// genTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
+func genTokenForUI(username string, service string, scopes []string, filters map[string]accessFilter) (string, int, *time.Time, error) {
 	isAdmin, err := dao.IsAdminRole(username)
 	if err != nil {
 		return "", 0, nil, err
-	}
-	f := &repositoryFilter{
-		parser: &basicParser{},
 	}
 	u := userInfo{
 		name:    username,
 		allPerm: isAdmin,
 	}
 	access := GetResourceActions(scopes)
-	for _, a := range access {
-		err = f.filter(u, a)
-		if err != nil {
-			return "", 0, nil, err
-		}
+	err = filterAccess(access, u, filters)
+	if err != nil {
+		return "", 0, nil, err
 	}
 	return MakeRawToken(username, service, access)
 }
