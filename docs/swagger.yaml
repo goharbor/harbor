@@ -1483,26 +1483,12 @@ definitions:
         description: Search results of the projects that matched the filter keywords.
         type: array
         items:
-          $ref: '#/definitions/SearchProject'
+          $ref: '#/definitions/Project'
       repositories:
         description: Search results of the repositories that matched the filter keywords.
         type: array
         items:
           $ref: '#/definitions/SearchRepository'
-  SearchProject:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-        description: The ID of project
-      name:
-        type: string
-        description: The name of the project
-      public:
-        type: integer
-        format: int
-        description: The flag to indicate the publicity of the project (1 is public, 0 is non-public)
   SearchRepository:
     type: object
     properties:
@@ -1518,6 +1504,12 @@ definitions:
       repository_name:
         type: string
         description: The name of the repository
+      pull_count:
+        type: integer
+        description: The count how many times the repository is pulled
+      tags_count:
+        type: integer
+        description: The count of tags in the repository		
   ProjectReq:
     type: object
     properties:
