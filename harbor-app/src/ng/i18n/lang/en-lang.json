@@ -208,6 +208,11 @@
         "SELF_REGISTRATION": "Self Registration",
         "SELF_REGISTRATION_TOOLTIP": "Enable sign up"
     },
+    "PAGE_NOT_FOUND": {
+        "MAIN_TITLE": "Page not found",
+        "SUB_TITLE": "Redirect to harbor home in",
+        "UNIT": "seconds..."
+    },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",
     "FORBIDDEN_ERROR": "You are not allowed to trigger the operation"

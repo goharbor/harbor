@@ -25,6 +25,8 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
 
 import { PortValidatorDirective } from './port.directive';
 
+import { PageNotFoundComponent } from './not-found/not-found.component';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -41,7 +43,8 @@ import { PortValidatorDirective } from './port.directive';
     InlineAlertComponent,
     ListPolicyComponent,
     CreateEditPolicyComponent,
-    PortValidatorDirective
+    PortValidatorDirective,
+    PageNotFoundComponent
   ],
   exports: [
     CoreModule,
@@ -55,7 +58,8 @@ import { PortValidatorDirective } from './port.directive';
     InlineAlertComponent,
     ListPolicyComponent,
     CreateEditPolicyComponent,
-    PortValidatorDirective
+    PortValidatorDirective,
+    PageNotFoundComponent
   ],
   providers: [
     SessionService,
