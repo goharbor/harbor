@@ -1,2 +1,3 @@
-export const modalAccountSettings= "account-settings";
-export const modalPasswordSetting = "password-setting";
+export const enum modalEvents {
+    USER_PROFILE, CHANGE_PWD, ABOUT
+}

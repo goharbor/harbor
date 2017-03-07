@@ -26,6 +26,7 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
 import { PortValidatorDirective } from './port.directive';
 
 import { PageNotFoundComponent } from './not-found/not-found.component';
+import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 
 @NgModule({
   imports: [
@@ -44,7 +45,8 @@ import { PageNotFoundComponent } from './not-found/not-found.component';
     ListPolicyComponent,
     CreateEditPolicyComponent,
     PortValidatorDirective,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   exports: [
     CoreModule,
@@ -59,7 +61,8 @@ import { PageNotFoundComponent } from './not-found/not-found.component';
     ListPolicyComponent,
     CreateEditPolicyComponent,
     PortValidatorDirective,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   providers: [
     SessionService,

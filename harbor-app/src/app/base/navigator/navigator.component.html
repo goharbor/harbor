@@ -27,10 +27,11 @@
             <div class="dropdown-menu">
                 <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
-                <a href="javascript:void(0)" clrDropdownItem>{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAboutDialog()">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
                 <div class="dropdown-divider"></div>
                 <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </div>
         </clr-dropdown>
+        <a href="javascript:void(0)" class="nav-link nav-text" (click)="openAboutDialog()" *ngIf="isSessionValid === false">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
     </div>
 </clr-header>
