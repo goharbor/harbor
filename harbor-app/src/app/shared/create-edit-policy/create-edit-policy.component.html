@@ -1,5 +1,5 @@
 <clr-modal [(clrModalOpen)]="createEditPolicyOpened">
-  <h3 class="modal-title">New Replication Rule</h3>
+  <h3 class="modal-title">{{modalTitle}}</h3>
   <div class="modal-body">
     <form #policyForm="ngForm">
       <section class="form-block">
@@ -11,27 +11,27 @@
           </div>
         </clr-alert>
         <div class="form-group">
-          <label for="policy_name" class="col-md-4">Name<span style="color: red">*</span></label>
+          <label for="policy_name" class="col-md-4">{{'REPLICATION.NAME' | translate}}<span style="color: red">*</span></label>
           <label for="policy_name" class="col-md-8"  aria-haspopup="true" role="tooltip" [class.invalid]="name.errors && (name.dirty || name.touched)" [class.valid]="name.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="policy_name" [(ngModel)]="createEditPolicy.name" name="name" #name="ngModel" required>
             <span class="tooltip-content" *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)">
-              Name is required
+              {{'REPLICATION.NAME_IS_REQUIRED'}}
             </span>
           </label>
         </div>
         <div class="form-group">
-          <label for="policy_description" class="col-md-4">Description</label>
+          <label for="policy_description" class="col-md-4">{{'REPLICATION.DESCRIPTION' | translate}}</label>
           <input type="text" class="col-md-8" id="policy_description" [(ngModel)]="createEditPolicy.description" name="description" size="20" #description="ngModel"> 
         </div>
         <div class="form-group">
-          <label class="col-md-4">Enable</label>
+          <label class="col-md-4">{{'REPLICATION.ENABLE' | translate}}</label>
           <div class="checkbox-inline">
             <input type="checkbox" id="policy_enable" [(ngModel)]="createEditPolicy.enable" name="enable" #enable="ngModel">
             <label for="policy_enable"></label>
           </div>
         </div>
         <div class="form-group">
-          <label for="destination_name" class="col-md-4">Destination name<span style="color: red">*</span></label>
+          <label for="destination_name" class="col-md-4">{{'REPLICATION.DESTINATION_NAME' | translate}}<span style="color: red">*</span></label>
           <div class="select" *ngIf="!isCreateDestination">
             <select id="destination_name" [(ngModel)]="createEditPolicy.targetId" name="targetId" (change)="selectTarget()" [disabled]="testOngoing">
               <option *ngFor="let t of targets" [value]="t.id" [selected]="t.id == createEditPolicy.targetId">{{t.name}}</option>
@@ -40,29 +40,29 @@
           <label class="col-md-8" *ngIf="isCreateDestination" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="destination_name" [(ngModel)]="createEditPolicy.targetName" name="targetName" size="20" #targetName="ngModel" value="" required> 
             <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
-              Destination name is required.
+              {{'REPLICATION.DESTINATION_NAME_IS_REQUIRED' | translate}}
             </span>
           </label>
           <div class="checkbox-inline">
             <input type="checkbox" id="check_new" (click)="newDestination(checkedAddNew.checked)" #checkedAddNew [checked]="isCreateDestination" [disabled]="testOngoing">
-            <label for="check_new">New destination</label>
+            <label for="check_new">{{'REPLICATION.NEW_DESTINATION' | translate}}</label>
           </div>
         </div>
         <div class="form-group">
-          <label for="destination_url" class="col-md-4">Destination URL<span style="color: red">*</span></label>
+          <label for="destination_url" class="col-md-4">{{'REPLICATION.DESTINATION_URL' | translate}}<span style="color: red">*</span></label>
           <label for="destination_url" class="col-md-8" aria-haspopup="true" role="tooltip" [class.invalid]="endpointUrl.errors && (endpointUrl.dirty || endpointUrl.touched)" [class.valid]="endpointUrl.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="destination_url" [disabled]="testOngoing" [(ngModel)]="createEditPolicy.endpointUrl" size="20" name="endpointUrl" required #endpointUrl="ngModel">
             <span class="tooltip-content" *ngIf="endpointUrl.errors && endpointUrl.errors.required && (endpointUrl.dirty || endpointUrl.touched)">
-              Destination URL is required.
+              {{'REPLICATION.DESTINATION_URL_IS_REQUIRED' | translate}}
             </span>
           </label>
         </div>
         <div class="form-group">
-          <label for="destination_username" class="col-md-4">Username</label>
+          <label for="destination_username" class="col-md-4">{{'REPLICATION.DESTINATION_USERNAME' | translate}}</label>
           <input type="text" class="col-md-8" id="destination_username" [disabled]="testOngoing" [(ngModel)]="createEditPolicy.username" size="20" name="username" #username="ngModel">
         </div>
         <div class="form-group">
-          <label for="destination_password" class="col-md-4">Password</label>
+          <label for="destination_password" class="col-md-4">{{'REPLICATION.DESTINATION_PASSWORD' | translate}}</label>
           <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [(ngModel)]="createEditPolicy.password" size="20" name="password" #password="ngModel">
         </div>
         <div class="form-group">
@@ -74,8 +74,8 @@
     </form>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing">Test Connection</button>
-      <button type="button" class="btn btn-outline" (click)="createEditPolicyOpened = false">Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="!policyForm.form.valid" (click)="onSubmit()">Ok</button>
+      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
+      <button type="button" class="btn btn-outline" (click)="createEditPolicyOpened = false">{{'BUTTON.CANCEL' | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!policyForm.form.valid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
