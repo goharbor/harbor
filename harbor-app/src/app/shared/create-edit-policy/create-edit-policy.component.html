@@ -14,7 +14,7 @@
           <label for="policy_name" class="col-md-4">Name<span style="color: red">*</span></label>
           <label for="policy_name" class="col-md-8"  aria-haspopup="true" role="tooltip" [class.invalid]="name.errors && (name.dirty || name.touched)" [class.valid]="name.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="policy_name" [(ngModel)]="createEditPolicy.name" name="name" #name="ngModel" required>
-            <span class="tooltip-content" *ngIf="name.errors && (name.dirty || name.touched)" [hidden]="!name.errors.required">
+            <span class="tooltip-content" *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)">
               Name is required
             </span>
           </label>
@@ -37,10 +37,10 @@
               <option *ngFor="let t of targets" [value]="t.id" [selected]="t.id == createEditPolicy.targetId">{{t.name}}</option>
             </select>
           </div>
-          <label class="col-md-8" *ngIf="isCreateDestination" for="destination_name" class="col-md-8"  aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+          <label class="col-md-8" *ngIf="isCreateDestination" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="destination_name" [(ngModel)]="createEditPolicy.targetName" name="targetName" size="20" #targetName="ngModel" value="" required> 
-            <span class="tooltip-content" *ngIf="targetName.errors && (targetName.dirty || targetName.touched)">
-              Destination name is required
+            <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
+              Destination name is required.
             </span>
           </label>
           <div class="checkbox-inline">
@@ -50,7 +50,12 @@
         </div>
         <div class="form-group">
           <label for="destination_url" class="col-md-4">Destination URL<span style="color: red">*</span></label>
-          <input type="text" class="col-md-8" id="destination_url" [disabled]="testOngoing" [(ngModel)]="createEditPolicy.endpointUrl" size="20" name="endpointUrl" #endpointUrl="ngModel">
+          <label for="destination_url" class="col-md-8" aria-haspopup="true" role="tooltip" [class.invalid]="endpointUrl.errors && (endpointUrl.dirty || endpointUrl.touched)" [class.valid]="endpointUrl.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+            <input type="text" id="destination_url" [disabled]="testOngoing" [(ngModel)]="createEditPolicy.endpointUrl" size="20" name="endpointUrl" required #endpointUrl="ngModel">
+            <span class="tooltip-content" *ngIf="endpointUrl.errors && endpointUrl.errors.required && (endpointUrl.dirty || endpointUrl.touched)">
+              Destination URL is required.
+            </span>
+          </label>
         </div>
         <div class="form-group">
           <label for="destination_username" class="col-md-4">Username</label>

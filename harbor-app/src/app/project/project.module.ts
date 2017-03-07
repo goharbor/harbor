@@ -8,11 +8,9 @@ import { LogModule } from '../log/log.module';
 
 import { ProjectComponent } from './project.component';
 import { CreateProjectComponent } from './create-project/create-project.component';
-import { ActionProjectComponent } from './action-project/action-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
 
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
-
 import { MemberComponent } from './member/member.component';
 import { AddMemberComponent } from './member/add-member/add-member.component';
 
@@ -31,7 +29,6 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
   declarations: [
     ProjectComponent,
     CreateProjectComponent,
-    ActionProjectComponent,
     ListProjectComponent,
     ProjectDetailComponent,
     MemberComponent,
