@@ -41,6 +41,12 @@ For Ubuntu:
       $ apt-get update && apt-get install -y libldap2-dev
    ```
 
+For Centos:
+
+   ```sh
+      $ yum update && yum install -y openldap-devel.x86_64
+   ```
+   
 For other platforms, please consult the relevant documentation of installing LDAP package.
 
 ## Step 4: Building and installing Harbor
