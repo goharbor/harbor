@@ -1,0 +1,92 @@
+<div>
+    <form #newUserFrom="ngForm" class="form">
+        <section class="form-block">
+            <div class="form-group">
+                <label for="username" class="col-md-4 required">{{'PROFILE.USER_NAME' | translate}}</label>
+                <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+                <input type="text" placeholder='{{"PLACEHOLDER.USER_NAME" | translate}}' required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="28">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.USER_NAME' | translate}}
+                </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="email" class="col-md-4 required">{{'PROFILE.EMAIL' | translate}}</label>
+                <label for="email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="eamilInput.invalid && (eamilInput.dirty || eamilInput.touched)">
+                      <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" 
+                      placeholder='{{"PLACEHOLDER.MAIL" | translate}}'
+                      required 
+                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="email" size="28">
+                      <span class="tooltip-content">
+                          {{'TOOLTIP.EMAIL' | translate}}
+                      </span>
+                </label>
+                <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
+                    <clr-icon shape="info" class="is-info" size="24"></clr-icon>
+                    <span class="tooltip-content">
+                        {{'TOOLTIP.SIGN_UP_MAIL' | translate}}
+                    </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="realname" class="col-md-4 required">{{'PROFILE.FULL_NAME' | translate}}</label>
+                <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+                      <input type="text" placeholder='{{"PLACEHOLDER.FULL_NAME" | translate}}' name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="28">
+                      <span class="tooltip-content">
+                          {{'TOOLTIP.FULL_NAME' | translate}}
+                      </span>
+                </label>
+                <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
+                    <clr-icon shape="info" class="is-info" size="24"></clr-icon>
+                    <span class="tooltip-content">
+                        {{'TOOLTIP.SIGN_UP_REAL_NAME' | translate}}
+                    </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="newPassword" class="required">{{'PROFILE.PASSWORD' | translate}}</label>
+                <label for="newPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="newPassInput.invalid && (newPassInput.dirty || newPassInput.touched)">
+                <input type="password" id="newPassword" placeholder='{{"PLACEHOLDER.NEW_PWD" | translate}}'
+                    required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{7,}$"
+                    name="newPassword"
+                    [(ngModel)]="newUser.password"
+                    #newPassInput="ngModel" size="28">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.PASSWORD' | translate}}
+                </span>
+                </label>
+                <label *ngIf="isSelfRegistration" role="tooltip" aria-haspopup="true" class="tooltip tooltip-bottom-left">
+                    <clr-icon shape="info" class="is-info" size="24"></clr-icon>
+                    <span class="tooltip-content">
+                        {{'TOOLTIP.PASSWORD' | translate}}
+                    </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword" class="required">{{'CHANGE_PWD.CONFIRM_PWD' | translate}}</label>
+                <label for="confirmPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="(confirmPassInput.invalid && (confirmPassInput.dirty || confirmPassInput.touched)) || (!confirmPassInput.invalid && confirmPassInput.value != newPassInput.value)">
+                <input type="password" id="confirmPassword" placeholder='{{"PLACEHOLDER.CONFIRM_PWD" | translate}}'
+                    required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{7,}$"
+                    name="confirmPassword"
+                    [(ngModel)]="confirmedPwd"
+                    #confirmPassInput="ngModel" size="28">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.CONFIRM_PWD' | translate}}
+                </span>
+            </label>
+            </div>
+            <div class="form-group">
+                <label for="comment" class="col-md-4">{{'PROFILE.COMMENT' | translate}}</label>
+                <label for="comment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="28">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.COMMENT' | translate}}
+                </span>
+                </label>
+            </div>
+        </section>
+    </form>
+</div>
+<div style="height: 15px;"></div>

@@ -15,7 +15,18 @@ import { RouterModule } from '@angular/router';
 
 import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.component';
 import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
+import { BaseRoutingResolver } from './route/base-routing-resolver.service';
+import { SystemAdminGuard } from './route/system-admin-activate.service';
+import { NewUserFormComponent } from './new-user-form/new-user-form.component';
+import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
+import { ListPolicyComponent } from './list-policy/list-policy.component';
+import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
+
+import { PortValidatorDirective } from './port.directive';
+
+import { PageNotFoundComponent } from './not-found/not-found.component';
+import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 
 @NgModule({
   imports: [
@@ -28,7 +39,14 @@ import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service
     MaxLengthExtValidatorDirective,
     FilterComponent,
     HarborActionOverflow,
-    DeletionDialogComponent
+    DeletionDialogComponent,
+    NewUserFormComponent,
+    InlineAlertComponent,
+    ListPolicyComponent,
+    CreateEditPolicyComponent,
+    PortValidatorDirective,
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   exports: [
     CoreModule,
@@ -37,13 +55,22 @@ import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service
     FilterComponent,
     HarborActionOverflow,
     TranslateModule,
-    DeletionDialogComponent
+    DeletionDialogComponent,
+    NewUserFormComponent,
+    InlineAlertComponent,
+    ListPolicyComponent,
+    CreateEditPolicyComponent,
+    PortValidatorDirective,
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   providers: [
     SessionService,
     MessageService,
     CookieService,
-    DeletionDialogService]
+    DeletionDialogService,
+    BaseRoutingResolver,
+    SystemAdminGuard]
 })
 export class SharedModule {
 

@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { SignInCredential } from './sign-in-credential';
+import { SignInCredential } from '../../shared/sign-in-credential';
 
-const url_prefix = '/ng';
-const signInUrl = url_prefix + '/login';
+const signInUrl = '/login';
 /**
  * 
  * Define a service to provide sign in methods

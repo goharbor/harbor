@@ -1,0 +1,32 @@
+.h2-log-override {
+    margin-top: 0px !important;
+}
+
+.filter-log {
+    float: right;
+    margin-right: 24px;
+    position: relative;
+    top: 8px;
+}
+
+.action-head-pos {
+    position: relative;
+    top: 20px;
+}
+
+.refresh-btn {
+    position: absolute;
+    right: -4px;
+    top: 8px;
+    cursor: pointer;
+}
+
+.custom-lines-button {
+    padding: 0px !important;
+    min-width: 25px !important;
+}
+
+.lines-button-toggole {
+    font-size: 16px;
+    text-decoration: underline;
+}

@@ -1,38 +1,34 @@
 <div class="row">
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-    <div class="row flex-items-xs-between">
-      <div class="col-xs-4 flex-xs-middle">
-        <button class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon>{{'MEMBER.NEW_MEMBER' | translate }}</button>
-        <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
-      </div>
-      <div class="col-xs-4 flex-xs-middle">
-        <grid-filter class="filter-pos" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)"></grid-filter>
-      </div>
-    </div>
-    <clr-datagrid>
-      <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'MEMBER.ACTIONS' | translate}}</clr-dg-column>
-      <clr-dg-row *ngFor="let u of members">
-        <clr-dg-cell>{{u.username}}</clr-dg-cell>
-        <clr-dg-cell>{{roleInfo[u.role_id] | translate}}</clr-dg-cell>
-        <clr-dg-cell>
-          <clr-dropdown [clrMenuPosition]="'bottom-left'" [hidden]="u.user_id === currentUser.user_id">
-            <button class="btn btn-sm btn-link" clrDropdownToggle>
-              {{'MEMBER.ACTIONS' | translate}}
-              <clr-icon shape="caret down"></clr-icon>
-            </button>
-            <div class="dropdown-menu">
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</a>
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</a>
-              <a href="javascript:void(0)" clrDropdownItem (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</a>
-              <div class="dropdown-divider"></div>
-              <a href="javascript:void(0)" clrDropdownItem (click)="deleteMember(u.user_id)">{{'MEMBER.DELETE' | translate}}</a>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="row flex-items-xs-between">
+            <div class="col-xs-4 flex-xs-middle">
+                <button class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon>{{'MEMBER.NEW_MEMBER' | translate }}</button>
+                <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
             </div>
-          </clr-dropdown>
-        </clr-dg-cell>
-      </clr-dg-row>
-      <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
-    </clr-datagrid>
-  </div>
+            <div class="col-xs-4 flex-xs-middle push-xs-1">
+                <grid-filter filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)"></grid-filter>
+                <a href="javascript:void(0)" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </a>
+            </div>
+        </div>
+        <clr-datagrid>
+            <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
+            <clr-dg-row *ngFor="let u of members">
+                <clr-dg-cell>{{u.username}}</clr-dg-cell>
+                <clr-dg-cell>
+                    {{roleInfo[u.role_id] | translate}}
+                    <harbor-action-overflow [hidden]="u.user_id === currentUser.user_id">
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</a>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</a>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteMember(u.user_id)">{{'MEMBER.DELETE' | translate}}</a>
+                    </harbor-action-overflow>
+                </clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
+        </clr-datagrid>
+    </div>
 </div>

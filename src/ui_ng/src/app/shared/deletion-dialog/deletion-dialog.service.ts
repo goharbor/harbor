@@ -6,13 +6,13 @@ import { DeletionMessage } from './deletion-message';
 @Injectable()
 export class DeletionDialogService {
     private deletionAnnoucedSource = new Subject<DeletionMessage>();
-    private deletionConfirmSource = new Subject<any>();
+    private deletionConfirmSource = new Subject<DeletionMessage>();
 
     deletionAnnouced$ = this.deletionAnnoucedSource.asObservable();
     deletionConfirm$ = this.deletionConfirmSource.asObservable();
 
-    confirmDeletion(obj: any): void {
-        this.deletionConfirmSource.next(obj);
+    confirmDeletion(message: any): void {
+        this.deletionConfirmSource.next(message);
     }
 
     openComfirmDialog(message: DeletionMessage): void {

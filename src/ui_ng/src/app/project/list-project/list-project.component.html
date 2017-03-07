@@ -15,9 +15,12 @@
     <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
     <clr-dg-cell>
       {{p.description}}
-      <span style="float: right;">
-        <action-project (togglePublic)="toggleProject($event)" (deleteProject)="deleteProject($event)" [project]="p"></action-project>
-      </span>
+      <harbor-action-overflow>
+        <a href="javascript:void(0)" class="dropdown-item">{{'PROJECT.NEW_POLICY' | translate}}</a>
+        <a href="javascript:void(0)" class="dropdown-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </a>
+        <div class="dropdown-divider"></div>
+        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</a>
+      </harbor-action-overflow>
     </clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>{{ (projects ? projects.length : 0) }} {{'PROJECT.ITEMS' | translate}}</clr-dg-footer>

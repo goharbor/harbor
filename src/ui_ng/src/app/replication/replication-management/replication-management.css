@@ -1,0 +1,32 @@
+.custom-h2 {
+    margin-top: 0px !important;
+}
+
+.custom-add-button {
+    font-size: medium;
+    margin-left: -12px;
+}
+
+.filter-icon {
+    position: relative;
+    right: -12px;
+}
+
+.filter-pos {
+    float: right;
+    margin-right: 24px;
+    position: relative;
+    top: 8px;
+}
+
+.action-panel-pos {
+    position: relative;
+    top: 20px;
+}
+
+.refresh-btn {
+    position: absolute;
+    right: -4px;
+    top: 8px;
+    cursor: pointer;
+}
