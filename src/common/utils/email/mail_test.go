@@ -1,0 +1,42 @@
+/*
+   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+package email
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestPing(t *testing.T) {
+	addr := "smtp.gmail.com:465"
+	identity := ""
+	username := "wrong_username"
+	password := "wrong_password"
+	timeout := 60
+	tls := true
+	insecure := false
+
+	// test secure connection
+	err := Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	if err == nil {
+		t.Errorf("there should be an auth error")
+	} else {
+		if !strings.Contains(err.Error(), "535") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}
+}
