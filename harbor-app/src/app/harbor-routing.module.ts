@@ -23,6 +23,8 @@ import { ProjectRoutingResolver } from './project/project-routing-resolver.servi
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
 import { ResetPasswordComponent } from './account/password/reset-password.component';
+import { RecentLogComponent } from './log/recent-log.component';
+import { ConfigurationComponent } from './config/config.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
@@ -39,6 +41,10 @@ const harborRoutes: Routes = [
       {
         path: 'projects',
         component: ProjectComponent
+      },
+      {
+        path: 'logs',
+        component: RecentLogComponent
       },
       {
         path: 'users',
@@ -84,6 +90,10 @@ const harborRoutes: Routes = [
             component: AuditLogComponent
           }
         ]
+      },
+      {
+        path: 'configs',
+        component: ConfigurationComponent
       }
     ]
   }

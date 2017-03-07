@@ -6,6 +6,7 @@ import { PasswordSetting } from './password-setting';
 
 const passwordChangeEndpoint = "/api/users/:user_id/password";
 const sendEmailEndpoint = "/sendEmail";
+const resetPasswordEndpoint = "/reset";
 
 @Injectable()
 export class PasswordSettingService {
@@ -40,10 +41,26 @@ export class PasswordSettingService {
 
         let getUrl = sendEmailEndpoint + "?email=" + email;
         return this.http.get(getUrl, this.options).toPromise()
-        .then(response => response)
-        .catch(error => {
-            return Promise.reject(error);
-        })
+            .then(response => response)
+            .catch(error => {
+                return Promise.reject(error);
+            })
+    }
+
+    resetPassword(uuid: string, newPassword: string): Promise<any> {
+        if (!uuid || !newPassword) {
+            return Promise.reject("Invalid reset uuid or password");
+        }
+
+        return this.http.post(resetPasswordEndpoint, JSON.stringify({
+            "reset_uuid": uuid,
+            "password": newPassword
+        }), this.options)
+            .toPromise()
+            .then(response => response)
+            .catch(error => {
+                return Promise.reject(error);
+            });
     }
 
 }

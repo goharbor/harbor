@@ -33,6 +33,8 @@ export class ForgotPasswordComponent {
 
     public open(): void {
         this.opened = true;
+        this.validationState = true;
+        this.forceValid = true;
         this.forgotPwdForm.resetForm();
     }
 

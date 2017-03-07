@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
+import { Subscription }   from 'rxjs/Subscription';
 
 import { UserService } from './user.service';
 import { User } from './user';
@@ -19,12 +20,13 @@ import { MessageService } from '../global-message/message.service';
   providers: [UserService]
 })
 
-export class UserComponent implements OnInit {
+export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
   private onGoing: boolean = false;
   private adminMenuText: string = "";
   private adminColumn: string = "";
+  private deletionSubscription: Subscription;
 
   @ViewChild(NewUserModalComponent)
   private newUserDialog: NewUserModalComponent;
@@ -34,7 +36,7 @@ export class UserComponent implements OnInit {
     private translate: TranslateService,
     private deletionDialogService: DeletionDialogService,
     private msgService: MessageService) {
-    deletionDialogService.deletionConfirm$.subscribe(confirmed => {
+    this.deletionSubscription = deletionDialogService.deletionConfirm$.subscribe(confirmed => {
       if (confirmed && confirmed.targetId === DeletionTargets.USER) {
         this.delUser(confirmed.data);
       }
@@ -69,6 +71,12 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     this.refreshUser();
+  }
+
+  ngOnDestroy(): void {
+    if(this.deletionSubscription){
+      this.deletionSubscription.unsubscribe();
+    }
   }
 
   //Filter items by keywords

@@ -11,13 +11,14 @@
         <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
             <section class="sidenav-content">
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
+                <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.LOGS' | translate}}</a>
                 <section class="nav-group collapsible" *ngIf="isSystemAdmin">
                     <input id="tabsystem" type="checkbox">
                     <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</a></li>
                         <li><a class="nav-link" routerLink="/harbor/replications/endpoints" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATIONS' | translate}}</a></li>
-                        <li><a class="nav-link">{{'SIDE_NAV.SYSTEM_MGMT.CONFIGS' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIGS' | translate}}</a></li>
                     </ul>
                 </section>
             </section>

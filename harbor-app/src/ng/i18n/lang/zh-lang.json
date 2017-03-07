@@ -14,7 +14,9 @@
         "SIGN_UP_LINK": "注册账号",
         "SIGN_UP": "注册",
         "CONFIRM": "确定",
-        "SEND": "发送"
+        "SEND": "发送",
+        "SAVE": "保存",
+        "TEST_MAIL": "测试邮件服务器"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -27,7 +29,8 @@
         "SIGN_IN_USERNAME": "用户名必需",
         "SIGN_IN_PWD": "密码必需",
         "SIGN_UP_MAIL": "邮件地址仅用来重置您的密码",
-        "SIGN_UP_REAL_NAME": "全名"
+        "SIGN_UP_REAL_NAME": "全名",
+        "ITEM_REQUIRED": "此项必需"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -71,7 +74,8 @@
             "USERS": "用户管理",
             "REPLICATIONS": "复制管理",
             "CONFIGS": "配置管理"
-        }
+        },
+        "LOGS": "日志"
     },
     "USER": {
         "ADD_ACTION": "用户",
@@ -173,7 +177,36 @@
         "CAPTION": "输入用来重置密码的邮箱",
         "EMAIL": "邮箱",
         "SUCCESS": "重置密码邮件已成功发送",
-        "CAPTION2": "请输入您的新密码"
+        "CAPTION2": "请输入您的新密码",
+        "RESET_OK": "密码重置成功,点击确定按钮前往登录页登录"
+    },
+    "RECENT_LOG": {
+        "SUB_TITLE": "显示最近",
+        "SUB_TITLE_SUFIX": "条日志记录"
+    },
+    "CONFIG": {
+        "TITLE": "配置",
+        "AUTH": "认证",
+        "REPLICATION": "复制",
+        "EMAIL": "邮箱",
+        "SYSTEM": "系统设置",
+        "CONFIRM_TITLE": "确认取消",
+        "CONFIRM_SUMMARY": "配置项有改动, 确定取消?",
+        "SAVE_SUCCESS": "变更的配置项成功保存",
+        "MAIL_SERVER": "邮件服务器",
+        "MAIL_SERVER_PORT": "邮件服务器端口",
+        "MAIL_USERNAME": "用户名",
+        "MAIL_PASSWORD": "密码",
+        "MAIL_FROM": "邮件来源",
+        "MAIL_SSL": "邮件 SSL",
+        "SSL_TOOLTIP": "应用SSL到邮件服务器连接",
+        "VERIFY_REMOTE_CERT": "验证远程证书",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
+        "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
+        "AUTH_MODE": "认证模式",
+        "PRO_CREATION_RESTRICTION": "项目创建限制",
+        "SELF_REGISTRATION": "自注册",
+        "SELF_REGISTRATION_TOOLTIP": "激活注册功能"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

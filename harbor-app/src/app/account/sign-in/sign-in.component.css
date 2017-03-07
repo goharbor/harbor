@@ -7,9 +7,9 @@
 }
 
 .forgot-password-link {
-    right: -72px;
     position: relative;
     line-height: 36px;
     font-size: 14px;
-    vertical-align: middle;
+    float: right;
+    top: -5px;
 }
