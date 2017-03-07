@@ -14,7 +14,7 @@
             <section class="form-block">
                 <div class="form-group">
                     <label for="verifyRemoteCert">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
-                    <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="allConfig.verify_remote_cert.value">
+                    <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="allConfig.verify_remote_cert.value" [disabled]="disabled(allConfig.verify_remote_cert)">
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top:-8px;">
                             <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
                             <span class="tooltip-content">{{'CONFIG.VERIFY_REMOTE_CERT_TOOLTIP' | translate }}</span>
@@ -31,22 +31,24 @@
         <form #systemConfigFrom="ngForm" class="form">
             <section class="form-block">
                 <div class="form-group">
-                    <label for="tokenExpiration">{{'CONFIG.TOKEN_EXPIRATION' | translate }}</label>
-                    <div class="select">
-                        <select id="tokenExpiration" name="tokenExpiration" [(ngModel)]="allConfig.token_expiration.value">
-                    <option>30</option>
-                    <option>60</option>
-                    <option>90</option>
-                    <option>120</option>
-                </select>
-                    </div>
+                    <label for="tokenExpiration" class="required">{{'CONFIG.TOKEN_EXPIRATION' | translate}}</label>
+                    <label for="tokenExpiration" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="tokenExpirationInput.invalid && (tokenExpirationInput.dirty || tokenExpirationInput.touched)">
+                      <input name="tokenExpiration" type="text" #tokenExpirationInput="ngModel" [(ngModel)]="allConfig.token_expiration.value" 
+                      required 
+                      pattern="^[1-9]{1}[\d]*$"
+                      id="tokenExpiration" 
+                      size="40" [disabled]="disabled(allConfig.token_expiration)">
+                      <span class="tooltip-content">
+                          {{'TOOLTIP.NUMBER_REQUIRED' | translate}}
+                      </span>
+                    </label>
                 </div>
             </section>
         </form>
     </clr-tab-content>
 </clr-tabs>
 <div>
-    <button type="button" class="btn btn-primary" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="testMailServer()" *ngIf="showTestServerBtn">{{'BUTTON.TEST_MAIL' | translate}}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
+    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-outline" (click)="testMailServer()" *ngIf="showTestServerBtn" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL' | translate}}</button>
 </div>

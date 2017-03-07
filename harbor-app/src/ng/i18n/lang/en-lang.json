@@ -30,7 +30,9 @@
         "SIGN_IN_PWD": "Password is required",
         "SIGN_UP_MAIL": "Email is only used for resetting your password",
         "SIGN_UP_REAL_NAME": "First name and last name",
-        "ITEM_REQUIRED": "Field is required"
+        "ITEM_REQUIRED": "Field is required",
+        "NUMBER_REQUIRED": "Filed is required and should be numbers",
+        "PORT_REQUIRED": "Filed is required and should be valid port number"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
