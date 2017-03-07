@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/src/common/utils/log"
 
@@ -27,7 +28,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 
-	"github.com/mqu/openldap"
+	openldap "gopkg.in/ldap.v2"
 )
 
 // Auth implements Authenticator interface to authenticate against LDAP
@@ -51,11 +52,36 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, errors.New("can not get any available LDAP_URL")
 	}
 	log.Debug("ldapURL:", ldapURL)
-	ldap, err := openldap.Initialize(ldapURL)
+
+	// This routine keeps compability with the old format used on harbor.cfg
+	splitLdapURL := strings.Split(ldapURL, "://")
+	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
+
+	var host, port string
+
+	// This tries to detect the used port, if not defined
+	if strings.Contains(hostport, ":") {
+		splitHostPort := strings.Split(hostport, ":")
+		host, port = splitHostPort[0], splitHostPort[1]
+	} else {
+		host = hostport
+		switch protocol {
+		case "ldap":
+			port = "389"
+		case "ldaps":
+			port = "636"
+		}
+	}
+
+	// Sets a Dial Timeout for LDAP
+	// TODO: Make this configurable
+	openldap.DefaultTimeout = 5 * time.Second // 5 seconds to get a connect timeout is reasonable, for now
+
+	// TODO: Make the option to use StartTLS configurable.
+	ldap, err := openldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
 	if err != nil {
 		return nil, err
 	}
-	ldap.SetOption(openldap.LDAP_OPT_PROTOCOL_VERSION, openldap.LDAP_VERSION3)
 
 	ldapBaseDn := config.LDAP().BaseDn
 	if ldapBaseDn == "" {
@@ -86,27 +112,42 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	ldapScope := config.LDAP().Scope
 	var scope int
 	if ldapScope == "1" {
-		scope = openldap.LDAP_SCOPE_BASE
+		scope = openldap.ScopeBaseObject
 	} else if ldapScope == "2" {
-		scope = openldap.LDAP_SCOPE_ONELEVEL
+		scope = openldap.ScopeSingleLevel
 	} else {
-		scope = openldap.LDAP_SCOPE_SUBTREE
+		scope = openldap.ScopeWholeSubtree
 	}
 	attributes := []string{"uid", "cn", "mail", "email"}
-	result, err := ldap.SearchAll(ldapBaseDn, scope, filter, attributes)
+
+	searchRequest := openldap.NewSearchRequest(
+		ldapBaseDn,
+		scope,
+		openldap.NeverDerefAliases,
+		0,     // Unlimited results. TODO: Limit this (as we expect only one result)?
+		0,     // Search Timeout. TODO: Limit this (check what is the unit of timeout) and make configurable
+		false, // Types Only
+		filter,
+		attributes,
+		nil,
+	)
+
+	result, err := ldap.Search(searchRequest)
 	if err != nil {
 		return nil, err
 	}
-	if len(result.Entries()) == 0 {
+
+	if len(result.Entries) == 0 {
 		log.Warningf("Not found an entry.")
 		return nil, nil
-	} else if len(result.Entries()) != 1 {
+	} else if len(result.Entries) != 1 {
 		log.Warningf("Found more than one entry.")
 		return nil, nil
 	}
-	en := result.Entries()[0]
-	bindDN := en.Dn()
-	log.Debug("found entry:", en)
+
+	entry := result.Entries[0]
+	bindDN := entry.DN
+	log.Debug("found entry:", bindDN)
 	err = ldap.Bind(bindDN, m.Password)
 	if err != nil {
 		log.Debug("Bind user error", err)
@@ -115,9 +156,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	defer ldap.Close()
 
 	u := models.User{}
-	for _, attr := range en.Attributes() {
-		val := attr.Values()[0]
-		switch attr.Name() {
+
+	for _, attr := range entry.Attributes {
+		val := attr.Values[0]
+		switch attr.Name {
 		case "uid":
 			u.Realname = val
 		case "cn":
