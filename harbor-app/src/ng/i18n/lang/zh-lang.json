@@ -159,7 +159,11 @@
         "FILTER_POLICIES_PLACEHOLDER": "过滤策略",
         "FILTER_JOBS_PLACEHOLDER": "过滤任务",
         "DELETION_TITLE": "删除策略确认",
-        "DELETION_SUMMARY": "确认删除策略 {{param}}?"
+        "DELETION_SUMMARY": "确认删除策略 {{param}}?",
+        "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
+        "DELETION_TITLE_TARGET": "删除目标确认",
+        "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?"
+        
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"

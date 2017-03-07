@@ -158,7 +158,10 @@
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
         "DELETION_TITLE": "Confirm Policy Deletion",
-        "DELETION_SUMMARY": "Do you want to delete policy {{param}}?"
+        "DELETION_SUMMARY": "Do you want to delete policy {{param}}?",
+        "FILTER_TARGETS_PLACEHOLDER": "Filter Targets",
+        "DELETION_TITLE_TARGET": "Confirm Target Deletion",
+        "DELETION_SUMMARY_TARGET": "Do you want to delete target {{param}}?"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"

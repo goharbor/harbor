@@ -46,15 +46,17 @@ export class ReplicationService extends BaseService {
                .catch(error=>Observable.throw(error));
   }
 
-  createTarget(target: Target): Observable<any> {
-    console.log('Create target:' + JSON.stringify(target));
-    return this.http
-               .post(`/api/targets`, JSON.stringify(target))
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+  updatePolicy(policy: Policy): Observable<any> {
+    if (policy && policy.id) {
+      return this.http
+                 .put(`/api/policies/replication/${policy.id}`, JSON.stringify(policy))
+                 .map(response=>response.status)
+                 .catch(error=>Observable.throw(error));
+    } 
+    return Observable.throw(new Error("Policy is nil or has no ID set."));
   }
 
-  createPolcyWithTarget(policy: Policy, target: Target): Observable<any> {
+  createOrUpdatePolicyWithNewTarget(policy: Policy, target: Target): Observable<any> {
     return this.http
                .post(`/api/targets`, JSON.stringify(target))
                .map(response=>{
@@ -73,11 +75,18 @@ export class ReplicationService extends BaseService {
                    let lastAddedTarget= <Target>res.json()[0];
                    if(lastAddedTarget && lastAddedTarget.id) {
                      policy.target_id = lastAddedTarget.id;
-                     return this.http
-                                .post(`/api/policies/replication`, JSON.stringify(policy))
-                                .map(response=>response.status)
-                                .catch(error=>Observable.throw(error));
-                   }
+                     if(policy.id) {
+                       return this.http
+                                  .put(`/api/policies/replication/${policy.id}`, JSON.stringify(policy))
+                                  .map(response=>response.status)
+                                  .catch(error=>Observable.throw(error));
+                     } else {
+                       return this.http
+                                  .post(`/api/policies/replication`, JSON.stringify(policy))
+                                  .map(response=>response.status)
+                                  .catch(error=>Observable.throw(error));
+                     }
+                   } 
                  }
                })
                .catch(error=>Observable.throw(error));
@@ -108,11 +117,27 @@ export class ReplicationService extends BaseService {
                .catch(error=>Observable.throw(error));
   }
 
-  listTargets(): Observable<Target[]> {
+  listTargets(targetName: string): Observable<Target[]> {
     console.log('Get targets.');
     return this.http
-               .get(`/api/targets`)
+               .get(`/api/targets?name=${targetName}`)
                .map(response=>response.json() as Target[])
+               .catch(error=>Observable.throw(error));
+  }
+
+  getTarget(targetId: number): Observable<Target> {
+    console.log('Get target by ID:' + targetId);
+    return this.http
+               .get(`/api/targets/${targetId}`)
+               .map(response=>response.json() as Target)
+               .catch(error=>Observable.throw(error));
+  }
+
+  createTarget(target: Target): Observable<any> {
+    console.log('Create target:' + JSON.stringify(target));
+    return this.http
+               .post(`/api/targets`, JSON.stringify(target))
+               .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
@@ -124,6 +149,22 @@ export class ReplicationService extends BaseService {
     body.set('password', target.password);
     return this.http
                .post(`/api/targets/ping`, body)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
+  updateTarget(target: Target): Observable<any> {
+    console.log('Update target with target ID' + target.id);
+    return this.http
+               .put(`/api/targets/${target.id}`, JSON.stringify(target))
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
+  deleteTarget(targetId: number): Observable<any> {
+    console.log('Deleting  target with ID:' + targetId);
+    return this.http
+               .delete(`/api/targets/${targetId}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

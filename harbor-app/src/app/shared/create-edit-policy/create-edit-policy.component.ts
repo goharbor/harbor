@@ -4,7 +4,7 @@ import { CreateEditPolicy } from './create-edit-policy';
 
 import { ReplicationService } from '../../replication/replication.service';
 import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
+import { AlertType, ActionType } from '../../shared/shared.const';
 
 import { Policy } from '../../replication/policy';
 import { Target } from '../../replication/target';
@@ -18,6 +18,8 @@ export class CreateEditPolicyComponent implements OnInit {
   createEditPolicyOpened: boolean;
   createEditPolicy: CreateEditPolicy = new CreateEditPolicy();
   
+  actionType: ActionType;
+
   errorMessageOpened: boolean;
   errorMessage: string;
   
@@ -37,14 +39,15 @@ export class CreateEditPolicyComponent implements OnInit {
   
   prepareTargets(targetId?: number) {
     this.replicationService
-        .listTargets()
+        .listTargets('')
         .subscribe(
           targets=>{
             this.targets = targets; 
             if(this.targets && this.targets.length > 0) {
               let initialTarget: Target;
-              (targetId) ? initialTarget = this.targets.find(t=>t.id===targetId) : initialTarget = this.targets[0]; 
+              (targetId) ? initialTarget = this.targets.find(t=>t.id==targetId) : initialTarget = this.targets[0]; 
               this.createEditPolicy.targetId = initialTarget.id;
+              this.createEditPolicy.targetName = initialTarget.name;
               this.createEditPolicy.endpointUrl = initialTarget.endpoint;
               this.createEditPolicy.username = initialTarget.username;
               this.createEditPolicy.password = initialTarget.password;
@@ -57,7 +60,6 @@ export class CreateEditPolicyComponent implements OnInit {
   ngOnInit(): void {}
 
   openCreateEditPolicy(policyId?: number): void {
-    console.log('createEditPolicyOpened:' + this.createEditPolicyOpened);
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
     this.isCreateDestination = false;
@@ -68,20 +70,23 @@ export class CreateEditPolicyComponent implements OnInit {
     this.pingStatus = true;
     this.testOngoing = false;  
 
-    this.prepareTargets();
     if(policyId) {
+      this.actionType = ActionType.EDIT;
       this.replicationService
           .getPolicy(policyId)
           .subscribe(
             policy=>{
+              this.createEditPolicy.policyId = policyId;
               this.createEditPolicy.name = policy.name;
               this.createEditPolicy.description = policy.description;
               this.createEditPolicy.enable = policy.enabled === 1? true : false;
-              this.createEditPolicy.targetId = policy.target_id;
               this.prepareTargets(policy.target_id);
             }
           )
-    }    
+    } else {
+      this.actionType = ActionType.ADD_NEW;
+      this.prepareTargets(); 
+    }
   } 
 
   newDestination(checkedAddNew: boolean): void {
@@ -94,12 +99,12 @@ export class CreateEditPolicyComponent implements OnInit {
   }
 
   selectTarget(): void {
-    let results = this.targets.filter(target=>target.id == this.createEditPolicy.targetId);
-    if(results && results.length > 0) {
-      this.createEditPolicy.targetId = results[0].id;
-      this.createEditPolicy.endpointUrl = results[0].endpoint;
-      this.createEditPolicy.username = results[0].username;
-      this.createEditPolicy.password = results[0].password;
+    let result = this.targets.find(target=>target.id == this.createEditPolicy.targetId);
+    if(result) {
+      this.createEditPolicy.targetId = result.id;
+      this.createEditPolicy.endpointUrl = result.endpoint;
+      this.createEditPolicy.username = result.username;
+      this.createEditPolicy.password = result.password;
     }
   }
   
@@ -111,6 +116,7 @@ export class CreateEditPolicyComponent implements OnInit {
   getPolicyByForm(): Policy {
     let policy = new Policy();
     policy.project_id = this.projectId;
+    policy.id = this.createEditPolicy.policyId;
     policy.name = this.createEditPolicy.name;
     policy.description = this.createEditPolicy.description;
     policy.enabled = this.createEditPolicy.enable ? 1 : 0;
@@ -120,6 +126,7 @@ export class CreateEditPolicyComponent implements OnInit {
 
   getTargetByForm(): Target {
     let target = new Target();
+    target.id = this.createEditPolicy.targetId;
     target.name = this.createEditPolicy.targetName;
     target.endpoint = this.createEditPolicy.endpointUrl;
     target.username = this.createEditPolicy.username;
@@ -128,7 +135,7 @@ export class CreateEditPolicyComponent implements OnInit {
   }
 
   createPolicy(): void {
-    console.log('Create policy with existed target in component.');
+    console.log('Create policy with existing target in component.');
     this.replicationService
         .createPolicy(this.getPolicyByForm())
         .subscribe(
@@ -144,30 +151,53 @@ export class CreateEditPolicyComponent implements OnInit {
           });
   }
 
-  createPolicyWithTarget(): void {
-    console.log('Create policy with new target in component.');
+  createOrUpdatePolicyAndCreateTarget(): void {
+    console.log('Creating policy with new created target.');
     this.replicationService
-        .createPolcyWithTarget(this.getPolicyByForm(), this.getTargetByForm())
+        .createOrUpdatePolicyWithNewTarget(this.getPolicyByForm(), this.getTargetByForm())
         .subscribe(
           response=>{
-            console.log('Successful created policy with added target:' + response);
+            console.log('Successful created policy and target:' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
           error=>{
             this.errorMessageOpened = true;
             this.errorMessage = error['_body'];
-            console.log('Failed to create policy with new added target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
+            console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
+          }
+        );
+  }
+
+  updatePolicy(): void {
+    console.log('Creating policy with existing target.');
+    this.replicationService
+        .updatePolicy(this.getPolicyByForm())
+        .subscribe(
+          response=>{
+            console.log('Successful created policy and target:' + response);
+            this.createEditPolicyOpened = false;
+            this.reload.emit(true);
+          },
+          error=>{
+            this.errorMessageOpened = true;
+            this.errorMessage = error['_body'];
+            console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
   }
 
   onSubmit() {
     if(this.isCreateDestination) {
-      this.createPolicyWithTarget();
+      this.createOrUpdatePolicyAndCreateTarget();
     } else {
-      this.createPolicy();
+      if(this.actionType === ActionType.ADD_NEW) {
+        this.createPolicy();
+      } else if(this.actionType === ActionType.EDIT){
+        this.updatePolicy();
+      }
     }
+    
     this.errorMessageOpened = false;
     this.errorMessage = '';
   }
