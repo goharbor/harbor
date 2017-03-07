@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-var endpoint string = "10.117.4.142"
+var endpoint = "10.117.4.142"
 
 func TestMain(m *testing.M) {
 	notaryServer := notarytest.NewNotaryServer(endpoint)

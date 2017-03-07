@@ -30,6 +30,8 @@ func currPath() string {
 	}
 	return path.Dir(f)
 }
+
+// NewNotaryServer creates a notary server for testing.
 func NewNotaryServer(endpoint string) *httptest.Server {
 	mux := http.NewServeMux()
 	validRoot := fmt.Sprintf("/v2/%s/notary-demo/busybox/_trust/tuf/", endpoint)
