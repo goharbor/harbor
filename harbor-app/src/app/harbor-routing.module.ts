@@ -25,6 +25,7 @@ import { SignUpComponent } from './account/sign-up/sign-up.component';
 import { ResetPasswordComponent } from './account/password/reset-password.component';
 import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
+import { PageNotFoundComponent } from './shared/not-found/not-found.component'
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
@@ -96,7 +97,8 @@ const harborRoutes: Routes = [
         component: ConfigurationComponent
       }
     ]
-  }
+  },
+  { path: "**", component: PageNotFoundComponent}
 ];
 
 @NgModule({

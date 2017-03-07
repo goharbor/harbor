@@ -210,6 +210,11 @@
         "SELF_REGISTRATION": "自注册",
         "SELF_REGISTRATION_TOOLTIP": "激活注册功能"
     },
+    "PAGE_NOT_FOUND": {
+        "MAIN_TITLE": "页面不存在",
+        "SUB_TITLE": "重定向到harbor主页面在",
+        "UNIT": "秒后..."
+    },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限"
