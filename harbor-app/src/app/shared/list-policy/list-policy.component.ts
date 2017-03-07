@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostBinding, OnInit, ViewChild} from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostBinding, OnInit, ViewChild, OnDestroy } from '@angular/core';
 
 import { ReplicationService } from '../../replication/replication.service';
 import { Policy } from '../../replication/policy';
@@ -11,12 +11,13 @@ import { DeletionTargets } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType } from '../../shared/shared.const';
 
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'list-policy',
   templateUrl: 'list-policy.component.html',
 })
-export class ListPolicyComponent implements OnInit {
+export class ListPolicyComponent implements OnInit, OnDestroy {
   
   @Input() policies: Policy[];
   @Input() projectless: boolean;
@@ -26,14 +27,14 @@ export class ListPolicyComponent implements OnInit {
   @Output() editOne = new EventEmitter<number>();
  
   selectedId: number;
-  
+  subscription: Subscription;
 
   constructor(
     private replicationService: ReplicationService,
     private deletionDialogService: DeletionDialogService,
     private messageService: MessageService) {
     
-    deletionDialogService
+    this.subscription = this.subscription = this.deletionDialogService
          .deletionConfirm$
          .subscribe(
            message=>{
@@ -54,6 +55,12 @@ export class ListPolicyComponent implements OnInit {
 
   ngOnInit() {
     
+  }
+
+  ngOnDestroy() {
+    if(this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   selectPolicy(policy: Policy): void {
