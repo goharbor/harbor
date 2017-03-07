@@ -340,6 +340,78 @@ func TestGetTopRepos(t *testing.T) {
 	})
 }
 
+func TestGetTotalOfRepositoriesByProject(t *testing.T) {
+	var projectID int64 = 1
+	repoName := "library/total_count"
+
+	total, err := GetTotalOfRepositoriesByProject(projectID, repoName)
+	if err != nil {
+		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
+		return
+	}
+
+	if err := addRepository(&models.RepoRecord{
+		Name:        repoName,
+		OwnerName:   "admin",
+		ProjectName: "library",
+	}); err != nil {
+		t.Errorf("failed to add repository %s: %v", repoName, err)
+		return
+	}
+	defer func() {
+		if err := deleteRepository(repoName); err != nil {
+			t.Errorf("failed to delete repository %s: %v", name, err)
+			return
+		}
+	}()
+
+	n, err := GetTotalOfRepositoriesByProject(projectID, repoName)
+	if err != nil {
+		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
+		return
+	}
+
+	if n != total+1 {
+		t.Errorf("unexpected total: %d != %d", n, total+1)
+	}
+}
+
+func TestGetRepositoriesByProject(t *testing.T) {
+	var projectID int64 = 1
+	repoName := "library/repository"
+
+	if err := addRepository(&models.RepoRecord{
+		Name:        repoName,
+		OwnerName:   "admin",
+		ProjectName: "library",
+	}); err != nil {
+		t.Errorf("failed to add repository %s: %v", repoName, err)
+		return
+	}
+	defer func() {
+		if err := deleteRepository(repoName); err != nil {
+			t.Errorf("failed to delete repository %s: %v", name, err)
+			return
+		}
+	}()
+
+	repositories, err := GetRepositoriesByProject(projectID, repoName, 10, 0)
+	if err != nil {
+		t.Errorf("failed to get repositoreis of project %d: %v", projectID, err)
+		return
+	}
+
+	t.Log(repositories)
+
+	for _, repository := range repositories {
+		if repository.Name == repoName {
+			return
+		}
+	}
+
+	t.Errorf("repository %s not found", repoName)
+}
+
 func addRepository(repository *models.RepoRecord) error {
 	return AddRepository(*repository)
 }
