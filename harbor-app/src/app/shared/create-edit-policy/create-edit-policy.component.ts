@@ -9,12 +9,15 @@ import { AlertType, ActionType } from '../../shared/shared.const';
 import { Policy } from '../../replication/policy';
 import { Target } from '../../replication/target';
 
+import { TranslateService } from '@ngx-translate/core';
+
 @Component({
   selector: 'create-edit-policy',
   templateUrl: 'create-edit-policy.component.html'
 })
 export class CreateEditPolicyComponent implements OnInit {
 
+  modalTitle: string;
   createEditPolicyOpened: boolean;
   createEditPolicy: CreateEditPolicy = new CreateEditPolicy();
   
@@ -34,8 +37,10 @@ export class CreateEditPolicyComponent implements OnInit {
   testOngoing: boolean;
   pingStatus: boolean;
 
-  constructor(private replicationService: ReplicationService,
-              private messageService: MessageService) {}
+  constructor(
+    private replicationService: ReplicationService,
+    private messageService: MessageService,
+    private translateService: TranslateService) {}
   
   prepareTargets(targetId?: number) {
     this.replicationService
@@ -72,6 +77,7 @@ export class CreateEditPolicyComponent implements OnInit {
 
     if(policyId) {
       this.actionType = ActionType.EDIT;
+      this.translateService.get('REPLICATION.EDIT_POLICY').subscribe(res=>this.modalTitle=res);
       this.replicationService
           .getPolicy(policyId)
           .subscribe(
@@ -85,6 +91,7 @@ export class CreateEditPolicyComponent implements OnInit {
           )
     } else {
       this.actionType = ActionType.ADD_NEW;
+      this.translateService.get('REPLICATION.ADD_POLICY').subscribe(res=>this.modalTitle=res);
       this.prepareTargets(); 
     }
   } 
@@ -204,7 +211,7 @@ export class CreateEditPolicyComponent implements OnInit {
 
   testConnection() {
     this.pingStatus = true;
-    this.pingTestMessage = 'Testing connection...';
+    this.translateService.get('REPLICATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
     this.testOngoing = !this.testOngoing;
     let pingTarget = new Target();
     pingTarget.endpoint = this.createEditPolicy.endpointUrl;
@@ -215,12 +222,12 @@ export class CreateEditPolicyComponent implements OnInit {
         .subscribe(
           response=>{
             this.testOngoing = !this.testOngoing;
-            this.pingTestMessage = 'Connection tested successfully.';
+            this.translateService.get('REPLICATION.TEST_CONNECTION_SUCCESS').subscribe(res=>this.pingTestMessage=res);
             this.pingStatus = true;
           },
           error=>{
             this.testOngoing = !this.testOngoing;
-            this.pingTestMessage = 'Failed to ping target.';
+            this.translateService.get('REPLICATION.TEST_CONNECTION_FAILURE').subscribe(res=>this.pingTestMessage=res);
             this.pingStatus = false;
           }
         );
