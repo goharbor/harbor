@@ -118,7 +118,11 @@ export class CreateEditDestinationComponent {
           );
         break;
     }
-    
+  }
+
+  onErrorMessageClose(): void {
+    this.errorMessageOpened = false;
+    this.errorMessage = '';
   }
 
 }

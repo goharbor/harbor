@@ -20,8 +20,8 @@ export class CreateProjectComponent {
   project: Project = new Project();
   createProjectOpened: boolean;
   
+  errorMessageOpened: boolean;
   errorMessage: string;
-  hasError: boolean;
   
   @Output() create = new EventEmitter<boolean>();
   
@@ -30,7 +30,6 @@ export class CreateProjectComponent {
               private translateService: TranslateService) {}
 
   onSubmit() {
-    this.hasError = false;
     this.projectService
         .createProject(this.project.name, this.project.public ? 1 : 0)
         .subscribe(
@@ -39,7 +38,7 @@ export class CreateProjectComponent {
             this.createProjectOpened = false;
           },
           error=>{
-            this.hasError = true;
+            this.errorMessageOpened = true;
             if (error instanceof Response) { 
               switch(error.status) {
               case 409:
@@ -59,9 +58,15 @@ export class CreateProjectComponent {
   }
 
   newProject() {
-    this.hasError = false;
     this.project = new Project();
     this.createProjectOpened = true;
+    this.errorMessageOpened = false;
+    this.errorMessage = '';
+  }
+
+  onErrorMessageClose(): void {
+    this.errorMessageOpened = false;
+    this.errorMessage = '';
   }
 }
 
