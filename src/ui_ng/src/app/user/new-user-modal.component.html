@@ -1,15 +1,8 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop">
     <h3 class="modal-title">{{'USER.ADD_USER_TITLE' | translate}}</h3>
     <div class="modal-body">
         <new-user-form (valueChange)="formValueChange($event)"></new-user-form>
-        <div style="height: 30px;"></div>
-        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [(clrAlertClosed)]="alertClose">
-            <div class="alert-item">
-                <span class="alert-text">
-                   {{errorMessage}}
-                </span>
-            </div>
-        </clr-alert>
+        <inline-alert (confirmEvt)="confirmCancel($event)"></inline-alert>
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline" style="top:8px;" [hidden]="inProgress === false"> </span>

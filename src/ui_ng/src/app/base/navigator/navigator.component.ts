@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { ModalEvent } from '../modal-event';
 import { SearchEvent } from '../search-event';
-import { modalAccountSettings, modalPasswordSetting } from '../modal-events.const';
+import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
@@ -62,7 +62,7 @@ export class NavigatorComponent implements OnInit {
     //Open the account setting dialog
     openAccountSettingsModal(): void {
         this.showAccountSettingsModal.emit({
-            modalName: modalAccountSettings,
+            modalName: modalEvents.USER_PROFILE,
             modalFlag: true
         });
     }
@@ -70,7 +70,15 @@ export class NavigatorComponent implements OnInit {
     //Open change password dialog
     openChangePwdModal(): void {
         this.showPwdChangeModal.emit({
-            modalName: modalPasswordSetting,
+            modalName: modalEvents.CHANGE_PWD,
+            modalFlag: true
+        });
+    }
+
+    //Open about dialog
+    openAboutDialog(): void {
+        this.showPwdChangeModal.emit({
+            modalName: modalEvents.ABOUT,
             modalFlag: true
         });
     }
@@ -100,6 +108,8 @@ export class NavigatorComponent implements OnInit {
             //TODO:
             console.error('Language '+lang.trim()+' is not suppoted');
         }
+        //Try to switch backend lang
+        //this.session.switchLanguage(lang).catch(error => console.error(error));
     }
 
     //Handle the home action

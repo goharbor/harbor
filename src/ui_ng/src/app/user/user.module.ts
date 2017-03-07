@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { UserComponent } from './user.component';
-import { NewUserFormComponent } from './new-user-form.component';
 import { NewUserModalComponent } from './new-user-modal.component';
+import { UserService } from './user.service';
 
 @NgModule({
   imports: [
@@ -10,13 +10,12 @@ import { NewUserModalComponent } from './new-user-modal.component';
   ],
   declarations: [
     UserComponent,
-    NewUserFormComponent,
     NewUserModalComponent
   ],
   exports: [
-    UserComponent,
-    NewUserFormComponent
-  ]
+    UserComponent
+  ],
+  providers:[UserService]
 })
 export class UserModule {
 

@@ -7,30 +7,33 @@
             <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="userNameInput.invalid && (userNameInput.dirty || userNameInput.touched)">
                 <input class="username" type="text" required
                 [(ngModel)]="signInCredential.principal" 
-                name="login_username" id="login_username" placeholder="Username"
+                name="login_username" id="login_username" placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}'
                 #userNameInput='ngModel'>
                 <span class="tooltip-content">
-                    Username is required!
+                    {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
                 </span>
             </label>
             <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
                 <input class="password" type="password" required 
                 [(ngModel)]="signInCredential.password" 
-                name="login_password" id="login_password" placeholder="Password" 
+                name="login_password" id="login_password" placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}'
                 #passwordInput="ngModel">
                 <span class="tooltip-content">
-                    Password is required!
+                    {{ 'TOOLTIP.SIGN_IN_PWD' | translate }}
                 </span>
             </label>
             <div class="checkbox">
                 <input type="checkbox" id="rememberme">
-                <label for="rememberme">Remember me</label>
+                <label for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
+                <a href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">Forgot password</a>
             </div>
-            <div [class.visibility-hidden]="signInStatus != statusError" class="error active">
-                Invalid user name or password
+            <div [class.visibility-hidden]="!isError" class="error active">
+                {{ 'SIGN_IN.INVALID_MSG' | translate }}
             </div>
-            <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()">{{ 'LOG_IN' | translate }}</button>
-            <a href="javascript:void(0)" class="signup" (click)="signUp()">{{ 'SIGN_UP' | translate }}</a>
+            <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
+            <a href="javascript:void(0)" class="signup" (click)="signUp()">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
         </div>
     </form>
 </div>
+<sign-up #signupDialog></sign-up>>
+<forgot-password #forgotPwdDialog></forgot-password>

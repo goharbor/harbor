@@ -18,7 +18,9 @@ export class AddMemberComponent {
   member: Member = new Member();
   addMemberOpened: boolean;
   errorMessage: string;
-  hasError: boolean;
+  
+  errorMessageOpened: boolean;
+
 
   @Input() projectId: number;
   @Output() added = new EventEmitter<boolean>();
@@ -28,7 +30,6 @@ export class AddMemberComponent {
               private translateService: TranslateService) {}
 
   onSubmit(): void {
-    this.hasError = false;
     console.log('Adding member:' + JSON.stringify(this.member));
     this.memberService
         .addMember(this.projectId, this.member.username, this.member.role_id)
@@ -39,7 +40,7 @@ export class AddMemberComponent {
             this.addMemberOpened = false;
           },
           error=>{
-            this.hasError = true;
+            this.errorMessageOpened = true;
             if (error instanceof Response) { 
             switch(error.status){
               case 404:
@@ -59,13 +60,17 @@ export class AddMemberComponent {
             console.log('Failed to add member of project:' + this.projectId, ' with error:' + error);
           }
         );
-
-    
   }
 
   openAddMemberModal(): void {
-    this.hasError = false;
+    this.errorMessageOpened = false;
+    this.errorMessage = '';
     this.member = new Member();
     this.addMemberOpened = true;
+  }
+
+  onErrorMessageClose(): void {
+    this.errorMessageOpened = false;
+    this.errorMessage = '';
   }
 }

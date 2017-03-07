@@ -5,3 +5,11 @@
 .visibility-hidden {
     visibility: hidden;
 }
+
+.forgot-password-link {
+    position: relative;
+    line-height: 36px;
+    font-size: 14px;
+    float: right;
+    top: -5px;
+}

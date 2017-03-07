@@ -5,7 +5,8 @@
         <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
       </div>
       <div class="col-xs-3 flex-xs-middle">
-        <grid-filter class="filter-pos" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
+        <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
+        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
       </div>
     </div>
     <div class="row flex-items-xs-right advance-option" [hidden]="currentOption === 0">

@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { SessionService } from '../../shared/session.service';
 import { SignInCredential } from '../../shared/sign-in-credential';
+
+import { SignUpComponent } from '../sign-up/sign-up.component';
+import { harborRootRoute } from '../../shared/shared.const';
+import { ForgotPasswordComponent } from '../password/forgot-password.component';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -17,13 +21,16 @@ export const signInStatusError = -1;
     styleUrls: ['sign-in.component.css']
 })
 
-export class SignInComponent implements AfterViewChecked {
+export class SignInComponent implements AfterViewChecked, OnInit {
+    private redirectUrl: string = "";
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
+    @ViewChild('signupDialog') signUpDialog: SignUpComponent;
+    @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
 
     //Status flag
-    signInStatus: number = 0;
+    signInStatus: number = signInStatusNormal;
 
     //Initialize sign in credential
     @Input() signInCredential: SignInCredential = {
@@ -33,8 +40,16 @@ export class SignInComponent implements AfterViewChecked {
 
     constructor(
         private router: Router,
-        private session: SessionService
+        private session: SessionService,
+        private route: ActivatedRoute
     ) { }
+
+    ngOnInit(): void {
+        this.route.queryParams
+            .subscribe(params => {
+                this.redirectUrl = params["redirect_url"] || "";
+            });
+    }
 
     //For template accessing
     public get isError(): boolean {
@@ -105,25 +120,26 @@ export class SignInComponent implements AfterViewChecked {
                 //Set status
                 this.signInStatus = signInStatusNormal;
 
-                //Validate the sign-in session
-                this.session.retrieveUser()
-                    .then(user => {
-                        //Routing to the right location
-                        let nextRoute = ["/harbor", "projects"];
-                        this.router.navigate(nextRoute);
-                    })
-                    .catch(error => {
-                        this.handleError(error);
-                    });
+                //Redirect to the right route
+                if (this.redirectUrl === "") {
+                    //Routing to the default location
+                    this.router.navigateByUrl(harborRootRoute);
+                }else{
+                    this.router.navigateByUrl(this.redirectUrl);
+                }
             })
             .catch(error => {
                 this.handleError(error);
             });
     }
 
-    //Help user navigate to the sign up
+    //Open sign up dialog
     signUp(): void {
-        let nextRoute = ["/harbor", "signup"];
-        this.router.navigate(nextRoute);
+        this.signUpDialog.open();
+    }
+
+    //Open forgot password dialog
+    forgotPassword(): void {
+        this.forgotPwdDialog.open();
     }
 }

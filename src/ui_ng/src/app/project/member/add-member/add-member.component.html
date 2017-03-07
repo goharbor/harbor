@@ -1,14 +1,21 @@
 <clr-modal [(clrModalOpen)]="addMemberOpened">
   <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
   <div class="modal-body">
-    <form>
+    <form #memberForm="ngForm">
       <section class="form-block">
+        <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="!errorMessageOpened" (clrAlertClosedChange)="onErrorMessageClose()">
+          <div class="alert-item">
+            <span class="alert-text">
+              {{errorMessage}}
+            </span>
+          </div>
+        </clr-alert>
         <div class="form-group">
           <label for="member_name" class="col-md-4">{{'MEMBER.NAME' | translate}}</label>
-          <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="hasError" [class.valid]="!hasError" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
-            <input type="text" id="member_name"  [(ngModel)]="member.username" name="name" size="20" (keyup)="hasError=false;">
-            <span class="tooltip-content">
-              {{errorMessage}}
+          <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="memberName.invalid && (memberName.dirty || memberName.touched)" [class.valid]="memberName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+            <input type="text" id="member_name"  [(ngModel)]="member.username" name="name" size="20" #memberName="ngModel" required>
+            <span class="tooltip-content" *ngIf="memberName.errors && memberName.errors.required && (memberName.dirty || memberName.touched)">
+              Username is required.
             </span>
           </label>
         </div>

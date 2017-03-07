@@ -1,23 +1,28 @@
 import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { ReplicationManagementComponent } from './replication-management/replication-management.component';
 
 import { ReplicationComponent } from './replication.component';
-import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
-import { ListPolicyComponent } from './list-policy/list-policy.component';
 import { ListJobComponent } from './list-job/list-job.component';
-
-import { CustomHighlightDirective } from './list-policy/custom-highlight.directive';
+import { TotalReplicationComponent } from './total-replication/total-replication.component';
+import { DestinationComponent } from './destination/destination.component';
+import { CreateEditDestinationComponent } from './create-edit-destination/create-edit-destination.component';
 
 import { SharedModule } from '../shared/shared.module';
 import { ReplicationService } from './replication.service';
 
 @NgModule({
-  imports: [ SharedModule ],
+  imports: [ 
+    SharedModule,
+    RouterModule
+  ],
   declarations: [ 
     ReplicationComponent,
-    CreateEditPolicyComponent,
-    ListPolicyComponent,
+    ReplicationManagementComponent,
     ListJobComponent,
-    CustomHighlightDirective
+    TotalReplicationComponent,
+    DestinationComponent,
+    CreateEditDestinationComponent
   ],
   exports: [ ReplicationComponent ],
   providers: [ ReplicationService ]
