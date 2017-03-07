@@ -28,7 +28,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/ui/service/cache"
 	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
@@ -195,13 +194,6 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "")
 		}
 	}
-
-	go func() {
-		log.Debug("refreshing catalog cache")
-		if err := cache.RefreshCatalogCache(); err != nil {
-			log.Errorf("error occurred while refresh catalog cache: %v", err)
-		}
-	}()
 }
 
 type tag struct {
@@ -392,7 +384,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, !verify, username, repoName,
+	return NewRepositoryClient(endpoint, !verify, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 

@@ -26,7 +26,6 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/service/cache"
 )
 
 // SearchAPI handles requesst to /api/search
@@ -160,7 +159,7 @@ func getTags(repository string) ([]string, error) {
 		return nil, err
 	}
 
-	client, err := cache.NewRepositoryClient(url, true,
+	client, err := NewRepositoryClient(url, true,
 		"admin", repository, "repository", repository, "pull")
 	if err != nil {
 		return nil, err
