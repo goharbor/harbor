@@ -23,6 +23,18 @@
 			"revisionTime": "2016-02-16T18:39:35Z"
 		},
 		{
+			"checksumSHA1": "LLVyR2dAgkihu0+HdZF+JK0gMMs=",
+			"path": "github.com/agl/ed25519",
+			"revision": "5312a61534124124185d41f09206b9fef1d88403",
+			"revisionTime": "2017-01-16T20:05:12Z"
+		},
+		{
+			"checksumSHA1": "30PBqj9BW03KCVqASvLg3bR+xYc=",
+			"path": "github.com/agl/ed25519/edwards25519",
+			"revision": "5312a61534124124185d41f09206b9fef1d88403",
+			"revisionTime": "2017-01-16T20:05:12Z"
+		},
+		{
 			"checksumSHA1": "G0MBhApkgOH9++JlIA8FPfU7j9Y=",
 			"path": "github.com/astaxie/beego",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",
@@ -283,10 +295,94 @@
 			"versionExact": "v2.5.1"
 		},
 		{
+			"checksumSHA1": "fpCMwlzpltN7rBIJoaDMQaIbGMc=",
+			"path": "github.com/docker/go/canonical/json",
+			"revision": "d30aec9fd63c35133f8f79c3412ad91a3b08be06",
+			"revisionTime": "2016-03-03T22:27:18Z"
+		},
+		{
 			"checksumSHA1": "sNAU9ojYVUhO6dVXey6T3JhRQpw=",
 			"path": "github.com/docker/libtrust",
 			"revision": "aabc10ec26b754e797f9028f4589c5b7bd90dc20",
 			"revisionTime": "2016-07-08T17:25:13Z"
+		},
+		{
+			"checksumSHA1": "kr4a1JkdZRyLRxFpMWEDBv+Tc5g=",
+			"path": "github.com/docker/notary",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "mDeAXotBLRQuoS08mUWT1bZZsPw=",
+			"path": "github.com/docker/notary/client",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "7OaN6ui8NyI1AkPO8eGb78pn9kU=",
+			"path": "github.com/docker/notary/client/changelist",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "zCRAbz+uCIjGLdMVmVm7K9yLato=",
+			"path": "github.com/docker/notary/cryptoservice",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "i1ZUCyeqmW3U2ldp2/NxogBSszM=",
+			"path": "github.com/docker/notary/storage",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "acjBXvqoC1F8k9eOH4w66pWlOKw=",
+			"path": "github.com/docker/notary/trustmanager",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "6xBrgTDJBdNg2OXWuszUPpejG+g=",
+			"path": "github.com/docker/notary/trustmanager/yubikey",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "eLLg03N96MZWDl7pnukFU3LiW9w=",
+			"path": "github.com/docker/notary/trustpinning",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "ehxA3/HRJcUIhNg6lHaGkzCLm7g=",
+			"path": "github.com/docker/notary/tuf",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "Z+wn3oZFjIqTcH+ldPAB+G6M+04=",
+			"path": "github.com/docker/notary/tuf/data",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "vkrpzjmJQ1EsCUDpHe9K2u31h24=",
+			"path": "github.com/docker/notary/tuf/signed",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "H+qavNPpU/vADl9qPwDX3QEX/p8=",
+			"path": "github.com/docker/notary/tuf/utils",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
+		},
+		{
+			"checksumSHA1": "s12+geW4Avm81PsGCFnTzCDpXd0=",
+			"path": "github.com/docker/notary/tuf/validation",
+			"revision": "c04e3e6d05881045def11167c51d4a8baa34899a",
+			"revisionTime": "2017-03-02T16:49:30Z"
 		},
 		{
 			"checksumSHA1": "fTw0VmWcoz28UZuOaeidmouucEM=",
@@ -313,6 +409,12 @@
 			"path": "github.com/mattn/go-sqlite3",
 			"revision": "3fb7a0e792edd47bf0cf1e919dfc14e2be412e15",
 			"revisionTime": "2016-09-07T16:20:43Z"
+		},
+		{
+			"checksumSHA1": "Q1J/j+vyjEO6R88eKga+osC8to4=",
+			"path": "github.com/miekg/pkcs11",
+			"revision": "7283ca79f35edb89bc1b4ecae7f86a3680ce737f",
+			"revisionTime": "2017-02-20T20:24:08Z"
 		},
 		{
 			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",

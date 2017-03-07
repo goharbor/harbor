@@ -499,7 +499,7 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 // NewRegistryClient ...
 func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
-	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
@@ -517,7 +517,7 @@ func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scop
 func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
 
-	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {
