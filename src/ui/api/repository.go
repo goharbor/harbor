@@ -19,22 +19,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"sort"
+	"strings"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/registry"
-	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
-
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
-
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/notary"
+	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
+	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -437,6 +438,34 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 	ra.Data["json"] = repos
+	ra.ServeJSON()
+}
+
+//GetSignatures handles request GET /api/repositories/signatures
+func (ra *RepositoryAPI) GetSignatures() {
+	//use this func to init session.
+	ra.GetUserIDForRequest()
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repoName)
+	username, err := ra.getUsername()
+	if err != nil {
+		log.Warningf("Error when getting username: %v", err)
+	}
+	targets, err := notary.GetTargets(username, fqRepo)
+	if err != nil {
+		log.Errorf("Error while fetching signature from notary: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+	ra.Data["json"] = targets
 	ra.ServeJSON()
 }
 

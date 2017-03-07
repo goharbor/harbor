@@ -119,6 +119,8 @@ func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 			user = nil
 		}
 		if user != nil {
+			b.SetSession("userId", user.UserID)
+			b.SetSession("username", user.Username)
 			// User login successfully no further check required.
 			return user.UserID, false, true
 		}
