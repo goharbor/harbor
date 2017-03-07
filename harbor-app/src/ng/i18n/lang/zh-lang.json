@@ -16,7 +16,8 @@
         "CONFIRM": "确定",
         "SEND": "发送",
         "SAVE": "保存",
-        "TEST_MAIL": "测试邮件服务器"
+        "TEST_MAIL": "测试邮件服务器",
+        "CLOSE": "关闭"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -214,6 +215,14 @@
         "MAIN_TITLE": "页面不存在",
         "SUB_TITLE": "重定向到harbor主页面在",
         "UNIT": "秒后..."
+    },
+    "ABOUT": {
+        "VERSION": "版本",
+        "BUILD": "构建",
+        "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
+        "END_USER_LICENSE": "终端用户许可协议",
+        "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

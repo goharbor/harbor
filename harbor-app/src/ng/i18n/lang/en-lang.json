@@ -16,7 +16,8 @@
         "CONFIRM": "Confirm",
         "SEND": "SEND",
         "SAVE": "SAVE",
-        "TEST_MAIL": "TEST MAIL SERVER"
+        "TEST_MAIL": "TEST MAIL SERVER",
+        "CLOSE": "CLOSE"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -212,6 +213,14 @@
         "MAIN_TITLE": "Page not found",
         "SUB_TITLE": "Redirect to harbor home in",
         "UNIT": "seconds..."
+    },
+    "ABOUT": {
+        "VERSION": "Version",
+        "BUILD": "Build",
+        "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
+        "END_USER_LICENSE": "End User License Agreement",
+        "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",
