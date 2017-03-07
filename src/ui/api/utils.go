@@ -29,9 +29,9 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
+	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/service/cache"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
@@ -352,7 +352,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
-			client, err := cache.NewRepositoryClient(endpoint, true,
+			client, err := NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
@@ -377,7 +377,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
-			client, err := cache.NewRepositoryClient(endpoint, true,
+			client, err := NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
@@ -440,7 +440,7 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 
-	registryClient, err := cache.NewRegistryClient(endpoint, true, "admin",
+	registryClient, err := NewRegistryClient(endpoint, true, "admin",
 		"registry", "catalog", "*")
 	if err != nil {
 		return nil, err
@@ -485,10 +485,6 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 	return repositories, nil
 }
 
-func getAllRepos() ([]string, error) {
-	return cache.GetRepoFromCache()
-}
-
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
@@ -498,4 +494,39 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 		return false, err
 	}
 	return len(tags) != 0, nil
+}
+
+// NewRegistryClient ...
+func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Registry, error) {
+	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// NewRepositoryClient ...
+func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	authorizer := auth.NewUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

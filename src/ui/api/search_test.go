@@ -22,9 +22,9 @@ func TestSearch(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		assert.Equal(int64(1), result.Projects[0].Id, "Project id should be equal")
+		assert.Equal(int64(1), result.Projects[0].ProjectID, "Project id should be equal")
 		assert.Equal("library", result.Projects[0].Name, "Project name should be library")
-		assert.Equal(int32(1), result.Projects[0].Public, "Project public status should be 1 (true)")
+		assert.Equal(1, result.Projects[0].Public, "Project public status should be 1 (true)")
 	}
 
 	//--------case 2 : Response Code  = 200, sysAdmin and search repo--------//
