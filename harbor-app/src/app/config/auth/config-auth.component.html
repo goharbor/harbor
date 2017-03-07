@@ -3,7 +3,7 @@
         <div class="form-group">
             <label for="authMode">{{'CONFIG.AUTH_MODE' | translate }}</label>
             <div class="select">
-                <select id="authMode" name="authMode" [(ngModel)]="currentConfig.auth_mode.value">
+                <select id="authMode" name="authMode" [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
                     <option>db_auth</option>
                     <option>ldap</option>
                 </select>
@@ -13,11 +13,12 @@
     <section class="form-block" *ngIf="showLdap">
         <div class="form-group">
             <label for="ldapUrl" class="required">LDAP URL</label>
-            <label for="ldapUrl" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="ldapUrlInput.invalid && (ldapUrlInput.dirty || ldapUrlInput.touched)">
+            <label for="ldapUrl" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapUrlInput.invalid && (ldapUrlInput.dirty || ldapUrlInput.touched)">
                       <input name="ldapUrl" type="text" #ldapUrlInput="ngModel" [(ngModel)]="currentConfig.ldap_url.value" 
                       required 
                       id="ldapUrl" 
-                      size="40">
+                      size="40" 
+                      [disabled]="disabled(currentConfig.ldap_url)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -25,11 +26,11 @@
         </div>
         <div class="form-group">
             <label for="ldapSearchDN" class="required">LDAP Search DN</label>
-            <label for="ldapSearchDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="ldapSearchDNInput.invalid && (ldapSearchDNInput.dirty || ldapSearchDNInput.touched)">
+            <label for="ldapSearchDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapSearchDNInput.invalid && (ldapSearchDNInput.dirty || ldapSearchDNInput.touched)">
                       <input name="ldapSearchDN" type="text" #ldapSearchDNInput="ngModel" [(ngModel)]="currentConfig.ldap_search_dn.value" 
                       required 
                       id="ldapSearchDN" 
-                      size="40">
+                      size="40" [disabled]="disabled(currentConfig.ldap_search_dn)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -37,11 +38,11 @@
         </div>
         <div class="form-group">
             <label for="ldapSearchPwd" class="required">LDAP Search Password</label>
-            <label for="ldapSearchPwd" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="ldapSearchPwdInput.invalid && (ldapSearchPwdInput.dirty || ldapSearchPwdInput.touched)">
+            <label for="ldapSearchPwd" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapSearchPwdInput.invalid && (ldapSearchPwdInput.dirty || ldapSearchPwdInput.touched)">
                       <input name="ldapSearchPwd" type="password" #ldapSearchPwdInput="ngModel" [(ngModel)]="currentConfig.ldap_search_password.value" 
                       required 
                       id="ldapSearchPwd" 
-                      size="40">
+                      size="40" [disabled]="disabled(currentConfig.ldap_search_password)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -49,11 +50,11 @@
         </div>
         <div class="form-group">
             <label for="ldapBaseDN" class="required">LDAP Base DN</label>
-            <label for="ldapBaseDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="ldapBaseDNInput.invalid && (ldapBaseDNInput.dirty || ldapBaseDNInput.touched)">
+            <label for="ldapBaseDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapBaseDNInput.invalid && (ldapBaseDNInput.dirty || ldapBaseDNInput.touched)">
                       <input name="ldapBaseDN" type="text" #ldapBaseDNInput="ngModel" [(ngModel)]="currentConfig.ldap_base_dn.value" 
                       required 
                       id="ldapBaseDN" 
-                      size="40">
+                      size="40" [disabled]="disabled(currentConfig.ldap_base_dn)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -61,10 +62,10 @@
         </div>
         <div class="form-group">
             <label for="ldapFilter">LDAP Filter</label>
-            <label for="ldapFilter" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
+            <label for="ldapFilter" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
                       <input name="ldapFilter" type="text" #ldapFilterInput="ngModel" [(ngModel)]="currentConfig.ldap_filter.value" 
                       id="ldapFilter" 
-                      size="40">
+                      size="40" [disabled]="disabled(currentConfig.ldap_filter)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -72,11 +73,11 @@
         </div>
         <div class="form-group">
             <label for="ldapUid" class="required">LDAP UID</label>
-            <label for="ldapUid" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="ldapUidInput.invalid && (ldapUidInput.dirty || ldapUidInput.touched)">
+            <label for="ldapUid" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapUidInput.invalid && (ldapUidInput.dirty || ldapUidInput.touched)">
                       <input name="ldapUid" type="text" #ldapUidInput="ngModel" [(ngModel)]="currentConfig.ldap_uid.value" 
                       required 
                       id="ldapUid" 
-                      size="40">
+                      size="40" [disabled]="disabled(currentConfig.ldap_uid)">
                       <span class="tooltip-content">
                           {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                       </span>
@@ -85,9 +86,10 @@
         <div class="form-group">
             <label for="ldapScope">lDAP Scope</label>
             <div class="select">
-                <select id="ldapScope" name="ldapScope" [(ngModel)]="currentConfig.ldap_scope.value">
-                    <option>Base</option>
-                    <option>Other</option>
+                <select id="ldapScope" name="ldapScope" [(ngModel)]="currentConfig.ldap_scope.value" [disabled]="disabled(currentConfig.ldap_scope)">
+                    <option value="1">Base</option>
+                    <option value="2">OneLevel</option>
+                    <option value="3">Subtree</option>
                 </select>
             </div>
         </div>
@@ -96,7 +98,7 @@
         <div class="form-group">
             <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}</label>
             <div class="select">
-                <select id="proCreation" name="proCreation" [(ngModel)]="currentConfig.project_creation_restriction.value">
+                <select id="proCreation" name="proCreation" [(ngModel)]="currentConfig.project_creation_restriction.value" [disabled]="disabled(currentConfig.project_creation_restriction)">
                     <option>everyone</option>
                     <option>adminonly</option>
                 </select>
@@ -104,7 +106,7 @@
         </div>
         <div class="form-group">
             <label for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}</label>
-            <clr-checkbox name="selfReg" id="selfReg" [(ngModel)]="currentConfig.self_registration.value">
+            <clr-checkbox name="selfReg" id="selfReg" [(ngModel)]="currentConfig.self_registration.value" [disabled]="disabled(currentConfig.self_registration)">
                 <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-8px;">
                     <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
                     <span class="tooltip-content">{{'CONFIG.SELF_REGISTRATION_TOOLTIP' | translate}}</span>

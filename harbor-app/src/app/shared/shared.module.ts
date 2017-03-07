@@ -23,6 +23,8 @@ import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 import { ListPolicyComponent } from './list-policy/list-policy.component';
 import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
 
+import { PortValidatorDirective } from './port.directive';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -38,7 +40,8 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
-    CreateEditPolicyComponent
+    CreateEditPolicyComponent,
+    PortValidatorDirective
   ],
   exports: [
     CoreModule,
@@ -51,7 +54,8 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
-    CreateEditPolicyComponent
+    CreateEditPolicyComponent,
+    PortValidatorDirective
   ],
   providers: [
     SessionService,
