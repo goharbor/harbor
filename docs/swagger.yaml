@@ -517,7 +517,6 @@ paths:
       responses:
         200:
           description: Get current user information successfully.
-          in: body
           schema:
             $ref: '#/definitions/User'
         401:
