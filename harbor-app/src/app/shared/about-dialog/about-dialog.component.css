@@ -1,0 +1,37 @@
+.margin-left-override {
+    margin-left: 24px !important;
+}
+
+.about-text-link {
+    font-family: "Proxima Nova Light";
+    font-size: 14px;
+    color: #007CBB;
+    line-height: 24px;
+}
+
+.about-copyright-text {
+    font-family: "Proxima Nova Light";
+    font-size: 13px;
+    color: #565656;
+    line-height: 16px;
+}
+
+.about-product-title {
+    font-family: "Metropolis Light";
+    font-size: 28px;
+    color: #000000;
+    line-height: 36px;
+}
+
+.about-version {
+    font-family: "Metropolis";
+    font-size: 14px;
+    color: #565656;
+    font-weight: 500;
+}
+
+.about-build {
+    font-family: "Metropolis";
+    font-size: 14px;
+    color: #565656;
+}

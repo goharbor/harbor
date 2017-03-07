@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
@@ -11,6 +11,9 @@ import { StringValueItem } from './config';
 import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
 import { DeletionMessage } from '../shared/deletion-dialog/deletion-message'
+
+import { ConfigurationAuthComponent } from './auth/config-auth.component';
+import { ConfigurationEmailComponent } from './email/config-email.component';
 
 const fakePass = "fakepassword";
 
@@ -25,6 +28,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     private currentTabId: string = "";
     private originalCopy: Configuration;
     private confirmSub: Subscription;
+
+    @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
+    @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
+    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
+    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
     constructor(
         private configService: ConfigurationService,
@@ -48,6 +56,26 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get inProgress(): boolean {
         return this.onGoing;
+    }
+
+    public isValid(): boolean {
+        return this.repoConfigForm &&
+            this.repoConfigForm.valid &&
+            this.systemConfigForm &&
+            this.systemConfigForm.valid &&
+            this.mailConfig &&
+            this.mailConfig.isValid() &&
+            this.authConfig &&
+            this.authConfig.isValid();
+    }
+
+    public hasChanges(): boolean {
+        return !this.isEmpty(this.getChanges());
+    }
+
+    public isMailConfigValid(): boolean {
+        return this.mailConfig &&
+            this.mailConfig.isValid();
     }
 
     public get showTestServerBtn(): boolean {
@@ -168,8 +196,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 if (field.value != this.allConfig[prop].value) {
                     changes[prop] = this.allConfig[prop].value;
                     //Fix boolean issue
-                    if(typeof field.value === "boolean"){
-                        changes[prop] = ""+changes[prop];
+                    if (typeof field.value === "boolean") {
+                        changes[prop] = changes[prop] ? "1" : "0";
                     }
                 }
             }
@@ -231,5 +259,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 return false;
         }
         return true;
+    }
+
+    private disabled(prop: any): boolean {
+        return !(prop && prop.editable);
     }
 }

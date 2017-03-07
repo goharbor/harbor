@@ -23,6 +23,11 @@ import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 import { ListPolicyComponent } from './list-policy/list-policy.component';
 import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
 
+import { PortValidatorDirective } from './port.directive';
+
+import { PageNotFoundComponent } from './not-found/not-found.component';
+import { AboutDialogComponent } from './about-dialog/about-dialog.component';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -38,7 +43,10 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
-    CreateEditPolicyComponent
+    CreateEditPolicyComponent,
+    PortValidatorDirective,
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   exports: [
     CoreModule,
@@ -51,7 +59,10 @@ import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-poli
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
-    CreateEditPolicyComponent
+    CreateEditPolicyComponent,
+    PortValidatorDirective,
+    PageNotFoundComponent,
+    AboutDialogComponent
   ],
   providers: [
     SessionService,

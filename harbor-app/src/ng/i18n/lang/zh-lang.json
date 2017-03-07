@@ -16,7 +16,8 @@
         "CONFIRM": "确定",
         "SEND": "发送",
         "SAVE": "保存",
-        "TEST_MAIL": "测试邮件服务器"
+        "TEST_MAIL": "测试邮件服务器",
+        "CLOSE": "关闭"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -30,7 +31,9 @@
         "SIGN_IN_PWD": "密码必需",
         "SIGN_UP_MAIL": "邮件地址仅用来重置您的密码",
         "SIGN_UP_REAL_NAME": "全名",
-        "ITEM_REQUIRED": "此项必需"
+        "ITEM_REQUIRED": "此项必需",
+        "NUMBER_REQUIRED": "此项必需且为数字",
+        "PORT_REQUIRED": "此项必需且为合理端口号"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -167,7 +170,7 @@
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?"
-        
+
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"
@@ -207,6 +210,19 @@
         "PRO_CREATION_RESTRICTION": "项目创建限制",
         "SELF_REGISTRATION": "自注册",
         "SELF_REGISTRATION_TOOLTIP": "激活注册功能"
+    },
+    "PAGE_NOT_FOUND": {
+        "MAIN_TITLE": "页面不存在",
+        "SUB_TITLE": "重定向到harbor主页面在",
+        "UNIT": "秒后..."
+    },
+    "ABOUT": {
+        "VERSION": "版本",
+        "BUILD": "构建",
+        "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
+        "END_USER_LICENSE": "终端用户许可协议",
+        "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
