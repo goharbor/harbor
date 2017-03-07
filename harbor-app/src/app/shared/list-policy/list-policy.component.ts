@@ -58,7 +58,9 @@ export class ListPolicyComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    if(this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   selectPolicy(policy: Policy): void {

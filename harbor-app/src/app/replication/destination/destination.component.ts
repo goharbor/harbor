@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Target } from '../target';
 import { ReplicationService } from '../replication.service';
 import { MessageService } from '../../global-message/message.service';
@@ -8,6 +8,8 @@ import { DeletionDialogService } from '../../shared/deletion-dialog/deletion-dia
 import { DeletionMessage } from '../../shared/deletion-dialog/deletion-message';
 
 import { DeletionTargets } from '../../shared/shared.const';
+
+import { Subscription } from 'rxjs/Subscription';
 
 import { CreateEditDestinationComponent } from '../create-edit-destination/create-edit-destination.component';
 
@@ -24,12 +26,13 @@ export class DestinationComponent implements OnInit {
   target: Target;
 
   targetName: string;
+  subscription : Subscription;
 
   constructor(
     private replicationService: ReplicationService,
     private messageService: MessageService,
     private deletionDialogService: DeletionDialogService) {
-      this.deletionDialogService.deletionConfirm$.subscribe(message=>{
+      this.subscription = this.deletionDialogService.deletionConfirm$.subscribe(message=>{
         let targetId = message.data;
         this.replicationService
             .deleteTarget(targetId)
@@ -49,6 +52,12 @@ export class DestinationComponent implements OnInit {
   ngOnInit(): void {
     this.targetName = '';
     this.retrieve('');
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   retrieve(targetName: string): void {
