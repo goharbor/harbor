@@ -1,4 +1,4 @@
-<form class="search">
+<form class="search" *ngIf="!shouldHide">
     <label for="search_input">
       <input #globalSearchBox id="search_input" type="text" (keyup)="search(globalSearchBox.value)" placeholder='{{"GLOBAL_SEARCH.PLACEHOLDER" | translate}}'>
     </label>

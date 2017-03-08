@@ -7,13 +7,13 @@
         "TITLE": "Sign Up"
     },
     "BUTTON": {
-        "CANCEL": "Cancel",
-        "OK": "Ok",
+        "CANCEL": "CANCEL",
+        "OK": "OK",
         "DELETE": "DELETE",
         "LOG_IN": "LOG IN",
         "SIGN_UP_LINK": "Sign up for an account",
         "SIGN_UP": "SIGN UP",
-        "CONFIRM": "Confirm",
+        "CONFIRM": "CONFIRM",
         "SEND": "SEND",
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",

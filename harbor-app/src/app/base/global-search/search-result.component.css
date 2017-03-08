@@ -2,12 +2,13 @@
     display: block;
     position: absolute;
     height: 100%;
-    width: 97%;
+    width: 98%;
     /*shoud be lesser than 1000 to aoivd override the popup menu*/
     z-index: 999;
     box-sizing: border-box;
     background: #fafafa;
     top: 0px;
+    padding-left: 24px;
 }
 
 .search-header {
@@ -17,7 +18,6 @@
 }
 
 .search-title {
-    margin-top: 0px;
     font-size: 28px;
     letter-spacing: normal;
     color: #000;
@@ -37,4 +37,14 @@
     top: 50%;
     left: 50%;
     position: absolute;
+}
+
+.grid-header-wrapper {
+    text-align: right;
+}
+
+.grid-filter {
+    position: relative;
+    top: 8px;
+    margin: 0px auto 0px auto;
 }
