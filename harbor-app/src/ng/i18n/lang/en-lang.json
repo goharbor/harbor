@@ -127,7 +127,8 @@
         "REPOSITORIES": "Repositories",
         "REPLICATION": "Replication",
         "USERS": "Users",
-        "LOGS": "Logs"
+        "LOGS": "Logs",
+        "PROJECTS": "Projects"
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",
@@ -261,7 +262,7 @@
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
-        "PROJECTS": "Projects",
+        "REPOSITORIES": "Repositories",
         "ITEMS": "item(s)"
     },
     "ALERT": {

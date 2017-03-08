@@ -127,7 +127,8 @@
         "REPOSITORIES": "镜像仓库",
         "REPLICATION": "复制",
         "USERS": "用户",
-        "LOGS": "日志"
+        "LOGS": "日志",
+        "PROJECTS": "项目"
     },
     "MEMBER": {
         "NEW_MEMBER": "新增成员",
@@ -262,7 +263,7 @@
         "ARCHITECTURE": "架构",
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
-        "PROJECTS": "项目",
+        "REPOSITORIES": "镜像仓库",
         "ITEMS": "条记录"
     },
     "ALERT": {
