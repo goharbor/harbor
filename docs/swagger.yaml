@@ -658,6 +658,11 @@ paths:
           format: int32
           required: true
           description: Relevant project ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Get detail info or not.
         - name: q
           in: query
           type: string

@@ -184,3 +184,34 @@ func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) 
 	err := GetOrmer().Raw(sql, params).QueryRow(&total)
 	return total, err
 }
+
+// GetTotalOfRepositoriesByProject ...
+func GetTotalOfRepositoriesByProject(projectID int64, name string) (int64, error) {
+	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
+		Filter("ProjectID", projectID)
+
+	if len(name) != 0 {
+		qs = qs.Filter("Name__contains", name)
+	}
+
+	return qs.Count()
+}
+
+// GetRepositoriesByProject ...
+func GetRepositoriesByProject(projectID int64, name string,
+	limit, offset int64) ([]*models.RepoRecord, error) {
+
+	repositories := []*models.RepoRecord{}
+
+	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
+		Filter("ProjectID", projectID)
+
+	if len(name) != 0 {
+		qs = qs.Filter("Name__contains", name)
+	}
+
+	_, err := qs.Limit(limit).
+		Offset(offset).All(&repositories)
+
+	return repositories, err
+}
