@@ -78,7 +78,7 @@ COMPILETAG=compile_normal
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
-NORTARYFLAG=false
+NOTARYFLAG=false
 
 #clarity parameters
 CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
@@ -232,7 +232,7 @@ compile:check_environment $(COMPILETAG)
 
 prepare: 
 	@echo "preparing..."
-	@if [ "$(NORTARYFLAG)" = "true" ] ; then \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) --with-notary; \
 	else \
 		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) ; \
@@ -286,7 +286,7 @@ package_offline: compile build modify_composefile
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) registry:2.5.1
 	@$(DOCKERPULL) nginx:1.11.5
-	@if [ "$(NORTARYFLAG)" = "true" ] ; then \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and mariadb..."; \
 		$(DOCKERPULL) jiangd/notary:server-0.5.0-fix; \
 		$(DOCKERPULL) notary:signer-0.5.0; \
@@ -294,7 +294,7 @@ package_offline: compile build modify_composefile
 	fi	
 	
 	@echo "saving harbor docker image"
-	@if [ "$(NORTARYFLAG)" = "true" ] ; then \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
@@ -345,7 +345,7 @@ pushimage:
 		
 start:
 	@echo "loading harbor images..."
-	@if [ "$(NORTARYFLAG)" = "true" ] ; then \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) up -d ; \
 	else \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d ; \
@@ -354,7 +354,7 @@ start:
 	
 down:
 	@echo "stoping harbor instance..."
-	@if [ "$(NORTARYFLAG)" = "true" ] ; then \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
 	else \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
