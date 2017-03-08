@@ -12,6 +12,9 @@ import { GlobalSearchComponent } from './global-search/global-search.component';
 import { FooterComponent } from './footer/footer.component';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 import { SearchResultComponent } from './global-search/search-result.component';
+import { SearchStartComponent } from './global-search/search-start.component';
+
+import { SearchTriggerService } from './global-search/search-trigger.service';
 
 @NgModule({
   imports: [
@@ -27,9 +30,11 @@ import { SearchResultComponent } from './global-search/search-result.component';
     GlobalSearchComponent,
     FooterComponent,
     HarborShellComponent,
-    SearchResultComponent
+    SearchResultComponent,
+    SearchStartComponent
   ],
-  exports: [ HarborShellComponent ]
+  exports: [ HarborShellComponent ],
+  providers: [SearchTriggerService]
 })
 export class BaseModule {
 
