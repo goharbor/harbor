@@ -236,6 +236,21 @@
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time"
     },
+    "REPOSITORY": {
+        "COPY_ID": "Copy ID",
+        "COPY_PARENT_ID": "Copy Parent ID",
+        "DELETE": "Delete",
+        "NAME": "Name",
+        "TAGS_COUNT": "Tags Count",
+        "PULL_COMMAND": "Pull Command",
+        "MY_REPOSITORY": "My Repository",
+        "PUBLIC_REPOSITORY": "Public Repository",
+        "DELETION_TITLE_REPO": "Confirm Repository Deletion",
+        "DELETION_SUMMARY_REPO": "Do you want to delete repository {{param}}?",
+        "DELETION_TITLE_TAG": "Confirm Tag Deletion",
+        "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
+        "FILTER_FOR_REPOSITORIES": "Filter for repositories"
+    },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"
     },

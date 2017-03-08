@@ -14,6 +14,7 @@ import { DestinationComponent } from './replication/destination/destination.comp
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
 import { RepositoryComponent } from './repository/repository.component';
+import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
 import { ReplicationComponent } from './replication/replication.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
@@ -66,6 +67,10 @@ const harborRoutes: Routes = [
             component: DestinationComponent
           }
         ]
+      },
+      {
+        path: 'tags/:id/:repo',
+        component: TagRepositoryComponent
       },
       {
         path: 'projects/:id',
