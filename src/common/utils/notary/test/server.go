@@ -37,7 +37,6 @@ func NewNotaryServer(endpoint string) *httptest.Server {
 	validRoot := fmt.Sprintf("/v2/%s/notary-demo/busybox/_trust/tuf/", endpoint)
 	invalidRoot := fmt.Sprintf("/v2/%s/notary-demo/fail/_trust/tuf/", endpoint)
 	p := currPath()
-	fmt.Printf("valid web root: %s, local path: %s\n", validRoot, path.Join(p, "valid"))
 	mux.Handle(validRoot, http.StripPrefix(validRoot, http.FileServer(http.Dir(path.Join(p, "valid")))))
 	mux.Handle(invalidRoot, http.StripPrefix(invalidRoot, http.FileServer(http.Dir(path.Join(p, "invalid")))))
 	return httptest.NewServer(mux)

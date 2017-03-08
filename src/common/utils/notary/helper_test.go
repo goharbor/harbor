@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
 
+	"os"
 	"path"
 	"testing"
 )
@@ -16,7 +17,10 @@ func TestMain(m *testing.M) {
 	defer notaryServer.Close()
 	notaryEndpoint = notaryServer.URL
 	notaryCachePath = "/tmp/notary"
-	m.Run()
+	result := m.Run()
+	if result != 0 {
+		os.Exit(result)
+	}
 }
 
 func TestGetTargets(t *testing.T) {

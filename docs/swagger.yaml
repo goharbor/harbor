@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: Harbor API
@@ -786,6 +784,32 @@ paths:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
+  /repositories/signatures:
+    get:
+      summary: Get signature information of a repository
+      description: |
+        This endpoint aims to retrieve signature information of a repository, the data is
+        from the nested notary instance of Harbor.
+        If the repository does not have any signature information in notary, this API will
+        return an empty list with response code 200, instead of 404
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          required: true
+          description: repository name.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Retrieved signatures.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepoSignature'
+        500:
+          description: Server side error.
+      
   /repositories/top:
     get:
       summary: Get public repositories which are accessed most.
@@ -2025,3 +2049,12 @@ definitions:
       email_identity:
         type: string
         description: The dentity of email server.
+  RepoSignature:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The tag of image.
+      hashes:
+        type: object
+        description: The JSON object of the hash of the image.
