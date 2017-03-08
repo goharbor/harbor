@@ -252,9 +252,21 @@ type usernameTokenAuthorizer struct {
 	username string
 }
 
-// NewUsernameTokenAuthorizer returns a authorizer which will generate a token according to
+// NewRegistryUsernameTokenAuthorizer returns an authorizer to generate token for registry according to
 // the user's privileges
-func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, scopeActions ...string) Authorizer {
+func NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	return newUsernameTokenAuthorizer(false, username, scopeType, scopeName, scopeActions...)
+}
+
+// NewNotaryUsernameTokenAuthorizer returns an authorizer to generate token for notary according to
+// the user's privileges
+func NewNotaryUsernameTokenAuthorizer(username, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	return newUsernameTokenAuthorizer(true, username, scopeType, scopeName, scopeActions...)
+}
+
+// newUsernameTokenAuthorizer returns a authorizer which will generate a token according to
+// the user's privileges
+func newUsernameTokenAuthorizer(notary bool, username, scopeType, scopeName string, scopeActions ...string) Authorizer {
 	authorizer := &usernameTokenAuthorizer{
 		username: username,
 	}
@@ -264,13 +276,25 @@ func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, sc
 		Name:    scopeName,
 		Actions: scopeActions,
 	}
-
-	authorizer.tg = authorizer.generateToken
-
+	if notary {
+		authorizer.tg = authorizer.genNotaryToken
+	} else {
+		authorizer.tg = authorizer.genRegistryToken
+	}
 	return authorizer
 }
 
 func (u *usernameTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
+	token, expiresIn, issuedAt, err = token_util.RegistryTokenForUI(u.username, service, scopes)
+	return
+}
+
+func (u *usernameTokenAuthorizer) genRegistryToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	token, expiresIn, issuedAt, err = token_util.RegistryTokenForUI(u.username, service, scopes)
+	return
+}
+
+func (u *usernameTokenAuthorizer) genNotaryToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	token, expiresIn, issuedAt, err = token_util.NotaryTokenForUI(u.username, service, scopes)
 	return
 }

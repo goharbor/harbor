@@ -20,7 +20,7 @@ func TestGetRepos(t *testing.T) {
 	fmt.Println("Testing Repos Get API")
 	//-------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID)
+	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "true")
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)
@@ -30,7 +30,7 @@ func TestGetRepos(t *testing.T) {
 	//-------------------case 2 : response code = 400------------------------//
 	fmt.Println("case 2 : response code = 409,invalid project_id")
 	projectID = "ccc"
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID)
+	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "0")
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)
@@ -40,7 +40,7 @@ func TestGetRepos(t *testing.T) {
 	//-------------------case 3 : response code = 404------------------------//
 	fmt.Println("case 3 : response code = 404:project  not found")
 	projectID = "111"
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID)
+	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "0")
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)

@@ -1,11 +1,11 @@
 <div>
-    <h2 class="custom-h2">Users</h2>
+    <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</h2>
     <div class="action-panel-pos">
         <span>
             <clr-icon shape="plus" class="is-highlight" size="24"></clr-icon>
-            <button type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()">USER</button>
+            <button type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()">{{'USER.ADD_ACTION' | translate}}</button>
         </span>
-        <grid-filter class="filter-pos" filterPlaceholder="Filter users" (filter)="doFilter($event)"></grid-filter>
+        <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
         <span class="refresh-btn" (click)="refreshUser()">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
@@ -13,24 +13,24 @@
     </div>
     <div>
         <clr-datagrid>
-            <clr-dg-column>Name</clr-dg-column>
-            <clr-dg-column>Administrator</clr-dg-column>
-            <clr-dg-column>Email</clr-dg-column>
-            <clr-dg-column>Registration time</clr-dg-column>
+            <clr-dg-column>{{'USER.COLUMN_NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let user of users" [clrDgItem]="user">
                 <clr-dg-cell>{{user.username}}</clr-dg-cell>
-                <clr-dg-cell>{{user.has_admin_role?"Yes":"No"}}</clr-dg-cell>
+                <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
                 <clr-dg-cell>{{user.email}}</clr-dg-cell>
                 <clr-dg-cell>
                     {{user.creation_time}}
                     <harbor-action-overflow>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{user.has_admin_role?"Disable administrator":"Enable administrator"}}</a>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</a>
                         <div class="dropdown-divider"></div>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user.user_id)">Delete</a>
+                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</a>
                     </harbor-action-overflow>
                 </clr-dg-cell>
             </clr-dg-row>
-            <clr-dg-footer>{{users.length}} users</clr-dg-footer>
+            <clr-dg-footer>{{users.length}} {{'USER.ADD_ACTION' | translate}}</clr-dg-footer>
         </clr-datagrid>
     </div>
     <new-user-modal (addNew)="addUserToList($event)"></new-user-modal>

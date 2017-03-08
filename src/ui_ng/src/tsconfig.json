@@ -1,7 +1,5 @@
 {
-    "compileOnSave": false,
     "compilerOptions": {
-        "rootDir": "../",
         "baseUrl": "",
         "declaration": false,
         "emitDecoratorMetadata": true,
@@ -10,24 +8,18 @@
             "es6",
             "dom"
         ],
-        "mapRoot": "src",
+        "mapRoot": "./",
         "module": "commonjs",
         "moduleResolution": "node",
-        "outDir": "dist/out-tsc",
+        "outDir": "../dist/out-tsc",
         "sourceMap": true,
         "target": "es5",
         "typeRoots": [
-            "node_modules/@types"
-        ],
-        "types": [
-          "jasmine",
-          "core-js",
-          "node"
+            "../node_modules/@types"
         ]
     },
     "exclude": [
         "node_modules",
-        "dist",
-        "test.ts"
+        "dist"
     ]
 }

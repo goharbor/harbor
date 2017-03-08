@@ -17,15 +17,16 @@ package email
 
 import (
 	"bytes"
-	"crypto/tls"
+	tlspkg "crypto/tls"
+	"net"
 	"strconv"
-	//"strings"
+	"time"
 
 	"net/smtp"
 	"text/template"
 
-	//"github.com/astaxie/beego"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -37,11 +38,12 @@ type Mail struct {
 	Message string
 }
 
-var mc models.Email
+var mc *models.Email
 
 // SendMail sends Email according to the configurations
 func (m Mail) SendMail() error {
-	mc, err := config.Email()
+	var err error
+	mc, err = config.Email()
 	if err != nil {
 		return err
 	}
@@ -72,7 +74,7 @@ func sendMail(m Mail, auth smtp.Auth, content []byte) error {
 }
 
 func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
-	conn, err := tls.Dial("tcp", mc.Host+":"+strconv.Itoa(mc.Port), nil)
+	conn, err := tlspkg.Dial("tcp", mc.Host+":"+strconv.Itoa(mc.Port), nil)
 	if err != nil {
 		return err
 	}
@@ -117,24 +119,76 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 	return client.Quit()
 }
 
-/*
-func loadConfig() {
-	config, err := beego.AppConfig.GetSection("mail")
+// Ping tests the connection and authentication with email server
+// If tls is true, a secure connection is established, or Ping
+// trys to upgrate the insecure connection to a secure one if
+// email server supports it.
+// Ping doesn't verify the server's certificate and hostname when
+// needed if the parameter insecure is ture
+func Ping(addr, identity, username, password string,
+	timeout int, tls, insecure bool) (err error) {
+	log.Debugf("establishing TCP connection with %s ...", addr)
+	conn, err := net.DialTimeout("tcp", addr,
+		time.Duration(timeout)*time.Second)
 	if err != nil {
-		panic(err)
+		return
+	}
+	defer conn.Close()
+
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return
 	}
 
-	var useTLS = false
-	if config["ssl"] != "" && strings.ToLower(config["ssl"]) == "true" {
-		useTLS = true
+	if tls {
+		log.Debugf("establishing SSL/TLS connection with %s ...", addr)
+		tlsConn := tlspkg.Client(conn, &tlspkg.Config{
+			ServerName:         host,
+			InsecureSkipVerify: insecure,
+		})
+		if err = tlsConn.Handshake(); err != nil {
+			return
+		}
+		defer tlsConn.Close()
+
+		conn = tlsConn
 	}
-	mc = MailConfig{
-		Identity: config["identity"],
-		Host:     config["host"],
-		Port:     config["port"],
-		Username: config["username"],
-		Password: config["password"],
-		TLS:      useTLS,
+
+	log.Debugf("creating SMTP client for %s ...", host)
+	client, err := smtp.NewClient(conn, host)
+	if err != nil {
+		return
 	}
+	defer client.Close()
+
+	//try to swith to SSL/TLS
+	if !tls {
+		if ok, _ := client.Extension("STARTTLS"); ok {
+			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)
+			if err = client.StartTLS(&tlspkg.Config{
+				ServerName:         host,
+				InsecureSkipVerify: insecure,
+			}); err != nil {
+				return
+			}
+		} else {
+			log.Debugf("the email server %s does not support STARTTLS", addr)
+		}
+	}
+
+	if ok, _ := client.Extension("AUTH"); ok {
+		log.Debug("authenticating the client...")
+		// only support plain auth
+		if err = client.Auth(smtp.PlainAuth(identity,
+			username, password, host)); err != nil {
+			return
+		}
+	} else {
+		log.Debugf("the email server %s does not support AUTH, skip",
+			addr)
+	}
+
+	log.Debug("ping email server successfully")
+
+	return
 }
-*/

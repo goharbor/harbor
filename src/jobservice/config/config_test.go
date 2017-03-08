@@ -66,8 +66,8 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get registry URL: %v", err)
 	}
 
-	if _, err := LogDir(); err != nil {
-		t.Fatalf("failed to get log directory: %v", err)
+	if dir := LogDir(); dir != "/var/log/jobs" {
+		t.Errorf("unexpected log directory: %s != %s", dir, "/var/log/jobs")
 	}
 
 	if _, err := SecretKey(); err != nil {

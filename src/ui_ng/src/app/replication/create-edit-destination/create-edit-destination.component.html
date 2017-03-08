@@ -1,0 +1,52 @@
+<clr-modal [(clrModalOpen)]="createEditDestinationOpened">
+  <h3 class="modal-title">New Endpoint</h3>
+  <div class="modal-body">
+    <form #targetForm="ngForm">
+      <section class="form-block">
+        <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="!errorMessageOpened" (clrAlertClosedChange)="onErrorMessageClose()">
+          <div class="alert-item">
+            <span class="alert-text">
+              {{errorMessage}}
+            </span>
+          </div>
+        </clr-alert>
+        <div class="form-group">
+          <label for="destination_name" class="col-md-4">Destination name<span style="color: red">*</span></label>
+          <label class="col-md-8" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+            <input type="text" id="destination_name" [(ngModel)]="target.name" name="targetName" size="20" #targetName="ngModel" value="" required> 
+            <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
+              Destination name is required.
+            </span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="destination_url" class="col-md-4">Destination URL<span style="color: red">*</span></label>
+          <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)" [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+            <input type="text" id="destination_url" [disabled]="testOngoing" [(ngModel)]="target.endpoint" size="20" name="endpointUrl" #targetEndpoint="ngModel" required>
+            <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
+              Destination URL is required.
+            </span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="destination_username" class="col-md-4">Username</label>
+          <input type="text" class="col-md-8" id="destination_username" [disabled]="testOngoing" [(ngModel)]="target.username" size="20" name="username" #username="ngModel">
+        </div>
+        <div class="form-group">
+          <label for="destination_password" class="col-md-4">Password</label>
+          <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [(ngModel)]="target.password" size="20" name="password" #password="ngModel">
+        </div>
+        <div class="form-group">
+          <label for="spin" class="col-md-4"></label>
+          <span class="col-md-8 spinner spinner-inline" [hidden]="!testOngoing"></span>
+          <span [style.color]="!pingStatus ? 'red': ''">{{ pingTestMessage }}</span>
+        </div>
+      </section>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || targetEndpoint.errors">Test Connection</button>
+      <button type="button" class="btn btn-outline" (click)="createEditDestinationOpened = false">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!targetForm.form.valid" (click)="onSubmit()">Ok</button>
+  </div>
+</clr-modal>

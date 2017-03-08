@@ -4,6 +4,10 @@ import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
+import { AlertType, httpStatusCode } from '../../shared/shared.const';
+import { MessageService } from '../../global-message/message.service';
+import { errorHandler, isEmptyForm, accessErrorHandler } from '../../shared/shared.utils';
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'password-setting',
@@ -14,19 +18,27 @@ export class PasswordSettingComponent implements AfterViewChecked {
     oldPwd: string = "";
     newPwd: string = "";
     reNewPwd: string = "";
+    error: any = null;
 
     private formValueChanged: boolean = false;
     private onCalling: boolean = false;
 
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
-    constructor(private passwordService: PasswordSettingService, private session: SessionService){}
+    @ViewChild(InlineAlertComponent)
+    private inlineAlert: InlineAlertComponent;
+
+    constructor(
+        private passwordService: PasswordSettingService,
+        private session: SessionService,
+        private msgService: MessageService) { }
 
     //If form is valid
     public get isValid(): boolean {
         if (this.pwdForm && this.pwdForm.form.get("newPassword")) {
             return this.pwdForm.valid &&
-                this.pwdForm.form.get("newPassword").value === this.pwdForm.form.get("reNewPassword").value;
+                (this.pwdForm.form.get("newPassword").value === this.pwdForm.form.get("reNewPassword").value) &&
+                this.error === null;
         }
         return false;
     }
@@ -45,6 +57,8 @@ export class PasswordSettingComponent implements AfterViewChecked {
             if (this.pwdFormRef) {
                 this.pwdFormRef.valueChanges.subscribe(data => {
                     this.formValueChanged = true;
+                    this.error = null;
+                    this.inlineAlert.close();
                 });
             }
         }
@@ -54,10 +68,26 @@ export class PasswordSettingComponent implements AfterViewChecked {
     open(): void {
         this.opened = true;
         this.pwdForm.reset();
+        this.formValueChanged = false;
     }
 
     //Close the moal dialog
     close(): void {
+        if (this.formValueChanged) {
+            if (isEmptyForm(this.pwdForm)) {
+                this.opened = false;
+            } else {
+                //Need user confirmation
+                this.inlineAlert.showInlineConfirmation({
+                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
+                });
+            }
+        } else {
+            this.opened = false;
+        }
+    }
+
+    confirmCancel(): void {
         this.opened = false;
     }
 
@@ -73,26 +103,31 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
         //Double confirm session is valid
         let cUser = this.session.getCurrentUser();
-        if(!cUser){
+        if (!cUser) {
             return;
         }
 
         //Call service
         this.onCalling = true;
 
-        this.passwordService.changePassword(cUser.user_id, 
-        {
-            new_password: this.pwdForm.value.newPassword,
-            old_password: this.pwdForm.value.oldPassword
-        })
-        .then(() => {
-            this.onCalling = false;
-            this.close();
-        })
-        .catch(error => {
-            this.onCalling = false;
-            console.error(error);//TODO:
-        });
-        //TODO:publish the successful message to general messae box
+        this.passwordService.changePassword(cUser.user_id,
+            {
+                new_password: this.pwdForm.value.newPassword,
+                old_password: this.pwdForm.value.oldPassword
+            })
+            .then(() => {
+                this.onCalling = false;
+                this.close();
+                this.msgService.announceMessage(200, "CHANGE_PWD.SAVE_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.onCalling = false;
+                this.error = error;
+                if(accessErrorHandler(error, this.msgService)){
+                    this.opened = false;
+                }else{
+                    this.inlineAlert.showInlineError(error);
+                }
+            });
     }
 }

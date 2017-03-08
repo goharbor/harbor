@@ -1,55 +1,48 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalSize]="'lg'">
-    <h3 class="modal-title">User Profile</h3>
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop">
+    <h3 class="modal-title">{{'PROFILE.TITLE' | translate}}</h3>
     <div class="modal-body" style="overflow-y: hidden;">
         <form #accountSettingsFrom="ngForm" class="form">
             <section class="form-block">
                 <div class="form-group">
-                    <label for="account_settings_username" class="col-md-4">Username</label>
-                    <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="51">
+                    <label for="account_settings_username" class="col-md-4">{{'PROFILE.USER_NAME' | translate}}</label>
+                    <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="31">
                 </div>
                 <div class="form-group">
-                    <label for="account_settings_email" class="col-md-4 required">Email</label>
-                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="eamilInput.invalid && (eamilInput.dirty || eamilInput.touched)">
+                    <label for="account_settings_email" class="col-md-4 required">{{'PROFILE.EMAIL' | translate}}</label>
+                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="eamilInput.invalid && (eamilInput.dirty || eamilInput.touched)">
                       <input name="account_settings_email" type="text" #eamilInput="ngModel" [(ngModel)]="account.email" 
                       required 
-                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="account_settings_email" size="48">
+                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="account_settings_email" size="28">
                       <span class="tooltip-content">
-                          Email should be a valid email address like name@example.com
+                          {{'TOOLTIP.EMAIL' | translate}}
                       </span>
                     </label>
                 </div>
                 <div class="form-group">
-                    <label for="account_settings_full_name" class="col-md-4 required">Full name</label>
-                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
-                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="48">
+                    <label for="account_settings_full_name" class="col-md-4 required">{{'PROFILE.FULL_NAME' | translate}}</label>
+                    <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="28">
                       <span class="tooltip-content">
-                          Max length of full name is 20
+                          {{'TOOLTIP.FULL_NAME' | translate}}
                       </span>
                     </label>
                 </div>
                 <div class="form-group">
-                    <label for="account_settings_comments" class="col-md-4">Comments</label>
-                    <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-right" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
-                    <input type="text" #commentInput="ngModel" maxLengthExt="20" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="48">
+                    <label for="account_settings_comments" class="col-md-4">{{'PROFILE.COMMENT' | translate}}</label>
+                    <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                    <input type="text" #commentInput="ngModel" maxLengthExt="20" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="28">
                     <span class="tooltip-content">
-                        Length of comment should be less than 20
+                        {{'TOOLTIP.COMMENT' | translate}}
                     </span>
                     </label>
                 </div>
             </section>
         </form>
-        <div style="height: 30px;"></div>
-        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [(clrAlertClosed)]="alertClose">
-            <div class="alert-item">
-                <span class="alert-text">
-                   {{errorMessage}}
-                </span>
-            </div>
-        </clr-alert>
+        <inline-alert (confirmEvt)="confirmCancel($event)"></inline-alert>
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline" style="top:8px;" [hidden]="showProgress === false"></span>
-        <button type="button" class="btn btn-outline" (click)="close()">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress" (click)="submit()">Ok</button>
+        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress" (click)="submit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
+import { RouterModule } from '@angular/router';
 
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { ProjectModule } from '../project/project.module';
@@ -12,16 +13,14 @@ import { FooterComponent } from './footer/footer.component';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 import { SearchResultComponent } from './global-search/search-result.component';
 
-import { BaseRoutingModule } from './base-routing.module';
-
 @NgModule({
   imports: [
     SharedModule,
     DashboardModule,
     ProjectModule,
     UserModule,
-    BaseRoutingModule,
-    AccountModule
+    AccountModule,
+    RouterModule
   ],
   declarations: [
     NavigatorComponent,

@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-    <div class="row flex-items-lg-right">
-      <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+    <div class="row flex-items-xs-between">
+      <div class="col-xs-4 flex-xs-middle">
         <clr-dropdown [clrMenuPosition]="'bottom-left'">
           <button class="btn btn-sm btn-outline-primary" clrDropdownToggle>
             My Projects
@@ -12,6 +12,9 @@
             <a href="#/project" clrDropdownItem>Public Projects</a>
           </div>
         </clr-dropdown>
+        
+      </div>
+      <div class="col-xs-4 flex-xs-middle">
         <input type="text" placeholder="Search for projects">
       </div>
     </div>

@@ -10,8 +10,19 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 import { ListProjectComponent } from './list-project/list-project.component';
 
 import { MessageService } from '../global-message/message.service';
+import { Message } from '../global-message/message';
 
-export const types: {} = { 0: 'My Projects', 1: 'Public Projects'};
+import { AlertType } from '../shared/shared.const';
+import { Response } from '@angular/http';
+
+import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
+import { DeletionTargets } from '../shared/shared.const';
+
+import { Subscription } from 'rxjs/Subscription';
+
+
+const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS'};
 
 @Component({
     selector: 'project',
@@ -33,7 +44,27 @@ export class ProjectComponent implements OnInit {
   currentFilteredType: number = 0;
   lastFilteredType: number = 0;
 
-  constructor(private projectService: ProjectService, private messageService: MessageService){}
+  subscription: Subscription;
+
+  constructor(
+    private projectService: ProjectService,
+    private messageService: MessageService,
+    private deletionDialogService: DeletionDialogService){
+      this.subscription = deletionDialogService.deletionConfirm$.subscribe(message => {
+        if (message && message.targetId === DeletionTargets.PROJECT) {
+          let projectId = message.data;
+          this.projectService
+              .deleteProject(projectId)
+              .subscribe(
+                response=>{
+                  console.log('Successful delete project with ID:' + projectId);
+                  this.retrieve('', this.lastFilteredType);
+                },
+                error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
+              );
+        }
+      });
+    }
 
   ngOnInit(): void {
     this.retrieve('', this.lastFilteredType);
@@ -43,8 +74,9 @@ export class ProjectComponent implements OnInit {
     this.projectService
         .listProjects(name, isPublic)
         .subscribe(
-          response => this.changedProjects = response,
-          error => this.messageService.announceMessage(error));
+          response => this.changedProjects = <Project[]>response,
+          error => this.messageService.announceAppLevelMessage(error.status, error, AlertType.WARNING)
+        );
   }
 
   openModal(): void {
@@ -70,24 +102,30 @@ export class ProjectComponent implements OnInit {
   }
 
   toggleProject(p: Project) {
-    this.projectService
+    if (p) {
+      p.public === 0 ? p.public = 1 : p.public = 0;
+      this.projectService
         .toggleProjectPublic(p.project_id, p.public)
         .subscribe(
           response=>console.log('Successful toggled project_id:' + p.project_id),
-          error=>this.messageService.announceMessage(error)
+          error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
         );
+    }
   }
 
   deleteProject(p: Project) {
-    this.projectService
-        .deleteProject(p.project_id)
-        .subscribe(
-          response=>{
-            console.log('Successful delete project_id:' + p.project_id);
-            this.retrieve('', this.lastFilteredType);
-          },
-          error=>console.log(error)
-        );
+    let deletionMessage = new DeletionMessage(
+      'PROJECT.DELETION_TITLE',
+      'PROJECT.DELETION_SUMMARY',
+      p.name,
+      p.project_id,
+      DeletionTargets.PROJECT
+    );
+    this.deletionDialogService.openComfirmDialog(deletionMessage);
+  }
+
+  refresh(): void {
+    this.retrieve('', this.lastFilteredType);
   }
 
 }

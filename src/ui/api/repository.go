@@ -19,23 +19,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"sort"
+	"strings"
+	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/ui/service/cache"
-	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
-
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
-
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/notary"
+	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
+	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -44,14 +45,25 @@ type RepositoryAPI struct {
 	api.BaseAPI
 }
 
+type repoResp struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	OwnerID      int64     `json:"owner_id"`
+	ProjectID    int64     `json:"project_id"`
+	Description  string    `json:"description"`
+	PullCount    int64     `json:"pull_count"`
+	StarCount    int64     `json:"star_count"`
+	TagsCount    int64     `json:"tags_count"`
+	CreationTime time.Time `json:"creation_time"`
+	UpdateTime   time.Time `json:"update_time"`
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil || projectID <= 0 {
 		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
 	}
-
-	page, pageSize := ra.GetPaginationParams()
 
 	project, err := dao.GetProjectByID(projectID)
 	if err != nil {
@@ -77,28 +89,69 @@ func (ra *RepositoryAPI) Get() {
 		}
 	}
 
-	repositories, err := getReposByProject(project.Name, ra.GetString("q"))
+	keyword := ra.GetString("q")
+
+	total, err := dao.GetTotalOfRepositoriesByProject(projectID, keyword)
+	if err != nil {
+		log.Errorf("failed to get total of repositories of project %d: %v", projectID, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	page, pageSize := ra.GetPaginationParams()
+
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
+
+	repositories, err := getRepositories(projectID,
+		keyword, pageSize, pageSize*(page-1), detail)
 	if err != nil {
 		log.Errorf("failed to get repository: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	total := int64(len(repositories))
-
-	if (page-1)*pageSize > total {
-		repositories = []string{}
-	} else {
-		repositories = repositories[(page-1)*pageSize:]
-	}
-
-	if page*pageSize <= total {
-		repositories = repositories[:pageSize]
-	}
-
 	ra.SetPaginationHeader(total, page, pageSize)
-
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
+}
+
+func getRepositories(projectID int64, keyword string,
+	limit, offset int64, detail bool) (interface{}, error) {
+	repositories, err := dao.GetRepositoriesByProject(projectID, keyword, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	//keep compatibility with old API
+	if !detail {
+		result := []string{}
+		for _, repository := range repositories {
+			result = append(result, repository.Name)
+		}
+		return result, nil
+	}
+
+	result := []*repoResp{}
+	for _, repository := range repositories {
+		repo := &repoResp{
+			ID:           repository.RepositoryID,
+			Name:         repository.Name,
+			OwnerID:      repository.OwnerID,
+			ProjectID:    repository.ProjectID,
+			Description:  repository.Description,
+			PullCount:    repository.PullCount,
+			StarCount:    repository.StarCount,
+			CreationTime: repository.CreationTime,
+			UpdateTime:   repository.UpdateTime,
+		}
+
+		tags, err := getTags(repository.Name)
+		if err != nil {
+			return nil, err
+		}
+		repo.TagsCount = int64(len(tags))
+		result = append(result, repo)
+	}
+
+	return result, nil
 }
 
 // Delete ...
@@ -119,11 +172,9 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
 	}
 
-	if project.Public == 0 {
-		userID := ra.ValidateUser()
-		if !hasProjectAdminRole(userID, project.ProjectID) {
-			ra.CustomAbort(http.StatusForbidden, "")
-		}
+	userID := ra.ValidateUser()
+	if !hasProjectAdminRole(userID, project.ProjectID) {
+		ra.CustomAbort(http.StatusForbidden, "")
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -195,13 +246,6 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "")
 		}
 	}
-
-	go func() {
-		log.Debug("refreshing catalog cache")
-		if err := cache.RefreshCatalogCache(); err != nil {
-			log.Errorf("error occurred while refresh catalog cache: %v", err)
-		}
-	}()
 }
 
 type tag struct {
@@ -234,36 +278,46 @@ func (ra *RepositoryAPI) GetTags() {
 		}
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	client, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
-
-	tags := []string{}
-
-	ts, err := rc.ListTag()
+	tags, err := listTag(client)
 	if err != nil {
 		regErr, ok := err.(*registry_error.Error)
 		if !ok {
 			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
+
+		ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+	}
+
+	ra.Data["json"] = tags
+	ra.ServeJSON()
+}
+
+func listTag(client *registry.Repository) ([]string, error) {
+	tags := []string{}
+
+	ts, err := client.ListTag()
+	if err != nil {
 		// TODO remove the logic if the bug of registry is fixed
 		// It's a workaround for a bug of registry: when listing tags of
 		// a repository which is being pushed, a "NAME_UNKNOWN" error will
 		// been returned, while the catalog API can list this repository.
-		if regErr.StatusCode != http.StatusNotFound {
-			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+
+		if regErr, ok := err.(*registry_error.Error); ok &&
+			regErr.StatusCode == http.StatusNotFound {
+			return tags, nil
 		}
 	}
 
 	tags = append(tags, ts...)
-
 	sort.Strings(tags)
 
-	ra.Data["json"] = tags
-	ra.ServeJSON()
+	return tags, nil
 }
 
 // GetManifests handles GET /api/repositories/manifests
@@ -382,7 +436,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return cache.NewRepositoryClient(endpoint, !verify, username, repoName,
+	return NewRepositoryClient(endpoint, !verify, username, repoName,
 		"repository", repoName, "pull", "push", "*")
 }
 
@@ -435,6 +489,34 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 	ra.Data["json"] = repos
+	ra.ServeJSON()
+}
+
+//GetSignatures handles request GET /api/repositories/signatures
+func (ra *RepositoryAPI) GetSignatures() {
+	//use this func to init session.
+	ra.GetUserIDForRequest()
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repoName)
+	username, err := ra.getUsername()
+	if err != nil {
+		log.Warningf("Error when getting username: %v", err)
+	}
+	targets, err := notary.GetTargets(username, fqRepo)
+	if err != nil {
+		log.Errorf("Error while fetching signature from notary: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+	}
+	ra.Data["json"] = targets
 	ra.ServeJSON()
 }
 

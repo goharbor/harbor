@@ -1,9 +1,16 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
+import { Subscription }   from 'rxjs/Subscription';
 
 import { UserService } from './user.service';
 import { User } from './user';
 import { NewUserModalComponent } from './new-user-modal.component';
+import { TranslateService } from '@ngx-translate/core';
+import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
+import { DeletionTargets, AlertType, httpStatusCode } from '../shared/shared.const'
+import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
+import { MessageService } from '../global-message/message.service';
 
 @Component({
   selector: 'harbor-user',
@@ -13,18 +20,49 @@ import { NewUserModalComponent } from './new-user-modal.component';
   providers: [UserService]
 })
 
-export class UserComponent implements OnInit {
+export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
   private onGoing: boolean = false;
+  private adminMenuText: string = "";
+  private adminColumn: string = "";
+  private deletionSubscription: Subscription;
 
   @ViewChild(NewUserModalComponent)
   private newUserDialog: NewUserModalComponent;
 
-  constructor(private userService: UserService) { }
+  constructor(
+    private userService: UserService,
+    private translate: TranslateService,
+    private deletionDialogService: DeletionDialogService,
+    private msgService: MessageService) {
+    this.deletionSubscription = deletionDialogService.deletionConfirm$.subscribe(confirmed => {
+      if (confirmed && confirmed.targetId === DeletionTargets.USER) {
+        this.delUser(confirmed.data);
+      }
+    });
+  }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
+  }
+
+  isSystemAdmin(u: User): string {
+    if (!u) {
+      return "{{MISS}}";
+    }
+    let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+    this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
+    return this.adminColumn;
+  }
+
+  adminActions(u: User): string {
+    if (!u) {
+      return "{{MISS}}";
+    }
+    let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
+    this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
+    return this.adminMenuText;
   }
 
   public get inProgress(): boolean {
@@ -33,6 +71,12 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     this.refreshUser();
+  }
+
+  ngOnDestroy(): void {
+    if(this.deletionSubscription){
+      this.deletionSubscription.unsubscribe();
+    }
   }
 
   //Filter items by keywords
@@ -56,37 +100,60 @@ export class UserComponent implements OnInit {
     }
 
     //Value copy
-    let updatedUser: User = Object.assign({}, user);
+    let updatedUser: User = {
+      user_id: user.user_id
+    };
 
-    if (updatedUser.has_admin_role === 0) {
+    if (user.has_admin_role === 0) {
       updatedUser.has_admin_role = 1;//Set as admin
     } else {
       updatedUser.has_admin_role = 0;//Set as none admin
     }
 
-    this.userService.updateUser(updatedUser)
+    this.userService.updateUserRole(updatedUser)
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
       })
-      .catch(error => console.error(error))//TODO:
+      .catch(error => {
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
+      })
   }
 
   //Delete the specified user
-  deleteUser(userId: number): void {
-    if (userId === 0) {
+  deleteUser(user: User): void {
+    if (!user) {
       return;
     }
 
-    this.userService.deleteUser(userId)
+    //Confirm deletion
+    let msg: DeletionMessage = new DeletionMessage(
+      "USER.DELETION_TITLE",
+      "USER.DELETION_SUMMARY",
+      user.username,
+      user,
+      DeletionTargets.USER
+    );
+    this.deletionDialogService.openComfirmDialog(msg);
+  }
+
+  private delUser(user: User): void {
+    this.userService.deleteUser(user.user_id)
       .then(() => {
         //Remove it from current user list
         //and then view refreshed
         this.originalUsers.then(users => {
-          this.users = users.filter(user => user.user_id != userId);
+          this.users = users.filter(u => u.user_id != user.user_id);
+          this.msgService.announceMessage(500, "USER.DELETE_SUCCESS", AlertType.SUCCESS);
         });
       })
-      .catch(error => console.error(error));//TODO:
+      .catch(error => {
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
+      });
   }
 
   //Refresh the user list
@@ -103,7 +170,9 @@ export class UserComponent implements OnInit {
       })
       .catch(error => {
         this.onGoing = false;
-        console.error(error);//TODO:
+        if (!accessErrorHandler(error, this.msgService)) {
+          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
+        }
       });
   }
 

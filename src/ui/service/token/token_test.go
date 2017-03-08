@@ -31,6 +31,7 @@ func TestMain(m *testing.M) {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
+	InitCreators()
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
@@ -169,9 +170,8 @@ func TestEndpointParser(t *testing.T) {
 	}
 	testList := []parserTestRec{parserTestRec{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
 		parserTestRec{"myimage:14.04", image{}, true},
-		//Test the temp workaround
-		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{"10.117.4.142:80", "library/myimage", "14.04"}, false},
-		parserTestRec{"library/myimage:14.04", image{"library", "myimage", "14.04"}, false},
+		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{}, true},
+		parserTestRec{"library/myimage:14.04", image{}, true},
 		parserTestRec{"10.117.4.142:5000/myimage:14.04", image{}, true},
 		parserTestRec{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},
 	}
@@ -184,4 +184,29 @@ func TestEndpointParser(t *testing.T) {
 			assert.Equal(t, rec.expect, *r, "result mismatch for input: %s", rec.input)
 		}
 	}
+}
+
+func TestFilterAccess(t *testing.T) {
+	//TODO put initial data in DB to verify repository filter.
+	var err error
+	s := []string{"registry:catalog:*"}
+	a1 := GetResourceActions(s)
+	a2 := GetResourceActions(s)
+	u := userInfo{"jack", false}
+	ra1 := token.ResourceActions{
+		Type:    "registry",
+		Name:    "catalog",
+		Actions: []string{"*"},
+	}
+	ra2 := token.ResourceActions{
+		Type:    "registry",
+		Name:    "catalog",
+		Actions: []string{},
+	}
+	err = filterAccess(a1, u, registryFilterMap)
+	assert.Nil(t, err, "Unexpected error: %v", err)
+	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
+	err = filterAccess(a2, u, notaryFilterMap)
+	assert.Nil(t, err, "Unexpected error: %v", err)
+	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 }

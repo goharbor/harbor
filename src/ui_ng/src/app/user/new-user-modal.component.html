@@ -1,19 +1,12 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalSize]="'lg'">
-    <h3 class="modal-title">Add User</h3>
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop">
+    <h3 class="modal-title">{{'USER.ADD_USER_TITLE' | translate}}</h3>
     <div class="modal-body">
         <new-user-form (valueChange)="formValueChange($event)"></new-user-form>
-        <div style="height: 30px;"></div>
-        <clr-alert [clrAlertType]="'alert-danger'" [clrAlertClosable]="true" [(clrAlertClosed)]="alertClose">
-            <div class="alert-item">
-                <span class="alert-text">
-                   {{errorMessage}}
-                </span>
-            </div>
-        </clr-alert>
+        <inline-alert (confirmEvt)="confirmCancel($event)"></inline-alert>
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline" style="top:8px;" [hidden]="inProgress === false"> </span>
-        <button type="button" class="btn btn-outline" (click)="close()">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid || inProgress" (click)="create()">Ok</button>
+        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isValid || inProgress" (click)="create()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

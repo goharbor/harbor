@@ -1,25 +1,24 @@
 <clr-main-container>
+    <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)" (showPwdChangeModal)="openModal($event)"></navigator>
-    <global-message></global-message>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch">
+            <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result (closeEvt)="searchClose($event)"></search-result>
             <router-outlet></router-outlet>
         </div>
-        <nav class="sidenav" [class.side-nav-override]="showSearch">
+        <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
             <section class="sidenav-content">
-                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">
-                    Projects
-                </a>
-                <section class="nav-group collapsible">
+                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
+                <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.LOGS' | translate}}</a>
+                <section class="nav-group collapsible" *ngIf="isSystemAdmin">
                     <input id="tabsystem" type="checkbox">
-                    <label for="tabsystem">System Managements</label>
+                    <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">Users</a></li>
-                        <li><a class="nav-link">Replications</a></li>
-                        <li><a class="nav-link">Quarantine[*]</a></li>
-                        <li><a class="nav-link">Configurations[*]</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/replications/endpoints" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATIONS' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIGS' | translate}}</a></li>
                     </ul>
                 </section>
             </section>
@@ -28,3 +27,5 @@
 </clr-main-container>
 <account-settings-modal></account-settings-modal>
 <password-setting></password-setting>
+<deletion-dialog></deletion-dialog>
+<about-dialog></about-dialog>

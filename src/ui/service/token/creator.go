@@ -26,6 +26,8 @@ import (
 )
 
 var creatorMap map[string]Creator
+var registryFilterMap map[string]accessFilter
+var notaryFilterMap map[string]accessFilter
 
 const (
 	notary   = "harbor-notary"
@@ -35,22 +37,29 @@ const (
 //InitCreators initialize the token creators for different services
 func InitCreators() {
 	creatorMap = make(map[string]Creator)
+	registryFilterMap = map[string]accessFilter{
+		"repository": &repositoryFilter{
+			parser: &basicParser{},
+		},
+		"registry": &registryFilter{},
+	}
 	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Warningf("Failed to get ext enpoint, err: %v, the token service will not be functional with notary requests", err)
 	} else {
+		notaryFilterMap = map[string]accessFilter{
+			"repository": &repositoryFilter{
+				parser: &endpointParser{
+					endpoint: strings.Split(ext, "//")[1],
+				},
+			},
+		}
 		creatorMap[notary] = &generalCreator{
 			validators: []ReqValidator{
 				&basicAuthValidator{},
 			},
-			service: notary,
-			filterMap: map[string]accessFilter{
-				"repository": &repositoryFilter{
-					parser: &endpointParser{
-						endpoint: strings.Split(ext, "//")[1],
-					},
-				},
-			},
+			service:   notary,
+			filterMap: notaryFilterMap,
 		}
 	}
 
@@ -59,16 +68,8 @@ func InitCreators() {
 			&secretValidator{config.JobserviceSecret()},
 			&basicAuthValidator{},
 		},
-		service: registry,
-		filterMap: map[string]accessFilter{
-			"repository": &repositoryFilter{
-				//Workaround, had to use same service for both notary and registry
-				parser: &endpointParser{
-					endpoint: ext,
-				},
-			},
-			"registry": &registryFilter{},
-		},
+		service:   registry,
+		filterMap: registryFilterMap,
 	}
 }
 
@@ -102,15 +103,10 @@ func (e endpointParser) parse(s string) (*image, error) {
 	if len(repo) < 2 {
 		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
 	}
-	//Workaround, need to use endpoint Parser to handle both cases.
-	if strings.ContainsRune(repo[0], '.') {
-		if repo[0] != e.endpoint {
-			log.Warningf("Mismatch endpoint from string: %s, expected endpoint: %s, fallback to basic parser", s, e.endpoint)
-			return parseImg(s)
-		}
-		return parseImg(repo[1])
+	if repo[0] != e.endpoint {
+		return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
 	}
-	return parseImg(s)
+	return parseImg(repo[1])
 }
 
 //build Image accepts a string like library/ubuntu:14.04 and build a image struct
@@ -153,7 +149,6 @@ type repositoryFilter struct {
 
 func (rep repositoryFilter) filter(user userInfo, a *token.ResourceActions) error {
 	//clear action list to assign to new acess element after perm check.
-	a.Actions = []string{}
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
 		return err
@@ -224,16 +219,9 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 		user = &userInfo{}
 	}
 	access := GetResourceActions(scopes)
-	for _, a := range access {
-		f, ok := g.filterMap[a.Type]
-		if !ok {
-			log.Warningf("No filter found for access type: %s, skip.", a.Type)
-			continue
-		}
-		err = f.filter(*user, a)
-		if err != nil {
-			return nil, err
-		}
+	err = filterAccess(access, *user, g.filterMap)
+	if err != nil {
+		return nil, err
 	}
 	return makeToken(user.name, g.service, access)
 }

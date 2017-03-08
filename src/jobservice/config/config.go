@@ -25,6 +25,7 @@ import (
 
 const (
 	defaultKeyPath string = "/etc/jobservice/key"
+	defaultLogDir  string = "/var/log/jobs"
 )
 
 var (
@@ -119,12 +120,12 @@ func LocalRegURL() (string, error) {
 }
 
 // LogDir returns the absolute path to which the log file will be written
-func LogDir() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
+func LogDir() string {
+	dir := os.Getenv("LOG_DIR")
+	if len(dir) == 0 {
+		dir = defaultLogDir
 	}
-	return cfg[comcfg.JobLogDir].(string), nil
+	return dir
 }
 
 // SecretKey will return the secret key for encryption/decryption password in target.

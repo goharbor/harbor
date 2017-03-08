@@ -29,7 +29,6 @@ HARBOR_ADMIN_PASSWORD=$harbor_admin_password
 PROJECT_CREATION_RESTRICTION=$project_creation_restriction
 VERIFY_REMOTE_CERT=$verify_remote_cert
 MAX_JOB_WORKERS=$max_job_workers
-LOG_DIR=/var/log/jobs
 UI_SECRET=$ui_secret
 JOBSERVICE_SECRET=$jobservice_secret
 TOKEN_EXPIRATION=$token_expiration
