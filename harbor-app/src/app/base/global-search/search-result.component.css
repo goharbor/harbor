@@ -2,7 +2,7 @@
     display: block;
     position: absolute;
     height: 100%;
-    width: 97%;
+    width: 98%;
     /*shoud be lesser than 1000 to aoivd override the popup menu*/
     z-index: 999;
     box-sizing: border-box;
