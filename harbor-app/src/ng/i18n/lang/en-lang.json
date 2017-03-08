@@ -214,7 +214,8 @@
         "OPERATION": "Operation",
         "CREATION_TIME": "Start Time",
         "END_TIME": "End Time",
-        "LOGS": "Logs"
+        "LOGS": "Logs",
+        "ITEMS": "item(s)"
     },
     "DESTINATION": {
         "ENDPOINT": "Endpoint",
@@ -234,14 +235,16 @@
         "CONFLICT_NAME": "Name or endpoint URL already exists.",
         "INVALID_NAME": "Invalid destination name.",
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
-        "CREATION_TIME": "Creation Time"
+        "CREATION_TIME": "Creation Time",
+        "ITEMS": "item(s)"
     },
     "REPOSITORY": {
         "COPY_ID": "Copy ID",
         "COPY_PARENT_ID": "Copy Parent ID",
         "DELETE": "Delete",
         "NAME": "Name",
-        "TAGS_COUNT": "Tags Count",
+        "TAGS_COUNT": "Tags",
+        "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Pull Command",
         "MY_REPOSITORY": "My Repository",
         "PUBLIC_REPOSITORY": "Public Repository",
@@ -249,7 +252,17 @@
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{param}}?",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
-        "FILTER_FOR_REPOSITORIES": "Filter for repositories"
+        "FILTER_FOR_REPOSITORIES": "Filter for repositories",
+        "TAG": "Tag",
+        "VERIFIED": "Verified",
+        "AUTHOR": "Author",
+        "CREATED": "Creation Time",
+        "DOCKER_VERSION": "Docker Version",
+        "ARCHITECTURE": "Architecture",
+        "OS": "OS",
+        "SHOW_DETAILS": "Show Details",
+        "PROJECTS": "Projects",
+        "ITEMS": "item(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"
