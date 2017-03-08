@@ -27,6 +27,7 @@ import { ResetPasswordComponent } from './account/password/reset-password.compon
 import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
+import { SearchStartComponent } from './base/global-search/search-start.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
@@ -40,6 +41,10 @@ const harborRoutes: Routes = [
       authResolver: BaseRoutingResolver
     },
     children: [
+      {
+        path: '',
+        component: SearchStartComponent
+      },
       {
         path: 'projects',
         component: ProjectComponent

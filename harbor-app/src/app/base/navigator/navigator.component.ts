@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ModalEvent } from '../modal-event';
-import { SearchEvent } from '../search-event';
 import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
@@ -21,7 +20,6 @@ import { supportedLangs, enLang, languageNames } from '../../shared/shared.const
 export class NavigatorComponent implements OnInit {
     // constructor(private router: Router){}
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
-    @Output() searchEvt = new EventEmitter<SearchEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
     private sessionUser: SessionUser = null;
@@ -83,11 +81,6 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
-    //Only transfer the search event to the parent shell
-    transferSearchEvent(evt: SearchEvent): void {
-        this.searchEvt.emit(evt);
-    }
-
     //Log out system
     logOut(): void {
         this.session.signOff()
@@ -116,7 +109,7 @@ export class NavigatorComponent implements OnInit {
     homeAction(): void {
         if(this.sessionUser != null){
             //Navigate to default page
-            this.router.navigate(['harbor','projects']);
+            this.router.navigate(['harbor']);
         }else{
             //Naviagte to signin page
             this.router.navigate(['sign-in']);

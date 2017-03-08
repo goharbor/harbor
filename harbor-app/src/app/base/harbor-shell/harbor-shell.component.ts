@@ -1,8 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { ModalEvent } from '../modal-event';
-import { SearchEvent } from '../search-event';
 import { modalEvents } from '../modal-events.const';
 
 import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
@@ -11,7 +10,12 @@ import { PasswordSettingComponent } from '../../account/password/password-settin
 import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
-import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component'
+import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
+import { SearchStartComponent } from '../global-search/search-start.component';
+
+import { SearchTriggerService } from '../global-search/search-trigger.service';
+
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'harbor-shell',
@@ -19,7 +23,7 @@ import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.com
     styleUrls: ["harbor-shell.component.css"]
 })
 
-export class HarborShellComponent implements OnInit {
+export class HarborShellComponent implements OnInit, OnDestroy {
 
     @ViewChild(AccountSettingsModalComponent)
     private accountSettingsModal: AccountSettingsModalComponent;
@@ -36,18 +40,43 @@ export class HarborShellComponent implements OnInit {
     @ViewChild(AboutDialogComponent)
     private aboutDialog: AboutDialogComponent;
 
+    @ViewChild(SearchStartComponent)
+    private searchSatrt: SearchStartComponent;
+
     //To indicator whwther or not the search results page is displayed
     //We need to use this property to do some overriding work
     private isSearchResultsOpened: boolean = false;
 
+    private searchSub: Subscription;
+    private searchCloseSub: Subscription;
+
     constructor(
         private route: ActivatedRoute,
-        private session: SessionService) { }
+        private session: SessionService,
+        private searchTrigger: SearchTriggerService) { }
 
     ngOnInit() {
-        this.route.data.subscribe(data => {
-            //dummy
+        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
+            this.doSearch(searchEvt);
         });
+
+        this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
+            if (close) {
+                this.searchClose();
+            }else{
+                this.watchClickEvt();//reuse
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
+
+        if (this.searchCloseSub) {
+            this.searchCloseSub.unsubscribe();
+        }
     }
 
     public get showSearch(): boolean {
@@ -82,21 +111,30 @@ export class HarborShellComponent implements OnInit {
     }
 
     //Handle the global search event and then let the result page to trigger api
-    doSearch(event: SearchEvent): void {
+    doSearch(event: string): void {
+        if (event === "") {
+            if (!this.isSearchResultsOpened) {
+                //Will not open search result panel if term is empty
+                return;
+            } else {
+                //If opened, then close the search result panel
+                this.isSearchResultsOpened = false;
+                this.searchResultComponet.close();
+                return;
+            }
+        }
         //Once this method is called
         //the search results page must be opened
         this.isSearchResultsOpened = true;
 
         //Call the child component to do the real work
-        this.searchResultComponet.doSearch(event.term);
+        this.searchResultComponet.doSearch(event);
     }
 
     //Search results page closed
     //remove the related ovevriding things
-    searchClose(event: boolean): void {
-        if (event) {
-            this.isSearchResultsOpened = false;
-        }
+    searchClose(): void {
+        this.isSearchResultsOpened = false;
     }
 
     //Close serch result panel if existing
