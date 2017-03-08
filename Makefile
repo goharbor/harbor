@@ -69,6 +69,8 @@ MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
+UIPATH=$(BUILDPATH)/src/ui
+UINGPATH=$(BUILDPATH)/src/ui_ng
 GOBASEPATH=/go/src/github.com/vmware
 CHECKENVCMD=checkenv.sh
 BASEIMAGE=photon
@@ -76,6 +78,12 @@ COMPILETAG=compile_normal
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
+NORTARYFLAG=false
+
+#clarity parameters
+CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
+CLARITYSEEDPATH=/clarity-seed
+CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -142,11 +150,11 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 
-
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
 DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
+DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 
 # version prepare
 VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
@@ -196,9 +204,14 @@ compile_jobservice:
 	@$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
 	@echo "Done."
 	
-compile_normal: compile_adminserver compile_ui compile_jobservice
+compile_clarity:
+	@echo "compiling binary for clarity ui..."
+	@$(DOCKERCMD) run --rm -v $(UIPATH)/static/new-ui:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src -v $(UINGPATH)/src/app:$(CLARITYSEEDPATH)/src/app $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT)
+	@echo "Done."
+	
+compile_normal: compile_clarity, compile_adminserver compile_ui compile_jobservice
 
-compile_golangimage:
+compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
@@ -219,7 +232,11 @@ compile:check_environment $(COMPILETAG)
 
 prepare: 
 	@echo "preparing..."
-	@$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE)
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) --with-notary; \
+	else \
+		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) ; \
+	fi	
 	
 build_common: version
 	@echo "buildging db container for photon..."
@@ -236,10 +253,7 @@ modify_composefile:
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
-install: compile build prepare modify_composefile
-	@echo "loading harbor images..."
-	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
-	@echo "Install complete. You can visit harbor now."
+install: compile build prepare modify_composefile start
 	
 package_online: modify_composefile
 	@echo "packing online package ..."
@@ -272,24 +286,32 @@ package_offline: compile build modify_composefile
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) registry:2.5.1
 	@$(DOCKERPULL) nginx:1.11.5
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		echo "pulling notary and mariadb..."; \
+		$(DOCKERPULL) jiangd/notary:server-0.5.0-fix; \
+		$(DOCKERPULL) notary:signer-0.5.0; \
+		$(DOCKERPULL) mariadb:10.1.10; \
+	fi	
 	
 	@echo "saving harbor docker image"
-	@$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0
-
-	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
-			  --exclude=$(HARBORPKG)/checkenv.sh \
-			  --exclude=$(HARBORPKG)/jsminify.sh \
-			  --exclude=$(HARBORPKG)/pushimage.sh \
-			  $(HARBORPKG)
+		nginx:1.11.5 registry:2.5.1 photon:1.0 \
+		jiangd/notary:server-0.5.0-fix notary:signer-0.5.0 mariadb:10.1.10; \
+	else \
+		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
+		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
+	fi
 	
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
@@ -323,12 +345,20 @@ pushimage:
 		
 start:
 	@echo "loading harbor images..."
-	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml up -d
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) up -d ; \
+	else \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d ; \
+	fi
 	@echo "Start complete. You can visit harbor now."
 	
 down:
 	@echo "stoping harbor instance..."
-	@$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml down
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
+	else \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
+	fi	
 	@echo "Done."
 
 cleanbinary:
