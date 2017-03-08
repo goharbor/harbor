@@ -5,32 +5,36 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	//	"github.com/vmware/harbor/tests/apitests/apilib"
-	//	"strconv"
 )
 
 func TestGetRepos(t *testing.T) {
-	var httpStatusCode int
-	var err error
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 	projectID := "1"
+	keyword := "hello-world"
+	detail := "true"
 
 	fmt.Println("Testing Repos Get API")
 	//-------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "true")
+	code, repositories, err := apiTest.GetRepos(*admin, projectID, keyword, detail)
 	if err != nil {
-		t.Error("Error whihle get repos by projectID", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get repositories: %v", err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int(200), code, "response code should be 200")
+		if repos, ok := repositories.([]repoResp); ok {
+			assert.Equal(int(1), len(repos), "the length of repositories should be 1")
+			assert.Equal(repos[0].Name, "library/hello-world", "unexpected repository name")
+		} else {
+			t.Error("the response should return more info as detail is true")
+		}
 	}
+
 	//-------------------case 2 : response code = 400------------------------//
-	fmt.Println("case 2 : response code = 409,invalid project_id")
+	fmt.Println("case 2 : response code = 400,invalid project_id")
 	projectID = "ccc"
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "0")
+	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword, detail)
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)
@@ -40,12 +44,29 @@ func TestGetRepos(t *testing.T) {
 	//-------------------case 3 : response code = 404------------------------//
 	fmt.Println("case 3 : response code = 404:project  not found")
 	projectID = "111"
-	httpStatusCode, err = apiTest.GetRepos(*admin, projectID, "0")
+	httpStatusCode, _, err = apiTest.GetRepos(*admin, projectID, keyword, detail)
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
+	}
+
+	//-------------------case 4 : response code = 200------------------------//
+	fmt.Println("case 4 : response code = 200")
+	projectID = "1"
+	detail = "false"
+	code, repositories, err = apiTest.GetRepos(*admin, projectID, keyword, detail)
+	if err != nil {
+		t.Errorf("failed to get repositories: %v", err)
+	} else {
+		assert.Equal(int(200), code, "response code should be 200")
+		if repos, ok := repositories.([]string); ok {
+			assert.Equal(int(1), len(repos), "the length of repositories should be 1")
+			assert.Equal(repos[0], "library/hello-world", "unexpected repository name")
+		} else {
+			t.Error("the response should not return detail info as detail is false")
+		}
 	}
 
 	fmt.Printf("\n")
