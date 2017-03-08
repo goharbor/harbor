@@ -20,6 +20,11 @@ services:
     depends_on:
       - notary-db
       - notary-signer
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "notary-server"
   notary-signer:
     image: notary:signer-0.5.0
     container_name: notary-signer
@@ -36,6 +41,11 @@ services:
     command: -c "notary-signer -config=/config/signer-config.json -logf=logfmt"
     depends_on:
       - notary-db
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "notary-signer"
   notary-db:
     image: mariadb:10.1.10
     container_name: notary-db
@@ -52,6 +62,11 @@ services:
       - TERM=dumb
       - MYSQL_ALLOW_EMPTY_PASSWORD="true"
     command: mysqld --innodb_file_per_table
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "notary-db"
 networks:
   harbor-notary:
     external: false
