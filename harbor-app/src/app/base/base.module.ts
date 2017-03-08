@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { RouterModule } from '@angular/router';
 
-import { DashboardModule } from '../dashboard/dashboard.module';
 import { ProjectModule } from '../project/project.module';
 import { UserModule } from '../user/user.module';
 import { AccountModule } from '../account/account.module';
@@ -16,7 +15,6 @@ import { SearchResultComponent } from './global-search/search-result.component';
 @NgModule({
   imports: [
     SharedModule,
-    DashboardModule,
     ProjectModule,
     UserModule,
     AccountModule,
