@@ -13,5 +13,5 @@
     <clr-dg-cell>{{j.update_time}}</clr-dg-cell>
     <clr-dg-cell><a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK"><clr-icon shape="clipboard"></clr-icon></a></clr-dg-cell>
   </clr-dg-row>
-  <clr-dg-footer>{{ (jobs ? jobs.length : 0) }} item(s)</clr-dg-footer>
+  <clr-dg-footer>{{ (jobs ? jobs.length : 0) }} {{'REPLICATION.ITEMS' | translate}}</clr-dg-footer>
 </clr-datagrid>

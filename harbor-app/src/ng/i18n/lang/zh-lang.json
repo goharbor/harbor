@@ -215,7 +215,8 @@
         "OPERATION": "操作",
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
-        "LOGS": "日志"
+        "LOGS": "日志",
+        "ITEMS": "条记录"
     },
     "DESTINATION": {
         "ENDPOINT": "目标",
@@ -235,7 +236,8 @@
         "CONFLICT_NAME": "目标名或目标URL已存在。",
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
-        "CREATION_TIME": "创建时间"
+        "CREATION_TIME": "创建时间",
+        "ITEMS": "条记录"
     }, 
     "REPOSITORY": {
         "COPY_ID": "复制ID",
@@ -243,6 +245,7 @@
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",
+        "PULL_COUNT": "下载数",
         "PULL_COMMAND": "Pull命令",
         "MY_REPOSITORY": "我的镜像",
         "PUBLIC_REPOSITORY": "公共镜像",
@@ -250,7 +253,17 @@
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
-        "FILTER_FOR_REPOSITORIES": "过滤镜像仓库"
+        "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
+        "TAG": "标签",
+        "VERIFIED": "已验证",
+        "AUTHOR": "作者",
+        "CREATED": "创建时间",
+        "DOCKER_VERSION": "Docker版本",
+        "ARCHITECTURE": "架构",
+        "OS": "操作系统",
+        "SHOW_DETAILS": "显示详细",
+        "PROJECTS": "项目",
+        "ITEMS": "条记录"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"

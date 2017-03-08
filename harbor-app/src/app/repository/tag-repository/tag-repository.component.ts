@@ -17,4 +17,8 @@ export class TagRepositoryComponent implements OnInit {
     this.repoName = this.route.snapshot.params['repo'];
   }
 
+  deleteTag(tagName: string) {
+    
+  }
+
 }
