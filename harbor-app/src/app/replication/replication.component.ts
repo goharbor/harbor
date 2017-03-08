@@ -16,23 +16,23 @@ import { Job } from './job';
 import { Target } from './target';
 
 const ruleStatus = [
-  { 'key':  '', 'description': 'All Status'},
-  { 'key': '1', 'description': 'Enabled'},
-  { 'key': '0', 'description': 'Disabled'}
+  { 'key':  '', 'description': 'REPLICATION.ALL_STATUS'},
+  { 'key': '1', 'description': 'REPLICATION.ENABLED'},
+  { 'key': '0', 'description': 'REPLICATION.DISABLED'}
 ];
 
 const jobStatus = [
-  { 'key': '', 'description': 'All' },
-  { 'key': 'pending',  'description': 'Pending' },
-  { 'key': 'running',  'description': 'Running' },
-  { 'key': 'error',    'description': 'Error' },
-  { 'key': 'retrying', 'description': 'Retrying' },
-  { 'key': 'stopped' , 'description': 'Stopped' },
-  { 'key': 'finished', 'description': 'Finished' },
-  { 'key': 'canceled', 'description': 'Canceled' }  
+  { 'key': '', 'description': 'REPLICATION.ALL' },
+  { 'key': 'pending',  'description': 'REPLICATION.PENDING' },
+  { 'key': 'running',  'description': 'REPLICATION.RUNNING' },
+  { 'key': 'error',    'description': 'REPLICATION.ERROR' },
+  { 'key': 'retrying', 'description': 'REPLICATION.RETRYING' },
+  { 'key': 'stopped' , 'description': 'REPLICATION.STOPPED' },
+  { 'key': 'finished', 'description': 'REPLICATION.FINISHED' },
+  { 'key': 'canceled', 'description': 'REPLICATION.CANCELED' }  
 ];
 
-const optionalSearch: {} = {0: 'Advanced', 1: 'Simple'};
+const optionalSearch: {} = {0: 'REPLICATION.ADVANCED', 1: 'REPLICATION.SIMPLE'};
 
 class SearchOption {
   policyId: number;
