@@ -453,7 +453,7 @@ func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID str
 
 //-------------------------Repositories Test---------------------------------------//
 //Return relevant repos of projectID
-func (a testapi) GetRepos(authInfo usrInfo, projectID string) (int, error) {
+func (a testapi) GetRepos(authInfo usrInfo, projectID, detail string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/"
@@ -462,9 +462,13 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID string) (int, error) {
 
 	type QueryParams struct {
 		ProjectID string `url:"project_id"`
+		Detail    string `url:"detail"`
 	}
 
-	_sling = _sling.QueryStruct(&QueryParams{ProjectID: projectID})
+	_sling = _sling.QueryStruct(&QueryParams{
+		ProjectID: projectID,
+		Detail:    detail,
+	})
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
 }

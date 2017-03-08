@@ -22,6 +22,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -44,14 +45,25 @@ type RepositoryAPI struct {
 	api.BaseAPI
 }
 
+type repoResp struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	OwnerID      int64     `json:"owner_id"`
+	ProjectID    int64     `json:"project_id"`
+	Description  string    `json:"description"`
+	PullCount    int64     `json:"pull_count"`
+	StarCount    int64     `json:"star_count"`
+	TagsCount    int64     `json:"tags_count"`
+	CreationTime time.Time `json:"creation_time"`
+	UpdateTime   time.Time `json:"update_time"`
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil || projectID <= 0 {
 		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
 	}
-
-	page, pageSize := ra.GetPaginationParams()
 
 	project, err := dao.GetProjectByID(projectID)
 	if err != nil {
@@ -77,28 +89,69 @@ func (ra *RepositoryAPI) Get() {
 		}
 	}
 
-	repositories, err := getReposByProject(project.Name, ra.GetString("q"))
+	keyword := ra.GetString("q")
+
+	total, err := dao.GetTotalOfRepositoriesByProject(projectID, keyword)
+	if err != nil {
+		log.Errorf("failed to get total of repositories of project %d: %v", projectID, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	page, pageSize := ra.GetPaginationParams()
+
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
+
+	repositories, err := getRepositories(projectID,
+		keyword, pageSize, pageSize*(page-1), detail)
 	if err != nil {
 		log.Errorf("failed to get repository: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	total := int64(len(repositories))
-
-	if (page-1)*pageSize > total {
-		repositories = []string{}
-	} else {
-		repositories = repositories[(page-1)*pageSize:]
-	}
-
-	if page*pageSize <= total {
-		repositories = repositories[:pageSize]
-	}
-
 	ra.SetPaginationHeader(total, page, pageSize)
-
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
+}
+
+func getRepositories(projectID int64, keyword string,
+	limit, offset int64, detail bool) (interface{}, error) {
+	repositories, err := dao.GetRepositoriesByProject(projectID, keyword, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	//keep compatibility with old API
+	if !detail {
+		result := []string{}
+		for _, repository := range repositories {
+			result = append(result, repository.Name)
+		}
+		return result, nil
+	}
+
+	result := []*repoResp{}
+	for _, repository := range repositories {
+		repo := &repoResp{
+			ID:           repository.RepositoryID,
+			Name:         repository.Name,
+			OwnerID:      repository.OwnerID,
+			ProjectID:    repository.ProjectID,
+			Description:  repository.Description,
+			PullCount:    repository.PullCount,
+			StarCount:    repository.StarCount,
+			CreationTime: repository.CreationTime,
+			UpdateTime:   repository.UpdateTime,
+		}
+
+		tags, err := getTags(repository.Name)
+		if err != nil {
+			return nil, err
+		}
+		repo.TagsCount = int64(len(tags))
+		result = append(result, repo)
+	}
+
+	return result, nil
 }
 
 // Delete ...
@@ -119,11 +172,9 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
 	}
 
-	if project.Public == 0 {
-		userID := ra.ValidateUser()
-		if !hasProjectAdminRole(userID, project.ProjectID) {
-			ra.CustomAbort(http.StatusForbidden, "")
-		}
+	userID := ra.ValidateUser()
+	if !hasProjectAdminRole(userID, project.ProjectID) {
+		ra.CustomAbort(http.StatusForbidden, "")
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
