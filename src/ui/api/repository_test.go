@@ -52,43 +52,64 @@ func TestGetRepos(t *testing.T) {
 }
 
 func TestGetReposTags(t *testing.T) {
-	var httpStatusCode int
-	var err error
-	var repoName string
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
+	repository := ""
+	detail := "false"
+
 	fmt.Println("Testing ReposTags Get API")
 	//-------------------case 1 : response code = 400------------------------//
 	fmt.Println("case 1 : response code = 400,repo_name is nil")
-	repoName = ""
-	httpStatusCode, err = apiTest.GetReposTags(*admin, repoName)
+
+	code, _, err := apiTest.GetReposTags(*admin, repository, detail)
 	if err != nil {
-		t.Error("Error whihle get reposTags by repoName", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
+		assert.Equal(int(400), code, "httpStatusCode should be 400")
 	}
+
 	//-------------------case 2 : response code = 404------------------------//
 	fmt.Println("case 2 : response code = 404,repo not found")
-	repoName = "errorRepos"
-	httpStatusCode, err = apiTest.GetReposTags(*admin, repoName)
+	repository = "errorRepos"
+	code, _, err = apiTest.GetReposTags(*admin, repository, detail)
 	if err != nil {
-		t.Error("Error whihle get reposTags by repoName", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
-		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
+		assert.Equal(int(404), code, "httpStatusCode should be 404")
 	}
 	//-------------------case 3 : response code = 200------------------------//
 	fmt.Println("case 3 : response code = 200")
-	repoName = "library/hello-world"
-	httpStatusCode, err = apiTest.GetReposTags(*admin, repoName)
+	repository = "library/hello-world"
+	code, tags, err := apiTest.GetReposTags(*admin, repository, detail)
 	if err != nil {
-		t.Error("Error whihle get reposTags by repoName", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int(200), code, "httpStatusCode should be 200")
+		if tg, ok := tags.([]string); ok {
+			assert.Equal(1, len(tg), fmt.Sprintf("there should be only one tag, but now %v", tg))
+			assert.Equal(tg[0], "latest", "the tag should be latest")
+		} else {
+			t.Error("the tags should be in simple style as the detail is false")
+		}
+	}
+
+	//-------------------case 4 : response code = 200------------------------//
+	fmt.Println("case 4 : response code = 200")
+	repository = "library/hello-world"
+	detail = "true"
+	code, tags, err = apiTest.GetReposTags(*admin, repository, detail)
+	if err != nil {
+		t.Errorf("failed to get tags of repository %s: %v", repository, err)
+	} else {
+		assert.Equal(int(200), code, "httpStatusCode should be 200")
+		if tg, ok := tags.([]detailedTagResp); ok {
+			assert.Equal(1, len(tg), fmt.Sprintf("there should be only one tag, but now %v", tg))
+			assert.Equal(tg[0].Tag, "latest", "the tag should be latest")
+		} else {
+			t.Error("the tags should be in detail style as the detail is true")
+		}
 	}
 
 	fmt.Printf("\n")

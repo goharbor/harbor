@@ -63,6 +63,11 @@ type detailedTagResp struct {
 	Manifest interface{} `json:"manifest"`
 }
 
+type manifestResp struct {
+	Manifest interface{} `json:"manifest"`
+	Config   interface{} `json:"config,omitempty" `
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
@@ -321,7 +326,7 @@ func (ra *RepositoryAPI) GetTags() {
 
 		result = append(result, detailedTagResp{
 			Tag:      tag,
-			Manifest: manifest,
+			Manifest: manifest.Manifest,
 		})
 	}
 
@@ -411,11 +416,8 @@ func (ra *RepositoryAPI) GetManifests() {
 }
 
 func getManifest(client *registry.Repository,
-	tag, version string) (interface{}, error) {
-	result := struct {
-		Manifest interface{} `json:"manifest"`
-		Config   interface{} `json:"config,omitempty" `
-	}{}
+	tag, version string) (*manifestResp, error) {
+	result := &manifestResp{}
 
 	mediaTypes := []string{}
 	switch version {
