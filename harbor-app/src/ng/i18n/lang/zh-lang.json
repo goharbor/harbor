@@ -1,7 +1,8 @@
 {
     "SIGN_IN": {
         "REMEMBER": "记住我",
-        "INVALID_MSG": "用户名或者密码不正确"
+        "INVALID_MSG": "用户名或者密码不正确",
+        "FORGOT_PWD": "忘记密码"
     },
     "SIGN_UP": {
         "TITLE": "注册"
@@ -239,7 +240,7 @@
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
         "ITEMS": "条记录"
-    }, 
+    },
     "REPOSITORY": {
         "COPY_ID": "复制ID",
         "COPY_PARENT_ID": "复制父级ID",
@@ -317,6 +318,9 @@
         "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "终端用户许可协议",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
+    },
+    "START_PAGE": {
+        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security."
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

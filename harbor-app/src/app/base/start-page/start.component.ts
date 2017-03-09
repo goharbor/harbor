@@ -7,7 +7,15 @@ import { Subscription } from 'rxjs/Subscription';
 import { SessionService } from '../../shared/session.service';
 import { SessionUser } from '../../shared/session-user';
 
-import { SearchTriggerService } from './search-trigger.service';
+import { SearchTriggerService } from '../global-search/search-trigger.service';
+
+import { Repository } from '../../repository/repository';
+import { TopRepoService } from './top-repository.service';
+
+import { errorHandler } from '../../shared/shared.utils';
+import { AlertType } from '../../shared/shared.const';
+
+import { MessageService } from '../../global-message/message.service';
 
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
@@ -15,11 +23,13 @@ import 'rxjs/add/operator/distinctUntilChanged';
 const deBounceTime = 500; //ms
 
 @Component({
-    selector: 'search-start',
-    templateUrl: "search-start.component.html",
-    styleUrls: ['search-start.component.css']
+    selector: 'start-page',
+    templateUrl: "start.component.html",
+    styleUrls: ['start.component.css'],
+
+    providers: [TopRepoService]
 })
-export class SearchStartComponent implements OnInit, OnDestroy {
+export class StartPageComponent implements OnInit, OnDestroy {
     //Keep search term as Subject
     private searchTerms = new Subject<string>();
 
@@ -27,12 +37,17 @@ export class SearchStartComponent implements OnInit, OnDestroy {
 
     private currentUser: SessionUser = null;
 
+    private topRepos: Repository[] = [];
+
     constructor(
         private session: SessionService,
-        private searchTrigger: SearchTriggerService){}
+        private searchTrigger: SearchTriggerService,
+        private topRepoService: TopRepoService,
+        private msgService: MessageService
+    ) { }
 
     public get currentUsername(): string {
-        return this.currentUser?this.currentUser.username: "";
+        return this.currentUser ? this.currentUser.username : "";
     }
 
     //Implement ngOnIni
@@ -45,10 +60,12 @@ export class SearchStartComponent implements OnInit, OnDestroy {
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
+
+        this.getTopRepos();
     }
 
     ngOnDestroy(): void {
-        if(this.searchSub){
+        if (this.searchSub) {
             this.searchSub.unsubscribe();
         }
     }
@@ -58,5 +75,16 @@ export class SearchStartComponent implements OnInit, OnDestroy {
         //Send event only when term is not empty
 
         this.searchTerms.next(term);
+    }
+
+    //Get top popular repositories
+    getTopRepos() {
+        this.topRepoService.getTopRepos()
+            .then(repos => repos.forEach(item => {
+                this.topRepos.push(new Repository(item.name, item.count));
+            }))
+            .catch(error => {
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            })
     }
 }

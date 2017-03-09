@@ -14,5 +14,7 @@
             <grid-filter class="grid-filter" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilterProjects($event)"></grid-filter>
         </div>
         <list-project [projects]="searchResults.project"></list-project>
+        <h2>Repositories</h2>
+        <list-repository [repositories]="searchResults.repository"></list-repository>
     </div>
 </div>
