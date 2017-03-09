@@ -1343,6 +1343,22 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors. 
+  /systeminfo:
+    get:
+      summary: Get general system info
+      description: |
+        This API is for retrieving general system info, this can be called by anonymous request.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get general info successfully.
+          schema:
+            type: object
+            items:
+              $ref: "#/definitions/GeneralInfo"
+        500:
+          description: Unexpected internal error.
   /systeminfo/volumes:
     get:
       summary: Get system volume info (total/free size).
@@ -1967,6 +1983,27 @@ definitions:
         type: integer
         format: int64
         description: Free volume size.
+  GeneralInfo:
+    type: object
+    properties:
+      with_notary:
+        type: boolean
+        description: If the Harbor instance is deployed with nested notary.
+      with_admiral:
+        type: boolean
+        description: If the Harbor instance is deployed with Admiral.
+      admiral_endpoint:
+        type: string
+        description: The url of the endpoint of admiral instance.
+      auth_mode:
+        type: string
+        description: The auth mode of current Harbor instance.
+      project_creation_restriction:
+        type: string
+        description: Indicate who can create projects, it could be 'adminonly' or 'everyone'.
+      self_registration:
+        type: boolean
+        description: Indicate whether the Harbor instance enable user to register himself.
   SystemInfo:
     type: object
     properties:

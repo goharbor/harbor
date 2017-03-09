@@ -97,6 +97,7 @@ func init() {
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
+	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
 	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
@@ -951,6 +952,11 @@ func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error)
 	}
 
 	return httpStatusCode, successPayLoad, err
+}
+
+func (a testapi) GetGeneralInfo() (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).Path("/api/systeminfo")
+	return request(_sling, jsonAcceptHeader)
 }
 
 //Get system cert
