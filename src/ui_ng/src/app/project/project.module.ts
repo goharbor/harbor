@@ -34,7 +34,7 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
     MemberComponent,
     AddMemberComponent
   ],
-  exports: [ProjectComponent],
+  exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, ProjectService, MemberService]
 })
 export class ProjectModule {
