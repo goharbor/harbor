@@ -25,6 +25,7 @@ import (
 )
 
 const defaultKeyPath string = "/etc/ui/key"
+const httpAuthDefault string = "http://127.0.0.1:4001/auth"
 
 var (
 	mg          *comcfg.Manager
@@ -252,4 +253,17 @@ func UISecret() string {
 // other component
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
+}
+
+//http_auth url
+func HttpAuth() string {
+	httpAuth := os.Getenv("HTTP_AUTH")
+	if len(httpAuth) == 0 && AuthMode() == "http_auth" {
+		log.Warningf("You pick me but not config for http_auth. How Dare you?!")
+		log.Warningf("Assuming that you're debuging, so I'm gone use default value: %s", httpAuthDefault)
+		httpAuth = httpAuthDefault
+	} else {
+		log.Infof("http_auth: %s", httpAuth)
+	}
+	return httpAuth
 }
