@@ -209,7 +209,7 @@ compile_clarity:
 	@$(DOCKERCMD) run --rm -v $(UIPATH)/static/new-ui:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src -v $(UINGPATH)/src/app:$(CLARITYSEEDPATH)/src/app $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT)
 	@echo "Done."
 	
-compile_normal: compile_clarity, compile_adminserver compile_ui compile_jobservice
+compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
 
 compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
@@ -313,6 +313,16 @@ package_offline: compile build modify_composefile
 		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
 	fi
 	
+	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
+			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
+			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
+			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
+			  --exclude=$(HARBORPKG)/checkenv.sh \
+			  --exclude=$(HARBORPKG)/jsminify.sh \
+			  --exclude=$(HARBORPKG)/pushimage.sh \
+			  $(HARBORPKG)
+	
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
@@ -353,6 +363,11 @@ start:
 	@echo "Start complete. You can visit harbor now."
 	
 down:
+	@echo "Please make sure to set -e NOTARYFLAG=true if you are using Notary in Harbor, otherwise the Notary containers cannot be stop automaticlly."
+	@while [ -z "$$CONTINUE" ]; do \
+        read -r -p "Type anything but Y or y to exit. [Y/N]: " CONTINUE; \
+    done ; \
+    [ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "stoping harbor instance..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
