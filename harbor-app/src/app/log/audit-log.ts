@@ -27,4 +27,6 @@ export class AuditLog {
   begin_timestamp: number = 0;
   end_timestamp: number = 0;
   keywords: string;
+  page: number;
+  page_size: number;
 }

@@ -1,10 +1,10 @@
 <h1>{{'PROJECT.PROJECTS' | translate}}</h1>
 <div class="row flex-items-xs-between">
-  <div class="col-xs-4">
+  <div class="flex-items-xs-middle">
     <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon>{{'PROJECT.NEW_PROJECT' | translate}}</button>
     <create-project (create)="createProject($event)"></create-project>
   </div>
-  <div class="col-xs-5 push-xs-1">
+  <div class="flex-items-xs-middle">
     <clr-dropdown [clrMenuPosition]="'bottom-left'">
       <button class="btn btn-sm btn-link" clrDropdownToggle>
         {{projectTypes[currentFilteredType] | translate}}

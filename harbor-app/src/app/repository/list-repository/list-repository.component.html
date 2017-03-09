@@ -1,8 +1,8 @@
-<clr-datagrid>
+<clr-datagrid (clrDgRefresh)="refresh($event)">
    <clr-dg-column>{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
-   <clr-dg-row *ngFor="let r of repositories">
+   <clr-dg-row *clrDgItems="let r of repositories">
      <clr-dg-cell><a [routerLink]="['/harbor', 'tags', projectId, r.name]">{{r.name}}</a></clr-dg-cell>
      <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
      <clr-dg-cell>{{r.pull_count}}
@@ -14,5 +14,8 @@
        </harbor-action-overflow>
       </clr-dg-cell>
     </clr-dg-row>
-  <clr-dg-footer>{{repositories ? repositories.length : 0}} {{'REPOSITORY.ITEMS' | translate}}</clr-dg-footer>
+  <clr-dg-footer>
+    {{repositories ? repositories.length : 0}} {{'REPOSITORY.ITEMS' | translate}}
+    <clr-dg-pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="repositories ? repositories.length : 0"></clr-dg-pagination>
+  </clr-dg-footer>
 </clr-datagrid>

@@ -13,6 +13,6 @@
       <grid-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></grid-filter>  
       <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
     </div>
-    <list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)"></list-repository>
+    <list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)" [pageSize]="pageSize" (paginate)="retrieve($event)"></list-repository>
   </div>
 </div>

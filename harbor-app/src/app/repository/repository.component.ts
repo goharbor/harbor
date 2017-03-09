@@ -12,6 +12,8 @@ import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog
 import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
 import { Subscription } from 'rxjs/Subscription';
 
+import { State } from 'clarity-angular';
+
 const repositoryTypes = [
   { key: '0', description: 'REPOSITORY.MY_REPOSITORY' },
   { key: '1', description: 'REPOSITORY.PUBLIC_REPOSITORY' }
@@ -28,6 +30,8 @@ export class RepositoryComponent implements OnInit {
   repositoryTypes = repositoryTypes;
   currentRepositoryType: {};
   lastFilteredRepoName: string;
+
+  pageSize: number = 5;
 
   subscription: Subscription;
 
@@ -59,7 +63,7 @@ export class RepositoryComponent implements OnInit {
     this.projectId = this.route.snapshot.parent.params['id'];
     this.currentRepositoryType = this.repositoryTypes[0];
     this.lastFilteredRepoName = '';
-    this.retrieve(this.lastFilteredRepoName);
+    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -68,9 +72,9 @@ export class RepositoryComponent implements OnInit {
     }
   }
 
-  retrieve(repoName: string) {
+  retrieve(state?: State) {
     this.repositoryService
-        .listRepositories(this.projectId, repoName)
+        .listRepositories(this.projectId, this.lastFilteredRepoName)
         .subscribe(
           response=>this.changedRepositories=response,
           error=>this.messageService.announceMessage(error.status, 'Failed to list repositories.', AlertType.DANGER)
@@ -83,7 +87,7 @@ export class RepositoryComponent implements OnInit {
   
   doSearchRepoNames(repoName: string) {
     this.lastFilteredRepoName = repoName;
-    this.retrieve(this.lastFilteredRepoName);
+    this.retrieve();
    
   }
 
@@ -96,6 +100,6 @@ export class RepositoryComponent implements OnInit {
   }
 
   refresh() {
-    this.retrieve('');
+    this.retrieve();
   }
 }

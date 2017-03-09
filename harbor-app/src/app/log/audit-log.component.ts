@@ -9,10 +9,11 @@ import { SessionService } from '../shared/session.service';
 import { MessageService } from '../global-message/message.service';
 import { AlertType } from '../shared/shared.const';
 
-export const optionalSearch: {} = {0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE'};
+import { State } from 'clarity-angular';
 
+const optionalSearch: {} = {0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE'};
 
-export class FilterOption {
+class FilterOption {
   key: string;
   description: string;
   checked: boolean;
@@ -51,6 +52,8 @@ export class AuditLogComponent implements OnInit {
     new FilterOption('others', 'AUDIT_LOG.OTHERS', true) 
  ];
 
+  pageSize: number = 5;
+
   constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageService: MessageService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['auditLogResolver']);    
@@ -60,24 +63,25 @@ export class AuditLogComponent implements OnInit {
     this.projectId = +this.route.snapshot.parent.params['id'];
     console.log('Get projectId from route params snapshot:' + this.projectId);
     this.queryParam.project_id = this.projectId;
-    this.retrieve(this.queryParam);
   }
 
-  retrieve(queryParam: AuditLog): void {
+  retrieve(state?: State): void {
     this.auditLogService
-        .listAuditLogs(queryParam)
+        .listAuditLogs(this.queryParam)
         .subscribe(
-          response=>this.auditLogs = response,
+          response=>{
+            this.auditLogs = response.json();
+          },
           error=>{
             this.router.navigate(['/harbor', 'projects']);
-            this.messageService.announceMessage(error.status, 'Failed to list audit logs with project ID:' + queryParam.project_id, AlertType.DANGER);
+            this.messageService.announceMessage(error.status, 'Failed to list audit logs with project ID:' + this.queryParam.project_id, AlertType.DANGER);
           }
         );
   }
 
   doSearchAuditLogs(searchUsername: string): void {
     this.queryParam.username = searchUsername;
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 
   doSearchByTimeRange(strDate: string, target: string): void {
@@ -91,7 +95,7 @@ export class AuditLogComponent implements OnInit {
       break;
     }
     console.log('Search audit log filtered by time range, begin: ' + this.queryParam.begin_timestamp + ', end:' + this.queryParam.end_timestamp);
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 
   doSearchByOptions() {
@@ -109,7 +113,7 @@ export class AuditLogComponent implements OnInit {
       operationFilter = [];
     }
     this.queryParam.keywords = operationFilter.join('/');
-    this.retrieve(this.queryParam);
+    this.retrieve();
     console.log('Search option filter:' + operationFilter.join('/'));
   }
 
@@ -137,6 +141,6 @@ export class AuditLogComponent implements OnInit {
     this.doSearchByOptions();
   }
   refresh(): void {
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 }
