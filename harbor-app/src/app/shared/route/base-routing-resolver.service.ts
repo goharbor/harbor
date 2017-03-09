@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-    Router, 
-    Resolve, 
-    ActivatedRouteSnapshot, 
+    Router,
+    Resolve,
+    ActivatedRouteSnapshot,
     RouterStateSnapshot,
     NavigationExtras
 } from '@angular/router';
@@ -28,7 +28,7 @@ export class BaseRoutingResolver implements Resolve<SessionUser> {
                 //Please pay attention that route 'harborRootRoute' support anonymous user
                 if (state.url != harborRootRoute) {
                     let navigatorExtra: NavigationExtras = {
-                        queryParams: {"redirect_url": state.url}
+                        queryParams: { "redirect_url": state.url }
                     };
                     this.router.navigate(['sign-in'], navigatorExtra);
                 }

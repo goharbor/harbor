@@ -27,7 +27,9 @@ import { ResetPasswordComponent } from './account/password/reset-password.compon
 import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
-import { SearchStartComponent } from './base/global-search/search-start.component';
+import { StartPageComponent } from './base/start-page/start.component';
+
+import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
@@ -43,7 +45,7 @@ const harborRoutes: Routes = [
     children: [
       {
         path: '',
-        component: SearchStartComponent
+        component: StartPageComponent
       },
       {
         path: 'projects',
@@ -62,6 +64,7 @@ const harborRoutes: Routes = [
         path: 'replications',
         component: ReplicationManagementComponent,
         canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
         children: [
           {
             path: 'rules',
@@ -104,7 +107,8 @@ const harborRoutes: Routes = [
       },
       {
         path: 'configs',
-        component: ConfigurationComponent
+        component: ConfigurationComponent,
+        canActivate: [SystemAdminGuard],
       }
     ]
   },

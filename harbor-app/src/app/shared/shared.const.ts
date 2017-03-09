@@ -17,6 +17,7 @@ export const enum DeletionTargets {
   EMPTY, PROJECT, PROJECT_MEMBER, USER, POLICY, TARGET, REPOSITORY
 };
 export const harborRootRoute = "/harbor";
+export const signInRoute = "/sign-in";
 
 export const enum ActionType {
   ADD_NEW, EDIT
