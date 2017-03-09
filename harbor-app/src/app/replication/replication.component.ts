@@ -15,6 +15,8 @@ import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
 
+import { State } from 'clarity-angular';
+
 const ruleStatus = [
   { 'key':  '', 'description': 'REPLICATION.ALL_STATUS'},
   { 'key': '1', 'description': 'REPLICATION.ENABLED'},
@@ -41,6 +43,8 @@ class SearchOption {
   status: string = '';
   startTime: string = '';
   endTime: string = '';
+  page: number = 1;
+  pageSize: number = 5;
 }
 
 @Component({
@@ -98,7 +102,8 @@ export class ReplicationComponent implements OnInit {
              this.changedPolicies = response;
              this.policies = this.changedPolicies;
              if(this.changedPolicies && this.changedPolicies.length > 0) {
-               this.fetchPolicyJobs(this.changedPolicies[0].id);
+               this.search.policyId = this.changedPolicies[0].id;
+               this.fetchPolicyJobs();
              } else {
                this.changedJobs = [];
              }
@@ -117,11 +122,11 @@ export class ReplicationComponent implements OnInit {
      this.createEditPolicyComponent.openCreateEditPolicy(policyId);
    }
 
-   fetchPolicyJobs(policyId: number) { 
-     this.search.policyId = policyId;
+   fetchPolicyJobs(state?: State) { 
      console.log('Received policy ID ' + this.search.policyId + ' by clicked row.');
      this.replicationService
-         .listJobs(this.search.policyId, this.search.status, this.search.repoName, this.search.startTime, this.search.endTime)
+         .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
+           this.search.startTime, this.search.endTime)
          .subscribe(
            response=>{
              this.changedJobs = response;
@@ -133,7 +138,8 @@ export class ReplicationComponent implements OnInit {
 
    selectOne(policy: Policy) {
      if(policy) {
-      this.fetchPolicyJobs(policy.id);
+      this.search.policyId = policy.id;
+      this.fetchPolicyJobs();
      }
    }
 
@@ -164,7 +170,7 @@ export class ReplicationComponent implements OnInit {
 
    doSearchJobs(repoName: string) {
      this.search.repoName = repoName;
-     this.fetchPolicyJobs(this.search.policyId);
+     this.fetchPolicyJobs();
    }
 
    reloadPolicies(isReady: boolean) {
@@ -178,7 +184,7 @@ export class ReplicationComponent implements OnInit {
    }
 
    refreshJobs() {
-     this.fetchPolicyJobs(this.search.policyId);
+     this.fetchPolicyJobs();
    }
 
    toggleSearchJobOptionalName(option: number) {
@@ -199,7 +205,7 @@ export class ReplicationComponent implements OnInit {
        break;
      }
      console.log('Search jobs filtered by time range, begin: ' + this.search.startTime + ', end:' + this.search.endTime);
-     this.fetchPolicyJobs(this.search.policyId);
+     this.fetchPolicyJobs();
    }
 
 }

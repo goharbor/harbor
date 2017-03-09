@@ -25,7 +25,7 @@ export class AuditLogService extends BaseService {
     super();
   }
 
-  listAuditLogs(queryParam: AuditLog): Observable<AuditLog[]> {
+  listAuditLogs(queryParam: AuditLog): Observable<any> {
     return this.http
       .post(`/api/projects/${queryParam.project_id}/logs/filter`, {
         begin_timestamp: queryParam.begin_timestamp,
@@ -35,7 +35,7 @@ export class AuditLogService extends BaseService {
         project_id: queryParam.project_id,
         username: queryParam.username
       })
-      .map(response => response.json() as AuditLog[])
+      .map(response => response)
       .catch(error => this.handleError(error));
   }
 

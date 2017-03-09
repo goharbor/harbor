@@ -1,10 +1,10 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-right">
-      <div class="col-xs-3 push-md-2 flex-xs-middle">
+      <div class="flex-xs-middle">
         <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
       </div>
-      <div class="col-xs-3 flex-xs-middle">
+      <div class="flex-xs-middle">
         <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
         <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
       </div>
@@ -26,20 +26,23 @@
         <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doSearchByTimeRange(toTime.value, 'end')">
       </div>
     </div>
-    <clr-datagrid>
+    <clr-datagrid (clrDgRefresh)="retrieve($event)">
       <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
-      <clr-dg-row *ngFor="let l of auditLogs">
+      <clr-dg-row *clrDgItems="let l of auditLogs">
         <clr-dg-cell>{{l.username}}</clr-dg-cell>
         <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
         <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
         <clr-dg-cell>{{l.operation}}</clr-dg-cell>
         <clr-dg-cell>{{l.op_time}}</clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{ (auditLogs ? auditLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
+      <clr-dg-footer>
+        {{(auditLogs ? auditLogs.length : 0)}} {{'AUDIT_LOG.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="auditLogs ? auditLogs.length : 0"></clr-dg-pagination>
+      </clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>
