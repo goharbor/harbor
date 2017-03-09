@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
@@ -453,7 +454,8 @@ func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID str
 
 //-------------------------Repositories Test---------------------------------------//
 //Return relevant repos of projectID
-func (a testapi) GetRepos(authInfo usrInfo, projectID, detail string) (int, error) {
+func (a testapi) GetRepos(authInfo usrInfo, projectID,
+	keyword, detail string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/"
@@ -463,14 +465,36 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, detail string) (int, erro
 	type QueryParams struct {
 		ProjectID string `url:"project_id"`
 		Detail    string `url:"detail"`
+		Keyword   string `url:"q"`
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{
 		ProjectID: projectID,
 		Detail:    detail,
+		Keyword:   keyword,
 	})
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if code == http.StatusOK {
+		if detail == "1" || detail == "true" {
+			repositories := []repoResp{}
+			if err = json.Unmarshal(body, &repositories); err != nil {
+				return 0, nil, err
+			}
+			return code, repositories, nil
+		}
+
+		repositories := []string{}
+		if err = json.Unmarshal(body, &repositories); err != nil {
+			return 0, nil, err
+		}
+		return code, repositories, nil
+	}
+
+	return code, nil, nil
 }
 
 //Get tags of a relevant repository
