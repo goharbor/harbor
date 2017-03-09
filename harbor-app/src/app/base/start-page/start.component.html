@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
+        <div class="card">
+            <div class="card-img">
+                <img src="../../../images/harbor-logo.png" alt="harbor-logo">
+            </div>
+            <div class="card-block">
+                <h3 class="card-title">Getting Start</h3>
+                <p class="card-text">
+                    {{'START_PAGE.GETTING_START' | translate}}
+                </p>
+            </div>
+            <div class="card-footer">
+                <a href="http://vmware.github.io/harbor/" target="_blank" class="btn btn-sm btn-link">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-8 col-xl-8">
+        <div class="card card-block">
+            <h3 class="card-title">Use Harbor from search</h3>
+            <span class="card-text" style="text-align: center">
+                <form class="search">
+                    <label for="search_start_input">
+      <clr-icon shape="search" size="24" class="search-icon is-highlight"></clr-icon>
+      <input #startSearchBox size="45" id="search_start_input" type="text" class="search-font" (keyup)="search(startSearchBox.value)" placeholder='{{"GLOBAL_SEARCH.PLACEHOLDER" | translate}}'>
+    </label>
+                </form>
+            </span>
+            <div style="height: 24px;"></div>
+        </div>
+        <statistics-panel></statistics-panel>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+        <div class="card card-block">
+            <h3 class="card-title">Popular Repositories</h3>
+            <list-repository [repositories]="topRepos"></list-repository>
+        </div>
+    </div>
+</div>

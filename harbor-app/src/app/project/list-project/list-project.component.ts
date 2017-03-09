@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
 import { SessionUser } from '../../shared/session-user';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-
+import { signInRoute } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-project',
@@ -35,8 +35,19 @@ export class ListProjectComponent implements OnInit {
   }
 
   goToLink(proId: number): void {
-    this.router.navigate(['/harbor', 'projects', proId, 'repository']);
     this.searchTrigger.closeSearch(false);
+    
+    let linkUrl = ['harbor', 'projects', proId, 'repository'];
+    if (!this.session.getCurrentUser()) {
+      let navigatorExtra: NavigationExtras = {
+        queryParams: { "redirect_url": linkUrl.join("/") }
+      };
+
+      this.router.navigate([signInRoute], navigatorExtra);
+    } else {
+      this.router.navigate(linkUrl);
+
+    }
   }
 
   toggleProject(p: Project) {

@@ -1,7 +1,8 @@
 {
     "SIGN_IN": {
         "REMEMBER": "Remember me",
-        "INVALID_MSG": "Invalid user name or password"
+        "INVALID_MSG": "Invalid user name or password",
+        "FORGOT_PWD": "Forgot password"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
@@ -182,7 +183,7 @@
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping target.",
         "NAME": "Name",
-        "PROJECT": "Project", 
+        "PROJECT": "Project",
         "NAME_IS_REQUIRED": "Name is required.",
         "DESCRIPTION": "Description",
         "ENABLE": "Enable",
@@ -316,6 +317,9 @@
         "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
+    },
+    "START_PAGE": {
+        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security."
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",

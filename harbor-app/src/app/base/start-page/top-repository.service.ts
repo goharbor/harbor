@@ -2,18 +2,18 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { SearchResults } from './search-results';
+import { TopRepo } from './top-repository';
 
-const searchEndpoint = "/api/search";
+export const topRepoEndpoint = "/api/repositories/top";
 /**
- * Declare service to handle the global search
+ * Declare service to handle the top repositories
  * 
  * 
  * @export
  * @class GlobalSearchService
  */
 @Injectable()
-export class GlobalSearchService {
+export class TopRepoService {
     private headers = new Headers({
         "Content-Type": 'application/json'
     });
@@ -24,18 +24,16 @@ export class GlobalSearchService {
     constructor(private http: Http) { }
 
     /**
-     * Search related artifacts with the provided keyword
+     * Get top popular repositories
      * 
      * @param {string} keyword
-     * @returns {Promise<SearchResults>}
+     * @returns {Promise<TopRepo>}
      * 
      * @memberOf GlobalSearchService
      */
-    doSearch(term: string): Promise<SearchResults> {
-        let searchUrl = searchEndpoint + "?q=" + term;
-
-        return this.http.get(searchUrl, this.options).toPromise()
-            .then(response => response.json() as SearchResults)
+    getTopRepos(): Promise<TopRepo[]> {
+        return this.http.get(topRepoEndpoint, this.options).toPromise()
+            .then(response => response.json() as TopRepo[])
             .catch(error => Promise.reject(error));
     }
 }

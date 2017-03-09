@@ -28,6 +28,11 @@ import { PortValidatorDirective } from './port.directive';
 import { PageNotFoundComponent } from './not-found/not-found.component';
 import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 
+import { AuthCheckGuard } from './route/auth-user-activate.service';
+
+import { StatisticsComponent } from './statictics/statistics.component';
+import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -46,7 +51,9 @@ import { AboutDialogComponent } from './about-dialog/about-dialog.component';
     CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
-    AboutDialogComponent
+    AboutDialogComponent,
+    StatisticsComponent,
+    StatisticsPanelComponent
   ],
   exports: [
     CoreModule,
@@ -62,7 +69,9 @@ import { AboutDialogComponent } from './about-dialog/about-dialog.component';
     CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
-    AboutDialogComponent
+    AboutDialogComponent,
+    StatisticsComponent,
+    StatisticsPanelComponent
   ],
   providers: [
     SessionService,
@@ -70,7 +79,8 @@ import { AboutDialogComponent } from './about-dialog/about-dialog.component';
     CookieService,
     DeletionDialogService,
     BaseRoutingResolver,
-    SystemAdminGuard]
+    SystemAdminGuard,
+    AuthCheckGuard]
 })
 export class SharedModule {
 

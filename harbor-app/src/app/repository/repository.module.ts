@@ -10,16 +10,16 @@ import { TagRepositoryComponent } from './tag-repository/tag-repository.componen
 import { RepositoryService } from './repository.service';
 
 @NgModule({
-  imports: [ 
+  imports: [
     SharedModule,
     RouterModule
   ],
-  declarations: [ 
+  declarations: [
     RepositoryComponent,
     ListRepositoryComponent,
     TagRepositoryComponent
   ],
-  exports: [ RepositoryComponent ],
-  providers: [ RepositoryService ]
+  exports: [RepositoryComponent, ListRepositoryComponent],
+  providers: [RepositoryService]
 })
-export class RepositoryModule {}
+export class RepositoryModule { }
