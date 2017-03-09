@@ -171,7 +171,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 
 	sql :=
 		`select distinct p.project_id, p.name, p.public, 
-			p.owner_id, p.creation_time, p.update_time, pm.role role
+			p.owner_id, p.creation_time, p.update_time
 		from project p 
 		left join project_member pm 
 		on p.project_id = pm.project_id 

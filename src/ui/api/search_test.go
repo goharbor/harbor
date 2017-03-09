@@ -28,7 +28,19 @@ func TestSearch(t *testing.T) {
 	}
 
 	//--------case 2 : Response Code  = 200, sysAdmin and search repo--------//
-	httpStatusCode, result, err = apiTest.SearchGet("docker", *admin)
+	httpStatusCode, result, err = apiTest.SearchGet("library", *admin)
+	if err != nil {
+		t.Error("Error while search project or repository", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal("library", result.Repositories[0].ProjectName, "Project name should be library")
+		assert.Equal("library/docker", result.Repositories[0].RepositoryName, "Repository  name should be library/docker")
+		assert.Equal(int32(1), result.Repositories[0].ProjectPublic, "Project public status should be 1 (true)")
+	}
+
+	//--------case 3 : Response Code  = 200, normal user and search repo--------//
+	httpStatusCode, result, err = apiTest.SearchGet("library", *testUser)
 	if err != nil {
 		t.Error("Error while search project or repository", err.Error())
 		t.Log(err)

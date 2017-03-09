@@ -73,30 +73,36 @@ func (s *SearchAPI) Get() {
 	sort.Sort(projectSorter)
 	projectResult := []models.Project{}
 	for _, p := range projects {
-		match := true
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
-			match = false
+			continue
 		}
-		if match {
-			if userID != dao.NonExistUserID {
-				if isSysAdmin {
-					p.Role = models.PROJECTADMIN
+
+		if userID != dao.NonExistUserID {
+			if isSysAdmin {
+				p.Role = models.PROJECTADMIN
+			} else {
+				roles, err := dao.GetUserProjectRoles(userID, p.ProjectID)
+				if err != nil {
+					log.Errorf("failed to get user's project role: %v", err)
+					s.CustomAbort(http.StatusInternalServerError, "")
 				}
-				if p.Role == models.PROJECTADMIN {
-					p.Togglable = true
-				}
+				p.Role = roles[0].RoleID
 			}
 
-			repos, err := dao.GetRepositoryByProjectName(p.Name)
-			if err != nil {
-				log.Errorf("failed to get repositories of project %s: %v", p.Name, err)
-				s.CustomAbort(http.StatusInternalServerError, "")
+			if p.Role == models.PROJECTADMIN {
+				p.Togglable = true
 			}
-
-			p.RepoCount = len(repos)
-
-			projectResult = append(projectResult, p)
 		}
+
+		repos, err := dao.GetRepositoryByProjectName(p.Name)
+		if err != nil {
+			log.Errorf("failed to get repositories of project %s: %v", p.Name, err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		p.RepoCount = len(repos)
+
+		projectResult = append(projectResult, p)
 	}
 
 	repositoryResult, err := filterRepositories(projects, keyword)
