@@ -8,8 +8,11 @@ import { State } from 'clarity-angular';
 })
 export class ListJobComponent {
   @Input() jobs: Job[];
-  @Input() pageSize: number;
+  @Input() totalRecordCount: number;
+  @Input() totalPage: number;
   @Output() paginate = new EventEmitter<State>();
+
+  pageOffset: number = 1;
 
   refresh(state: State) {
     if(this.jobs) {

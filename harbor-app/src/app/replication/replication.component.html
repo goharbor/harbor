@@ -43,6 +43,6 @@
         <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doJobSearchByTimeRange(toTime.value, 'end')">
       </div>
     </div>
-    <list-job [jobs]="changedJobs" [pageSize]="search.pageSize" (paginate)="fetchPolicyJobs($event)"></list-job>     
+    <list-job [jobs]="changedJobs" [totalPage]="jobsTotalPage" [totalRecordCount]="jobsTotalRecordCount" (paginate)="fetchPolicyJobs($event)"></list-job>     
   </div>
 </div>
