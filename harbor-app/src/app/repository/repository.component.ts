@@ -31,7 +31,11 @@ export class RepositoryComponent implements OnInit {
   currentRepositoryType: {};
   lastFilteredRepoName: string;
 
-  pageSize: number = 5;
+  page: number = 1;
+  pageSize: number = 15;
+
+  totalPage: number;
+  totalRecordCount: number;
 
   subscription: Subscription;
 
@@ -73,10 +77,18 @@ export class RepositoryComponent implements OnInit {
   }
 
   retrieve(state?: State) {
+    if(state) {
+      this.page = state.page.to + 1;
+    }
     this.repositoryService
-        .listRepositories(this.projectId, this.lastFilteredRepoName)
+        .listRepositories(this.projectId, this.lastFilteredRepoName, this.page, this.pageSize)
         .subscribe(
-          response=>this.changedRepositories=response,
+          response=>{
+            this.totalRecordCount = response.headers.get('x-total-count');
+            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
+            this.changedRepositories=response.json();
+          },
           error=>this.messageService.announceMessage(error.status, 'Failed to list repositories.', AlertType.DANGER)
         );
   }

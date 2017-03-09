@@ -70,6 +70,9 @@ export class ReplicationComponent implements OnInit {
    policies: Policy[];
    jobs: Job[];
 
+   jobsTotalRecordCount: number;
+   jobsTotalPage: number;
+
    toggleJobSearchOption = optionalSearch;
    currentJobSearchOption: number;
 
@@ -123,13 +126,18 @@ export class ReplicationComponent implements OnInit {
    }
 
    fetchPolicyJobs(state?: State) { 
+     if(state) {
+       this.search.page = state.page.to + 1;
+     }
      console.log('Received policy ID ' + this.search.policyId + ' by clicked row.');
      this.replicationService
          .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
-           this.search.startTime, this.search.endTime)
+           this.search.startTime, this.search.endTime, this.search.page, this.search.pageSize)
          .subscribe(
            response=>{
-             this.changedJobs = response;
+             this.jobsTotalRecordCount = response.headers.get('x-total-count');
+             this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
+             this.changedJobs = response.json();
              this.jobs = this.changedJobs;
            },
            error=>this.messageService.announceMessage(error.status, 'Failed to fetch jobs with policy ID:' + this.search.policyId, AlertType.DANGER)

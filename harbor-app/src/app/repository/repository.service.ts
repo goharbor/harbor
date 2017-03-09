@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { Http, URLSearchParams } from '@angular/http';
 
 import { Repository } from './repository';
 import { Observable } from 'rxjs/Observable'
@@ -9,11 +9,14 @@ export class RepositoryService {
   
   constructor(private http: Http){}
 
-  listRepositories(projectId: number, repoName: string): Observable<Repository[]> {
+  listRepositories(projectId: number, repoName: string, page?: number, pageSize?: number): Observable<any> {
     console.log('List repositories with project ID:' + projectId);
+    let params = new URLSearchParams();
+    params.set('page', page + '');
+    params.set('page_size', pageSize + '');
     return this.http
-               .get(`/api/repositories?project_id=${projectId}&q=${repoName}&detail=1`)
-               .map(response=>response.json() as Repository[])
+               .get(`/api/repositories?project_id=${projectId}&q=${repoName}&detail=1`, {search: params})
+               .map(response=>response)
                .catch(error=>Observable.throw(error));
   }
 

@@ -17,11 +17,13 @@ export class ListRepositoryComponent {
   @Input() repositories: Repository[];
   @Output() delete = new EventEmitter<string>();
 
-  @Input() total: number;
-  @Input() pageSize: number;
+  @Input() totalPage: number;
+  @Input() totalRecordCount: number;
   @Output() paginate = new EventEmitter<State>();
 
-constructor(
+  pageOffset: number = 1;
+
+  constructor(
     private router: Router,
     private searchTrigger: SearchTriggerService,
     private session: SessionService) { }

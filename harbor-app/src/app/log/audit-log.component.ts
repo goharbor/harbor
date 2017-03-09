@@ -52,8 +52,11 @@ export class AuditLogComponent implements OnInit {
     new FilterOption('others', 'AUDIT_LOG.OTHERS', true) 
  ];
 
-  pageSize: number = 5;
-
+  pageOffset: number = 1;
+  pageSize: number = 15;
+  totalRecordCount: number;
+  totalPage: number;
+  
   constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageService: MessageService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['auditLogResolver']);    
@@ -63,13 +66,20 @@ export class AuditLogComponent implements OnInit {
     this.projectId = +this.route.snapshot.parent.params['id'];
     console.log('Get projectId from route params snapshot:' + this.projectId);
     this.queryParam.project_id = this.projectId;
+    this.queryParam.page_size = this.pageSize;
   }
 
   retrieve(state?: State): void {
+    if(state) {
+      this.queryParam.page = state.page.to + 1;
+    }
     this.auditLogService
         .listAuditLogs(this.queryParam)
         .subscribe(
           response=>{
+            this.totalRecordCount = response.headers.get('x-total-count');
+            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
             this.auditLogs = response.json();
           },
           error=>{

@@ -27,7 +27,7 @@ export class AuditLogService extends BaseService {
 
   listAuditLogs(queryParam: AuditLog): Observable<any> {
     return this.http
-      .post(`/api/projects/${queryParam.project_id}/logs/filter`, {
+      .post(`/api/projects/${queryParam.project_id}/logs/filter?page=${queryParam.page}&page_size=${queryParam.page_size}`, {
         begin_timestamp: queryParam.begin_timestamp,
         end_timestamp: queryParam.end_timestamp,
         keywords: queryParam.keywords,

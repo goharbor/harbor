@@ -8,6 +8,8 @@ import { SessionUser } from '../../shared/session-user';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { signInRoute } from '../../shared/shared.const';
 
+import { State } from 'clarity-angular';
+
 @Component({
   selector: 'list-project',
   templateUrl: 'list-project.component.html'
@@ -15,6 +17,13 @@ import { signInRoute } from '../../shared/shared.const';
 export class ListProjectComponent implements OnInit {
 
   @Input() projects: Project[];
+
+
+  @Input() totalPage: number;
+  @Input() totalRecordCount: number;
+  pageOffset: number = 1;
+
+  @Output() paginate = new EventEmitter<State>();
 
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
@@ -48,6 +57,10 @@ export class ListProjectComponent implements OnInit {
       this.router.navigate(linkUrl);
 
     }
+  }
+
+  refresh(state: State) {
+    this.paginate.emit(state);
   }
 
   toggleProject(p: Project) {
