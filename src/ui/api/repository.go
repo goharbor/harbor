@@ -554,7 +554,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	if err != nil {
 		log.Warningf("Error when getting username: %v", err)
 	}
-	targets, err := notary.GetTargets(username, fqRepo)
+	targets, err := notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")

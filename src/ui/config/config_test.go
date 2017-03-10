@@ -120,4 +120,24 @@ func TestConfig(t *testing.T) {
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
 	}
+	if InternalNotaryEndpoint() != "http://notary-server:4443" {
+		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
+	}
+	if WithNotary() {
+		t.Errorf("Withnotary should be false")
+	}
+	if !WithAdmiral() {
+		t.Errorf("WithAdmiral should be true")
+	}
+	if AdmiralEndpoint() != "http://www.vmware.com" {
+		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
+	}
+
+	extURL, err := ExtURL()
+	if err != nil {
+		t.Errorf("Unexpected error getting external URL: %v", err)
+	}
+	if extURL != "host01.com" {
+		t.Errorf(`extURL should be "host01.com".`)
+	}
 }

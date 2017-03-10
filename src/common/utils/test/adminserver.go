@@ -58,6 +58,8 @@ var adminServerDefaultConfig = map[string]interface{}{
 	config.CfgExpiration:              5,
 	config.UseCompressedJS:            true,
 	config.AdminInitialPassword:       "password",
+	config.AdmiralEndpoint:            "http://www.vmware.com",
+	config.WithNotary:                 false,
 }
 
 // NewAdminserver returns a mock admin server

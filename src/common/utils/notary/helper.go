@@ -28,7 +28,6 @@ import (
 )
 
 var (
-	notaryEndpoint  = "http://notary-server:4443"
 	notaryCachePath = "/root/notary"
 	trustPin        trustpinning.TrustPinConfig
 	mockRetriever   notary.PassRetriever
@@ -55,7 +54,7 @@ func init() {
 // GetTargets is a help function called by API to fetch signature information of a given repository.
 // Per docker's convention the repository should contain the information of endpoint, i.e. it should look
 // like "10.117.4.117/library/ubuntu", instead of "library/ubuntu" (fqRepo for fully-qualified repo)
-func GetTargets(username string, fqRepo string) ([]Target, error) {
+func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target, error) {
 	res := []Target{}
 	authorizer := auth.NewNotaryUsernameTokenAuthorizer(username, "repository", fqRepo, "pull")
 	store, err := auth.NewAuthorizerStore(strings.Split(notaryEndpoint, "//")[1], true, authorizer)
