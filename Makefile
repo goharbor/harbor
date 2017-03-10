@@ -264,18 +264,24 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
-			  --exclude=$(HARBORPKG)/checkenv.sh \
-			  --exclude=$(HARBORPKG)/jsminify.sh \
-			  --exclude=$(HARBORPKG)/pushimage.sh \
-			  $(HARBORPKG)
-			
+
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME); \
+	else \
+		$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/harbor.cfg ; \
+	fi
+						
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-	
+		
 package_offline: compile build modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
@@ -313,16 +319,21 @@ package_offline: compile build modify_composefile
 		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
 	fi
 	
-	@$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/common/log --exclude=$(HARBORPKG)/ubuntu \
-			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
-			  --exclude=$(HARBORPKG)/checkenv.sh \
-			  --exclude=$(HARBORPKG)/jsminify.sh \
-			  --exclude=$(HARBORPKG)/pushimage.sh \
-			  $(HARBORPKG)
-	
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
+	else \
+		$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
+				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
+	fi
+
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
