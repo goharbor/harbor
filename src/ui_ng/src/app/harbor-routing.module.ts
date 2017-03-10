@@ -14,6 +14,7 @@ import { DestinationComponent } from './replication/destination/destination.comp
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
 import { RepositoryComponent } from './repository/repository.component';
+import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
 import { ReplicationComponent } from './replication/replication.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
@@ -26,6 +27,7 @@ import { ResetPasswordComponent } from './account/password/reset-password.compon
 import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
+import { SearchStartComponent } from './base/global-search/search-start.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor', pathMatch: 'full' },
@@ -39,6 +41,10 @@ const harborRoutes: Routes = [
       authResolver: BaseRoutingResolver
     },
     children: [
+      {
+        path: '',
+        component: SearchStartComponent
+      },
       {
         path: 'projects',
         component: ProjectComponent
@@ -66,6 +72,10 @@ const harborRoutes: Routes = [
             component: DestinationComponent
           }
         ]
+      },
+      {
+        path: 'tags/:id/:repo',
+        component: TagRepositoryComponent
       },
       {
         path: 'projects/:id',

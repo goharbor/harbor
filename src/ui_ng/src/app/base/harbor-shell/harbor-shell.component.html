@@ -1,11 +1,11 @@
 <clr-main-container>
     <global-message [isAppLevel]="true"></global-message>
-    <navigator (showAccountSettingsModal)="openModal($event)" (searchEvt)="doSearch($event)" (showPwdChangeModal)="openModal($event)"></navigator>
+    <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
-            <search-result (closeEvt)="searchClose($event)"></search-result>
+            <search-result></search-result>
             <router-outlet></router-outlet>
         </div>
         <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>

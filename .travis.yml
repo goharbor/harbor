@@ -87,6 +87,7 @@ script:
   - cd tests
   - sudo ./ldapprepare.sh 
   - cd .. 
+  - go test -i ./src/ui ./src/adminserver ./src/jobservice
   - ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 

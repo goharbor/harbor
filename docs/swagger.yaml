@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: Harbor API
@@ -684,11 +682,11 @@ paths:
         - Products
       responses:
         200:
-          description: Searched for respositories successfully.
+          description: If detail is false, the response body is a string array which contains the names of repositories, or the response body contains an object array as described in schema.
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/Repository'
           headers:
             X-Total-Count:
               description: The total count of repositories
@@ -743,15 +741,20 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: If detail is true, the manifests is returned too.
       tags:
        - Products
       responses:
         200:
-          description: Retrieved tags from a relevant repository successfully.
+          description: If detail is false, the response body is a string array, or the response body contains the manifest informations as described in schema.
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/DetailedTag'
         500:
           description: Unexpected internal errors.
   /repositories/manifests:
@@ -781,11 +784,37 @@ paths:
         200:
           description: Retrieved manifests from a relevant repository successfully.
           schema:
-            $ref: '#/definitions/Repository'
+            $ref: '#/definitions/Manifest'
         404:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
+  /repositories/signatures:
+    get:
+      summary: Get signature information of a repository
+      description: |
+        This endpoint aims to retrieve signature information of a repository, the data is
+        from the nested notary instance of Harbor.
+        If the repository does not have any signature information in notary, this API will
+        return an empty list with response code 200, instead of 404
+      parameters:
+        - name: repo_name
+          in: query
+          type: string
+          required: true
+          description: repository name.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Retrieved signatures.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepoSignature'
+        500:
+          description: Server side error.
+      
   /repositories/top:
     get:
       summary: Get public repositories which are accessed most.
@@ -1589,7 +1618,7 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
-  Repository:
+  Manifest:
     type: object
     properties:
       manifest:
@@ -2025,3 +2054,54 @@ definitions:
       email_identity:
         type: string
         description: The dentity of email server.
+  RepoSignature:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The tag of image.
+      hashes:
+        type: object
+        description: The JSON object of the hash of the image.
+  DetailedTag:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The tag of image.
+      manifest:
+        type: object
+        description: The detail of manifest.
+  Repository:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The ID of repository.
+      name:
+        type: string
+        description: The name of repository.
+      owner_id:
+        type: integer
+        description: The owner ID of repository.
+      project_id:
+        type: integer
+        description: The project ID of repository.
+      description:
+        type: string
+        description: The description of repository.
+      pull_count:
+        type: integer
+        description: The pull count of repository.
+      star_count:
+        type: integer
+        description: The star count of repository.
+      tags_count:
+        type: integer
+        description: The tags count of repository.
+      creation_time:
+        type: string
+        description: The creation time of repository.
+      update_time:
+        type: string
+        description: The update time of repository.

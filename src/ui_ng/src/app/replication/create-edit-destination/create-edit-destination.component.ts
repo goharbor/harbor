@@ -6,6 +6,7 @@ import { AlertType, ActionType } from '../../shared/shared.const';
 
 import { Target } from '../target';
 
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'create-edit-destination',
@@ -13,6 +14,7 @@ import { Target } from '../target';
 })
 export class CreateEditDestinationComponent {
 
+  modalTitle: string;
   createEditDestinationOpened: boolean;
 
   errorMessageOpened: boolean;
@@ -30,7 +32,8 @@ export class CreateEditDestinationComponent {
   
   constructor(
     private replicationService: ReplicationService,
-    private messageService: MessageService) {}
+    private messageService: MessageService,
+    private translateService: TranslateService) {}
 
   openCreateEditTarget(targetId?: number) {
     this.target = new Target();
@@ -46,20 +49,22 @@ export class CreateEditDestinationComponent {
 
     if(targetId) {
       this.actionType = ActionType.EDIT;
+      this.translateService.get('DESTINATION.TITLE_EDIT').subscribe(res=>this.modalTitle=res);
       this.replicationService
           .getTarget(targetId)
           .subscribe(
             target=>this.target=target,
             error=>this.messageService
-                       .announceMessage(error.status, 'Failed to get target with ID:' + targetId, AlertType.DANGER)
+                       .announceMessage(error.status, 'DESTINATION.FAILED_TO_GET_TARGET', AlertType.DANGER)
           );
     } else {
       this.actionType = ActionType.ADD_NEW;
+      this.translateService.get('DESTINATION.TITLE_ADD').subscribe(res=>this.modalTitle=res);
     }
   }
 
   testConnection() {
-    this.pingTestMessage = 'Testing connection...';
+    this.translateService.get('DESTINATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
     this.pingStatus = true;
     this.testOngoing = !this.testOngoing;
     this.replicationService
@@ -67,12 +72,12 @@ export class CreateEditDestinationComponent {
         .subscribe(
           response=>{
             this.pingStatus = true;
-            this.pingTestMessage = 'Connection tested successfully.';
+            this.translateService.get('DESTINATION.TEST_CONNECTION_SUCCESS').subscribe(res=>this.pingTestMessage=res);
             this.testOngoing = !this.testOngoing;
           },
           error=>{
             this.pingStatus = false;
-            this.pingTestMessage = 'Failed to ping target.';
+            this.translateService.get('DESTINATION.TEST_CONNECTION_FAILURE').subscribe(res=>this.pingTestMessage=res);
             this.testOngoing = !this.testOngoing;
           }
         )
@@ -94,9 +99,23 @@ export class CreateEditDestinationComponent {
             },
             error=>{
               this.errorMessageOpened = true;
-              this.errorMessage = 'Failed to add target:' + error;
-              this.messageService
-                      .announceMessage(error.status, this.errorMessage, AlertType.DANGER);
+              let errorMessageKey = '';
+              switch(error.status) {
+              case 409:
+                errorMessageKey = 'DESTINATION.CONFLICT_NAME';
+                break;
+              case 400:
+                errorMessageKey = 'DESTINATION.INVALID_NAME';
+                break;
+              default:
+                errorMessageKey = 'UNKNOWN_ERROR';
+              }
+              this.translateService
+                  .get(errorMessageKey)
+                  .subscribe(res=>{
+                    this.errorMessage = res;
+                    this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
+                  });
             }
           );
         break;
@@ -112,8 +131,23 @@ export class CreateEditDestinationComponent {
             error=>{
               this.errorMessageOpened = true;
               this.errorMessage = 'Failed to update target:' + error;
-              this.messageService
-                      .announceMessage(error.status, this.errorMessage, AlertType.DANGER);
+              let errorMessageKey = '';
+              switch(error.status) {
+              case 409:
+                errorMessageKey = 'DESTINATION.CONFLICT_NAME';
+                break;
+              case 400:
+                errorMessageKey = 'DESTINATION.INVALID_NAME';
+                break;
+              default:
+                errorMessageKey = 'UNKNOWN_ERROR';
+              }
+              this.translateService
+                  .get(errorMessageKey)
+                  .subscribe(res=>{
+                    this.errorMessage = res;
+                    this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
+                  });
             }
           );
         break;

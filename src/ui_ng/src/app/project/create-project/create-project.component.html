@@ -15,10 +15,10 @@
           <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="20" required minlength="2" #projectName="ngModel">
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.required && (projectName.dirty || projectName.touched)">
-              Project name is required.
+              {{'PROJECT.NAME_IS_REQUIRED' | translate}}
             </span>
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.minlength && (projectName.dirty || projectName.touched)">
-              Minimum length of project name is 2 characters.
+              {{'PROJECT.NAME_MINIMUM_LENGTH' | translate}}
             </span>
           </label>
         </div>

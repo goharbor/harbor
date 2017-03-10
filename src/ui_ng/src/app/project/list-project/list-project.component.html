@@ -1,27 +1,27 @@
 <clr-datagrid>
-  <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
-  <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'PROJECT.DESCRIPTION' | translate}}</clr-dg-column> 
-  <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p">
-    <!--<clr-dg-action-overflow>
+    <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.DESCRIPTION' | translate}}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p">
+        <!--<clr-dg-action-overflow>
       <button class="action-item" (click)="onEdit(p)">Edit</button>
       <button class="action-item" (click)="onDelete(p)">Delete</button>
     </clr-dg-action-overflow>-->
-    <clr-dg-cell><a [routerLink]="['/harbor', 'projects', p.project_id, 'repository']" >{{p.name}}</a></clr-dg-cell>
-    <clr-dg-cell>{{ (p.public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
-    <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
-    <clr-dg-cell>
-      {{p.description}}
-      <harbor-action-overflow>
-        <a href="javascript:void(0)" class="dropdown-item">{{'PROJECT.NEW_POLICY' | translate}}</a>
-        <a href="javascript:void(0)" class="dropdown-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </a>
-        <div class="dropdown-divider"></div>
-        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</a>
-      </harbor-action-overflow>
-    </clr-dg-cell>
-  </clr-dg-row>
-  <clr-dg-footer>{{ (projects ? projects.length : 0) }} {{'PROJECT.ITEMS' | translate}}</clr-dg-footer>
+        <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
+        <clr-dg-cell>{{ (p.public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
+        <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{p.description}}
+            <harbor-action-overflow *ngIf="isSessionValid">
+                <a href="javascript:void(0)" class="dropdown-item">{{'PROJECT.NEW_POLICY' | translate}}</a>
+                <a href="javascript:void(0)" class="dropdown-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </a>
+                <div class="dropdown-divider"></div>
+                <a href="javascript:void(0)" class="dropdown-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</a>
+            </harbor-action-overflow>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>{{ (projects ? projects.length : 0) }} {{'PROJECT.ITEMS' | translate}}</clr-dg-footer>
 </clr-datagrid>

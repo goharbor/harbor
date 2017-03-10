@@ -1,0 +1,24 @@
+<a [routerLink]="['/harbor', 'projects', projectId, 'repository']">&lt; {{'REPOSITORY.REPOSITORIES' | translate}}</a>
+<h2>{{repoName}} <span class="badge">{{tags ? tags.length : 0}}</span></h2>
+<clr-datagrid>
+   <clr-dg-column>{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.VERIFIED' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
+   <clr-dg-row *ngFor="let t of tags">
+     <clr-dg-cell></clr-dg-cell>
+     <clr-dg-cell></clr-dg-cell>
+     <clr-dg-cell>
+       <harbor-action-overflow>
+         <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.SHOW_DETAILS'}}</a>
+         <div class="dropdown-divider"></div>
+         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteTag(t.name)">{{'REPOSITORY.DELETE' | translate}}</a>
+       </harbor-action-overflow>
+      </clr-dg-cell>
+    </clr-dg-row>
+  <clr-dg-footer>{{tags ? tags.length : 0}} {{'REPOSITORY.ITEMS' | translate}}</clr-dg-footer>
+</clr-datagrid>

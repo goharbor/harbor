@@ -1,5 +1,5 @@
 <clr-modal [(clrModalOpen)]="createEditDestinationOpened">
-  <h3 class="modal-title">New Endpoint</h3>
+  <h3 class="modal-title">{{modalTitle}}</h3>
   <div class="modal-body">
     <form #targetForm="ngForm">
       <section class="form-block">
@@ -11,29 +11,29 @@
           </div>
         </clr-alert>
         <div class="form-group">
-          <label for="destination_name" class="col-md-4">Destination name<span style="color: red">*</span></label>
+          <label for="destination_name" class="col-md-4">{{ 'DESTINATION.NAME' | translate }}<span style="color: red">*</span></label>
           <label class="col-md-8" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
-            <input type="text" id="destination_name" [(ngModel)]="target.name" name="targetName" size="20" #targetName="ngModel" value="" required> 
+            <input type="text" id="destination_name" [disabled]="testOngoing" [(ngModel)]="target.name" name="targetName" size="20" #targetName="ngModel" value="" required> 
             <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
-              Destination name is required.
+              {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}
             </span>
           </label>
         </div>
         <div class="form-group">
-          <label for="destination_url" class="col-md-4">Destination URL<span style="color: red">*</span></label>
+          <label for="destination_url" class="col-md-4">{{ 'DESTINATION.URL' | translate }}<span style="color: red">*</span></label>
           <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)" [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
             <input type="text" id="destination_url" [disabled]="testOngoing" [(ngModel)]="target.endpoint" size="20" name="endpointUrl" #targetEndpoint="ngModel" required>
             <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
-              Destination URL is required.
+              {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
             </span>
           </label>
         </div>
         <div class="form-group">
-          <label for="destination_username" class="col-md-4">Username</label>
+          <label for="destination_username" class="col-md-4">{{ 'DESTINATION.USERNAME' | translate }}</label>
           <input type="text" class="col-md-8" id="destination_username" [disabled]="testOngoing" [(ngModel)]="target.username" size="20" name="username" #username="ngModel">
         </div>
         <div class="form-group">
-          <label for="destination_password" class="col-md-4">Password</label>
+          <label for="destination_password" class="col-md-4">{{ 'DESTINATION.PASSWORD' | translate }}</label>
           <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [(ngModel)]="target.password" size="20" name="password" #password="ngModel">
         </div>
         <div class="form-group">
@@ -45,8 +45,8 @@
     </form>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || targetEndpoint.errors">Test Connection</button>
-      <button type="button" class="btn btn-outline" (click)="createEditDestinationOpened = false">Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="!targetForm.form.valid" (click)="onSubmit()">Ok</button>
+      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || targetEndpoint.errors">{{ 'DESTINATION.TEST_CONNECTION' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="createEditDestinationOpened = false"  [disabled]="testOngoing">{{ 'BUTTON.CANCEL' | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!targetForm.form.valid" (click)="onSubmit()"  [disabled]="testOngoing">{{ 'BUTTON.OK' | translate }}</button>
   </div>
 </clr-modal>
