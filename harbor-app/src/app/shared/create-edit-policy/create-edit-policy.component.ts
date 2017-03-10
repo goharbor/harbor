@@ -99,10 +99,14 @@ export class CreateEditPolicyComponent implements OnInit {
   newDestination(checkedAddNew: boolean): void {
     console.log('CheckedAddNew:' + checkedAddNew);
     this.isCreateDestination = checkedAddNew;
-    this.createEditPolicy.targetName = '';
-    this.createEditPolicy.endpointUrl = '';
-    this.createEditPolicy.username = '';
-    this.createEditPolicy.password = '';
+    if(this.isCreateDestination) {
+      this.createEditPolicy.targetName = '';
+      this.createEditPolicy.endpointUrl = '';
+      this.createEditPolicy.username = '';
+      this.createEditPolicy.password = '';
+    } else {
+      this.prepareTargets();
+    }
   }
 
   selectTarget(): void {

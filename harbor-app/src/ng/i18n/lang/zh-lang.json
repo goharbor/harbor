@@ -132,7 +132,7 @@
         "PROJECTS": "项目"
     },
     "MEMBER": {
-        "NEW_MEMBER": "新增成员",
+        "NEW_MEMBER": "新建成员",
         "NAME": "姓名",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
@@ -167,7 +167,8 @@
         "FILTER_PLACEHOLDER": "过滤日志"
     },
     "REPLICATION": {
-        "REPLICATION_RULES": "复制",
+        "REPLICATION_RULE": "复制策略",
+        "NEW_REPLICATION_RULE": "新建策略",
         "ENDPOINTS": "目标",
         "FILTER_POLICIES_PLACEHOLDER": "过滤策略",
         "FILTER_JOBS_PLACEHOLDER": "过滤任务",
@@ -176,7 +177,7 @@
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
-        "ADD_POLICY": "新增策略",
+        "ADD_POLICY": "新建策略",
         "EDIT_POLICY": "修改策略",
         "DELETE_POLICY": "删除策略",
         "TEST_CONNECTION": "测试连接",
@@ -196,7 +197,6 @@
         "DESTINATION_URL_IS_REQUIRED": "目标URL为必填项。",
         "DESTINATION_USERNAME": "用户名",
         "DESTINATION_PASSWORD": "密码",
-        "REPLICATION_RULE": "创建策略",
         "ALL_STATUS": "所有状态",
         "ENABLED": "启用",
         "DISABLED": "停用",
@@ -221,7 +221,7 @@
         "ITEMS": "条记录"
     },
     "DESTINATION": {
-        "ENDPOINT": "目标",
+        "NEW_ENDPOINT": "新建目标",
         "NAME": "目标名",
         "NAME_IS_REQUIRED": "目标名为必填项。",
         "URL": "目标URL",

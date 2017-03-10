@@ -66,6 +66,7 @@ export class ReplicationComponent implements OnInit {
 
    changedPolicies: Policy[];
    changedJobs: Job[];
+   initSelectedId: number;
 
    policies: Policy[];
    jobs: Job[];
@@ -103,6 +104,9 @@ export class ReplicationComponent implements OnInit {
          .subscribe(
            response=>{
              this.changedPolicies = response;
+             if(this.changedPolicies && this.changedPolicies.length > 0) {
+               this.initSelectedId = this.changedPolicies[0].id;
+             }
              this.policies = this.changedPolicies;
              if(this.changedPolicies && this.changedPolicies.length > 0) {
                this.search.policyId = this.changedPolicies[0].id;
