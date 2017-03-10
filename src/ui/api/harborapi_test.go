@@ -498,7 +498,8 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID,
 }
 
 //Get tags of a relevant repository
-func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, error) {
+func (a testapi) GetReposTags(authInfo usrInfo, repoName,
+	detail string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/tags"
@@ -507,11 +508,35 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, error) {
 
 	type QueryParams struct {
 		RepoName string `url:"repo_name"`
+		Detail   string `url:"detail"`
 	}
 
-	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName})
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
+	_sling = _sling.QueryStruct(&QueryParams{
+		RepoName: repoName,
+		Detail:   detail,
+	})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if httpStatusCode != http.StatusOK {
+		return httpStatusCode, body, nil
+	}
+
+	if detail == "true" || detail == "1" {
+		result := []detailedTagResp{}
+		if err := json.Unmarshal(body, &result); err != nil {
+			return 0, nil, err
+		}
+		return http.StatusOK, result, nil
+	}
+
+	result := []string{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return http.StatusOK, result, nil
 }
 
 //Get manifests of a relevant repository

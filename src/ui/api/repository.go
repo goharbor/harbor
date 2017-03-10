@@ -58,6 +58,16 @@ type repoResp struct {
 	UpdateTime   time.Time `json:"update_time"`
 }
 
+type detailedTagResp struct {
+	Tag      string      `json:"tag"`
+	Manifest interface{} `json:"manifest"`
+}
+
+type manifestResp struct {
+	Manifest interface{} `json:"manifest"`
+	Config   interface{} `json:"config,omitempty" `
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
@@ -259,6 +269,7 @@ func (ra *RepositoryAPI) GetTags() {
 	if len(repoName) == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
 	}
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
 
 	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
@@ -294,8 +305,34 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 	}
 
-	ra.Data["json"] = tags
+	if !detail {
+		ra.Data["json"] = tags
+		ra.ServeJSON()
+		return
+	}
+
+	result := []detailedTagResp{}
+
+	for _, tag := range tags {
+		manifest, err := getManifest(client, tag, "v1")
+		if err != nil {
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+			}
+
+			log.Errorf("failed to get manifest of %s:%s: %v", repoName, tag, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
+
+		result = append(result, detailedTagResp{
+			Tag:      tag,
+			Manifest: manifest.Manifest,
+		})
+	}
+
+	ra.Data["json"] = result
 	ra.ServeJSON()
+
 }
 
 func listTag(client *registry.Repository) ([]string, error) {
@@ -312,6 +349,8 @@ func listTag(client *registry.Repository) ([]string, error) {
 			regErr.StatusCode == http.StatusNotFound {
 			return tags, nil
 		}
+
+		return nil, err
 	}
 
 	tags = append(tags, ts...)
@@ -362,20 +401,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	result := struct {
-		Manifest interface{} `json:"manifest"`
-		Config   interface{} `json:"config,omitempty" `
-	}{}
-
-	mediaTypes := []string{}
-	switch version {
-	case "v1":
-		mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
-	case "v2":
-		mediaTypes = append(mediaTypes, schema2.MediaTypeManifest)
-	}
-
-	_, mediaType, payload, err := rc.PullManifest(tag, mediaTypes)
+	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
 		if regErr, ok := err.(*registry_error.Error); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
@@ -385,33 +411,50 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
+	ra.Data["json"] = manifest
+	ra.ServeJSON()
+}
+
+func getManifest(client *registry.Repository,
+	tag, version string) (*manifestResp, error) {
+	result := &manifestResp{}
+
+	mediaTypes := []string{}
+	switch version {
+	case "v1":
+		mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
+	case "v2":
+		mediaTypes = append(mediaTypes, schema2.MediaTypeManifest)
+	}
+
+	_, mediaType, payload, err := client.PullManifest(tag, mediaTypes)
+	if err != nil {
+		return nil, err
+	}
+
 	manifest, _, err := registry.UnMarshal(mediaType, payload)
 	if err != nil {
-		log.Errorf("an error occurred while parsing manifest of %s:%s: %v", repoName, tag, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		return nil, err
 	}
 
 	result.Manifest = manifest
 
 	deserializedmanifest, ok := manifest.(*schema2.DeserializedManifest)
 	if ok {
-		_, data, err := rc.PullBlob(deserializedmanifest.Target().Digest.String())
+		_, data, err := client.PullBlob(deserializedmanifest.Target().Digest.String())
 		if err != nil {
-			log.Errorf("failed to get config of manifest %s:%s: %v", repoName, tag, err)
-			ra.CustomAbort(http.StatusInternalServerError, "")
+			return nil, err
 		}
 
 		b, err := ioutil.ReadAll(data)
 		if err != nil {
-			log.Errorf("failed to read config of manifest %s:%s: %v", repoName, tag, err)
-			ra.CustomAbort(http.StatusInternalServerError, "")
+			return nil, err
 		}
 
 		result.Config = string(b)
 	}
 
-	ra.Data["json"] = result
-	ra.ServeJSON()
+	return result, nil
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
