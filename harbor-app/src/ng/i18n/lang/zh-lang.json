@@ -345,7 +345,17 @@
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
     "START_PAGE": {
-        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security."
+        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security.",
+        "GETTING_START_TITLE": "从这开始"
+    },
+    "TOP_REPO": "受欢迎镜像库",
+    "STATISTICS": {
+        "TITLE": "统计",
+        "PRO_ITEM": "项目",
+        "REPO_ITEM": "镜像库",
+        "INDEX_MY": "私有的",
+        "INDEX_PUB": "公开的",
+        "INDEX_TOTAL": "总计"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

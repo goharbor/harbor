@@ -8,6 +8,8 @@ import { MessageService } from '../../global-message/message.service';
 
 import { Statistics } from './statistics';
 
+import { SessionService } from '../session.service';
+
 @Component({
     selector: 'statistics-panel',
     templateUrl: "statistics-panel.component.html",
@@ -15,23 +17,30 @@ import { Statistics } from './statistics';
     providers: [StatisticsService]
 })
 
-export class StatisticsPanelComponent implements OnInit{
+export class StatisticsPanelComponent implements OnInit {
 
-    private originalCopy:Statistics = new Statistics();
+    private originalCopy: Statistics = new Statistics();
 
     constructor(
         private statistics: StatisticsService,
-        private msgService: MessageService) { }
+        private msgService: MessageService,
+        private session: SessionService) { }
 
     ngOnInit(): void {
-        this.getStatistics();
+        if (this.session.getCurrentUser()) {
+            this.getStatistics();
+        }
     }
 
     getStatistics(): void {
         this.statistics.getStatistics()
-        .then(statistics => this.originalCopy = statistics)
-        .catch(error => {
-            this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
-        })
+            .then(statistics => this.originalCopy = statistics)
+            .catch(error => {
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            })
+    }
+
+    public get isValidSession(): boolean {
+        return this.session.getCurrentUser() != null;
     }
 }

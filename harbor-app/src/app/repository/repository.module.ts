@@ -6,6 +6,7 @@ import { SharedModule } from '../shared/shared.module';
 import { RepositoryComponent } from './repository.component';
 import { ListRepositoryComponent } from './list-repository/list-repository.component';
 import { TagRepositoryComponent } from './tag-repository/tag-repository.component';
+import { TopRepoComponent } from './top-repo/top-repo.component';
 
 import { RepositoryService } from './repository.service';
 
@@ -17,9 +18,10 @@ import { RepositoryService } from './repository.service';
   declarations: [
     RepositoryComponent,
     ListRepositoryComponent,
-    TagRepositoryComponent
+    TagRepositoryComponent,
+    TopRepoComponent
   ],
-  exports: [RepositoryComponent, ListRepositoryComponent],
+  exports: [RepositoryComponent, ListRepositoryComponent, TopRepoComponent],
   providers: [RepositoryService]
 })
 export class RepositoryModule { }

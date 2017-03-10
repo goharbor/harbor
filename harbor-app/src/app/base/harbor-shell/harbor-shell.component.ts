@@ -17,6 +17,8 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 
 import { Subscription } from 'rxjs/Subscription';
 
+import { harborRootRoute } from '../../shared/shared.const';
+
 @Component({
     selector: 'harbor-shell',
     templateUrl: 'harbor-shell.component.html',
@@ -52,6 +54,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService) { }
 
@@ -77,6 +80,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         if (this.searchCloseSub) {
             this.searchCloseSub.unsubscribe();
         }
+    }
+
+    public get isStartPage(): boolean {
+        return this.router.routerState.snapshot.url.toString() === harborRootRoute;
     }
 
     public get showSearch(): boolean {

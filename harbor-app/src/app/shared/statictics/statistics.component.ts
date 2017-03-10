@@ -7,5 +7,5 @@ import { Component, Input } from '@angular/core';
 })
 
 export class StatisticsComponent {
-    @Input() data: any = {number: 0, label: "empty"};
+    @Input() data: any;
 }

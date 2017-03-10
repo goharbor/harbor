@@ -4,9 +4,8 @@ import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
-import { SessionUser } from '../../shared/session-user';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { signInRoute } from '../../shared/shared.const';
+import { signInRoute, ListMode } from '../../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
@@ -28,7 +27,7 @@ export class ListProjectComponent implements OnInit {
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
-  private currentUser: SessionUser = null;
+  @Input() mode: string = ListMode.FULL;
 
   constructor(
     private session: SessionService,
@@ -36,11 +35,10 @@ export class ListProjectComponent implements OnInit {
     private searchTrigger: SearchTriggerService) { }
 
   ngOnInit(): void {
-    this.currentUser = this.session.getCurrentUser();
   }
 
-  public get isSessionValid(): boolean {
-    return this.currentUser != null;
+  public get listFullMode(): boolean {
+    return this.mode === ListMode.FULL;
   }
 
   goToLink(proId: number): void {
