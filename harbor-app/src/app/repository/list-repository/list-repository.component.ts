@@ -5,7 +5,7 @@ import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { SessionService } from '../../shared/session.service';
-import { signInRoute } from '../../shared/shared.const';
+import { signInRoute, ListMode } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-repository',
@@ -20,6 +20,8 @@ export class ListRepositoryComponent {
   @Input() totalPage: number;
   @Input() totalRecordCount: number;
   @Output() paginate = new EventEmitter<State>();
+
+  @Input() mode: string = ListMode.FULL;
 
   pageOffset: number = 1;
 
@@ -36,6 +38,10 @@ export class ListRepositoryComponent {
     if(this.repositories) {
       this.paginate.emit(state);
     }
+  }
+
+  public get listFullMode(): boolean {
+    return this.mode === ListMode.FULL;
   }
 
   public gotoLink(projectId: number, repoName: string): void {

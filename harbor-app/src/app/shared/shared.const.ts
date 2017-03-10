@@ -22,3 +22,8 @@ export const signInRoute = "/sign-in";
 export const enum ActionType {
   ADD_NEW, EDIT
 };
+
+export const ListMode = {
+  READONLY: "readonly",
+  FULL: "full"
+};
