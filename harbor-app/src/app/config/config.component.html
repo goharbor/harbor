@@ -17,7 +17,7 @@
                     <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="allConfig.verify_remote_cert.value" [disabled]="disabled(allConfig.verify_remote_cert)">
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top:-8px;">
                             <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
-                            <span class="tooltip-content">{{'CONFIG.VERIFY_REMOTE_CERT_TOOLTIP' | translate }}</span>
+                            <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate }}</span>
                         </a>
                     </clr-checkbox>
                 </div>
@@ -42,6 +42,10 @@
                           {{'TOOLTIP.NUMBER_REQUIRED' | translate}}
                       </span>
                     </label>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                        <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.TOKEN_EXPIRATION' | translate}}</span>
+                    </a>
                 </div>
             </section>
         </form>

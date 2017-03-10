@@ -299,12 +299,37 @@
         "MAIL_SSL": "邮件 SSL",
         "SSL_TOOLTIP": "应用SSL到邮件服务器连接",
         "VERIFY_REMOTE_CERT": "验证远程证书",
-        "VERIFY_REMOTE_CERT_TOOLTIP": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
         "AUTH_MODE": "认证模式",
         "PRO_CREATION_RESTRICTION": "项目创建限制",
         "SELF_REGISTRATION": "自注册",
-        "SELF_REGISTRATION_TOOLTIP": "激活注册功能"
+        "AUTH_MODE_DB": "数据库",
+        "AUTH_MODE_LDAP": "LDAP",
+        "SCOPE_BASE": "基础",
+        "SCOPE_ONE_LEVEL": "单级",
+        "SCOPE_SUBTREE": "子树",
+        "PRO_CREATION_EVERYONE": "所有人",
+        "PRO_CREATION_ADMIN": "仅管理员",
+        "TOOLTIP": {
+            "SELF_REGISTRATION": "激活注册功能",
+            "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
+            "AUTH_MODE": "默认认证模式为本地认证，比如用户凭证存储在本地数据库。如果使用LDAP服务来认证用户则设置为LDAP服务。",
+            "LDAP_SEARCH_DN": "有权搜索LDAP服务器的用户的DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN之和搜索密码。",
+            "LDAP_BASE_DN": "用来在LDAP和AD中搜寻用户的基础DN。",
+            "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
+            "LDAP_SCOPE": "搜索用户的范围",
+            "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
+            "PRO_CREATION_RESTRICTION": "用来控制那些用户有权创建项目的标志位，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。"
+        },
+        "LDAP": {
+            "URL": "LDAP地址",
+            "SEARCH_DN": "LDAP搜索专有名称（DN)",
+            "SEARCH_PWD": "LDAP搜索密码",
+            "BASE_DN": "LDAP基础专有名称（DN)",
+            "FILTER": "LDAP过滤器",
+            "UID": "LDAP用户标识（UID)",
+            "SCOPE": "lDAP范围"
+        }
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",
