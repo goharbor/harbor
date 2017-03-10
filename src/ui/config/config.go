@@ -255,13 +255,16 @@ func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
 
-//http_auth url
+//http_auth config
 func HttpAuth() string {
 	httpAuth := os.Getenv("HTTP_AUTH")
-	if len(httpAuth) == 0 && AuthMode() == "http_auth" {
-		log.Warningf("You pick me but not config for http_auth. How Dare you?!")
-		log.Warningf("Assuming that you're debuging, so I'm gone use default value: %s", httpAuthDefault)
-		httpAuth = httpAuthDefault
+	if len(httpAuth) == 0 {
+		authMode, _ := AuthMode()
+		if authMode == "http_auth" {
+			log.Warningf("You pick me but not config for http_auth. How Dare you?!")
+			log.Warningf("Assuming that you're debuging, so I'm gone use default value: %s", httpAuthDefault)
+			httpAuth = httpAuthDefault
+		}
 	} else {
 		log.Infof("http_auth: %s", httpAuth)
 	}
