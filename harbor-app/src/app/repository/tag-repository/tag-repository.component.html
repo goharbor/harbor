@@ -10,13 +10,19 @@
    <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
    <clr-dg-row *ngFor="let t of tags">
-     <clr-dg-cell></clr-dg-cell>
-     <clr-dg-cell></clr-dg-cell>
+     <clr-dg-cell>{{t.tag}}</clr-dg-cell>
+     <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>
      <clr-dg-cell>
+       <clr-icon shape="check" *ngIf="t.verified" style="color: #1D5100;"></clr-icon>
+       <clr-icon shape="close" *ngIf="!t.verified" style="color: #C92100;"></clr-icon>
+      </clr-dg-cell>
+     <clr-dg-cell>{{t.author}}</clr-dg-cell>
+     <clr-dg-cell>{{t.created | date: 'yyyy/MM/dd'}}</clr-dg-cell>
+     <clr-dg-cell>{{t.dockerVersion}}</clr-dg-cell>
+     <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
+     <clr-dg-cell>{{t.os}}
        <harbor-action-overflow>
-         <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.SHOW_DETAILS'}}</a>
-         <div class="dropdown-divider"></div>
-         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteTag(t.name)">{{'REPOSITORY.DELETE' | translate}}</a>
+         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteTag(t.tag)">{{'REPOSITORY.DELETE' | translate}}</a>
        </harbor-action-overflow>
       </clr-dg-cell>
     </clr-dg-row>

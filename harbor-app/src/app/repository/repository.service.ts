@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Http, URLSearchParams } from '@angular/http';
+import { Http, URLSearchParams, Response } from '@angular/http';
 
 import { Repository } from './repository';
+import { Tag } from './tag';
+import { VerifiedSignature } from './verified-signature';
+
+import { verifiedSignatures } from './mock-verfied-signature';
+
 import { Observable } from 'rxjs/Observable'
+import 'rxjs/add/observable/of';
+import 'rxjs/add/operator/mergeMap';
 
 @Injectable()
 export class RepositoryService {
@@ -20,6 +27,41 @@ export class RepositoryService {
                .catch(error=>Observable.throw(error));
   }
 
+  listTags(repoName: string): Observable<Tag[]> {
+    return this.http
+               .get(`/api/repositories/tags?repo_name=${repoName}&detail=1`)
+               .map(response=>response.json())
+               .catch(error=>Observable.throw(error));
+  }
+
+  listNotaryVerfiedSignatures(repoName: string): Observable<VerifiedSignature[]> {
+    return Observable.of(verifiedSignatures);
+  }
+
+  listTagsWithVerifiedSignatures(repoName: string): Observable<Tag[]> {
+    return this.listTags(repoName)
+               .flatMap(
+                 (tags: Tag[])=>{
+                     console.log(repoName);
+                   return Observable.create(observer=>{
+                     tags.forEach(t=>{
+                       verifiedSignatures.forEach(v=>{
+                         if(v.tag === t.tag) {
+                           t.verified = true;
+                         }
+                       });
+                     });
+                     observer.next(tags);
+                     observer.complete();
+                   });
+                })
+               .map(res=>{
+                 console.log(res);
+                 return res;
+                })
+               .catch(error=>Observable.throw(error));
+  }
+
   deleteRepository(repoName: string): Observable<any> {
     console.log('Delete repository with repo name:' + repoName);
     return this.http
@@ -27,4 +69,13 @@ export class RepositoryService {
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
+
+  deleteRepoByTag(repoName: string, tag: string): Observable<any> {
+    console.log('Delete repository with repo name:' + repoName + ', tag:' + tag);
+    return this.http
+               .delete(`/api/repositories?repo_name=${repoName}&tag=${tag}`)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+
 }

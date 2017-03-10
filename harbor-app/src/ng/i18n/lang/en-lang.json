@@ -76,7 +76,7 @@
         "SYSTEM_MGMT": {
             "NAME": "System Managements",
             "USERS": "Users",
-            "REPLICATIONS": "Replications",
+            "REPLICATION": "Replication",
             "CONFIGS": "Configurations"
         },
         "LOGS": "Logs"
@@ -135,6 +135,7 @@
         "NEW_MEMBER": "New Member",
         "NAME": "Name",
         "ROLE": "Role",
+        "SYS_ADMIN": "System Admin",
         "PROJECT_ADMIN": "Project Admin",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
@@ -166,7 +167,8 @@
         "FILTER_PLACEHOLDER": "Filter Logs"
     },
     "REPLICATION": {
-        "REPLICATION_RULES": "Replication Rules",
+        "REPLICATION_RULE": "Rules",
+        "NEW_REPLICATION_RULE": "New Replication Rule",
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
@@ -195,7 +197,6 @@
         "DESTINATION_URL_IS_REQUIRED": "Endpoint URL is required.",
         "DESTINATION_USERNAME": "Username",
         "DESTINATION_PASSWORD": "Password",
-        "REPLICATION_RULE": "Replication Rule",
         "ALL_STATUS": "All Status",
         "ENABLED": "Enabled",
         "DISABLED": "Disabled",
@@ -220,7 +221,7 @@
         "ITEMS": "item(s)"
     },
     "DESTINATION": {
-        "ENDPOINT": "Endpoint",
+        "NEW_ENDPOINT": "New Endpoint",
         "NAME": "Destination Name",
         "NAME_IS_REQUIRED": "Destination name is required.",
         "URL": "Endpoint URL",
