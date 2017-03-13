@@ -32,16 +32,24 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private repositoryService: RepositoryService) {
       this.subscription = this.deletionDialogService.deletionConfirm$.subscribe(
         message=>{
-          let tagName = message.data;
-          this.repositoryService
-            .deleteRepoByTag(this.repoName, tagName)
-            .subscribe(
-              response=>{
-                this.retrieve();
-                console.log('Deleted repo:' + this.repoName + ' with tag:' + tagName);
-              },
-              error=>this.messageService.announceMessage(error.status, 'Failed to delete tag:' + tagName + ' under repo:' + this.repoName, AlertType.DANGER)
-            );
+          let tag = message.data;
+          if(tag) {
+            if(tag.verified) {
+              return;
+            } else {
+              let tagName = tag.tag;
+              this.repositoryService
+                  .deleteRepoByTag(this.repoName, tagName)
+                  .subscribe(
+                    response=>{
+                      this.retrieve();
+                      console.log('Deleted repo:' + this.repoName + ' with tag:' + tagName);
+                    },
+                    error=>this.messageService.announceMessage(error.status, 'Failed to delete tag:' + tagName + ' under repo:' + this.repoName, AlertType.DANGER)
+                  );
+            }
+          }
+          
         }
       )
   }
@@ -58,8 +66,9 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       this.subscription.unsubscribe();
     }
   }
-
+  
   retrieve() {
+    this.tags = [];
     this.repositoryService
         .listTagsWithVerifiedSignatures(this.repoName)
         .subscribe(
@@ -81,11 +90,19 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
         error=>this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
   }
 
-  deleteTag(tagName: string) {
-    let message = new DeletionMessage(
-      'REPOSITORY.DELETION_TITLE_TAG', 'REPOSITORY.DELETION_SUMMARY_TAG', 
-      tagName, tagName, DeletionTargets.TAG);
-    this.deletionDialogService.openComfirmDialog(message);
+  deleteTag(tag: TagView) {
+    if(tag) {
+      let titleKey: string, summaryKey: string;
+      if (tag.verified) {
+        titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
+        summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
+      } else {
+        titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
+        summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+      }
+      let message = new DeletionMessage(titleKey, summaryKey, tag.tag, tag, DeletionTargets.TAG);
+      this.deletionDialogService.openComfirmDialog(message);
+    }
   }
 
 }
