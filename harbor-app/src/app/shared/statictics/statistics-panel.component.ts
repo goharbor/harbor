@@ -41,6 +41,7 @@ export class StatisticsPanelComponent implements OnInit {
     }
 
     public get isValidSession(): boolean {
-        return this.session.getCurrentUser() != null;
+        let user = this.session.getCurrentUser();
+        return user && user.has_admin_role > 0;
     }
 }

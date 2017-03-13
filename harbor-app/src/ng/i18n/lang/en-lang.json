@@ -72,12 +72,13 @@
         "PLACEHOLDER": "Search Harbor..."
     },
     "SIDE_NAV": {
+        "DASHBOARD": "Dashboard",
         "PROJECTS": "Projects",
         "SYSTEM_MGMT": {
-            "NAME": "System Managements",
-            "USERS": "Users",
+            "NAME": "Administration",
+            "USER": "Users",
             "REPLICATION": "Replication",
-            "CONFIGS": "Configurations"
+            "CONFIG": "Configuration"
         },
         "LOGS": "Logs"
     },

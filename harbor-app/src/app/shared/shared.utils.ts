@@ -50,10 +50,10 @@ export const isEmptyForm = function (ngForm: NgForm): boolean {
 export const accessErrorHandler = function (error: any, msgService: MessageService): boolean {
     if (error && error.status && msgService) {
         if (error.status === httpStatusCode.Unauthorized) {
-            this.msgService.announceAppLevelMessage(error.status, "UNAUTHORIZED_ERROR", AlertType.DANGER);
+            msgService.announceAppLevelMessage(error.status, "UNAUTHORIZED_ERROR", AlertType.DANGER);
             return true;
         } else if (error.status === httpStatusCode.Forbidden) {
-            this.msgService.announceAppLevelMessage(error.status, "FORBIDDEN_ERROR", AlertType.DANGER);
+            msgService.announceAppLevelMessage(error.status, "FORBIDDEN_ERROR", AlertType.DANGER);
             return true;
         }
     }
