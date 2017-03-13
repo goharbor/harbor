@@ -97,6 +97,7 @@ func init() {
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
 	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
+	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
 	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
@@ -558,7 +559,8 @@ func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string
 }
 
 //Get public repositories which are accessed most
-func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, error) {
+func (a testapi) GetReposTop(authInfo usrInfo, count,
+	detail string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/top"
@@ -566,12 +568,36 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, error) {
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		Count string `url:"count"`
+		Count  string `url:"count"`
+		Detail string `url:"detail"`
 	}
 
-	_sling = _sling.QueryStruct(&QueryParams{Count: count})
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
+	_sling = _sling.QueryStruct(&QueryParams{
+		Count:  count,
+		Detail: detail,
+	})
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if code != http.StatusOK {
+		return code, body, err
+	}
+
+	if detail == "true" || detail == "1" {
+		result := []*repoResp{}
+		if err = json.Unmarshal(body, &result); err != nil {
+			return 0, nil, err
+		}
+		return http.StatusOK, result, nil
+	}
+
+	result := []*models.TopRepo{}
+	if err = json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return http.StatusOK, result, nil
 }
 
 //-------------------------Targets Test---------------------------------------//
@@ -951,6 +977,11 @@ func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error)
 	}
 
 	return httpStatusCode, successPayLoad, err
+}
+
+func (a testapi) GetGeneralInfo() (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).Path("/api/systeminfo")
+	return request(_sling, jsonAcceptHeader)
 }
 
 //Get system cert

@@ -75,6 +75,8 @@ const (
 	JobLogDir                  = "job_log_dir"
 	UseCompressedJS            = "use_compressed_js"
 	AdminInitialPassword       = "admin_initial_password"
+	AdmiralEndpoint            = "admiral_url"
+	WithNotary                 = "with_notary"
 )
 
 // Manager manages configurations

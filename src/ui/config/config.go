@@ -18,6 +18,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"strings"
 
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
@@ -132,13 +133,26 @@ func TokenExpiration() (int, error) {
 	return int(cfg[comcfg.TokenExpiration].(float64)), nil
 }
 
-// ExtEndpoint returns the external URL of Harbor: protocal://host:port
+// ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
 	return cfg[comcfg.ExtEndpoint].(string), nil
+}
+
+// ExtURL returns the external URL: host:port
+func ExtURL() (string, error) {
+	endpoint, err := ExtEndpoint()
+	if err != nil {
+		return "", err
+	}
+	l := strings.Split(endpoint, "://")
+	if len(l) > 0 {
+		return l[1], nil
+	}
+	return endpoint, nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
@@ -172,6 +186,12 @@ func InternalJobServiceURL() string {
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
 	return "http://ui/service/token"
+}
+
+// InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
+// This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
+func InternalNotaryEndpoint() string {
+	return "http://notary-server:4443"
 }
 
 // InitialAdminPassword returns the initial password for administrator
@@ -252,4 +272,33 @@ func UISecret() string {
 // other component
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
+}
+
+// WithNotary returns a bool value to indicate if Harbor's deployed with Notary
+func WithNotary() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithNotary == false")
+		return false
+	}
+	return cfg[comcfg.WithNotary].(bool)
+}
+
+// AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
+func AdmiralEndpoint() string {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint")
+
+		return ""
+	}
+	if e, ok := cfg[comcfg.AdmiralEndpoint].(string); !ok || e == "NA" {
+		cfg[comcfg.AdmiralEndpoint] = ""
+	}
+	return cfg[comcfg.AdmiralEndpoint].(string)
+}
+
+// WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
+func WithAdmiral() bool {
+	return len(AdmiralEndpoint()) > 0
 }

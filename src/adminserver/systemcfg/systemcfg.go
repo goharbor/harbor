@@ -114,6 +114,11 @@ var (
 		},
 		comcfg.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
 		comcfg.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+		comcfg.AdmiralEndpoint:            "ADMIRAL_URL",
+		comcfg.WithNotary: &parser{
+			env:   "WITH_NOTARY",
+			parse: parseStringToBool,
+		},
 	}
 
 	// configurations need read from environment variables
@@ -133,6 +138,11 @@ var (
 		comcfg.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
+		},
+		comcfg.AdmiralEndpoint: "ADMIRAL_URL",
+		comcfg.WithNotary: &parser{
+			env:   "WITH_NOTARY",
+			parse: parseStringToBool,
 		},
 	}
 )

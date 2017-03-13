@@ -139,6 +139,10 @@ func getRepositories(projectID int64, keyword string,
 		return result, nil
 	}
 
+	return populateTagsCount(repositories)
+}
+
+func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
 	result := []*repoResp{}
 	for _, repository := range repositories {
 		repo := &repoResp{
@@ -160,7 +164,6 @@ func getRepositories(projectID int64, keyword string,
 		repo.TagsCount = int64(len(tags))
 		result = append(result, repo)
 	}
-
 	return result, nil
 }
 
@@ -531,7 +534,30 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
-	ra.Data["json"] = repos
+
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
+	if !detail {
+		result := []*models.TopRepo{}
+
+		for _, repo := range repos {
+			result = append(result, &models.TopRepo{
+				RepoName:    repo.Name,
+				AccessCount: repo.PullCount,
+			})
+		}
+
+		ra.Data["json"] = result
+		ra.ServeJSON()
+		return
+	}
+
+	result, err := populateTagsCount(repos)
+	if err != nil {
+		log.Errorf("failed to popultate tags count to repositories: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
+	}
+
+	ra.Data["json"] = result
 	ra.ServeJSON()
 }
 
@@ -554,7 +580,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	if err != nil {
 		log.Warningf("Error when getting username: %v", err)
 	}
-	targets, err := notary.GetTargets(username, fqRepo)
+	targets, err := notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")

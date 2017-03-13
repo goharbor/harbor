@@ -43,14 +43,14 @@ func InitCreators() {
 		},
 		"registry": &registryFilter{},
 	}
-	ext, err := config.ExtEndpoint()
+	ext, err := config.ExtURL()
 	if err != nil {
-		log.Warningf("Failed to get ext enpoint, err: %v, the token service will not be functional with notary requests", err)
+		log.Warningf("Failed to get ext url, err: %v, the token service will not be functional with notary requests", err)
 	} else {
 		notaryFilterMap = map[string]accessFilter{
 			"repository": &repositoryFilter{
 				parser: &endpointParser{
-					endpoint: strings.Split(ext, "//")[1],
+					endpoint: ext,
 				},
 			},
 		}
