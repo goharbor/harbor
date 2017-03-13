@@ -13,6 +13,8 @@
         <div class="grid-header-wrapper">
             <grid-filter class="grid-filter" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilterProjects($event)"></grid-filter>
         </div>
-        <list-project [projects]="searchResults.project"></list-project>
+        <list-project [projects]="searchResults.project" [mode]="listMode"></list-project>
+        <h2>Repositories</h2>
+        <list-repository [repositories]="searchResults.repository" [mode]="listMode"></list-repository>
     </div>
 </div>

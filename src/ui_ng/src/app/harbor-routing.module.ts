@@ -27,23 +27,25 @@ import { ResetPasswordComponent } from './account/password/reset-password.compon
 import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
-import { SearchStartComponent } from './base/global-search/search-start.component';
+import { StartPageComponent } from './base/start-page/start.component';
+
+import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
+import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 
 const harborRoutes: Routes = [
-  { path: '', redirectTo: '/harbor', pathMatch: 'full' },
-  { path: 'sign-in', component: SignInComponent },
+  { path: '', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
+  { path: 'harbor', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
+  { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
   { path: 'sign-up', component: SignUpComponent},
   { path: 'reset_password', component: ResetPasswordComponent},
   {
     path: 'harbor',
     component: HarborShellComponent,
-    resolve: {
-      authResolver: BaseRoutingResolver
-    },
+    canActivateChild: [AuthCheckGuard],
     children: [
       {
-        path: '',
-        component: SearchStartComponent
+        path: 'dashboard',
+        component: StartPageComponent
       },
       {
         path: 'projects',
@@ -62,6 +64,7 @@ const harborRoutes: Routes = [
         path: 'replications',
         component: ReplicationManagementComponent,
         canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
         children: [
           {
             path: 'rules',
@@ -104,7 +107,8 @@ const harborRoutes: Routes = [
       },
       {
         path: 'configs',
-        component: ConfigurationComponent
+        component: ConfigurationComponent,
+        canActivate: [SystemAdminGuard],
       }
     ]
   },

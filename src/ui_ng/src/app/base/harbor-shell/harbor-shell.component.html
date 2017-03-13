@@ -2,7 +2,7 @@
     <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <div class="content-container">
-        <div class="content-area" [class.container-override]="showSearch">
+        <div class="content-area" [class.container-override]="showSearch" [class.start-content-padding]="isStartPage">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
@@ -10,15 +10,16 @@
         </div>
         <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
             <section class="sidenav-content">
+                <a routerLink="/harbor/dashboard" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.DASHBOARD' | translate}}</a>
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
                 <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.LOGS' | translate}}</a>
                 <section class="nav-group collapsible" *ngIf="isSystemAdmin">
                     <input id="tabsystem" type="checkbox">
                     <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</a></li>
-                        <li><a class="nav-link" routerLink="/harbor/replications/endpoints" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATIONS' | translate}}</a></li>
-                        <li><a class="nav-link" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIGS' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/replications/endpoints" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}</a></li>
                     </ul>
                 </section>
             </section>

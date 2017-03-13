@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostBinding, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy } from '@angular/core';
 
 import { ReplicationService } from '../../replication/replication.service';
 import { Policy } from '../../replication/policy';
@@ -17,16 +17,16 @@ import { Subscription } from 'rxjs/Subscription';
   selector: 'list-policy',
   templateUrl: 'list-policy.component.html',
 })
-export class ListPolicyComponent implements OnInit, OnDestroy {
+export class ListPolicyComponent implements OnDestroy {
   
   @Input() policies: Policy[];
   @Input() projectless: boolean;
+  @Input() selectedId: number;
 
   @Output() reload = new EventEmitter<boolean>();
   @Output() selectOne = new EventEmitter<Policy>();
   @Output() editOne = new EventEmitter<number>();
  
-  selectedId: number;
   subscription: Subscription;
 
   constructor(
@@ -51,10 +51,6 @@ export class ListPolicyComponent implements OnInit, OnDestroy {
              }
            });
 
-  }
-
-  ngOnInit() {
-    
   }
 
   ngOnDestroy() {

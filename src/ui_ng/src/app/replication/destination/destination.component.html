@@ -1,11 +1,11 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <div class="row flex-items-xs-between ">
-      <div class="col-xs-4">
-        <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'DESTINATION.ENDPOINT' | translate}}</button>
+    <div class="row flex-items-xs-between">
+      <div class="flex-items-xs-middle">
+        <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'DESTINATION.NEW_ENDPOINT' | translate}}</button>
         <create-edit-destination (reload)="reload($event)"></create-edit-destination>
       </div>
-      <div class="col-xs-4 push-xs-1">
+      <div class="flex-items-xs-middle">
         <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)"></grid-filter>
         <a href="javascript:void(0)" (click)="refreshTargets()"><clr-icon shape="refresh"></clr-icon></a>
       </div>

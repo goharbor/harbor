@@ -1,7 +1,8 @@
 {
     "SIGN_IN": {
         "REMEMBER": "记住我",
-        "INVALID_MSG": "用户名或者密码不正确"
+        "INVALID_MSG": "用户名或者密码不正确",
+        "FORGOT_PWD": "忘记密码"
     },
     "SIGN_UP": {
         "TITLE": "注册"
@@ -71,12 +72,13 @@
         "PLACEHOLDER": "搜索 Harbor..."
     },
     "SIDE_NAV": {
+        "DASHBOARD": "仪表板",
         "PROJECTS": "项目",
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
-            "USERS": "用户管理",
-            "REPLICATIONS": "复制管理",
-            "CONFIGS": "配置管理"
+            "USER": "用户管理",
+            "REPLICATION": "复制管理",
+            "CONFIG": "配置管理"
         },
         "LOGS": "日志"
     },
@@ -131,7 +133,7 @@
         "PROJECTS": "项目"
     },
     "MEMBER": {
-        "NEW_MEMBER": "新增成员",
+        "NEW_MEMBER": "新建成员",
         "NAME": "姓名",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
@@ -166,7 +168,8 @@
         "FILTER_PLACEHOLDER": "过滤日志"
     },
     "REPLICATION": {
-        "REPLICATION_RULES": "复制",
+        "REPLICATION_RULE": "复制策略",
+        "NEW_REPLICATION_RULE": "新建策略",
         "ENDPOINTS": "目标",
         "FILTER_POLICIES_PLACEHOLDER": "过滤策略",
         "FILTER_JOBS_PLACEHOLDER": "过滤任务",
@@ -175,7 +178,7 @@
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
-        "ADD_POLICY": "新增策略",
+        "ADD_POLICY": "新建策略",
         "EDIT_POLICY": "修改策略",
         "DELETE_POLICY": "删除策略",
         "TEST_CONNECTION": "测试连接",
@@ -195,7 +198,6 @@
         "DESTINATION_URL_IS_REQUIRED": "目标URL为必填项。",
         "DESTINATION_USERNAME": "用户名",
         "DESTINATION_PASSWORD": "密码",
-        "REPLICATION_RULE": "创建策略",
         "ALL_STATUS": "所有状态",
         "ENABLED": "启用",
         "DISABLED": "停用",
@@ -220,7 +222,7 @@
         "ITEMS": "条记录"
     },
     "DESTINATION": {
-        "ENDPOINT": "目标",
+        "NEW_ENDPOINT": "新建目标",
         "NAME": "目标名",
         "NAME_IS_REQUIRED": "目标名为必填项。",
         "URL": "目标URL",
@@ -239,7 +241,7 @@
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
         "ITEMS": "条记录"
-    }, 
+    },
     "REPOSITORY": {
         "COPY_ID": "复制ID",
         "COPY_PARENT_ID": "复制父级ID",
@@ -298,12 +300,37 @@
         "MAIL_SSL": "邮件 SSL",
         "SSL_TOOLTIP": "应用SSL到邮件服务器连接",
         "VERIFY_REMOTE_CERT": "验证远程证书",
-        "VERIFY_REMOTE_CERT_TOOLTIP": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
         "AUTH_MODE": "认证模式",
         "PRO_CREATION_RESTRICTION": "项目创建限制",
         "SELF_REGISTRATION": "自注册",
-        "SELF_REGISTRATION_TOOLTIP": "激活注册功能"
+        "AUTH_MODE_DB": "数据库",
+        "AUTH_MODE_LDAP": "LDAP",
+        "SCOPE_BASE": "基础",
+        "SCOPE_ONE_LEVEL": "单级",
+        "SCOPE_SUBTREE": "子树",
+        "PRO_CREATION_EVERYONE": "所有人",
+        "PRO_CREATION_ADMIN": "仅管理员",
+        "TOOLTIP": {
+            "SELF_REGISTRATION": "激活注册功能",
+            "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
+            "AUTH_MODE": "默认认证模式为本地认证，比如用户凭证存储在本地数据库。如果使用LDAP服务来认证用户则设置为LDAP服务。",
+            "LDAP_SEARCH_DN": "有权搜索LDAP服务器的用户的DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN之和搜索密码。",
+            "LDAP_BASE_DN": "用来在LDAP和AD中搜寻用户的基础DN。",
+            "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
+            "LDAP_SCOPE": "搜索用户的范围",
+            "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
+            "PRO_CREATION_RESTRICTION": "用来控制那些用户有权创建项目的标志位，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。"
+        },
+        "LDAP": {
+            "URL": "LDAP地址",
+            "SEARCH_DN": "LDAP搜索专有名称（DN)",
+            "SEARCH_PWD": "LDAP搜索密码",
+            "BASE_DN": "LDAP基础专有名称（DN)",
+            "FILTER": "LDAP过滤器",
+            "UID": "LDAP用户标识（UID)",
+            "SCOPE": "lDAP范围"
+        }
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",
@@ -317,6 +344,19 @@
         "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "终端用户许可协议",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
+    },
+    "START_PAGE": {
+        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security.",
+        "GETTING_START_TITLE": "从这开始"
+    },
+    "TOP_REPO": "受欢迎镜像库",
+    "STATISTICS": {
+        "TITLE": "统计",
+        "PRO_ITEM": "项目",
+        "REPO_ITEM": "镜像库",
+        "INDEX_MY": "私有的",
+        "INDEX_PUB": "公开的",
+        "INDEX_TOTAL": "总计"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

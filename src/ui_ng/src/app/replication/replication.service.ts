@@ -62,6 +62,7 @@ export class ReplicationService extends BaseService {
                .map(response=>{
                  return response.status;
                })
+               .catch(error=>Observable.throw(error))
                .flatMap((status)=>{
                  if(status === 201) {
                    return this.http
@@ -109,11 +110,11 @@ export class ReplicationService extends BaseService {
   }
 
   // /api/jobs/replication/?page=1&page_size=20&end_time=&policy_id=1&start_time=&status=&repository=
-  listJobs(policyId: number, status: string = '', repoName: string = '', startTime: string = '', endTime: string = ''): Observable<Job[]> {
+  listJobs(policyId: number, status: string = '', repoName: string = '', startTime: string = '', endTime: string = '', page: number, pageSize: number): Observable<any> {
     console.log('Get jobs under policy ID:' + policyId);
     return this.http
-               .get(`/api/jobs/replication?policy_id=${policyId}&status=${status}&repository=${repoName}&start_time=${startTime}&end_time=${endTime}`)
-               .map(response=>response.json() as Job[])
+               .get(`/api/jobs/replication?policy_id=${policyId}&status=${status}&repository=${repoName}&start_time=${startTime}&end_time=${endTime}&page=${page}&page_size=${pageSize}`)
+               .map(response=>response)
                .catch(error=>Observable.throw(error));
   }
 

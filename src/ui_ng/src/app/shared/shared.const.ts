@@ -14,10 +14,16 @@ export const httpStatusCode = {
   "Forbidden": 403
 };
 export const enum DeletionTargets {
-  EMPTY, PROJECT, PROJECT_MEMBER, USER, POLICY, TARGET, REPOSITORY
+  EMPTY, PROJECT, PROJECT_MEMBER, USER, POLICY, TARGET, REPOSITORY, TAG
 };
-export const harborRootRoute = "/harbor";
+export const harborRootRoute = "/harbor/dashboard";
+export const signInRoute = "/sign-in";
 
 export const enum ActionType {
   ADD_NEW, EDIT
+};
+
+export const ListMode = {
+  READONLY: "readonly",
+  FULL: "full"
 };

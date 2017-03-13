@@ -64,10 +64,7 @@ export class SessionService {
      */
     retrieveUser(): Promise<SessionUser> {
         return this.http.get(currentUserEndpint, { headers: this.headers }).toPromise()
-            .then(response => {
-                this.currentUser = response.json() as SessionUser;
-                return this.currentUser;
-            })
+            .then(response => this.currentUser = response.json() as SessionUser)
             .catch(error => this.handleError(error))
     }
 
