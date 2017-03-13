@@ -147,6 +147,7 @@ token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 secretkey_path = rcp.get("configuration", "secretkey_path")
+admiral_url = rcp.get("configuration", "admiral_url")
 secret_key = get_secret_key(secretkey_path)
 ########
 
@@ -190,10 +191,10 @@ else:
         nginx_conf)
 		
 render(os.path.join(templates_dir, "adminserver", "env"),
-		adminserver_conf_env,
-		ui_url=ui_url,
-		auth_mode=auth_mode,
-		self_registration=self_registration,
+        adminserver_conf_env,
+        ui_url=ui_url,
+        auth_mode=auth_mode,
+        self_registration=self_registration,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -203,27 +204,29 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_scope=ldap_scope,
         ldap_timeout=ldap_timeout,
         db_password=db_password,
-		email_host=email_host,
-		email_port=email_port,
-		email_usr=email_usr,
-		email_pwd=email_pwd,
-		email_ssl=email_ssl,
-		email_from=email_from,
-		email_identity=email_identity,
+        email_host=email_host,
+        email_port=email_port,
+        email_usr=email_usr,
+        email_pwd=email_pwd,
+        email_ssl=email_ssl,
+        email_from=email_from,
+        email_identity=email_identity,
         harbor_admin_password=harbor_admin_password,
-		project_creation_restriction=proj_cre_restriction,
-		verify_remote_cert=verify_remote_cert,
-		max_job_workers=max_job_workers,
-		ui_secret=ui_secret,
-		jobservice_secret=jobservice_secret,
-		token_expiration=token_expiration,
-		use_compressed_js=use_compressed_js
+        project_creation_restriction=proj_cre_restriction,
+        verify_remote_cert=verify_remote_cert,
+        max_job_workers=max_job_workers,
+        ui_secret=ui_secret,
+        jobservice_secret=jobservice_secret,
+        token_expiration=token_expiration,
+        admiral_url=admiral_url,
+        with_notary=args.notary_mode,
+        use_compressed_js=use_compressed_js
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
-		ui_conf_env, 
-		ui_secret=ui_secret,
-		jobservice_secret=jobservice_secret,)
+        ui_conf_env, 
+        ui_secret=ui_secret,
+        jobservice_secret=jobservice_secret,)
 
 render(os.path.join(templates_dir, "registry", 
 		"config.yml"),
@@ -237,8 +240,8 @@ render(os.path.join(templates_dir, "db", "env"),
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
         ui_secret=ui_secret,
-		jobservice_secret=jobservice_secret)
-		
+        jobservice_secret=jobservice_secret)
+
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
 
@@ -328,5 +331,6 @@ if args.notary_mode:
     default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
 
+		
 print("The configuration files are ready, please use docker-compose to start the service.")
 

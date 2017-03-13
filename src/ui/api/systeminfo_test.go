@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -35,6 +36,18 @@ func TestGetVolumeInfo(t *testing.T) {
 		}
 	}
 
+}
+
+func TestGetGeneralInfo(t *testing.T) {
+	apiTest := newHarborAPI()
+	code, body, err := apiTest.GetGeneralInfo()
+	assert := assert.New(t)
+	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
+	assert.Equal(200, code, fmt.Sprintf("Unexpected status code: %d", code))
+	g := &GeneralInfo{}
+	err = json.Unmarshal(body, g)
+	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
+	assert.Equal(false, g.WithNotary, "with notary should be false")
 }
 
 func TestGetCert(t *testing.T) {
