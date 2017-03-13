@@ -34,31 +34,35 @@ export class RepositoryService {
                .catch(error=>Observable.throw(error));
   }
 
-  listNotaryVerfiedSignatures(repoName: string): Observable<VerifiedSignature[]> {
-    return Observable.of(verifiedSignatures);
+  listNotarySignatures(repoName: string): Observable<VerifiedSignature[]> {
+    return this.http
+               .get(`/api/repositories/signatures?repo_name=${repoName}`)
+               .map(response=>response.json())
+               .catch(error=>Observable.throw(error));
   }
 
   listTagsWithVerifiedSignatures(repoName: string): Observable<Tag[]> {
-    return this.listTags(repoName)
-               .flatMap(
-                 (tags: Tag[])=>{
-                     console.log(repoName);
-                   return Observable.create(observer=>{
-                     tags.forEach(t=>{
-                       verifiedSignatures.forEach(v=>{
-                         if(v.tag === t.tag) {
-                           t.verified = true;
-                         }
-                       });
-                     });
-                     observer.next(tags);
-                     observer.complete();
-                   });
-                })
-               .map(res=>{
-                 console.log(res);
-                 return res;
-                })
+    return this.http
+               .get(`/api/repositories/tags?repo_name=${repoName}&detail=1`)
+               .map(response=>response.json())
+               .catch(error=>Observable.throw(error))
+               .flatMap((tags: Tag[])=>
+                 this.http
+                     .get(`/api/repositories/signatures?repo_name=${repoName}`)
+                     .map(res=>{
+                         let signatures = res.json();
+                         tags.forEach(t=>{
+                           for(let i = 0; i < signatures.length; i++) {
+                             if(signatures[i].tag === t.tag) {
+                               t.verified = true;
+                               break;
+                             }
+                           }
+                         });
+                         return tags;
+                       })
+                       .catch(error=>Observable.throw(error))
+               )
                .catch(error=>Observable.throw(error));
   }
 

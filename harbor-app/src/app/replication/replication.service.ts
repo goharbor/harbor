@@ -62,6 +62,7 @@ export class ReplicationService extends BaseService {
                .map(response=>{
                  return response.status;
                })
+               .catch(error=>Observable.throw(error))
                .flatMap((status)=>{
                  if(status === 201) {
                    return this.http
