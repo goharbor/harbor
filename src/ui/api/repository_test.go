@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/models"
 )
 
 func TestGetRepos(t *testing.T) {
@@ -193,9 +194,6 @@ func TestGetReposManifests(t *testing.T) {
 }
 
 func TestGetReposTop(t *testing.T) {
-	var httpStatusCode int
-	var err error
-	var count string
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
@@ -203,24 +201,46 @@ func TestGetReposTop(t *testing.T) {
 	fmt.Println("Testing ReposTop Get API")
 	//-------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
-	count = "1"
-	httpStatusCode, err = apiTest.GetReposTop(*admin, count)
+	count := "1"
+	detail := "false"
+	code, repos, err := apiTest.GetReposTop(*admin, count, detail)
 	if err != nil {
-		t.Error("Error whihle get reposTop to show the most popular public repositories ", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get the most popular repositories: %v", err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int(200), code, "response code should be 200")
+		if r, ok := repos.([]*models.TopRepo); ok {
+			assert.Equal(int(1), len(r), "the length should be 1")
+			assert.Equal(r[0].RepoName, "library/docker", "the name of repository should be library/docker")
+		} else {
+			t.Error("the repositories should in simple style as the detail is false")
+		}
 	}
 
 	//-------------------case 2 : response code = 400------------------------//
 	fmt.Println("case 2 : response code = 400,invalid count")
 	count = "cc"
-	httpStatusCode, err = apiTest.GetReposTop(*admin, count)
+	code, _, err = apiTest.GetReposTop(*admin, count, detail)
 	if err != nil {
-		t.Error("Error whihle get reposTop to show the most popular public repositories ", err.Error())
-		t.Log(err)
+		t.Errorf("failed to get the most popular repositories: %v", err)
 	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
+		assert.Equal(int(400), code, "response code should be 400")
+	}
+
+	//-------------------case 3 : response code = 200------------------------//
+	fmt.Println("case 3 : response code = 200")
+	count = "1"
+	detail = "true"
+	code, repos, err = apiTest.GetReposTop(*admin, count, detail)
+	if err != nil {
+		t.Errorf("failed to get the most popular repositories: %v", err)
+	} else {
+		assert.Equal(int(200), code, "response code should be 200")
+		if r, ok := repos.([]*repoResp); ok {
+			assert.Equal(int(1), len(r), "the length should be 1")
+			assert.Equal(r[0].Name, "library/docker", "the name of repository should be library/docker")
+		} else {
+			t.Error("the repositories should in detail style as the detail is true")
+		}
 	}
 
 	fmt.Printf("\n")

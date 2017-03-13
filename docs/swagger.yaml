@@ -827,15 +827,20 @@ paths:
           format: int32
           required: false
           description: The number of the requested public repositories, default is 10 if not provided.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Get detail info or not.
       tags:
        - Products
       responses:
         200:
-          description: Retrieved top repositories successfully.
+          description: If detail is true, the response is described as the schema, or the response contains a TopRepo array.
           schema:
             type: array
             items:
-              $ref: '#/definitions/TopRepo'
+              $ref: '#/definitions/Repository'
         400:
           description: Bad request because of invalid count.
         500:
@@ -1753,7 +1758,7 @@ definitions:
   TopRepo:
     type: object
     properties:
-      repo_name: 
+      name: 
         type: string
         description: The name of the repo 
       count:
