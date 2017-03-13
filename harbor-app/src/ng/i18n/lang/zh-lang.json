@@ -76,7 +76,7 @@
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
             "USERS": "用户管理",
-            "REPLICATIONS": "复制管理",
+            "REPLICATION": "复制管理",
             "CONFIGS": "配置管理"
         },
         "LOGS": "日志"
