@@ -72,12 +72,13 @@
         "PLACEHOLDER": "搜索 Harbor..."
     },
     "SIDE_NAV": {
+        "DASHBOARD": "仪表板",
         "PROJECTS": "项目",
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
-            "USERS": "用户管理",
+            "USER": "用户管理",
             "REPLICATION": "复制管理",
-            "CONFIGS": "配置管理"
+            "CONFIG": "配置管理"
         },
         "LOGS": "日志"
     },

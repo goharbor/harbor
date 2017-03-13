@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { ClarityModule } from 'clarity-angular';
@@ -16,8 +16,17 @@ import { MyMissingTranslationHandler } from './i18n/missing-trans.handler';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Http } from '@angular/http';
 
+import { SessionService } from './shared/session.service';
+
 export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'ng/i18n/lang/', '-lang.json');
+}
+
+export function initConfig(session: SessionService) {
+    return () => {
+        console.info("app init here");
+        return Promise.resolve(true);
+    };
 }
 
 @NgModule({
@@ -42,7 +51,12 @@ export function HttpLoaderFactory(http: Http) {
             }
         })
     ],
-    providers: [],
+    providers: [{
+        provide: APP_INITIALIZER,
+        useFactory: initConfig,
+        deps: [SessionService],
+        multi: true
+    }],
     bootstrap: [AppComponent]
 })
 export class AppModule {

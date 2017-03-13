@@ -9,6 +9,10 @@
     height: 100%;
 }
 
+.row-margin {
+    margin-left: 24px;
+}
+
 .column-fill-height {
     height: 100%;
 }

@@ -30,21 +30,21 @@ import { PageNotFoundComponent } from './shared/not-found/not-found.component'
 import { StartPageComponent } from './base/start-page/start.component';
 
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
+import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 
 const harborRoutes: Routes = [
-  { path: '', redirectTo: '/harbor', pathMatch: 'full' },
-  { path: 'sign-in', component: SignInComponent },
+  { path: '', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
+  { path: 'harbor', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
+  { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
   { path: 'sign-up', component: SignUpComponent},
   { path: 'reset_password', component: ResetPasswordComponent},
   {
     path: 'harbor',
     component: HarborShellComponent,
-    resolve: {
-      authResolver: BaseRoutingResolver
-    },
+    canActivateChild: [AuthCheckGuard],
     children: [
       {
-        path: '',
+        path: 'dashboard',
         component: StartPageComponent
       },
       {

@@ -35,8 +35,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
     constructor(
-        private configService: ConfigurationService,
         private msgService: MessageService,
+        private configService: ConfigurationService,
         private confirmService: DeletionDialogService) { }
 
     ngOnInit(): void {

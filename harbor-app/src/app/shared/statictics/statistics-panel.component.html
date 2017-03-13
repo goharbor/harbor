@@ -1,4 +1,4 @@
-<div class="card card-block" *ngIf="isValidSession">
+<div class="card card-block">
     <h3 class="card-title">{{'STATISTICS.TITLE' | translate }}</h3>
     <span class="card-text">
         <div class="row">
@@ -8,7 +8,7 @@
 <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
     <statistics [data]='{number: originalCopy.my_project_count, label: "my"}'></statistics>
     <statistics [data]='{number: originalCopy.public_project_count, label: "pub"}'></statistics>
-    <statistics [data]='{number: originalCopy.total_project_count, label: "total"}'></statistics>
+    <statistics [data]='{number: originalCopy.total_project_count, label: "total"}' *ngIf="isValidSession"></statistics>
 </div>
 </div>
 <div class="row">
@@ -18,7 +18,7 @@
     <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
         <statistics [data]='{number: originalCopy.my_repo_count, label: "my"}'></statistics>
         <statistics [data]='{number: originalCopy.public_repo_count, label: "pub"}'></statistics>
-        <statistics [data]='{number: originalCopy.total_repo_count, label: "total"}'></statistics>
+        <statistics [data]='{number: originalCopy.total_repo_count, label: "total"}' *ngIf="isValidSession"></statistics>
     </div>
 </div>
 </span>
