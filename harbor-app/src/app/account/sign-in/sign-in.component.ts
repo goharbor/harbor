@@ -48,6 +48,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
+                let isSignUp = params["sign_up"] || "";
+                if(isSignUp != ""){
+                    this.signUp();//Open sign up
+                }
             });
     }
 
