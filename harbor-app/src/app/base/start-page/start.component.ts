@@ -8,19 +8,14 @@ import { SessionUser } from '../../shared/session-user';
     templateUrl: "start.component.html",
     styleUrls: ['start.component.css']
 })
-export class StartPageComponent implements OnInit {
-    private currentUser: SessionUser = null;
+export class StartPageComponent implements OnInit{
+    private isSessionValid: boolean = false;
 
     constructor(
         private session: SessionService
     ) { }
 
-    public get currentUsername(): string {
-        return this.currentUser ? this.currentUser.username : "";
-    }
-
-    //Implement ngOnIni
     ngOnInit(): void {
-        this.currentUser = this.session.getCurrentUser();
+        this.isSessionValid = this.session.getCurrentUser() != null;
     }
 }

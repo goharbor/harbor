@@ -32,6 +32,7 @@ import { AuthCheckGuard } from './route/auth-user-activate.service';
 
 import { StatisticsComponent } from './statictics/statistics.component';
 import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
+import { SignInGuard } from './route/sign-in-guard-activate.service';
 
 @NgModule({
   imports: [
@@ -80,7 +81,8 @@ import { StatisticsPanelComponent } from './statictics/statistics-panel.componen
     DeletionDialogService,
     BaseRoutingResolver,
     SystemAdminGuard,
-    AuthCheckGuard]
+    AuthCheckGuard,
+    SignInGuard]
 })
 export class SharedModule {
 
