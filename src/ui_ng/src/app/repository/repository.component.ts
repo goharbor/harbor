@@ -12,6 +12,8 @@ import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog
 import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
 import { Subscription } from 'rxjs/Subscription';
 
+import { State } from 'clarity-angular';
+
 const repositoryTypes = [
   { key: '0', description: 'REPOSITORY.MY_REPOSITORY' },
   { key: '1', description: 'REPOSITORY.PUBLIC_REPOSITORY' }
@@ -28,6 +30,12 @@ export class RepositoryComponent implements OnInit {
   repositoryTypes = repositoryTypes;
   currentRepositoryType: {};
   lastFilteredRepoName: string;
+
+  page: number = 1;
+  pageSize: number = 15;
+
+  totalPage: number;
+  totalRecordCount: number;
 
   subscription: Subscription;
 
@@ -59,7 +67,7 @@ export class RepositoryComponent implements OnInit {
     this.projectId = this.route.snapshot.parent.params['id'];
     this.currentRepositoryType = this.repositoryTypes[0];
     this.lastFilteredRepoName = '';
-    this.retrieve(this.lastFilteredRepoName);
+    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -68,11 +76,19 @@ export class RepositoryComponent implements OnInit {
     }
   }
 
-  retrieve(repoName: string) {
+  retrieve(state?: State) {
+    if(state) {
+      this.page = state.page.to + 1;
+    }
     this.repositoryService
-        .listRepositories(this.projectId, repoName)
+        .listRepositories(this.projectId, this.lastFilteredRepoName, this.page, this.pageSize)
         .subscribe(
-          response=>this.changedRepositories=response,
+          response=>{
+            this.totalRecordCount = response.headers.get('x-total-count');
+            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
+            this.changedRepositories=response.json();
+          },
           error=>this.messageService.announceMessage(error.status, 'Failed to list repositories.', AlertType.DANGER)
         );
   }
@@ -83,7 +99,7 @@ export class RepositoryComponent implements OnInit {
   
   doSearchRepoNames(repoName: string) {
     this.lastFilteredRepoName = repoName;
-    this.retrieve(this.lastFilteredRepoName);
+    this.retrieve();
    
   }
 
@@ -96,6 +112,6 @@ export class RepositoryComponent implements OnInit {
   }
 
   refresh() {
-    this.retrieve('');
+    this.retrieve();
   }
 }

@@ -21,6 +21,7 @@ import { DeletionTargets } from '../shared/shared.const';
 
 import { Subscription } from 'rxjs/Subscription';
 
+import { State } from 'clarity-angular';
 
 const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS'};
 
@@ -42,9 +43,17 @@ export class ProjectComponent implements OnInit {
   listProject: ListProjectComponent;
 
   currentFilteredType: number = 0;
-  lastFilteredType: number = 0;
 
   subscription: Subscription;
+
+  projectName: string;
+  isPublic: number;
+
+  page: number = 1;
+  pageSize: number = 3;
+
+  totalPage: number;
+  totalRecordCount: number;
 
   constructor(
     private projectService: ProjectService,
@@ -58,7 +67,7 @@ export class ProjectComponent implements OnInit {
               .subscribe(
                 response=>{
                   console.log('Successful delete project with ID:' + projectId);
-                  this.retrieve('', this.lastFilteredType);
+                  this.retrieve();
                 },
                 error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
               );
@@ -67,14 +76,23 @@ export class ProjectComponent implements OnInit {
     }
 
   ngOnInit(): void {
-    this.retrieve('', this.lastFilteredType);
+    this.projectName = '';
+    this.isPublic = 0;
   }
 
-  retrieve(name: string, isPublic: number): void {
+  retrieve(state?: State): void {
+    if(state) {
+      this.page = state.page.to + 1;
+    }
     this.projectService
-        .listProjects(name, isPublic)
+        .listProjects(this.projectName, this.isPublic, this.page, this.pageSize)
         .subscribe(
-          response => this.changedProjects = <Project[]>response,
+          response => {
+            this.totalRecordCount = response.headers.get('x-total-count');
+            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
+            this.changedProjects = response.json();
+          },
           error => this.messageService.announceAppLevelMessage(error.status, error, AlertType.WARNING)
         );
   }
@@ -85,20 +103,20 @@ export class ProjectComponent implements OnInit {
   
   createProject(created: boolean) {
     if(created) {
-      this.retrieve('', this.lastFilteredType);
+      this.retrieve();
     }
   }
 
   doSearchProjects(projectName: string): void {
     console.log('Search for project name:' + projectName);
-    this.retrieve(projectName, this.lastFilteredType);
+    this.projectName = projectName;
+    this.retrieve();
   }
 
   doFilterProjects(filteredType: number): void {
     console.log('Filter projects with type:' + types[filteredType]);
-    this.lastFilteredType = filteredType;
-    this.currentFilteredType = filteredType;
-    this.retrieve('', this.lastFilteredType);
+    this.isPublic = filteredType;
+    this.retrieve();
   }
 
   toggleProject(p: Project) {
@@ -125,7 +143,7 @@ export class ProjectComponent implements OnInit {
   }
 
   refresh(): void {
-    this.retrieve('', this.lastFilteredType);
+    this.retrieve();
   }
 
 }

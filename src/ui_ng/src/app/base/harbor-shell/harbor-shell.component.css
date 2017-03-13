@@ -5,3 +5,9 @@
 .container-override {
     position: relative !important;
 }
+
+.start-content-padding {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+}

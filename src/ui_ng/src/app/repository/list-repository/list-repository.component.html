@@ -1,18 +1,21 @@
-<clr-datagrid>
-   <clr-dg-column>{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
-   <clr-dg-column>{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
-   <clr-dg-column>{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
-   <clr-dg-row *ngFor="let r of repositories">
-     <clr-dg-cell><a [routerLink]="['/harbor', 'tags', projectId, r.name]">{{r.name}}</a></clr-dg-cell>
-     <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
-     <clr-dg-cell>{{r.pull_count}}
-       <harbor-action-overflow>
-         <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.COPY_ID' | translate}}</a>
-         <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</a>
-         <div class="dropdown-divider"></div>
-         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteRepo(r.name)">{{'REPOSITORY.DELETE' | translate}}</a>
-       </harbor-action-overflow>
-      </clr-dg-cell>
+<clr-datagrid (clrDgRefresh)="refresh($event)">
+    <clr-dg-column>{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let r of repositories">
+        <clr-dg-cell><a href="javascript:void(0)" (click)="gotoLink(projectId || r.project_id, r.name || r.repository_name)">{{r.name || r.repository_name}}</a></clr-dg-cell>
+        <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
+        <clr-dg-cell>{{r.pull_count}}
+            <harbor-action-overflow *ngIf="listFullMode">
+                <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.COPY_ID' | translate}}</a>
+                <a href="javascript:void(0)" class="dropdown-item">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</a>
+                <div class="dropdown-divider"></div>
+                <a href="javascript:void(0)" class="dropdown-item" (click)="deleteRepo(r.name)">{{'REPOSITORY.DELETE' | translate}}</a>
+            </harbor-action-overflow>
+        </clr-dg-cell>
     </clr-dg-row>
-  <clr-dg-footer>{{repositories ? repositories.length : 0}} {{'REPOSITORY.ITEMS' | translate}}</clr-dg-footer>
+    <clr-dg-footer>
+        {{totalRecordCount || (repositories ? repositories.length : 0)}} {{'REPOSITORY.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+    </clr-dg-footer>
 </clr-datagrid>

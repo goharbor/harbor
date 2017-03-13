@@ -1,32 +1,30 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-right">
-      <div class="col-xs-3 push-md-2 flex-xs-middle">
+      <div class="flex-xs-middle">
         <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
       </div>
-      <div class="col-xs-3 flex-xs-middle">
+      <div class="flex-xs-middle">
         <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
         <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
       </div>
     </div>
-    <div class="row flex-items-xs-right advance-option" [hidden]="currentOption === 0">
-      <div class="col-xs-2 push-md-1">
-        <clr-dropdown [clrMenuPosition]="'bottom-left'" >
-          <button class="btn btn-link" clrDropdownToggle>
-            {{'AUDIT_LOG.ALL_OPERATIONS' | translate}}
-            <clr-icon shape="caret down"></clr-icon>
-          </button>
-          <div class="dropdown-menu">
-            <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description | translate}}</a>
-          </div>
-        </clr-dropdown>
-      </div>
-      <div class="col-xs-5 push-md-1">
-        <clr-icon shape="date"></clr-icon><input type="date" #fromTime  (change)="doSearchByTimeRange(fromTime.value, 'begin')">
-        <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doSearchByTimeRange(toTime.value, 'end')">
+    <div class="row flex-items-xs-right" [hidden]="currentOption === 0">
+      <clr-dropdown [clrMenuPosition]="'bottom-left'" >
+        <button class="btn btn-link" clrDropdownToggle>
+          {{'AUDIT_LOG.ALL_OPERATIONS' | translate}}
+          <clr-icon shape="caret down"></clr-icon>
+        </button>
+        <div class="dropdown-menu">
+          <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description | translate}}</a>
+        </div>
+      </clr-dropdown>
+      <div class="flex-xs-middle">
+      <clr-icon shape="date"></clr-icon><input type="date" #fromTime  (change)="doSearchByTimeRange(fromTime.value, 'begin')">
+      <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doSearchByTimeRange(toTime.value, 'end')">
       </div>
     </div>
-    <clr-datagrid>
+    <clr-datagrid (clrDgRefresh)="retrieve($event)">
       <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
@@ -39,7 +37,10 @@
         <clr-dg-cell>{{l.operation}}</clr-dg-cell>
         <clr-dg-cell>{{l.op_time}}</clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{ (auditLogs ? auditLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
+      <clr-dg-footer>
+        {{totalRecordCount}} {{'AUDIT_LOG.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+      </clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

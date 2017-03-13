@@ -6,20 +6,22 @@ import { SharedModule } from '../shared/shared.module';
 import { RepositoryComponent } from './repository.component';
 import { ListRepositoryComponent } from './list-repository/list-repository.component';
 import { TagRepositoryComponent } from './tag-repository/tag-repository.component';
+import { TopRepoComponent } from './top-repo/top-repo.component';
 
 import { RepositoryService } from './repository.service';
 
 @NgModule({
-  imports: [ 
+  imports: [
     SharedModule,
     RouterModule
   ],
-  declarations: [ 
+  declarations: [
     RepositoryComponent,
     ListRepositoryComponent,
-    TagRepositoryComponent
+    TagRepositoryComponent,
+    TopRepoComponent
   ],
-  exports: [ RepositoryComponent ],
-  providers: [ RepositoryService ]
+  exports: [RepositoryComponent, ListRepositoryComponent, TopRepoComponent],
+  providers: [RepositoryService]
 })
-export class RepositoryModule {}
+export class RepositoryModule { }

@@ -1,4 +1,4 @@
-<clr-datagrid>
+<clr-datagrid (clrDgRefresh)="refresh($event)"> 
   <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
   <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
   <clr-dg-column>{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>      
@@ -13,5 +13,8 @@
     <clr-dg-cell>{{j.update_time}}</clr-dg-cell>
     <clr-dg-cell><a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK"><clr-icon shape="clipboard"></clr-icon></a></clr-dg-cell>
   </clr-dg-row>
-  <clr-dg-footer>{{ (jobs ? jobs.length : 0) }} {{'REPLICATION.ITEMS' | translate}}</clr-dg-footer>
+  <clr-dg-footer>
+    {{ totalRecordCount }} {{'REPLICATION.ITEMS' | translate}} 
+    <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+  </clr-dg-footer>
 </clr-datagrid>

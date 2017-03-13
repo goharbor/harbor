@@ -1,7 +1,8 @@
 {
     "SIGN_IN": {
         "REMEMBER": "Remember me",
-        "INVALID_MSG": "Invalid user name or password"
+        "INVALID_MSG": "Invalid user name or password",
+        "FORGOT_PWD": "Forgot password"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
@@ -71,12 +72,13 @@
         "PLACEHOLDER": "Search Harbor..."
     },
     "SIDE_NAV": {
+        "DASHBOARD": "Dashboard",
         "PROJECTS": "Projects",
         "SYSTEM_MGMT": {
-            "NAME": "System Managements",
-            "USERS": "Users",
-            "REPLICATIONS": "Replications",
-            "CONFIGS": "Configurations"
+            "NAME": "Administration",
+            "USER": "Users",
+            "REPLICATION": "Replication",
+            "CONFIG": "Configuration"
         },
         "LOGS": "Logs"
     },
@@ -134,6 +136,7 @@
         "NEW_MEMBER": "New Member",
         "NAME": "Name",
         "ROLE": "Role",
+        "SYS_ADMIN": "System Admin",
         "PROJECT_ADMIN": "Project Admin",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
@@ -165,7 +168,8 @@
         "FILTER_PLACEHOLDER": "Filter Logs"
     },
     "REPLICATION": {
-        "REPLICATION_RULES": "Replication Rules",
+        "REPLICATION_RULE": "Rules",
+        "NEW_REPLICATION_RULE": "New Replication Rule",
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
@@ -182,7 +186,7 @@
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping target.",
         "NAME": "Name",
-        "PROJECT": "Project", 
+        "PROJECT": "Project",
         "NAME_IS_REQUIRED": "Name is required.",
         "DESCRIPTION": "Description",
         "ENABLE": "Enable",
@@ -194,7 +198,6 @@
         "DESTINATION_URL_IS_REQUIRED": "Endpoint URL is required.",
         "DESTINATION_USERNAME": "Username",
         "DESTINATION_PASSWORD": "Password",
-        "REPLICATION_RULE": "Replication Rule",
         "ALL_STATUS": "All Status",
         "ENABLED": "Enabled",
         "DISABLED": "Disabled",
@@ -219,7 +222,7 @@
         "ITEMS": "item(s)"
     },
     "DESTINATION": {
-        "ENDPOINT": "Endpoint",
+        "NEW_ENDPOINT": "New Endpoint",
         "NAME": "Destination Name",
         "NAME_IS_REQUIRED": "Destination name is required.",
         "URL": "Endpoint URL",
@@ -297,12 +300,37 @@
         "MAIL_SSL": "Email SSL",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Certificate",
-        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self -signed or untrusted certificate.",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
         "AUTH_MODE": "Authentication",
         "PRO_CREATION_RESTRICTION": "Project Creation Restriction",
         "SELF_REGISTRATION": "Self Registration",
-        "SELF_REGISTRATION_TOOLTIP": "Enable sign up"
+        "AUTH_MODE_DB": "Database",
+        "AUTH_MODE_LDAP": "LDAP",
+        "SCOPE_BASE": "Base",
+        "SCOPE_ONE_LEVEL": "OneLevel",
+        "SCOPE_SUBTREE": "Subtree",
+        "PRO_CREATION_EVERYONE": "Everyone",
+        "PRO_CREATION_ADMIN": "Admin Only",
+        "TOOLTIP": {
+            "SELF_REGISTRATION": "Enable sign up",
+            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self -signed or untrusted certificate.",
+            "AUTH_MODE": "By default the auth mode is db_auth, i.e. the credentials are stored in a local database.Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.",
+            "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server.If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
+            "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD",
+            "LDAP_UID": "The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD",
+            "LDAP_SCOPE": "The scope to search for users",
+            "TOKEN_EXPIRATION": "The expiration time (in minute) of token created by token service, default is 30 minutes",
+            "PRO_CREATION_RESTRICTION": "The flag to control what users have permission to create projects,Be default everyone can create a project, set to 'adminonly' such that only admin can create project."
+        },
+        "LDAP": {
+            "URL": "LDAP URL",
+            "SEARCH_DN": "LDAP Search DN",
+            "SEARCH_PWD": "LDAP Search Password",
+            "BASE_DN": "LDAP Base DN",
+            "FILTER": "LDAP Filter",
+            "UID": "LDAP UID",
+            "SCOPE": "lDAP Scope"
+        }
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
@@ -316,6 +344,19 @@
         "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
+    },
+    "START_PAGE": {
+        "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security.",
+        "GETTING_START_TITLE": "Getting Start"
+    },
+    "TOP_REPO": "Popular Repositories",
+    "STATISTICS": {
+        "TITLE": "STATISTICS",
+        "PRO_ITEM": "PROJECTS",
+        "REPO_ITEM": "REPOSITORIES",
+        "INDEX_MY": "MY",
+        "INDEX_PUB": "PUBLIC",
+        "INDEX_TOTAL": "TOTAL"
     },
     "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
     "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",

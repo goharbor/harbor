@@ -11,11 +11,13 @@ import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
-import { SearchStartComponent } from '../global-search/search-start.component';
+import { StartPageComponent } from '../start-page/start.component';
 
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 
 import { Subscription } from 'rxjs/Subscription';
+
+import { harborRootRoute } from '../../shared/shared.const';
 
 @Component({
     selector: 'harbor-shell',
@@ -40,8 +42,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     @ViewChild(AboutDialogComponent)
     private aboutDialog: AboutDialogComponent;
 
-    @ViewChild(SearchStartComponent)
-    private searchSatrt: SearchStartComponent;
+    @ViewChild(StartPageComponent)
+    private searchSatrt: StartPageComponent;
 
     //To indicator whwther or not the search results page is displayed
     //We need to use this property to do some overriding work
@@ -52,6 +54,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService) { }
 
@@ -77,6 +80,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         if (this.searchCloseSub) {
             this.searchCloseSub.unsubscribe();
         }
+    }
+
+    public get isStartPage(): boolean {
+        return this.router.routerState.snapshot.url.toString() === harborRootRoute;
     }
 
     public get showSearch(): boolean {

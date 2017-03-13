@@ -3,7 +3,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
 import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
-import { AlertType } from '../../shared/shared.const';
+import { AlertType, ListMode } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
 
 import { SearchTriggerService } from './search-trigger.service';
@@ -50,6 +50,10 @@ export class SearchResultComponent {
         }
 
         return res//Empty object
+    }
+
+    public get listMode(): string {
+        return ListMode.READONLY;
     }
 
     public get state(): boolean {

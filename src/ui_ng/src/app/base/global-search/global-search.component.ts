@@ -31,10 +31,6 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         private searchTrigger: SearchTriggerService,
         private router: Router) { }
 
-    public get shouldHide(): boolean {
-        return this.router.routerState.snapshot.url === harborRootRoute && !this.isResPanelOpened;
-    }
-
     //Implement ngOnIni
     ngOnInit(): void {
         this.searchSub = this.searchTerms
@@ -43,18 +39,11 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
-
-        this.stateSub = this.searchTrigger.searchInputChan$.subscribe(state => {
-            this.isResPanelOpened = state;
-        });
     }
 
     ngOnDestroy(): void {
         if (this.searchSub) {
             this.searchSub.unsubscribe();
-        }
-        if (this.stateSub) {
-            this.stateSub.unsubscribe();
         }
     }
 

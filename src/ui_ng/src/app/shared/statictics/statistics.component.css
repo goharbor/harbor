@@ -1,0 +1,30 @@
+.statistic-wrapper {
+    padding: 12px;
+    margin: 12px;
+    text-align: center;
+    vertical-align: middle;
+    height: 72px;
+    min-width: 108px;
+    max-width: 216px;
+    display: inline-block;
+}
+
+.statistic-data {
+    font-size: 48px;
+    font-weight: bolder;
+    font-family: "Metropolis";
+    line-height: 48px;
+}
+
+.statistic-text {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 24px;
+    text-transform: uppercase;
+    font-family: "Metropolis";
+}
+
+.statistic-column-title {
+    position: relative;
+    top: 40%;
+}

@@ -36,6 +36,6 @@ export class GlobalSearchService {
 
         return this.http.get(searchUrl, this.options).toPromise()
             .then(response => response.json() as SearchResults)
-            .catch(error => error);
+            .catch(error => Promise.reject(error));
     }
 }

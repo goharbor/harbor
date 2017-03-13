@@ -1,18 +1,11 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
     <div class="row flex-items-xs-right">
-      <clr-dropdown [clrMenuPosition]="'bottom-left'">
-        <button class="btn btn-sm btn-link" clrDropdownToggle>
-          {{currentRepositoryType.description | translate}}
-          <clr-icon shape="caret down"></clr-icon>
-        </button>
-        <div class="dropdown-menu">
-          <a href="javascript:void(0)" clrDropdownItem *ngFor="let r of repositoryTypes" (click)="doFilterRepositoryByType(r.key)">{{r.description | translate}}</a>
-        </div>
-      </clr-dropdown>
-      <grid-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></grid-filter>  
-      <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+      <div class="flex-xs-middle">
+        <grid-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></grid-filter>  
+        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+      </div>
     </div>
-    <list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)"></list-repository>
+    <list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)" [totalPage]="totalPage" [totalRecordCount]="totalRecordCount" (paginate)="retrieve($event)"></list-repository>
   </div>
 </div>

@@ -1,12 +1,12 @@
 <h1>{{'PROJECT.PROJECTS' | translate}}</h1>
 <div class="row flex-items-xs-between">
-  <div class="col-xs-4">
-    <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon>{{'PROJECT.NEW_PROJECT' | translate}}</button>
+  <div class="flex-items-xs-middle">
+    <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.NEW_PROJECT' | translate}}</button>
     <create-project (create)="createProject($event)"></create-project>
   </div>
-  <div class="col-xs-5 push-xs-1">
+  <div class="flex-items-xs-middle">
     <clr-dropdown [clrMenuPosition]="'bottom-left'">
-      <button class="btn btn-sm btn-link" clrDropdownToggle>
+      <button class="btn btn-link" clrDropdownToggle>
         {{projectTypes[currentFilteredType] | translate}}
         <clr-icon shape="caret down"></clr-icon>
       </button>
@@ -19,6 +19,6 @@
     <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <list-project [projects]="changedProjects" (toggle)="toggleProject($event)" (delete)="deleteProject($event)"></list-project>
+    <list-project [projects]="changedProjects" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)" [totalPage]="totalPage" [totalRecordCount]="totalRecordCount"></list-project>
   </div>
 </div>
