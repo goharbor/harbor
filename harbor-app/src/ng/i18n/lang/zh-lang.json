@@ -256,6 +256,8 @@
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
+        "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
+        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "VERIFIED": "已验证",
