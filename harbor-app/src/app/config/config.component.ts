@@ -28,6 +28,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     private currentTabId: string = "";
     private originalCopy: Configuration;
     private confirmSub: Subscription;
+    private testingOnGoing: boolean = false;
 
     @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
     @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
@@ -58,6 +59,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.onGoing;
     }
 
+    public get testingInProgress(): boolean {
+        return this.testingOnGoing;
+    }
+
     public isValid(): boolean {
         return this.repoConfigForm &&
             this.repoConfigForm.valid &&
@@ -80,6 +85,16 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get showTestServerBtn(): boolean {
         return this.currentTabId === 'config-email';
+    }
+
+    public get showLdapServerBtn(): boolean {
+        return this.currentTabId === 'config-auth' &&
+            this.allConfig.auth_mode &&
+            this.allConfig.auth_mode.value === "ldap_auth";
+    }
+
+    public isLDAPConfigValid(): boolean {
+        return this.authConfig && this.authConfig.isValid();
     }
 
     public tabLinkChanged(tabLink: any) {
@@ -150,7 +165,46 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     public testMailServer(): void {
+        let mailSettings = {};
+        let allChanges = this.getChanges();
+        for (let prop in allChanges) {
+            if (prop.startsWith("email_")) {
+                mailSettings[prop] = allChanges[prop];
+            }
+        }
 
+        this.testingOnGoing = true;
+        this.configService.testMailServer(mailSettings)
+            .then(response => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(200, "CONFIG.TEST_MAIL_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            });
+    }
+
+    public testLDAPServer(): void {
+        let ldapSettings = {};
+        let allChanges = this.getChanges();
+        for (let prop in allChanges) {
+            if (prop.startsWith("ldap_")) {
+                ldapSettings[prop] = allChanges[prop];
+            }
+        }
+
+        console.info(ldapSettings);
+        this.testingOnGoing = true;
+        this.configService.testLDAPServer(ldapSettings)
+            .then(respone => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(200, "CONFIG.TEST_LDAP_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            });
     }
 
     private retrieveConfig(): void {
