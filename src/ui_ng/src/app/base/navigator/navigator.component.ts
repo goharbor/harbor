@@ -1,5 +1,5 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Output, EventEmitter, OnInit, Inject } from '@angular/core';
+import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ModalEvent } from '../modal-event';
@@ -9,7 +9,10 @@ import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
+import { supportedLangs, enLang, languageNames, signInRoute } from '../../shared/shared.const';
+
+import { AppConfigService } from '../../app-config.service';
+import { AppConfig } from '../../app-config';
 
 @Component({
     selector: 'navigator',
@@ -24,12 +27,14 @@ export class NavigatorComponent implements OnInit {
 
     private sessionUser: SessionUser = null;
     private selectedLang: string = enLang;
+    private appConfig: AppConfig = new AppConfig();
 
     constructor(
         private session: SessionService,
         private router: Router,
         private translate: TranslateService,
-        private cookie: CookieService) { }
+        private cookie: CookieService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
         this.sessionUser = this.session.getCurrentUser();
@@ -39,6 +44,8 @@ export class NavigatorComponent implements OnInit {
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);
         });
+
+        this.appConfig = this.appConfigService.getConfig();
     }
 
     public get isSessionValid(): boolean {
@@ -51,6 +58,19 @@ export class NavigatorComponent implements OnInit {
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
+    }
+
+    public get isIntegrationMode(): boolean {
+        return this.appConfig.with_admiral && this.appConfig.admiral_endpoint.trim() != "";
+    }
+
+    public get admiralLink(): string {
+        let routeSegments = [this.appConfig.admiral_endpoint,
+        "?registry_url=",
+        encodeURIComponent(window.location.href)
+        ];
+
+        return routeSegments.join("");
     }
 
     matchLang(lang: string): boolean {
@@ -94,12 +114,12 @@ export class NavigatorComponent implements OnInit {
 
     //Switch languages
     switchLanguage(lang: string): void {
-        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())){
+        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())) {
             this.translate.use(lang);
-        }else{
+        } else {
             this.translate.use(enLang);//Use default
             //TODO:
-            console.error('Language '+lang.trim()+' is not suppoted');
+            console.error('Language ' + lang.trim() + ' is not suppoted');
         }
         //Try to switch backend lang
         //this.session.switchLanguage(lang).catch(error => console.error(error));
@@ -107,12 +127,20 @@ export class NavigatorComponent implements OnInit {
 
     //Handle the home action
     homeAction(): void {
-        if(this.sessionUser != null){
+        if (this.sessionUser != null) {
             //Navigate to default page
             this.router.navigate(['harbor']);
-        }else{
+        } else {
             //Naviagte to signin page
             this.router.navigate(['sign-in']);
         }
+    }
+
+    openSignUp(): void {
+        let navigatorExtra: NavigationExtras = {
+            queryParams: { "sign_up": true }
+        };
+
+        this.router.navigate([signInRoute], navigatorExtra);
     }
 }

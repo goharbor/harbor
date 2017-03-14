@@ -2,7 +2,8 @@
     "SIGN_IN": {
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确",
-        "FORGOT_PWD": "忘记密码"
+        "FORGOT_PWD": "忘记密码",
+        "HEADER_LINK": "登录"
     },
     "SIGN_UP": {
         "TITLE": "注册"
@@ -18,7 +19,8 @@
         "SEND": "发送",
         "SAVE": "保存",
         "TEST_MAIL": "测试邮件服务器",
-        "CLOSE": "关闭"
+        "CLOSE": "关闭",
+        "TEST_LDAP": "测试LDAP服务器"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -256,6 +258,8 @@
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
+        "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
+        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "VERIFIED": "已验证",
@@ -330,7 +334,9 @@
             "FILTER": "LDAP过滤器",
             "UID": "LDAP用户标识（UID)",
             "SCOPE": "lDAP范围"
-        }
+        },
+        "TEST_MAIL_SUCCESS": "邮件服务器的连通正常",
+        "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",

@@ -44,7 +44,9 @@ export class ResetPasswordComponent implements OnInit{
     }
 
     public getValidationState(key: string): boolean {
-        return this.validationState && this.validationState[key];
+        return this.validationState && 
+        this.validationState[key] &&
+        key === 'reNewPassword'?this.samePassword():true;
     }
 
     public open(): void {
@@ -76,10 +78,12 @@ export class ResetPasswordComponent implements OnInit{
         this.onGoing = true;
         this.pwdService.resetPassword(this.resetUuid, this.password)
         .then(() => {
+            this.onGoing = false;
             this.resetOk = true;
             this.inlineAlert.showInlineSuccess({message:'RESET_PWD.RESET_OK'});
         })
         .catch(error => {
+            this.onGoing = false;
             if(accessErrorHandler(error, this.msgService)){
                 this.close();
             }else{

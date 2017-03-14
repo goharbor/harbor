@@ -5,12 +5,19 @@
             <span class="title">Harbor</span>
         </a>
     </div>
+    <div class="header-nav">
+        <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">Management</span></a>
+        <a href="javascript:void(0)" routerLink="/harbor/dashboard" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">Registry</span></a>
+    </div>
     <global-search></global-search>
     <div class="header-actions">
+        <a href="javascript:void(0)" class="nav-link nav-text" routerLink="/sign-in" routerLinkActive="active" *ngIf="isSessionValid === false">{{'SIGN_IN.HEADER_LINK' | translate}}</a>
+        <div class="nav-divider" *ngIf="!isSessionValid"></div>
+        <a href="javascript:void(0)" class="nav-link nav-text" (click)="openSignUp()" *ngIf="isSessionValid === false">{{'SIGN_UP.TITLE' | translate}}</a>
         <clr-dropdown class="dropdown bottom-left">
-            <button class="nav-icon" clrDropdownToggle style="width: 90px;">
+            <button class="nav-icon" clrDropdownToggle style="width: 98px;">
                 <clr-icon shape="world" style="left:-8px;"></clr-icon>
-                <span>{{currentLang}}</span>
+                <span style="padding-right: 8px;">{{currentLang}}</span>
                 <clr-icon shape="caret down"></clr-icon>
             </button>
             <div class="dropdown-menu">

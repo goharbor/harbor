@@ -16,17 +16,14 @@ import { MyMissingTranslationHandler } from './i18n/missing-trans.handler';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Http } from '@angular/http';
 
-import { SessionService } from './shared/session.service';
+import { AppConfigService } from './app-config.service';
 
 export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'ng/i18n/lang/', '-lang.json');
 }
 
-export function initConfig(session: SessionService) {
-    return () => {
-        console.info("app init here");
-        return Promise.resolve(true);
-    };
+export function initConfig(configService: AppConfigService) {
+    return () => configService.load();
 }
 
 @NgModule({
@@ -51,10 +48,12 @@ export function initConfig(session: SessionService) {
             }
         })
     ],
-    providers: [{
+    providers: [
+        AppConfigService,
+        {
         provide: APP_INITIALIZER,
         useFactory: initConfig,
-        deps: [SessionService],
+        deps: [AppConfigService],
         multi: true
     }],
     bootstrap: [AppComponent]

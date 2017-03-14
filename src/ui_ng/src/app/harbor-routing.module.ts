@@ -36,35 +36,35 @@ const harborRoutes: Routes = [
   { path: '', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
   { path: 'harbor', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
-  { path: 'sign-up', component: SignUpComponent},
-  { path: 'reset_password', component: ResetPasswordComponent},
+  { path: 'sign-up', component: SignUpComponent },
+  { path: 'password-reset', component: ResetPasswordComponent },
   {
     path: 'harbor',
     component: HarborShellComponent,
-    canActivateChild: [AuthCheckGuard],
     children: [
-      {
-        path: 'dashboard',
-        component: StartPageComponent
-      },
+      { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
+      { path: 'sign-up', component: SignUpComponent },
+      { path: 'dashboard', component: StartPageComponent },
       {
         path: 'projects',
-        component: ProjectComponent
+        component: ProjectComponent,
+        canActivate: [AuthCheckGuard]
       },
       {
         path: 'logs',
-        component: RecentLogComponent
+        component: RecentLogComponent,
+        canActivate: [AuthCheckGuard]
       },
       {
         path: 'users',
         component: UserComponent,
-        canActivate: [SystemAdminGuard]
+        canActivate: [AuthCheckGuard, SystemAdminGuard]
       },
       {
         path: 'replications',
         component: ReplicationManagementComponent,
-        canActivate: [SystemAdminGuard],
-        canActivateChild: [SystemAdminGuard],
+        canActivate: [AuthCheckGuard, SystemAdminGuard],
+        canActivateChild: [AuthCheckGuard, SystemAdminGuard],
         children: [
           {
             path: 'rules',
@@ -78,11 +78,14 @@ const harborRoutes: Routes = [
       },
       {
         path: 'tags/:id/:repo',
-        component: TagRepositoryComponent
+        component: TagRepositoryComponent,
+        canActivate: [AuthCheckGuard]
       },
       {
         path: 'projects/:id',
         component: ProjectDetailComponent,
+        canActivate: [AuthCheckGuard],
+        canActivateChild: [AuthCheckGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
         },
@@ -108,11 +111,11 @@ const harborRoutes: Routes = [
       {
         path: 'configs',
         component: ConfigurationComponent,
-        canActivate: [SystemAdminGuard],
+        canActivate: [AuthCheckGuard, SystemAdminGuard],
       }
     ]
   },
-  { path: "**", component: PageNotFoundComponent}
+  { path: "**", component: PageNotFoundComponent }
 ];
 
 @NgModule({
