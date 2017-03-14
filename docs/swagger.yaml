@@ -1529,6 +1529,22 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors.
+  /configurations/reset:
+    post:
+      summary: Reset system configurations.
+      description: |
+        Reset system configurations from harbor.cfg. Can only be accessed by admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Reset system configurations successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
   /email/ping:
     post:
       summary: Test connection and authentication with email server.
