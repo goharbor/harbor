@@ -37,7 +37,7 @@ const harborRoutes: Routes = [
   { path: 'harbor', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
   { path: 'sign-up', component: SignUpComponent},
-  { path: 'reset_password', component: ResetPasswordComponent},
+  { path: 'password-reset', component: ResetPasswordComponent},
   {
     path: 'harbor',
     component: HarborShellComponent,
