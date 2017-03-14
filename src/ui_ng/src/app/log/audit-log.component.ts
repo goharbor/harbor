@@ -53,7 +53,7 @@ export class AuditLogComponent implements OnInit {
  ];
 
   pageOffset: number = 1;
-  pageSize: number = 2;
+  pageSize: number = 15;
   totalRecordCount: number;
   totalPage: number;
   

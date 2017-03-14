@@ -9,6 +9,8 @@ import { UserService } from '../../user/user.service';
 import { errorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
+import { Modal } from 'clarity-angular';
+
 @Component({
     selector: 'sign-up',
     templateUrl: "sign-up.component.html"
@@ -29,6 +31,9 @@ export class SignUpComponent {
 
     @ViewChild(InlineAlertComponent)
     private inlienAlert: InlineAlertComponent;
+
+    @ViewChild(Modal)
+    private modal: Modal;
 
     private getNewUser(): User {
         return this.newUserForm.getData();
@@ -55,7 +60,7 @@ export class SignUpComponent {
     open(): void {
         this.newUserForm.reset();//Reset form
         this.formValueChanged = false;
-        this.opened = true;
+        this.modal.open();
     }
 
     close(): void {
@@ -74,7 +79,7 @@ export class SignUpComponent {
     }
 
     confirmCancel(): void {
-        this.opened = false;
+        this.modal.close();
     }
 
     //Create new user
@@ -97,7 +102,7 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
-                this.close();
+                this.modal.close();
             })
             .catch(error => {
                 this.onGoing = false;

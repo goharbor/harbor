@@ -20,7 +20,7 @@ export class ConfigurationAuthComponent {
     public get showLdap(): boolean {
         return this.currentConfig &&
             this.currentConfig.auth_mode &&
-            this.currentConfig.auth_mode.value === 'ldap';
+            this.currentConfig.auth_mode.value === 'ldap_auth';
     }
 
     private disabled(prop: any): boolean {

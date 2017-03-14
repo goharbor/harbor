@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Headers, Http, RequestOptions, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { PasswordSetting } from './password-setting';
@@ -52,10 +52,18 @@ export class PasswordSettingService {
             return Promise.reject("Invalid reset uuid or password");
         }
 
-        return this.http.post(resetPasswordEndpoint, JSON.stringify({
-            "reset_uuid": uuid,
-            "password": newPassword
-        }), this.options)
+        let formHeaders = new Headers({
+            "Content-Type": 'application/x-www-form-urlencoded'
+        });
+        let formOptions: RequestOptions = new RequestOptions({
+            headers: formHeaders
+        });
+        
+        let body: URLSearchParams = new URLSearchParams();
+        body.set("reset_uuid", uuid);
+        body.set("password", newPassword);
+
+        return this.http.post(resetPasswordEndpoint, body.toString(), formOptions)
             .toPromise()
             .then(response => response)
             .catch(error => {

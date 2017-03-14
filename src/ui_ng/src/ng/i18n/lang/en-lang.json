@@ -2,7 +2,8 @@
     "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password",
-        "FORGOT_PWD": "Forgot password"
+        "FORGOT_PWD": "Forgot password",
+        "HEADER_LINK": "Sign In"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
@@ -18,7 +19,8 @@
         "SEND": "SEND",
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",
-        "CLOSE": "CLOSE"
+        "CLOSE": "CLOSE",
+        "TEST_LDAP": "TEST LDAP SERVER"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -256,6 +258,8 @@
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{param}}?",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
+        "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
+        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from Notary before they can be deleted.",
         "FILTER_FOR_REPOSITORIES": "Filter for repositories",
         "TAG": "Tag",
         "VERIFIED": "Verified",
@@ -330,7 +334,9 @@
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
             "SCOPE": "lDAP Scope"
-        }
+        },
+        "TEST_MAIL_SUCCESS": "Connection to mail server is verified",
+        "TEST_LDAP_SUCCESS": "Connection to ldap server is verified"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",

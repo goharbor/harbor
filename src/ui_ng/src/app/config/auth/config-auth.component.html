@@ -3,10 +3,9 @@
         <div class="form-group">
             <label for="authMode">{{'CONFIG.AUTH_MODE' | translate }}</label>
             <div class="select">
-                <select id="authMode" name="authMode" [disabled]="disabled(currentConfig.auth_mode)
-" [(ngModel)]="currentConfig.auth_mode.value">
+                <select id="authMode" name="authMode" [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
                     <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
-                    <option value="ldap">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
+                    <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
                 </select>
             </div>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
