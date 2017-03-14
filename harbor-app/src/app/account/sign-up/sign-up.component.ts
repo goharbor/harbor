@@ -97,7 +97,7 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
-                this.close();
+                this.opened = false;
             })
             .catch(error => {
                 this.onGoing = false;
