@@ -1,4 +1,4 @@
-Test 7-01 -Update-project-restrict
+Test 8-02 -Update-project-restrict
 =======
 
 # Purpose:
