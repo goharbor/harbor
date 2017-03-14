@@ -4,6 +4,7 @@ import { CookieService } from 'angular2-cookie/core';
 
 import { supportedLangs, enLang } from './shared/shared.const';
 import { SessionService } from './shared/session.service';
+import { AppConfigService } from './app-config.service';
 
 @Component({
     selector: 'harbor-app',
@@ -14,7 +15,8 @@ export class AppComponent {
     constructor(
         private translate: TranslateService,
         private cookie: CookieService,
-        private session: SessionService) {
+        private session: SessionService,
+        private config: AppConfigService) {
         translate.addLangs(supportedLangs);
         translate.setDefaultLang(enLang);
 
@@ -28,6 +30,7 @@ export class AppComponent {
         let selectedLang = this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang;
         translate.use(selectedLang);
         //this.session.switchLanguage(selectedLang).catch(error => console.error(error));
+        console.info(config.getConfig());
     }
 
     private isLangMatch(browserLang: string, supportedLangs: string[]) {

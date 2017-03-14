@@ -2,7 +2,8 @@
     "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password",
-        "FORGOT_PWD": "Forgot password"
+        "FORGOT_PWD": "Forgot password",
+        "HEADER_LINK": "Sign In"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"

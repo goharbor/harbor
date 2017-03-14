@@ -2,7 +2,8 @@
     "SIGN_IN": {
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确",
-        "FORGOT_PWD": "忘记密码"
+        "FORGOT_PWD": "忘记密码",
+        "HEADER_LINK": "登录"
     },
     "SIGN_UP": {
         "TITLE": "注册"

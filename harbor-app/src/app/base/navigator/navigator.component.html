@@ -8,7 +8,7 @@
     <global-search></global-search>
     <div class="header-actions">
         <a href="javascript:void(0)" class="nav-link nav-text" routerLink="/sign-in" routerLinkActive="active" *ngIf="isSessionValid === false">{{'SIGN_IN.HEADER_LINK' | translate}}</a>
-        <div class="nav-divider"></div>
+        <div class="nav-divider" *ngIf="!isSessionValid"></div>
         <a href="javascript:void(0)" class="nav-link nav-text" (click)="openSignUp()" *ngIf="isSessionValid === false">{{'SIGN_UP.TITLE' | translate}}</a>
         <clr-dropdown class="dropdown bottom-left">
             <button class="nav-icon" clrDropdownToggle style="width: 98px;">
