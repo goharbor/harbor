@@ -44,7 +44,7 @@ const harborRoutes: Routes = [
     children: [
       { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
       { path: 'sign-up', component: SignUpComponent },
-      { path: 'dashboard', component: StartPageComponent },
+      { path: 'dashboard', component: StartPageComponent, canActivate: [AuthCheckGuard]},
       {
         path: 'projects',
         component: ProjectComponent,

@@ -1,0 +1,42 @@
+{
+    "/api/*": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/service/*": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/login": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/sign_in": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/log_out": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/sendEmail": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/language": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/reset": {
+        "target": "http://10.117.4.165",
+        "secure": false,
+        "logLevel": "debug"
+    }
+}
