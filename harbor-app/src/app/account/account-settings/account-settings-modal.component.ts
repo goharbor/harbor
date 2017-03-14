@@ -118,7 +118,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.session.updateAccountSettings(this.account)
             .then(() => {
                 this.isOnCalling = false;
-                this.close();
+                this.opened = false;
                 this.msgService.announceMessage(200, "PROFILE.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {
