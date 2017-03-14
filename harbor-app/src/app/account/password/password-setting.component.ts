@@ -117,7 +117,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             })
             .then(() => {
                 this.onCalling = false;
-                this.close();
+                this.opened = false;
                 this.msgService.announceMessage(200, "CHANGE_PWD.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {
