@@ -138,7 +138,7 @@ func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
 
 	var r sql.Result
 	salt := utils.GenerateRandomString()
-	if len(oldPassword) == 0 {
+	if (oldPassword[0] == "")  {
 		//In some cases, it may no need to check old password, just as Linux change password policies.
 		r, err = o.Raw(`update user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, salt), salt, u.UserID).Exec()
 	} else {
