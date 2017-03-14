@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, Inject } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -10,6 +10,9 @@ import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
 import { supportedLangs, enLang, languageNames, signInRoute } from '../../shared/shared.const';
+
+import { AppConfigService } from '../../app-config.service';
+import { AppConfig } from '../../app-config';
 
 @Component({
     selector: 'navigator',
@@ -24,12 +27,14 @@ export class NavigatorComponent implements OnInit {
 
     private sessionUser: SessionUser = null;
     private selectedLang: string = enLang;
+    private appConfig: AppConfig = new AppConfig();
 
     constructor(
         private session: SessionService,
         private router: Router,
         private translate: TranslateService,
-        private cookie: CookieService) { }
+        private cookie: CookieService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
         this.sessionUser = this.session.getCurrentUser();
@@ -39,6 +44,8 @@ export class NavigatorComponent implements OnInit {
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);
         });
+
+        this.appConfig = this.appConfigService.getConfig();
     }
 
     public get isSessionValid(): boolean {
@@ -51,6 +58,19 @@ export class NavigatorComponent implements OnInit {
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
+    }
+
+    public get isIntegrationMode(): boolean {
+        return this.appConfig.with_admiral && this.appConfig.admiral_endpoint.trim() != "";
+    }
+
+    public get admiralLink(): string {
+        let routeSegments = [this.appConfig.admiral_endpoint,
+        "?registry_url=",
+        encodeURIComponent(window.location.href)
+        ];
+
+        return routeSegments.join("");
     }
 
     matchLang(lang: string): boolean {
@@ -118,7 +138,7 @@ export class NavigatorComponent implements OnInit {
 
     openSignUp(): void {
         let navigatorExtra: NavigationExtras = {
-            queryParams: { "sign_up": true}
+            queryParams: { "sign_up": true }
         };
 
         this.router.navigate([signInRoute], navigatorExtra);

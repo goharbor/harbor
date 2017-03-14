@@ -15,6 +15,8 @@ import { DeletionMessage } from '../shared/deletion-dialog/deletion-message'
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 
+import { AppConfigService } from '../app-config.service';
+
 const fakePass = "fakepassword";
 
 @Component({
@@ -38,7 +40,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     constructor(
         private msgService: MessageService,
         private configService: ConfigurationService,
-        private confirmService: DeletionDialogService) { }
+        private confirmService: DeletionDialogService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
         //First load
@@ -120,6 +123,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //or force refresh by calling service.
                     //HERE we choose force way
                     this.retrieveConfig();
+
+                    //Reload bootstrap option
+                    this.appConfigService.load().catch(error=> console.error("Failed to reload bootstrap option with error: ", error));
+
                     this.msgService.announceMessage(response.status, "CONFIG.SAVE_SUCCESS", AlertType.SUCCESS);
                 })
                 .catch(error => {
