@@ -1,41 +1,32 @@
-import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
+import { Component, Output, ViewChild, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { User } from '../../user/user';
 
-import { SessionService } from '../../shared/session.service';
 import { UserService } from '../../user/user.service';
 import { errorHandler } from '../../shared/shared.utils';
-import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { AlertType } from '../../shared/shared.const';
 
-import { Modal } from 'clarity-angular';
+import { MessageService } from '../../global-message/message.service';
 
 @Component({
-    selector: 'sign-up',
-    templateUrl: "sign-up.component.html"
+    selector: 'sign-up-page',
+    templateUrl: "sign-up-page.component.html"
 })
-export class SignUpComponent {
-    opened: boolean = false;
-    staticBackdrop: boolean = true;
+export class SignUpPageComponent implements OnInit {
     private error: any;
     private onGoing: boolean = false;
     private formValueChanged: boolean = false;
 
-    @Output() userCreation = new EventEmitter<User>();
-
     constructor(
-        private session: SessionService,
-        private userService: UserService) { }
+        private userService: UserService,
+        private msgService: MessageService,
+        private router: Router) { }
 
     @ViewChild(NewUserFormComponent)
     private newUserForm: NewUserFormComponent;
-
-    @ViewChild(InlineAlertComponent)
-    private inlienAlert: InlineAlertComponent;
-
-    @ViewChild(Modal)
-    private modal: Modal;
 
     private getNewUser(): User {
         return this.newUserForm.getData();
@@ -49,6 +40,15 @@ export class SignUpComponent {
         return this.newUserForm.isValid && this.error == null;
     }
 
+    public get canBeCancelled(): boolean {
+        return this.formValueChanged && this.newUserForm && !this.newUserForm.isEmpty();
+    }
+
+    ngOnInit(): void {
+        this.newUserForm.reset();//Reset form
+        this.formValueChanged = false;
+    }
+
     formValueChange(flag: boolean): void {
         if (flag) {
             this.formValueChanged = true;
@@ -56,32 +56,12 @@ export class SignUpComponent {
         if (this.error != null) {
             this.error = null;//clear error
         }
-        this.inlienAlert.close();//Close alert if being shown
     }
 
-    open(): void {
-        this.newUserForm.reset();//Reset form
-        this.formValueChanged = false;
-        this.modal.open();
-    }
-
-    close(): void {
-        if (this.formValueChanged) {
-            if (this.newUserForm.isEmpty()) {
-                this.opened = false;
-            } else {
-                //Need user confirmation
-                this.inlienAlert.showInlineConfirmation({
-                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
-                });
-            }
-        } else {
-            this.opened = false;
+    cancel(): void {
+        if (this.newUserForm) {
+            this.newUserForm.reset();
         }
-    }
-
-    confirmCancel(): void {
-        this.modal.close();
     }
 
     //Create new user
@@ -104,13 +84,14 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
-                this.modal.close();
-                this.userCreation.emit(u);
+                this.msgService.announceMessage(200, "", AlertType.SUCCESS);
+                //Navigate to embeded sign-in
+                this.router.navigate(['harbor', 'sign-in']);
             })
             .catch(error => {
                 this.onGoing = false;
-                this.error = error;
-                this.inlienAlert.showInlineError(error);
+                this.error = error
+                this.msgService.announceMessage(error.status | 500, "", AlertType.WARNING);
             });
     }
 }

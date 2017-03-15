@@ -17,7 +17,7 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 
 import { Subscription } from 'rxjs/Subscription';
 
-import { harborRootRoute } from '../../shared/shared.const';
+import { CommonRoutes } from '../../shared/shared.const';
 
 @Component({
     selector: 'harbor-shell',
@@ -83,7 +83,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     }
 
     public get isStartPage(): boolean {
-        return this.router.routerState.snapshot.url.toString() === harborRootRoute;
+        return this.router.routerState.snapshot.url.toString() === CommonRoutes.HARBOR_ROOT;
     }
 
     public get showSearch(): boolean {
