@@ -14,12 +14,8 @@ ENV MYSQL_USR root \
 COPY src/ui/views /go/bin/views
 COPY src/ui/static /go/bin/static
 COPY src/favicon.ico /go/bin/favicon.ico
-COPY make/jsminify.sh /tmp/jsminify.sh
 
-RUN chmod u+x /go/bin/harbor_ui \
-    && timestamp=`date '+%s'` \
-    && /tmp/jsminify.sh /go/bin/views/sections/script-include.htm /go/bin/static/resources/js/harbor.app.min.$timestamp.js /go/bin/ \
-    && sed -i "s/harbor\.app\.min\.js/harbor\.app\.min\.$timestamp\.js/g" /go/bin/views/sections/script-min-include.htm
+RUN chmod u+x /go/bin/harbor_ui
 
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_ui"]
