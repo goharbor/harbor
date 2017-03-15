@@ -1,10 +1,11 @@
-package auth
+package challenge
 
 import (
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 // Challenge carries information from a WWW-Authenticate response header.
@@ -17,12 +18,12 @@ type Challenge struct {
 	Parameters map[string]string
 }
 
-// ChallengeManager manages the challenges for endpoints.
+// Manager manages the challenges for endpoints.
 // The challenges are pulled out of HTTP responses. Only
 // responses which expect challenges should be added to
 // the manager, since a non-unauthorized request will be
 // viewed as not requiring challenges.
-type ChallengeManager interface {
+type Manager interface {
 	// GetChallenges returns the challenges for the given
 	// endpoint URL.
 	GetChallenges(endpoint url.URL) ([]Challenge, error)
@@ -36,36 +37,52 @@ type ChallengeManager interface {
 	AddResponse(resp *http.Response) error
 }
 
-// NewSimpleChallengeManager returns an instance of
-// ChallengeManger which only maps endpoints to challenges
+// NewSimpleManager returns an instance of
+// Manger which only maps endpoints to challenges
 // based on the responses which have been added the
 // manager. The simple manager will make no attempt to
 // perform requests on the endpoints or cache the responses
 // to a backend.
-func NewSimpleChallengeManager() ChallengeManager {
-	return simpleChallengeManager{}
+func NewSimpleManager() Manager {
+	return &simpleManager{
+		Challanges: make(map[string][]Challenge),
+	}
 }
 
-type simpleChallengeManager map[string][]Challenge
+type simpleManager struct {
+	sync.RWMutex
+	Challanges map[string][]Challenge
+}
 
-func (m simpleChallengeManager) GetChallenges(endpoint url.URL) ([]Challenge, error) {
+func normalizeURL(endpoint *url.URL) {
 	endpoint.Host = strings.ToLower(endpoint.Host)
+	endpoint.Host = canonicalAddr(endpoint)
+}
 
-	challenges := m[endpoint.String()]
+func (m *simpleManager) GetChallenges(endpoint url.URL) ([]Challenge, error) {
+	normalizeURL(&endpoint)
+
+	m.RLock()
+	defer m.RUnlock()
+	challenges := m.Challanges[endpoint.String()]
 	return challenges, nil
 }
 
-func (m simpleChallengeManager) AddResponse(resp *http.Response) error {
+func (m *simpleManager) AddResponse(resp *http.Response) error {
 	challenges := ResponseChallenges(resp)
 	if resp.Request == nil {
 		return fmt.Errorf("missing request reference")
 	}
 	urlCopy := url.URL{
 		Path:   resp.Request.URL.Path,
-		Host:   strings.ToLower(resp.Request.URL.Host),
+		Host:   resp.Request.URL.Host,
 		Scheme: resp.Request.URL.Scheme,
 	}
-	m[urlCopy.String()] = challenges
+	normalizeURL(&urlCopy)
+
+	m.Lock()
+	defer m.Unlock()
+	m.Challanges[urlCopy.String()] = challenges
 	return nil
 }
 
