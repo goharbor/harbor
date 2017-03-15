@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	comcfg "github.com/vmware/harbor/src/common/config"
 )
 
 func TestPingEmail(t *testing.T) {
@@ -38,17 +37,17 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(401, code, "the status code of ping email server with non-admin user should be 401")
 
-	settings := map[string]string{
-		comcfg.EmailHost:     "smtp.gmail.com",
-		comcfg.EmailPort:     "465",
-		comcfg.EmailIdentity: "",
-		comcfg.EmailUsername: "wrong_username",
-		comcfg.EmailPassword: "wrong_password",
-		comcfg.EmailSSL:      "1",
-	}
-
 	//case 2: secure connection with admin role
-	code, body, err := apiTest.PingEmail(*admin, settings)
+	settings := `{
+		"email_host":     "smtp.gmail.com",
+		"email_port":     465,
+		"email_identity": "",
+		"email_username": "wrong_username",
+		"email_password": "wrong_password",
+		"email_ssl":      true
+	}`
+
+	code, body, err := apiTest.PingEmail(*admin, []byte(settings))
 	if err != nil {
 		t.Errorf("failed to test ping email server: %v", err)
 		return

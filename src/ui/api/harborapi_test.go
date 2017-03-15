@@ -3,6 +3,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -1029,8 +1030,8 @@ func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]string) (int, error)
 	return code, err
 }
 
-func (a testapi) PingEmail(authInfo usrInfo, settings map[string]string) (int, string, error) {
-	_sling := sling.New().Base(a.basePath).Post("/api/email/ping").BodyJSON(settings)
+func (a testapi) PingEmail(authInfo usrInfo, settings []byte) (int, string, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/email/ping").Body(bytes.NewReader(settings))
 
 	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
 
