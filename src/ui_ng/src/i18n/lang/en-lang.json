@@ -2,7 +2,8 @@
     "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password",
-        "FORGOT_PWD": "Forgot password"
+        "FORGOT_PWD": "Forgot password",
+        "HEADER_LINK": "Sign In"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
@@ -18,7 +19,8 @@
         "SEND": "SEND",
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",
-        "CLOSE": "CLOSE"
+        "CLOSE": "CLOSE",
+        "TEST_LDAP": "TEST LDAP SERVER"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -332,7 +334,9 @@
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
             "SCOPE": "lDAP Scope"
-        }
+        },
+        "TEST_MAIL_SUCCESS": "Connection to mail server is verified",
+        "TEST_LDAP_SUCCESS": "Connection to ldap server is verified"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",

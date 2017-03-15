@@ -50,7 +50,7 @@ export class ProjectComponent implements OnInit {
   isPublic: number;
 
   page: number = 1;
-  pageSize: number = 3;
+  pageSize: number = 15;
 
   totalPage: number;
   totalRecordCount: number;
