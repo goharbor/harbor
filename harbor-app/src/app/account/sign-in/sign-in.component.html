@@ -35,5 +35,5 @@
         </div>
     </form>
 </div>
-<sign-up #signupDialog></sign-up>
+<sign-up #signupDialog (userCreation)="handleUserCreation($event)"></sign-up>
 <forgot-password #forgotPwdDialog></forgot-password>

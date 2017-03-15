@@ -10,7 +10,6 @@
         </div>
         <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
             <section class="sidenav-content">
-                <a routerLink="/harbor/dashboard" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.DASHBOARD' | translate}}</a>
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
                 <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.LOGS' | translate}}</a>
                 <section class="nav-group collapsible" *ngIf="isSystemAdmin">

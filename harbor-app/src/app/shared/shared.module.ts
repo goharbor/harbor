@@ -15,7 +15,6 @@ import { RouterModule } from '@angular/router';
 
 import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.component';
 import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
-import { BaseRoutingResolver } from './route/base-routing-resolver.service';
 import { SystemAdminGuard } from './route/system-admin-activate.service';
 import { NewUserFormComponent } from './new-user-form/new-user-form.component';
 import { InlineAlertComponent } from './inline-alert/inline-alert.component';
@@ -33,6 +32,8 @@ import { AuthCheckGuard } from './route/auth-user-activate.service';
 import { StatisticsComponent } from './statictics/statistics.component';
 import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
 import { SignInGuard } from './route/sign-in-guard-activate.service';
+import { ModeGuard } from './route/mode-guard-activate.service';
+import { StartGuard } from './route/start-guard-activate.service';
 
 @NgModule({
   imports: [
@@ -79,10 +80,11 @@ import { SignInGuard } from './route/sign-in-guard-activate.service';
     MessageService,
     CookieService,
     DeletionDialogService,
-    BaseRoutingResolver,
     SystemAdminGuard,
     AuthCheckGuard,
-    SignInGuard]
+    SignInGuard,
+    ModeGuard,
+    StartGuard]
 })
 export class SharedModule {
 

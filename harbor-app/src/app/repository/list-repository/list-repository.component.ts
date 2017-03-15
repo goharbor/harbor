@@ -5,7 +5,8 @@ import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { SessionService } from '../../shared/session.service';
-import { signInRoute, ListMode } from '../../shared/shared.const';
+import { ListMode, CommonRoutes } from '../../shared/shared.const';
+import { AppConfigService } from '../../app-config.service';
 
 @Component({
   selector: 'list-repository',
@@ -28,14 +29,15 @@ export class ListRepositoryComponent {
   constructor(
     private router: Router,
     private searchTrigger: SearchTriggerService,
-    private session: SessionService) { }
+    private session: SessionService,
+    private appConfigService: AppConfigService) { }
 
   deleteRepo(repoName: string) {
     this.delete.emit(repoName);
-  } 
+  }
 
   refresh(state: State) {
-    if(this.repositories) {
+    if (this.repositories) {
       this.paginate.emit(state);
     }
   }
@@ -52,8 +54,11 @@ export class ListRepositoryComponent {
       let navigatorExtra: NavigationExtras = {
         queryParams: { "redirect_url": linkUrl.join("/") }
       };
-
-      this.router.navigate([signInRoute], navigatorExtra);
+      if (this.appConfigService.isIntegrationMode()) {
+        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+      } else {
+        this.router.navigate([CommonRoutes.SIGN_IN], navigatorExtra);
+      }
     } else {
       this.router.navigate(linkUrl);
     }

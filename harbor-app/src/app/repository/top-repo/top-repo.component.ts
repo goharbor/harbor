@@ -32,11 +32,7 @@ export class TopRepoComponent implements OnInit{
     //Get top popular repositories
     getTopRepos() {
         this.topRepoService.getTopRepos()
-            .then(repos => repos.forEach(item => {
-                let repo: Repository = new Repository(item.name, item.count);
-                repo.pull_count = 0;
-                this.topRepos.push(repo);
-            }))
+            .then(repos => this.topRepos = repos )
             .catch(error => {
                 this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
             })

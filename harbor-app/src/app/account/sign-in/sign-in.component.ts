@@ -7,11 +7,12 @@ import { SessionService } from '../../shared/session.service';
 import { SignInCredential } from '../../shared/sign-in-credential';
 
 import { SignUpComponent } from '../sign-up/sign-up.component';
-import { harborRootRoute } from '../../shared/shared.const';
+import { CommonRoutes } from '../../shared/shared.const';
 import { ForgotPasswordComponent } from '../password/forgot-password.component';
 
 import { AppConfigService } from '../../app-config.service';
 import { AppConfig } from '../../app-config';
+import { User } from '../../user/user';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -105,6 +106,17 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     }
 
+    //Fill the new user info into the sign in form
+    private handleUserCreation(user: User): void {
+        if(user){
+            this.currentForm.setValue({
+                "login_username": user.username,
+                "login_password": user.password
+            });
+
+        }
+    }
+
     //Implement interface
     //Watch the view change only when view is in error state
     ngAfterViewChecked() {
@@ -139,7 +151,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 //Redirect to the right route
                 if (this.redirectUrl === "") {
                     //Routing to the default location
-                    this.router.navigateByUrl(harborRootRoute);
+                    this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
                 } else {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
