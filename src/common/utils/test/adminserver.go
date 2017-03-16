@@ -93,5 +93,13 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 		}),
 	})
 
+	m = append(m, &RequestHandlerMapping{
+		Method:  "POST",
+		Pattern: "/api/configurations/reset",
+		Handler: Handler(&Response{
+			StatusCode: http.StatusOK,
+		}),
+	})
+
 	return NewServer(m...), nil
 }

@@ -117,4 +117,21 @@ func TestSystemcfg(t *testing.T) {
 			cfg[comcfg.AUTHMode], comcfg.DBAuth)
 		return
 	}
+
+	if err = Reset(); err != nil {
+		t.Errorf("failed to reset system configurations: %v", err)
+		return
+	}
+
+	cfg, err = GetSystemCfg()
+	if err != nil {
+		t.Errorf("failed to get system configurations: %v", err)
+		return
+	}
+
+	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
+		t.Errorf("unexpected auth mode: %s != %s",
+			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+		return
+	}
 }

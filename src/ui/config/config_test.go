@@ -140,4 +140,17 @@ func TestConfig(t *testing.T) {
 	if extURL != "host01.com" {
 		t.Errorf(`extURL should be "host01.com".`)
 	}
+
+	// reset configurations
+	if err = Reset(); err != nil {
+		t.Errorf("failed to reset configurations: %v", err)
+		return
+	}
+	mode, err = AuthMode()
+	if err != nil {
+		t.Fatalf("failed to get auth mode: %v", err)
+	}
+	if mode != "db_auth" {
+		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
+	}
 }
