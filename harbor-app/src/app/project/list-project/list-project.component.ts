@@ -5,8 +5,7 @@ import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { CommonRoutes, ListMode } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { ListMode } from '../../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
@@ -33,14 +32,13 @@ export class ListProjectComponent implements OnInit {
   constructor(
     private session: SessionService,
     private router: Router,
-    private searchTrigger: SearchTriggerService,
-    private appConfigService: AppConfigService) { }
+    private searchTrigger: SearchTriggerService) { }
 
   ngOnInit(): void {
   }
 
   public get listFullMode(): boolean {
-    return this.mode === ListMode.FULL;
+    return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
   }
 
   goToLink(proId: number): void {
@@ -49,14 +47,10 @@ export class ListProjectComponent implements OnInit {
     let linkUrl = ['harbor', 'projects', proId, 'repository'];
     if (!this.session.getCurrentUser()) {
       let navigatorExtra: NavigationExtras = {
-        queryParams: { "redirect_url": linkUrl.join("/") }
+        queryParams: { "guest": true }
       };
 
-      if (this.appConfigService.isIntegrationMode()) {
-        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-      } else {
-        this.router.navigate([CommonRoutes.SIGN_IN], navigatorExtra);
-      }
+      this.router.navigate(linkUrl, navigatorExtra);
     } else {
       this.router.navigate(linkUrl);
 

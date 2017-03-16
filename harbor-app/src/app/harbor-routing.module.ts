@@ -36,16 +36,15 @@ import { ModeGuard } from './shared/route/mode-guard-activate.service';
 import { StartGuard } from './shared/route/start-guard-activate.service';
 
 const harborRoutes: Routes = [
-  { path: '', redirectTo: '/harbor', pathMatch: 'full' },
-  { path: 'sign-in', component: SignInComponent, canActivate: [ModeGuard, SignInGuard] },
+  { path: '', redirectTo: 'harbor', pathMatch: 'full' },
   { path: 'password-reset', component: ResetPasswordComponent },
   {
     path: 'harbor',
     component: HarborShellComponent,
     canActivateChild: [AuthCheckGuard],
     children: [
-      { path: 'sign-in', component: SignInComponent, canActivate: [ModeGuard, SignInGuard] },
-      { path: '', component: StartPageComponent, canActivate: [StartGuard]},
+      { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
+      { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
       {
         path: 'projects',
         component: ProjectComponent
