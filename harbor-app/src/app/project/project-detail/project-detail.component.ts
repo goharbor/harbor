@@ -8,7 +8,7 @@ import { SessionService } from '../../shared/session.service';
 @Component({
     selector: 'project-detail',
     templateUrl: "project-detail.component.html",
-    styleUrls: [ 'project-detail.css' ]
+    styleUrls: [ 'project-detail.component.css' ]
 })
 export class ProjectDetailComponent {
 
@@ -17,11 +17,18 @@ export class ProjectDetailComponent {
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private session: SessionService) {
+    private sessionService: SessionService) {
     this.route.data.subscribe(data=>this.currentProject = <Project>data['projectResolver']);
+
+  }
+
+  public get isSystemAdmin(): boolean {
+    let account = this.sessionService.getCurrentUser();
+    return account != null && account.has_admin_role > 0;
   }
 
   public get isSessionValid(): boolean {
-    return this.session.getCurrentUser() != null;
+    return this.sessionService.getCurrentUser() != null;
   }
+
 }

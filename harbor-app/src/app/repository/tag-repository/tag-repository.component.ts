@@ -15,8 +15,10 @@ import { TagView } from '../tag-view';
 import { AppConfigService } from '../../app-config.service';
 
 @Component({
+  moduleId: module.id,
   selector: 'tag-repository',
-  templateUrl: 'tag-repository.component.html'
+  templateUrl: 'tag-repository.component.html',
+  styleUrls: ['./tag-repository.component.css']
 })
 export class TagRepositoryComponent implements OnInit, OnDestroy {
 

@@ -10,8 +10,10 @@ import { ListMode } from '../../shared/shared.const';
 import { State } from 'clarity-angular';
 
 @Component({
+  moduleId: module.id,
   selector: 'list-project',
-  templateUrl: 'list-project.component.html'
+  templateUrl: 'list-project.component.html',
+  styleUrls: ['./list-project.component.css']
 })
 export class ListProjectComponent implements OnInit {
 

@@ -48,8 +48,10 @@ class SearchOption {
 }
 
 @Component({
+  moduleId: module.id,
   selector: 'replicaton',
-  templateUrl: 'replication.component.html'
+  templateUrl: 'replication.component.html',
+  styleUrls: ['./replication.component.css']
 })
 export class ReplicationComponent implements OnInit {
    
