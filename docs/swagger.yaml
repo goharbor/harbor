@@ -1533,7 +1533,7 @@ paths:
     post:
       summary: Reset system configurations.
       description: |
-        Reset system configurations from harbor.cfg. Can only be accessed by admin user.
+        Reset system configurations from environment variables. Can only be accessed by admin user.
       tags:
         - Products
       responses:
