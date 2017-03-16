@@ -2098,7 +2098,7 @@ definitions:
         type: string
         description: The host of email server.
       email_port:
-        type: string
+        type: integer
         description: The port of email server.
       email_username:
         type: string
@@ -2107,7 +2107,7 @@ definitions:
         type: string
         description: The password of email server.
       email_ssl:
-        type: string
+        type: boolean
         description: Use ssl/tls or not.
       email_identity:
         type: string
