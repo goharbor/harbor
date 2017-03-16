@@ -2025,6 +2025,9 @@ definitions:
       self_registration:
         type: boolean
         description: Indicate whether the Harbor instance enable user to register himself.
+      has_ca_root:
+        type: boolean
+        description: Indicate whether there is a ca root cert file ready for download in the file system.
   SystemInfo:
     type: object
     properties:
@@ -2098,7 +2101,7 @@ definitions:
         type: string
         description: The host of email server.
       email_port:
-        type: string
+        type: integer
         description: The port of email server.
       email_username:
         type: string
@@ -2107,7 +2110,7 @@ definitions:
         type: string
         description: The password of email server.
       email_ssl:
-        type: string
+        type: boolean
         description: Use ssl/tls or not.
       email_identity:
         type: string

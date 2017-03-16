@@ -44,6 +44,7 @@ type GeneralInfo struct {
 	RegistryURL             string `json:"registry_url"`
 	ProjectCreationRestrict string `json:"project_creation_restriction"`
 	SelfRegistration        bool   `json:"self_registration"`
+	HasCARoot               bool   `json:"has_ca_root"`
 }
 
 // validate for validating user if an admin.
@@ -88,13 +89,16 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 func (sia *SystemInfoAPI) GetCert() {
 	sia.validate()
 	if sia.isAdmin {
-		if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
+		if _, err := os.Stat(defaultRootCert); err == nil {
 			sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
 			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
 			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
-		} else {
+		} else if os.IsNotExist(err) {
 			log.Error("No certificate found.")
 			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+		} else {
+			log.Errorf("Unexpected error: %v", err)
+			sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 	}
 	sia.CustomAbort(http.StatusForbidden, "")
@@ -113,6 +117,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	} else {
 		registryURL = l[0]
 	}
+	_, caStatErr := os.Stat(defaultRootCert)
 	info := GeneralInfo{
 		AdmiralEndpoint:         cfg[comcfg.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
@@ -121,6 +126,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		ProjectCreationRestrict: cfg[comcfg.ProjectCreationRestriction].(string),
 		SelfRegistration:        cfg[comcfg.SelfRegistration].(bool),
 		RegistryURL:             registryURL,
+		HasCARoot:               caStatErr == nil,
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()

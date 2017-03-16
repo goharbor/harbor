@@ -48,6 +48,7 @@ func TestGetGeneralInfo(t *testing.T) {
 	err = json.Unmarshal(body, g)
 	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
 	assert.Equal(false, g.WithNotary, "with notary should be false")
+	assert.Equal(true, g.HasCARoot, "has ca root should be true")
 }
 
 func TestGetCert(t *testing.T) {
