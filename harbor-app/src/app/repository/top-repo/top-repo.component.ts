@@ -9,6 +9,7 @@ import { Repository } from '../repository';
 @Component({
     selector: 'top-repo',
     templateUrl: "top-repo.component.html",
+    styleUrls: ['top-repo.component.css'],
 
     providers: [TopRepoService]
 })

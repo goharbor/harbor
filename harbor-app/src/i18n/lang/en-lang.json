@@ -20,7 +20,8 @@
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",
         "CLOSE": "CLOSE",
-        "TEST_LDAP": "TEST LDAP SERVER"
+        "TEST_LDAP": "TEST LDAP SERVER",
+        "MORE_INFO": "More info..."
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -273,7 +274,8 @@
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
-        "ITEMS": "item(s)"
+        "ITEMS": "item(s)",
+        "POP_REPOS": "Popular Repositories"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"

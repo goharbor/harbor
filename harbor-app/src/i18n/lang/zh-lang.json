@@ -20,7 +20,8 @@
         "SAVE": "保存",
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
-        "TEST_LDAP": "测试LDAP服务器"
+        "TEST_LDAP": "测试LDAP服务器",
+        "MORE_INFO": "更多信息..."
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -273,7 +274,8 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "POP_REPOS": "受欢迎的镜像库"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"

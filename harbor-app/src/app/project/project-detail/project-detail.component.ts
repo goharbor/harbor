@@ -13,9 +13,9 @@ import { SessionService } from '../../shared/session.service';
 export class ProjectDetailComponent {
 
   currentProject: Project;
-  
+
   constructor(
-    private route: ActivatedRoute,
+    private route: ActivatedRoute, 
     private router: Router,
     private sessionService: SessionService) {
     this.route.data.subscribe(data=>this.currentProject = <Project>data['projectResolver']);
@@ -26,5 +26,9 @@ export class ProjectDetailComponent {
     let account = this.sessionService.getCurrentUser();
     return account != null && account.has_admin_role > 0;
   }
-  
+
+  public get isSessionValid(): boolean {
+    return this.sessionService.getCurrentUser() != null;
+  }
+
 }
