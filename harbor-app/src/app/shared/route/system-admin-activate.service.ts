@@ -40,11 +40,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
               let navigatorExtra: NavigationExtras = {
                 queryParams: { "redirect_url": state.url }
               };
-              if (this.appConfigService.isIntegrationMode()) {
-                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-              } else {
-                this.router.navigate([CommonRoutes.SIGN_IN], navigatorExtra);
-              }
+              this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
               return resolve(false);
             } else {
               return resolve(true);

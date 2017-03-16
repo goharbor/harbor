@@ -12,12 +12,14 @@ import { ResetPasswordComponent } from './password/reset-password.component';
 import { SignUpPageComponent } from './sign-up/sign-up-page.component';
 
 import { PasswordSettingService } from './password/password-setting.service';
+import { RepositoryModule } from '../repository/repository.module';
 
 @NgModule({
   imports: [
     CoreModule,
     RouterModule,
-    SharedModule
+    SharedModule,
+    RepositoryModule
   ],
   declarations: [
     SignInComponent,

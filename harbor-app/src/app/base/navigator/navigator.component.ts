@@ -12,7 +12,6 @@ import { CookieService } from 'angular2-cookie/core';
 import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 
 import { AppConfigService } from '../../app-config.service';
-import { AppConfig } from '../../app-config';
 
 @Component({
     selector: 'navigator',
@@ -26,7 +25,6 @@ export class NavigatorComponent implements OnInit {
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
     private selectedLang: string = enLang;
-    private appConfig: AppConfig = new AppConfig();
 
     constructor(
         private session: SessionService,
@@ -42,8 +40,6 @@ export class NavigatorComponent implements OnInit {
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);
         });
-
-        this.appConfig = this.appConfigService.getConfig();
     }
 
     public get isSessionValid(): boolean {
@@ -58,12 +54,9 @@ export class NavigatorComponent implements OnInit {
         return languageNames[this.selectedLang];
     }
 
-    public get isIntegrationMode(): boolean {
-        return this.appConfig.with_admiral && this.appConfig.admiral_endpoint.trim() != "";
-    }
-
     public get admiralLink(): string {
-        let routeSegments = [this.appConfig.admiral_endpoint,
+        let appConfig = this.appConfigService.getConfig();
+        let routeSegments = [appConfig.admiral_endpoint,
             "?registry_url=",
         encodeURIComponent(window.location.href)
         ];
@@ -71,27 +64,8 @@ export class NavigatorComponent implements OnInit {
         return routeSegments.join("");
     }
 
-    public get showSignUpLink(): boolean {
-        return this.appConfig.auth_mode === "db_auth" &&
-            this.appConfig.self_registration &&
-            !this.isSessionValid &&
-            !this.isSignInRoute();
-    }
-
-    public get showSignInLink(): boolean {
-        return !this.isSignInRoute() && !this.isSessionValid;
-    }
-
-    public get loginUrl(): string {
-        if (this.isIntegrationMode) {
-            return CommonRoutes.EMBEDDED_SIGN_IN;
-        } else {
-            return CommonRoutes.SIGN_IN;
-        }
-    }
-
-    private isSignInRoute(): boolean {
-        return this.router.routerState.snapshot.url.toString().startsWith(CommonRoutes.EMBEDDED_SIGN_IN);
+    public get isIntegrationMode(): boolean {
+        return this.appConfigService.isIntegrationMode();
     }
 
     matchLang(lang: string): boolean {
@@ -127,11 +101,7 @@ export class NavigatorComponent implements OnInit {
         this.session.signOff()
             .then(() => {
                 //Naviagte to the sign in route
-                if (this.isIntegrationMode) {
-                    this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
-                } else {
-                    this.router.navigate([CommonRoutes.SIGN_IN]);
-                }
+                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
             .catch(error => {
                 console.error("Log out with error: ", error);
@@ -159,18 +129,6 @@ export class NavigatorComponent implements OnInit {
         } else {
             //Naviagte to signin page
             this.router.navigate([CommonRoutes.HARBOR_ROOT]);
-        }
-    }
-
-    openSignUp(): void {
-        let navigatorExtra: NavigationExtras = {
-            queryParams: { "sign_up": true }
-        };
-
-        if (this.isIntegrationMode) {
-            this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-        } else {
-            this.router.navigate([CommonRoutes.SIGN_IN], navigatorExtra);
         }
     }
 }

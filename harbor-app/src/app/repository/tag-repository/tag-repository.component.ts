@@ -12,6 +12,8 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { TagView } from '../tag-view';
 
+import { AppConfigService } from '../../app-config.service';
+
 @Component({
   selector: 'tag-repository',
   templateUrl: 'tag-repository.component.html'
@@ -29,7 +31,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private messageService: MessageService,
     private deletionDialogService: DeletionDialogService,
-    private repositoryService: RepositoryService) {
+    private repositoryService: RepositoryService,
+    private appConfigService: AppConfigService) {
       this.subscription = this.deletionDialogService.deletionConfirm$.subscribe(
         message=>{
           let tag = message.data;

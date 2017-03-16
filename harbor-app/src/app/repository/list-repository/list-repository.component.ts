@@ -5,8 +5,7 @@ import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { SessionService } from '../../shared/session.service';
-import { ListMode, CommonRoutes } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { ListMode } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-repository',
@@ -29,8 +28,7 @@ export class ListRepositoryComponent {
   constructor(
     private router: Router,
     private searchTrigger: SearchTriggerService,
-    private session: SessionService,
-    private appConfigService: AppConfigService) { }
+    private session: SessionService) { }
 
   deleteRepo(repoName: string) {
     this.delete.emit(repoName);
@@ -43,7 +41,7 @@ export class ListRepositoryComponent {
   }
 
   public get listFullMode(): boolean {
-    return this.mode === ListMode.FULL;
+    return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
   }
 
   public gotoLink(projectId: number, repoName: string): void {
@@ -52,13 +50,9 @@ export class ListRepositoryComponent {
     let linkUrl = ['harbor', 'tags', projectId, repoName];
     if (!this.session.getCurrentUser()) {
       let navigatorExtra: NavigationExtras = {
-        queryParams: { "redirect_url": linkUrl.join("/") }
+        queryParams: { "guest": true }
       };
-      if (this.appConfigService.isIntegrationMode()) {
-        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-      } else {
-        this.router.navigate([CommonRoutes.SIGN_IN], navigatorExtra);
-      }
+      this.router.navigate(linkUrl, navigatorExtra);
     } else {
       this.router.navigate(linkUrl);
     }

@@ -82,8 +82,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         }
     }
 
-    public get isStartPage(): boolean {
-        return this.router.routerState.snapshot.url.toString() === CommonRoutes.HARBOR_ROOT;
+    public get shouldOverrideContent(): boolean {
+        return this.router.routerState.snapshot.url.toString().startsWith(CommonRoutes.EMBEDDED_SIGN_IN);
     }
 
     public get showSearch(): boolean {
