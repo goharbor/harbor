@@ -43,7 +43,7 @@ func TestConfigAPI(t *testing.T) {
 
 	secret := "secret"
 	envs := map[string]string{
-
+		"AUTH_MODE":             comcfg.DBAuth,
 		"JSON_CFG_STORE_PATH":   configPath,
 		"KEY_PATH":              secretKeyPath,
 		"UI_SECRET":             secret,
@@ -164,7 +164,55 @@ func TestConfigAPI(t *testing.T) {
 
 	mode := m[comcfg.AUTHMode].(string)
 	if mode != comcfg.LDAPAuth {
-		t.Errorf("unexpected ldap scope: %s != %s", mode, comcfg.LDAPAuth)
+		t.Errorf("unexpected auth mode: %s != %s", mode, comcfg.LDAPAuth)
+		return
+	}
+
+	// reset configurations
+	w = httptest.NewRecorder()
+	r, err = http.NewRequest("POST", "", nil)
+	if err != nil {
+		t.Errorf("failed to create request: %v", err)
+		return
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: secret,
+	})
+
+	ResetCfgs(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
+		return
+	}
+
+	// confirm the reset
+	r, err = http.NewRequest("GET", "", nil)
+	if err != nil {
+		t.Errorf("failed to create request: %v", err)
+		return
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: secret,
+	})
+	w = httptest.NewRecorder()
+	ListCfgs(w, r)
+	if w.Code != http.StatusOK {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
+		return
+	}
+
+	m, err = parse(w.Body)
+	if err != nil {
+		t.Errorf("failed to parse response body: %v", err)
+		return
+	}
+
+	mode = m[comcfg.AUTHMode].(string)
+	if mode != comcfg.DBAuth {
+		t.Errorf("unexpected auth mode: %s != %s", mode, comcfg.LDAPAuth)
 		return
 	}
 }

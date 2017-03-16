@@ -71,6 +71,11 @@ func Load() error {
 	return err
 }
 
+// Reset configurations
+func Reset() error {
+	return mg.Reset()
+}
+
 // Upload uploads all system configutations to admin server
 func Upload(cfg map[string]interface{}) error {
 	b, err := json.Marshal(cfg)

@@ -175,6 +175,11 @@ func Init() (err error) {
 	//init key provider
 	initKeyProvider()
 
+	if os.Getenv("RESET") == "true" {
+		log.Info("RESET is set, resetting system configurations...")
+		return Reset()
+	}
+
 	cfg, err := GetSystemCfg()
 	if err != nil {
 		return err
@@ -331,4 +336,17 @@ func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
 		m[key] = text
 	}
 	return nil
+}
+
+// Reset clears old system configurations and reloads them
+// from environment variables
+func Reset() error {
+	cfg := map[string]interface{}{}
+	if err := loadFromEnv(cfg, true); err != nil {
+		return err
+	}
+
+	//sync configurations into cfg store
+	log.Info("updating system configurations...")
+	return UpdateSystemCfg(cfg)
 }
