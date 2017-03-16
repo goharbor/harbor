@@ -13,8 +13,10 @@ import { Subscription } from 'rxjs/Subscription';
 import { TagView } from '../tag-view';
 
 @Component({
+  moduleId: module.id,
   selector: 'tag-repository',
-  templateUrl: 'tag-repository.component.html'
+  templateUrl: 'tag-repository.component.html',
+  styleUrls: ['./tag-repository.component.css']
 })
 export class TagRepositoryComponent implements OnInit, OnDestroy {
 

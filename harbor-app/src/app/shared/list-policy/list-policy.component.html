@@ -5,6 +5,7 @@
   <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
   <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>   
   <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+  <clr-dg-column></clr-dg-column>
   <clr-dg-row *ngFor="let p of policies;let i = index;" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
     <clr-dg-cell>{{p.name}}</clr-dg-cell>
     <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
@@ -13,6 +14,8 @@
     <clr-dg-cell>{{p.start_time}}</clr-dg-cell>
     <clr-dg-cell>
       {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
+    </clr-dg-cell>
+    <clr-dg-cell>
       <harbor-action-overflow>
         <a href="javascript:void(0)" class="dropdown-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</a>
         <a href="javascript:void(0)" class="dropdown-item" (click)="enablePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</a>

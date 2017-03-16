@@ -14,8 +14,10 @@ import { Subscription } from 'rxjs/Subscription';
 import { CreateEditDestinationComponent } from '../create-edit-destination/create-edit-destination.component';
 
 @Component({
+  moduleId: module.id,
   selector: 'destination',
-  templateUrl: 'destination.component.html'
+  templateUrl: 'destination.component.html',
+  styleUrls: ['./destination.component.css']
 })
 export class DestinationComponent implements OnInit {
 

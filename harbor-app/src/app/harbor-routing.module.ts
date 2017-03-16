@@ -19,7 +19,6 @@ import { ReplicationComponent } from './replication/replication.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
 
-import { BaseRoutingResolver } from './shared/route/base-routing-resolver.service';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
