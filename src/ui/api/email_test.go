@@ -37,13 +37,25 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(401, code, "the status code of ping email server with non-admin user should be 401")
 
-	//case 2: secure connection with admin role
+	//case 2: bad request
 	settings := `{
+		"email_host":     ""
+	}`
+
+	code, _, err = apiTest.PingEmail(*admin, []byte(settings))
+	if err != nil {
+		t.Errorf("failed to test ping email server: %v", err)
+		return
+	}
+
+	assert.Equal(400, code, "the status code of ping email server should be 400")
+
+	//case 3: secure connection with admin role
+	settings = `{
 		"email_host":     "smtp.gmail.com",
 		"email_port":     465,
 		"email_identity": "",
 		"email_username": "wrong_username",
-		"email_password": "wrong_password",
 		"email_ssl":      true
 	}`
 
@@ -59,4 +71,13 @@ func TestPingEmail(t *testing.T) {
 		t.Errorf("unexpected error: %s does not contains 535", body)
 		return
 	}
+
+	//case 4: ping email server whose settings are read from config
+	code, _, err = apiTest.PingEmail(*admin, nil)
+	if err != nil {
+		t.Errorf("failed to test ping email server: %v", err)
+		return
+	}
+
+	assert.Equal(400, code, "the status code of ping email server should be 400")
 }
