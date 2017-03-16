@@ -14,10 +14,12 @@
       <clr-dg-column>{{'DESTINATION.NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'DESTINATION.URL' | translate}}</clr-dg-column>
       <clr-dg-column>{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
+      <clr-dg-column></clr-dg-column>
       <clr-dg-row *ngFor="let t of targets">
         <clr-dg-cell>{{t.name}}</clr-dg-cell>
         <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
-        <clr-dg-cell>{{t.creation_time}}
+        <clr-dg-cell>{{t.creation_time}}</clr-dg-cell>
+        <clr-dg-cell>
           <harbor-action-overflow>
             <a href="javascript:void(0)" class="dropdown-item" (click)="editTarget(t)">{{'DESTINATION.TITLE_EDIT' | translate}}</a>
             <a href="javascript:void(0)" class="dropdown-item" (click)="deleteTarget(t)">{{'DESTINATION.DELETE' | translate}}</a>
