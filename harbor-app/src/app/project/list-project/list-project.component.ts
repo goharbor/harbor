@@ -63,6 +63,12 @@ export class ListProjectComponent implements OnInit {
     this.paginate.emit(state);
   }
 
+  newReplicationRule(p: Project) {
+    if(p) {
+      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replication?is_create=true`);
+    }
+  }
+
   toggleProject(p: Project) {
     this.toggle.emit(p);
   }

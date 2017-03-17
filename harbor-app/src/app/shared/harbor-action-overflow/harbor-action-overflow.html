@@ -1,10 +1,10 @@
-<span style="position: fixed;">
+<div style="float: right;">
 <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
-    <button clrDropdownToggle>
+  <button clrDropdownToggle>
     <clr-icon shape="ellipses-vertical"></clr-icon>
   </button>
-    <div class="dropdown-menu">
-        <ng-content></ng-content>
-    </div>
+  <div class="dropdown-menu">
+    <ng-content></ng-content>
+  </div>
 </clr-dropdown>
-</span>
+</div>

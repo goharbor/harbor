@@ -60,7 +60,7 @@ export class TotalReplicationComponent implements OnInit {
       this.projectId = policy.project_id;
     }
   }
-  
+
   refreshPolicies() {
     this.retrievePolicies();
   }

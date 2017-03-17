@@ -3,13 +3,16 @@
 <clr-datagrid>
    <clr-dg-column>{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-   <clr-dg-column>{{'REPOSITORY.VERIFIED' | translate}}</clr-dg-column>
+   <clr-dg-column>{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
    <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
    <clr-dg-row *ngFor="let t of tags">
+     <clr-dg-action-overflow>
+       <button class="action-item" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
+     </clr-dg-action-overflow> 
      <clr-dg-cell>{{t.tag}}</clr-dg-cell>
      <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>
      <clr-dg-cell>
@@ -20,11 +23,7 @@
      <clr-dg-cell>{{t.created | date: 'yyyy/MM/dd'}}</clr-dg-cell>
      <clr-dg-cell>{{t.dockerVersion}}</clr-dg-cell>
      <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
-     <clr-dg-cell>{{t.os}}
-       <harbor-action-overflow>
-         <a href="javascript:void(0)" class="dropdown-item" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</a>
-       </harbor-action-overflow>
-      </clr-dg-cell>
+     <clr-dg-cell>{{t.os}}</clr-dg-cell>
     </clr-dg-row>
   <clr-dg-footer>{{tags ? tags.length : 0}} {{'REPOSITORY.ITEMS' | translate}}</clr-dg-footer>
 </clr-datagrid>
