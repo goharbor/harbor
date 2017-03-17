@@ -128,7 +128,8 @@
         "ITEMS": "item(s)",
         "DELETION_TITLE": "Confirm project deletion",
         "DELETION_SUMMARY": "Do you want to delete project {{param}}?",
-        "FILTER_PLACEHOLDER": "Filter Projects"
+        "FILTER_PLACEHOLDER": "Filter Projects",
+        "REPLICATION_RULE": "Replication Rule"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -161,6 +162,7 @@
         "REPOSITORY_NAME": "Repository Name",
         "TAGS": "Tags",
         "OPERATION": "Operation",
+        "OPERATIONS": "Operations",
         "TIMESTAMP": "Timestamp",
         "ALL_OPERATIONS": "All Operations",
         "PULL": "Pull",
@@ -267,7 +269,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from Notary before they can be deleted.",
         "FILTER_FOR_REPOSITORIES": "Filter for repositories",
         "TAG": "Tag",
-        "VERIFIED": "Verified",
+        "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
         "DOCKER_VERSION": "Docker Version",

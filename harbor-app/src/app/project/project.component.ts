@@ -117,6 +117,7 @@ export class ProjectComponent implements OnInit {
   doFilterProjects(filteredType: number): void {
     console.log('Filter projects with type:' + types[filteredType]);
     this.isPublic = filteredType;
+    this.currentFilteredType = filteredType;
     this.retrieve();
   }
 

@@ -128,7 +128,8 @@
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
-        "FILTER_PLACEHOLDER": "过滤项目"
+        "FILTER_PLACEHOLDER": "过滤项目",
+        "REPLICATION_RULE": "复制策略"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "镜像仓库",
@@ -161,6 +162,7 @@
         "REPOSITORY_NAME": "镜像名称",
         "TAGS": "标签",
         "OPERATION": "操作",
+        "OPERATIONS": "操作",
         "TIMESTAMP": "时间戳",
         "ALL_OPERATIONS": "所有操作",
         "PULL": "Pull",
@@ -267,7 +269,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
-        "VERIFIED": "已验证",
+        "SIGNED": "已签名",
         "AUTHOR": "作者",
         "CREATED": "创建时间",
         "DOCKER_VERSION": "Docker版本",

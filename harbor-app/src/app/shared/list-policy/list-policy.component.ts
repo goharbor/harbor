@@ -26,7 +26,8 @@ export class ListPolicyComponent implements OnDestroy {
   @Output() reload = new EventEmitter<boolean>();
   @Output() selectOne = new EventEmitter<Policy>();
   @Output() editOne = new EventEmitter<number>();
- 
+  @Output() toggleOne = new EventEmitter<Policy>();
+
   subscription: Subscription;
 
   constructor(
@@ -70,10 +71,14 @@ export class ListPolicyComponent implements OnDestroy {
     this.editOne.emit(policy.id);
   }
   
-  enablePolicy(policy: Policy): void {
+  togglePolicy(policy: Policy) {
     policy.enabled = policy.enabled === 0 ? 1 : 0; 
     console.log('Enable policy ID:' + policy.id + ' with activation status ' + policy.enabled);
-    this.replicationService.enablePolicy(policy.id, policy.enabled);
+    this.replicationService.enablePolicy(policy.id, policy.enabled)
+        .subscribe(
+          res=>console.log('Successful toggled policy status'),
+          error=>this.messageService.announceMessage(error.status, "Failed to toggle policy status.", AlertType.DANGER)
+        );
   }
 
   deletePolicy(policy: Policy) {

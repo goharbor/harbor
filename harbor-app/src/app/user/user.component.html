@@ -17,16 +17,15 @@
             <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
             <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let user of users" [clrDgItem]="user">
+                <clr-dg-action-overflow>
+                    <button class="action-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</button>
+                    <button class="action-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</button>
+                </clr-dg-action-overflow>
                 <clr-dg-cell>{{user.username}}</clr-dg-cell>
                 <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
                 <clr-dg-cell>{{user.email}}</clr-dg-cell>
                 <clr-dg-cell>
                     {{user.creation_time}}
-                    <harbor-action-overflow>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</a>
-                    </harbor-action-overflow>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{users.length}} {{'USER.ADD_ACTION' | translate}}</clr-dg-footer>
