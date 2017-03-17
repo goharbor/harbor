@@ -32,7 +32,7 @@ env:
 before_install:
    - sudo ./tests/hostcfg.sh
    - sudo ./tests/generateCerts.sh
-   - sudo ./make/prepare --with-notary
+   - sudo ./make/prepare
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev 
@@ -98,9 +98,6 @@ script:
   - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=danieljt/harbor-clarity-base:0.8.4 NOTARYFLAG=true
   
   - docker ps
-  - cat /var/log/harbor/*/proxy.log
-  - cat /var/log/harbor/*/ui.log
-  - cat ./make/common/config/nginx/nginx.conf
   - go run tests/startuptest.go https://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
