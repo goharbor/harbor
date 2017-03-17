@@ -1,9 +1,8 @@
-<div>
+<div style="margin-left: 24px;">
     <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</h2>
     <div class="action-panel-pos">
         <span>
-            <clr-icon shape="plus" class="is-highlight" size="24"></clr-icon>
-            <button type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()">{{'USER.ADD_ACTION' | translate}}</button>
+            <button type="submit" class="btn btn-primary custom-add-button" (click)="addNewUser()"><clr-icon shape="add"></clr-icon>  {{'USER.ADD_ACTION' | translate}}</button>
         </span>
         <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
         <span class="refresh-btn" (click)="refreshUser()">
