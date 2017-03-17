@@ -5,7 +5,7 @@ import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { SessionService } from '../../shared/session.service';
-import { signInRoute, ListMode } from '../../shared/shared.const';
+import { ListMode } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-repository',
@@ -32,16 +32,16 @@ export class ListRepositoryComponent {
 
   deleteRepo(repoName: string) {
     this.delete.emit(repoName);
-  } 
+  }
 
   refresh(state: State) {
-    if(this.repositories) {
+    if (this.repositories) {
       this.paginate.emit(state);
     }
   }
 
   public get listFullMode(): boolean {
-    return this.mode === ListMode.FULL;
+    return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
   }
 
   public gotoLink(projectId: number, repoName: string): void {
@@ -50,10 +50,9 @@ export class ListRepositoryComponent {
     let linkUrl = ['harbor', 'tags', projectId, repoName];
     if (!this.session.getCurrentUser()) {
       let navigatorExtra: NavigationExtras = {
-        queryParams: { "redirect_url": linkUrl.join("/") }
+        queryParams: { "guest": true }
       };
-
-      this.router.navigate([signInRoute], navigatorExtra);
+      this.router.navigate(linkUrl, navigatorExtra);
     } else {
       this.router.navigate(linkUrl);
     }

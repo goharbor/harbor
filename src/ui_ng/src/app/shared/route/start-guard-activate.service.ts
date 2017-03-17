@@ -9,11 +9,11 @@ import { SessionService } from '../../shared/session.service';
 import { CommonRoutes } from '../../shared/shared.const';
 
 @Injectable()
-export class SignInGuard implements CanActivate, CanActivateChild {
+export class StartGuard implements CanActivate, CanActivateChild {
   constructor(private authService: SessionService, private router: Router) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    //If user has logged in, should not login again
+    //Authentidacted user should not see the start page now
     return new Promise((resolve, reject) => {
       let user = this.authService.getCurrentUser();
       if (!user) {

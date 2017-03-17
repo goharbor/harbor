@@ -20,7 +20,8 @@
         "SAVE": "保存",
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
-        "TEST_LDAP": "测试LDAP服务器"
+        "TEST_LDAP": "测试LDAP服务器",
+        "MORE_INFO": "更多信息..."
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -116,6 +117,7 @@
         "DELETE": "删除",
         "MY_PROJECTS": "我的项目",
         "PUBLIC_PROJECTS": "公开项目",
+        "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
         "NAME_IS_REQUIRED": "项目名称为必填项",
         "NAME_MINIMUM_LENGTH": "项目名称长度过短，至少多于2个字符。",
@@ -136,6 +138,7 @@
     },
     "MEMBER": {
         "NEW_MEMBER": "新建成员",
+        "MEMBER": "成员",
         "NAME": "姓名",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
@@ -225,6 +228,7 @@
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
+        "ENDPOINT": "目标",
         "NAME": "目标名",
         "NAME_IS_REQUIRED": "目标名为必填项。",
         "URL": "目标URL",
@@ -270,7 +274,8 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "POP_REPOS": "受欢迎的镜像库"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"

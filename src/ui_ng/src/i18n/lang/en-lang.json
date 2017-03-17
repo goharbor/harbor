@@ -20,7 +20,8 @@
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",
         "CLOSE": "CLOSE",
-        "TEST_LDAP": "TEST LDAP SERVER"
+        "TEST_LDAP": "TEST LDAP SERVER",
+        "MORE_INFO": "More info..."
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -116,6 +117,7 @@
         "DELETE": "Delete",
         "MY_PROJECTS": "My Projects",
         "PUBLIC_PROJECTS": "Public Projects",
+        "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
         "NAME_IS_REQUIRED": "Project name is required.",
         "NAME_MINIMUM_LENGTH": "Project name is too short, it should be greater than 2 characters.",
@@ -136,6 +138,7 @@
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",
+        "MEMBER": "Member",
         "NAME": "Name",
         "ROLE": "Role",
         "SYS_ADMIN": "System Admin",
@@ -170,7 +173,7 @@
         "FILTER_PLACEHOLDER": "Filter Logs"
     },
     "REPLICATION": {
-        "REPLICATION_RULE": "Rules",
+        "REPLICATION_RULE": "Replication Rule",
         "NEW_REPLICATION_RULE": "New Replication Rule",
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
@@ -180,8 +183,8 @@
         "FILTER_TARGETS_PLACEHOLDER": "Filter Targets",
         "DELETION_TITLE_TARGET": "Confirm Target Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete target {{param}}?",
-        "ADD_POLICY": "Add Policy",
-        "EDIT_POLICY": "Edit Policy",
+        "ADD_POLICY": "New Replication Rule",
+        "EDIT_POLICY": "Edit Replication Rule",
         "DELETE_POLICY": "Delete Policy",
         "TEST_CONNECTION": "Test Connection",
         "TESTING_CONNECTION": "Testing Connection...",
@@ -225,6 +228,7 @@
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
+        "ENDPOINT": "Endpoint",
         "NAME": "Destination Name",
         "NAME_IS_REQUIRED": "Destination name is required.",
         "URL": "Endpoint URL",
@@ -270,7 +274,8 @@
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
-        "ITEMS": "item(s)"
+        "ITEMS": "item(s)",
+        "POP_REPOS": "Popular Repositories"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"

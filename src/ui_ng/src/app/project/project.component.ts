@@ -26,9 +26,10 @@ import { State } from 'clarity-angular';
 const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS'};
 
 @Component({
+    moduleId: module.id,
     selector: 'project',
     templateUrl: 'project.component.html',
-    styleUrls: [ 'project.css' ]
+    styleUrls: [ './project.component.css' ]
 })
 export class ProjectComponent implements OnInit {
     
@@ -50,7 +51,7 @@ export class ProjectComponent implements OnInit {
   isPublic: number;
 
   page: number = 1;
-  pageSize: number = 15;
+  pageSize: number = 3;
 
   totalPage: number;
   totalRecordCount: number;
