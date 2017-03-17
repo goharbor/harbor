@@ -84,7 +84,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
               let data = JSON.parse(t.manifest.history[0].v1Compatibility);
               tag.architecture = data['architecture'];
               tag.author = data['author'];
-              tag.verified = t.verified || false;
+              tag.verified = t.signed;
               tag.created = data['created'];
               tag.dockerVersion = data['docker_version'];
               tag.pullCommand = 'docker pull ' + t.manifest.name + ':' + t.tag;
