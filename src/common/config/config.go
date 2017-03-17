@@ -136,6 +136,11 @@ func (m *Manager) Load() (map[string]interface{}, error) {
 	return c, nil
 }
 
+// Reset configurations
+func (m *Manager) Reset() error {
+	return m.Loader.Reset()
+}
+
 func getCfgExpiration(m map[string]interface{}) (int, error) {
 	if m == nil {
 		return 0, fmt.Errorf("can not get cfg expiration as configurations are null")
@@ -227,7 +232,7 @@ func (l *Loader) Load() ([]byte, error) {
 	return b, nil
 }
 
-// Upload configuratons to remote server
+// Upload configurations to remote server
 func (l *Loader) Upload(b []byte) error {
 	req, err := http.NewRequest("PUT", l.url+"/api/configurations", bytes.NewReader(b))
 	if err != nil {
@@ -249,6 +254,33 @@ func (l *Loader) Upload(b []byte) error {
 	}
 
 	log.Debug("configurations uploaded")
+
+	return nil
+}
+
+// Reset sends configurations resetting command to
+// remote server
+func (l *Loader) Reset() error {
+	req, err := http.NewRequest("POST", l.url+"/api/configurations/reset", nil)
+	if err != nil {
+		return err
+	}
+
+	req.AddCookie(&http.Cookie{
+		Name:  "secret",
+		Value: l.secret,
+	})
+
+	resp, err := l.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
+	}
+
+	log.Debug("configurations resetted")
 
 	return nil
 }

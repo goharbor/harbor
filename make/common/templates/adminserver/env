@@ -37,3 +37,4 @@ USE_COMPRESSED_JS=$use_compressed_js
 GODEBUG=netdns=cgo
 ADMIRAL_URL=$admiral_url
 WITH_NOTARY=$with_notary
+RESET=false

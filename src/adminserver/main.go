@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/handlers"
 	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -52,7 +53,7 @@ func main() {
 	}
 	server := &Server{
 		Port:    port,
-		Handler: newHandler(),
+		Handler: handlers.LoggingHandler(os.Stdout, newHandler()),
 	}
 	if err := server.Serve(); err != nil {
 		log.Fatal(err)
