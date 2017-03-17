@@ -31,7 +31,8 @@ env:
 
 before_install:
    - sudo ./tests/hostcfg.sh
-   - sudo ./make/prepare
+   - sudo ./tests/generateCerts.sh
+   - sudo ./make/prepare --with-notary
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev 
@@ -92,9 +93,8 @@ script:
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo make/prepare
   - sudo rm -rf /data/config/*
-  - docker-compose -f make/dev/docker-compose.yml up -d
+  - make install –e GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=danieljt/harbor-clarity-base:0.8.4 NOTARYFLAG=true
   
   - docker ps
   - go run tests/startuptest.go http://localhost/

@@ -79,6 +79,7 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
+HTTPPROXY=
 
 #clarity parameters
 CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
@@ -206,7 +207,11 @@ compile_jobservice:
 	
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
-	@$(DOCKERCMD) run --rm -v $(UIPATH)/static/new-ui:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src -v $(UINGPATH)/src/app:$(CLARITYSEEDPATH)/src/app $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT)
+	@if [ "$(HTTPPROXY)" != "" ] ; then \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+	else \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+	fi
 	@echo "Done."
 	
 compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
@@ -324,14 +329,14 @@ package_offline: compile build modify_composefile
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
 	else \
 		$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
 	fi
 
 	@rm -rf $(HARBORPKG)
@@ -381,9 +386,9 @@ down:
     [ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "stoping harbor instance..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) -v down ; \
 	else \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -v down ; \
 	fi	
 	@echo "Done."
 
