@@ -26,5 +26,6 @@ func newHandler() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/configurations", api.ListCfgs).Methods("GET")
 	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
+	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
 	return r
 }

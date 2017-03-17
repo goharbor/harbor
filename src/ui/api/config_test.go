@@ -68,3 +68,37 @@ func TestPutConfig(t *testing.T) {
 		return
 	}
 }
+
+func TestResetConfig(t *testing.T) {
+	fmt.Println("Testing resetting configurations")
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	code, err := apiTest.ResetConfig(*admin)
+	if err != nil {
+		t.Errorf("failed to get configurations: %v", err)
+		return
+	}
+
+	if !assert.Equal(200, code, "unexpected response code") {
+		return
+	}
+
+	code, cfgs, err := apiTest.GetConfig(*admin)
+	if err != nil {
+		t.Errorf("failed to get configurations: %v", err)
+		return
+	}
+
+	if !assert.Equal(200, code, "unexpected response code") {
+		return
+	}
+
+	value, ok := cfgs[config.VerifyRemoteCert]
+	if !ok {
+		t.Errorf("%s not found", config.VerifyRemoteCert)
+		return
+	}
+
+	assert.Equal(value.Value.(bool), true, "unexpected value")
+}

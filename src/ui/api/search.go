@@ -86,7 +86,9 @@ func (s *SearchAPI) Get() {
 					log.Errorf("failed to get user's project role: %v", err)
 					s.CustomAbort(http.StatusInternalServerError, "")
 				}
-				p.Role = roles[0].RoleID
+				if len(roles) != 0 {
+					p.Role = roles[0].RoleID
+				}
 			}
 
 			if p.Role == models.PROJECTADMIN {

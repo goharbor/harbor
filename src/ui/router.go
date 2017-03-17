@@ -90,6 +90,7 @@ func initRouters() {
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/logs", &api.LogAPI{})
 	beego.Router("/api/configurations", &api.ConfigAPI{})
+	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")

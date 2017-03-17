@@ -147,7 +147,10 @@ token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 secretkey_path = rcp.get("configuration", "secretkey_path")
-admiral_url = rcp.get("configuration", "admiral_url")
+if rcp.has_option("configuration", "admiral_url"):
+    admiral_url = rcp.get("configuration", "admiral_url")
+else:
+    admiral_url = ""
 secret_key = get_secret_key(secretkey_path)
 ########
 
@@ -313,20 +316,21 @@ if args.notary_mode:
         shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
     shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
     #TODO:generate certs?
-    print ("Copying certs for notary signer")
+    print("Copying certs for notary signer")
     shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
     shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
     shutil.copy2(os.path.join(notary_temp_dir, "root-ca.crt"), notary_config_dir)
 
     shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
-    print ("Copying notary signer configuration file")
+    print("Copying notary signer configuration file")
     shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
     render(os.path.join(notary_temp_dir, "server-config.json"),
         os.path.join(notary_config_dir, "server-config.json"),
         token_endpoint=ui_url)
 
-    print ("Copying nginx configuration file for notary")
-    shutil.copy2(os.path.join(templates_dir, "nginx", "nginx.notary.conf"), nginx_conf_d)
+    print("Copying nginx configuration file for notary")
+    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
+    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.location.conf"), nginx_conf_d)
 
     default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)

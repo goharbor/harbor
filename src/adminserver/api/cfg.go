@@ -104,3 +104,24 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// ResetCfgs resets configurations from environment variables
+func ResetCfgs(w http.ResponseWriter, r *http.Request) {
+	authenticated, err := isAuthenticated(r)
+	if err != nil {
+		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+
+	if !authenticated {
+		handleUnauthorized(w)
+		return
+	}
+
+	if err = cfg.Reset(); err != nil {
+		log.Errorf("failed to reset system configurations: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+}

@@ -16,13 +16,11 @@
 package api
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/api"
-	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/email"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -54,63 +52,60 @@ func (e *EmailAPI) Prepare() {
 
 // Ping tests connection and authentication with email server
 func (e *EmailAPI) Ping() {
-	m := map[string]string{}
-	e.DecodeJSONReq(&m)
-
-	settings, err := config.Email()
-	if err != nil {
-		e.CustomAbort(http.StatusInternalServerError,
-			http.StatusText(http.StatusInternalServerError))
-	}
-
-	host, ok := m[comcfg.EmailHost]
-	if ok {
-		if len(host) == 0 {
-			e.CustomAbort(http.StatusBadRequest, "empty email server host")
+	var host, username, password, identity string
+	var port int
+	var ssl bool
+	body := e.Ctx.Input.CopyBody(1 << 32)
+	if body == nil || len(body) == 0 {
+		cfg, err := config.Email()
+		if err != nil {
+			log.Errorf("failed to get email configurations: %v", err)
+			e.CustomAbort(http.StatusInternalServerError,
+				http.StatusText(http.StatusInternalServerError))
 		}
-		settings.Host = host
-	}
+		host = cfg.Host
+		port = cfg.Port
+		username = cfg.Username
+		password = cfg.Password
+		identity = cfg.Identity
+		ssl = cfg.SSL
+	} else {
+		settings := &struct {
+			Host     string  `json:"email_host"`
+			Port     *int    `json:"email_port"`
+			Username string  `json:"email_username"`
+			Password *string `json:"email_password"`
+			SSL      bool    `json:"email_ssl"`
+			Identity string  `json:"email_identity"`
+		}{}
+		e.DecodeJSONReq(&settings)
 
-	port, ok := m[comcfg.EmailPort]
-	if ok {
-		if len(port) == 0 {
-			e.CustomAbort(http.StatusBadRequest, "empty email server port")
+		if len(settings.Host) == 0 || settings.Port == nil {
+			e.CustomAbort(http.StatusBadRequest, "empty host or port")
 		}
-		p, err := strconv.Atoi(port)
-		if err != nil || p <= 0 {
-			e.CustomAbort(http.StatusBadRequest, "invalid email server port")
+
+		if settings.Password == nil {
+			cfg, err := config.Email()
+			if err != nil {
+				log.Errorf("failed to get email configurations: %v", err)
+				e.CustomAbort(http.StatusInternalServerError,
+					http.StatusText(http.StatusInternalServerError))
+			}
+
+			settings.Password = &cfg.Password
 		}
-		settings.Port = p
+
+		host = settings.Host
+		port = *settings.Port
+		username = settings.Username
+		password = *settings.Password
+		identity = settings.Identity
+		ssl = settings.SSL
 	}
 
-	username, ok := m[comcfg.EmailUsername]
-	if ok {
-		settings.Username = username
-	}
-
-	password, ok := m[comcfg.EmailPassword]
-	if ok {
-		settings.Password = password
-	}
-
-	identity, ok := m[comcfg.EmailIdentity]
-	if ok {
-		settings.Identity = identity
-	}
-
-	ssl, ok := m[comcfg.EmailSSL]
-	if ok {
-		if ssl != "0" && ssl != "1" {
-			e.CustomAbort(http.StatusBadRequest,
-				fmt.Sprintf("%s should be 0 or 1", comcfg.EmailSSL))
-		}
-		settings.SSL = ssl == "1"
-	}
-
-	addr := net.JoinHostPort(settings.Host, strconv.Itoa(settings.Port))
-	if err := email.Ping(
-		addr, settings.Identity, settings.Username,
-		settings.Password, pingEmailTimeout, settings.SSL, false); err != nil {
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
+	if err := email.Ping(addr, identity, username,
+		password, pingEmailTimeout, ssl, false); err != nil {
 		log.Debugf("ping %s failed: %v", addr, err)
 		e.CustomAbort(http.StatusBadRequest, err.Error())
 	}
