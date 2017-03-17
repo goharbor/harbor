@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { StatisticsService } from './statistics.service';
-import { errorHandler } from '../../shared/shared.utils';
+import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
 import { AlertType } from '../../shared/shared.const';
 
 import { MessageService } from '../../global-message/message.service';
@@ -36,7 +36,9 @@ export class StatisticsPanelComponent implements OnInit {
         this.statistics.getStatistics()
             .then(statistics => this.originalCopy = statistics)
             .catch(error => {
-                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+                if (!accessErrorHandler(error, this.msgService)) {
+                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+                }
             })
     }
 
