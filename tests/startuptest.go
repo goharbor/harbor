@@ -16,7 +16,6 @@ func main() {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-
 	var client = &http.Client{
 		Timeout:   time.Second * 30,
 		Transport: tr,
