@@ -20,8 +20,10 @@ const repositoryTypes = [
 ];
 
 @Component({
+  moduleId: module.id,
   selector: 'repository',
-  templateUrl: 'repository.component.html'
+  templateUrl: 'repository.component.html',
+  styleUrls: ['./repository.component.css']
 })
 export class RepositoryComponent implements OnInit {
   changedRepositories: Repository[];
