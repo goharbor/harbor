@@ -79,6 +79,7 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
+REGISTRYVERSION=2.6.0
 
 #clarity parameters
 CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
@@ -290,7 +291,7 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.1
+	@$(DOCKERPULL) registry:$(REGISTRYVERSION)
 	@$(DOCKERPULL) nginx:1.11.5
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and mariadb..."; \
@@ -307,7 +308,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 \
+		nginx:1.11.5 registry:$(REGISTRYVERSION) photon:1.0 \
 		jiangd/notary:server-0.5.0-fix notary:signer-0.5.0 mariadb:10.1.10; \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
@@ -316,7 +317,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
+		nginx:1.11.5 registry:$(REGISTRYVERSION) photon:1.0 ; \
 	fi
 	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
@@ -400,7 +401,7 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-#	- $(DOCKERRMIMAGE) -f registry:2.5.1
+#	- $(DOCKERRMIMAGE) -f registry:$(REGISTRYVERSION)
 #	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
