@@ -59,8 +59,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 if (cont.valid && key === "account_settings_email") {
                     if (this.formValueChanged && this.account.email != this.originalStaticData.email) {
                         if (this.mailAlreadyChecked[this.account.email]) {
-                            this.validationStateMap[key] = false;
-                            this.emailTooltip = "TOOLTIP.EMAIL_EXISTING";
+                            this.validationStateMap[key] = !this.mailAlreadyChecked[this.account.email].result;
+                            if (!this.validationStateMap[key]) {
+                                this.emailTooltip = "TOOLTIP.EMAIL_EXISTING";
+                            }
                             return;
                         }
 
@@ -72,8 +74,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                                 this.validationStateMap[key] = !res;
                                 if (res) {
                                     this.emailTooltip = "TOOLTIP.EMAIL_EXISTING";
-                                    this.mailAlreadyChecked[this.account.email] = true; //Tag it checked
                                 }
+                                this.mailAlreadyChecked[this.account.email] = {
+                                    result: res
+                                }; //Tag it checked
                             })
                             .catch(error => {
                                 this.checkOnGoing = false;

@@ -129,7 +129,7 @@ export class SessionService {
             .catch(error => this.handleError(error))
     }
 
-    checkUserExisting(target: string, value: string): Promise<any> {
+    checkUserExisting(target: string, value: string): Promise<boolean> {
         //Build the form package
         const body = new URLSearchParams();
         body.set('target', target);
@@ -138,7 +138,9 @@ export class SessionService {
         //Trigger Http
         return this.http.post(userExistsEndpoint, body.toString(), { headers: this.formHeaders })
             .toPromise()
-            .then(response => response)
+            .then(response => {
+                return response.json();
+            })
             .catch(error => this.handleError(error));
     }
 }
