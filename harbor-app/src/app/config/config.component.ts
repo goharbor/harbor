@@ -5,12 +5,12 @@ import { NgForm } from '@angular/forms';
 import { ConfigurationService } from './config.service';
 import { Configuration } from './config';
 import { MessageService } from '../global-message/message.service';
-import { AlertType, DeletionTargets } from '../shared/shared.const';
+import { AlertType, ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
 import { StringValueItem } from './config';
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message'
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message'
 
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
@@ -40,15 +40,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     constructor(
         private msgService: MessageService,
         private configService: ConfigurationService,
-        private confirmService: DeletionDialogService,
+        private confirmService: ConfirmationDialogService,
         private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
         //First load
         this.retrieveConfig();
 
-        this.confirmSub = this.confirmService.deletionConfirm$.subscribe(confirmation => {
-            this.reset(confirmation.data);
+        this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
+            if (confirmation &&
+                confirmation.state === ConfirmationState.CONFIRMED &&
+                confirmation.source === ConfirmationTargets.CONFIG) {
+                this.reset(confirmation.data);
+            }
         });
     }
 
@@ -125,7 +129,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     this.retrieveConfig();
 
                     //Reload bootstrap option
-                    this.appConfigService.load().catch(error=> console.error("Failed to reload bootstrap option with error: ", error));
+                    this.appConfigService.load().catch(error => console.error("Failed to reload bootstrap option with error: ", error));
 
                     this.msgService.announceMessage(response.status, "CONFIG.SAVE_SUCCESS", AlertType.SUCCESS);
                 })
@@ -150,12 +154,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     public cancel(): void {
         let changes = this.getChanges();
         if (!this.isEmpty(changes)) {
-            let msg = new DeletionMessage(
+            let msg = new ConfirmationMessage(
                 "CONFIG.CONFIRM_TITLE",
                 "CONFIG.CONFIRM_SUMMARY",
                 "",
                 changes,
-                DeletionTargets.EMPTY
+                ConfirmationTargets.CONFIG
             );
             this.confirmService.openComfirmDialog(msg);
         } else {
