@@ -13,8 +13,17 @@ export const httpStatusCode = {
   "Unauthorized": 401,
   "Forbidden": 403
 };
-export const enum DeletionTargets {
-  EMPTY, PROJECT, PROJECT_MEMBER, USER, POLICY, TARGET, REPOSITORY, TAG
+export const enum ConfirmationTargets {
+  EMPTY, 
+  PROJECT, 
+  PROJECT_MEMBER, 
+  USER, 
+  POLICY, 
+  TARGET, 
+  REPOSITORY, 
+  TAG, 
+  CONFIG,
+  CONFIG_ROUTE
 };
 
 export const enum ActionType {
@@ -36,3 +45,7 @@ export const CommonRoutes = {
 };
 
 export const AdmiralQueryParamKey = "admiral_redirect_url";
+
+export const enum ConfirmationState {
+  NA, CONFIRMED, CANCEL
+}
