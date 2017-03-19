@@ -38,7 +38,8 @@
         "ITEM_REQUIRED": "Field is required",
         "NUMBER_REQUIRED": "Field is required and should be numbers",
         "PORT_REQUIRED": "Field is required and should be valid port number",
-        "EMAIL_EXISTING": "Email address is already existing"
+        "EMAIL_EXISTING": "Email address is already existing",
+        "USER_EXISTING": "Username is already used"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
