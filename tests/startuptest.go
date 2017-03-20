@@ -36,7 +36,7 @@ func main() {
 		}
 		//		fmt.Printf("%s", b)
 
-		if strings.Contains(string(b), "Clarity Seed App") {
+		if strings.Contains(string(b), "Harbor") {
 			fmt.Printf("sucess!\n")
 		} else {
 			fmt.Println("the response does not contain \"Harbor\"!")

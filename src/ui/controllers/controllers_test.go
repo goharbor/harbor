@@ -65,7 +65,7 @@ func TestMain(t *testing.T) {
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "'/' httpStatusCode should be 200")
-	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>Clarity Seed App</title>"), "http respond should have '<title>Clarity Seed App</title>'")
+	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>Harbor</title>"), "http respond should have '<title>Harbor</title>'")
 
 	r, _ = http.NewRequest("POST", "/login", nil)
 	w = httptest.NewRecorder()
