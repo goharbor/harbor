@@ -11,7 +11,7 @@ import { MessageService } from '../../global-message/message.service';
 @Component({
     selector: 'reset-password',
     templateUrl: "reset-password.component.html",
-    styleUrls: ['password.component.css']
+    styleUrls: ['password.component.css', '../../common.css']
 })
 export class ResetPasswordComponent implements OnInit{
     opened: boolean = true;

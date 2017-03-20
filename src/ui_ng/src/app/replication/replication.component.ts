@@ -98,6 +98,11 @@ export class ReplicationComponent implements OnInit {
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
      this.retrievePolicies();
+
+     let isCreate = this.route.snapshot.parent.queryParams['is_create'];
+     if (isCreate && <boolean>isCreate) {
+       this.openModal();
+     }
    }
 
    retrievePolicies(): void {
@@ -156,7 +161,7 @@ export class ReplicationComponent implements OnInit {
       this.fetchPolicyJobs();
      }
    }
-
+   
    doSearchPolicies(policyName: string) {
      this.search.policyName = policyName;
      this.retrievePolicies();

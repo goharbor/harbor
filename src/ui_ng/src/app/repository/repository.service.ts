@@ -47,7 +47,7 @@ export class RepositoryService {
                     tags.forEach(t=>{
                       for(let i = 0; i < signatures.length; i++) {
                         if(signatures[i].tag === t.tag) {
-                          t.verified = true;
+                          t.signed = true;
                           break;
                         }
                       }

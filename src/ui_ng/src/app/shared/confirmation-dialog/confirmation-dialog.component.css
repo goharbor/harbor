@@ -1,14 +1,14 @@
-.deletion-icon-inline {
+.confirmation-icon-inline {
     display: inline-block;
 }
 
-.deletion-title {
+.confirmation-title {
     line-height: 24px;
     color: #000000;
     font-size: 22px;
 }
 
-.deletion-content {
+.confirmation-content {
     font-size: 14px;
     color: #565656;
     line-height: 24px;

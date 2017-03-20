@@ -23,5 +23,5 @@ export class Tag {
       }
     ];
   };
-  verified: boolean;
+  signed: boolean;
 }

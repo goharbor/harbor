@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { Response } from '@angular/http';
 
 import { Project } from '../project';
@@ -7,6 +7,8 @@ import { ProjectService } from '../project.service';
 
 import { MessageService } from '../../global-message/message.service';
 import { AlertType } from '../../shared/shared.const';
+
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -22,9 +24,11 @@ export class CreateProjectComponent {
   
   errorMessageOpened: boolean;
   errorMessage: string;
-  
+
   @Output() create = new EventEmitter<boolean>();
-  
+  @ViewChild(InlineAlertComponent)
+  private inlineAlert: InlineAlertComponent;
+
   constructor(private projectService: ProjectService, 
               private messageService: MessageService,
               private translateService: TranslateService) {}
@@ -53,6 +57,7 @@ export class CreateProjectComponent {
                   this.messageService.announceMessage(error.status, this.errorMessage, AlertType.DANGER);
                 });
               }
+              this.inlineAlert.showInlineError(this.errorMessage);
             }
           }); 
   }
@@ -68,5 +73,10 @@ export class CreateProjectComponent {
     this.errorMessageOpened = false;
     this.errorMessage = '';
   }
+
+  confirmCancel(event: boolean): void {
+    this.errorMessageOpened = false;
+  }
+
 }
 
