@@ -30,9 +30,10 @@ class FilterOption {
 }
 
 @Component({
+  moduleId: module.id,
   selector: 'audit-log',
   templateUrl: './audit-log.component.html',
-  styleUrls: [ 'audit-log.css' ]
+  styleUrls: [ './audit-log.component.css' ]
 })
 export class AuditLogComponent implements OnInit {
 

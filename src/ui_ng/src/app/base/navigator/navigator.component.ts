@@ -9,10 +9,9 @@ import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames, signInRoute } from '../../shared/shared.const';
+import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 
 import { AppConfigService } from '../../app-config.service';
-import { AppConfig } from '../../app-config';
 
 @Component({
     selector: 'navigator',
@@ -25,9 +24,7 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
-    private sessionUser: SessionUser = null;
     private selectedLang: string = enLang;
-    private appConfig: AppConfig = new AppConfig();
 
     constructor(
         private session: SessionService,
@@ -37,40 +34,38 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
-        this.sessionUser = this.session.getCurrentUser();
         this.selectedLang = this.translate.currentLang;
         this.translate.onLangChange.subscribe(langChange => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);
         });
-
-        this.appConfig = this.appConfigService.getConfig();
     }
 
     public get isSessionValid(): boolean {
-        return this.sessionUser != null;
+        return this.session.getCurrentUser() != null;
     }
 
     public get accountName(): string {
-        return this.sessionUser ? this.sessionUser.username : "";
+        return this.session.getCurrentUser() ? this.session.getCurrentUser().username : "N/A";
     }
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
     }
 
-    public get isIntegrationMode(): boolean {
-        return this.appConfig.with_admiral && this.appConfig.admiral_endpoint.trim() != "";
-    }
-
     public get admiralLink(): string {
-        let routeSegments = [this.appConfig.admiral_endpoint,
-        "?registry_url=",
+        let appConfig = this.appConfigService.getConfig();
+        let routeSegments = [appConfig.admiral_endpoint,
+            "?registry_url=",
         encodeURIComponent(window.location.href)
         ];
 
         return routeSegments.join("");
+    }
+
+    public get isIntegrationMode(): boolean {
+        return this.appConfigService.isIntegrationMode();
     }
 
     matchLang(lang: string): boolean {
@@ -105,11 +100,12 @@ export class NavigatorComponent implements OnInit {
     logOut(): void {
         this.session.signOff()
             .then(() => {
-                this.sessionUser = null;
                 //Naviagte to the sign in route
-                this.router.navigate(["/sign-in"]);
+                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
-            .catch()//TODO:
+            .catch(error => {
+                console.error("Log out with error: ", error);
+            });
     }
 
     //Switch languages
@@ -127,20 +123,12 @@ export class NavigatorComponent implements OnInit {
 
     //Handle the home action
     homeAction(): void {
-        if (this.sessionUser != null) {
+        if (this.session.getCurrentUser() != null) {
             //Navigate to default page
-            this.router.navigate(['harbor']);
+            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
         } else {
             //Naviagte to signin page
-            this.router.navigate(['sign-in']);
+            this.router.navigate([CommonRoutes.HARBOR_ROOT]);
         }
-    }
-
-    openSignUp(): void {
-        let navigatorExtra: NavigationExtras = {
-            queryParams: { "sign_up": true }
-        };
-
-        this.router.navigate([signInRoute], navigatorExtra);
     }
 }

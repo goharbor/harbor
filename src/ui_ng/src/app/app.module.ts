@@ -19,7 +19,7 @@ import { Http } from '@angular/http';
 import { AppConfigService } from './app-config.service';
 
 export function HttpLoaderFactory(http: Http) {
-    return new TranslateHttpLoader(http, 'ng/i18n/lang/', '-lang.json');
+    return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
 }
 
 export function initConfig(configService: AppConfigService) {

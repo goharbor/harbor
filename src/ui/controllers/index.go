@@ -1,11 +1,14 @@
 package controllers
 
+import "github.com/astaxie/beego"
+
 // IndexController handles request to /
 type IndexController struct {
-	BaseController
+	beego.Controller
 }
 
 // Get renders the index page
 func (ic *IndexController) Get() {
-	ic.Forward("page_title_index", "index.htm")
+	ic.TplExt = "html"
+	ic.TplName = "index.html"
 }

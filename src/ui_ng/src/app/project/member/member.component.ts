@@ -24,7 +24,9 @@ import 'rxjs/add/observable/throw';
 export const roleInfo: {} = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
 
 @Component({
-  templateUrl: 'member.component.html'
+  moduleId: module.id,
+  templateUrl: 'member.component.html',
+  styleUrls: ['./member.component.css']
 })
 export class MemberComponent implements OnInit {
 
