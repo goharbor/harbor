@@ -55,13 +55,7 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get admiralLink(): string {
-        let appConfig = this.appConfigService.getConfig();
-        let routeSegments = [appConfig.admiral_endpoint,
-            "?registry_url=",
-        encodeURIComponent(window.location.href)
-        ];
-
-        return routeSegments.join("");
+        return this.appConfigService.getAdmiralEndpoint(window.location.href);
     }
 
     public get isIntegrationMode(): boolean {
