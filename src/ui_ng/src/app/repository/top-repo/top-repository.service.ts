@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { TopRepo } from './top-repository';
+import { Repository } from '../repository';
 
-export const topRepoEndpoint = "/api/repositories/top";
+export const topRepoEndpoint = "/api/repositories/top?detail=1";
 /**
  * Declare service to handle the top repositories
  * 
@@ -31,9 +31,9 @@ export class TopRepoService {
      * 
      * @memberOf GlobalSearchService
      */
-    getTopRepos(): Promise<TopRepo[]> {
+    getTopRepos(): Promise<Repository[]> {
         return this.http.get(topRepoEndpoint, this.options).toPromise()
-            .then(response => response.json() as TopRepo[])
+            .then(response => response.json() as Repository[])
             .catch(error => Promise.reject(error));
     }
 }

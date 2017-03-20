@@ -13,3 +13,31 @@
     float: right;
     top: -5px;
 }
+
+.popular-repo-wrapper {
+    background-color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-grow: 1;
+    margin-top: 24px;
+    justify-content: center;
+    flex-direction: column;
+    height: auto;
+    position: relative;
+    margin-left: 1px;
+}
+
+.login-wrapper-override {
+    flex-wrap: wrap;
+}
+
+.repo-container {
+    width: 100%;
+    margin-top: -250px;
+}
+
+.more-info-link {
+    position: relative;
+    top: 100px;
+    left: 330px;
+}

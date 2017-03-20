@@ -11,7 +11,8 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 @Component({
     selector: 'password-setting',
-    templateUrl: "password-setting.component.html"
+    templateUrl: "password-setting.component.html",
+    styleUrls: ['../../common.css']
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     opened: boolean = false;

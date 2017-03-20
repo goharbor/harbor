@@ -1,18 +1,16 @@
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-    <div class="row flex-items-xs-right">
+    <div class="row flex-items-xs-right option-right">
       <div class="flex-xs-middle">
         <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
-      </div>
-      <div class="flex-xs-middle">
         <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></grid-filter>
         <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
       </div>
     </div>
-    <div class="row flex-items-xs-right" [hidden]="currentOption === 0">
+    <div class="row flex-items-xs-right option-right" [hidden]="currentOption === 0">
       <clr-dropdown [clrMenuPosition]="'bottom-left'" >
         <button class="btn btn-link" clrDropdownToggle>
-          {{'AUDIT_LOG.ALL_OPERATIONS' | translate}}
+          {{'AUDIT_LOG.OPERATIONS' | translate}}
           <clr-icon shape="caret down"></clr-icon>
         </button>
         <div class="dropdown-menu">
@@ -24,6 +22,8 @@
       <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doSearchByTimeRange(toTime.value, 'end')">
       </div>
     </div>
+  </div>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 datagrid-margin-top ">  
     <clr-datagrid (clrDgRefresh)="retrieve($event)">
       <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
