@@ -1,7 +1,7 @@
 version: '2'
 services:
   registry:
-    image: library/registry:2.5.1
+    image: library/registry:2.6.0
     restart: always
     volumes:
       - /data/registry:/storage
