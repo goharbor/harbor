@@ -3,7 +3,7 @@
 }
 
 .custom-add-button {
-    font-size: medium;
+    font-size: 12px;
     margin-left: -12px;
 }
 
@@ -16,17 +16,19 @@
     float: right;
     margin-right: 24px;
     position: relative;
-    top: 8px;
+    top: 10px;
 }
 
 .action-panel-pos {
     position: relative;
-    top: 20px;
+    top: 6px;
+    padding-left: 12px;
+    margin-top: 12px;
 }
 
 .refresh-btn {
     position: absolute;
-    right: -4px;
-    top: 8px;
+    right: 2px;
+    top: 12px;
     cursor: pointer;
 }
