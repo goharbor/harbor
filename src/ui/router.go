@@ -26,39 +26,38 @@ import (
 
 func initRouters() {
 
-	beego.SetStaticPath("static/resources", "static/resources")
-	beego.SetStaticPath("static/vendors", "static/vendors")
-	beego.SetStaticPath("/ng", "./static/new-ui")
-	beego.SetStaticPath("/ng/harbor", "./static/new-ui")
-	beego.SetStaticPath("/ng/harbor/dashboard", "./static/new-ui")
-	beego.SetStaticPath("/ng/harbor/projects", "./static/new-ui")
-	beego.SetStaticPath("/ng/harbor/users", "./static/new-ui")
+	beego.SetStaticPath("/static", "./static")
+	beego.SetStaticPath("/i18n", "./static/i18n")
 
 	//Page Controllers:
 	beego.Router("/", &controllers.IndexController{})
-	beego.Router("/dashboard", &controllers.DashboardController{})
-	beego.Router("/project", &controllers.ProjectController{})
-	beego.Router("/repository", &controllers.RepositoryController{})
-	beego.Router("/sign_up", &controllers.SignUpController{})
-	beego.Router("/add_new", &controllers.AddNewController{})
-	beego.Router("/account_setting", &controllers.AccountSettingController{})
-	beego.Router("/change_password", &controllers.ChangePasswordController{})
-	beego.Router("/admin_option", &controllers.AdminOptionController{})
-	beego.Router("/forgot_password", &controllers.ForgotPasswordController{})
-	beego.Router("/reset_password", &controllers.ResetPasswordController{})
-	beego.Router("/search", &controllers.SearchController{})
+	beego.Router("/sign-in", &controllers.IndexController{})
+	beego.Router("/sign-up", &controllers.IndexController{})
+	beego.Router("/password-reset", &controllers.IndexController{})
+
+	beego.Router("/harbor", &controllers.IndexController{})
+	beego.Router("/harbor/sign-in", &controllers.IndexController{})
+	beego.Router("/harbor/sign-up", &controllers.IndexController{})
+	beego.Router("/harbor/dashboard", &controllers.IndexController{})
+	beego.Router("/harbor/projects", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/repository", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/replication", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/member", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/log", &controllers.IndexController{})
+
+	beego.Router("/harbor/users", &controllers.IndexController{})
+	beego.Router("/harbor/logs", &controllers.IndexController{})
+	beego.Router("/harbor/replications", &controllers.IndexController{})
+	beego.Router("/harbor/replications/endpoints", &controllers.IndexController{})
+	beego.Router("/harbor/replications/rules", &controllers.IndexController{})
+	beego.Router("/harbor/tags", &controllers.IndexController{})
+	beego.Router("/harbor/configs", &controllers.IndexController{})
 
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
-	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
-
-	beego.Router("/optional_menu", &controllers.OptionalMenuController{})
-	beego.Router("/navigation_header", &controllers.NavigationHeaderController{})
-	beego.Router("/navigation_detail", &controllers.NavigationDetailController{})
-	beego.Router("/sign_in", &controllers.SignInController{})
 
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})

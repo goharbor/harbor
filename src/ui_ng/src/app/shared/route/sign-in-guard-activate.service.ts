@@ -6,7 +6,7 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { harborRootRoute } from '../../shared/shared.const';
+import { CommonRoutes } from '../../shared/shared.const';
 
 @Injectable()
 export class SignInGuard implements CanActivate, CanActivateChild {
@@ -19,14 +19,14 @@ export class SignInGuard implements CanActivate, CanActivateChild {
       if (!user) {
         this.authService.retrieveUser()
           .then(() => {
-            this.router.navigate([harborRootRoute]);
+            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
             return resolve(false);
           })
           .catch(error => {
             return resolve(true);
           });
       } else {
-        this.router.navigate([harborRootRoute]);
+        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
         return resolve(false);
       }
     });

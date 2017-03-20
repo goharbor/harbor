@@ -7,11 +7,15 @@ import {
   NavigationExtras
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { harborRootRoute, signInRoute } from '../../shared/shared.const';
+import { CommonRoutes } from '../../shared/shared.const';
+import { AppConfigService } from '../../app-config.service';
 
 @Injectable()
 export class SystemAdminGuard implements CanActivate, CanActivateChild {
-  constructor(private authService: SessionService, private router: Router) { }
+  constructor(
+    private authService: SessionService,
+    private router: Router,
+    private appConfigService: AppConfigService) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     return new Promise((resolve, reject) => {
@@ -24,7 +28,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
             if (user.has_admin_role > 0) {
               return resolve(true);
             } else {
-              this.router.navigate([harborRootRoute]);
+              this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
               return resolve(false);
             }
           })
@@ -32,11 +36,11 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
             //Session retrieving failed then redirect to sign-in
             //no matter what status code is.
             //Please pay attention that route 'harborRootRoute' support anonymous user
-            if (state.url != harborRootRoute) {
+            if (state.url != CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
               let navigatorExtra: NavigationExtras = {
                 queryParams: { "redirect_url": state.url }
               };
-              this.router.navigate([signInRoute], navigatorExtra);
+              this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
               return resolve(false);
             } else {
               return resolve(true);
@@ -46,7 +50,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
         if (user.has_admin_role > 0) {
           return resolve(true);
         } else {
-          this.router.navigate([harborRootRoute]);
+          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
           return resolve(false);
         }
       }

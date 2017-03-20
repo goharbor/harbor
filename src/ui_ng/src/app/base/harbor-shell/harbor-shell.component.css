@@ -7,7 +7,6 @@
 }
 
 .start-content-padding {
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-    padding-left: 0px !important;
+    padding: 0px !important;
+    background-color: white;
 }

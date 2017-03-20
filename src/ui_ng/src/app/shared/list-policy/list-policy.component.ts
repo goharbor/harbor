@@ -71,8 +71,8 @@ export class ListPolicyComponent implements OnDestroy {
   }
   
   enablePolicy(policy: Policy): void {
-    console.log('Enable policy ID:' + policy.id + ' with activation status ' + policy.enabled);
     policy.enabled = policy.enabled === 0 ? 1 : 0; 
+    console.log('Enable policy ID:' + policy.id + ' with activation status ' + policy.enabled);
     this.replicationService.enablePolicy(policy.id, policy.enabled);
   }
 
