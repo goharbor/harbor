@@ -239,7 +239,7 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		for _, t := range tags {
 			if _, ok = signedTags[t]; ok {
-				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled")
+				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
 				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
 			}
 		}
