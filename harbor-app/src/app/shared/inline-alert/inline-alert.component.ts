@@ -44,7 +44,7 @@ export class InlineAlertComponent {
         this.showCancelAction = true;
         this.inlineAlertClosable = true;
         this.alertClose = false;
-        this.useAppLevelStyle = true;
+        this.useAppLevelStyle = false;
     }
 
     //Show inline sccess info
