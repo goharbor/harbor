@@ -16,7 +16,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
@@ -32,14 +31,8 @@ func Capacity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.Marshal(capacity)
-	if err != nil {
-		log.Errorf("failed to marshal capacity: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-
-	if _, err = w.Write(b); err != nil {
+	if err = writeJSON(w, capacity); err != nil {
 		log.Errorf("failed to write response: %v", err)
+		return
 	}
 }

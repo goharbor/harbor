@@ -24,6 +24,8 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
+// NewHandler returns a gorilla router which is wrapped by  authenticate handler
+// and logging handler
 func NewHandler() http.Handler {
 	h := newRouter()
 	secrets := map[string]string{

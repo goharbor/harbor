@@ -33,14 +33,9 @@ func ListCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		log.Errorf("failed to marshal configurations: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-	if _, err = w.Write(b); err != nil {
+	if err = writeJSON(w, cfg); err != nil {
 		log.Errorf("failed to write response: %v", err)
+		return
 	}
 }
 
