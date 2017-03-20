@@ -14,7 +14,7 @@
   "dependencies": {
     "@angular/common": "^2.4.1",
     "@angular/compiler": "^2.4.1",
-    "@angular/core": "^2.4.1",
+    "@angular/core": "^2.4.9",
     "@angular/forms": "^2.4.1",
     "@angular/http": "^2.4.1",
     "@angular/platform-browser": "^2.4.1",
@@ -36,11 +36,12 @@
     "zone.js": "^0.7.2"
   },
   "devDependencies": {
+    "@angular/cli": "^1.0.0-rc.1",
     "@angular/compiler-cli": "^2.4.1",
     "@types/core-js": "^0.9.34",
     "@types/jasmine": "^2.2.30",
     "@types/node": "^6.0.42",
-    "angular-cli": "^1.0.0-beta.24",
+    "@angular/cli": "^1.0.0-rc.2",
     "bootstrap": "4.0.0-alpha.5",
     "codelyzer": "~1.0.0-beta.3",
     "enhanced-resolve": "^3.0.0",
