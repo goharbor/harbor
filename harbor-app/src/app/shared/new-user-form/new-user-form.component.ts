@@ -161,7 +161,10 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
             pwdEqualStatus = this.newUserForm.controls["confirmPassword"].value === this.newUserForm.controls["newPassword"].value;
         }
         return this.newUserForm &&
-            this.newUserForm.valid && pwdEqualStatus;
+            this.newUserForm.valid && 
+            pwdEqualStatus &&
+            this.validationStateMap["username"] &&
+            this.validationStateMap["email"];//Backend check should be valid as well
     }
 
     ngAfterViewChecked(): void {

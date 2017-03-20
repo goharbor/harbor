@@ -45,6 +45,8 @@ export const CommonRoutes = {
 };
 
 export const AdmiralQueryParamKey = "admiral_redirect_url";
+export const HarborQueryParamKey = "harbor_redirect_url";
+export const CookieKeyOfAdmiral = "admiral.endpoint.latest";
 
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL

@@ -34,7 +34,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.searchSub = this.searchTerms
             .debounceTime(deBounceTime)
-            .distinctUntilChanged()
+            //.distinctUntilChanged()
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });

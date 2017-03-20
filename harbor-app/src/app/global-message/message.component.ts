@@ -94,7 +94,7 @@ export class MessageComponent implements OnInit {
   }
 
   signIn(): void {
-    this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
+    this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
   }
 
   onClose() {
