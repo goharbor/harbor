@@ -48,7 +48,6 @@ func init() {
 	beego.Router("/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &CommonController{}, "get:SendEmail")
-	beego.Router("/language", &CommonController{}, "get:SwitchLanguage")
 
 	//Init user Info
 	//admin = &usrInfo{adminName, adminPwd}
