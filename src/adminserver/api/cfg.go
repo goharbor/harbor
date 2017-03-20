@@ -19,40 +19,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-func isAuthenticated(r *http.Request) (bool, error) {
-	uiSecret := os.Getenv("UI_SECRET")
-	jobserviceSecret := os.Getenv("JOBSERVICE_SECRET")
-	c, err := r.Cookie("secret")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return false, nil
-		}
-		return false, err
-	}
-	return c != nil && (c.Value == uiSecret ||
-		c.Value == jobserviceSecret), nil
-}
-
 // ListCfgs lists configurations
 func ListCfgs(w http.ResponseWriter, r *http.Request) {
-	authenticated, err := isAuthenticated(r)
-	if err != nil {
-		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-
-	if !authenticated {
-		handleUnauthorized(w)
-		return
-	}
-
 	cfg, err := cfg.GetSystemCfg()
 	if err != nil {
 		log.Errorf("failed to get system configurations: %v", err)
@@ -73,18 +46,6 @@ func ListCfgs(w http.ResponseWriter, r *http.Request) {
 
 // UpdateCfgs updates configurations
 func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
-	authenticated, err := isAuthenticated(r)
-	if err != nil {
-		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-
-	if !authenticated {
-		handleUnauthorized(w)
-		return
-	}
-
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("failed to read request body: %v", err)
@@ -107,19 +68,7 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 
 // ResetCfgs resets configurations from environment variables
 func ResetCfgs(w http.ResponseWriter, r *http.Request) {
-	authenticated, err := isAuthenticated(r)
-	if err != nil {
-		log.Errorf("failed to check whether the request is authenticated or not: %v", err)
-		handleInternalServerError(w)
-		return
-	}
-
-	if !authenticated {
-		handleUnauthorized(w)
-		return
-	}
-
-	if err = cfg.Reset(); err != nil {
+	if err := cfg.Reset(); err != nil {
 		log.Errorf("failed to reset system configurations: %v", err)
 		handleInternalServerError(w)
 		return
