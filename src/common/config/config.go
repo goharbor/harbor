@@ -17,83 +17,26 @@
 package config
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/astaxie/beego/cache"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-)
-
-// const variables
-const (
-	DBAuth              = "db_auth"
-	LDAPAuth            = "ldap_auth"
-	ProCrtRestrEveryone = "everyone"
-	ProCrtRestrAdmOnly  = "adminonly"
-	LDAPScopeBase       = "1"
-	LDAPScopeOnelevel   = "2"
-	LDAPScopeSubtree    = "3"
-
-	ExtEndpoint                = "ext_endpoint"
-	AUTHMode                   = "auth_mode"
-	DatabaseType               = "database_type"
-	MySQLHost                  = "mysql_host"
-	MySQLPort                  = "mysql_port"
-	MySQLUsername              = "mysql_username"
-	MySQLPassword              = "mysql_password"
-	MySQLDatabase              = "mysql_database"
-	SQLiteFile                 = "sqlite_file"
-	SelfRegistration           = "self_registration"
-	LDAPURL                    = "ldap_url"
-	LDAPSearchDN               = "ldap_search_dn"
-	LDAPSearchPwd              = "ldap_search_password"
-	LDAPBaseDN                 = "ldap_base_dn"
-	LDAPUID                    = "ldap_uid"
-	LDAPFilter                 = "ldap_filter"
-	LDAPScope                  = "ldap_scope"
-	LDAPTimeout                = "ldap_timeout"
-	TokenServiceURL            = "token_service_url"
-	RegistryURL                = "registry_url"
-	EmailHost                  = "email_host"
-	EmailPort                  = "email_port"
-	EmailUsername              = "email_username"
-	EmailPassword              = "email_password"
-	EmailFrom                  = "email_from"
-	EmailSSL                   = "email_ssl"
-	EmailIdentity              = "email_identity"
-	ProjectCreationRestriction = "project_creation_restriction"
-	VerifyRemoteCert           = "verify_remote_cert"
-	MaxJobWorkers              = "max_job_workers"
-	TokenExpiration            = "token_expiration"
-	CfgExpiration              = "cfg_expiration"
-	JobLogDir                  = "job_log_dir"
-	UseCompressedJS            = "use_compressed_js"
-	AdminInitialPassword       = "admin_initial_password"
-	AdmiralEndpoint            = "admiral_url"
-	WithNotary                 = "with_notary"
+	"github.com/vmware/harbor/src/adminserver/client"
+	"github.com/vmware/harbor/src/common"
 )
 
 // Manager manages configurations
 type Manager struct {
-	Loader *Loader
-	Parser *Parser
+	client client.Client
 	Cache  bool
 	cache  cache.Cache
 	key    string
 }
 
 // NewManager returns an instance of Manager
-// url: the url from which loader loads configurations
-func NewManager(url, secret string, enableCache bool) *Manager {
+func NewManager(client client.Client, enableCache bool) *Manager {
 	m := &Manager{
-		Loader: NewLoader(url, secret),
-		Parser: &Parser{},
+		client: client,
 	}
 
 	if enableCache {
@@ -105,19 +48,9 @@ func NewManager(url, secret string, enableCache bool) *Manager {
 	return m
 }
 
-// Init loader
-func (m *Manager) Init() error {
-	return m.Loader.Init()
-}
-
 // Load configurations, if cache is enabled, cache the configurations
 func (m *Manager) Load() (map[string]interface{}, error) {
-	b, err := m.Loader.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := m.Parser.Parse(b)
+	c, err := m.client.GetCfgs()
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +60,15 @@ func (m *Manager) Load() (map[string]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err = m.cache.Put(m.key, c,
+
+		// copy the configuration map so that later modification to the
+		// map does not effect the cached value
+		cachedCfgs := map[string]interface{}{}
+		for k, v := range c {
+			cachedCfgs[k] = v
+		}
+
+		if err = m.cache.Put(m.key, cachedCfgs,
 			time.Duration(expi)*time.Second); err != nil {
 			return nil, err
 		}
@@ -138,7 +79,7 @@ func (m *Manager) Load() (map[string]interface{}, error) {
 
 // Reset configurations
 func (m *Manager) Reset() error {
-	return m.Loader.Reset()
+	return m.client.ResetCfgs()
 }
 
 func getCfgExpiration(m map[string]interface{}) (int, error) {
@@ -146,7 +87,7 @@ func getCfgExpiration(m map[string]interface{}) (int, error) {
 		return 0, fmt.Errorf("can not get cfg expiration as configurations are null")
 	}
 
-	expi, ok := m[CfgExpiration]
+	expi, ok := m[common.CfgExpiration]
 	if !ok {
 		return 0, fmt.Errorf("cfg expiration is not set")
 	}
@@ -167,133 +108,6 @@ func (m *Manager) Get() (map[string]interface{}, error) {
 }
 
 // Upload configurations
-func (m *Manager) Upload(b []byte) error {
-	return m.Loader.Upload(b)
-}
-
-// Loader loads and uploads configurations
-type Loader struct {
-	url    string
-	secret string
-	client *http.Client
-}
-
-// NewLoader ...
-func NewLoader(url, secret string) *Loader {
-	return &Loader{
-		url:    url,
-		secret: secret,
-		client: &http.Client{},
-	}
-}
-
-// Init waits remote server to be ready by testing connections with it
-func (l *Loader) Init() error {
-	addr := l.url
-	if strings.Contains(addr, "://") {
-		addr = strings.Split(addr, "://")[1]
-	}
-
-	if !strings.Contains(addr, ":") {
-		addr = addr + ":80"
-	}
-
-	return utils.TestTCPConn(addr, 60, 2)
-}
-
-// Load configurations from remote server
-func (l *Loader) Load() ([]byte, error) {
-	log.Debug("loading configurations...")
-	req, err := http.NewRequest("GET", l.url+"/api/configurations", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: l.secret,
-	})
-
-	resp, err := l.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%d", resp.StatusCode)
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	log.Debug("configurations load completed")
-	return b, nil
-}
-
-// Upload configurations to remote server
-func (l *Loader) Upload(b []byte) error {
-	req, err := http.NewRequest("PUT", l.url+"/api/configurations", bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: l.secret,
-	})
-
-	resp, err := l.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
-	}
-
-	log.Debug("configurations uploaded")
-
-	return nil
-}
-
-// Reset sends configurations resetting command to
-// remote server
-func (l *Loader) Reset() error {
-	req, err := http.NewRequest("POST", l.url+"/api/configurations/reset", nil)
-	if err != nil {
-		return err
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: l.secret,
-	})
-
-	resp, err := l.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected http status code: %d", resp.StatusCode)
-	}
-
-	log.Debug("configurations resetted")
-
-	return nil
-}
-
-// Parser parses configurations
-type Parser struct {
-}
-
-// Parse parses []byte to a map configuration
-func (p *Parser) Parse(b []byte) (map[string]interface{}, error) {
-	c := map[string]interface{}{}
-	if err := json.Unmarshal(b, &c); err != nil {
-		return nil, err
-	}
-	return c, nil
+func (m *Manager) Upload(cfgs map[string]interface{}) error {
+	return m.client.UpdateCfgs(cfgs)
 }

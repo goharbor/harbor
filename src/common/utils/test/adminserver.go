@@ -20,46 +20,47 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/vmware/harbor/src/common"
 )
 
 var adminServerDefaultConfig = map[string]interface{}{
-	config.ExtEndpoint:                "https://host01.com",
-	config.AUTHMode:                   config.DBAuth,
-	config.DatabaseType:               "mysql",
-	config.MySQLHost:                  "127.0.0.1",
-	config.MySQLPort:                  3306,
-	config.MySQLUsername:              "user01",
-	config.MySQLPassword:              "password",
-	config.MySQLDatabase:              "registry",
-	config.SQLiteFile:                 "/tmp/registry.db",
-	config.SelfRegistration:           true,
-	config.LDAPURL:                    "ldap://127.0.0.1",
-	config.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
-	config.LDAPSearchPwd:              "password",
-	config.LDAPBaseDN:                 "ou=people,dc=mydomain,dc=com",
-	config.LDAPUID:                    "uid",
-	config.LDAPFilter:                 "",
-	config.LDAPScope:                  3,
-	config.LDAPTimeout:                30,
-	config.TokenServiceURL:            "http://token_service",
-	config.RegistryURL:                "http://registry",
-	config.EmailHost:                  "127.0.0.1",
-	config.EmailPort:                  25,
-	config.EmailUsername:              "user01",
-	config.EmailPassword:              "password",
-	config.EmailFrom:                  "from",
-	config.EmailSSL:                   true,
-	config.EmailIdentity:              "",
-	config.ProjectCreationRestriction: config.ProCrtRestrAdmOnly,
-	config.VerifyRemoteCert:           false,
-	config.MaxJobWorkers:              3,
-	config.TokenExpiration:            30,
-	config.CfgExpiration:              5,
-	config.UseCompressedJS:            true,
-	config.AdminInitialPassword:       "password",
-	config.AdmiralEndpoint:            "http://www.vmware.com",
-	config.WithNotary:                 false,
+	common.ExtEndpoint:                "https://host01.com",
+	common.AUTHMode:                   common.DBAuth,
+	common.DatabaseType:               "mysql",
+	common.MySQLHost:                  "127.0.0.1",
+	common.MySQLPort:                  3306,
+	common.MySQLUsername:              "user01",
+	common.MySQLPassword:              "password",
+	common.MySQLDatabase:              "registry",
+	common.SQLiteFile:                 "/tmp/registry.db",
+	common.SelfRegistration:           true,
+	common.LDAPURL:                    "ldap://127.0.0.1",
+	common.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
+	common.LDAPSearchPwd:              "password",
+	common.LDAPBaseDN:                 "ou=people,dc=mydomain,dc=com",
+	common.LDAPUID:                    "uid",
+	common.LDAPFilter:                 "",
+	common.LDAPScope:                  3,
+	common.LDAPTimeout:                30,
+	common.TokenServiceURL:            "http://token_service",
+	common.RegistryURL:                "http://registry",
+	common.EmailHost:                  "127.0.0.1",
+	common.EmailPort:                  25,
+	common.EmailUsername:              "user01",
+	common.EmailPassword:              "password",
+	common.EmailFrom:                  "from",
+	common.EmailSSL:                   true,
+	common.EmailIdentity:              "",
+	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
+	common.VerifyRemoteCert:           false,
+	common.MaxJobWorkers:              3,
+	common.TokenExpiration:            30,
+	common.CfgExpiration:              5,
+	common.UseCompressedJS:            true,
+	common.AdminInitialPassword:       "password",
+	common.AdmiralEndpoint:            "http://www.vmware.com",
+	common.WithNotary:                 false,
 }
 
 // NewAdminserver returns a mock admin server
@@ -101,5 +102,32 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 		}),
 	})
 
+	capacityHandler, err := NewCapacityHandle()
+	if err != nil {
+		return nil, err
+	}
+	m = append(m, &RequestHandlerMapping{
+		Method:  "GET",
+		Pattern: "/api/systeminfo/capacity",
+		Handler: capacityHandler,
+	})
+
 	return NewServer(m...), nil
+}
+
+// NewCapacityHandle ...
+func NewCapacityHandle() (func(http.ResponseWriter, *http.Request), error) {
+	capacity := imagestorage.Capacity{
+		Total: 100,
+		Free:  90,
+	}
+	b, err := json.Marshal(capacity)
+	if err != nil {
+		return nil, err
+	}
+	resp := &Response{
+		StatusCode: http.StatusOK,
+		Body:       b,
+	}
+	return Handler(resp), nil
 }
