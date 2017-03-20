@@ -1,5 +1,6 @@
 <clr-modal [(clrModalOpen)]="createEditPolicyOpened">
   <h3 class="modal-title">{{modalTitle}}</h3>
+  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
   <div class="modal-body">
     <form #policyForm="ngForm">
       <section class="form-block">
@@ -75,7 +76,7 @@
   </div>
   <div class="modal-footer">
       <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
-      <button type="button" class="btn btn-outline" (click)="createEditPolicyOpened = false">{{'BUTTON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="!policyForm.form.valid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
