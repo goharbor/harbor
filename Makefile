@@ -79,6 +79,12 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
+REGISTRYVERSION=2.6.0
+NGINXVERSION=1.11.5
+PHOTONVERSION=1.0
+NOTARYVERSION=server-0.5.0-fix
+NOTARYSIGNERVERSION=signer-0.5.0
+MARIADBVERSION=10.1.10
 HTTPPROXY=
 
 #clarity parameters
@@ -295,13 +301,13 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.1
-	@$(DOCKERPULL) nginx:1.11.5
+	@$(DOCKERPULL) registry:$(REGISTRYVERSION)
+	@$(DOCKERPULL) nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and mariadb..."; \
-		$(DOCKERPULL) jiangd/notary:server-0.5.0-fix; \
-		$(DOCKERPULL) notary:signer-0.5.0; \
-		$(DOCKERPULL) mariadb:10.1.10; \
+		$(DOCKERPULL) jiangd/notary:$(NOTARYVERSION); \
+		$(DOCKERPULL) notary:$(NOTARYSIGNERVERSION); \
+		$(DOCKERPULL) mariadb:$(MARIADBVERSION); \
 	fi	
 	
 	@echo "saving harbor docker image"
@@ -312,8 +318,8 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 \
-		jiangd/notary:server-0.5.0-fix notary:signer-0.5.0 mariadb:10.1.10; \
+		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
+		jiangd/notary:$(NOTARYVERSION) notary:$(NOTARYSIGNERVERSION) mariadb:$(MARIADBVERSION); \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
@@ -321,7 +327,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
+		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) ; \
 	fi
 	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
@@ -386,9 +392,9 @@ down:
     [ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "stoping harbor instance..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) -v down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
 	else \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -v down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
 	fi	
 	@echo "Done."
 
