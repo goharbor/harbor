@@ -19,8 +19,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/handlers"
+	"github.com/vmware/harbor/src/adminserver/handlers"
 	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
+	sysinfo "github.com/vmware/harbor/src/adminserver/systeminfo"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -47,13 +48,15 @@ func main() {
 	}
 	log.Info("system initialization completed")
 
+	sysinfo.Init()
+
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "80"
 	}
 	server := &Server{
 		Port:    port,
-		Handler: handlers.LoggingHandler(os.Stdout, newHandler()),
+		Handler: handlers.NewHandler(),
 	}
 	if err := server.Serve(); err != nil {
 		log.Fatal(err)

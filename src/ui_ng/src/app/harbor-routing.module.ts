@@ -31,8 +31,7 @@ import { SignUpPageComponent } from './account/sign-up/sign-up-page.component';
 
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
-import { ModeGuard } from './shared/route/mode-guard-activate.service';
-import { StartGuard } from './shared/route/start-guard-activate.service';
+import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -106,6 +105,7 @@ const harborRoutes: Routes = [
         path: 'configs',
         component: ConfigurationComponent,
         canActivate: [SystemAdminGuard],
+        canDeactivate: [LeavingConfigRouteDeactivate]
       }
     ]
   },

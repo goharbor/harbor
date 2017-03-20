@@ -21,7 +21,8 @@
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
         "TEST_LDAP": "测试LDAP服务器",
-        "MORE_INFO": "更多信息..."
+        "MORE_INFO": "更多信息...",
+        "YES": "确定"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -37,7 +38,9 @@
         "SIGN_UP_REAL_NAME": "全名",
         "ITEM_REQUIRED": "此项必需",
         "NUMBER_REQUIRED": "此项必需且为数字",
-        "PORT_REQUIRED": "此项必需且为合理端口号"
+        "PORT_REQUIRED": "此项必需且为合理端口号",
+        "EMAIL_EXISTING": "邮件地址已经存在",
+        "USER_EXISTING": "用户名已经存在"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -106,7 +109,7 @@
     "PROJECT": {
         "PROJECTS": "项目",
         "NAME": "项目名称",
-        "PUBLIC_OR_PRIVATE": "公开/私有",
+        "PUBLIC_OR_PRIVATE": "公开",
         "REPO_COUNT": "镜像仓库数",
         "CREATION_TIME": "创建时间",
         "DESCRIPTION": "描述",
@@ -127,7 +130,8 @@
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
-        "FILTER_PLACEHOLDER": "过滤项目"
+        "FILTER_PLACEHOLDER": "过滤项目",
+        "REPLICATION_RULE": "复制策略"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "镜像仓库",
@@ -160,6 +164,7 @@
         "REPOSITORY_NAME": "镜像名称",
         "TAGS": "标签",
         "OPERATION": "操作",
+        "OPERATIONS": "操作",
         "TIMESTAMP": "时间戳",
         "ALL_OPERATIONS": "所有操作",
         "PULL": "Pull",
@@ -266,7 +271,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
-        "VERIFIED": "已验证",
+        "SIGNED": "已签名",
         "AUTHOR": "作者",
         "CREATED": "创建时间",
         "DOCKER_VERSION": "Docker版本",
@@ -341,7 +346,9 @@
             "SCOPE": "lDAP范围"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常",
-        "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常"
+        "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常",
+        "LEAVING_CONFIRMATION_TITLE": "确定离开?",
+        "LEAVING_CONFIRMATION_SUMMARY": "存在未保存的配置更改, 确认离开当前配置页?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",
@@ -368,6 +375,10 @@
         "INDEX_MY": "私有的",
         "INDEX_PUB": "公开的",
         "INDEX_TOTAL": "总计"
+    },
+    "SEARCH": {
+        "IN_PROGRESS": "搜索中...",
+        "BACK": "返回"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",

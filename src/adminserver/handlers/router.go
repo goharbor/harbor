@@ -13,7 +13,7 @@
    limitations under the License.
 */
 
-package main
+package handlers
 
 import (
 	"net/http"
@@ -22,10 +22,11 @@ import (
 	"github.com/vmware/harbor/src/adminserver/api"
 )
 
-func newHandler() http.Handler {
+func newRouter() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/configurations", api.ListCfgs).Methods("GET")
 	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
 	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
+	r.HandleFunc("/api/systeminfo/capacity", api.Capacity).Methods("GET")
 	return r
 }

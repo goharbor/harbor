@@ -8,13 +8,12 @@ import { MessageComponent } from '../global-message/message.component';
 import { MessageService } from '../global-message/message.service';
 import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
 import { FilterComponent } from './filter/filter.component';
-import { HarborActionOverflow } from './harbor-action-overflow/harbor-action-overflow';
 import { TranslateModule } from "@ngx-translate/core";
 
 import { RouterModule } from '@angular/router';
 
-import { DeletionDialogComponent } from './deletion-dialog/deletion-dialog.component';
-import { DeletionDialogService } from './deletion-dialog/deletion-dialog.service';
+import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogService } from './confirmation-dialog/confirmation-dialog.service';
 import { SystemAdminGuard } from './route/system-admin-activate.service';
 import { NewUserFormComponent } from './new-user-form/new-user-form.component';
 import { InlineAlertComponent } from './inline-alert/inline-alert.component';
@@ -32,8 +31,7 @@ import { AuthCheckGuard } from './route/auth-user-activate.service';
 import { StatisticsComponent } from './statictics/statistics.component';
 import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
 import { SignInGuard } from './route/sign-in-guard-activate.service';
-import { ModeGuard } from './route/mode-guard-activate.service';
-import { StartGuard } from './route/start-guard-activate.service';
+import { LeavingConfigRouteDeactivate } from './route/leaving-config-deactivate.service';
 
 @NgModule({
   imports: [
@@ -45,8 +43,7 @@ import { StartGuard } from './route/start-guard-activate.service';
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    HarborActionOverflow,
-    DeletionDialogComponent,
+    ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
@@ -62,9 +59,8 @@ import { StartGuard } from './route/start-guard-activate.service';
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
-    HarborActionOverflow,
     TranslateModule,
-    DeletionDialogComponent,
+    ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
     ListPolicyComponent,
@@ -79,12 +75,12 @@ import { StartGuard } from './route/start-guard-activate.service';
     SessionService,
     MessageService,
     CookieService,
-    DeletionDialogService,
+    ConfirmationDialogService,
     SystemAdminGuard,
     AuthCheckGuard,
     SignInGuard,
-    ModeGuard,
-    StartGuard]
+    LeavingConfigRouteDeactivate
+  ]
 })
 export class SharedModule {
 
