@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	au "github.com/docker/distribution/registry/client/auth"
+	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/registry"
 )
@@ -40,7 +40,7 @@ type Authorizer interface {
 type AuthorizerStore struct {
 	authorizers []Authorizer
 	ping        *url.URL
-	challenges  []au.Challenge
+	challenges  []challenge.Challenge
 }
 
 // NewAuthorizerStore ...

@@ -2025,6 +2025,9 @@ definitions:
       self_registration:
         type: boolean
         description: Indicate whether the Harbor instance enable user to register himself.
+      has_ca_root:
+        type: boolean
+        description: Indicate whether there is a ca root cert file ready for download in the file system.
   SystemInfo:
     type: object
     properties:

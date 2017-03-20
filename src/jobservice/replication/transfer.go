@@ -323,12 +323,6 @@ func (m *ManifestPuller) enter() (string, error) {
 		blobs = append(blobs, discriptor.Digest.String())
 	}
 
-	// config is also need to be transferred if the schema of manifest is v2
-	manifest2, ok := manifest.(*schema2.DeserializedManifest)
-	if ok {
-		blobs = append(blobs, manifest2.Target().Digest.String())
-	}
-
 	m.logger.Infof("all blobs of %s:%s from %s: %v", name, tag, m.srcURL, blobs)
 
 	for _, blob := range blobs {
