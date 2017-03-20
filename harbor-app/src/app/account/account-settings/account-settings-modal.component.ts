@@ -112,7 +112,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get isValid(): boolean {
-        return this.accountForm && this.accountForm.valid && this.error === null;
+        return this.accountForm && 
+        this.accountForm.valid && 
+        this.error === null &&
+        this.validationStateMap["account_settings_email"]; //backend check is valid as well
     }
 
     public get showProgress(): boolean {
