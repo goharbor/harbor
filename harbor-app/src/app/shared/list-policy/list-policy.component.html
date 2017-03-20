@@ -5,7 +5,7 @@
     <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
-    <clr-dg-row *clrDgItems="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
+    <clr-dg-row *ngFor="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
             <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
