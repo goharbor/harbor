@@ -232,7 +232,7 @@ func (ra *RepositoryAPI) Delete() {
 		targets, err := getNotaryTargets(user, repoName)
 		if err != nil {
 			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
-			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.")
+			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
 		}
 		for _, tgt := range targets {
 			signedTags[tgt.Tag] = struct{}{}
