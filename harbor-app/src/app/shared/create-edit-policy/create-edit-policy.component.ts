@@ -240,6 +240,8 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             break;
           } else {
             this.hasChanged = false;
+            this.inlineAlert.close();
+            break;
           }
         }
       });

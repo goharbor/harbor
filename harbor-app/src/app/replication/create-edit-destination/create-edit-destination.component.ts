@@ -185,6 +185,8 @@ export class CreateEditDestinationComponent {
             break;
           } else {
             this.hasChanged = false;
+            this.inlineAlert.close();
+            break;
           }
         }
       });
