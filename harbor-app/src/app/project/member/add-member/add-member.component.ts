@@ -96,6 +96,8 @@ export class AddMemberComponent implements AfterViewChecked {
             break;
           } else {
             this.hasChanged = false;
+            this.inlineAlert.close();
+            break;
           }
         }
       });
