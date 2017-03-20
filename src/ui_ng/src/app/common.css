@@ -1,0 +1,8 @@
+.form-group-override {
+    padding-left: 170px !important;
+}
+
+.form-group-label-override {
+    font-size: 14px;
+    font-weight: 400;
+}

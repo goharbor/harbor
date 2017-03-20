@@ -4,20 +4,17 @@
     <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.DESCRIPTION' | translate}}</clr-dg-column>
-    <clr-dg-row *ngFor="let p of projects">
+    <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
+        <clr-dg-action-overflow *ngIf="listFullMode">
+            <button class="action-item" (click)="newReplicationRule(p)">{{'PROJECT.REPLICATION_RULE' | translate}}</button>
+            <button class="action-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </button>
+            <button class="action-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</button>
+        </clr-dg-action-overflow>
         <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
         <clr-dg-cell>{{ (p.public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
         <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
-        <clr-dg-cell>
-            {{p.description}}
-            <harbor-action-overflow *ngIf="listFullMode">
-                <a href="javascript:void(0)" class="dropdown-item">{{'PROJECT.NEW_POLICY' | translate}}</a>
-                <a href="javascript:void(0)" class="dropdown-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </a>
-                <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" class="dropdown-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</a>
-            </harbor-action-overflow>
-        </clr-dg-cell>
+        <clr-dg-cell>{{p.description}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
         {{totalRecordCount || (projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}

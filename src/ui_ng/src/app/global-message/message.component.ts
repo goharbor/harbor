@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Message } from './message';
 import { MessageService } from './message.service';
 
-import { AlertType, dismissInterval, httpStatusCode } from '../shared/shared.const';
+import { AlertType, dismissInterval, httpStatusCode, CommonRoutes } from '../shared/shared.const';
 
 @Component({
   selector: 'global-message',
@@ -94,7 +94,7 @@ export class MessageComponent implements OnInit {
   }
 
   signIn(): void {
-    this.router.navigate(['sign-in']);
+    this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
   }
 
   onClose() {

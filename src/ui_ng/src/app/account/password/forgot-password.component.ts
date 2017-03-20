@@ -8,7 +8,7 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 @Component({
     selector: 'forgot-password',
     templateUrl: "forgot-password.component.html",
-    styleUrls: ['password.component.css']
+    styleUrls: ['password.component.css', '../../common.css']
 })
 export class ForgotPasswordComponent {
     opened: boolean = false;

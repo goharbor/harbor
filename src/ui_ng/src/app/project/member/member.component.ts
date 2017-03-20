@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Response } from '@angular/http';
 
@@ -9,10 +9,10 @@ import { MemberService } from './member.service';
 import { AddMemberComponent } from './add-member/add-member.component';
 
 import { MessageService } from '../../global-message/message.service';
-import { AlertType, DeletionTargets } from '../../shared/shared.const';
+import { AlertType, ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
 
-import { DeletionDialogService } from '../../shared/deletion-dialog/deletion-dialog.service';
-import { DeletionMessage } from '../../shared/deletion-dialog/deletion-message';
+import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
 import { SessionService } from '../../shared/session.service';
 
 import { Observable } from 'rxjs/Observable';
@@ -20,30 +20,36 @@ import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
+import { Subscription } from 'rxjs/Subscription';
 
 export const roleInfo: {} = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
 
 @Component({
-  templateUrl: 'member.component.html'
+  moduleId: module.id,
+  templateUrl: 'member.component.html',
+  styleUrls: ['./member.component.css']
 })
-export class MemberComponent implements OnInit {
+export class MemberComponent implements OnInit, OnDestroy {
 
   currentUser: SessionUser;
   members: Member[];
   projectId: number;
   roleInfo = roleInfo;
+  private delSub: Subscription;
 
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
   constructor(private route: ActivatedRoute, private router: Router,
     private memberService: MemberService, private messageService: MessageService,
-    private deletionDialogService: DeletionDialogService,
-    session:SessionService) {
+    private deletionDialogService: ConfirmationDialogService,
+    session: SessionService) {
     //Get current user from registered resolver.
     this.currentUser = session.getCurrentUser();
-    deletionDialogService.deletionConfirm$.subscribe(message => {
-      if (message && message.targetId === DeletionTargets.PROJECT_MEMBER) {
+    this.delSub = deletionDialogService.confirmationConfirm$.subscribe(message => {
+      if (message &&
+        message.state === ConfirmationState.CONFIRMED &&
+        message.source === ConfirmationTargets.PROJECT_MEMBER) {
         this.memberService
           .deleteMember(this.projectId, message.data)
           .subscribe(
@@ -67,6 +73,12 @@ export class MemberComponent implements OnInit {
         this.messageService.announceMessage(error.status, 'Failed to get project member with project ID:' + projectId, AlertType.DANGER);
       }
       );
+  }
+
+  ngOnDestroy() {
+    if (this.delSub) {
+      this.delSub.unsubscribe();
+    }
   }
 
   ngOnInit() {
@@ -98,12 +110,12 @@ export class MemberComponent implements OnInit {
   }
 
   deleteMember(userId: number) {
-    let deletionMessage: DeletionMessage = new DeletionMessage(
+    let deletionMessage: ConfirmationMessage = new ConfirmationMessage(
       'MEMBER.DELETION_TITLE',
       'MEMBER.DELETION_SUMMARY',
-      userId+"",
+      userId + "",
       userId,
-      DeletionTargets.PROJECT_MEMBER
+      ConfirmationTargets.PROJECT_MEMBER
     );
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }

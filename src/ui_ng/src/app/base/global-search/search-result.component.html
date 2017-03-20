@@ -1,20 +1,14 @@
 <div class="search-overlay" *ngIf="state">
     <div id="placeholder1" style="height: 24px;"></div>
     <div class="search-header">
-        <span class="search-title">Search results for '{{currentTerm}}'</span>
-        <span class="search-close" (mouseover)="mouseAction(true)" (mouseout)="mouseAction(false)">
-            <clr-icon shape="close" [class.is-highlight]="hover" size="36" (click)="close()"></clr-icon>
-        </span>
+        <a href="javascript:void(0)" (click)="close()">&lt;&nbsp;{{'SEARCH.BACK' | translate}}</a>
     </div>
     <!-- spinner -->
-    <div class="spinner spinner-lg search-spinner" [hidden]="done">Search...</div>
+    <div class="spinner spinner-lg search-spinner" [hidden]="done">{{'SEARCH.IN_PROGRESS' | translate}}</div>
     <div id="results">
-        <h2>Projects</h2>
-        <div class="grid-header-wrapper">
-            <grid-filter class="grid-filter" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilterProjects($event)"></grid-filter>
-        </div>
+        <h2>{{'PROJECT.PROJECTS' | translate}}</h2>
         <list-project [projects]="searchResults.project" [mode]="listMode"></list-project>
-        <h2>Repositories</h2>
+        <h2>{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</h2>
         <list-repository [repositories]="searchResults.repository" [mode]="listMode"></list-repository>
     </div>
 </div>

@@ -1,22 +1,26 @@
-<h1>{{'PROJECT.PROJECTS' | translate}}</h1>
-<div class="row flex-items-xs-between">
-  <div class="flex-items-xs-middle">
-    <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.NEW_PROJECT' | translate}}</button>
-    <create-project (create)="createProject($event)"></create-project>
-  </div>
-  <div class="flex-items-xs-middle">
-    <clr-dropdown [clrMenuPosition]="'bottom-left'">
-      <button class="btn btn-link" clrDropdownToggle>
-        {{projectTypes[currentFilteredType] | translate}}
-        <clr-icon shape="caret down"></clr-icon>
-      </button>
-      <div class="dropdown-menu">
-        <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(0)">{{projectTypes[0] | translate}}</a>
-        <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(1)">{{projectTypes[1] | translate}}</a>
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <h2 class="header-title">{{'PROJECT.PROJECTS' | translate}}</h2>
+    <div class="row flex-items-xs-between">
+      <div class="option-left">
+        <button class="btn btn-primary" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.PROJECT' | translate}}</button>
+        <create-project (create)="createProject($event)"></create-project>
       </div>
-    </clr-dropdown>
-    <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)"></grid-filter>
-    <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+      <div class="option-right">
+        <clr-dropdown [clrMenuPosition]="'bottom'">
+          <button class="btn btn-link" clrDropdownToggle>
+            {{projectTypes[currentFilteredType] | translate}}
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <div class="dropdown-menu">
+            <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(0)">{{projectTypes[0] | translate}}</a>
+            <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(1)">{{projectTypes[1] | translate}}</a>
+          </div>
+        </clr-dropdown>
+        <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)"></grid-filter>
+        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+      </div>
+    </div>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <list-project [projects]="changedProjects" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)" [totalPage]="totalPage" [totalRecordCount]="totalRecordCount"></list-project>

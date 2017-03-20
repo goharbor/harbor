@@ -26,4 +26,6 @@
     background-color: #fafafa;
     position: relative;
     top: 10px;
+    opacity: 0.15;
+    content: '';
 }

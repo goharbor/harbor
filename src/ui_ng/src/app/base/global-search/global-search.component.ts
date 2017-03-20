@@ -5,7 +5,6 @@ import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 
 import { SearchTriggerService } from './search-trigger.service';
-import { harborRootRoute } from '../../shared/shared.const';
 
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
@@ -35,7 +34,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.searchSub = this.searchTerms
             .debounceTime(deBounceTime)
-            .distinctUntilChanged()
+            //.distinctUntilChanged()
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });

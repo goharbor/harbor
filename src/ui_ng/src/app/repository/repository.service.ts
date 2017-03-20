@@ -40,25 +40,24 @@ export class RepositoryService {
   }
 
   listTagsWithVerifiedSignatures(repoName: string): Observable<Tag[]> {
-    return this.http
-               .get(`/api/repositories/signatures?repo_name=${repoName}`)
-               .map(response=>response)
-               .flatMap(res=>
-                 this.listTags(repoName)
-                     .map((tags: Tag[])=>{
-                       let signatures = res.json();
-                       tags.forEach(t=>{
-                         for(let i = 0; i < signatures.length; i++) {
-                           if(signatures[i].tag === t.tag) {
-                             t.verified = true;
-                             break;
-                           }
-                         }
-                       });
-                       return tags;
-                     })
-                     .catch(error=>Observable.throw(error))
-               )
+    return this.listTags(repoName)
+               .map(res=>res)
+               .flatMap(tags=>{
+                 return this.listNotarySignatures(repoName).map(signatures=>{
+                    tags.forEach(t=>{
+                      for(let i = 0; i < signatures.length; i++) {
+                        if(signatures[i].tag === t.tag) {
+                          t.signed = true;
+                          break;
+                        }
+                      }
+                    });
+                    return tags;
+                  })
+                  .catch(error=>{
+                    return tags;
+                  })
+               })
                .catch(error=>Observable.throw(error));
   }
 

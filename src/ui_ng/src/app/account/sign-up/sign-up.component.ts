@@ -1,4 +1,4 @@
-import { Component, Output, ViewChild } from '@angular/core';
+import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
@@ -21,6 +21,8 @@ export class SignUpComponent {
     private error: any;
     private onGoing: boolean = false;
     private formValueChanged: boolean = false;
+
+    @Output() userCreation = new EventEmitter<User>();
 
     constructor(
         private session: SessionService,
@@ -103,6 +105,7 @@ export class SignUpComponent {
             .then(() => {
                 this.onGoing = false;
                 this.modal.close();
+                this.userCreation.emit(u);
             })
             .catch(error => {
                 this.onGoing = false;

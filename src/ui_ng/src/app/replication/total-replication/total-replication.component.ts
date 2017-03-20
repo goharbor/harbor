@@ -9,9 +9,11 @@ import { AlertType } from '../../shared/shared.const';
 import { Policy } from '../../replication/policy';
 
 @Component({
+  moduleId: module.id,
   selector: 'total-replication',
   templateUrl: 'total-replication.component.html',
-  providers: [ ReplicationService ]
+  providers: [ ReplicationService ],
+  styleUrls: ['./total-replication.component.css']
 })
 export class TotalReplicationComponent implements OnInit {
 
@@ -58,7 +60,7 @@ export class TotalReplicationComponent implements OnInit {
       this.projectId = policy.project_id;
     }
   }
-  
+
   refreshPolicies() {
     this.retrievePolicies();
   }

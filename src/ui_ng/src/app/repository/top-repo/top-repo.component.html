@@ -1,4 +1,8 @@
-<div class="card card-block">
-    <h3 class="card-title">Popular Repositories</h3>
-    <list-repository [repositories]="topRepos" [mode]="listMode"></list-repository>
+<div class="repo-wrapper">
+    <div>
+        <h3 style="margin-top: 0px;">{{'REPOSITORY.POP_REPOS' | translate}}</h3>
+    </div>
+    <div>
+        <list-repository [repositories]="topRepos" [mode]="listMode"></list-repository>
+    </div>
 </div>

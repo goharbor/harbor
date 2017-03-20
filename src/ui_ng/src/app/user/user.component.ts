@@ -1,14 +1,14 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
 
 import { UserService } from './user.service';
 import { User } from './user';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
-import { DeletionTargets, AlertType, httpStatusCode } from '../shared/shared.const'
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
+import { ConfirmationState, ConfirmationTargets, AlertType, httpStatusCode } from '../shared/shared.const'
 import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
 import { MessageService } from '../global-message/message.service';
 
@@ -34,10 +34,12 @@ export class UserComponent implements OnInit, OnDestroy {
   constructor(
     private userService: UserService,
     private translate: TranslateService,
-    private deletionDialogService: DeletionDialogService,
+    private deletionDialogService: ConfirmationDialogService,
     private msgService: MessageService) {
-    this.deletionSubscription = deletionDialogService.deletionConfirm$.subscribe(confirmed => {
-      if (confirmed && confirmed.targetId === DeletionTargets.USER) {
+    this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
+      if (confirmed &&
+        confirmed.source === ConfirmationTargets.USER &&
+        confirmed.state === ConfirmationState.CONFIRMED) {
         this.delUser(confirmed.data);
       }
     });
@@ -74,7 +76,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if(this.deletionSubscription){
+    if (this.deletionSubscription) {
       this.deletionSubscription.unsubscribe();
     }
   }
@@ -129,12 +131,12 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     //Confirm deletion
-    let msg: DeletionMessage = new DeletionMessage(
+    let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
       user.username,
       user,
-      DeletionTargets.USER
+      ConfirmationTargets.USER
     );
     this.deletionDialogService.openComfirmDialog(msg);
   }

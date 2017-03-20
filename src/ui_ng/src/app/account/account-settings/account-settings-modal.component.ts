@@ -10,7 +10,8 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 @Component({
     selector: "account-settings-modal",
-    templateUrl: "account-settings-modal.component.html"
+    templateUrl: "account-settings-modal.component.html",
+    styleUrls: ['../../common.css']
 })
 
 export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
@@ -19,9 +20,16 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     account: SessionUser;
     error: any = null;
     originalStaticData: SessionUser;
+    private emailTooltip: string = 'TOOLTIP.EMAIL';
+    private validationStateMap: any = {
+        "account_settings_email": true,
+        "account_settings_full_name": true
+    };
+    private mailAlreadyChecked = {};
 
     private isOnCalling: boolean = false;
     private formValueChanged: boolean = false;
+    private checkOnGoing: boolean = false;
 
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
@@ -35,6 +43,54 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         //Value copy
         this.account = Object.assign({}, this.session.getCurrentUser());
+    }
+
+    private getValidationState(key: string): boolean {
+        return this.validationStateMap[key];
+    }
+
+    private handleValidation(key: string, flag: boolean): void {
+        if (flag) {
+            //Checking
+            let cont = this.accountForm.controls[key];
+            if (cont) {
+                this.validationStateMap[key] = cont.valid;
+                //Check email existing from backend
+                if (cont.valid && key === "account_settings_email") {
+                    if (this.formValueChanged && this.account.email != this.originalStaticData.email) {
+                        if (this.mailAlreadyChecked[this.account.email]) {
+                            this.validationStateMap[key] = !this.mailAlreadyChecked[this.account.email].result;
+                            if (!this.validationStateMap[key]) {
+                                this.emailTooltip = "TOOLTIP.EMAIL_EXISTING";
+                            }
+                            return;
+                        }
+
+                        //Mail changed
+                        this.checkOnGoing = true;
+                        this.session.checkUserExisting("email", this.account.email)
+                            .then((res: boolean) => {
+                                this.checkOnGoing = false;
+                                this.validationStateMap[key] = !res;
+                                if (res) {
+                                    this.emailTooltip = "TOOLTIP.EMAIL_EXISTING";
+                                }
+                                this.mailAlreadyChecked[this.account.email] = {
+                                    result: res
+                                }; //Tag it checked
+                            })
+                            .catch(error => {
+                                this.checkOnGoing = false;
+                                this.validationStateMap[key] = false;//Not valid @ backend
+                            });
+                    }
+                }
+            }
+        } else {
+            //Reset
+            this.validationStateMap[key] = true;
+            this.emailTooltip = "TOOLTIP.EMAIL";
+        }
     }
 
     private isUserDataChange(): boolean {
@@ -56,11 +112,18 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get isValid(): boolean {
-        return this.accountForm && this.accountForm.valid && this.error === null;
+        return this.accountForm && 
+        this.accountForm.valid && 
+        this.error === null &&
+        this.validationStateMap["account_settings_email"]; //backend check is valid as well
     }
 
     public get showProgress(): boolean {
         return this.isOnCalling;
+    }
+
+    public get checkProgress(): boolean {
+        return this.checkOnGoing;
     }
 
     ngAfterViewChecked(): void {
@@ -124,9 +187,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .catch(error => {
                 this.isOnCalling = false;
                 this.error = error;
-                if(accessErrorHandler(error, this.msgService)){
+                if (accessErrorHandler(error, this.msgService)) {
                     this.opened = false;
-                }else{
+                } else {
                     this.inlineAlert.showInlineError(error);
                 }
             });
