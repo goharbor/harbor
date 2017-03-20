@@ -21,7 +21,8 @@
         "TEST_MAIL": "TEST MAIL SERVER",
         "CLOSE": "CLOSE",
         "TEST_LDAP": "TEST LDAP SERVER",
-        "MORE_INFO": "More info..."
+        "MORE_INFO": "More info...",
+        "YES": "YES"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -282,7 +283,7 @@
         "POP_REPOS": "Popular Repositories"
     },
     "ALERT": {
-        "FORM_CHANGE_CONFIRMATION": "Values have changed, confirm to discard?"
+        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you really want to cancel?"
     },
     "RESET_PWD": {
         "TITLE": "Reset Password",
@@ -303,7 +304,7 @@
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
-        "CONFIRM_SUMMARY": "Values have changed, confirm to leave?",
+        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to leave?",
         "SAVE_SUCCESS": "Configurations have been successfully saved",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",

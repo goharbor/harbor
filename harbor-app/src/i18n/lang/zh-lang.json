@@ -21,7 +21,8 @@
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
         "TEST_LDAP": "测试LDAP服务器",
-        "MORE_INFO": "更多信息..."
+        "MORE_INFO": "更多信息...",
+        "YES": "确定"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
