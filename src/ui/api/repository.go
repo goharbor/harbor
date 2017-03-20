@@ -227,6 +227,24 @@ func (ra *RepositoryAPI) Delete() {
 		}
 	}
 
+	if config.WithNotary() {
+		signedTags := make(map[string]struct{})
+		targets, err := getNotaryTargets(user, repoName)
+		if err != nil {
+			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
+			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.")
+		}
+		for _, tgt := range targets {
+			signedTags[tgt.Tag] = struct{}{}
+		}
+		for _, t := range tags {
+			if _, ok = signedTags[t]; ok {
+				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled")
+				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
+			}
+		}
+	}
+
 	for _, t := range tags {
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*registry_error.Error); ok {
@@ -565,28 +583,32 @@ func (ra *RepositoryAPI) GetTopRepos() {
 func (ra *RepositoryAPI) GetSignatures() {
 	//use this func to init session.
 	ra.GetUserIDForRequest()
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
-	ext, err := config.ExtEndpoint()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
-	}
-	endpoint := strings.Split(ext, "//")[1]
-	fqRepo := path.Join(endpoint, repoName)
 	username, err := ra.getUsername()
 	if err != nil {
 		log.Warningf("Error when getting username: %v", err)
 	}
-	targets, err := notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+	targets, err := getNotaryTargets(username, repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
+}
+
+func getNotaryTargets(username string, repo string) ([]notary.Target, error) {
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		return nil, err
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repo)
+	return notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
 }
 
 func newRepositoryClient(endpoint string, insecure bool, username, password, repository, scopeType, scopeName string,
