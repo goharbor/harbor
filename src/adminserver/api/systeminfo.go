@@ -16,34 +16,23 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-func handleInternalServerError(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusInternalServerError),
-		http.StatusInternalServerError)
-}
-
-func handleBadRequestError(w http.ResponseWriter, error string) {
-	http.Error(w, error, http.StatusBadRequest)
-}
-
-func handleUnauthorized(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusUnauthorized),
-		http.StatusUnauthorized)
-}
-
-// response status code will be written automatically if there is an error
-func writeJSON(w http.ResponseWriter, v interface{}) error {
-	b, err := json.Marshal(v)
+// Capacity handles /api/systeminfo/capacity and returns system capacity
+func Capacity(w http.ResponseWriter, r *http.Request) {
+	capacity, err := imagestorage.GlobalDriver.Cap()
 	if err != nil {
+		log.Errorf("failed to get capacity: %v", err)
 		handleInternalServerError(w)
-		return err
+		return
 	}
 
-	if _, err = w.Write(b); err != nil {
-		return err
+	if err = writeJSON(w, capacity); err != nil {
+		log.Errorf("failed to write response: %v", err)
+		return
 	}
-	return nil
 }

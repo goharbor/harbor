@@ -79,19 +79,12 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	w := httptest.NewRecorder()
-	ListCfgs(w, r)
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusUnauthorized)
-		return
-	}
-
 	r.AddCookie(&http.Cookie{
 		Name:  "secret",
 		Value: secret,
 	})
 
-	w = httptest.NewRecorder()
+	w := httptest.NewRecorder()
 	ListCfgs(w, r)
 	if w.Code != http.StatusOK {
 		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
