@@ -376,6 +376,10 @@
         "INDEX_PUB": "公开的",
         "INDEX_TOTAL": "总计"
     },
+    "SEARCH": {
+        "IN_PROGRESS": "搜索中...",
+        "BACK": "返回"
+    },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限"

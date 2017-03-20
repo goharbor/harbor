@@ -1,14 +1,16 @@
 .search-overlay {
     display: block;
-    position: absolute;
+    position: fixed;
     height: 100%;
-    width: 98%;
+    width: 100%;
     /*shoud be lesser than 1000 to aoivd override the popup menu*/
     z-index: 999;
     box-sizing: border-box;
     background: #fafafa;
-    top: 0px;
-    padding-left: 24px;
+    top: 60px;
+    left: 0px;
+    padding-left: 36px;
+    padding-right: 24px;
 }
 
 .search-header {
@@ -47,4 +49,8 @@
     position: relative;
     top: 8px;
     margin: 0px auto 0px auto;
+}
+
+.search-header a:hover {
+    text-decoration: none;
 }
