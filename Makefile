@@ -82,7 +82,7 @@ NOTARYFLAG=false
 REGISTRYVERSION=2.6.0
 NGINXVERSION=1.11.5
 PHOTONVERSION=1.0
-NOTARYVERSION=server-0.5.0-fix
+NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
 MARIADBVERSION=10.1.10
 HTTPPROXY=
@@ -305,8 +305,8 @@ package_offline: compile build modify_composefile
 	@$(DOCKERPULL) nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and mariadb..."; \
-		$(DOCKERPULL) jiangd/notary:$(NOTARYVERSION); \
-		$(DOCKERPULL) notary:$(NOTARYSIGNERVERSION); \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
 		$(DOCKERPULL) mariadb:$(MARIADBVERSION); \
 	fi	
 	
@@ -319,7 +319,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
-		jiangd/notary:$(NOTARYVERSION) notary:$(NOTARYSIGNERVERSION) mariadb:$(MARIADBVERSION); \
+		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) mariadb:$(MARIADBVERSION); \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
