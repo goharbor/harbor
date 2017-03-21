@@ -164,8 +164,8 @@ DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 
 # version prepare
-VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
-VERSIONFILENAME=header-content.htm
+VERSIONFILEPATH=$(CURDIR)
+VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
 ifeq ($(DEVFLAG), true)        
@@ -189,9 +189,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 version:
-	@if [ "$(DEVFLAG)" = "false" ] ; then \
-		$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME) ; \
-	fi
+	@printf $(VERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -420,7 +418,7 @@ cleandockercomposefile:
 
 cleanversiontag:
 	@echo "cleaning version TAG"
-	@$(SEDCMD) -i 's/version=\"$(VERSIONTAG)\"/version=\"{{.Version}}\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME)
+	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)	
 	
 cleanpackage:
 	@echo "cleaning harbor install package"

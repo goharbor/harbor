@@ -3,8 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetVolumeInfo(t *testing.T) {
@@ -49,6 +50,7 @@ func TestGetGeneralInfo(t *testing.T) {
 	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
 	assert.Equal(false, g.WithNotary, "with notary should be false")
 	assert.Equal(true, g.HasCARoot, "has ca root should be true")
+	assert.NotEmpty(g.HarborVersion, "harbor version should not be empty")
 }
 
 func TestGetCert(t *testing.T) {
