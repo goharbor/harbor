@@ -6,9 +6,12 @@ import {
   CanActivateChild,
   NavigationExtras
 } from '@angular/router';
+
 import { SessionService } from '../../shared/session.service';
 import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
+import { maintainUrlQueryParmas } from '../../shared/shared.utils';
+
 
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
@@ -38,7 +41,16 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
       let queryParams = route.queryParams;
       if (queryParams) {
         if (queryParams[AdmiralQueryParamKey]) {
-          console.debug(queryParams[AdmiralQueryParamKey]);
+          this.appConfigService.saveAdmiralEndpoint(queryParams[AdmiralQueryParamKey]);
+          //Remove the query parameter key pair and redirect
+          let keyRemovedUrl = maintainUrlQueryParmas(state.url, AdmiralQueryParamKey, undefined);
+          if(!/[?]{1}.+/i.test(keyRemovedUrl)){
+            keyRemovedUrl = keyRemovedUrl.replace('?','');
+          }
+
+          this.router.navigateByUrl(keyRemovedUrl);
+          return resolve(false);
+
         }
       }
 

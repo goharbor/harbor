@@ -12,13 +12,14 @@ jobservice/test
 
 src/ui/static/dist/
 
-src/clarity-seed/coverage/
-src/clarity-seed/dist/
-src/clarity-seed/html-report/
-src/clarity-seed/node_modules/
-src/clarity-seed/typings/
+src/ui_ng/coverage/
+src/ui_ng/dist/
+src/ui_ng/html-report/
+src/ui_ng/node_modules/
+src/ui_ng/typings/
 **/*npm-debug.log.*
 **/*yarn-error.log.*
 .idea/
 .DS_Store
+
 

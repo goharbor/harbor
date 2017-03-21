@@ -1,8 +1,11 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, ViewChild, AfterViewChecked } from '@angular/core';
+import { NgForm } from '@angular/forms';
 
 import { ReplicationService } from '../replication.service';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType, ActionType } from '../../shared/shared.const';
+
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { Target } from '../target';
 
@@ -17,9 +20,6 @@ export class CreateEditDestinationComponent {
   modalTitle: string;
   createEditDestinationOpened: boolean;
 
-  errorMessageOpened: boolean;
-  errorMessage: string;
-
   testOngoing: boolean;
   pingTestMessage: string;
   pingStatus: boolean;
@@ -27,6 +27,16 @@ export class CreateEditDestinationComponent {
   actionType: ActionType;
 
   target: Target = new Target();
+
+  targetForm: NgForm;
+
+  @ViewChild('targetForm')
+  currentForm: NgForm;
+
+  hasChanged: boolean;
+
+  @ViewChild(InlineAlertComponent)
+  inlineAlert: InlineAlertComponent;
 
   @Output() reload = new EventEmitter<boolean>();
   
@@ -40,8 +50,7 @@ export class CreateEditDestinationComponent {
 
     this.createEditDestinationOpened = true;
     
-    this.errorMessageOpened = false;
-    this.errorMessage = '';
+    this.hasChanged = false;
     
     this.pingTestMessage = '';
     this.pingStatus = true;
@@ -84,9 +93,6 @@ export class CreateEditDestinationComponent {
   }
 
   onSubmit() {
-    this.errorMessage = '';
-    this.errorMessageOpened = false;
-
     switch(this.actionType) {
     case ActionType.ADD_NEW:
       this.replicationService
@@ -98,7 +104,6 @@ export class CreateEditDestinationComponent {
               this.reload.emit(true);
             },
             error=>{
-              this.errorMessageOpened = true;
               let errorMessageKey = '';
               switch(error.status) {
               case 409:
@@ -110,11 +115,12 @@ export class CreateEditDestinationComponent {
               default:
                 errorMessageKey = 'UNKNOWN_ERROR';
               }
+              
               this.translateService
                   .get(errorMessageKey)
                   .subscribe(res=>{
-                    this.errorMessage = res;
                     this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
+                    this.inlineAlert.showInlineError(errorMessageKey);
                   });
             }
           );
@@ -129,8 +135,6 @@ export class CreateEditDestinationComponent {
               this.reload.emit(true);
             },
             error=>{
-              this.errorMessageOpened = true;
-              this.errorMessage = 'Failed to update target:' + error;
               let errorMessageKey = '';
               switch(error.status) {
               case 409:
@@ -145,7 +149,7 @@ export class CreateEditDestinationComponent {
               this.translateService
                   .get(errorMessageKey)
                   .subscribe(res=>{
-                    this.errorMessage = res;
+                    this.inlineAlert.showInlineError(errorMessageKey);
                     this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
                   });
             }
@@ -154,9 +158,39 @@ export class CreateEditDestinationComponent {
     }
   }
 
-  onErrorMessageClose(): void {
-    this.errorMessageOpened = false;
-    this.errorMessage = '';
+  onCancel() {
+    if(this.hasChanged) {
+      this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
+    } else {
+      this.createEditDestinationOpened = false;
+    }
+  }
+
+  confirmCancel(confirmed: boolean) {
+    this.createEditDestinationOpened = false;
+    this.inlineAlert.close();
+  }
+
+  ngAfterViewChecked(): void {
+    this.targetForm = this.currentForm;
+    if(this.targetForm) {
+      this.targetForm.valueChanges.subscribe(data=>{
+        for(let i in data) {
+          let item = data[i];
+          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
+            this.hasChanged = true;
+            break;
+          } else if (typeof item === 'boolean' && (<boolean>item)) {
+            this.hasChanged = true;
+            break;
+          } else {
+            this.hasChanged = false;
+            this.inlineAlert.close();
+            break;
+          }
+        }
+      });
+    }
   }
 
 }

@@ -1,5 +1,6 @@
 <clr-modal [(clrModalOpen)]="addMemberOpened">
   <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
+  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
   <div class="modal-body">
     <form #memberForm="ngForm">
       <section class="form-block">
@@ -22,15 +23,15 @@
         <div class="form-group">
           <label class="col-md-4">{{'MEMBER.ROLE' | translate}}</label>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_project_admin" (click)="member.role_id = 1" [checked]="member.role_id === 1">
+            <input type="radio" name="roleRadios" id="checkrads_project_admin" value="1" [(ngModel)]="member.role_id">
             <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
           </div>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_developer"  (click)="member.role_id = 2" [checked]="member.role_id === 2">
+            <input type="radio" name="roleRadios" id="checkrads_developer" value="2" [(ngModel)]="member.role_id">
             <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
           </div>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_guest" (click)="member.role_id = 3" [checked]="member.role_id === 3">
+            <input type="radio" name="roleRadios" id="checkrads_guest" value="3" [(ngModel)]="member.role_id">
             <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
           </div>
         </div>
@@ -38,7 +39,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="addMemberOpened = false">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
     <button type="button" class="btn btn-primary" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
