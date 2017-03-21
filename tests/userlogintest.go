@@ -1,28 +1,33 @@
 package main
 
 import (
+	"crypto/tls"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-        "flag"
 )
 
 func main() {
-        usrNamePtr := flag.String("name","anaymous","user name")
-        usrPasswdPtr := flag.String("passwd","anaymous","user password")
-        flag.Parse()
+	usrNamePtr := flag.String("name", "anaymous", "user name")
+	usrPasswdPtr := flag.String("passwd", "anaymous", "user password")
+	flag.Parse()
 
-        v := url.Values{}
-        v.Set("principal", *usrNamePtr)
-        v.Set("password", *usrPasswdPtr)
+	v := url.Values{}
+	v.Set("principal", *usrNamePtr)
+	v.Set("password", *usrPasswdPtr)
 
 	body := ioutil.NopCloser(strings.NewReader(v.Encode())) //endode v:[body struce]
-        fmt.Println(v)
- 
-	client := &http.Client{}
-	reqest, err := http.NewRequest("POST", "http://localhost/login", body)
+	fmt.Println(v)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	reqest, err := http.NewRequest("POST", "https://localhost/login", body)
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
 	}
@@ -41,7 +46,7 @@ func main() {
 
 	//fmt.Println(string(content_post))    //print reply
 
-	response, err := http.Get("http://localhost/api/logout")
+	response, err := client.Get("https://localhost/api/logout")
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
 	}

@@ -11,7 +11,8 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 @Component({
     selector: 'password-setting',
-    templateUrl: "password-setting.component.html"
+    templateUrl: "password-setting.component.html",
+    styleUrls: ['../../common.css']
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     opened: boolean = false;
@@ -117,7 +118,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             })
             .then(() => {
                 this.onCalling = false;
-                this.close();
+                this.opened = false;
                 this.msgService.announceMessage(200, "CHANGE_PWD.SAVE_SUCCESS", AlertType.SUCCESS);
             })
             .catch(error => {

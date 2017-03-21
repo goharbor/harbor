@@ -1,4 +1,4 @@
-import { Component, Output, ViewChild } from '@angular/core';
+import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
@@ -8,6 +8,8 @@ import { SessionService } from '../../shared/session.service';
 import { UserService } from '../../user/user.service';
 import { errorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+
+import { Modal } from 'clarity-angular';
 
 @Component({
     selector: 'sign-up',
@@ -20,6 +22,8 @@ export class SignUpComponent {
     private onGoing: boolean = false;
     private formValueChanged: boolean = false;
 
+    @Output() userCreation = new EventEmitter<User>();
+
     constructor(
         private session: SessionService,
         private userService: UserService) { }
@@ -29,6 +33,9 @@ export class SignUpComponent {
 
     @ViewChild(InlineAlertComponent)
     private inlienAlert: InlineAlertComponent;
+
+    @ViewChild(Modal)
+    private modal: Modal;
 
     private getNewUser(): User {
         return this.newUserForm.getData();
@@ -55,7 +62,7 @@ export class SignUpComponent {
     open(): void {
         this.newUserForm.reset();//Reset form
         this.formValueChanged = false;
-        this.opened = true;
+        this.modal.open();
     }
 
     close(): void {
@@ -74,7 +81,7 @@ export class SignUpComponent {
     }
 
     confirmCancel(): void {
-        this.opened = false;
+        this.modal.close();
     }
 
     //Create new user
@@ -97,7 +104,8 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
-                this.close();
+                this.modal.close();
+                this.userCreation.emit(u);
             })
             .catch(error => {
                 this.onGoing = false;

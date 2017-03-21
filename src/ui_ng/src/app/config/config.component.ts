@@ -5,15 +5,17 @@ import { NgForm } from '@angular/forms';
 import { ConfigurationService } from './config.service';
 import { Configuration } from './config';
 import { MessageService } from '../global-message/message.service';
-import { AlertType, DeletionTargets } from '../shared/shared.const';
+import { AlertType, ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
 import { StringValueItem } from './config';
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message'
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message'
 
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
+
+import { AppConfigService } from '../app-config.service';
 
 const fakePass = "fakepassword";
 
@@ -28,6 +30,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     private currentTabId: string = "";
     private originalCopy: Configuration;
     private confirmSub: Subscription;
+    private testingOnGoing: boolean = false;
 
     @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
     @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
@@ -37,14 +40,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     constructor(
         private msgService: MessageService,
         private configService: ConfigurationService,
-        private confirmService: DeletionDialogService) { }
+        private confirmService: ConfirmationDialogService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
         //First load
         this.retrieveConfig();
 
-        this.confirmSub = this.confirmService.deletionConfirm$.subscribe(confirmation => {
-            this.reset(confirmation.data);
+        this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
+            if (confirmation &&
+                confirmation.state === ConfirmationState.CONFIRMED &&
+                confirmation.source === ConfirmationTargets.CONFIG) {
+                this.reset(confirmation.data);
+            }
         });
     }
 
@@ -56,6 +64,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get inProgress(): boolean {
         return this.onGoing;
+    }
+
+    public get testingInProgress(): boolean {
+        return this.testingOnGoing;
     }
 
     public isValid(): boolean {
@@ -82,6 +94,16 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.currentTabId === 'config-email';
     }
 
+    public get showLdapServerBtn(): boolean {
+        return this.currentTabId === 'config-auth' &&
+            this.allConfig.auth_mode &&
+            this.allConfig.auth_mode.value === "ldap_auth";
+    }
+
+    public isLDAPConfigValid(): boolean {
+        return this.authConfig && this.authConfig.isValid();
+    }
+
     public tabLinkChanged(tabLink: any) {
         this.currentTabId = tabLink.id;
     }
@@ -105,6 +127,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //or force refresh by calling service.
                     //HERE we choose force way
                     this.retrieveConfig();
+
+                    //Reload bootstrap option
+                    this.appConfigService.load().catch(error => console.error("Failed to reload bootstrap option with error: ", error));
+
                     this.msgService.announceMessage(response.status, "CONFIG.SAVE_SUCCESS", AlertType.SUCCESS);
                 })
                 .catch(error => {
@@ -128,12 +154,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     public cancel(): void {
         let changes = this.getChanges();
         if (!this.isEmpty(changes)) {
-            let msg = new DeletionMessage(
+            let msg = new ConfirmationMessage(
                 "CONFIG.CONFIRM_TITLE",
                 "CONFIG.CONFIRM_SUMMARY",
                 "",
                 changes,
-                DeletionTargets.EMPTY
+                ConfirmationTargets.CONFIG
             );
             this.confirmService.openComfirmDialog(msg);
         } else {
@@ -150,7 +176,46 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     public testMailServer(): void {
+        let mailSettings = {};
+        let allChanges = this.getChanges();
+        for (let prop in allChanges) {
+            if (prop.startsWith("email_")) {
+                mailSettings[prop] = allChanges[prop];
+            }
+        }
 
+        this.testingOnGoing = true;
+        this.configService.testMailServer(mailSettings)
+            .then(response => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(200, "CONFIG.TEST_MAIL_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            });
+    }
+
+    public testLDAPServer(): void {
+        let ldapSettings = {};
+        let allChanges = this.getChanges();
+        for (let prop in allChanges) {
+            if (prop.startsWith("ldap_")) {
+                ldapSettings[prop] = allChanges[prop];
+            }
+        }
+
+        console.info(ldapSettings);
+        this.testingOnGoing = true;
+        this.configService.testLDAPServer(ldapSettings)
+            .then(respone => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(200, "CONFIG.TEST_LDAP_SUCCESS", AlertType.SUCCESS);
+            })
+            .catch(error => {
+                this.testingOnGoing = false;
+                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+            });
     }
 
     private retrieveConfig(): void {

@@ -48,12 +48,6 @@ func init() {
 	beego.Router("/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &CommonController{}, "get:SendEmail")
-	beego.Router("/language", &CommonController{}, "get:SwitchLanguage")
-
-	beego.Router("/optional_menu", &OptionalMenuController{})
-	beego.Router("/navigation_header", &NavigationHeaderController{})
-	beego.Router("/navigation_detail", &NavigationDetailController{})
-	beego.Router("/sign_in", &SignInController{})
 
 	//Init user Info
 	//admin = &usrInfo{adminName, adminPwd}
@@ -71,7 +65,11 @@ func TestMain(t *testing.T) {
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "'/' httpStatusCode should be 200")
+<<<<<<< HEAD
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>page_title_index</title>"), "http respond should have '<title>page_title_index</title>'")
+=======
+	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>Harbor</title>"), "http respond should have '<title>Harbor</title>'")
+>>>>>>> upstream/dev
 
 	r, _ = http.NewRequest("POST", "/login", nil)
 	w = httptest.NewRecorder()

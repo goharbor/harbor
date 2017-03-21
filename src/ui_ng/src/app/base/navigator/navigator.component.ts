@@ -1,5 +1,5 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Output, EventEmitter, OnInit, Inject } from '@angular/core';
+import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ModalEvent } from '../modal-event';
@@ -9,7 +9,9 @@ import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
+import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
+
+import { AppConfigService } from '../../app-config.service';
 
 @Component({
     selector: 'navigator',
@@ -22,17 +24,16 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
-    private sessionUser: SessionUser = null;
     private selectedLang: string = enLang;
 
     constructor(
         private session: SessionService,
         private router: Router,
         private translate: TranslateService,
-        private cookie: CookieService) { }
+        private cookie: CookieService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit(): void {
-        this.sessionUser = this.session.getCurrentUser();
         this.selectedLang = this.translate.currentLang;
         this.translate.onLangChange.subscribe(langChange => {
             this.selectedLang = langChange.lang;
@@ -42,15 +43,23 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get isSessionValid(): boolean {
-        return this.sessionUser != null;
+        return this.session.getCurrentUser() != null;
     }
 
     public get accountName(): string {
-        return this.sessionUser ? this.sessionUser.username : "";
+        return this.session.getCurrentUser() ? this.session.getCurrentUser().username : "N/A";
     }
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
+    }
+
+    public get admiralLink(): string {
+        return this.appConfigService.getAdmiralEndpoint(window.location.href);
+    }
+
+    public get isIntegrationMode(): boolean {
+        return this.appConfigService.isIntegrationMode();
     }
 
     matchLang(lang: string): boolean {
@@ -85,21 +94,22 @@ export class NavigatorComponent implements OnInit {
     logOut(): void {
         this.session.signOff()
             .then(() => {
-                this.sessionUser = null;
                 //Naviagte to the sign in route
-                this.router.navigate(["/sign-in"]);
+                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
-            .catch()//TODO:
+            .catch(error => {
+                console.error("Log out with error: ", error);
+            });
     }
 
     //Switch languages
     switchLanguage(lang: string): void {
-        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())){
+        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())) {
             this.translate.use(lang);
-        }else{
+        } else {
             this.translate.use(enLang);//Use default
             //TODO:
-            console.error('Language '+lang.trim()+' is not suppoted');
+            console.error('Language ' + lang.trim() + ' is not suppoted');
         }
         //Try to switch backend lang
         //this.session.switchLanguage(lang).catch(error => console.error(error));
@@ -107,12 +117,12 @@ export class NavigatorComponent implements OnInit {
 
     //Handle the home action
     homeAction(): void {
-        if(this.sessionUser != null){
+        if (this.session.getCurrentUser() != null) {
             //Navigate to default page
-            this.router.navigate(['harbor']);
-        }else{
+            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        } else {
             //Naviagte to signin page
-            this.router.navigate(['sign-in']);
+            this.router.navigate([CommonRoutes.HARBOR_ROOT]);
         }
     }
 }

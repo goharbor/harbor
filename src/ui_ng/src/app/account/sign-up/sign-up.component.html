@@ -1,8 +1,8 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="true">
     <h3 class="modal-title">{{'SIGN_UP.TITLE' | translate}}</h3>
+    <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
     <div class="modal-body" style="overflow-y: hidden;">
         <new-user-form isSelfRegistration="true" (valueChange)="formValueChange($event)"></new-user-form>
-        <inline-alert (confirmEvt)="confirmCancel($event)"></inline-alert>
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline" style="top:8px;" [hidden]="inProgress === false"> </span>

@@ -35,10 +35,6 @@ export class SearchResultComponent {
         private msgService: MessageService,
         private searchTrigger: SearchTriggerService) { }
 
-    private doFilterProjects(event: string) {
-        this.searchResults.project = this.originalCopy.project.filter(pro => pro.name.indexOf(event) != -1);
-    }
-
     private clone(src: SearchResults): SearchResults {
         let res: SearchResults = new SearchResults();
 

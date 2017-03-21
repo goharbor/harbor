@@ -1,24 +1,24 @@
 <clr-datagrid>
-  <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
-  <clr-dg-column *ngIf="projectless">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>   
-  <clr-dg-column>{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>   
-  <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
-  <clr-dg-row *ngFor="let p of policies;let i = index;" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
-    <clr-dg-cell>{{p.name}}</clr-dg-cell>
-    <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
-    <clr-dg-cell>{{p.description}}</clr-dg-cell>
-    <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
-    <clr-dg-cell>{{p.start_time}}</clr-dg-cell>
-    <clr-dg-cell>
-      {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
-      <harbor-action-overflow>
-        <a href="javascript:void(0)" class="dropdown-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</a>
-        <a href="javascript:void(0)" class="dropdown-item" (click)="enablePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</a>
-        <a href="javascript:void(0)" class="dropdown-item" (click)="deletePolicy(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</a>
-      </harbor-action-overflow>
-    </clr-dg-cell>
-  </clr-dg-row>
-  <clr-dg-footer>{{ (policies ? policies.length : 0) }} {{'REPLICATION.ITEMS' | translate}}</clr-dg-footer>
+    <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="projectless">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
+            <button class="action-item" (click)="deletePolicy(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.description}}</clr-dg-cell>
+        <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.start_time}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>{{ (policies ? policies.length : 0) }} {{'REPLICATION.ITEMS' | translate}}</clr-dg-footer>
 </clr-datagrid>

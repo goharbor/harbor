@@ -1,10 +1,14 @@
-import { Component, Input, Output, EventEmitter, OnInit, HostBinding } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ViewChild, AfterViewChecked } from '@angular/core';
+
+import { NgForm } from '@angular/forms';
 
 import { CreateEditPolicy } from './create-edit-policy';
 
 import { ReplicationService } from '../../replication/replication.service';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType, ActionType } from '../../shared/shared.const';
+
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { Policy } from '../../replication/policy';
 import { Target } from '../../replication/target';
@@ -15,16 +19,13 @@ import { TranslateService } from '@ngx-translate/core';
   selector: 'create-edit-policy',
   templateUrl: 'create-edit-policy.component.html'
 })
-export class CreateEditPolicyComponent implements OnInit {
+export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   modalTitle: string;
   createEditPolicyOpened: boolean;
   createEditPolicy: CreateEditPolicy = new CreateEditPolicy();
   
   actionType: ActionType;
-
-  errorMessageOpened: boolean;
-  errorMessage: string;
   
   isCreateDestination: boolean;
   @Input() projectId: number;
@@ -36,6 +37,16 @@ export class CreateEditPolicyComponent implements OnInit {
   pingTestMessage: string;
   testOngoing: boolean;
   pingStatus: boolean;
+
+  policyForm: NgForm;
+
+  @ViewChild('policyForm')
+  currentForm: NgForm;
+
+  hasChanged: boolean;
+
+  @ViewChild(InlineAlertComponent)
+  inlineAlert: InlineAlertComponent;
 
   constructor(
     private replicationService: ReplicationService,
@@ -68,9 +79,9 @@ export class CreateEditPolicyComponent implements OnInit {
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
     this.isCreateDestination = false;
-    this.errorMessageOpened = false;
-    this.errorMessage = '';
     
+    this.hasChanged = false;
+
     this.pingTestMessage = '';
     this.pingStatus = true;
     this.testOngoing = false;  
@@ -118,12 +129,7 @@ export class CreateEditPolicyComponent implements OnInit {
       this.createEditPolicy.password = result.password;
     }
   }
-  
-  onErrorMessageClose(): void {
-    this.errorMessageOpened = false;
-    this.errorMessage = '';
-  }
-  
+    
   getPolicyByForm(): Policy {
     let policy = new Policy();
     policy.project_id = this.projectId;
@@ -156,8 +162,7 @@ export class CreateEditPolicyComponent implements OnInit {
             this.reload.emit(true);
           },
           error=>{
-            this.errorMessageOpened = true;
-            this.errorMessage = error['_body'];
+            this.inlineAlert.showInlineError(error['_body']);
             console.log('Failed to create policy:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           });
   }
@@ -173,8 +178,7 @@ export class CreateEditPolicyComponent implements OnInit {
             this.reload.emit(true);
           },
           error=>{
-            this.errorMessageOpened = true;
-            this.errorMessage = error['_body'];
+            this.inlineAlert.showInlineError(error['_body']);
             console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
@@ -191,8 +195,7 @@ export class CreateEditPolicyComponent implements OnInit {
             this.reload.emit(true);
           },
           error=>{
-            this.errorMessageOpened = true;
-            this.errorMessage = error['_body'];
+            this.inlineAlert.showInlineError(error['_body']);
             console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
@@ -208,10 +211,43 @@ export class CreateEditPolicyComponent implements OnInit {
         this.updatePolicy();
       }
     }
-    
-    this.errorMessageOpened = false;
-    this.errorMessage = '';
   }
+
+  onCancel() {
+    if(this.hasChanged) {
+      this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
+    } else {
+      this.createEditPolicyOpened = false;
+    }
+  }
+
+  confirmCancel(confirmed: boolean) {
+    this.createEditPolicyOpened = false;
+    this.inlineAlert.close();
+  }
+
+  ngAfterViewChecked(): void {
+    this.policyForm = this.currentForm;
+    if(this.policyForm) {
+      this.policyForm.valueChanges.subscribe(data=>{
+        for(let i in data) {
+          let item = data[i];
+          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
+            this.hasChanged = true;
+            break;
+          } else if (typeof item === 'boolean' && (<boolean>item)) {
+            this.hasChanged = true;
+            break;
+          } else {
+            this.hasChanged = false;
+            this.inlineAlert.close();
+            break;
+          }
+        }
+      });
+    }
+  }
+
 
   testConnection() {
     this.pingStatus = true;

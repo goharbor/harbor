@@ -30,9 +30,10 @@ class FilterOption {
 }
 
 @Component({
+  moduleId: module.id,
   selector: 'audit-log',
   templateUrl: './audit-log.component.html',
-  styleUrls: [ 'audit-log.css' ]
+  styleUrls: [ './audit-log.component.css' ]
 })
 export class AuditLogComponent implements OnInit {
 
@@ -53,7 +54,7 @@ export class AuditLogComponent implements OnInit {
  ];
 
   pageOffset: number = 1;
-  pageSize: number = 2;
+  pageSize: number = 15;
   totalRecordCount: number;
   totalPage: number;
   

@@ -5,13 +5,15 @@ import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { signInRoute, ListMode } from '../../shared/shared.const';
+import { ListMode } from '../../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
 @Component({
+  moduleId: module.id,
   selector: 'list-project',
-  templateUrl: 'list-project.component.html'
+  templateUrl: 'list-project.component.html',
+  styleUrls: ['./list-project.component.css']
 })
 export class ListProjectComponent implements OnInit {
 
@@ -38,19 +40,19 @@ export class ListProjectComponent implements OnInit {
   }
 
   public get listFullMode(): boolean {
-    return this.mode === ListMode.FULL;
+    return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
   }
 
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(false);
-    
+
     let linkUrl = ['harbor', 'projects', proId, 'repository'];
     if (!this.session.getCurrentUser()) {
       let navigatorExtra: NavigationExtras = {
-        queryParams: { "redirect_url": linkUrl.join("/") }
+        queryParams: { "guest": true }
       };
 
-      this.router.navigate([signInRoute], navigatorExtra);
+      this.router.navigate(linkUrl, navigatorExtra);
     } else {
       this.router.navigate(linkUrl);
 
@@ -59,6 +61,12 @@ export class ListProjectComponent implements OnInit {
 
   refresh(state: State) {
     this.paginate.emit(state);
+  }
+
+  newReplicationRule(p: Project) {
+    if(p) {
+      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replication?is_create=true`);
+    }
   }
 
   toggleProject(p: Project) {

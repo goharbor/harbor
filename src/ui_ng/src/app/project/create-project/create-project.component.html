@@ -1,15 +1,9 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened">
   <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
+  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
   <div class="modal-body">
     <form #projectForm="ngForm">
       <section class="form-block">
-        <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="!errorMessageOpened" (clrAlertClosedChange)="onErrorMessageClose()">
-          <div class="alert-item">
-            <span class="alert-text">
-              {{errorMessage}}
-            </span>
-          </div>
-        </clr-alert>
         <div class="form-group">
           <label for="create_project_name" class="col-md-4">{{'PROJECT.NAME' | translate}}</label>
           <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
@@ -33,7 +27,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="createProjectOpened = false">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
     <button type="button" class="btn btn-primary" [disabled]="!projectForm.form.valid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>

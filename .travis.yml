@@ -31,6 +31,7 @@ env:
 
 before_install:
    - sudo ./tests/hostcfg.sh
+   - sudo ./tests/generateCerts.sh
    - sudo ./make/prepare
 
 install: 
@@ -92,12 +93,12 @@ script:
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo make/prepare
-  - sudo rm -rf /data/config/*
-  - docker-compose -f make/dev/docker-compose.yml up -d
+  - sudo rm -rf /data/config/*  
+  - ls /data/cert
+  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=danieljt/harbor-clarity-base:0.8.4 NOTARYFLAG=true
   
   - docker ps
-  - go run tests/startuptest.go http://localhost/
+  - go run tests/startuptest.go https://localhost/
   - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
 
 #  - sudo ./tests/testprepare.sh

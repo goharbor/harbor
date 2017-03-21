@@ -45,12 +45,17 @@ func TestUnMarshal(t *testing.T) {
 	}
 
 	refs := manifest.References()
-	if len(refs) != 1 {
-		t.Fatalf("unexpected length of reference: %d != %d", len(refs), 1)
+	if len(refs) != 2 {
+		t.Fatalf("unexpected length of reference: %d != %d", len(refs), 2)
 	}
 
-	digest := "sha256:c04b14da8d1441880ed3fe6106fb2cc6fa1c9661846ac0266b8a5ec8edf37b7c"
+	digest := "sha256:c54a2cc56cbb2f04003c1cd4507e118af7c0d340fe7e2720f70976c4b75237dc"
 	if refs[0].Digest.String() != digest {
 		t.Errorf("unexpected digest: %s != %s", refs[0].Digest.String(), digest)
+	}
+
+	digest = "sha256:c04b14da8d1441880ed3fe6106fb2cc6fa1c9661846ac0266b8a5ec8edf37b7c"
+	if refs[1].Digest.String() != digest {
+		t.Errorf("unexpected digest: %s != %s", refs[1].Digest.String(), digest)
 	}
 }

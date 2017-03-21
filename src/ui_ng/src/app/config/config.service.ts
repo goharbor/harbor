@@ -5,6 +5,8 @@ import 'rxjs/add/operator/toPromise';
 import { Configuration } from './config';
 
 const configEndpoint = "/api/configurations";
+const emailEndpoint = "/api/email/ping";
+const ldapEndpoint = "/api/ldap/ping";
 
 @Injectable()
 export class ConfigurationService {
@@ -26,6 +28,20 @@ export class ConfigurationService {
 
     public saveConfiguration(values: any): Promise<any> {
         return this.http.put(configEndpoint, JSON.stringify(values), this.options)
+        .toPromise()
+        .then(response => response)
+        .catch(error => Promise.reject(error));
+    }
+
+    public testMailServer(mailSettings: any): Promise<any> {
+        return this.http.post(emailEndpoint, JSON.stringify(mailSettings), this.options)
+        .toPromise()
+        .then(response => response)
+        .catch(error => Promise.reject(error));
+    }
+
+    public testLDAPServer(ldapSettings: any): Promise<any> {
+         return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), this.options)
         .toPromise()
         .then(response => response)
         .catch(error => Promise.reject(error));

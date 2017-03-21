@@ -4,50 +4,56 @@ import { ReplicationService } from '../replication.service';
 import { MessageService } from '../../global-message/message.service';
 import { AlertType } from '../../shared/shared.const';
 
-import { DeletionDialogService } from '../../shared/deletion-dialog/deletion-dialog.service';
-import { DeletionMessage } from '../../shared/deletion-dialog/deletion-message';
+import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
 
-import { DeletionTargets } from '../../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
 
 import { Subscription } from 'rxjs/Subscription';
 
 import { CreateEditDestinationComponent } from '../create-edit-destination/create-edit-destination.component';
 
 @Component({
+  moduleId: module.id,
   selector: 'destination',
-  templateUrl: 'destination.component.html'
+  templateUrl: 'destination.component.html',
+  styleUrls: ['./destination.component.css']
 })
 export class DestinationComponent implements OnInit {
 
-  @ViewChild(CreateEditDestinationComponent) 
-  createEditDestinationComponent: CreateEditDestinationComponent;  
+  @ViewChild(CreateEditDestinationComponent)
+  createEditDestinationComponent: CreateEditDestinationComponent;
 
   targets: Target[];
   target: Target;
 
   targetName: string;
-  subscription : Subscription;
+  subscription: Subscription;
 
   constructor(
     private replicationService: ReplicationService,
     private messageService: MessageService,
-    private deletionDialogService: DeletionDialogService) {
-      this.subscription = this.deletionDialogService.deletionConfirm$.subscribe(message=>{
+    private deletionDialogService: ConfirmationDialogService) {
+    this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(message => {
+      if (message &&
+        message.source === ConfirmationTargets.TARGET &&
+        message.state === ConfirmationState.CONFIRMED) {
         let targetId = message.data;
         this.replicationService
-            .deleteTarget(targetId)
-            .subscribe(
-              response=>{
-                console.log('Successful deleted target with ID:' + targetId);
-                this.reload();
-              },
-              error=>this.messageService
-                         .announceMessage(error.status, 
-                           'Failed to delete target with ID:' + targetId + ', error:' + error, 
-                           AlertType.DANGER)
-              );
-      });
-    }
+          .deleteTarget(targetId)
+          .subscribe(
+          response => {
+            console.log('Successful deleted target with ID:' + targetId);
+            this.reload();
+          },
+          error => this.messageService
+            .announceMessage(error.status,
+            'Failed to delete target with ID:' + targetId + ', error:' + error,
+            AlertType.DANGER)
+          );
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.targetName = '';
@@ -55,18 +61,18 @@ export class DestinationComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    if(this.subscription) {
+    if (this.subscription) {
       this.subscription.unsubscribe();
     }
   }
 
   retrieve(targetName: string): void {
     this.replicationService
-        .listTargets(targetName)
-        .subscribe(
-          targets=>this.targets = targets,
-          error=>this.messageService.announceMessage(error.status,'Failed to get targets:' + error, AlertType.DANGER)
-        );
+      .listTargets(targetName)
+      .subscribe(
+      targets => this.targets = targets,
+      error => this.messageService.announceMessage(error.status, 'Failed to get targets:' + error, AlertType.DANGER)
+      );
   }
 
   doSearchTargets(targetName: string) {
@@ -88,15 +94,20 @@ export class DestinationComponent implements OnInit {
   }
 
   editTarget(target: Target) {
-    if(target) {
+    if (target) {
       this.createEditDestinationComponent.openCreateEditTarget(target.id);
     }
   }
 
   deleteTarget(target: Target) {
-    if(target) {
+    if (target) {
       let targetId = target.id;
-      let deletionMessage = new DeletionMessage('REPLICATION.DELETION_TITLE_TARGET', 'REPLICATION.DELETION_SUMMARY_TARGET', target.name, target.id, DeletionTargets.TARGET);
+      let deletionMessage = new ConfirmationMessage(
+        'REPLICATION.DELETION_TITLE_TARGET',
+        'REPLICATION.DELETION_SUMMARY_TARGET',
+        target.name,
+        target.id,
+        ConfirmationTargets.TARGET);
       this.deletionDialogService.openComfirmDialog(deletionMessage);
     }
   }

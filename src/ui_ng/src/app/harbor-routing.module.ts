@@ -19,7 +19,6 @@ import { ReplicationComponent } from './replication/replication.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
 
-import { BaseRoutingResolver } from './shared/route/base-routing-resolver.service';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
@@ -28,25 +27,22 @@ import { RecentLogComponent } from './log/recent-log.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
 import { StartPageComponent } from './base/start-page/start.component';
+import { SignUpPageComponent } from './account/sign-up/sign-up-page.component';
 
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
+import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 
 const harborRoutes: Routes = [
-  { path: '', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
-  { path: 'harbor', redirectTo: '/harbor/dashboard', pathMatch: 'full' },
-  { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
-  { path: 'sign-up', component: SignUpComponent},
-  { path: 'reset_password', component: ResetPasswordComponent},
+  { path: '', redirectTo: 'harbor', pathMatch: 'full' },
+  { path: 'password-reset', component: ResetPasswordComponent },
   {
     path: 'harbor',
     component: HarborShellComponent,
     canActivateChild: [AuthCheckGuard],
     children: [
-      {
-        path: 'dashboard',
-        component: StartPageComponent
-      },
+      { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
+      { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
       {
         path: 'projects',
         component: ProjectComponent
@@ -109,10 +105,11 @@ const harborRoutes: Routes = [
         path: 'configs',
         component: ConfigurationComponent,
         canActivate: [SystemAdminGuard],
+        canDeactivate: [LeavingConfigRouteDeactivate]
       }
     ]
   },
-  { path: "**", component: PageNotFoundComponent}
+  { path: "**", component: PageNotFoundComponent }
 ];
 
 @NgModule({

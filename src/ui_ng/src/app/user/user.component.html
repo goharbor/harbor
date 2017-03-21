@@ -1,9 +1,8 @@
-<div>
-    <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USERS' | translate}}</h2>
+<div style="margin-left: 24px;">
+    <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</h2>
     <div class="action-panel-pos">
         <span>
-            <clr-icon shape="plus" class="is-highlight" size="24"></clr-icon>
-            <button type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()">{{'USER.ADD_ACTION' | translate}}</button>
+            <button type="submit" class="btn btn-primary custom-add-button" (click)="addNewUser()"><clr-icon shape="add"></clr-icon>  {{'USER.ADD_ACTION' | translate}}</button>
         </span>
         <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
         <span class="refresh-btn" (click)="refreshUser()">
@@ -17,17 +16,16 @@
             <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
             <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
             <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
-            <clr-dg-row *clrDgItems="let user of users" [clrDgItem]="user">
+            <clr-dg-row *ngFor="let user of users" [clrDgItem]="user">
+                <clr-dg-action-overflow>
+                    <button class="action-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</button>
+                    <button class="action-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</button>
+                </clr-dg-action-overflow>
                 <clr-dg-cell>{{user.username}}</clr-dg-cell>
                 <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
                 <clr-dg-cell>{{user.email}}</clr-dg-cell>
                 <clr-dg-cell>
                     {{user.creation_time}}
-                    <harbor-action-overflow>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:void(0)" class="dropdown-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</a>
-                    </harbor-action-overflow>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{users.length}} {{'USER.ADD_ACTION' | translate}}</clr-dg-footer>

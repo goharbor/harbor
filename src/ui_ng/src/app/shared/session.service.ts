@@ -11,6 +11,7 @@ const currentUserEndpint = "/api/users/current";
 const signOffEndpoint = "/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
+const userExistsEndpoint = "/userExists";
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
@@ -118,13 +119,28 @@ export class SessionService {
         }
 
         let backendLang = langMap[lang];
-        if(!backendLang){
+        if (!backendLang) {
             backendLang = langMap[enLang];
         }
 
         let getUrl = langEndpoint + "?lang=" + backendLang;
         return this.http.get(getUrl).toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error))
+            .then(() => null)
+            .catch(error => this.handleError(error))
+    }
+
+    checkUserExisting(target: string, value: string): Promise<boolean> {
+        //Build the form package
+        const body = new URLSearchParams();
+        body.set('target', target);
+        body.set('value', value);
+
+        //Trigger Http
+        return this.http.post(userExistsEndpoint, body.toString(), { headers: this.formHeaders })
+            .toPromise()
+            .then(response => {
+                return response.json();
+            })
+            .catch(error => this.handleError(error));
     }
 }

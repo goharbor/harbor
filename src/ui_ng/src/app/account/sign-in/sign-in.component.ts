@@ -7,8 +7,12 @@ import { SessionService } from '../../shared/session.service';
 import { SignInCredential } from '../../shared/sign-in-credential';
 
 import { SignUpComponent } from '../sign-up/sign-up.component';
-import { harborRootRoute } from '../../shared/shared.const';
+import { CommonRoutes } from '../../shared/shared.const';
 import { ForgotPasswordComponent } from '../password/forgot-password.component';
+
+import { AppConfigService } from '../../app-config.service';
+import { AppConfig } from '../../app-config';
+import { User } from '../../user/user';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -23,6 +27,7 @@ export const signInStatusError = -1;
 
 export class SignInComponent implements AfterViewChecked, OnInit {
     private redirectUrl: string = "";
+    private appConfig: AppConfig = new AppConfig();
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -41,13 +46,19 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     constructor(
         private router: Router,
         private session: SessionService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private appConfigService: AppConfigService
     ) { }
 
     ngOnInit(): void {
+        this.appConfig = this.appConfigService.getConfig();
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
+                let isSignUp = params["sign_up"] || "";
+                if (isSignUp != "") {
+                    this.signUp();//Open sign up
+                }
             });
     }
 
@@ -63,6 +74,12 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     //Validate the related fields
     public get isValid(): boolean {
         return this.currentForm.form.valid;
+    }
+
+    //Whether show the 'sign up' link
+    public get selfSignUp(): boolean {
+        return this.appConfig.auth_mode === 'db_auth'
+            && this.appConfig.self_registration;
     }
 
     //General error handler
@@ -87,6 +104,17 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 });
         }
 
+    }
+
+    //Fill the new user info into the sign in form
+    private handleUserCreation(user: User): void {
+        if(user){
+            this.currentForm.setValue({
+                "login_username": user.username,
+                "login_password": user.password
+            });
+
+        }
     }
 
     //Implement interface
@@ -123,8 +151,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 //Redirect to the right route
                 if (this.redirectUrl === "") {
                     //Routing to the default location
-                    this.router.navigateByUrl(harborRootRoute);
-                }else{
+                    this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
+                } else {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
             })

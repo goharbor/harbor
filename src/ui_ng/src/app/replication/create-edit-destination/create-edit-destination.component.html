@@ -1,5 +1,6 @@
 <clr-modal [(clrModalOpen)]="createEditDestinationOpened">
   <h3 class="modal-title">{{modalTitle}}</h3>
+  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
   <div class="modal-body">
     <form #targetForm="ngForm">
       <section class="form-block">
@@ -46,7 +47,7 @@
   </div>
   <div class="modal-footer">
       <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || targetEndpoint.errors">{{ 'DESTINATION.TEST_CONNECTION' | translate }}</button>
-      <button type="button" class="btn btn-outline" (click)="createEditDestinationOpened = false"  [disabled]="testOngoing">{{ 'BUTTON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="onCancel()"  [disabled]="testOngoing">{{ 'BUTTON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="!targetForm.form.valid" (click)="onSubmit()"  [disabled]="testOngoing">{{ 'BUTTON.OK' | translate }}</button>
   </div>
 </clr-modal>

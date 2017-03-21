@@ -29,7 +29,6 @@
             <label for="emailUsername">{{'CONFIG.MAIL_USERNAME' | translate}}</label>
             <label for="emailUsername" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="false">
                       <input name="emailUsername" type="text" #emailUsernameInput="ngModel" [(ngModel)]="currentConfig.email_username.value" 
-                      required 
                       id="emailUsername" 
                       size="40" [disabled]="disabled(currentConfig.email_username)">
                       <span class="tooltip-content">
@@ -41,7 +40,6 @@
             <label for="emailPassword">{{'CONFIG.MAIL_PASSWORD' | translate}}</label>
             <label for="emailPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="false">
                       <input name="emailPassword" type="password" #emailPasswordInput="ngModel" [(ngModel)]="currentConfig.email_password.value" 
-                      required 
                       id="emailPassword" 
                       size="40" [disabled]="disabled(currentConfig.email_password)">
                       <span class="tooltip-content">

@@ -1529,6 +1529,22 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors.
+  /configurations/reset:
+    post:
+      summary: Reset system configurations.
+      description: |
+        Reset system configurations from environment variables. Can only be accessed by admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Reset system configurations successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
   /email/ping:
     post:
       summary: Test connection and authentication with email server.
@@ -2009,6 +2025,9 @@ definitions:
       self_registration:
         type: boolean
         description: Indicate whether the Harbor instance enable user to register himself.
+      has_ca_root:
+        type: boolean
+        description: Indicate whether there is a ca root cert file ready for download in the file system.
   SystemInfo:
     type: object
     properties:
@@ -2082,7 +2101,7 @@ definitions:
         type: string
         description: The host of email server.
       email_port:
-        type: string
+        type: integer
         description: The port of email server.
       email_username:
         type: string
@@ -2091,7 +2110,7 @@ definitions:
         type: string
         description: The password of email server.
       email_ssl:
-        type: string
+        type: boolean
         description: Use ssl/tls or not.
       email_identity:
         type: string

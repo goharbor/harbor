@@ -196,6 +196,14 @@ func (c *ConfigAPI) Put() {
 	}
 }
 
+// Reset system configurations
+func (c *ConfigAPI) Reset() {
+	if err := config.Reset(); err != nil {
+		log.Errorf("failed to reset configurations: %v", err)
+		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+}
+
 func validateCfg(c map[string]string) (bool, error) {
 	isSysErr := false
 
