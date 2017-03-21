@@ -26,7 +26,7 @@ import (
 	"testing"
 
 	"github.com/vmware/harbor/src/adminserver/systemcfg"
-	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
@@ -43,7 +43,7 @@ func TestConfigAPI(t *testing.T) {
 
 	secret := "secret"
 	envs := map[string]string{
-		"AUTH_MODE":             comcfg.DBAuth,
+		"AUTH_MODE":             common.DBAuth,
 		"JSON_CFG_STORE_PATH":   configPath,
 		"KEY_PATH":              secretKeyPath,
 		"UI_SECRET":             secret,
@@ -97,7 +97,7 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	scope := int(m[comcfg.LDAPScope].(float64))
+	scope := int(m[common.LDAPScope].(float64))
 	if scope != 3 {
 		t.Errorf("unexpected ldap scope: %d != %d", scope, 3)
 		return
@@ -105,7 +105,7 @@ func TestConfigAPI(t *testing.T) {
 
 	// modify configurations
 	c := map[string]interface{}{
-		comcfg.AUTHMode: comcfg.LDAPAuth,
+		common.AUTHMode: common.LDAPAuth,
 	}
 
 	b, err := json.Marshal(c)
@@ -155,9 +155,9 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	mode := m[comcfg.AUTHMode].(string)
-	if mode != comcfg.LDAPAuth {
-		t.Errorf("unexpected auth mode: %s != %s", mode, comcfg.LDAPAuth)
+	mode := m[common.AUTHMode].(string)
+	if mode != common.LDAPAuth {
+		t.Errorf("unexpected auth mode: %s != %s", mode, common.LDAPAuth)
 		return
 	}
 
@@ -203,9 +203,9 @@ func TestConfigAPI(t *testing.T) {
 		return
 	}
 
-	mode = m[comcfg.AUTHMode].(string)
-	if mode != comcfg.DBAuth {
-		t.Errorf("unexpected auth mode: %s != %s", mode, comcfg.LDAPAuth)
+	mode = m[common.AUTHMode].(string)
+	if mode != common.DBAuth {
+		t.Errorf("unexpected auth mode: %s != %s", mode, common.LDAPAuth)
 		return
 	}
 }

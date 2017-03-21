@@ -7,8 +7,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/api"
-	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -112,19 +112,19 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		sia.CustomAbort(http.StatusInternalServerError, "Unexpected error")
 	}
 	var registryURL string
-	if l := strings.Split(cfg[comcfg.ExtEndpoint].(string), "://"); len(l) > 1 {
+	if l := strings.Split(cfg[common.ExtEndpoint].(string), "://"); len(l) > 1 {
 		registryURL = l[1]
 	} else {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
 	info := GeneralInfo{
-		AdmiralEndpoint:         cfg[comcfg.AdmiralEndpoint].(string),
+		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
 		WithNotary:              config.WithNotary(),
-		AuthMode:                cfg[comcfg.AUTHMode].(string),
-		ProjectCreationRestrict: cfg[comcfg.ProjectCreationRestriction].(string),
-		SelfRegistration:        cfg[comcfg.SelfRegistration].(bool),
+		AuthMode:                cfg[common.AUTHMode].(string),
+		ProjectCreationRestrict: cfg[common.ProjectCreationRestriction].(string),
+		SelfRegistration:        cfg[common.SelfRegistration].(bool),
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
 	}

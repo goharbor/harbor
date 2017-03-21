@@ -20,7 +20,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 func TestGetConfig(t *testing.T) {
@@ -46,8 +47,13 @@ func TestGetConfig(t *testing.T) {
 		return
 	}
 
-	mode := cfg[config.AUTHMode].Value.(string)
-	assert.Equal(config.DBAuth, mode, fmt.Sprintf("the auth mode should be %s", config.DBAuth))
+	mode := cfg[common.AUTHMode].Value.(string)
+	assert.Equal(common.DBAuth, mode, fmt.Sprintf("the auth mode should be %s", common.DBAuth))
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
 }
 
 func TestPutConfig(t *testing.T) {
@@ -56,7 +62,7 @@ func TestPutConfig(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	cfg := map[string]string{
-		config.VerifyRemoteCert: "0",
+		common.VerifyRemoteCert: "0",
 	}
 
 	code, err := apiTest.PutConfig(*admin, cfg)
@@ -67,6 +73,11 @@ func TestPutConfig(t *testing.T) {
 	if !assert.Equal(200, code, "the status code of modifying configurations with admin user should be 200") {
 		return
 	}
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
 }
 
 func TestResetConfig(t *testing.T) {
@@ -94,11 +105,17 @@ func TestResetConfig(t *testing.T) {
 		return
 	}
 
-	value, ok := cfgs[config.VerifyRemoteCert]
+	value, ok := cfgs[common.VerifyRemoteCert]
 	if !ok {
-		t.Errorf("%s not found", config.VerifyRemoteCert)
+		t.Errorf("%s not found", common.VerifyRemoteCert)
 		return
 	}
 
 	assert.Equal(value.Value.(bool), true, "unexpected value")
+
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
 }
