@@ -268,11 +268,7 @@
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
-<<<<<<< HEAD:src/ui_ng/src/ng/i18n/lang/en-lang.json
-        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from Notary before they can be deleted.",
-=======
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.",
->>>>>>> upstream/dev:src/ui_ng/src/i18n/lang/en-lang.json
         "FILTER_FOR_REPOSITORIES": "Filter for repositories",
         "TAG": "Tag",
         "SIGNED": "Signed",

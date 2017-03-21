@@ -66,7 +66,11 @@ func TestMain(t *testing.T) {
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "'/' httpStatusCode should be 200")
 <<<<<<< HEAD
+<<<<<<< HEAD
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>page_title_index</title>"), "http respond should have '<title>page_title_index</title>'")
+=======
+	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>Harbor</title>"), "http respond should have '<title>Harbor</title>'")
+>>>>>>> upstream/dev
 =======
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), "<title>Harbor</title>"), "http respond should have '<title>Harbor</title>'")
 >>>>>>> upstream/dev

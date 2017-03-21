@@ -7,6 +7,7 @@ import { CookieService } from 'angular2-cookie/core';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas } from './shared/shared.utils';
 
+
 export const systemInfoEndpoint = "/api/systeminfo";
 /**
  * Declare service to handle the bootstrap options
@@ -49,6 +50,7 @@ export class AppConfigService {
                 //Catch the error
                 console.error("Failed to load bootstrap options with error: ", error);
             });
+
     }
 
     public getConfig(): AppConfig {

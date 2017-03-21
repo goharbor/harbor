@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Output, ViewChild, AfterViewChecked } from '@angular/core';
+
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 
@@ -29,6 +30,7 @@ export class CreateProjectComponent implements AfterViewChecked {
 
   createProjectOpened: boolean;
   
+
   hasChanged: boolean;
 
   @Output() create = new EventEmitter<boolean>();
