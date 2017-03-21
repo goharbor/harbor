@@ -9,7 +9,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -113,7 +113,7 @@ func (cc *CommonController) SendEmail() {
 
 		message := new(bytes.Buffer)
 
-		harborURL := config.ExtEndpoint
+		harborURL := common.ExtEndpoint
 		if harborURL == "" {
 			harborURL = "localhost"
 		}

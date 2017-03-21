@@ -31,5 +31,6 @@ services:
     volumes:
       - /data/config/:/etc/adminserver/
       - /data/secretkey:/etc/adminserver/key
+      - /data/:/data/
     ports:
       - 8888:80
