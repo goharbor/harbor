@@ -30,28 +30,4 @@
             <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>
     </div>
-  </div>
-  <div class="col-lg-12 col-md-12 datagrid-margin-top">
-    <clr-datagrid>
-      <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-      <clr-dg-column style="width: 12px;" class="datagrid-column-ext"></clr-dg-column>
-      <clr-dg-row *ngFor="let u of members">
-        <clr-dg-cell>{{u.username}}</clr-dg-cell>
-          <clr-dg-cell>
-            {{roleInfo[u.role_id] | translate}}
-          </clr-dg-cell>
-          <clr-dg-cell>
-            <harbor-action-overflow [hidden]="u.user_id === currentUser.user_id" class="habor-action-pos">
-              <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</a>
-              <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</a>
-              <a href="javascript:void(0)" class="dropdown-item" (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</a>
-              <div class="dropdown-divider"></div>
-              <a href="javascript:void(0)" class="dropdown-item" (click)="deleteMember(u.user_id)">{{'MEMBER.DELETE' | translate}}</a>
-            </harbor-action-overflow>
-          </clr-dg-cell>
-        </clr-dg-row>
-        <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
-     </clr-datagrid>
-  </div>
 </div>

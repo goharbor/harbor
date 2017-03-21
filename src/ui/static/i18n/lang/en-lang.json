@@ -20,23 +20,27 @@
         "SAVE": "SAVE",
         "TEST_MAIL": "TEST MAIL SERVER",
         "CLOSE": "CLOSE",
-        "TEST_LDAP": "TEST LDAP SERVER"
+        "TEST_LDAP": "TEST LDAP SERVER",
+        "MORE_INFO": "More info...",
+        "YES": "YES"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
-        "USER_NAME": "Can not contain \"~#$% and max length should be less than 20",
-        "FULL_NAME": "Max length should be less than 20",
-        "COMMENT": "Length of comment should be less than 20",
-        "CURRENT_PWD": "Current password is Required",
-        "PASSWORD": "Password should be at least 8 characters with 1 uppercase, 1 lower case and 1 number",
-        "CONFIRM_PWD": "Password input here should be same with above password",
+        "USER_NAME": "Can not contain \"~#$% and maxinum length should be less than 20 characters",
+        "FULL_NAME": "Max length should be less than 20 characters",
+        "COMMENT": "Length of comment should be less than 20 characters",
+        "CURRENT_PWD": "Current password is required",
+        "PASSWORD": "Password should be at least 8 characters with 1 uppercase, 1 lowercase and 1 number",
+        "CONFIRM_PWD": "Password should be same as the password above",
         "SIGN_IN_USERNAME": "Username is required",
         "SIGN_IN_PWD": "Password is required",
         "SIGN_UP_MAIL": "Email is only used for resetting your password",
         "SIGN_UP_REAL_NAME": "First name and last name",
         "ITEM_REQUIRED": "Field is required",
-        "NUMBER_REQUIRED": "Filed is required and should be numbers",
-        "PORT_REQUIRED": "Filed is required and should be valid port number"
+        "NUMBER_REQUIRED": "Field is required and should be numbers",
+        "PORT_REQUIRED": "Field is required and should be valid port number",
+        "EMAIL_EXISTING": "Email address is already existing",
+        "USER_EXISTING": "Username is already used"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -55,14 +59,14 @@
         "FULL_NAME": "Full name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
-        "SAVE_SUCCESS": "Save user profile successfully"
+        "SAVE_SUCCESS": "User profile saved successfully"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
         "CURRENT_PWD": "Current Password",
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
-        "SAVE_SUCCESS": "Change user password successfully"
+        "SAVE_SUCCESS": "User password changed successfully"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
@@ -97,15 +101,15 @@
         "IS_ADMIN": "Yes",
         "IS_NOT_ADMIN": "No",
         "ADD_USER_TITLE": "Add User",
-        "SAVE_SUCCESS": "Add new user successfully",
+        "SAVE_SUCCESS": "New user added successfully",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
-        "DELETE_SUCCESS": "Delete user successfully"
+        "DELETE_SUCCESS": "User deleted successfully"
     },
     "PROJECT": {
         "PROJECTS": "Projects",
         "NAME": "Project Name",
-        "PUBLIC_OR_PRIVATE": "Public/Private",
+        "PUBLIC_OR_PRIVATE": "Public",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
         "DESCRIPTION": "Description",
@@ -116,16 +120,18 @@
         "DELETE": "Delete",
         "MY_PROJECTS": "My Projects",
         "PUBLIC_PROJECTS": "Public Projects",
+        "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
         "NAME_IS_REQUIRED": "Project name is required.",
         "NAME_MINIMUM_LENGTH": "Project name is too short, it should be greater than 2 characters.",
         "NAME_ALREADY_EXISTS": "Project name already exists.",
-        "NAME_IS_ILLEGAL": "Project name is illegal.",
-        "UNKNOWN_ERROR": "Unknown error occurred while creating project.",
+        "NAME_IS_ILLEGAL": "Project name is invalid.",
+        "UNKNOWN_ERROR": "An unknown error occurred while creating the project.",
         "ITEMS": "item(s)",
         "DELETION_TITLE": "Confirm project deletion",
         "DELETION_SUMMARY": "Do you want to delete project {{param}}?",
-        "FILTER_PLACEHOLDER": "Filter Projects"
+        "FILTER_PLACEHOLDER": "Filter Projects",
+        "REPLICATION_RULE": "Replication Rule"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -136,6 +142,7 @@
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",
+        "MEMBER": "Member",
         "NAME": "Name",
         "ROLE": "Role",
         "SYS_ADMIN": "System Admin",
@@ -157,6 +164,7 @@
         "REPOSITORY_NAME": "Repository Name",
         "TAGS": "Tags",
         "OPERATION": "Operation",
+        "OPERATIONS": "Operations",
         "TIMESTAMP": "Timestamp",
         "ALL_OPERATIONS": "All Operations",
         "PULL": "Pull",
@@ -170,7 +178,7 @@
         "FILTER_PLACEHOLDER": "Filter Logs"
     },
     "REPLICATION": {
-        "REPLICATION_RULE": "Rules",
+        "REPLICATION_RULE": "Replication Rule",
         "NEW_REPLICATION_RULE": "New Replication Rule",
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Policies",
@@ -180,8 +188,8 @@
         "FILTER_TARGETS_PLACEHOLDER": "Filter Targets",
         "DELETION_TITLE_TARGET": "Confirm Target Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete target {{param}}?",
-        "ADD_POLICY": "Add Policy",
-        "EDIT_POLICY": "Edit Policy",
+        "ADD_POLICY": "New Replication Rule",
+        "EDIT_POLICY": "Edit Replication Rule",
         "DELETE_POLICY": "Delete Policy",
         "TEST_CONNECTION": "Test Connection",
         "TESTING_CONNECTION": "Testing Connection...",
@@ -225,6 +233,7 @@
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
+        "ENDPOINT": "Endpoint",
         "NAME": "Destination Name",
         "NAME_IS_REQUIRED": "Destination name is required.",
         "URL": "Endpoint URL",
@@ -259,10 +268,10 @@
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
-        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from Notary before they can be deleted.",
+        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.",
         "FILTER_FOR_REPOSITORIES": "Filter for repositories",
         "TAG": "Tag",
-        "VERIFIED": "Verified",
+        "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
         "DOCKER_VERSION": "Docker Version",
@@ -270,10 +279,11 @@
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
-        "ITEMS": "item(s)"
+        "ITEMS": "item(s)",
+        "POP_REPOS": "Popular Repositories"
     },
     "ALERT": {
-        "FORM_CHANGE_CONFIRMATION": "Form value changed, confirm to cancel?"
+        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you really want to cancel?"
     },
     "RESET_PWD": {
         "TITLE": "Reset Password",
@@ -281,7 +291,7 @@
         "EMAIL": "Email",
         "SUCCESS": "Mail of resetting password is successfully send to your mail box",
         "CAPTION2": "Enter your new password",
-        "RESET_OK": "Password is successfully reset, click OK button to login with new password"
+        "RESET_OK": "Password has been successfully reset. Click OK to login with new password"
     },
     "RECENT_LOG": {
         "SUB_TITLE": "Show recent",
@@ -294,8 +304,8 @@
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
-        "CONFIRM_SUMMARY": "Some changes happend, confirm to cancel?",
-        "SAVE_SUCCESS": "Configurations are successfully saved",
+        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to leave?",
+        "SAVE_SUCCESS": "Configurations have been successfully saved",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",
         "MAIL_USERNAME": "Email Username",
@@ -317,14 +327,14 @@
         "PRO_CREATION_ADMIN": "Admin Only",
         "TOOLTIP": {
             "SELF_REGISTRATION": "Enable sign up",
-            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self -signed or untrusted certificate.",
-            "AUTH_MODE": "By default the auth mode is db_auth, i.e. the credentials are stored in a local database.Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.",
-            "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server.If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
+            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
+            "AUTH_MODE": "By default the auth mode is db_auth, i.e. the credentials are stored in a local database. Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.",
+            "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
             "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD",
-            "LDAP_UID": "The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD",
+            "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD",
             "LDAP_SCOPE": "The scope to search for users",
-            "TOKEN_EXPIRATION": "The expiration time (in minute) of token created by token service, default is 30 minutes",
-            "PRO_CREATION_RESTRICTION": "The flag to control what users have permission to create projects,Be default everyone can create a project, set to 'adminonly' such that only admin can create project."
+            "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes",
+            "PRO_CREATION_RESTRICTION": "The flag to control what users have permission to create projects. By default everyone can create a project. Set to 'adminonly' so only an admin can create a project."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -333,27 +343,29 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
-            "SCOPE": "lDAP Scope"
+            "SCOPE": "LDAP Scope"
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified",
-        "TEST_LDAP_SUCCESS": "Connection to ldap server is verified"
+        "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified",
+        "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
+        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet, do you really want to leave currnet page?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
-        "SUB_TITLE": "Redirect to harbor home in",
+        "SUB_TITLE": "Redirect to Harbor page in",
         "UNIT": "seconds..."
     },
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
         "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
-        "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
+        "TRADEMARK": "VMware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
     "START_PAGE": {
         "GETTING_START": "Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security.",
-        "GETTING_START_TITLE": "Getting Start"
+        "GETTING_START_TITLE": "Getting Started"
     },
     "TOP_REPO": "Popular Repositories",
     "STATISTICS": {
@@ -364,7 +376,11 @@
         "INDEX_PUB": "PUBLIC",
         "INDEX_TOTAL": "TOTAL"
     },
-    "UNKNOWN_ERROR": "There are some unknown errors occurred, please try later",
-    "UNAUTHORIZED_ERROR": "Session is invalid or expired, you need to sign in to continue the operation",
-    "FORBIDDEN_ERROR": "You are not allowed to trigger the operation"
+    "SEARCH": {
+        "IN_PROGRESS": "Search...",
+        "BACK": "Back"
+    },
+    "UNKNOWN_ERROR": "Some unknown errors HAVE occurred. Please try again later",
+    "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue the operation",
+    "FORBIDDEN_ERROR": "You are not allowed to perform this operation"
 }
