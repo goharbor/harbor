@@ -24,6 +24,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   modalTitle: string;
   createEditPolicyOpened: boolean;
   createEditPolicy: CreateEditPolicy = new CreateEditPolicy();
+  initVal: CreateEditPolicy = new CreateEditPolicy();
   
   actionType: ActionType;
   
@@ -67,6 +68,11 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.createEditPolicy.endpointUrl = initialTarget.endpoint;
               this.createEditPolicy.username = initialTarget.username;
               this.createEditPolicy.password = initialTarget.password;
+
+              this.initVal.targetId = this.createEditPolicy.targetId;
+              this.initVal.endpointUrl = this.createEditPolicy.endpointUrl;
+              this.initVal.username = this.createEditPolicy.username;
+              this.initVal.password = this.createEditPolicy.password;
             }
           },
           error=>this.messageService.announceMessage(error.status, 'Error occurred while get targets.', AlertType.DANGER)
@@ -78,6 +84,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   openCreateEditPolicy(policyId?: number): void {
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
+   
     this.isCreateDestination = false;
     
     this.hasChanged = false;
@@ -97,7 +104,12 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.createEditPolicy.name = policy.name;
               this.createEditPolicy.description = policy.description;
               this.createEditPolicy.enable = policy.enabled === 1? true : false;
-              this.prepareTargets(policy.target_id);
+              this.prepareTargets(policy.target_id);         
+
+              this.initVal.name = this.createEditPolicy.name;
+              this.initVal.description = this.createEditPolicy.description;
+              this.initVal.enable = this.createEditPolicy.enable;
+              
             }
           )
     } else {
@@ -231,23 +243,19 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
     if(this.policyForm) {
       this.policyForm.valueChanges.subscribe(data=>{
         for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });
     }
   }
-
 
   testConnection() {
     this.pingStatus = true;

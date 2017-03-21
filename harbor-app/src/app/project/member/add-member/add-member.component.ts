@@ -20,6 +20,8 @@ import { Member } from '../member';
 export class AddMemberComponent implements AfterViewChecked {
 
   member: Member = new Member();
+  initVal: Member = new Member();
+
   addMemberOpened: boolean;
   
   memberForm: NgForm;
@@ -83,21 +85,15 @@ export class AddMemberComponent implements AfterViewChecked {
     this.memberForm = this.currentForm;
     if(this.memberForm) {
       this.memberForm.valueChanges.subscribe(data=>{
-        for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'number' && (<number>item) !== 0) {
+       for(let i in data) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });
