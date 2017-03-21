@@ -26,6 +26,7 @@ export class CreateProjectComponent implements AfterViewChecked {
   currentForm: NgForm;
 
   project: Project = new Project();
+  initVal: Project = new Project();
 
   createProjectOpened: boolean;
   
@@ -81,17 +82,14 @@ export class CreateProjectComponent implements AfterViewChecked {
     if(this.projectForm) {
       this.projectForm.valueChanges.subscribe(data=>{
         for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });

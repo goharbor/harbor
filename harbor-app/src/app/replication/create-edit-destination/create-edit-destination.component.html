@@ -4,13 +4,6 @@
   <div class="modal-body">
     <form #targetForm="ngForm">
       <section class="form-block">
-        <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="!errorMessageOpened" (clrAlertClosedChange)="onErrorMessageClose()">
-          <div class="alert-item">
-            <span class="alert-text">
-              {{errorMessage}}
-            </span>
-          </div>
-        </clr-alert>
         <div class="form-group">
           <label for="destination_name" class="col-md-4">{{ 'DESTINATION.NAME' | translate }}<span style="color: red">*</span></label>
           <label class="col-md-8" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)" [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
