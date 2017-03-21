@@ -32,20 +32,10 @@ func TestGetRepos(t *testing.T) {
 		}
 	}
 
-	//-------------------case 2 : response code = 400------------------------//
-	fmt.Println("case 2 : response code = 400,invalid project_id")
-	projectID = "ccc"
-	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword, detail)
-	if err != nil {
-		t.Error("Error whihle get repos by projectID", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-	//-------------------case 3 : response code = 404------------------------//
-	fmt.Println("case 3 : response code = 404:project  not found")
+	//-------------------case 2 : response code = 404------------------------//
+	fmt.Println("case 2 : response code = 404:project  not found")
 	projectID = "111"
-	httpStatusCode, _, err = apiTest.GetRepos(*admin, projectID, keyword, detail)
+	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword, detail)
 	if err != nil {
 		t.Error("Error whihle get repos by projectID", err.Error())
 		t.Log(err)
@@ -53,8 +43,8 @@ func TestGetRepos(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
-	//-------------------case 4 : response code = 200------------------------//
-	fmt.Println("case 4 : response code = 200")
+	//-------------------case 3 : response code = 200------------------------//
+	fmt.Println("case 3 : response code = 200")
 	projectID = "1"
 	detail = "false"
 	code, repositories, err = apiTest.GetRepos(*admin, projectID, keyword, detail)
@@ -78,31 +68,18 @@ func TestGetReposTags(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	repository := ""
+	//-------------------case 1 : response code = 404------------------------//
+	fmt.Println("case 1 : response code = 404,repo not found")
+	repository := "errorRepos"
 	detail := "false"
-
-	fmt.Println("Testing ReposTags Get API")
-	//-------------------case 1 : response code = 400------------------------//
-	fmt.Println("case 1 : response code = 400,repo_name is nil")
-
 	code, _, err := apiTest.GetReposTags(*admin, repository, detail)
-	if err != nil {
-		t.Errorf("failed to get tags of repository %s: %v", repository, err)
-	} else {
-		assert.Equal(int(400), code, "httpStatusCode should be 400")
-	}
-
-	//-------------------case 2 : response code = 404------------------------//
-	fmt.Println("case 2 : response code = 404,repo not found")
-	repository = "errorRepos"
-	code, _, err = apiTest.GetReposTags(*admin, repository, detail)
 	if err != nil {
 		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
 		assert.Equal(int(404), code, "httpStatusCode should be 404")
 	}
-	//-------------------case 3 : response code = 200------------------------//
-	fmt.Println("case 3 : response code = 200")
+	//-------------------case 2 : response code = 200------------------------//
+	fmt.Println("case 2 : response code = 200")
 	repository = "library/hello-world"
 	code, tags, err := apiTest.GetReposTags(*admin, repository, detail)
 	if err != nil {
@@ -117,8 +94,8 @@ func TestGetReposTags(t *testing.T) {
 		}
 	}
 
-	//-------------------case 4 : response code = 200------------------------//
-	fmt.Println("case 4 : response code = 200")
+	//-------------------case 3 : response code = 200------------------------//
+	fmt.Println("case 3 : response code = 200")
 	repository = "library/hello-world"
 	detail = "true"
 	code, tags, err = apiTest.GetReposTags(*admin, repository, detail)
@@ -169,18 +146,8 @@ func TestGetReposManifests(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
-	//-------------------case 3 : response code = 400------------------------//
-	fmt.Println("case 3 : response code = 400,repo_name or is nil")
-	repoName = ""
-	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
-	if err != nil {
-		t.Error("Error whihle get reposManifests by repoName and tag", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-	//-------------------case 4 : response code = 404------------------------//
-	fmt.Println("case 4 : response code = 404,repo not found")
+	//-------------------case 3 : response code = 404------------------------//
+	fmt.Println("case 3 : response code = 404,repo not found")
 	repoName = "111"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
 	if err != nil {

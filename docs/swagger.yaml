@@ -438,6 +438,64 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
+  /projects/{project_id}/repositories:
+    get:
+      summary: Get repositories accompany with relevant project and repo name.
+      description: |
+        This endpoint let user search repositories accompanying with relevant project ID and repo name.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Get detail info or not.
+        - name: q
+          in: query
+          type: string
+          required: false
+          description: Repo name for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: If detail is false, the response body is a string array which contains the names of repositories, or the response body contains an object array as described in schema.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        400:
+          description: Invalid project ID.
+        403:
+          description: Project is not public or current user is irrelevant to the repository.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
   /statistics:
     get:
       summary: Get projects number and repositories number relevant to the user
@@ -644,84 +702,27 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /repositories:
-    get:
-      summary: Get repositories accompany with relevant project and repo name.
-      description: |
-        This endpoint let user search repositories accompanying with relevant project ID and repo name.
-      parameters:
-        - name: project_id
-          in: query
-          type: integer
-          format: int32
-          required: true
-          description: Relevant project ID.
-        - name: detail
-          in: query
-          type: boolean
-          required: false
-          description: Get detail info or not.
-        - name: q
-          in: query
-          type: string
-          required: false
-          description: Repo name for filtering results.
-        - name: page
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: The page nubmer, default is 1.
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: The size of per page, default is 10, maximum is 100.
-      tags:
-        - Products
-      responses:
-        200:
-          description: If detail is false, the response body is a string array which contains the names of repositories, or the response body contains an object array as described in schema.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Repository'
-          headers:
-            X-Total-Count:
-              description: The total count of repositories
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-        400:
-          description: Invalid project ID.
-        403:
-          description: Project is not public or current user is irrelevant to the repository.
-        404:
-          description: Project ID does not exist.
-        500:
-          description: Unexpected internal errors.
+  /repositories/{repo_name}/tags/{tag}:
     delete:
-      summary: Delete a repository or a tag in a repository.
+      summary: Delete a tag in a repository.
       description: |
-        This endpoint let user delete repositories and tags with repo name and tag.
+        This endpoint let user delete tags with repo name and tag.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: The name of repository which will be deleted.
         - name: tag
-          in: query
+          in: path
           type: string
-          required: false
+          required: true
           description: Tag of a repository.
       tags:
         - Products
       responses:
         200:
-          description: Delete repository or tag successfully.
+          description: Delete tag successfully.
         400:
           description: Invalid repo_name.
         401:
@@ -730,14 +731,14 @@ paths:
           description: Repository or tag not found.
         403:
           description: Forbidden.
-  /repositories/tags:
+  /repositories/{repo_name}/tags:
     get:
       summary: Get tags of a relevant repository.
       description: |
         This endpoint aims to retrieve tags from a relevant repository.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: Relevant repository name.
@@ -757,19 +758,42 @@ paths:
               $ref: '#/definitions/DetailedTag'
         500:
           description: Unexpected internal errors.
-  /repositories/manifests:
+    delete:
+      summary: Delete all tags of a repository.
+      description: |
+        This endpoint let user delete all tags with repo name.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository which will be deleted.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete successfully.
+        400:
+          description: Invalid repo_name.
+        401:
+          description: Unauthorized.
+        404:
+          description: Repository not found.
+        403:
+          description: Forbidden.
+  /repositories/{repo_name}/tags/{tag}/manifest:
     get:
       summary: Get manifests of a relevant repository.
       description: |
         This endpoint aims to retreive manifests from a relevant repository.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: Repository name
         - name: tag
-          in: query
+          in: path
           type: string
           required: true
           description: Tag name
@@ -789,7 +813,7 @@ paths:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
-  /repositories/signatures:
+  /repositories/{repo_name}/signatures:
     get:
       summary: Get signature information of a repository
       description: |
@@ -799,7 +823,7 @@ paths:
         return an empty list with response code 200, instead of 404
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: repository name.

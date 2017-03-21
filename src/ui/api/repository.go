@@ -70,8 +70,8 @@ type manifestResp struct {
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
-	projectID, err := ra.GetInt64("project_id")
-	if err != nil || projectID <= 0 {
+	projectID, err := ra.GetInt64(":id")
+	if err != nil {
 		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
 	}
 
@@ -169,10 +169,8 @@ func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
 
 // Delete ...
 func (ra *RepositoryAPI) Delete() {
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
+	// using :splat to get * part in path
+	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
@@ -197,7 +195,7 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	tags := []string{}
-	tag := ra.GetString("tag")
+	tag := ra.GetString(":tag")
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
@@ -284,12 +282,9 @@ type tag struct {
 	Tags []string `json:"tags"`
 }
 
-// GetTags handles GET /api/repositories/tags
+// GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
+	repoName := ra.GetString(":splat")
 	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
 
 	projectName, _ := utils.ParseRepository(repoName)
@@ -380,14 +375,10 @@ func listTag(client *registry.Repository) ([]string, error) {
 	return tags, nil
 }
 
-// GetManifests handles GET /api/repositories/manifests
+// GetManifests returns the manifest of a tag
 func (ra *RepositoryAPI) GetManifests() {
-	repoName := ra.GetString("repo_name")
-	tag := ra.GetString("tag")
-
-	if len(repoName) == 0 || len(tag) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
-	}
+	repoName := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
 
 	version := ra.GetString("version")
 	if len(version) == 0 {
@@ -535,7 +526,7 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	return "", nil
 }
 
-//GetTopRepos handles request GET /api/repositories/top
+//GetTopRepos returns the most populor repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
@@ -579,7 +570,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	ra.ServeJSON()
 }
 
-//GetSignatures handles request GET /api/repositories/signatures
+//GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
 	//use this func to init session.
 	ra.GetUserIDForRequest()
@@ -587,10 +578,8 @@ func (ra *RepositoryAPI) GetSignatures() {
 	if err != nil {
 		log.Warningf("Error when getting username: %v", err)
 	}
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
+	repoName := ra.GetString(":splat")
+
 	targets, err := getNotaryTargets(username, repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
