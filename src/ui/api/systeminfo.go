@@ -116,7 +116,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
-	harbor_version := sia.getVersion()
+	harborVersion := sia.getVersion()
 	info := GeneralInfo{
 		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
@@ -126,7 +126,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		SelfRegistration:        cfg[common.SelfRegistration].(bool),
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
-		HarborVersion:           harbor_version,
+		HarborVersion:           harborVersion,
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
