@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS `notarysigner`;
 
-CREATE USER "signer"@"%" IDENTIFIED BY "";
+CREATE USER "signer"@"notary-signer.%" IDENTIFIED BY "";
 
 GRANT
 	ALL PRIVILEGES ON `notarysigner`.* 
-	TO "signer"@"%";
+	TO "signer"@"notary-signer.%";

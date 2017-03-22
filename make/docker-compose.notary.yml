@@ -47,7 +47,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
-    image: mariadb:10.1.10
+    image: vmware/harbor-notary-db:mariadb-10.1.10
     container_name: notary-db
     networks:
       notary-mdb:
