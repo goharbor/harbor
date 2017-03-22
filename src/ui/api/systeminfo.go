@@ -21,7 +21,7 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
-const harborVersionFile = "/harbor/VERSION1"
+const harborVersionFile = "/harbor/VERSION"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
