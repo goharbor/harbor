@@ -1,6 +1,7 @@
 package api
 
 import (
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -20,6 +21,7 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
+const harborVersionFile = "/harbor/VERSION"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
@@ -42,6 +44,7 @@ type GeneralInfo struct {
 	ProjectCreationRestrict string `json:"project_creation_restriction"`
 	SelfRegistration        bool   `json:"self_registration"`
 	HasCARoot               bool   `json:"has_ca_root"`
+	HarborVersion           string `json:"harbor_version"`
 }
 
 // validate for validating user if an admin.
@@ -113,6 +116,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
+	harborVersion := sia.getVersion()
 	info := GeneralInfo{
 		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
@@ -122,7 +126,18 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		SelfRegistration:        cfg[common.SelfRegistration].(bool),
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
+		HarborVersion:           harborVersion,
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
+}
+
+// GetVersion gets harbor version.
+func (sia *SystemInfoAPI) getVersion() string {
+	version, err := ioutil.ReadFile(harborVersionFile)
+	if err != nil {
+		log.Errorf("Error occured getting harbor version: %v", err)
+		return ""
+	}
+	return string(version[:])
 }
