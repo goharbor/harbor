@@ -56,7 +56,7 @@
         "TITLE": "User Profile",
         "USER_NAME": "Username",
         "EMAIL": "Email",
-        "FULL_NAME": "Full name",
+        "FULL_NAME": "First and last name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
         "SAVE_SUCCESS": "User profile saved successfully"
@@ -66,7 +66,8 @@
         "CURRENT_PWD": "Current Password",
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
-        "SAVE_SUCCESS": "User password changed successfully"
+        "SAVE_SUCCESS": "User password changed successfully",
+        "PASS_TIPS": "At least 8 chars with 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
