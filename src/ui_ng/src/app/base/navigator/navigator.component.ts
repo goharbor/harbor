@@ -9,9 +9,11 @@ import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
-
+import { supportedLangs, enLang, languageNames, CommonRoutes, AlertType } from '../../shared/shared.const';
+import { errorHandler } from '../../shared/shared.utils';
 import { AppConfigService } from '../../app-config.service';
+import { SearchTriggerService } from '../global-search/search-trigger.service';
+import { MessageService } from '../../global-message/message.service';
 
 @Component({
     selector: 'navigator',
@@ -31,7 +33,9 @@ export class NavigatorComponent implements OnInit {
         private router: Router,
         private translate: TranslateService,
         private cookie: CookieService,
-        private appConfigService: AppConfigService) { }
+        private appConfigService: AppConfigService,
+        private msgService: MessageService,
+        private searchTrigger: SearchTriggerService) { }
 
     ngOnInit(): void {
         this.selectedLang = this.translate.currentLang;
@@ -98,8 +102,10 @@ export class NavigatorComponent implements OnInit {
                 this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
             .catch(error => {
-                console.error("Log out with error: ", error);
+                this.msgService.announceMessage(error.status | 500, errorHandler(error), AlertType.WARNING);
             });
+        //Confirm search result panel is close
+        this.searchTrigger.closeSearch(false);
     }
 
     //Switch languages
@@ -124,5 +130,12 @@ export class NavigatorComponent implements OnInit {
             //Naviagte to signin page
             this.router.navigate([CommonRoutes.HARBOR_ROOT]);
         }
+
+        //Confirm search result panel is close
+        this.searchTrigger.closeSearch(false);
+    }
+
+    registryAction(): void {
+        this.searchTrigger.closeSearch(false);
     }
 }

@@ -28,37 +28,62 @@ export class ListPolicyComponent implements OnDestroy {
   @Output() editOne = new EventEmitter<number>();
   @Output() toggleOne = new EventEmitter<Policy>();
 
+  toggleSubscription: Subscription;
   subscription: Subscription;
 
   constructor(
     private replicationService: ReplicationService,
+    private toggleConfirmDialogService: ConfirmationDialogService,
     private deletionDialogService: ConfirmationDialogService,
     private messageService: MessageService) {
 
-    this.subscription = this.subscription = this.deletionDialogService
+    this.toggleSubscription = this.toggleConfirmDialogService
+        .confirmationConfirm$
+        .subscribe(
+          message=> {
+            if(message &&
+             message.source === ConfirmationTargets.TOGGLE_CONFIRM && 
+             message.state === ConfirmationState.CONFIRMED) {
+               let policy: Policy = message.data;
+               policy.enabled = policy.enabled === 0 ? 1 : 0;
+               console.log('Enable policy ID:' + policy.id + ' with activation status ' + policy.enabled);
+               this.replicationService
+                   .enablePolicy(policy.id, policy.enabled)
+                   .subscribe(
+                      res => console.log('Successful toggled policy status'),
+                      error => this.messageService.announceMessage(error.status, "Failed to toggle policy status.", AlertType.DANGER)
+                   );
+             }
+          }
+        );
+    this.subscription =  this.deletionDialogService
       .confirmationConfirm$
       .subscribe(
-      message => {
-        if (message &&
-          message.source === ConfirmationTargets.POLICY &&
-          message.state === ConfirmationState.CONFIRMED) {
-          this.replicationService
-            .deletePolicy(message.data)
-            .subscribe(
-            response => {
-              console.log('Successful delete policy with ID:' + message.data);
-              this.reload.emit(true);
-            },
-            error => this.messageService.announceMessage(error.status, 'Failed to delete policy with ID:' + message.data, AlertType.DANGER)
-            );
+        message => {
+          if (message &&
+            message.source === ConfirmationTargets.POLICY &&
+            message.state === ConfirmationState.CONFIRMED) {
+            this.replicationService
+                .deletePolicy(message.data)
+                .subscribe(
+                  response => {
+                    console.log('Successful delete policy with ID:' + message.data);
+                    this.reload.emit(true);
+                  },
+                  error => this.messageService.announceMessage(error.status, 'Failed to delete policy with ID:' + message.data, AlertType.DANGER)
+                );
         }
-      });
+      }
+    );
 
   }
 
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    if(this.toggleSubscription) {
+      this.toggleSubscription.unsubscribe();
     }
   }
 
@@ -74,13 +99,14 @@ export class ListPolicyComponent implements OnDestroy {
   }
 
   togglePolicy(policy: Policy) {
-    policy.enabled = policy.enabled === 0 ? 1 : 0;
-    console.log('Enable policy ID:' + policy.id + ' with activation status ' + policy.enabled);
-    this.replicationService.enablePolicy(policy.id, policy.enabled)
-      .subscribe(
-      res => console.log('Successful toggled policy status'),
-      error => this.messageService.announceMessage(error.status, "Failed to toggle policy status.", AlertType.DANGER)
-      );
+    let toggleConfirmMessage: ConfirmationMessage = new ConfirmationMessage(
+      policy.enabled === 1 ? 'REPLICATION.TOGGLE_DISABLE_TITLE' : 'REPLICATION.TOGGLE_ENABLE_TITLE',
+      policy.enabled === 1 ? 'REPLICATION.CONFIRM_TOGGLE_DISABLE_POLICY': 'REPLICATION.CONFIRM_TOGGLE_ENABLE_POLICY',
+      policy.name,
+      policy,
+      ConfirmationTargets.TOGGLE_CONFIRM
+    );
+    this.toggleConfirmDialogService.openComfirmDialog(toggleConfirmMessage);
   }
 
   deletePolicy(policy: Policy) {
