@@ -21,7 +21,7 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
-const harborVersionFile = "/harbor/VERSION"
+const harborVersionFile = "/harbor/VERSION1"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
@@ -134,18 +134,10 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 
 // GetVersion gets harbor version.
 func (sia *SystemInfoAPI) getVersion() string {
-	if _, err := os.Stat(harborVersionFile); err != nil {
-		if os.IsNotExist(err) {
-			log.Errorf("Version File doesn't exist.")
-			return ""
-		}
-	}
-
 	version, err := ioutil.ReadFile(harborVersionFile)
 	if err != nil {
 		log.Errorf("Error occured getting harbor version: %v", err)
 		return ""
 	}
-
 	return string(version[:])
 }
