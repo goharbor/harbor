@@ -31,6 +31,9 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
 
   targetForm: NgForm;
 
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
+
   @ViewChild('targetForm')
   currentForm: NgForm;
 

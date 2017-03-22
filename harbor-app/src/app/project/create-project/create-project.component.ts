@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild, AfterViewChecked } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, AfterViewChecked, HostBinding } from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 
@@ -12,6 +12,7 @@ import { AlertType } from '../../shared/shared.const';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'create-project',
@@ -31,6 +32,9 @@ export class CreateProjectComponent implements AfterViewChecked {
   createProjectOpened: boolean;
   
   hasChanged: boolean;
+
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
 
   @Output() create = new EventEmitter<boolean>();
   @ViewChild(InlineAlertComponent)
@@ -74,7 +78,9 @@ export class CreateProjectComponent implements AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.createProjectOpened = false;
+      this.projectForm.reset();
     }
+   
   }
 
   ngAfterViewChecked(): void {
@@ -105,7 +111,7 @@ export class CreateProjectComponent implements AfterViewChecked {
   confirmCancel(event: boolean): void {
     this.createProjectOpened = false;
     this.inlineAlert.close();
+    this.projectForm.reset();
   }
-
 }
 

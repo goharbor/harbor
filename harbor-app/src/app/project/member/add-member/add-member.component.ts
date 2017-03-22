@@ -26,6 +26,9 @@ export class AddMemberComponent implements AfterViewChecked {
   
   memberForm: NgForm;
 
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
+
   @ViewChild('memberForm')
   currentForm: NgForm;
 
@@ -42,6 +45,7 @@ export class AddMemberComponent implements AfterViewChecked {
               private translateService: TranslateService) {}
 
   onSubmit(): void {
+    if(!this.member.username || this.member.username.length === 0) { return; }
     console.log('Adding member:' + JSON.stringify(this.member));
     this.memberService
         .addMember(this.projectId, this.member.username, +this.member.role_id)
@@ -78,6 +82,7 @@ export class AddMemberComponent implements AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.addMemberOpened = false;
+      this.memberForm.reset();
     }
   }
 
@@ -103,6 +108,7 @@ export class AddMemberComponent implements AfterViewChecked {
   confirmCancel(confirmed: boolean) {
     this.addMemberOpened = false;
     this.inlineAlert.close();
+    this.memberForm.reset();
   }
 
   openAddMemberModal(): void {

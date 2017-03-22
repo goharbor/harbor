@@ -26,6 +26,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
   repoName: string;
 
   tags: TagView[];
+  registryUrl: string;
 
   private subscription: Subscription;
 
@@ -66,6 +67,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     this.projectId = this.route.snapshot.params['id'];
     this.repoName = this.route.snapshot.params['repo'];
     this.tags = [];
+    this.registryUrl = this.appConfigService.getConfig().registry_url;
     this.retrieve();
   }
 
@@ -87,10 +89,10 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
           let data = JSON.parse(t.manifest.history[0].v1Compatibility);
           tag.architecture = data['architecture'];
           tag.author = data['author'];
-          tag.verified = t.signed;
+          tag.signed = t.signed;
           tag.created = data['created'];
           tag.dockerVersion = data['docker_version'];
-          tag.pullCommand = 'docker pull ' + t.manifest.name + ':' + t.tag;
+          tag.pullCommand = 'docker pull ' + this.registryUrl + '/' + t.manifest.name + ':' + t.tag;
           tag.os = data['os'];
           this.tags.push(tag);
         });
@@ -100,18 +102,20 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   deleteTag(tag: TagView) {
     if (tag) {
-      let titleKey: string, summaryKey: string;
-      if (tag.verified) {
+      let titleKey: string, summaryKey: string, content: string;
+      if (tag.signed) {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
+        content = 'notary -s https://' + this.registryUrl + ' -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ':' + tag.tag;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+        content = tag.tag;
       }
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
-        tag.tag,
+        content,
         tag,
         ConfirmationTargets.TAG);
       this.deletionDialogService.openComfirmDialog(message);
