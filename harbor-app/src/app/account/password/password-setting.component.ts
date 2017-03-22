@@ -23,6 +23,10 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     private formValueChanged: boolean = false;
     private onCalling: boolean = false;
+    private validationStateMap: any = {
+        "newPassword": true,
+        "reNewPassword": true
+    };
 
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
@@ -50,6 +54,29 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     public get showProgress(): boolean {
         return this.onCalling;
+    }
+
+    private getValidationState(key: string): boolean {
+        return this.validationStateMap[key];
+    }
+
+    private handleValidation(key: string, flag: boolean): void {
+        if (flag) {
+            //Checking
+            let cont = this.pwdForm.controls[key];
+            if (cont) {
+                this.validationStateMap[key] = cont.valid;
+                if(key === "reNewPassword" && cont.valid){
+                    let compareCont = this.pwdForm.controls["newPassword"];
+                    if(compareCont){
+                        this.validationStateMap[key]= cont.value === compareCont.value;
+                    }
+                }
+            }
+        } else {
+            //Reset
+            this.validationStateMap[key] = true;
+        }
     }
 
     ngAfterViewChecked() {

@@ -7,7 +7,7 @@
     </div>
     <div class="header-nav">
         <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">Management</span></a>
-        <a href="javascript:void(0)" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">Registry</span></a>
+        <a href="javascript:void(0)" (click)="registryAction()" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">Registry</span></a>
     </div>
     <global-search></global-search>
     <div class="header-actions">
