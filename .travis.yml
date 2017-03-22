@@ -76,7 +76,6 @@ before_script:
 script:
   - sudo mkdir -p /harbor_storage/ca_download
   - sudo mv ./tests/ca.crt /harbor_storage/ca_download
-  - ls .
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
