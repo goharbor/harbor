@@ -3,3 +3,8 @@
     padding: 0px !important;
     margin-top: -5px !important;
 }
+
+.spinner-pos {
+    margin-right: 0px !important;
+    top: 2px;
+}

@@ -66,7 +66,8 @@
         "CURRENT_PWD": "当前密码",
         "NEW_PWD": "新密码",
         "CONFIRM_PWD": "确认密码",
-        "SAVE_SUCCESS": "更改用户密码成功"
+        "SAVE_SUCCESS": "更改用户密码成功",
+        "PASS_TIPS": "至少8个字符且需包含至少一个大写字符、小写字符或者数字"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
