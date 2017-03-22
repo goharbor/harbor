@@ -84,7 +84,7 @@ NGINXVERSION=1.11.5
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
-MARIADBVERSION=10.1.10
+MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
 
 #clarity parameters
@@ -304,10 +304,10 @@ package_offline: compile build modify_composefile
 	@$(DOCKERPULL) registry:$(REGISTRYVERSION)
 	@$(DOCKERPULL) nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		echo "pulling notary and mariadb..."; \
+		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
-		$(DOCKERPULL) mariadb:$(MARIADBVERSION); \
+		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	fi	
 	
 	@echo "saving harbor docker image"
@@ -319,7 +319,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
-		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) mariadb:$(MARIADBVERSION); \
+		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
