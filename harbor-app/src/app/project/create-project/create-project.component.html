@@ -1,23 +1,26 @@
-<clr-modal [(clrModalOpen)]="createProjectOpened">
+<clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
   <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
   <div class="modal-body">
     <form #projectForm="ngForm">
       <section class="form-block">
         <div class="form-group">
-          <label for="create_project_name" class="col-md-4">{{'PROJECT.NAME' | translate}}</label>
+          <label for="create_project_name" class="col-md-4 form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
           <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
-            <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="20" required minlength="2" #projectName="ngModel">
+            <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="20" required minlength="2" #projectName="ngModel" targetExists="PROJECT_NAME">
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.required && (projectName.dirty || projectName.touched)">
               {{'PROJECT.NAME_IS_REQUIRED' | translate}}
             </span>
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.minlength && (projectName.dirty || projectName.touched)">
               {{'PROJECT.NAME_MINIMUM_LENGTH' | translate}}
             </span>
+            <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.targetExists && (projectName.dirty || projectName.touched)">
+              {{'PROJECT.NAME_ALREADY_EXISTS' | translate}}
+            </span>
           </label>
         </div>
         <div class="form-group">
-          <label class="col-md-4">{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</label>
+          <label class="col-md-4 form-group-label-override">{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</label>
           <div class="checkbox-inline">
             <input type="checkbox" id="create_project_public" [(ngModel)]="project.public" name="public">
             <label for="create_project_public"></label>

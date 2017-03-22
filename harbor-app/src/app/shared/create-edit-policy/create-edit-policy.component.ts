@@ -41,6 +41,9 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   policyForm: NgForm;
 
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
+
   @ViewChild('policyForm')
   currentForm: NgForm;
 
@@ -48,6 +51,18 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
+
+  get readonly(): boolean {
+    return this.actionType === ActionType.EDIT && this.createEditPolicy.enable;
+  }
+
+  get untoggleable(): boolean {
+    return this.actionType === ActionType.EDIT && this.initVal.enable;
+  }
+
+  get showNewDestination(): boolean {
+    return this.actionType === ActionType.ADD_NEW || !this.createEditPolicy.enable;
+  }
 
   constructor(
     private replicationService: ReplicationService,
@@ -109,7 +124,6 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.initVal.name = this.createEditPolicy.name;
               this.initVal.description = this.createEditPolicy.description;
               this.initVal.enable = this.createEditPolicy.enable;
-              
             }
           )
     } else {
@@ -230,12 +244,14 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.createEditPolicyOpened = false;
+      this.policyForm.reset();
     }
   }
 
   confirmCancel(confirmed: boolean) {
     this.createEditPolicyOpened = false;
     this.inlineAlert.close();
+    this.policyForm.reset();
   }
 
   ngAfterViewChecked(): void {

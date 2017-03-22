@@ -5,14 +5,14 @@
     <li class="nav-item">
       <a class="nav-link" routerLink="repository" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
     </li>
-    <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
-      <a class="nav-link" routerLink="replication" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
-    </li>
     <li class="nav-item" *ngIf="isSessionValid">
       <a class="nav-link" routerLink="member" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
     </li>
     <li class="nav-item" *ngIf="isSessionValid">
       <a class="nav-link" routerLink="log" routerLinkActive="active">{{'PROJECT_DETAIL.LOGS' | translate}}</a>
+    </li>
+    <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
+      <a class="nav-link" routerLink="replication" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
     </li>
   </ul>
 </nav>
