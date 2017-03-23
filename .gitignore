@@ -10,7 +10,10 @@ src/common/dao/dao.test
 *.pyc
 jobservice/test
 
-src/ui/static/dist/
+src/ui/static/*.html
+src/ui/static/*.bundle.js
+src/ui/static/*.bundle.js.map
+src/ui/static/harbor-log.*.png
 
 src/ui_ng/coverage/
 src/ui_ng/dist/

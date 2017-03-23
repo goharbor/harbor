@@ -6,12 +6,10 @@ import {
   CanActivateChild,
   NavigationExtras
 } from '@angular/router';
-
 import { SessionService } from '../../shared/session.service';
 import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
-
 
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
@@ -50,7 +48,6 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
 
           this.router.navigateByUrl(keyRemovedUrl);
           return resolve(false);
-
         }
       }
 

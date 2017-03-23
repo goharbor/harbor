@@ -19,7 +19,7 @@ import (
 	"os"
 	"testing"
 
-	comcfg "github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
@@ -54,7 +54,7 @@ func TestSystemcfg(t *testing.T) {
 	}
 
 	m := map[string]string{
-		"AUTH_MODE":             comcfg.DBAuth,
+		"AUTH_MODE":             common.DBAuth,
 		"LDAP_SCOPE":            "1",
 		"LDAP_TIMEOUT":          "30",
 		"MYSQL_PORT":            "3306",
@@ -93,13 +93,13 @@ func TestSystemcfg(t *testing.T) {
 		return
 	}
 
-	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
+	if cfg[common.AUTHMode] != common.DBAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+			cfg[common.AUTHMode], common.DBAuth)
 		return
 	}
 
-	cfg[comcfg.AUTHMode] = comcfg.LDAPAuth
+	cfg[common.AUTHMode] = common.LDAPAuth
 
 	if err = UpdateSystemCfg(cfg); err != nil {
 		t.Errorf("failed to update system configurations: %v", err)
@@ -112,9 +112,9 @@ func TestSystemcfg(t *testing.T) {
 		return
 	}
 
-	if cfg[comcfg.AUTHMode] != comcfg.LDAPAuth {
+	if cfg[common.AUTHMode] != common.LDAPAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+			cfg[common.AUTHMode], common.DBAuth)
 		return
 	}
 
@@ -129,9 +129,9 @@ func TestSystemcfg(t *testing.T) {
 		return
 	}
 
-	if cfg[comcfg.AUTHMode] != comcfg.DBAuth {
+	if cfg[common.AUTHMode] != common.DBAuth {
 		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[comcfg.AUTHMode], comcfg.DBAuth)
+			cfg[common.AUTHMode], common.DBAuth)
 		return
 	}
 }

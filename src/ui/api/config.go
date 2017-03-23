@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/api"
-	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -30,65 +30,65 @@ import (
 var (
 	// valid keys of configurations which user can modify
 	validKeys = []string{
-		comcfg.ExtEndpoint,
-		comcfg.AUTHMode,
-		comcfg.DatabaseType,
-		comcfg.MySQLHost,
-		comcfg.MySQLPort,
-		comcfg.MySQLUsername,
-		comcfg.MySQLPassword,
-		comcfg.MySQLDatabase,
-		comcfg.SQLiteFile,
-		comcfg.SelfRegistration,
-		comcfg.LDAPURL,
-		comcfg.LDAPSearchDN,
-		comcfg.LDAPSearchPwd,
-		comcfg.LDAPBaseDN,
-		comcfg.LDAPUID,
-		comcfg.LDAPFilter,
-		comcfg.LDAPScope,
-		comcfg.LDAPTimeout,
-		comcfg.TokenServiceURL,
-		comcfg.RegistryURL,
-		comcfg.EmailHost,
-		comcfg.EmailPort,
-		comcfg.EmailUsername,
-		comcfg.EmailPassword,
-		comcfg.EmailFrom,
-		comcfg.EmailSSL,
-		comcfg.EmailIdentity,
-		comcfg.ProjectCreationRestriction,
-		comcfg.VerifyRemoteCert,
-		comcfg.MaxJobWorkers,
-		comcfg.TokenExpiration,
-		comcfg.CfgExpiration,
-		comcfg.JobLogDir,
-		comcfg.UseCompressedJS,
-		comcfg.AdminInitialPassword,
+		common.ExtEndpoint,
+		common.AUTHMode,
+		common.DatabaseType,
+		common.MySQLHost,
+		common.MySQLPort,
+		common.MySQLUsername,
+		common.MySQLPassword,
+		common.MySQLDatabase,
+		common.SQLiteFile,
+		common.SelfRegistration,
+		common.LDAPURL,
+		common.LDAPSearchDN,
+		common.LDAPSearchPwd,
+		common.LDAPBaseDN,
+		common.LDAPUID,
+		common.LDAPFilter,
+		common.LDAPScope,
+		common.LDAPTimeout,
+		common.TokenServiceURL,
+		common.RegistryURL,
+		common.EmailHost,
+		common.EmailPort,
+		common.EmailUsername,
+		common.EmailPassword,
+		common.EmailFrom,
+		common.EmailSSL,
+		common.EmailIdentity,
+		common.ProjectCreationRestriction,
+		common.VerifyRemoteCert,
+		common.MaxJobWorkers,
+		common.TokenExpiration,
+		common.CfgExpiration,
+		common.JobLogDir,
+		common.UseCompressedJS,
+		common.AdminInitialPassword,
 	}
 
 	numKeys = []string{
-		comcfg.EmailPort,
-		comcfg.LDAPScope,
-		comcfg.LDAPTimeout,
-		comcfg.MySQLPort,
-		comcfg.MaxJobWorkers,
-		comcfg.TokenExpiration,
-		comcfg.CfgExpiration,
+		common.EmailPort,
+		common.LDAPScope,
+		common.LDAPTimeout,
+		common.MySQLPort,
+		common.MaxJobWorkers,
+		common.TokenExpiration,
+		common.CfgExpiration,
 	}
 
 	boolKeys = []string{
-		comcfg.EmailSSL,
-		comcfg.SelfRegistration,
-		comcfg.VerifyRemoteCert,
-		comcfg.UseCompressedJS,
+		common.EmailSSL,
+		common.SelfRegistration,
+		common.VerifyRemoteCert,
+		common.UseCompressedJS,
 	}
 
 	passwordKeys = []string{
-		comcfg.AdminInitialPassword,
-		comcfg.EmailPassword,
-		comcfg.LDAPSearchPwd,
-		comcfg.MySQLPassword,
+		common.AdminInitialPassword,
+		common.EmailPassword,
+		common.LDAPSearchPwd,
+		common.MySQLPassword,
 	}
 )
 
@@ -157,7 +157,7 @@ func (c *ConfigAPI) Put() {
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
-	if value, ok := cfg[comcfg.AUTHMode]; ok {
+	if value, ok := cfg[common.AUTHMode]; ok {
 		mode, err := config.AuthMode()
 		if err != nil {
 			log.Errorf("failed to get auth mode: %v", err)
@@ -174,7 +174,7 @@ func (c *ConfigAPI) Put() {
 			if !flag {
 				c.CustomAbort(http.StatusBadRequest,
 					fmt.Sprintf("%s can not be modified as new users have been inserted into database",
-						comcfg.AUTHMode))
+						common.AUTHMode))
 			}
 		}
 	}
@@ -213,14 +213,14 @@ func validateCfg(c map[string]string) (bool, error) {
 		return isSysErr, err
 	}
 
-	if value, ok := c[comcfg.AUTHMode]; ok {
-		if value != comcfg.DBAuth && value != comcfg.LDAPAuth {
-			return isSysErr, fmt.Errorf("invalid %s, shoud be %s or %s", comcfg.AUTHMode, comcfg.DBAuth, comcfg.LDAPAuth)
+	if value, ok := c[common.AUTHMode]; ok {
+		if value != common.DBAuth && value != common.LDAPAuth {
+			return isSysErr, fmt.Errorf("invalid %s, shoud be %s or %s", common.AUTHMode, common.DBAuth, common.LDAPAuth)
 		}
 		mode = value
 	}
 
-	if mode == comcfg.LDAPAuth {
+	if mode == common.LDAPAuth {
 		ldap, err := config.LDAP()
 		if err != nil {
 			isSysErr = true
@@ -228,46 +228,46 @@ func validateCfg(c map[string]string) (bool, error) {
 		}
 
 		if len(ldap.URL) == 0 {
-			if _, ok := c[comcfg.LDAPURL]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPURL)
+			if _, ok := c[common.LDAPURL]; !ok {
+				return isSysErr, fmt.Errorf("%s is missing", common.LDAPURL)
 			}
 		}
 
 		if len(ldap.BaseDN) == 0 {
-			if _, ok := c[comcfg.LDAPBaseDN]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPBaseDN)
+			if _, ok := c[common.LDAPBaseDN]; !ok {
+				return isSysErr, fmt.Errorf("%s is missing", common.LDAPBaseDN)
 			}
 		}
 		if len(ldap.UID) == 0 {
-			if _, ok := c[comcfg.LDAPUID]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPUID)
+			if _, ok := c[common.LDAPUID]; !ok {
+				return isSysErr, fmt.Errorf("%s is missing", common.LDAPUID)
 			}
 		}
 		if ldap.Scope == 0 {
-			if _, ok := c[comcfg.LDAPScope]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", comcfg.LDAPScope)
+			if _, ok := c[common.LDAPScope]; !ok {
+				return isSysErr, fmt.Errorf("%s is missing", common.LDAPScope)
 			}
 		}
 	}
 
-	if ldapURL, ok := c[comcfg.LDAPURL]; ok && len(ldapURL) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPURL)
+	if ldapURL, ok := c[common.LDAPURL]; ok && len(ldapURL) == 0 {
+		return isSysErr, fmt.Errorf("%s is empty", common.LDAPURL)
 	}
-	if baseDN, ok := c[comcfg.LDAPBaseDN]; ok && len(baseDN) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPBaseDN)
+	if baseDN, ok := c[common.LDAPBaseDN]; ok && len(baseDN) == 0 {
+		return isSysErr, fmt.Errorf("%s is empty", common.LDAPBaseDN)
 	}
-	if uID, ok := c[comcfg.LDAPUID]; ok && len(uID) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", comcfg.LDAPUID)
+	if uID, ok := c[common.LDAPUID]; ok && len(uID) == 0 {
+		return isSysErr, fmt.Errorf("%s is empty", common.LDAPUID)
 	}
-	if scope, ok := c[comcfg.LDAPScope]; ok &&
-		scope != comcfg.LDAPScopeBase &&
-		scope != comcfg.LDAPScopeOnelevel &&
-		scope != comcfg.LDAPScopeSubtree {
+	if scope, ok := c[common.LDAPScope]; ok &&
+		scope != common.LDAPScopeBase &&
+		scope != common.LDAPScopeOnelevel &&
+		scope != common.LDAPScopeSubtree {
 		return isSysErr, fmt.Errorf("invalid %s, should be %s, %s or %s",
-			comcfg.LDAPScope,
-			comcfg.LDAPScopeBase,
-			comcfg.LDAPScopeOnelevel,
-			comcfg.LDAPScopeSubtree)
+			common.LDAPScope,
+			common.LDAPScopeBase,
+			common.LDAPScopeOnelevel,
+			common.LDAPScopeSubtree)
 	}
 
 	for _, k := range boolKeys {
@@ -293,19 +293,19 @@ func validateCfg(c map[string]string) (bool, error) {
 			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
 		}
 
-		if (k == comcfg.EmailPort ||
-			k == comcfg.MySQLPort) && n > 65535 {
+		if (k == common.EmailPort ||
+			k == common.MySQLPort) && n > 65535 {
 			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
 		}
 	}
 
-	if crt, ok := c[comcfg.ProjectCreationRestriction]; ok &&
-		crt != comcfg.ProCrtRestrEveryone &&
-		crt != comcfg.ProCrtRestrAdmOnly {
+	if crt, ok := c[common.ProjectCreationRestriction]; ok &&
+		crt != common.ProCrtRestrEveryone &&
+		crt != common.ProCrtRestrAdmOnly {
 		return isSysErr, fmt.Errorf("invalid %s, should be %s or %s",
-			comcfg.ProjectCreationRestriction,
-			comcfg.ProCrtRestrAdmOnly,
-			comcfg.ProCrtRestrEveryone)
+			common.ProjectCreationRestriction,
+			common.ProCrtRestrAdmOnly,
+			common.ProCrtRestrEveryone)
 	}
 
 	return isSysErr, nil
@@ -363,7 +363,7 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	if err != nil {
 		return nil, err
 	}
-	result[comcfg.AUTHMode].Editable = flag
+	result[common.AUTHMode].Editable = flag
 
 	return result, nil
 }

@@ -66,7 +66,8 @@
         "CURRENT_PWD": "当前密码",
         "NEW_PWD": "新密码",
         "CONFIRM_PWD": "确认密码",
-        "SAVE_SUCCESS": "更改用户密码成功"
+        "SAVE_SUCCESS": "更改用户密码成功",
+        "PASS_TIPS": "至少8个字符且需包含至少一个大写字符、小写字符或者数字"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
@@ -152,8 +153,9 @@
         "DELETE": "删除",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
-        "USERNAME_DOES_NOT_EXISTS": "用户名不存在",
-        "USERNAME_ALREADY_EXISTS": "用户名已存在",
+        "USERNAME_IS_REQUIRED": "用户名为必填项。",
+        "USERNAME_DOES_NOT_EXISTS": "用户名不存在。",
+        "USERNAME_ALREADY_EXISTS": "用户名已存在。",
         "UNKNOWN_ERROR": "添加成员时发生未知错误。",
         "FILTER_PLACEHOLDER": "过滤成员",
         "DELETION_TITLE": "删除项目成员确认",
@@ -229,7 +231,11 @@
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
         "LOGS": "日志",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "TOGGLE_ENABLE_TITLE": "启用策略",
+        "CONFIRM_TOGGLE_ENABLE_POLICY": "启用策略后，该项目下的所有镜像仓库将复制到目标实例。请确认继续。",
+        "TOGGLE_DISABLE_TITLE": "停用策略",
+        "CONFIRM_TOGGLE_DISABLE_POLICY": "停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -268,7 +274,7 @@
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
-        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。",
+        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。{{param}}",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "SIGNED": "已签名",

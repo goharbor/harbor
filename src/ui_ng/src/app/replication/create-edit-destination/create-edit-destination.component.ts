@@ -15,7 +15,7 @@ import { TranslateService } from '@ngx-translate/core';
   selector: 'create-edit-destination',
   templateUrl: './create-edit-destination.component.html'
 })
-export class CreateEditDestinationComponent {
+export class CreateEditDestinationComponent implements AfterViewChecked {
 
   modalTitle: string;
   createEditDestinationOpened: boolean;
@@ -27,8 +27,12 @@ export class CreateEditDestinationComponent {
   actionType: ActionType;
 
   target: Target = new Target();
+  initVal: Target = new Target();
 
   targetForm: NgForm;
+
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
 
   @ViewChild('targetForm')
   currentForm: NgForm;
@@ -47,7 +51,6 @@ export class CreateEditDestinationComponent {
 
   openCreateEditTarget(targetId?: number) {
     this.target = new Target();
-
     this.createEditDestinationOpened = true;
     
     this.hasChanged = false;
@@ -62,7 +65,13 @@ export class CreateEditDestinationComponent {
       this.replicationService
           .getTarget(targetId)
           .subscribe(
-            target=>this.target=target,
+            target=>{ 
+              this.target = target;
+              this.initVal.name = this.target.name;
+              this.initVal.endpoint = this.target.endpoint;
+              this.initVal.username = this.target.username;
+              this.initVal.password = this.target.password;
+            },
             error=>this.messageService
                        .announceMessage(error.status, 'DESTINATION.FAILED_TO_GET_TARGET', AlertType.DANGER)
           );
@@ -171,22 +180,26 @@ export class CreateEditDestinationComponent {
     this.inlineAlert.close();
   }
 
+  mappedName: {} = {
+    'targetName': 'name',
+    'endpointUrl': 'endpoint',
+    'username': 'username',
+    'password': 'password'
+  };
+
   ngAfterViewChecked(): void {
     this.targetForm = this.currentForm;
     if(this.targetForm) {
       this.targetForm.valueChanges.subscribe(data=>{
         for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
+          let current = data[i];
+          let origin = this.initVal[this.mappedName[i]];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });

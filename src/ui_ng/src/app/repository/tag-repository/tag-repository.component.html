@@ -16,8 +16,8 @@
         <clr-dg-cell>{{t.tag}}</clr-dg-cell>
         <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>
         <clr-dg-cell>
-            <clr-icon shape="check" *ngIf="t.verified" style="color: #1D5100;"></clr-icon>
-            <clr-icon shape="close" *ngIf="!t.verified" style="color: #C92100;"></clr-icon>
+            <clr-icon shape="check" *ngIf="t.signed" style="color: #1D5100;"></clr-icon>
+            <clr-icon shape="close" *ngIf="!t.signed" style="color: #C92100;"></clr-icon>
         </clr-dg-cell>
         <clr-dg-cell>{{t.author}}</clr-dg-cell>
         <clr-dg-cell>{{t.created | date: 'yyyy/MM/dd'}}</clr-dg-cell>

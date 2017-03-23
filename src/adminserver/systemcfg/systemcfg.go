@@ -23,6 +23,7 @@ import (
 
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
+	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -40,82 +41,82 @@ var (
 
 	// attrs need to be encrypted or decrypted
 	attrs = []string{
-		comcfg.EmailPassword,
-		comcfg.LDAPSearchPwd,
-		comcfg.MySQLPassword,
-		comcfg.AdminInitialPassword,
+		common.EmailPassword,
+		common.LDAPSearchPwd,
+		common.MySQLPassword,
+		common.AdminInitialPassword,
 	}
 
 	// all configurations need read from environment variables
 	allEnvs = map[string]interface{}{
-		comcfg.ExtEndpoint: "EXT_ENDPOINT",
-		comcfg.AUTHMode:    "AUTH_MODE",
-		comcfg.SelfRegistration: &parser{
+		common.ExtEndpoint: "EXT_ENDPOINT",
+		common.AUTHMode:    "AUTH_MODE",
+		common.SelfRegistration: &parser{
 			env:   "SELF_REGISTRATION",
 			parse: parseStringToBool,
 		},
-		comcfg.DatabaseType: "DATABASE_TYPE",
-		comcfg.MySQLHost:    "MYSQL_HOST",
-		comcfg.MySQLPort: &parser{
+		common.DatabaseType: "DATABASE_TYPE",
+		common.MySQLHost:    "MYSQL_HOST",
+		common.MySQLPort: &parser{
 			env:   "MYSQL_PORT",
 			parse: parseStringToInt,
 		},
-		comcfg.MySQLUsername: "MYSQL_USR",
-		comcfg.MySQLPassword: "MYSQL_PWD",
-		comcfg.MySQLDatabase: "MYSQL_DATABASE",
-		comcfg.SQLiteFile:    "SQLITE_FILE",
-		comcfg.LDAPURL:       "LDAP_URL",
-		comcfg.LDAPSearchDN:  "LDAP_SEARCH_DN",
-		comcfg.LDAPSearchPwd: "LDAP_SEARCH_PWD",
-		comcfg.LDAPBaseDN:    "LDAP_BASE_DN",
-		comcfg.LDAPFilter:    "LDAP_FILTER",
-		comcfg.LDAPUID:       "LDAP_UID",
-		comcfg.LDAPScope: &parser{
+		common.MySQLUsername: "MYSQL_USR",
+		common.MySQLPassword: "MYSQL_PWD",
+		common.MySQLDatabase: "MYSQL_DATABASE",
+		common.SQLiteFile:    "SQLITE_FILE",
+		common.LDAPURL:       "LDAP_URL",
+		common.LDAPSearchDN:  "LDAP_SEARCH_DN",
+		common.LDAPSearchPwd: "LDAP_SEARCH_PWD",
+		common.LDAPBaseDN:    "LDAP_BASE_DN",
+		common.LDAPFilter:    "LDAP_FILTER",
+		common.LDAPUID:       "LDAP_UID",
+		common.LDAPScope: &parser{
 			env:   "LDAP_SCOPE",
 			parse: parseStringToInt,
 		},
-		comcfg.LDAPTimeout: &parser{
+		common.LDAPTimeout: &parser{
 			env:   "LDAP_TIMEOUT",
 			parse: parseStringToInt,
 		},
-		comcfg.EmailHost: "EMAIL_HOST",
-		comcfg.EmailPort: &parser{
+		common.EmailHost: "EMAIL_HOST",
+		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",
 			parse: parseStringToInt,
 		},
-		comcfg.EmailUsername: "EMAIL_USR",
-		comcfg.EmailPassword: "EMAIL_PWD",
-		comcfg.EmailSSL: &parser{
+		common.EmailUsername: "EMAIL_USR",
+		common.EmailPassword: "EMAIL_PWD",
+		common.EmailSSL: &parser{
 			env:   "EMAIL_SSL",
 			parse: parseStringToBool,
 		},
-		comcfg.EmailFrom:     "EMAIL_FROM",
-		comcfg.EmailIdentity: "EMAIL_IDENTITY",
-		comcfg.RegistryURL:   "REGISTRY_URL",
-		comcfg.TokenExpiration: &parser{
+		common.EmailFrom:     "EMAIL_FROM",
+		common.EmailIdentity: "EMAIL_IDENTITY",
+		common.RegistryURL:   "REGISTRY_URL",
+		common.TokenExpiration: &parser{
 			env:   "TOKEN_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.UseCompressedJS: &parser{
+		common.UseCompressedJS: &parser{
 			env:   "USE_COMPRESSED_JS",
 			parse: parseStringToBool,
 		},
-		comcfg.CfgExpiration: &parser{
+		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.MaxJobWorkers: &parser{
+		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
-		comcfg.VerifyRemoteCert: &parser{
+		common.VerifyRemoteCert: &parser{
 			env:   "VERIFY_REMOTE_CERT",
 			parse: parseStringToBool,
 		},
-		comcfg.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
-		comcfg.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
-		comcfg.AdmiralEndpoint:            "ADMIRAL_URL",
-		comcfg.WithNotary: &parser{
+		common.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
+		common.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+		common.AdmiralEndpoint:            "ADMIRAL_URL",
+		common.WithNotary: &parser{
 			env:   "WITH_NOTARY",
 			parse: parseStringToBool,
 		},
@@ -124,23 +125,23 @@ var (
 	// configurations need read from environment variables
 	// every time the system startup
 	repeatLoadEnvs = map[string]interface{}{
-		comcfg.ExtEndpoint:   "EXT_ENDPOINT",
-		comcfg.MySQLPassword: "MYSQL_PWD",
-		comcfg.MaxJobWorkers: &parser{
+		common.ExtEndpoint:   "EXT_ENDPOINT",
+		common.MySQLPassword: "MYSQL_PWD",
+		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
 		// TODO remove this config?
-		comcfg.UseCompressedJS: &parser{
+		common.UseCompressedJS: &parser{
 			env:   "USE_COMPRESSED_JS",
 			parse: parseStringToBool,
 		},
-		comcfg.CfgExpiration: &parser{
+		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.AdmiralEndpoint: "ADMIRAL_URL",
-		comcfg.WithNotary: &parser{
+		common.AdmiralEndpoint: "ADMIRAL_URL",
+		common.WithNotary: &parser{
 			env:   "WITH_NOTARY",
 			parse: parseStringToBool,
 		},

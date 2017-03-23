@@ -24,6 +24,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   modalTitle: string;
   createEditPolicyOpened: boolean;
   createEditPolicy: CreateEditPolicy = new CreateEditPolicy();
+  initVal: CreateEditPolicy = new CreateEditPolicy();
   
   actionType: ActionType;
   
@@ -40,6 +41,9 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   policyForm: NgForm;
 
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
+
   @ViewChild('policyForm')
   currentForm: NgForm;
 
@@ -47,6 +51,18 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
+
+  get readonly(): boolean {
+    return this.actionType === ActionType.EDIT && this.createEditPolicy.enable;
+  }
+
+  get untoggleable(): boolean {
+    return this.actionType === ActionType.EDIT && this.initVal.enable;
+  }
+
+  get showNewDestination(): boolean {
+    return this.actionType === ActionType.ADD_NEW || !this.createEditPolicy.enable;
+  }
 
   constructor(
     private replicationService: ReplicationService,
@@ -67,6 +83,11 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.createEditPolicy.endpointUrl = initialTarget.endpoint;
               this.createEditPolicy.username = initialTarget.username;
               this.createEditPolicy.password = initialTarget.password;
+
+              this.initVal.targetId = this.createEditPolicy.targetId;
+              this.initVal.endpointUrl = this.createEditPolicy.endpointUrl;
+              this.initVal.username = this.createEditPolicy.username;
+              this.initVal.password = this.createEditPolicy.password;
             }
           },
           error=>this.messageService.announceMessage(error.status, 'Error occurred while get targets.', AlertType.DANGER)
@@ -78,6 +99,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   openCreateEditPolicy(policyId?: number): void {
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
+   
     this.isCreateDestination = false;
     
     this.hasChanged = false;
@@ -97,7 +119,11 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.createEditPolicy.name = policy.name;
               this.createEditPolicy.description = policy.description;
               this.createEditPolicy.enable = policy.enabled === 1? true : false;
-              this.prepareTargets(policy.target_id);
+              this.prepareTargets(policy.target_id);         
+
+              this.initVal.name = this.createEditPolicy.name;
+              this.initVal.description = this.createEditPolicy.description;
+              this.initVal.enable = this.createEditPolicy.enable;
             }
           )
     } else {
@@ -218,12 +244,14 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.createEditPolicyOpened = false;
+      this.policyForm.reset();
     }
   }
 
   confirmCancel(confirmed: boolean) {
     this.createEditPolicyOpened = false;
     this.inlineAlert.close();
+    this.policyForm.reset();
   }
 
   ngAfterViewChecked(): void {
@@ -231,23 +259,19 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
     if(this.policyForm) {
       this.policyForm.valueChanges.subscribe(data=>{
         for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });
     }
   }
-
 
   testConnection() {
     this.pingStatus = true;
