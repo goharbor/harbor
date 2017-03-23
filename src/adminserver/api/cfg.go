@@ -20,13 +20,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	cfg "github.com/vmware/harbor/src/adminserver/systemcfg"
+	"github.com/vmware/harbor/src/adminserver/systemcfg"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // ListCfgs lists configurations
 func ListCfgs(w http.ResponseWriter, r *http.Request) {
-	cfg, err := cfg.GetSystemCfg()
+	cfg, err := systemcfg.CfgStore.Read()
 	if err != nil {
 		log.Errorf("failed to get system configurations: %v", err)
 		handleInternalServerError(w)
@@ -54,7 +54,7 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = cfg.UpdateSystemCfg(m); err != nil {
+	if err = systemcfg.CfgStore.Write(m); err != nil {
 		log.Errorf("failed to update system configurations: %v", err)
 		handleInternalServerError(w)
 		return
@@ -63,8 +63,15 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 
 // ResetCfgs resets configurations from environment variables
 func ResetCfgs(w http.ResponseWriter, r *http.Request) {
-	if err := cfg.Reset(); err != nil {
+	cfgs := map[string]interface{}{}
+	if err := systemcfg.LoadFromEnv(cfgs, true); err != nil {
 		log.Errorf("failed to reset system configurations: %v", err)
+		handleInternalServerError(w)
+		return
+	}
+
+	if err := systemcfg.CfgStore.Write(cfgs); err != nil {
+		log.Errorf("failed to write system configurations to storage: %v", err)
 		handleInternalServerError(w)
 		return
 	}

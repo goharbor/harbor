@@ -21,23 +21,24 @@ import (
 	"strconv"
 	"strings"
 
+	enpt "github.com/vmware/harbor/src/adminserver/systemcfg/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
-	defaultCfgStoreDriver   string = "json"
 	defaultJSONCfgStorePath string = "/etc/adminserver/config.json"
 	defaultKeyPath          string = "/etc/adminserver/key"
 )
 
 var (
-	cfgStore    store.Driver
-	keyProvider comcfg.KeyProvider
+	// CfgStore is a storage driver that configurations
+	// can be read from and wrote to
+	CfgStore store.Driver
 
 	// attrs need to be encrypted or decrypted
 	attrs = []string{
@@ -157,6 +158,9 @@ type parser struct {
 }
 
 func parseStringToInt(str string) (interface{}, error) {
+	if len(str) == 0 {
+		return 0, nil
+	}
 	return strconv.Atoi(str)
 }
 
@@ -165,80 +169,65 @@ func parseStringToBool(str string) (interface{}, error) {
 		strings.ToLower(str) == "on", nil
 }
 
-// Init system configurations. Read from config store first,
-// if null read from env
+// Init system configurations. If env RESET is set or configurations
+// read from storage driver is null, load all configurations from env
 func Init() (err error) {
-	//init configuation store
 	if err = initCfgStore(); err != nil {
 		return err
 	}
 
-	//init key provider
-	initKeyProvider()
+	loadAll := false
+	cfgs := map[string]interface{}{}
 
 	if os.Getenv("RESET") == "true" {
-		log.Info("RESET is set, resetting system configurations...")
-		return Reset()
+		log.Info("RESET is set, will load all configurations from environment variables")
+		loadAll = true
 	}
 
-	cfg, err := GetSystemCfg()
-	if err != nil {
+	if !loadAll {
+		cfgs, err = CfgStore.Read()
+		if cfgs == nil {
+			log.Info("configurations read from storage driver are null, will load them from environment variables")
+			loadAll = true
+			cfgs = map[string]interface{}{}
+		}
+	}
+
+	if err = LoadFromEnv(cfgs, loadAll); err != nil {
 		return err
 	}
 
-	if cfg != nil {
-		if err = loadFromEnv(cfg, false); err != nil {
-			return err
-		}
-	} else {
-		log.Info("configurations read from store driver are null, initializing system from environment variables...")
-		cfg = make(map[string]interface{})
-		if err = loadFromEnv(cfg, true); err != nil {
-			return err
-		}
-	}
-
-	//sync configurations into cfg store
-	log.Info("updating system configurations...")
-	return UpdateSystemCfg(cfg)
+	return CfgStore.Write(cfgs)
 }
 
 func initCfgStore() (err error) {
-	t := os.Getenv("CFG_STORE_DRIVER")
-	if len(t) == 0 {
-		t = defaultCfgStoreDriver
-	}
-	log.Infof("configuration store driver: %s", t)
-
-	switch t {
-	case "json":
-		path := os.Getenv("JSON_CFG_STORE_PATH")
-		if len(path) == 0 {
-			path = defaultJSONCfgStorePath
-		}
-		log.Infof("json configuration store path: %s", path)
-
-		cfgStore, err = json.NewCfgStore(path)
-	default:
-		err = fmt.Errorf("unsupported configuration store driver %s", t)
-	}
-
-	return err
-}
-
-func initKeyProvider() {
-	path := os.Getenv("KEY_PATH")
+	path := os.Getenv("JSON_CFG_STORE_PATH")
 	if len(path) == 0 {
-		path = defaultKeyPath
+		path = defaultJSONCfgStorePath
 	}
-	log.Infof("key path: %s", path)
+	log.Infof("the path of json configuration storage: %s", path)
 
-	keyProvider = comcfg.NewFileKeyProvider(path)
+	CfgStore, err = json.NewCfgStore(path)
+	if err != nil {
+		return
+	}
+
+	kp := os.Getenv("KEY_PATH")
+	if len(kp) == 0 {
+		kp = defaultKeyPath
+	}
+	log.Infof("the path of key used by key provider: %s", kp)
+
+	encryptor := enpt.NewAESEncryptor(
+		comcfg.NewFileKeyProvider(kp), nil)
+
+	CfgStore = encrypt.NewCfgStore(encryptor, attrs, CfgStore)
+	return nil
 }
 
-// load the configurations from allEnvs, if all is false, it just loads
+// LoadFromEnv loads the configurations from allEnvs, if all is false, it just loads
 // the repeatLoadEnvs
-func loadFromEnv(cfg map[string]interface{}, all bool) error {
+func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 	envs := repeatLoadEnvs
 	if all {
 		envs = allEnvs
@@ -246,7 +235,7 @@ func loadFromEnv(cfg map[string]interface{}, all bool) error {
 
 	for k, v := range envs {
 		if str, ok := v.(string); ok {
-			cfg[k] = os.Getenv(str)
+			cfgs[k] = os.Getenv(str)
 			continue
 		}
 
@@ -255,7 +244,7 @@ func loadFromEnv(cfg map[string]interface{}, all bool) error {
 			if err != nil {
 				return err
 			}
-			cfg[k] = i
+			cfgs[k] = i
 			continue
 		}
 
@@ -263,91 +252,4 @@ func loadFromEnv(cfg map[string]interface{}, all bool) error {
 	}
 
 	return nil
-}
-
-// GetSystemCfg returns the system configurations
-func GetSystemCfg() (map[string]interface{}, error) {
-	m, err := cfgStore.Read()
-	if err != nil {
-		return nil, err
-	}
-
-	key, err := keyProvider.Get(nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get key: %v", err)
-	}
-
-	if err = decrypt(m, attrs, key); err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-// UpdateSystemCfg updates the system configurations
-func UpdateSystemCfg(cfg map[string]interface{}) error {
-
-	key, err := keyProvider.Get(nil)
-	if err != nil {
-		return fmt.Errorf("failed to get key: %v", err)
-	}
-
-	if err := encrypt(cfg, attrs, key); err != nil {
-		return err
-	}
-
-	return cfgStore.Write(cfg)
-}
-
-func encrypt(m map[string]interface{}, keys []string, secretKey string) error {
-	for _, key := range keys {
-		v, ok := m[key]
-		if !ok {
-			continue
-		}
-
-		if len(v.(string)) == 0 {
-			continue
-		}
-
-		cipherText, err := utils.ReversibleEncrypt(v.(string), secretKey)
-		if err != nil {
-			return err
-		}
-		m[key] = cipherText
-	}
-	return nil
-}
-
-func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
-	for _, key := range keys {
-		v, ok := m[key]
-		if !ok {
-			continue
-		}
-
-		if len(v.(string)) == 0 {
-			continue
-		}
-
-		text, err := utils.ReversibleDecrypt(v.(string), secretKey)
-		if err != nil {
-			return err
-		}
-		m[key] = text
-	}
-	return nil
-}
-
-// Reset clears old system configurations and reloads them
-// from environment variables
-func Reset() error {
-	cfg := map[string]interface{}{}
-	if err := loadFromEnv(cfg, true); err != nil {
-		return err
-	}
-
-	//sync configurations into cfg store
-	log.Info("updating system configurations...")
-	return UpdateSystemCfg(cfg)
 }
