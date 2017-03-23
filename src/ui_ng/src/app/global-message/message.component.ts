@@ -18,6 +18,7 @@ export class MessageComponent implements OnInit {
   globalMessage: Message = new Message();
   globalMessageOpened: boolean;
   messageText: string = "";
+  private timer: any = null;
 
   constructor(
     private messageService: MessageService,
@@ -48,7 +49,7 @@ export class MessageComponent implements OnInit {
 
           // Make the message alert bar dismiss after several intervals.
           //Only for this case
-          setInterval(() => this.onClose(), dismissInterval);
+          this.timer = setTimeout(() => this.onClose(), dismissInterval);
         }
       );
     }
@@ -56,15 +57,9 @@ export class MessageComponent implements OnInit {
 
   //Translate or refactor the message shown to user
   translateMessage(msg: Message): void {
-    if (!msg) {
-      return;
-    }
-
-    let key = "";
-    if (!msg.message) {
-      key = "UNKNOWN_ERROR";
-    } else {
-      key = typeof msg.message === "string" ? msg.message.trim() : msg.message;
+    let key = "UNKNOWN_ERROR", param = "";
+    if (msg && msg.message) {
+      key = (typeof msg.message === "string" ? msg.message.trim() : msg.message);
       if (key === "") {
         key = "UNKNOWN_ERROR";
       }
@@ -73,13 +68,11 @@ export class MessageComponent implements OnInit {
     //Override key for HTTP 401 and 403
     if (this.globalMessage.statusCode === httpStatusCode.Unauthorized) {
       key = "UNAUTHORIZED_ERROR";
-    }
-
-    if (this.globalMessage.statusCode === httpStatusCode.Forbidden) {
+    } else if (this.globalMessage.statusCode === httpStatusCode.Forbidden) {
       key = "FORBIDDEN_ERROR";
-    }
+    } 
 
-    this.translate.get(key).subscribe((res: string) => this.messageText = res);
+    this.translate.get(key, { 'param': param }).subscribe((res: string) => this.messageText = res);
   }
 
   public get needAuth(): boolean {
@@ -98,6 +91,9 @@ export class MessageComponent implements OnInit {
   }
 
   onClose() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
     this.globalMessageOpened = false;
   }
 }

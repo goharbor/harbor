@@ -10,6 +10,7 @@ import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmati
 
 import { Subscription } from 'rxjs/Subscription';
 
+import { Tag } from '../tag';
 import { TagView } from '../tag-view';
 
 import { AppConfigService } from '../../app-config.service';
@@ -27,6 +28,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   tags: TagView[];
   registryUrl: string;
+  withNotary: boolean;
 
   private subscription: Subscription;
 
@@ -52,6 +54,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
                 .subscribe(
                 response => {
                   this.retrieve();
+                  this.messageService.announceMessage(response, 'REPOSITORY.DELETED_TAG_SUCCESS', AlertType.SUCCESS);
                   console.log('Deleted repo:' + this.repoName + ' with tag:' + tagName);
                 },
                 error => this.messageService.announceMessage(error.status, 'Failed to delete tag:' + tagName + ' under repo:' + this.repoName, AlertType.DANGER)
@@ -68,6 +71,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     this.repoName = this.route.snapshot.params['repo'];
     this.tags = [];
     this.registryUrl = this.appConfigService.getConfig().registry_url;
+    this.withNotary = this.appConfigService.getConfig().with_notary;
     this.retrieve();
   }
 
@@ -79,25 +83,35 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   retrieve() {
     this.tags = [];
+    if(this.withNotary) {
     this.repositoryService
       .listTagsWithVerifiedSignatures(this.repoName)
       .subscribe(
-      items => {
-        items.forEach(t => {
-          let tag = new TagView();
-          tag.tag = t.tag;
-          let data = JSON.parse(t.manifest.history[0].v1Compatibility);
-          tag.architecture = data['architecture'];
-          tag.author = data['author'];
-          tag.signed = t.signed;
-          tag.created = data['created'];
-          tag.dockerVersion = data['docker_version'];
-          tag.pullCommand = 'docker pull ' + this.registryUrl + '/' + t.manifest.name + ':' + t.tag;
-          tag.os = data['os'];
-          this.tags.push(tag);
-        });
-      },
+      items => this.listTags(items),
       error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+    } else {
+      this.repositoryService
+      .listTags(this.repoName)
+      .subscribe(
+      items => this.listTags(items),
+      error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+    }
+  }
+
+  private listTags(tags: Tag[]): void {
+    tags.forEach(t => {
+      let tag = new TagView();
+      tag.tag = t.tag;
+      let data = JSON.parse(t.manifest.history[0].v1Compatibility);
+      tag.architecture = data['architecture'];
+      tag.author = data['author'];
+      tag.signed = t.signed;
+      tag.created = data['created'];
+      tag.dockerVersion = data['docker_version'];
+      tag.pullCommand = 'docker pull ' + this.registryUrl + '/' + t.manifest.name + ':' + t.tag;
+      tag.os = data['os'];
+      this.tags.push(tag);
+    });
   }
 
   deleteTag(tag: TagView) {

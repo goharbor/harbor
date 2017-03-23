@@ -132,7 +132,10 @@
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
         "FILTER_PLACEHOLDER": "过滤项目",
-        "REPLICATION_RULE": "复制策略"
+        "REPLICATION_RULE": "复制策略",
+        "CREATED_SUCCESS": "创建项目成功。",
+        "DELETED_SUCCESS": "删除项目成功。",
+        "TOGGLED_SUCCESS": "切换状态成功。"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "镜像仓库",
@@ -159,7 +162,10 @@
         "UNKNOWN_ERROR": "添加成员时发生未知错误。",
         "FILTER_PLACEHOLDER": "过滤成员",
         "DELETION_TITLE": "删除项目成员确认",
-        "DELETION_SUMMARY": "你确认删除项目成员 {{param}}?"
+        "DELETION_SUMMARY": "你确认删除项目成员 {{param}}?",
+        "ADDED_SUCCESS": "新增成员成功。",
+        "DELETED_SUCCESS": "删除成员成功",
+        "SWITCHED_SUCCESS": "切换角色成功"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -235,7 +241,12 @@
         "TOGGLE_ENABLE_TITLE": "启用策略",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用策略后，该项目下的所有镜像仓库将复制到目标实例。请确认继续。",
         "TOGGLE_DISABLE_TITLE": "停用策略",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。"
+        "CONFIRM_TOGGLE_DISABLE_POLICY": "停用策略后，所有未完成的复制任务将被终止和取消。请确认继续。",
+        "CREATED_SUCCESS": "创建复制策略成功。",
+        "UPDATED_SUCCESS": "更新复制策略成功。",
+        "DELETED_SUCCESS": "删除复制策略成功。",
+        "DELETED_FAILED": "删除复制策略失败。",
+        "TOGGLED_SUCCESS": "切换复制策略状态成功。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -257,7 +268,11 @@
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "CREATED_SUCCESS": "创建目标成功。",
+        "UPDATED_SUCCESS": "更新目标成功。",
+        "DELETED_SUCCESS": "删除目标成功。",
+        "DELETED_FAILED": "删除目标失败。"
     },
     "REPOSITORY": {
         "COPY_ID": "复制ID",
@@ -286,7 +301,9 @@
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
         "ITEMS": "条记录",
-        "POP_REPOS": "受欢迎的镜像库"
+        "POP_REPOS": "受欢迎的镜像库",
+        "DELETED_REPO_SUCCESS": "删除镜像仓库成功。",
+        "DELETED_TAG_SUCCESS": "删除镜像标签成功。"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"
@@ -388,5 +405,6 @@
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
-    "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限"
+    "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限",
+    "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}"
 }

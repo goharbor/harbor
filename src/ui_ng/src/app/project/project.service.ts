@@ -70,4 +70,11 @@ export class ProjectService {
                .catch(error=>Observable.throw(error));
   }
    
+  checkProjectMember(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/members`)
+               .map(response=>response.json())
+               .catch(error=>Observable.throw(error));
+  }
+  
 }

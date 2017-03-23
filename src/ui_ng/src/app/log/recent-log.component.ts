@@ -34,17 +34,22 @@ export class RecentLogComponent implements OnInit {
         this.retrieveLogs();
     }
 
-    public get inProgress(): boolean {
-        return this.onGoing;
+    private handleOnchange($event: any) {
+        if (event && event.target && event.srcElement["value"]) {
+            this.lines = event.srcElement["value"];
+            if (this.lines < 10) {
+                this.lines = 10;
+            }
+            this.retrieveLogs();
+        }
     }
 
-    public setLines(lines: number): void {
-        this.lines = lines;
-        if (this.lines < 10) {
-            this.lines = 10;
-        }
+    public get logNumber(): number {
+        return this.recentLogs?this.recentLogs.length:0;
+    }
 
-        this.retrieveLogs();
+    public get inProgress(): boolean {
+        return this.onGoing;
     }
 
     public doFilter(terms: string): void {
@@ -60,7 +65,7 @@ export class RecentLogComponent implements OnInit {
         this.retrieveLogs();
     }
 
-    public formatDateTime(dateTime: string){
+    public formatDateTime(dateTime: string) {
         let dt: Date = new Date(dateTime);
         return dt.toLocaleString();
     }
