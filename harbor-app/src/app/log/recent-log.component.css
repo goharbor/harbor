@@ -2,23 +2,16 @@
     margin-top: 0px !important;
 }
 
-.filter-log {
-    float: right;
-    margin-right: 24px;
-    position: relative;
-    top: 8px;
-}
-
 .action-head-pos {
-    position: relative;
-    top: 20px;
+    padding-right: 18px;
 }
 
 .refresh-btn {
-    position: absolute;
-    right: -4px;
-    top: 8px;
     cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #00bfff;
 }
 
 .custom-lines-button {
@@ -29,4 +22,21 @@
 .lines-button-toggole {
     font-size: 16px;
     text-decoration: underline;
+}
+
+.log-select {
+    width: 180px;
+    display: inline-block;
+    top: 1px;
+}
+
+.item-divider {
+    height: 24px;
+    display: inline-block;
+    width: 1px;
+    background-color: #ccc;
+    opacity: 0.55;
+    margin-left: 12px;
+    top: 8px;
+    position: relative;
 }
