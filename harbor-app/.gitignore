@@ -7,3 +7,6 @@ typings/
 **/*yarn-error.log.*
 .idea/
 .DS_Store
+ssl/
+*angular-cli.json*
+*package.json*
