@@ -405,5 +405,6 @@
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
-    "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限"
+    "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限",
+    "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}"
 }
