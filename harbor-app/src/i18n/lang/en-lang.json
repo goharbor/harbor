@@ -386,7 +386,8 @@
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
     },
-    "UNKNOWN_ERROR": "Some unknown errors HAVE occurred. Please try again later",
+    "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue the operation",
-    "FORBIDDEN_ERROR": "You are not allowed to perform this operation"
+    "FORBIDDEN_ERROR": "You are not allowed to perform this operation",
+    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}"
 }
