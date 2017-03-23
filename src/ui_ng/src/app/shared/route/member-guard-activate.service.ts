@@ -17,7 +17,8 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    let projectId: number = route.params['id'];
+    let projectId = route.params['id'];
+    this.sessionService.setProjectMembers([]);
     return new Promise((resolve, reject) => {
         this.projectService.checkProjectMember(projectId)
           .subscribe(
@@ -26,6 +27,10 @@ export class MemberGuard implements CanActivate, CanActivateChild {
               return resolve(true)
             },
             error => {
+              //Add exception for repository in project detail router activation.
+              if(state.url.endsWith('repository')) {
+                return resolve(true);
+              }
               this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
               return resolve(false);
             });

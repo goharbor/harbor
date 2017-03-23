@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { Repository } from '../repository';
 import { State } from 'clarity-angular';
@@ -8,16 +8,17 @@ import { SessionService } from '../../shared/session.service';
 import { ListMode } from '../../shared/shared.const';
 
 import { SessionUser } from '../../shared/session-user';
-import { Member } from '../../project/member/member';
 
 @Component({
   selector: 'list-repository',
   templateUrl: 'list-repository.component.html'
 })
-export class ListRepositoryComponent {
+export class ListRepositoryComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() repositories: Repository[];
+  
+
   @Output() delete = new EventEmitter<string>();
 
   @Input() totalPage: number;
@@ -25,25 +26,16 @@ export class ListRepositoryComponent {
   @Output() paginate = new EventEmitter<State>();
 
   @Input() mode: string = ListMode.FULL;
+  @Input() hasProjectAdminRole: boolean;
 
   pageOffset: number = 1;
-
-  hasProjectAdminRole: boolean;
 
   constructor(
     private router: Router,
     private searchTrigger: SearchTriggerService,
-    private session: SessionService) { 
-      //Get current user from registered resolver.
-      let currentUser = session.getCurrentUser();
-      let projectMembers: Member[] = session.getProjectMembers();
-      if(currentUser && projectMembers) {
-        let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
-        if(currentMember) {
-          this.hasProjectAdminRole = (currentMember.role_name === 'projectAdmin');
-        }
-      }
-    }
+    private session: SessionService) { }
+
+  ngOnInit() {}
 
   deleteRepo(repoName: string) {
     this.delete.emit(repoName);

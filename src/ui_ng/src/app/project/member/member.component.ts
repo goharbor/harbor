@@ -15,6 +15,8 @@ import { ConfirmationDialogService } from '../../shared/confirmation-dialog/conf
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
 import { SessionService } from '../../shared/session.service';
 
+import { RoleInfo } from '../../shared/shared.const';
+
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/catch';
@@ -22,7 +24,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 import { Subscription } from 'rxjs/Subscription';
 
-export const roleInfo: {} = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
+import { Project } from '../../project/project';
 
 @Component({
   moduleId: module.id,
@@ -31,31 +33,22 @@ export const roleInfo: {} = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 
 })
 export class MemberComponent implements OnInit, OnDestroy {
 
-  currentUser: SessionUser;
   members: Member[];
   projectId: number;
-  roleInfo = roleInfo;
+  roleInfo = RoleInfo;
   private delSub: Subscription;
 
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
+  currentUser: SessionUser;
   hasProjectAdminRole: boolean;
 
   constructor(private route: ActivatedRoute, private router: Router,
     private memberService: MemberService, private messageService: MessageService,
     private deletionDialogService: ConfirmationDialogService,
-    session: SessionService) {
-    //Get current user from registered resolver.
-    this.currentUser = session.getCurrentUser();
-    let projectMembers: Member[] = session.getProjectMembers();
-    if(this.currentUser && projectMembers) {
-      let currentMember = projectMembers.find(m=>m.user_id === this.currentUser.user_id);
-      if(currentMember) {
-        this.hasProjectAdminRole = (currentMember.role_name === 'projectAdmin');
-      }
-    }
-
+    private session: SessionService) {
+    
     this.delSub = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
@@ -82,8 +75,7 @@ export class MemberComponent implements OnInit, OnDestroy {
       error => {
         this.router.navigate(['/harbor', 'projects']);
         this.messageService.announceMessage(error.status, 'Failed to get project member with project ID:' + projectId, AlertType.DANGER);
-      }
-      );
+      });
   }
 
   ngOnDestroy() {
@@ -97,6 +89,15 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.projectId = +this.route.snapshot.parent.params['id'];
     console.log('Get projectId from route params snapshot:' + this.projectId);
     
+    this.currentUser = this.session.getCurrentUser();
+    //Get current user from registered resolver.
+    let resolverData = this.route.snapshot.parent.data;
+    if(resolverData) {
+      this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+    }
+
+   
+
     this.retrieve(this.projectId, '');
   }
 
@@ -108,25 +109,27 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.retrieve(this.projectId, '');
   }
 
-  changeRole(userId: number, roleId: number) {
-    this.memberService
-      .changeMemberRole(this.projectId, userId, roleId)
-      .subscribe(
-      response => {
-        this.messageService.announceMessage(response, 'MEMBER.SWITCHED_SUCCESS', AlertType.SUCCESS);
-        console.log('Successful change role with user ' + userId + ' to roleId ' + roleId);
-        this.retrieve(this.projectId, '');
-      },
-      error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + userId + ' to roleId ' + roleId, AlertType.DANGER)
-      );
+  changeRole(m: Member, roleId: number) {
+    if(m) {
+      this.memberService
+        .changeMemberRole(this.projectId, m.user_id, roleId)
+        .subscribe(
+        response => {
+          this.messageService.announceMessage(response, 'MEMBER.SWITCHED_SUCCESS', AlertType.SUCCESS);
+          console.log('Successful change role with user ' + m.user_id + ' to roleId ' + roleId);
+          this.retrieve(this.projectId, '');
+        },
+        error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + m.user_id + ' to roleId ' + roleId, AlertType.DANGER)
+        );
+      }
   }
 
-  deleteMember(userId: number) {
+  deleteMember(m: Member) {
     let deletionMessage: ConfirmationMessage = new ConfirmationMessage(
       'MEMBER.DELETION_TITLE',
       'MEMBER.DELETION_SUMMARY',
-      userId + "",
-      userId,
+      m.username,
+      m.user_id,
       ConfirmationTargets.PROJECT_MEMBER
     );
     this.deletionDialogService.openComfirmDialog(deletionMessage);

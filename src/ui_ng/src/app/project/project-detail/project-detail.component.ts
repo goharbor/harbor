@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 
 import { SessionService } from '../../shared/session.service';
+import { ProjectService } from '../../project/project.service';
 
 @Component({
     selector: 'project-detail',
@@ -13,13 +14,18 @@ import { SessionService } from '../../shared/session.service';
 export class ProjectDetailComponent {
 
   currentProject: Project;
+  isMember: boolean;
 
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private sessionService: SessionService) {
-    this.route.data.subscribe(data=>this.currentProject = <Project>data['projectResolver']);
+    private sessionService: SessionService,
+    private projectService: ProjectService) {
 
+    this.route.data.subscribe(data=>{
+      this.currentProject = <Project>data['projectResolver'];
+      this.isMember = this.currentProject.is_member;
+    });
   }
 
   public get isSystemAdmin(): boolean {

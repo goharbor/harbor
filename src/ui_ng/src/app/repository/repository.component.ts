@@ -14,6 +14,8 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { State } from 'clarity-angular';
 
+import { Project } from '../project/project';
+
 const repositoryTypes = [
   { key: '0', description: 'REPOSITORY.MY_REPOSITORY' },
   { key: '1', description: 'REPOSITORY.PUBLIC_REPOSITORY' }
@@ -38,6 +40,8 @@ export class RepositoryComponent implements OnInit {
 
   totalPage: number;
   totalRecordCount: number;
+
+  hasProjectAdminRole: boolean;
 
   subscription: Subscription;
 
@@ -66,12 +70,16 @@ export class RepositoryComponent implements OnInit {
             error => this.messageService.announceMessage(error.status, 'Failed to delete repo:' + repoName, AlertType.DANGER)
             );
         }
-      }
-      );
+      });
+ 
   }
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.parent.params['id'];
+    let resolverData = this.route.snapshot.parent.data;
+    if(resolverData) {
+      this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+    }
     this.currentRepositoryType = this.repositoryTypes[0];
     this.lastFilteredRepoName = '';
     this.retrieve();
