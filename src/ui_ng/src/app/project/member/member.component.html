@@ -2,7 +2,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="row flex-items-xs-between">
             <div class="flex-xs-middle option-left">
-                <button class="btn btn-primary" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> {{'MEMBER.MEMBER' | translate }}</button>
+                <button *ngIf="hasProjectAdminRole" class="btn btn-primary" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> {{'MEMBER.MEMBER' | translate }}</button>
                 <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
             </div>
             <div class="flex-xs-middle option-right">
@@ -18,7 +18,7 @@
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
             <clr-dg-row *ngFor="let u of members">
-                <clr-dg-action-overflow [hidden]="u.user_id === currentUser.user_id">
+                <clr-dg-action-overflow [hidden]="u.user_id === currentUser.user_id || !hasProjectAdminRole">
                     <button class="action-item" (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
                     <button class="action-item" (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
                     <button class="action-item" (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</button>

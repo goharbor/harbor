@@ -120,15 +120,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     //Handle the global search event and then let the result page to trigger api
     doSearch(event: string): void {
         if (event === "") {
-            if (!this.isSearchResultsOpened) {
-                //Will not open search result panel if term is empty
-                return;
-            } else {
-                //If opened, then close the search result panel
-                this.isSearchResultsOpened = false;
-                this.searchResultComponet.close();
-                return;
-            }
+            //Do nothing
+            return;
         }
         //Once this method is called
         //the search results page must be opened

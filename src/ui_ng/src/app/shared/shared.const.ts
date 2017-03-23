@@ -24,7 +24,8 @@ export const enum ConfirmationTargets {
   REPOSITORY, 
   TAG, 
   CONFIG,
-  CONFIG_ROUTE
+  CONFIG_ROUTE,
+  CONFIG_TAB
 };
 
 export const enum ActionType {

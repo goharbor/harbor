@@ -183,6 +183,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         .createPolicy(this.getPolicyByForm())
         .subscribe(
           response=>{
+            this.messageService.announceMessage(response, 'REPLICATION.CREATED_SUCCESS', AlertType.SUCCESS);
             console.log('Successful created policy: ' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
@@ -199,6 +200,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         .createOrUpdatePolicyWithNewTarget(this.getPolicyByForm(), this.getTargetByForm())
         .subscribe(
           response=>{
+            this.messageService.announceMessage(response, 'REPLICATION.UPDATED_SUCCESS', AlertType.SUCCESS);
             console.log('Successful created policy and target:' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
