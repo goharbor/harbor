@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions, Response, URLSearchParams } from '@angular/http';
 import { Project } from './project';
 
-import { BaseService } from '../service/base.service';
-
 import { Message } from '../global-message/message';
 
 import { Observable } from 'rxjs/Observable';
