@@ -17,15 +17,15 @@
         <clr-datagrid>
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-            <clr-dg-row *ngFor="let u of members">
-                <clr-dg-action-overflow [hidden]="u.user_id === currentUser.user_id || !hasProjectAdminRole">
-                    <button class="action-item" (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
-                    <button class="action-item" (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
-                    <button class="action-item" (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</button>
-                    <button class="action-item" (click)="deleteMember(u.user_id)">{{'MEMBER.DELETE' | translate}}</button>
+            <clr-dg-row *ngFor="let m of members">
+                <clr-dg-action-overflow [hidden]="m.user_id === currentUser.user_id || !hasProjectAdminRole">
+                    <button class="action-item" (click)="changeRole(m, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
+                    <button class="action-item" (click)="changeRole(m, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
+                    <button class="action-item" (click)="changeRole(m, 3)">{{'MEMBER.GUEST' | translate}}</button>
+                    <button class="action-item" (click)="deleteMember(m)">{{'MEMBER.DELETE' | translate}}</button>
                 </clr-dg-action-overflow>
-                <clr-dg-cell>{{u.username}}</clr-dg-cell>
-                <clr-dg-cell>{{roleInfo[u.role_id] | translate}}</clr-dg-cell>
+                <clr-dg-cell>{{m.username}}</clr-dg-cell>
+                <clr-dg-cell>{{roleInfo[m.role_id] | translate}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>

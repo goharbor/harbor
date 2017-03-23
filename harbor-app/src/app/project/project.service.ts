@@ -22,11 +22,10 @@ export class ProjectService {
 
   constructor(private http: Http) {}
 
-  getProject(projectId: number): Promise<Project> {
+  getProject(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}`)
-               .toPromise()
-               .then(response=>response.json() as Project)
+               .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
 

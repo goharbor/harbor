@@ -10,18 +10,16 @@ import { BaseService } from '../../service/base.service';
 import { Member } from './member';
 
 @Injectable()
-export class MemberService extends BaseService {
+export class MemberService {
   
-  constructor(private http: Http) {
-    super();
-  }
+  constructor(private http: Http) {}
 
   listMembers(projectId: number, username: string): Observable<Member[]> {
     console.log('Get member from project_id:' + projectId + ', username:' + username);
     return this.http
                .get(`/api/projects/${projectId}/members?username=${username}`)
-               .map(response=>response.json())
-               .catch(error=>this.handleError(error));            
+               .map(response=>response.json() as Member[])
+               .catch(error=>Observable.throw(error));            
   }
 
   addMember(projectId: number, username: string, roleId: number): Observable<any> {
