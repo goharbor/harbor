@@ -31,6 +31,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-    <button type="button" class="btn btn-primary" [disabled]="!projectForm.form.valid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+    <button type="button" class="btn btn-primary" [disabled]="projectForm.form.invalid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>

@@ -110,10 +110,10 @@
     "PROJECT": {
         "PROJECTS": "项目",
         "NAME": "项目名称",
+        "ROLE": "角色",
         "PUBLIC_OR_PRIVATE": "公开",
         "REPO_COUNT": "镜像仓库数",
         "CREATION_TIME": "创建时间",
-        "DESCRIPTION": "描述",
         "PUBLIC": "公开",
         "PRIVATE": "私有",
         "MAKE": "设为",

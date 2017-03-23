@@ -15,6 +15,10 @@ import { TagView } from '../tag-view';
 
 import { AppConfigService } from '../../app-config.service';
 
+import { SessionService } from '../../shared/session.service';
+
+import { Project } from '../../project/project';
+
 @Component({
   moduleId: module.id,
   selector: 'tag-repository',
@@ -25,6 +29,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   projectId: number;
   repoName: string;
+
+  hasProjectAdminRole: boolean = false;
 
   tags: TagView[];
   registryUrl: string;
@@ -37,7 +43,9 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private deletionDialogService: ConfirmationDialogService,
     private repositoryService: RepositoryService,
-    private appConfigService: AppConfigService) {
+    private appConfigService: AppConfigService,
+    private session: SessionService){
+    
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(
       message => {
         if (message &&
@@ -62,11 +70,15 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
             }
           }
         }
-      }
-    )
+      });
   }
 
   ngOnInit() {
+    let resolverData = this.route.snapshot.data;
+    console.log(JSON.stringify(resolverData));
+    if(resolverData) {
+      this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+    }
     this.projectId = this.route.snapshot.params['id'];
     this.repoName = this.route.snapshot.params['repo'];
     this.tags = [];
@@ -84,17 +96,17 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
   retrieve() {
     this.tags = [];
     if(this.withNotary) {
-    this.repositoryService
-      .listTagsWithVerifiedSignatures(this.repoName)
-      .subscribe(
-      items => this.listTags(items),
-      error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+      this.repositoryService
+          .listTagsWithVerifiedSignatures(this.repoName)
+          .subscribe(
+            items => this.listTags(items),
+            error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
     } else {
       this.repositoryService
-      .listTags(this.repoName)
-      .subscribe(
-      items => this.listTags(items),
-      error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+          .listTags(this.repoName)
+          .subscribe(
+            items => this.listTags(items),
+            error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
     }
   }
 

@@ -10,7 +10,7 @@
     <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
-        <clr-dg-action-overflow>
+        <clr-dg-action-overflow *ngIf="hasProjectAdminRole">
             <button class="action-item" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-overflow>
         <clr-dg-cell>{{t.tag}}</clr-dg-cell>
