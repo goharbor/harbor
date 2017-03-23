@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild, AfterViewChecked } from '@angular/core';
-
+import { Component, EventEmitter, Output, ViewChild, AfterViewChecked, HostBinding } from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 
@@ -14,6 +13,7 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 import { TranslateService } from '@ngx-translate/core';
 
+
 @Component({
   selector: 'create-project',
   templateUrl: 'create-project.component.html',
@@ -27,11 +27,14 @@ export class CreateProjectComponent implements AfterViewChecked {
   currentForm: NgForm;
 
   project: Project = new Project();
+  initVal: Project = new Project();
 
   createProjectOpened: boolean;
   
-
   hasChanged: boolean;
+
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
 
   @Output() create = new EventEmitter<boolean>();
   @ViewChild(InlineAlertComponent)
@@ -75,7 +78,9 @@ export class CreateProjectComponent implements AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.createProjectOpened = false;
+      this.projectForm.reset();
     }
+   
   }
 
   ngAfterViewChecked(): void {
@@ -83,17 +88,14 @@ export class CreateProjectComponent implements AfterViewChecked {
     if(this.projectForm) {
       this.projectForm.valueChanges.subscribe(data=>{
         for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });
@@ -109,7 +111,7 @@ export class CreateProjectComponent implements AfterViewChecked {
   confirmCancel(event: boolean): void {
     this.createProjectOpened = false;
     this.inlineAlert.close();
+    this.projectForm.reset();
   }
-
 }
 

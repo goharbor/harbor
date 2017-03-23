@@ -8,10 +8,17 @@
     <clr-dg-row *ngFor="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
+            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.TOGGLE_ENABLE_TITLE' : 'REPLICATION.TOGGLE_DISABLE_TITLE') | translate}}</button>
             <button class="action-item" (click)="deletePolicy(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
         </clr-dg-action-overflow>
-        <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell>
+          <template [ngIf]="projectless">
+            <a href="javascript:void(0)" [routerLink]="['/harbor', 'projects', p.project_id, 'replication']">{{p.name}}</a>
+          </template>
+          <template [ngIf]="!projectless">
+            {{p.name}}
+          </template>
+        </clr-dg-cell>
         <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.description}}</clr-dg-cell>
         <clr-dg-cell>{{p.target_name}}</clr-dg-cell>

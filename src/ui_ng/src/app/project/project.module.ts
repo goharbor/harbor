@@ -18,6 +18,8 @@ import { ProjectService } from './project.service';
 import { MemberService } from './member/member.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
+import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
+
 @NgModule({
   imports: [
     SharedModule,
@@ -32,7 +34,8 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
     ListProjectComponent,
     ProjectDetailComponent,
     MemberComponent,
-    AddMemberComponent
+    AddMemberComponent,
+    TargetExistsValidatorDirective
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, ProjectService, MemberService]

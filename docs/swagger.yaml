@@ -2052,6 +2052,9 @@ definitions:
       has_ca_root:
         type: boolean
         description: Indicate whether there is a ca root cert file ready for download in the file system.
+      harbor_version:
+        type: string
+        description: The build version of Harbor.		
   SystemInfo:
     type: object
     properties:

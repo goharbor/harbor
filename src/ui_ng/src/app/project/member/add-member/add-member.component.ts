@@ -20,9 +20,14 @@ import { Member } from '../member';
 export class AddMemberComponent implements AfterViewChecked {
 
   member: Member = new Member();
+  initVal: Member = new Member();
+
   addMemberOpened: boolean;
   
   memberForm: NgForm;
+
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
 
   @ViewChild('memberForm')
   currentForm: NgForm;
@@ -40,6 +45,7 @@ export class AddMemberComponent implements AfterViewChecked {
               private translateService: TranslateService) {}
 
   onSubmit(): void {
+    if(!this.member.username || this.member.username.length === 0) { return; }
     console.log('Adding member:' + JSON.stringify(this.member));
     this.memberService
         .addMember(this.projectId, this.member.username, +this.member.role_id)
@@ -76,6 +82,7 @@ export class AddMemberComponent implements AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.addMemberOpened = false;
+      this.memberForm.reset();
     }
   }
 
@@ -83,21 +90,15 @@ export class AddMemberComponent implements AfterViewChecked {
     this.memberForm = this.currentForm;
     if(this.memberForm) {
       this.memberForm.valueChanges.subscribe(data=>{
-        for(let i in data) {
-          let item = data[i];
-          if(typeof item === 'string' && (<string>item).trim().length !== 0) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'boolean' && (<boolean>item)) {
-            this.hasChanged = true;
-            break;
-          } else if (typeof item === 'number' && (<number>item) !== 0) {
+       for(let i in data) {
+          let origin = this.initVal[i];          
+          let current = data[i];
+          if(current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
             this.hasChanged = false;
             this.inlineAlert.close();
-            break;
           }
         }
       });
@@ -107,6 +108,7 @@ export class AddMemberComponent implements AfterViewChecked {
   confirmCancel(confirmed: boolean) {
     this.addMemberOpened = false;
     this.inlineAlert.close();
+    this.memberForm.reset();
   }
 
   openAddMemberModal(): void {

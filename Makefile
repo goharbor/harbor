@@ -82,9 +82,9 @@ NOTARYFLAG=false
 REGISTRYVERSION=2.6.0
 NGINXVERSION=1.11.5
 PHOTONVERSION=1.0
-NOTARYVERSION=server-0.5.0-fix
+NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
-MARIADBVERSION=10.1.10
+MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
 
 #clarity parameters
@@ -164,8 +164,8 @@ DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 
 # version prepare
-VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
-VERSIONFILENAME=header-content.htm
+VERSIONFILEPATH=$(CURDIR)
+VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
 ifeq ($(DEVFLAG), true)        
@@ -189,9 +189,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 version:
-	@if [ "$(DEVFLAG)" = "false" ] ; then \
-		$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME) ; \
-	fi
+	@printf $(VERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -304,10 +302,10 @@ package_offline: compile build modify_composefile
 	@$(DOCKERPULL) registry:$(REGISTRYVERSION)
 	@$(DOCKERPULL) nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		echo "pulling notary and mariadb..."; \
-		$(DOCKERPULL) jiangd/notary:$(NOTARYVERSION); \
-		$(DOCKERPULL) notary:$(NOTARYSIGNERVERSION); \
-		$(DOCKERPULL) mariadb:$(MARIADBVERSION); \
+		echo "pulling notary and harbor-notary-db..."; \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
+		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	fi	
 	
 	@echo "saving harbor docker image"
@@ -319,7 +317,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
-		jiangd/notary:$(NOTARYVERSION) notary:$(NOTARYSIGNERVERSION) mariadb:$(MARIADBVERSION); \
+		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
@@ -420,7 +418,7 @@ cleandockercomposefile:
 
 cleanversiontag:
 	@echo "cleaning version TAG"
-	@$(SEDCMD) -i 's/version=\"$(VERSIONTAG)\"/version=\"{{.Version}}\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME)
+	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)	
 	
 cleanpackage:
 	@echo "cleaning harbor install package"
