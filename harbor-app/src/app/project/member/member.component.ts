@@ -40,12 +40,22 @@ export class MemberComponent implements OnInit, OnDestroy {
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
+  hasProjectAdminRole: boolean;
+
   constructor(private route: ActivatedRoute, private router: Router,
     private memberService: MemberService, private messageService: MessageService,
     private deletionDialogService: ConfirmationDialogService,
     session: SessionService) {
     //Get current user from registered resolver.
     this.currentUser = session.getCurrentUser();
+    let projectMembers: Member[] = session.getProjectMembers();
+    if(this.currentUser && projectMembers) {
+      let currentMember = projectMembers.find(m=>m.user_id === this.currentUser.user_id);
+      if(currentMember) {
+        this.hasProjectAdminRole = (currentMember.role_name === 'projectAdmin');
+      }
+    }
+
     this.delSub = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
@@ -86,7 +96,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     //Get projectId from route params snapshot.          
     this.projectId = +this.route.snapshot.parent.params['id'];
     console.log('Get projectId from route params snapshot:' + this.projectId);
-
+    
     this.retrieve(this.projectId, '');
   }
 

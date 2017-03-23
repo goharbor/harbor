@@ -18,7 +18,7 @@
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
             <clr-dg-row *ngFor="let u of members">
-                <clr-dg-action-overflow [hidden]="u.user_id === currentUser.user_id">
+                <clr-dg-action-overflow [hidden]="u.user_id === currentUser.user_id || !hasProjectAdminRole">
                     <button class="action-item" (click)="changeRole(u.user_id, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
                     <button class="action-item" (click)="changeRole(u.user_id, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
                     <button class="action-item" (click)="changeRole(u.user_id, 3)">{{'MEMBER.GUEST' | translate}}</button>
