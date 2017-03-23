@@ -15,6 +15,9 @@ import { TagView } from '../tag-view';
 
 import { AppConfigService } from '../../app-config.service';
 
+import { SessionService } from '../../shared/session.service';
+import { Member } from '../../project/member/member';
+
 @Component({
   moduleId: module.id,
   selector: 'tag-repository',
@@ -25,6 +28,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   projectId: number;
   repoName: string;
+
+  hasProjectAdminRole: boolean;
 
   tags: TagView[];
   registryUrl: string;
@@ -37,7 +42,18 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private deletionDialogService: ConfirmationDialogService,
     private repositoryService: RepositoryService,
-    private appConfigService: AppConfigService) {
+    private appConfigService: AppConfigService,
+    private session: SessionService){
+    
+    let currentUser = session.getCurrentUser();
+    let projectMembers: Member[] = session.getProjectMembers();
+    if(currentUser && projectMembers) {
+      let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
+      if(currentMember) {
+        this.hasProjectAdminRole = (currentMember.role_name === 'projectAdmin');
+      }
+    }
+    
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(
       message => {
         if (message &&
