@@ -19,6 +19,7 @@ export const enum ConfirmationTargets {
   PROJECT_MEMBER, 
   USER, 
   POLICY, 
+  TOGGLE_CONFIRM,
   TARGET, 
   REPOSITORY, 
   TAG, 

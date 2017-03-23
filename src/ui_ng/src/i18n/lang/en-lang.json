@@ -56,7 +56,7 @@
         "TITLE": "User Profile",
         "USER_NAME": "Username",
         "EMAIL": "Email",
-        "FULL_NAME": "Full name",
+        "FULL_NAME": "First and last name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
         "SAVE_SUCCESS": "User profile saved successfully"
@@ -66,7 +66,8 @@
         "CURRENT_PWD": "Current Password",
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
-        "SAVE_SUCCESS": "User password changed successfully"
+        "SAVE_SUCCESS": "User password changed successfully",
+        "PASS_TIPS": "At least 8 chars with 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
@@ -152,6 +153,7 @@
         "DELETE": "Delete",
         "ITEMS": "item(s)",
         "ACTIONS": "Actions",
+        "USERNAME_IS_REQUIRED": "Username is required",
         "USERNAME_DOES_NOT_EXISTS": "Username does not exist.",
         "USERNAME_ALREADY_EXISTS": "Username already exists.",
         "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
@@ -229,7 +231,11 @@
         "CREATION_TIME": "Start Time",
         "END_TIME": "End Time",
         "LOGS": "Logs",
-        "ITEMS": "item(s)"
+        "ITEMS": "item(s)",
+        "TOGGLE_ENABLE_TITLE": "Enable Policy",
+        "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication policy, all repositories under the project will be replicated to the destination registry. Please confirm to continue.",
+        "TOGGLE_DISABLE_TITLE": "Disable Policy",
+        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -268,7 +274,7 @@
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
-        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.",
+        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted. {{param}}",
         "FILTER_FOR_REPOSITORIES": "Filter for repositories",
         "TAG": "Tag",
         "SIGNED": "Signed",
