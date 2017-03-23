@@ -3,6 +3,8 @@ import { Headers, Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SessionUser } from './session-user';
+import { Member } from '../project/member/member';
+
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const'
 
@@ -26,6 +28,8 @@ const langMap = {
 @Injectable()
 export class SessionService {
     currentUser: SessionUser = null;
+
+    projectMembers: Member[];
 
     private headers = new Headers({
         "Content-Type": 'application/json'
@@ -142,5 +146,13 @@ export class SessionService {
                 return response.json();
             })
             .catch(error => this.handleError(error));
+    }
+
+    setProjectMembers(projectMembers: Member[]): void {
+        this.projectMembers = projectMembers;
+    }
+
+    getProjectMembers(): Member[] {
+        return this.projectMembers;
     }
 }

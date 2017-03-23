@@ -16,8 +16,15 @@ import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 
 import { AppConfigService } from '../app-config.service';
+import { SessionService } from '../shared/session.service';
 
 const fakePass = "fakepassword";
+const TabLinkContentMap = {
+    "config-auth": "authentication",
+    "config-replication": "replication",
+    "config-email": "email",
+    "config-system": "system_settings"
+};
 
 @Component({
     selector: 'config',
@@ -27,7 +34,7 @@ const fakePass = "fakepassword";
 export class ConfigurationComponent implements OnInit, OnDestroy {
     private onGoing: boolean = false;
     allConfig: Configuration = new Configuration();
-    private currentTabId: string = "";
+    private currentTabId: string = "config-auth";//default tab
     private originalCopy: Configuration;
     private confirmSub: Subscription;
     private testingOnGoing: boolean = false;
@@ -41,17 +48,76 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private msgService: MessageService,
         private configService: ConfigurationService,
         private confirmService: ConfirmationDialogService,
-        private appConfigService: AppConfigService) { }
+        private appConfigService: AppConfigService,
+        private session: SessionService) { }
+
+    private isCurrentTabLink(tabId: string): boolean {
+        return this.currentTabId === tabId;
+    }
+
+    private isCurrentTabContent(contentId: string): boolean {
+        return TabLinkContentMap[this.currentTabId] === contentId;
+    }
+
+    private hasUnsavedChangesOfCurrentTab(): any {
+        let allChanges = this.getChanges();
+        if (this.isEmpty(allChanges)) {
+            return null;
+        }
+
+        let properties = [];
+        switch (this.currentTabId) {
+            case "config-auth":
+                for (let prop in allChanges) {
+                    if (prop.startsWith("ldap_")) {
+                        return allChanges;
+                    }
+                }
+                properties = ["auth_mode", "project_creation_restriction", "self_registration"];
+                break;
+            case "config-email":
+                for (let prop in allChanges) {
+                    if (prop.startsWith("email_")) {
+                        return allChanges;
+                    }
+                }
+                return null;
+            case "config-replication":
+                properties = ["verify_remote_cert"];
+                break;
+            case "config-system":
+                properties = ["token_expiration"];
+                break;
+            default:
+                return null;
+        }
+
+        for (let prop in allChanges) {
+            if (properties.indexOf(prop) != -1) {
+                return allChanges;
+            }
+        }
+
+        return null;
+    }
 
     ngOnInit(): void {
         //First load
-        this.retrieveConfig();
+        //Double confirm the current use has admin role
+        let currentUser = this.session.getCurrentUser();
+        if (currentUser && currentUser.has_admin_role > 0) {
+            this.retrieveConfig();
+        }
 
         this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
             if (confirmation &&
-                confirmation.state === ConfirmationState.CONFIRMED &&
-                confirmation.source === ConfirmationTargets.CONFIG) {
-                this.reset(confirmation.data);
+                confirmation.state === ConfirmationState.CONFIRMED) {
+                if (confirmation.source === ConfirmationTargets.CONFIG) {
+                    this.reset(confirmation.data);
+                } else if (confirmation.source === ConfirmationTargets.CONFIG_TAB) {
+                    this.reset(confirmation.data["changes"]);
+                    this.currentTabId = confirmation.data["tabId"];
+                }
             }
         });
     }
@@ -104,8 +170,15 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.authConfig && this.authConfig.isValid();
     }
 
-    public tabLinkChanged(tabLink: any) {
-        this.currentTabId = tabLink.id;
+    public tabLinkClick(tabLink: string) {
+        //Whether has unsave changes in current tab
+        let changes = this.hasUnsavedChangesOfCurrentTab();
+        if (!changes) {
+            this.currentTabId = tabLink;
+            return;
+        }
+
+        this.confirmUnsavedTabChanges(changes, tabLink);
     }
 
     /**
@@ -154,14 +227,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     public cancel(): void {
         let changes = this.getChanges();
         if (!this.isEmpty(changes)) {
-            let msg = new ConfirmationMessage(
-                "CONFIG.CONFIRM_TITLE",
-                "CONFIG.CONFIRM_SUMMARY",
-                "",
-                changes,
-                ConfirmationTargets.CONFIG
-            );
-            this.confirmService.openComfirmDialog(msg);
+            this.confirmUnsavedChanges(changes);
         } else {
             //Inprop situation, should not come here
             console.error("Nothing changed");
@@ -216,6 +282,33 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 this.testingOnGoing = false;
                 this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
             });
+    }
+
+    private confirmUnsavedChanges(changes: any) {
+        let msg = new ConfirmationMessage(
+            "CONFIG.CONFIRM_TITLE",
+            "CONFIG.CONFIRM_SUMMARY",
+            "",
+            changes,
+            ConfirmationTargets.CONFIG
+        );
+
+        this.confirmService.openComfirmDialog(msg);
+    }
+
+    private confirmUnsavedTabChanges(changes: any, tabId: string){
+        let msg = new ConfirmationMessage(
+            "CONFIG.CONFIRM_TITLE",
+            "CONFIG.CONFIRM_SUMMARY",
+            "",
+            {
+                "changes": changes,
+                "tabId": tabId
+            },
+            ConfirmationTargets.CONFIG_TAB
+        );
+
+        this.confirmService.openComfirmDialog(msg);
     }
 
     private retrieveConfig(): void {

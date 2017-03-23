@@ -44,5 +44,4 @@ export class AuditLogService extends BaseService {
       .map(response => response.json() as AuditLog[])
       .catch(error => this.handleError(error));
   }
-
 }
