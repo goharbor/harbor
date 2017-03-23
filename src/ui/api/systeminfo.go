@@ -1,14 +1,13 @@
 package api
 
 import (
+	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
-	"syscall"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/api"
-	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -21,8 +20,8 @@ type SystemInfoAPI struct {
 	isAdmin       bool
 }
 
-const harborStoragePath = "/harbor_storage"
 const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
+const harborVersionFile = "/harbor/VERSION"
 
 //SystemInfo models for system info.
 type SystemInfo struct {
@@ -45,6 +44,7 @@ type GeneralInfo struct {
 	ProjectCreationRestrict string `json:"project_creation_restriction"`
 	SelfRegistration        bool   `json:"self_registration"`
 	HasCARoot               bool   `json:"has_ca_root"`
+	HarborVersion           string `json:"harbor_version"`
 }
 
 // validate for validating user if an admin.
@@ -66,18 +66,16 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 		sia.RenderError(http.StatusForbidden, "User does not have admin role.")
 		return
 	}
-	var stat syscall.Statfs_t
-	err := syscall.Statfs(filepath.Join("/", harborStoragePath), &stat)
-	if err != nil {
-		log.Errorf("Error occurred in syscall.Statfs: %v", err)
-		sia.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		return
-	}
 
+	capacity, err := config.AdminserverClient.Capacity()
+	if err != nil {
+		log.Errorf("failed to get capacity: %v", err)
+		sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 	systemInfo := SystemInfo{
 		HarborStorage: Storage{
-			Total: stat.Blocks * uint64(stat.Bsize),
-			Free:  stat.Bavail * uint64(stat.Bsize),
+			Total: capacity.Total,
+			Free:  capacity.Free,
 		},
 	}
 
@@ -112,22 +110,34 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		sia.CustomAbort(http.StatusInternalServerError, "Unexpected error")
 	}
 	var registryURL string
-	if l := strings.Split(cfg[comcfg.ExtEndpoint].(string), "://"); len(l) > 1 {
+	if l := strings.Split(cfg[common.ExtEndpoint].(string), "://"); len(l) > 1 {
 		registryURL = l[1]
 	} else {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
+	harborVersion := sia.getVersion()
 	info := GeneralInfo{
-		AdmiralEndpoint:         cfg[comcfg.AdmiralEndpoint].(string),
+		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
 		WithNotary:              config.WithNotary(),
-		AuthMode:                cfg[comcfg.AUTHMode].(string),
-		ProjectCreationRestrict: cfg[comcfg.ProjectCreationRestriction].(string),
-		SelfRegistration:        cfg[comcfg.SelfRegistration].(bool),
+		AuthMode:                cfg[common.AUTHMode].(string),
+		ProjectCreationRestrict: cfg[common.ProjectCreationRestriction].(string),
+		SelfRegistration:        cfg[common.SelfRegistration].(bool),
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
+		HarborVersion:           harborVersion,
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
+}
+
+// GetVersion gets harbor version.
+func (sia *SystemInfoAPI) getVersion() string {
+	version, err := ioutil.ReadFile(harborVersionFile)
+	if err != nil {
+		log.Errorf("Error occured getting harbor version: %v", err)
+		return ""
+	}
+	return string(version[:])
 }

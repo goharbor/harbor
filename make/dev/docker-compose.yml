@@ -50,6 +50,7 @@ services:
     volumes:
       - /data/config/:/etc/adminserver/
       - /data/secretkey:/etc/adminserver/key
+      - /data/:/data/
     depends_on:
       - log
     logging:

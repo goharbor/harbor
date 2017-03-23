@@ -62,4 +62,12 @@ export class ProjectService {
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
+
+  checkProjectExists(projectName: string): Observable<any> {
+    return this.http
+               .head(`/api/projects/?project_name=${projectName}`)
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
+  }
+   
 }

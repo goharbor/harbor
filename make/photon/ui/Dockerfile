@@ -7,6 +7,7 @@ COPY ./make/dev/ui/harbor_ui /harbor/
 COPY ./src/ui/views /harbor/views
 COPY ./src/ui/static /harbor/static
 COPY ./src/favicon.ico /harbor/favicon.ico
+COPY ./VERSION /harbor/VERSION
 
 RUN chmod u+x /harbor/harbor_ui 
 	

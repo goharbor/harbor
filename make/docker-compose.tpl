@@ -56,6 +56,7 @@ services:
     volumes:
       - /data/config/:/etc/adminserver/
       - /data/secretkey:/etc/adminserver/key
+      - /data/:/data/
     networks:
       - harbor
     depends_on:
@@ -74,7 +75,6 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
-      - /data:/harbor_storage
       - /data/secretkey:/etc/ui/key
     networks:
       - harbor

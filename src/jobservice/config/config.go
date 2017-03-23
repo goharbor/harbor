@@ -16,21 +16,28 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/vmware/harbor/src/adminserver/client"
+	"github.com/vmware/harbor/src/adminserver/client/auth"
+	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
-	defaultKeyPath string = "/etc/jobservice/key"
-	defaultLogDir  string = "/var/log/jobs"
+	defaultKeyPath   string = "/etc/jobservice/key"
+	defaultLogDir    string = "/var/log/jobs"
+	secretCookieName string = "secret"
 )
 
 var (
-	mg          *comcfg.Manager
-	keyProvider comcfg.KeyProvider
+	// AdminserverClient is a client for adminserver
+	AdminserverClient client.Client
+	mg                *comcfg.Manager
+	keyProvider       comcfg.KeyProvider
 )
 
 // Init configurations
@@ -42,11 +49,14 @@ func Init() error {
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
-	mg = comcfg.NewManager(adminServerURL, JobserviceSecret(), true)
-
-	if err := mg.Init(); err != nil {
-		return err
+	log.Infof("initializing client for adminserver %s ...", adminServerURL)
+	authorizer := auth.NewSecretAuthorizer(secretCookieName, UISecret())
+	AdminserverClient = client.NewClient(adminServerURL, authorizer)
+	if err := AdminserverClient.Ping(); err != nil {
+		return fmt.Errorf("failed to ping adminserver: %v", err)
 	}
+
+	mg = comcfg.NewManager(AdminserverClient, true)
 
 	if _, err := mg.Load(); err != nil {
 		return err
@@ -71,7 +81,7 @@ func VerifyRemoteCert() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	return cfg[comcfg.VerifyRemoteCert].(bool), nil
+	return cfg[common.VerifyRemoteCert].(bool), nil
 }
 
 // Database ...
@@ -81,16 +91,16 @@ func Database() (*models.Database, error) {
 		return nil, err
 	}
 	database := &models.Database{}
-	database.Type = cfg[comcfg.DatabaseType].(string)
+	database.Type = cfg[common.DatabaseType].(string)
 	mysql := &models.MySQL{}
-	mysql.Host = cfg[comcfg.MySQLHost].(string)
-	mysql.Port = int(cfg[comcfg.MySQLPort].(float64))
-	mysql.Username = cfg[comcfg.MySQLUsername].(string)
-	mysql.Password = cfg[comcfg.MySQLPassword].(string)
-	mysql.Database = cfg[comcfg.MySQLDatabase].(string)
+	mysql.Host = cfg[common.MySQLHost].(string)
+	mysql.Port = int(cfg[common.MySQLPort].(float64))
+	mysql.Username = cfg[common.MySQLUsername].(string)
+	mysql.Password = cfg[common.MySQLPassword].(string)
+	mysql.Database = cfg[common.MySQLDatabase].(string)
 	database.MySQL = mysql
 	sqlite := &models.SQLite{}
-	sqlite.File = cfg[comcfg.SQLiteFile].(string)
+	sqlite.File = cfg[common.SQLiteFile].(string)
 	database.SQLite = sqlite
 
 	return database, nil
@@ -102,7 +112,7 @@ func MaxJobWorkers() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return int(cfg[comcfg.MaxJobWorkers].(float64)), nil
+	return int(cfg[common.MaxJobWorkers].(float64)), nil
 }
 
 // LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
@@ -116,7 +126,7 @@ func LocalRegURL() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.RegistryURL].(string), nil
+	return cfg[common.RegistryURL].(string), nil
 }
 
 // LogDir returns the absolute path to which the log file will be written
@@ -151,7 +161,7 @@ func ExtEndpoint() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.ExtEndpoint].(string), nil
+	return cfg[common.ExtEndpoint].(string), nil
 }
 
 // InternalTokenServiceEndpoint ...
