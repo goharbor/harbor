@@ -59,7 +59,7 @@ export class MessageComponent implements OnInit {
   translateMessage(msg: Message): void {
     let key = "UNKNOWN_ERROR", param = "";
     if (msg && msg.message) {
-      key = typeof msg.message === "string" ? msg.message.trim() : msg.message;
+      key = (typeof msg.message === "string" ? msg.message.trim() : msg.message);
       if (key === "") {
         key = "UNKNOWN_ERROR";
       }
@@ -70,13 +70,7 @@ export class MessageComponent implements OnInit {
       key = "UNAUTHORIZED_ERROR";
     } else if (this.globalMessage.statusCode === httpStatusCode.Forbidden) {
       key = "FORBIDDEN_ERROR";
-    } else {
-      if (key != "UNKNOWN_ERROR") {
-        //Override as general message
-        param = key;
-        key = "GENERAL_ERROR";
-      }
-    }
+    } 
 
     this.translate.get(key, { 'param': param }).subscribe((res: string) => this.messageText = res);
   }
