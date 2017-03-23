@@ -60,6 +60,7 @@ export class RepositoryComponent implements OnInit {
             .subscribe(
             response => {
               this.refresh();
+              this.messageService.announceMessage(response, 'REPOSITORY.DELETED_REPO_SUCCESS', AlertType.SUCCESS);
               console.log('Successful deleted repo:' + repoName);
             },
             error => this.messageService.announceMessage(error.status, 'Failed to delete repo:' + repoName, AlertType.DANGER)

@@ -51,6 +51,7 @@ export class AddMemberComponent implements AfterViewChecked {
         .addMember(this.projectId, this.member.username, +this.member.role_id)
         .subscribe(
           response=>{
+            this.messageService.announceMessage(response, 'MEMBER.ADDED_SUCCESS', AlertType.SUCCESS);
             console.log('Added member successfully.');
             this.added.emit(true);
             this.addMemberOpened = false;
@@ -112,9 +113,11 @@ export class AddMemberComponent implements AfterViewChecked {
   }
 
   openAddMemberModal(): void {
+    this.memberForm.reset();
     this.member = new Member();
     this.addMemberOpened = true;
     this.hasChanged = false;
+    this.member.role_id = 1;
   }
 
 }

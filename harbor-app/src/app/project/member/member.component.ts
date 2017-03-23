@@ -54,7 +54,8 @@ export class MemberComponent implements OnInit, OnDestroy {
           .deleteMember(this.projectId, message.data)
           .subscribe(
           response => {
-            console.log('Successful change role with user ' + message.data);
+            this.messageService.announceMessage(response, 'MEMBER.DELETED_SUCCESS', AlertType.SUCCESS);
+            console.log('Successful delete member: ' + message.data);
             this.retrieve(this.projectId, '');
           },
           error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + message.data, AlertType.DANGER)
@@ -102,6 +103,7 @@ export class MemberComponent implements OnInit, OnDestroy {
       .changeMemberRole(this.projectId, userId, roleId)
       .subscribe(
       response => {
+        this.messageService.announceMessage(response, 'MEMBER.SWITCHED_SUCCESS', AlertType.SUCCESS);
         console.log('Successful change role with user ' + userId + ' to roleId ' + roleId);
         this.retrieve(this.projectId, '');
       },

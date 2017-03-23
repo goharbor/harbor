@@ -3,7 +3,7 @@
     <h2 class="header-title">{{'PROJECT.PROJECTS' | translate}}</h2>
     <div class="row flex-items-xs-between">
       <div class="option-left">
-        <button class="btn btn-primary" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.PROJECT' | translate}}</button>
+        <button *ngIf="projectCreationRestriction" class="btn btn-primary" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.PROJECT' | translate}}</button>
         <create-project (create)="createProject($event)"></create-project>
       </div>
       <div class="option-right">

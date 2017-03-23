@@ -108,6 +108,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .createTarget(this.target)
           .subscribe(
             response=>{
+              this.messageService.announceMessage(response, 'DESTINATION.CREATED_SUCCESS', AlertType.SUCCESS);
               console.log('Successful added target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
@@ -129,7 +130,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
                   .get(errorMessageKey)
                   .subscribe(res=>{
                     this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
-                    this.inlineAlert.showInlineError(errorMessageKey);
+                    this.inlineAlert.showInlineError(res);
                   });
             }
           );
@@ -139,6 +140,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .updateTarget(this.target)
           .subscribe(
             response=>{ 
+              this.messageService.announceMessage(response, 'DESTINATION.UPDATED_SUCCESS', AlertType.SUCCESS);
               console.log('Successful updated target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
@@ -158,7 +160,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
               this.translateService
                   .get(errorMessageKey)
                   .subscribe(res=>{
-                    this.inlineAlert.showInlineError(errorMessageKey);
+                    this.inlineAlert.showInlineError(res);
                     this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
                   });
             }
