@@ -327,7 +327,7 @@
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
-        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to leave?",
+        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to discard?",
         "SAVE_SUCCESS": "Configurations have been successfully saved",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",
