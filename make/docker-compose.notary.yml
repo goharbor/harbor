@@ -60,6 +60,8 @@ services:
       - TERM=dumb
       - MYSQL_ALLOW_EMPTY_PASSWORD="true"
     command: mysqld --innodb_file_per_table
+    depends_on:
+      - log
     logging:
       driver: "syslog"
       options:  

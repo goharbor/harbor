@@ -262,29 +262,33 @@ FNULL = open(os.devnull, 'w')
 from functools import wraps
 def stat_decorator(func):
     @wraps(func)
-    def check_wrapper(*args, **kwargs):
-        stat = func(*args, **kwargs)
-        message = "Generated configuration file: %s" % kwargs['path'] \
-                if stat == 0 else "Fail to generate %s" % kwargs['path']
+    def check_wrapper(*args, **kw):
+        stat = func(*args, **kw)
+        message = "Generated certificate, key file: %s, cert file: %s" % (kw['key_path'], kw['cert_path']) \
+                if stat == 0 else "Fail to generate key file: %s, cert file: %s" % (kw['key_path'], kw['cert_path'])
         print(message)
         if stat != 0:
             sys.exit(1)
     return check_wrapper
 
 @stat_decorator
-def check_private_key_stat(*args, **kwargs):
-    return subprocess.call(["openssl", "genrsa", "-out", kwargs['path'], "4096"],\
-        stdout=FNULL, stderr=subprocess.STDOUT)
+def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
+   rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "4096"])
+   if rc != 0:
+        return rc
+   return subprocess.call(["openssl", "req", "-new", "-x509", "-key", key_path,\
+        "-out", cert_path, "-days", "3650", "-subj", subj])
 
 @stat_decorator
-def check_certificate_stat(*args, **kwargs):
-    dirty_subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}/CN={5}/emailAddress={6}"\
-        .format(crt_country, crt_state, crt_location, crt_organization,\
-        crt_organizationalunit, crt_commonname, crt_email)
-    subj = validate_crt_subj(dirty_subj)
-    return subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
-        private_key_pem, "-out", root_crt, "-days", "3650", "-subj", subj], \
-        stdout=FNULL, stderr=subprocess.STDOUT)
+def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt"):
+    cert_dir = os.path.dirname(cert_path)
+    csr_path = os.path.join(cert_dir, "tmp.csr")
+    rc = subprocess.call(["openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
+        "-out", csr_path, "-subj", subj])
+    if rc != 0:
+        return rc
+    return subprocess.call(["openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
+        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path])
 
 def openssl_is_installed(stat):
     if stat == 0:
@@ -296,15 +300,14 @@ def openssl_is_installed(stat):
 if customize_crt == 'on':
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
     if openssl_is_installed(shell_stat):
+        empty_subj = "/C=/ST=/L=/O=/CN=/"
         private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
         root_crt = os.path.join(config_dir, "registry", "root.crt")
-
-        check_private_key_stat(path=private_key_pem)
-        check_certificate_stat(path=root_crt)
+        create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
 else:
-    print("Generated configuration file: %s" % ui_config_dir + "private_key.pem")
+    print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
-    print("Generated configuration file: %s" % registry_config_dir + "root.crt")
+    print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 	
 FNULL.close()
@@ -316,10 +319,27 @@ if args.notary_mode:
         shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
     shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
     #TODO:generate certs?
-    print("Copying certs for notary signer")
-    shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
-    shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
-    shutil.copy2(os.path.join(notary_temp_dir, "root-ca.crt"), notary_config_dir)
+    if customize_crt == 'on':
+        temp_cert_dir = os.path.join(base_dir, "cert_tmp")
+        if not os.path.exists(temp_cert_dir):
+            os.makedirs(temp_cert_dir)
+        ca_subj = "/C=US/ST=California/L=Palo Alto/O=Vmware/CN=Self Signed CA/"
+        cert_subj = "/C=US/ST=California/L=Palo Alto/O=Vmware/CN=notarysigner/"
+        signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
+        signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
+        signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
+        signer_key_path = os.path.join(temp_cert_dir, "notary-signer.key")
+        create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
+        create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
+        print("Copying certs for notary signer")
+        shutil.copy2(signer_cert_path, notary_config_dir)
+        shutil.copy2(signer_key_path, notary_config_dir)
+        shutil.copy2(signer_ca_cert, notary_config_dir)
+    else:
+        print("Copying certs for notary signer")
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_dir)
 
     shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
     print("Copying notary signer configuration file")
