@@ -3,7 +3,7 @@
 <clr-datagrid>
     <clr-dg-column>{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
@@ -15,7 +15,7 @@
         </clr-dg-action-overflow>
         <clr-dg-cell>{{t.tag}}</clr-dg-cell>
         <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>
-        <clr-dg-cell>
+        <clr-dg-cell *ngIf="withNotary">
             <clr-icon shape="check" *ngIf="t.signed" style="color: #1D5100;"></clr-icon>
             <clr-icon shape="close" *ngIf="!t.signed" style="color: #C92100;"></clr-icon>
         </clr-dg-cell>

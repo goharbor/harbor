@@ -43,14 +43,15 @@ export class DestinationComponent implements OnInit {
           .deleteTarget(targetId)
           .subscribe(
           response => {
+            this.messageService.announceMessage(response, 'DESTINATION.DELETED_SUCCESS', AlertType.SUCCESS);
             console.log('Successful deleted target with ID:' + targetId);
             this.reload();
           },
-          error => this.messageService
-            .announceMessage(error.status,
-            'Failed to delete target with ID:' + targetId + ', error:' + error,
-            AlertType.DANGER)
-          );
+          error => { 
+            this.messageService
+                .announceMessage(error.status,'DESTINATION.DELETED_FAILED', AlertType.DANGER);
+            console.log('Failed to delete target with ID:' + targetId + ', error:' + error);
+          });
       }
     });
   }

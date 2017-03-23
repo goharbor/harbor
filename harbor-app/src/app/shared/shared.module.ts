@@ -32,6 +32,7 @@ import { StatisticsComponent } from './statictics/statistics.component';
 import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
 import { SignInGuard } from './route/sign-in-guard-activate.service';
 import { LeavingConfigRouteDeactivate } from './route/leaving-config-deactivate.service';
+import { MemberGuard } from './route/member-guard-activate.service';
 
 @NgModule({
   imports: [
@@ -79,7 +80,8 @@ import { LeavingConfigRouteDeactivate } from './route/leaving-config-deactivate.
     SystemAdminGuard,
     AuthCheckGuard,
     SignInGuard,
-    LeavingConfigRouteDeactivate
+    LeavingConfigRouteDeactivate,
+    MemberGuard
   ]
 })
 export class SharedModule {
