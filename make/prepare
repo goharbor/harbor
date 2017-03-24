@@ -350,7 +350,7 @@ if args.notary_mode:
 
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
-    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.location.conf"), nginx_conf_d)
+    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.server.conf"), nginx_conf_d)
 
     default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
