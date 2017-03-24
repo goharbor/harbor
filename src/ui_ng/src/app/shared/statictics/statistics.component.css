@@ -1,30 +1,57 @@
 .statistic-wrapper {
-    padding: 12px;
-    margin: 12px;
-    text-align: center;
+    padding: 4px;
+    margin: 4px;
+    text-align: right;
     vertical-align: middle;
-    height: 72px;
-    min-width: 108px;
-    max-width: 216px;
+    height: 30px;
     display: inline-block;
 }
 
 .statistic-data {
-    font-size: 48px;
-    font-weight: bolder;
-    font-family: "Metropolis";
-    line-height: 48px;
+    font-size: 16px;
+    font-weight: 900;
+    font-family: "semibold";
+    line-height: 16px;
 }
 
 .statistic-text {
-    font-size: 24px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: 10px;
+    line-height: 10px;
     text-transform: uppercase;
-    font-family: "Metropolis";
+    font-family: "semibold";
+}
+
+.statistic-column-block {
+    display: inline-block;
+    text-align: right;
 }
 
 .statistic-column-title {
     position: relative;
-    top: 40%;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.statistic-column-title-pro {
+    top: -10px;
+}
+
+.statistic-column-title-repo {
+    top: 3px;
+}
+
+.statistic-item-divider {
+    height: 54px;
+    display: inline-block;
+    width: 1px;
+    background-color: #ccc;
+    opacity: 0.55;
+    margin-left: 4px;
+    margin-right: 12px;
+    position: relative;
+    top: 3px;
+}
+
+.statistic-block {
+    display: inline-block;
 }

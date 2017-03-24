@@ -135,13 +135,6 @@ if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
     cert_key_path = rcp.get("configuration", "ssl_cert_key")
 customize_crt = rcp.get("configuration", "customize_crt")
-crt_country = rcp.get("configuration", "crt_country")
-crt_state = rcp.get("configuration", "crt_state")
-crt_location = rcp.get("configuration", "crt_location")
-crt_organization = rcp.get("configuration", "crt_organization")
-crt_organizationalunit = rcp.get("configuration", "crt_organizationalunit")
-crt_commonname = rcp.get("configuration", "crt_commonname")
-crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
@@ -273,44 +266,43 @@ def stat_decorator(func):
 
 @stat_decorator
 def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
-   rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "4096"])
+   rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "4096"], stdout=FNULL, stderr=subprocess.STDOUT)
    if rc != 0:
         return rc
    return subprocess.call(["openssl", "req", "-new", "-x509", "-key", key_path,\
-        "-out", cert_path, "-days", "3650", "-subj", subj])
+        "-out", cert_path, "-days", "3650", "-subj", subj], stdout=FNULL, stderr=subprocess.STDOUT)
 
 @stat_decorator
 def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt"):
     cert_dir = os.path.dirname(cert_path)
     csr_path = os.path.join(cert_dir, "tmp.csr")
     rc = subprocess.call(["openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
-        "-out", csr_path, "-subj", subj])
+        "-out", csr_path, "-subj", subj], stdout=FNULL, stderr=subprocess.STDOUT)
     if rc != 0:
         return rc
     return subprocess.call(["openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
-        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path])
+        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path], stdout=FNULL, stderr=subprocess.STDOUT)
 
-def openssl_is_installed(stat):
-    if stat == 0:
-        return True
-    else:
+def openssl_installed():
+    shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
+    if shell_stat != 0:
         print("Cannot find openssl installed in this computer\nUse default SSL certificate file")
         return False
+    return True
+        
 
-if customize_crt == 'on':
+if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
-    if openssl_is_installed(shell_stat):
-        empty_subj = "/C=/ST=/L=/O=/CN=/"
-        private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
-        root_crt = os.path.join(config_dir, "registry", "root.crt")
-        create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
+    empty_subj = "/C=/ST=/L=/O=/CN=/"
+    private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
+    root_crt = os.path.join(config_dir, "registry", "root.crt")
+    create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
 else:
     print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
     print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 	
-FNULL.close()
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
     notary_temp_dir = os.path.join(templates_dir, "notary") 
@@ -318,13 +310,12 @@ if args.notary_mode:
     if os.path.exists(os.path.join(notary_config_dir, "mysql-initdb.d")):
         shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
     shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
-    #TODO:generate certs?
-    if customize_crt == 'on':
+    if customize_crt == 'on' and openssl_installed():
         temp_cert_dir = os.path.join(base_dir, "cert_tmp")
         if not os.path.exists(temp_cert_dir):
             os.makedirs(temp_cert_dir)
-        ca_subj = "/C=US/ST=California/L=Palo Alto/O=Vmware/CN=Self Signed CA/"
-        cert_subj = "/C=US/ST=California/L=Palo Alto/O=Vmware/CN=notarysigner/"
+        ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
+        cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
         signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
         signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
         signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
@@ -355,6 +346,6 @@ if args.notary_mode:
     default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
 
-		
+FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
 

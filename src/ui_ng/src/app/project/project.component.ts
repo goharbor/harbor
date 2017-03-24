@@ -25,9 +25,7 @@ import { State } from 'clarity-angular';
 
 import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
-
-
-const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
+import { ProjectTypes } from '../shared/shared.const';
 
 @Component({
   moduleId: module.id,
@@ -39,7 +37,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   selected = [];
   changedProjects: Project[];
-  projectTypes = types;
+  projectTypes = ProjectTypes;
 
   @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
@@ -145,7 +143,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   doFilterProjects(filteredType: number): void {
-    console.log('Filter projects with type:' + types[filteredType]);
+    console.log('Filter projects with type:' + this.projectTypes[filteredType]);
     this.isPublic = filteredType;
     this.currentFilteredType = filteredType;
     this.retrieve();
