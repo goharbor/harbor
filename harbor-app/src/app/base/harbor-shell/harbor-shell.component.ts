@@ -5,13 +5,11 @@ import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
 
 import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
-import { SearchResultComponent } from '../global-search/search-result.component';
 import { PasswordSettingComponent } from '../../account/password/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
-import { StartPageComponent } from '../start-page/start.component';
 
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 
@@ -30,9 +28,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     @ViewChild(AccountSettingsModalComponent)
     private accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(SearchResultComponent)
-    private searchResultComponet: SearchResultComponent;
-
     @ViewChild(PasswordSettingComponent)
     private pwdSetting: PasswordSettingComponent;
 
@@ -41,9 +36,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     @ViewChild(AboutDialogComponent)
     private aboutDialog: AboutDialogComponent;
-
-    @ViewChild(StartPageComponent)
-    private searchSatrt: StartPageComponent;
 
     //To indicator whwther or not the search results page is displayed
     //We need to use this property to do some overriding work
@@ -60,15 +52,13 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
-            this.doSearch(searchEvt);
+            if(searchEvt && searchEvt.trim() != ""){
+                this.isSearchResultsOpened = true;
+            }
         });
 
         this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
-            if (close) {
-                this.searchClose();
-            }else{
-                this.watchClickEvt();//reuse
-            }
+           this.isSearchResultsOpened = false;
         });
     }
 
@@ -115,31 +105,5 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             default:
                 break;
         }
-    }
-
-    //Handle the global search event and then let the result page to trigger api
-    doSearch(event: string): void {
-        if (event === "") {
-            //Do nothing
-            return;
-        }
-        //Once this method is called
-        //the search results page must be opened
-        this.isSearchResultsOpened = true;
-
-        //Call the child component to do the real work
-        this.searchResultComponet.doSearch(event);
-    }
-
-    //Search results page closed
-    //remove the related ovevriding things
-    searchClose(): void {
-        this.isSearchResultsOpened = false;
-    }
-
-    //Close serch result panel if existing
-    watchClickEvt(): void {
-        this.searchResultComponet.close();
-        this.isSearchResultsOpened = false;
     }
 }

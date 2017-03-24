@@ -105,7 +105,7 @@ export class NavigatorComponent implements OnInit {
                 this.msgService.announceMessage(error.status | 500, errorHandler(error), AlertType.WARNING);
             });
         //Confirm search result panel is close
-        this.searchTrigger.closeSearch(false);
+        this.searchTrigger.closeSearch(true);
     }
 
     //Switch languages
@@ -132,10 +132,10 @@ export class NavigatorComponent implements OnInit {
         }
 
         //Confirm search result panel is close
-        this.searchTrigger.closeSearch(false);
+        this.searchTrigger.closeSearch(true);
     }
 
     registryAction(): void {
-        this.searchTrigger.closeSearch(false);
+        this.searchTrigger.closeSearch(true);
     }
 }

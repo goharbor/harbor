@@ -21,10 +21,11 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
 
     //Keep subscription for future use
     private searchSub: Subscription;
-    private stateSub: Subscription;
+    private closeSub: Subscription;
 
     //To indicate if the result panel is opened
     private isResPanelOpened: boolean = false;
+    private searchTerm: string = "";
 
     constructor(
         private searchTrigger: SearchTriggerService,
@@ -38,6 +39,9 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
+        this.closeSub = this.searchTrigger.searchClearChan$.subscribe(clear => {
+            this.searchTerm = "";
+        });
     }
 
     ngOnDestroy(): void {

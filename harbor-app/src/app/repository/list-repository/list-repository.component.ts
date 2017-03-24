@@ -52,7 +52,7 @@ export class ListRepositoryComponent implements OnInit {
   }
 
   public gotoLink(projectId: number, repoName: string): void {
-    this.searchTrigger.closeSearch(false);
+    this.searchTrigger.closeSearch(true);
 
     let linkUrl = ['harbor', 'tags', projectId, repoName];
     if (!this.session.getCurrentUser()) {
