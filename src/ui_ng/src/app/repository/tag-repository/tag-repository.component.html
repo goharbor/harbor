@@ -1,4 +1,6 @@
-<a [routerLink]="['/harbor', 'projects', projectId, 'repository']">&lt; {{'REPOSITORY.REPOSITORIES' | translate}}</a>
+<a *ngIf="hasSignedIn" [routerLink]="['/harbor', 'projects', projectId, 'repository']">&lt; {{'REPOSITORY.REPOSITORIES' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
+
 <h2 class="sub-header-title">{{repoName}} <span class="badge">{{tags ? tags.length : 0}}</span></h2>
 <clr-datagrid>
     <clr-dg-column>{{'REPOSITORY.TAG' | translate}}</clr-dg-column>

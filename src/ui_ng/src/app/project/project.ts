@@ -31,4 +31,5 @@ export class Project {
     repo_count: number;
     has_project_admin_role: boolean;
     is_member: boolean;
+    role_name: string;
 }

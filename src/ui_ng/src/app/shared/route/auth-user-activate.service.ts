@@ -19,15 +19,10 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     private appConfigService: AppConfigService) { }
 
   private isGuest(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    let queryParams = route.queryParams;
-    if (queryParams) {
-      if (queryParams["guest"]) {
-        let proRegExp = /\/harbor\/projects\/[\d]+\/.+/i;
-        const libRegExp = /\/harbor\/tags\/[\d]+\/.+/i;
-        if (proRegExp.test(state.url)|| libRegExp.test(state.url)) {
-          return true;
-        }
-      }
+    const proRegExp = /\/harbor\/projects\/[\d]+\/.+/i;
+    const libRegExp = /\/harbor\/tags\/[\d]+\/.+/i;
+    if (proRegExp.test(state.url) || libRegExp.test(state.url)) {
+      return true;
     }
 
     return false;
@@ -42,8 +37,8 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
           this.appConfigService.saveAdmiralEndpoint(queryParams[AdmiralQueryParamKey]);
           //Remove the query parameter key pair and redirect
           let keyRemovedUrl = maintainUrlQueryParmas(state.url, AdmiralQueryParamKey, undefined);
-          if(!/[?]{1}.+/i.test(keyRemovedUrl)){
-            keyRemovedUrl = keyRemovedUrl.replace('?','');
+          if (!/[?]{1}.+/i.test(keyRemovedUrl)) {
+            keyRemovedUrl = keyRemovedUrl.replace('?', '');
           }
 
           this.router.navigateByUrl(keyRemovedUrl);

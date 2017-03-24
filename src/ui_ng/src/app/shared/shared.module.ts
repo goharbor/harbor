@@ -34,6 +34,9 @@ import { SignInGuard } from './route/sign-in-guard-activate.service';
 import { LeavingConfigRouteDeactivate } from './route/leaving-config-deactivate.service';
 import { MemberGuard } from './route/member-guard-activate.service';
 
+import { ListProjectROComponent } from './list-project-ro/list-project-ro.component';
+import { ListRepositoryROComponent } from './list-repository-ro/list-repository-ro.component';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -53,7 +56,9 @@ import { MemberGuard } from './route/member-guard-activate.service';
     PageNotFoundComponent,
     AboutDialogComponent,
     StatisticsComponent,
-    StatisticsPanelComponent
+    StatisticsPanelComponent,
+    ListProjectROComponent,
+    ListRepositoryROComponent
   ],
   exports: [
     CoreModule,
@@ -70,7 +75,9 @@ import { MemberGuard } from './route/member-guard-activate.service';
     PageNotFoundComponent,
     AboutDialogComponent,
     StatisticsComponent,
-    StatisticsPanelComponent
+    StatisticsPanelComponent,
+    ListProjectROComponent,
+    ListRepositoryROComponent
   ],
   providers: [
     SessionService,

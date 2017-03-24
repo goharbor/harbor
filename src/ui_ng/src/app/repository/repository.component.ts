@@ -16,11 +16,6 @@ import { State } from 'clarity-angular';
 
 import { Project } from '../project/project';
 
-const repositoryTypes = [
-  { key: '0', description: 'REPOSITORY.MY_REPOSITORY' },
-  { key: '1', description: 'REPOSITORY.PUBLIC_REPOSITORY' }
-];
-
 @Component({
   moduleId: module.id,
   selector: 'repository',
@@ -31,8 +26,7 @@ export class RepositoryComponent implements OnInit {
   changedRepositories: Repository[];
 
   projectId: number;
-  repositoryTypes = repositoryTypes;
-  currentRepositoryType: {};
+
   lastFilteredRepoName: string;
 
   page: number = 1;
@@ -80,7 +74,6 @@ export class RepositoryComponent implements OnInit {
     if(resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
-    this.currentRepositoryType = this.repositoryTypes[0];
     this.lastFilteredRepoName = '';
     this.retrieve();
   }
@@ -106,10 +99,6 @@ export class RepositoryComponent implements OnInit {
       },
       error => this.messageService.announceMessage(error.status, 'Failed to list repositories.', AlertType.DANGER)
       );
-  }
-
-  doFilterRepositoryByType(type: string) {
-    this.currentRepositoryType = this.repositoryTypes.find(r => r.key == type);
   }
 
   doSearchRepoNames(repoName: string) {
