@@ -82,7 +82,7 @@ func init() {
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
-	beego.Router("/api/projects/:id([0-9]+)/repositories", &RepositoryAPI{}, "get:Get")
+	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
@@ -463,18 +463,20 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID,
 	keyword, detail string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
-	path := fmt.Sprintf("/api/projects/%s/repositories", projectID)
+	path := "/api/repositories/"
 
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		Detail  string `url:"detail"`
-		Keyword string `url:"q"`
+		ProjectID string `url:"project_id"`
+		Detail    string `url:"detail"`
+		Keyword   string `url:"q"`
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{
-		Detail:  detail,
-		Keyword: keyword,
+		ProjectID: projectID,
+		Detail:    detail,
+		Keyword:   keyword,
 	})
 	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {

@@ -70,8 +70,8 @@ type manifestResp struct {
 
 // Get ...
 func (ra *RepositoryAPI) Get() {
-	projectID, err := ra.GetInt64(":id")
-	if err != nil {
+	projectID, err := ra.GetInt64("project_id")
+	if err != nil || projectID <= 0 {
 		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
 	}
 

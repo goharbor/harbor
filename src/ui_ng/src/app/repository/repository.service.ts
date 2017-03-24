@@ -27,14 +27,14 @@ export class RepositoryService {
 
   listTags(repoName: string): Observable<Tag[]> {
     return this.http
-               .get(`/api/repositories/tags?repo_name=${repoName}&detail=1`)
+               .get(`/api/repositories/${repoName}/tags?detail=1`)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
 
   listNotarySignatures(repoName: string): Observable<VerifiedSignature[]> {
     return this.http
-               .get(`/api/repositories/signatures?repo_name=${repoName}`)
+               .get(`/api/repositories/${repoName}/signatures`)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
@@ -64,7 +64,7 @@ export class RepositoryService {
   deleteRepository(repoName: string): Observable<any> {
     console.log('Delete repository with repo name:' + repoName);
     return this.http
-               .delete(`/api/repositories?repo_name=${repoName}`)
+               .delete(`/api/repositories/${repoName}/tags`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
@@ -72,7 +72,7 @@ export class RepositoryService {
   deleteRepoByTag(repoName: string, tag: string): Observable<any> {
     console.log('Delete repository with repo name:' + repoName + ', tag:' + tag);
     return this.http
-               .delete(`/api/repositories?repo_name=${repoName}&tag=${tag}`)
+               .delete(`/api/repositories/${repoName}/tags/${tag}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

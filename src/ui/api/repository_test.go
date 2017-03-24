@@ -60,6 +60,17 @@ func TestGetRepos(t *testing.T) {
 		}
 	}
 
+	//-------------------case 4 : response code = 400------------------------//
+	fmt.Println("case 4 : response code = 400,invalid project_id")
+	projectID = "ccc"
+	httpStatusCode, _, err = apiTest.GetRepos(*admin, projectID, keyword, detail)
+	if err != nil {
+		t.Error("Error whihle get repos by projectID", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
+	}
+
 	fmt.Printf("\n")
 }
 
