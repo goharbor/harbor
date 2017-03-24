@@ -14,11 +14,15 @@ User guide
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.  
+2. In configuration page,change authentication mode from DB to LDAP or from LDAP to DB.  
+3. Save the configuration.  
+4. Change the configuration again.  
 
 # Expected Outcome:
 
-TBD
+* In step2, user can change authentication mode.  
+* In step4, user cannot change authentication mode.
 
 # Possible Problems:
 None

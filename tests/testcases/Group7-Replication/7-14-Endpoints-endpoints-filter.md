@@ -3,20 +3,24 @@ Test 7-14 Endpoints endpoints filter
 
 # Purpose:
 
-TBD
+To verify endpoints filter works correctly.
 
 # References:
 User guide
 
 # Environment:
 
+* This test requires at least one Harbor instance is running and available.
+
 # Test Steps:
 
-TBD
+1. Login UI as admin user.    
+2. In replication page,add some endpoints.    
+3. Input some character in endpoints filter.  
 
 # Expected Outcome:
 
-TBD
+* In step3, endpoints can be filtered.
 
 # Possible Problems:
 

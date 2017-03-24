@@ -3,21 +3,24 @@ Test 7-13 Endpoints endpoint delete
 
 # Purpose
 
-TBD
+To verify admin user can delete an endpoint.
 
 # References:
 User guide
 
 # Environments:
 
+* This test requires one Harbor instance is running and available.
+* At least one endpoint should exist.
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.  
+2. In replication page, delete an endpoint.  
 
 # Expected Outcome:
 
-TBD
+* In step2, endpoint can be deleted.
 
 # Possible Problems:
 None
