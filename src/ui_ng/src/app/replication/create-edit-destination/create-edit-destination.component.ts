@@ -174,6 +174,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
       this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
     } else {
       this.createEditDestinationOpened = false;
+      this.targetForm.reset();
     }
   }
 

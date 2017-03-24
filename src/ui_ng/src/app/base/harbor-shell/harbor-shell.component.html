@@ -8,7 +8,7 @@
             <search-result></search-result>
             <router-outlet></router-outlet>
         </div>
-        <nav class="sidenav" *ngIf="isUserExisting" [class.side-nav-override]="showSearch" (click)='watchClickEvt()'>
+        <nav class="sidenav" *ngIf="isUserExisting">
             <section class="sidenav-content">
                 <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
                 <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link" style="margin-top: 4px;">{{'SIDE_NAV.LOGS' | translate}}</a>

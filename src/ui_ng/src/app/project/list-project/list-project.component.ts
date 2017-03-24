@@ -5,15 +5,14 @@ import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { ListMode, ProjectTypes, RoleInfo } from '../../shared/shared.const';
+import { ProjectTypes, RoleInfo } from '../../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
 @Component({
   moduleId: module.id,
   selector: 'list-project',
-  templateUrl: 'list-project.component.html',
-  styleUrls: ['./list-project.component.css']
+  templateUrl: 'list-project.component.html'
 })
 export class ListProjectComponent implements OnInit {
 
@@ -31,8 +30,6 @@ export class ListProjectComponent implements OnInit {
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
-  @Input() mode: string = ListMode.FULL;
-
   roleInfo = RoleInfo;
 
   constructor(
@@ -43,12 +40,8 @@ export class ListProjectComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  public get listFullMode(): boolean {
-    return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
-  }
-
   get showRoleInfo(): boolean {
-    return this.listFullMode && this.filteredType === ProjectTypes[0];
+    return this.filteredType === ProjectTypes[0];
   }
 
   public get isSystemAdmin(): boolean {
@@ -57,19 +50,10 @@ export class ListProjectComponent implements OnInit {
   }
 
   goToLink(proId: number): void {
-    this.searchTrigger.closeSearch(false);
+    this.searchTrigger.closeSearch(true);
 
     let linkUrl = ['harbor', 'projects', proId, 'repository'];
-    if (!this.session.getCurrentUser()) {
-      let navigatorExtra: NavigationExtras = {
-        queryParams: { "guest": true }
-      };
-
-      this.router.navigate(linkUrl, navigatorExtra);
-    } else {
-      this.router.navigate(linkUrl);
-
-    }
+    this.router.navigate(linkUrl);
   }
 
   refresh(state: State) {

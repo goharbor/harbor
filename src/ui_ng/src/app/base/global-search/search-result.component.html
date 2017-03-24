@@ -7,8 +7,8 @@
     <div class="spinner spinner-lg search-spinner" [hidden]="done">{{'SEARCH.IN_PROGRESS' | translate}}</div>
     <div id="results">
         <h2>{{'PROJECT.PROJECTS' | translate}}</h2>
-        <list-project [projects]="searchResults.project" [mode]="listMode"></list-project>
+        <list-project-ro [projects]="searchResults.project"></list-project-ro>
         <h2>{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</h2>
-        <list-repository [repositories]="searchResults.repository" [mode]="listMode"></list-repository>
+        <list-repository-ro [repositories]="searchResults.repository"></list-repository-ro>
     </div>
 </div>

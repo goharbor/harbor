@@ -243,11 +243,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      */
     public testMailServer(): void {
         let mailSettings = {};
-        let allChanges = this.getChanges();
-        for (let prop in allChanges) {
+        for (let prop in this.allConfig) {
             if (prop.startsWith("email_")) {
-                mailSettings[prop] = allChanges[prop];
+                mailSettings[prop] = this.allConfig[prop].value;
             }
+        }
+        //Confirm port is number
+        mailSettings["email_port"] = +mailSettings["email_port"];
+        let allChanges = this.getChanges();
+        let password = allChanges["email_password"]
+        if (password) {
+            mailSettings["email_password"] = password;
+        } else {
+            delete mailSettings["email_password"];
         }
 
         this.testingOnGoing = true;
@@ -264,14 +272,21 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public testLDAPServer(): void {
         let ldapSettings = {};
+        for (let prop in this.allConfig) {
+            if (prop.startsWith("ldap_")) {
+                ldapSettings[prop] = this.allConfig[prop].value;
+            }
+        }
+
         let allChanges = this.getChanges();
-        for (let prop in allChanges) {
+        for(let prop in allChanges){
             if (prop.startsWith("ldap_")) {
                 ldapSettings[prop] = allChanges[prop];
             }
         }
 
         console.info(ldapSettings);
+
         this.testingOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
             .then(respone => {
@@ -296,7 +311,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.confirmService.openComfirmDialog(msg);
     }
 
-    private confirmUnsavedTabChanges(changes: any, tabId: string){
+    private confirmUnsavedTabChanges(changes: any, tabId: string) {
         let msg = new ConfirmationMessage(
             "CONFIG.CONFIRM_TITLE",
             "CONFIG.CONFIRM_SUMMARY",
