@@ -1,20 +1,24 @@
 <div>
-    <h2 class="h2-log-override">{{'SIDE_NAV.LOGS' | translate}}</h2>
-    <div class="action-head-pos">
-        <span>
-            <label>{{'RECENT_LOG.SUB_TITLE' | translate}} </label>
-            <button type="submit" class="btn btn-link custom-lines-button" [class.lines-button-toggole]="lines === 10" (click)="setLines(10)">10</button>
-            <label> | </label>
-            <button type="submit" class="btn btn-link custom-lines-button" [class.lines-button-toggole]="lines === 25" (click)="setLines(25)">25</button>
-            <label> | </label>
-            <button type="submit" class="btn btn-link custom-lines-button" [class.lines-button-toggole]="lines === 50" (click)="setLines(50)">50</button>
-            <label>{{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</label>
-        </span>
-        <grid-filter class="filter-log" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
-        <span class="refresh-btn" (click)="refresh()">
+    <h2 class="h2-log-override">{{'SIDE_NAV.LOGS' | translate}}
+        <span class="badge badge-info">{{logNumber}}</span>
+    </h2>
+    <div class="row flex-items-xs-between flex-items-xs-bottom">
+        <div></div>
+        <div class="action-head-pos">
+            <div class="select log-select">
+                <select id="log_display_num" (change)="handleOnchange($event)">
+                    <option value="10">{{'RECENT_LOG.SUB_TITLE' | translate}} 10 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
+                    <option value="25">{{'RECENT_LOG.SUB_TITLE' | translate}} 25 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
+                    <option value="50">{{'RECENT_LOG.SUB_TITLE' | translate}} 50 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
+            </select>
+            </div>
+            <div class="item-divider"></div>
+            <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
+            <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
-        </span>
+            </span>
+        </div>
     </div>
     <div>
         <clr-datagrid>

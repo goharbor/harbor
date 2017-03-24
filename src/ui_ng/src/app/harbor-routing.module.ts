@@ -33,6 +33,8 @@ import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 
+import { MemberGuard } from './shared/route/member-guard-activate.service';
+
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
   { path: 'password-reset', component: ResetPasswordComponent },
@@ -74,11 +76,15 @@ const harborRoutes: Routes = [
       },
       {
         path: 'tags/:id/:repo',
-        component: TagRepositoryComponent
+        component: TagRepositoryComponent,
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
       },
       {
         path: 'projects/:id',
         component: ProjectDetailComponent,
+        canActivate: [MemberGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
         },
@@ -89,7 +95,8 @@ const harborRoutes: Routes = [
           },
           {
             path: 'replication',
-            component: ReplicationComponent
+            component: ReplicationComponent,
+            canActivate: [SystemAdminGuard]
           },
           {
             path: 'member',

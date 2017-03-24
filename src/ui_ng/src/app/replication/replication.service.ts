@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams, Response } from '@angular/http';
 
-import { BaseService } from '../service/base.service';
-
 import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
@@ -14,10 +12,8 @@ import 'rxjs/add/observable/throw';
 import 'rxjs/add/operator/mergeMap';
 
 @Injectable()
-export class ReplicationService extends BaseService {
-  constructor(private http: Http) {
-    super();
-  }
+export class ReplicationService {
+  constructor(private http: Http) {}
 
   listPolicies(policyName: string, projectId?: any): Observable<Policy[]> {
     if(!projectId) {

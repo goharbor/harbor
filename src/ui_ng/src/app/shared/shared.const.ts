@@ -24,7 +24,8 @@ export const enum ConfirmationTargets {
   REPOSITORY, 
   TAG, 
   CONFIG,
-  CONFIG_ROUTE
+  CONFIG_ROUTE,
+  CONFIG_TAB
 };
 
 export const enum ActionType {
@@ -52,3 +53,6 @@ export const CookieKeyOfAdmiral = "admiral.endpoint.latest";
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+
+export const ProjectTypes = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
+export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };

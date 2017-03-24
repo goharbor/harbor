@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: vmware/harbor-log
+    image: vmware/harbor-log:__version__
     container_name: harbor-log 
     restart: always
     volumes:
@@ -11,7 +11,7 @@ services:
     networks:
       - harbor
   registry:
-    image: registry:2.6.0
+    image: vmware/registry:photon-2.6.0
     container_name: registry
     restart: always
     volumes:
@@ -31,7 +31,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
   mysql:
-    image: vmware/harbor-db
+    image: vmware/harbor-db:__version__
     container_name: harbor-db
     restart: always
     volumes:
@@ -48,7 +48,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
   adminserver:
-    image: vmware/harbor-adminserver
+    image: vmware/harbor-adminserver:__version__
     container_name: harbor-adminserver
     env_file:
       - ./common/config/adminserver/env
@@ -67,7 +67,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "adminserver"
   ui:
-    image: vmware/harbor-ui
+    image: vmware/harbor-ui:__version__
     container_name: harbor-ui
     env_file:
       - ./common/config/ui/env
@@ -88,7 +88,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
   jobservice:
-    image: vmware/harbor-jobservice
+    image: vmware/harbor-jobservice:__version__
     container_name: harbor-jobservice
     env_file:
       - ./common/config/jobservice/env

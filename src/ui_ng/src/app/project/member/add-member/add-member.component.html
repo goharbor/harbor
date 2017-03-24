@@ -19,15 +19,15 @@
         <div class="form-group">
           <label class="col-md-4 form-group-label-override">{{'MEMBER.ROLE' | translate}}</label>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_project_admin" value="1" [(ngModel)]="member.role_id">
+            <input type="radio" name="roleRadios" id="checkrads_project_admin" [value]="1" [(ngModel)]="member.role_id">
             <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
           </div>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_developer" value="2" [(ngModel)]="member.role_id">
+            <input type="radio" name="roleRadios" id="checkrads_developer" [value]="2" [(ngModel)]="member.role_id">
             <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
           </div>
           <div class="radio">
-            <input type="radio" name="roleRadios" id="checkrads_guest" value="3" [(ngModel)]="member.role_id">
+            <input type="radio" name="roleRadios" id="checkrads_guest" [value]="3" [(ngModel)]="member.role_id">
             <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
           </div>
         </div>
@@ -36,6 +36,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-    <button type="button" class="btn btn-primary" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+    <button type="button" class="btn btn-primary" [disabled]="memberForm.form.invalid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>

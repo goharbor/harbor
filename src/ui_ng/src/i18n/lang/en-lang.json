@@ -110,10 +110,10 @@
     "PROJECT": {
         "PROJECTS": "Projects",
         "NAME": "Project Name",
+        "ROLE": "Role",
         "PUBLIC_OR_PRIVATE": "Public",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
-        "DESCRIPTION": "Description",
         "PUBLIC": "Public",
         "PRIVATE": "Private",
         "MAKE": "Make",
@@ -132,7 +132,10 @@
         "DELETION_TITLE": "Confirm project deletion",
         "DELETION_SUMMARY": "Do you want to delete project {{param}}?",
         "FILTER_PLACEHOLDER": "Filter Projects",
-        "REPLICATION_RULE": "Replication Rule"
+        "REPLICATION_RULE": "Replication Rule",
+        "CREATED_SUCCESS": "Created project successfully.",
+        "DELETED_SUCCESS": "Deleted project successfully.",
+        "TOGGLED_SUCCESS": "Toggled project successfully."
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -159,7 +162,10 @@
         "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
         "FILTER_PLACEHOLDER": "Filter Members",
         "DELETION_TITLE": "Confirm project member deletion",
-        "DELETION_SUMMARY": "Do you want to delete project member {{param}}?"
+        "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
+        "ADDED_SUCCESS": "Added member successfully.",
+        "DELETED_SUCCESS": "Deleted member successfully.",
+        "SWITCHED_SUCCESS": "Switched member role successfully."
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -235,7 +241,12 @@
         "TOGGLE_ENABLE_TITLE": "Enable Policy",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication policy, all repositories under the project will be replicated to the destination registry. Please confirm to continue.",
         "TOGGLE_DISABLE_TITLE": "Disable Policy",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue."
+        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the policy, all unfinished replication jobs of this policy will be stopped and canceled. Please confirm to continue.",
+        "CREATED_SUCCESS": "Created policy successfully.",
+        "UPDATED_SUCCESS": "Updated policy successfully.",
+        "DELETED_SUCCESS": "Deleted policy successfully.",
+        "DELETED_FAILED": "Deleted policy failed.",
+        "TOGGLED_SUCCESS": "Toggled policy status successfully."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -257,7 +268,11 @@
         "INVALID_NAME": "Invalid destination name.",
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time",
-        "ITEMS": "item(s)"
+        "ITEMS": "item(s)",
+        "CREATED_SUCCESS": "Created destination successfully.",
+        "UPDATED_SUCCESS": "Updated destination successfully.",
+        "DELETED_SUCCESS": "Deleted destination successfully.",
+        "DELETED_FAILED": "Deleted destination failed."
     },
     "REPOSITORY": {
         "COPY_ID": "Copy ID",
@@ -275,7 +290,7 @@
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted. {{param}}",
-        "FILTER_FOR_REPOSITORIES": "Filter for repositories",
+        "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
@@ -286,7 +301,9 @@
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
         "ITEMS": "item(s)",
-        "POP_REPOS": "Popular Repositories"
+        "POP_REPOS": "Popular Repositories",
+        "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
+        "DELETED_TAG_SUCCESS": "Deleted tag successfully."
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you really want to cancel?"
@@ -310,7 +327,7 @@
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
-        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to leave?",
+        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to discard?",
         "SAVE_SUCCESS": "Configurations have been successfully saved",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",
@@ -386,7 +403,8 @@
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
     },
-    "UNKNOWN_ERROR": "Some unknown errors HAVE occurred. Please try again later",
+    "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue the operation",
-    "FORBIDDEN_ERROR": "You are not allowed to perform this operation"
+    "FORBIDDEN_ERROR": "You are not allowed to perform this operation",
+    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}"
 }

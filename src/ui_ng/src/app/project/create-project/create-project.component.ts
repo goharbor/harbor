@@ -13,7 +13,6 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 import { TranslateService } from '@ngx-translate/core';
 
-
 @Component({
   selector: 'create-project',
   templateUrl: 'create-project.component.html',
@@ -50,6 +49,7 @@ export class CreateProjectComponent implements AfterViewChecked {
         .subscribe(
           status=>{
             this.create.emit(true);
+            this.messageService.announceMessage(status, 'PROJECT.CREATED_SUCCESS', AlertType.SUCCESS);
             this.createProjectOpened = false;
           },
           error=>{

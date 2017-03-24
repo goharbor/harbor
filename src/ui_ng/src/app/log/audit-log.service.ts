@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions } from '@angular/http';
 
-import { BaseService } from '../service/base.service';
-
 import { AuditLog } from './audit-log';
 
 import { Observable } from 'rxjs/Observable';
@@ -13,7 +11,7 @@ import 'rxjs/add/observable/throw';
 export const logEndpoint = "/api/logs";
 
 @Injectable()
-export class AuditLogService extends BaseService {
+export class AuditLogService {
   private httpOptions = new RequestOptions({
     headers: new Headers({
       "Content-Type": 'application/json',
@@ -21,9 +19,7 @@ export class AuditLogService extends BaseService {
     })
   });
 
-  constructor(private http: Http) {
-    super();
-  }
+  constructor(private http: Http) {}
 
   listAuditLogs(queryParam: AuditLog): Observable<any> {
     return this.http
@@ -36,13 +32,12 @@ export class AuditLogService extends BaseService {
         username: queryParam.username
       })
       .map(response => response)
-      .catch(error => this.handleError(error));
+      .catch(error => Observable.throw(error));
   }
 
   getRecentLogs(lines: number): Observable<AuditLog[]> {
     return this.http.get(logEndpoint + "?lines=" + lines, this.httpOptions)
       .map(response => response.json() as AuditLog[])
-      .catch(error => this.handleError(error));
+      .catch(error => Observable.throw(error));
   }
-
 }

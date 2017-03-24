@@ -79,7 +79,7 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
-REGISTRYVERSION=2.6.0
+REGISTRYVERSION=photon-2.6.0
 NGINXVERSION=1.11.5
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
@@ -260,7 +260,7 @@ build: build_$(BASEIMAGE)
 modify_composefile: 
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	
 install: compile build prepare modify_composefile start
 	
@@ -299,7 +299,7 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:$(REGISTRYVERSION)
+	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
 	@$(DOCKERPULL) nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and harbor-notary-db..."; \
@@ -316,7 +316,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
+		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
 		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	else \
 		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
@@ -325,7 +325,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) ; \
+		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) ; \
 	fi
 	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
@@ -390,9 +390,9 @@ down:
     [ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "stoping harbor instance..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down -v ; \
 	else \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v ; \
 	fi	
 	@echo "Done."
 

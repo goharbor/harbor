@@ -50,7 +50,10 @@ export class ListPolicyComponent implements OnDestroy {
                this.replicationService
                    .enablePolicy(policy.id, policy.enabled)
                    .subscribe(
-                      res => console.log('Successful toggled policy status'),
+                      response => {
+                        this.messageService.announceMessage(response, 'REPLICATION.TOGGLED_SUCCESS', AlertType.SUCCESS);
+                        console.log('Successful toggled policy status')
+                      },
                       error => this.messageService.announceMessage(error.status, "Failed to toggle policy status.", AlertType.DANGER)
                    );
              }
@@ -67,10 +70,11 @@ export class ListPolicyComponent implements OnDestroy {
                 .deletePolicy(message.data)
                 .subscribe(
                   response => {
+                    this.messageService.announceMessage(response, 'REPLICATION.DELETED_SUCCESS', AlertType.SUCCESS);
                     console.log('Successful delete policy with ID:' + message.data);
                     this.reload.emit(true);
                   },
-                  error => this.messageService.announceMessage(error.status, 'Failed to delete policy with ID:' + message.data, AlertType.DANGER)
+                  error => this.messageService.announceMessage(error.status, 'REPLICATION.DELETED_FAILED', AlertType.DANGER)
                 );
         }
       }

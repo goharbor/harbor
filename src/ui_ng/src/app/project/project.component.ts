@@ -23,7 +23,9 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { State } from 'clarity-angular';
 
-const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
+import { AppConfigService } from '../app-config.service';
+import { SessionService } from '../shared/session.service';
+import { ProjectTypes } from '../shared/shared.const';
 
 @Component({
   moduleId: module.id,
@@ -35,7 +37,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   selected = [];
   changedProjects: Project[];
-  projectTypes = types;
+  projectTypes = ProjectTypes;
 
   @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
@@ -59,6 +61,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
   constructor(
     private projectService: ProjectService,
     private messageService: MessageService,
+    private appConfigService: AppConfigService,
+    private sessionService: SessionService,
     private deletionDialogService: ConfirmationDialogService) {
     this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
@@ -69,6 +73,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
           .deleteProject(projectId)
           .subscribe(
           response => {
+            this.messageService.announceMessage(response, 'PROJECT.DELETED_SUCCESS', AlertType.SUCCESS);
             console.log('Successful delete project with ID:' + projectId);
             this.retrieve();
           },
@@ -76,17 +81,32 @@ export class ProjectComponent implements OnInit, OnDestroy {
           );
       }
     });
+    
   }
 
   ngOnInit(): void {
     this.projectName = '';
     this.isPublic = 0;
+    
   }
 
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+  }
+
+  get projectCreationRestriction(): boolean {
+    let account = this.sessionService.getCurrentUser();
+    if(account) {
+      switch(this.appConfigService.getConfig().project_creation_restriction) {
+      case 'adminonly':
+        return (account.has_admin_role === 1);
+      case 'everyone':
+        return true;
+      } 
+    }
+    return false;
   }
 
   retrieve(state?: State): void {
@@ -123,7 +143,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   doFilterProjects(filteredType: number): void {
-    console.log('Filter projects with type:' + types[filteredType]);
+    console.log('Filter projects with type:' + this.projectTypes[filteredType]);
     this.isPublic = filteredType;
     this.currentFilteredType = filteredType;
     this.retrieve();
@@ -135,7 +155,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
       this.projectService
         .toggleProjectPublic(p.project_id, p.public)
         .subscribe(
-        response => console.log('Successful toggled project_id:' + p.project_id),
+        response => {
+          this.messageService.announceMessage(response, 'PROJECT.TOGGLED_SUCCESS', AlertType.SUCCESS);
+          console.log('Successful toggled project_id:' + p.project_id);
+        },
         error => this.messageService.announceMessage(error.status, error, AlertType.WARNING)
         );
     }

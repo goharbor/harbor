@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions, Response, URLSearchParams } from '@angular/http';
 import { Project } from './project';
 
-import { BaseService } from '../service/base.service';
-
 import { Message } from '../global-message/message';
 
 import { Observable } from 'rxjs/Observable';
@@ -22,11 +20,10 @@ export class ProjectService {
 
   constructor(private http: Http) {}
 
-  getProject(projectId: number): Promise<Project> {
+  getProject(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}`)
-               .toPromise()
-               .then(response=>response.json() as Project)
+               .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
 
@@ -70,4 +67,11 @@ export class ProjectService {
                .catch(error=>Observable.throw(error));
   }
    
+  checkProjectMember(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/members`)
+               .map(response=>response.json())
+               .catch(error=>Observable.throw(error));
+  }
+  
 }
