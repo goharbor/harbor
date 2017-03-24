@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
@@ -8,6 +8,8 @@ import { MessageService } from '../../global-message/message.service';
 
 import { SearchTriggerService } from './search-trigger.service';
 
+import { Subscription } from 'rxjs/Subscription';
+
 @Component({
     selector: "search-result",
     templateUrl: "search-result.component.html",
@@ -16,7 +18,7 @@ import { SearchTriggerService } from './search-trigger.service';
     providers: [GlobalSearchService]
 })
 
-export class SearchResultComponent {
+export class SearchResultComponent implements OnInit, OnDestroy {
     private searchResults: SearchResults = new SearchResults();
     private originalCopy: SearchResults;
 
@@ -30,10 +32,33 @@ export class SearchResultComponent {
     //Whether or not mouse point is onto the close indicator
     private mouseOn: boolean = false;
 
+    //Watch message channel
+    private searchSub: Subscription;
+    private closeSearchSub: Subscription;
+
     constructor(
         private search: GlobalSearchService,
         private msgService: MessageService,
         private searchTrigger: SearchTriggerService) { }
+
+    ngOnInit() {
+        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(term => {
+            this.doSearch(term);
+        });
+        this.closeSearchSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
+            this.close();
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
+
+        if (this.closeSearchSub) {
+            this.closeSearchSub.unsubscribe();
+        }
+    }
 
     private clone(src: SearchResults): SearchResults {
         let res: SearchResults = new SearchResults();
@@ -64,27 +89,23 @@ export class SearchResultComponent {
         return this.mouseOn;
     }
 
-    //Handle mouse event of close indicator
-    mouseAction(over: boolean): void {
-        this.mouseOn = over;
-    }
-
     //Show the results
     show(): void {
         this.stateIndicator = true;
-        this.searchTrigger.searchInputStat(true);
     }
 
     //Close the result page
     close(): void {
-        //Tell shell close
-        this.searchTrigger.closeSearch(true);
-        this.searchTrigger.searchInputStat(false);
         this.stateIndicator = false;
+        this.searchTrigger.clear(true);
     }
 
     //Call search service to complete the search request
     doSearch(term: string): void {
+        //Only search none empty term
+        if (!term || term.trim() === "") {
+            return;
+        }
         //Do nothing if search is ongoing
         if (this.onGoing) {
             return;

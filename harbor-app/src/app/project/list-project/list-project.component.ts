@@ -57,7 +57,7 @@ export class ListProjectComponent implements OnInit {
   }
 
   goToLink(proId: number): void {
-    this.searchTrigger.closeSearch(false);
+    this.searchTrigger.closeSearch(true);
 
     let linkUrl = ['harbor', 'projects', proId, 'repository'];
     if (!this.session.getCurrentUser()) {
