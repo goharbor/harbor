@@ -5,7 +5,7 @@ import { ProjectService } from '../project.service';
 
 import { SessionService } from '../../shared/session.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { ListMode } from '../../shared/shared.const';
+import { ListMode, ProjectTypes, RoleInfo } from '../../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
@@ -24,12 +24,16 @@ export class ListProjectComponent implements OnInit {
   @Input() totalRecordCount: number;
   pageOffset: number = 1;
 
+  @Input() filteredType: string;
+
   @Output() paginate = new EventEmitter<State>();
 
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
   @Input() mode: string = ListMode.FULL;
+
+  roleInfo = RoleInfo;
 
   constructor(
     private session: SessionService,
@@ -41,6 +45,10 @@ export class ListProjectComponent implements OnInit {
 
   public get listFullMode(): boolean {
     return this.mode === ListMode.FULL && this.session.getCurrentUser() != null;
+  }
+
+  get showRoleInfo(): boolean {
+    return this.listFullMode && this.filteredType === ProjectTypes[0];
   }
 
   public get isSystemAdmin(): boolean {

@@ -76,7 +76,10 @@ const harborRoutes: Routes = [
       },
       {
         path: 'tags/:id/:repo',
-        component: TagRepositoryComponent
+        component: TagRepositoryComponent,
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
       },
       {
         path: 'projects/:id',
