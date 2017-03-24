@@ -29,8 +29,8 @@ export class FilterComponent implements OnInit{
 
     ngOnInit(): void {
         this.filterTerms
-        .debounceTime(300)
-        .distinctUntilChanged()
+        .debounceTime(500)
+        //.distinctUntilChanged()
         .subscribe(terms => {
             this.filterEvt.emit(terms);
         });
