@@ -243,13 +243,23 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      */
     public testMailServer(): void {
         let mailSettings = {};
-        let allChanges = this.getChanges();
-        for (let prop in allChanges) {
+        let allConfigs = this.allConfig;
+        for (let prop in allConfigs) {
             if (prop.startsWith("email_")) {
-                mailSettings[prop] = allChanges[prop];
+                mailSettings[prop] = allConfigs[prop].value;
             }
         }
+        //convert string to int
+        mailSettings["email_port"] = +mailSettings["email_port"]
+        let allChanges = this.getChanges();
+        let password = allChanges["email_password"]
+        if (password) {
+            mailSettings["email_password"] = password
+        }else{
+            delete mailSettings["email_password"];
+        }
 
+        console.info(mailSettings);
         this.testingOnGoing = true;
         this.configService.testMailServer(mailSettings)
             .then(response => {
