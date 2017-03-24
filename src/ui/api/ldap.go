@@ -16,6 +16,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -65,6 +66,22 @@ func (l *LdapAPI) Ping() {
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
+		v := map[string]interface{}{}
+		if err := json.Unmarshal(l.Ctx.Input.RequestBody,
+			&v); err != nil {
+			log.Errorf("failed to unmarshal LDAP server settings: %v", err)
+			l.RenderError(http.StatusInternalServerError, "")
+			return
+		}
+		if _, ok := v["ldap_search_password"]; !ok {
+			settings, err := ldapUtils.GetSystemLdapConf()
+			if err != nil {
+				log.Errorf("Can't load system configuration, error: %v", err)
+				l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+				return
+			}
+			ldapConfs.LdapSearchPassword = settings.LdapSearchPassword
+		}
 	}
 
 	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
