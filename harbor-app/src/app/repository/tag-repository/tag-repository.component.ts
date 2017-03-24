@@ -36,6 +36,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
   registryUrl: string;
   withNotary: boolean;
 
+  hasSignedIn: boolean;
+
   private subscription: Subscription;
 
   constructor(
@@ -74,8 +76,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.hasSignedIn = (this.session.getCurrentUser() !== null);
     let resolverData = this.route.snapshot.data;
-    console.log(JSON.stringify(resolverData));
     if(resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }

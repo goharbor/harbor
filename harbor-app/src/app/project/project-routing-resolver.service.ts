@@ -23,13 +23,21 @@ export class ProjectRoutingResolver implements Resolve<Project>{
                .then((project: Project)=> {
                   if(project) {
                     let currentUser = this.sessionService.getCurrentUser();
-                    let projectMembers = this.sessionService.getProjectMembers();
-                    if(currentUser && projectMembers) {
-                      let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
-                      if(currentMember) {
-                        project.is_member = true;
-                        project.has_project_admin_role = (currentMember.role_name === 'projectAdmin') || currentUser.has_admin_role === 1;
-                      } 
+                    if(currentUser) {
+                      if(currentUser.has_admin_role === 1) {
+                        project.has_project_admin_role = true;
+                        project.role_name = 'sysAdmin';
+                      } else {
+                        let projectMembers = this.sessionService.getProjectMembers();
+                        if(projectMembers) {
+                          let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
+                          if(currentMember) {
+                            project.is_member = true;
+                            project.has_project_admin_role = (currentMember.role_name === 'projectAdmin');
+                            project.role_name = currentMember.role_name;
+                          } 
+                        }
+                      }
                     }
                     return project;
                   } else {
