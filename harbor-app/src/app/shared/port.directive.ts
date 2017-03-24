@@ -1,7 +1,7 @@
 import { Directive } from '@angular/core';
 import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS, Validators } from '@angular/forms';
 
-export const portNumbers = /[\d]+/;
+export const portNumbers = /^[\d]{1,5}$/;
 
 export function portValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {

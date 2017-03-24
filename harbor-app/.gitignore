@@ -8,5 +8,5 @@ typings/
 .idea/
 .DS_Store
 ssl/
-*angular-cli.json*
-*package.json*
+angular-cli.json
+package.json
