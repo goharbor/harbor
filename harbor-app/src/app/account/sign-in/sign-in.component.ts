@@ -51,7 +51,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.appConfig = this.appConfigService.getConfig();
+        //Make sure the updated configuration can be loaded
+        this.appConfigService.load()
+        .then(updatedConfig => this.appConfig = updatedConfig);
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
@@ -108,7 +110,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     //Fill the new user info into the sign in form
     private handleUserCreation(user: User): void {
-        if(user){
+        if (user) {
             this.currentForm.setValue({
                 "login_username": user.username,
                 "login_password": user.password
