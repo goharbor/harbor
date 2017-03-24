@@ -192,7 +192,9 @@ func TestFilterAccess(t *testing.T) {
 	s := []string{"registry:catalog:*"}
 	a1 := GetResourceActions(s)
 	a2 := GetResourceActions(s)
-	u := userInfo{"jack", false}
+	a3 := GetResourceActions(s)
+	u1 := userInfo{"jack", true}
+	u2 := userInfo{"jack", false}
 	ra1 := token.ResourceActions{
 		Type:    "registry",
 		Name:    "catalog",
@@ -203,10 +205,13 @@ func TestFilterAccess(t *testing.T) {
 		Name:    "catalog",
 		Actions: []string{},
 	}
-	err = filterAccess(a1, u, registryFilterMap)
+	err = filterAccess(a1, u1, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
-	err = filterAccess(a2, u, notaryFilterMap)
+	err = filterAccess(a2, u1, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
+	err = filterAccess(a3, u2, registryFilterMap)
+	assert.Nil(t, err, "Unexpected error: %v", err)
+	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }

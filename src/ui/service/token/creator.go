@@ -139,6 +139,10 @@ func (reg registryFilter) filter(user userInfo, a *token.ResourceActions) error 
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
 	}
+	if !user.allPerm {
+		//Set the actions to empty is the user is not admin
+		a.Actions = []string{}
+	}
 	return nil
 }
 
