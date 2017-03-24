@@ -166,13 +166,13 @@ then
 	if [ -n "$(docker-compose -f docker-compose.yml -f docker-compose.notary.yml ps -q)"  ]
 	then
 		note "stopping existing Harbor instance ..." 
-		docker-compose -f docker-compose.yml -f docker-compose.notary.yml down
+		docker-compose -f docker-compose.yml -f docker-compose.notary.yml down -v
 	fi
 else
 	if [ -n "$(docker-compose -f docker-compose.yml ps -q)" ]
 	then
 		note "stopping existing Harbor instance ..." 
-		docker-compose -f docker-compose.yml down
+		docker-compose -f docker-compose.yml down -v
 	fi	
 fi
 echo ""
