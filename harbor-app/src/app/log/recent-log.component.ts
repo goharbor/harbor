@@ -35,8 +35,8 @@ export class RecentLogComponent implements OnInit {
     }
 
     private handleOnchange($event: any) {
-        if (event && event.target && event.srcElement["value"]) {
-            this.lines = event.srcElement["value"];
+        if ($event && $event.target && $event.target["value"]) {
+            this.lines = $event.target["value"];
             if (this.lines < 10) {
                 this.lines = 10;
             }
