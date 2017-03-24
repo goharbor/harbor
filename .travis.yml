@@ -102,7 +102,7 @@ script:
   - docker ps
   - ./tests/notarytest.sh
   - ./tests/startuptest.sh
-  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests
