@@ -118,6 +118,7 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 4443:4443
     depends_on:
       - mysql
       - registry
