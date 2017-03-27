@@ -27,6 +27,7 @@ export class NavigatorComponent implements OnInit {
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
     private selectedLang: string = enLang;
+    private appTitle: string = 'APP_TITLE.HARBOR';
 
     constructor(
         private session: SessionService,
@@ -44,6 +45,9 @@ export class NavigatorComponent implements OnInit {
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);
         });
+        if (this.appConfigService.isIntegrationMode()) {
+            this.appTitle = 'APP_TITLE.VIC';
+        }
     }
 
     public get isSessionValid(): boolean {

@@ -1,20 +1,22 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="true" [clrModalStaticBackdrop]="false">
     <h3 class="modal-title margin-left-override">vmware</h3>
     <div class="modal-body margin-left-override">
-        <div class="about-product-title">Harbor</div>
-        <div style="height: 12px;"></div>
         <div>
-            <span class="about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
-            <span>|</span>
-            <span class="about-build">{{'ABOUT.BUILD' | translate}} {{build}}</span>
+            <h2>Harbor</h2>
         </div>
         <div style="height: 12px;"></div>
         <div>
-            <p class="about-copyright-text">{{'ABOUT.COPYRIGHT' | translate}} <a href="http://www.vmware.com/go/patents" target="_blank" class="about-text-link">http://www.vmware.com/go/patents</a></p>
-            <p class="about-copyright-text">{{'ABOUT.TRADEMARK' | translate}}</p>
-            <p>
-                <a href="#" target="_blank" class="about-text-link">{{'ABOUT.END_USER_LICENSE' | translate}}</a><br>
-                <a href="#" target="_blank" class="about-text-link">{{'ABOUT.OPEN_SOURCE_LICENSE' | translate}}</a>
+            <span class="p5 about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
+            <span>|</span>
+            <span class="p5 about-build">{{'ABOUT.BUILD' | translate}} {{build}}</span>
+        </div>
+        <div style="height: 12px;"></div>
+        <div>
+            <p class="p5">{{'ABOUT.COPYRIGHT' | translate}} <a href="http://www.vmware.com/go/patents" target="_blank" class="about-text-link">http://www.vmware.com/go/patents</a></p>
+            <p class="p5">{{'ABOUT.TRADEMARK' | translate}}</p>
+            <p class="p5">
+                <a href="#" target="_blank">{{'ABOUT.END_USER_LICENSE' | translate}}</a><br>
+                <a href="#" target="_blank">{{'ABOUT.OPEN_SOURCE_LICENSE' | translate}}</a>
             </p>
             <div style="height: 24px;"></div>
         </div>
