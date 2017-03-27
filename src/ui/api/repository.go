@@ -228,6 +228,7 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	if config.WithNotary() {
+		var digest string
 		signedTags := make(map[string]struct{})
 		targets, err := getNotaryTargets(user, repoName)
 		if err != nil {
@@ -235,10 +236,21 @@ func (ra *RepositoryAPI) Delete() {
 			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
 		}
 		for _, tgt := range targets {
-			signedTags[tgt.Tag] = struct{}{}
+			digest, err = notary.DigestFromTarget(tgt)
+			if err != nil {
+				log.Errorf("Failed to get disgest from target, error: %v", err)
+				ra.CustomAbort(http.StatusInternalServerError, err.Error())
+			}
+			signedTags[digest] = struct{}{}
 		}
 		for _, t := range tags {
-			if _, ok = signedTags[t]; ok {
+			digest, _, err := rc.ManifestExist(t)
+			if err != nil {
+				log.Errorf("Failed to Check the digest of tag: %s, error: %v", t, err.Error())
+				ra.CustomAbort(http.StatusInternalServerError, err.Error())
+			}
+			log.Debugf("Tag: %s, digest: %s", t, digest)
+			if _, ok = signedTags[digest]; ok {
 				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
 				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
 			}
