@@ -81,7 +81,8 @@
         "PROFILE": "User Profile",
         "CHANGE_PWD": "Change Password",
         "ABOUT": "About",
-        "LOGOUT": "Log Out"
+        "LOGOUT": "Log Out",
+        "ROOT_CERT": "Download Root Cert"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "Search Harbor..."

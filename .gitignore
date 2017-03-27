@@ -24,5 +24,8 @@ src/ui_ng/typings/
 **/*yarn-error.log.*
 .idea/
 .DS_Store
+**/node_modules
+**/ssl/
+**/proxy.config.json
 
 

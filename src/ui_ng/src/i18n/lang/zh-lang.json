@@ -81,7 +81,8 @@
         "PROFILE": "用户设置",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
-        "LOGOUT": "退出"
+        "LOGOUT": "退出",
+        "ROOT_CERT": "下载根证书"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "搜索 Harbor..."
