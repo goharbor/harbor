@@ -16,6 +16,8 @@
 package notary
 
 import (
+	"os"
+	"path"
 	"strings"
 
 	"github.com/docker/notary"
@@ -73,6 +75,12 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 		return res, nil
 	} else if err != nil {
 		return res, err
+	}
+	//Remove root.json such that when remote repository is removed the local cache can't be reused.
+	rootJSON := path.Join(notaryCachePath, "tuf", fqRepo, "metadata/root.json")
+	rmErr := os.Remove(rootJSON)
+	if rmErr != nil {
+		log.Warningf("Failed to clear cached root.json: %s, error: %v, when repo is removed from notary the signature status maybe incorrect")
 	}
 	for _, t := range targets {
 		res = append(res, Target{t.Name, t.Hashes})

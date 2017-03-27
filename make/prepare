@@ -40,20 +40,28 @@ def validate(conf, args):
         raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
 
 def get_secret_key(path):
-    key_file = os.path.join(path, "secretkey")
+    secret_key = _get_secret(path, "secretkey") 
+    if len(secret_key) != 16:
+        raise Exception("secret key's length has to be 16 chars, current length: %d" % len(secret_key))
+    return secret_key
+
+def get_alias(path):
+    alias = _get_secret(path, "defaultalias", length=8)
+    return alias
+
+def _get_secret(folder, filename, length=16):
+    key_file = os.path.join(folder, filename)
     if os.path.isfile(key_file):
         with open(key_file, 'r') as f:
             key = f.read()
-            print("loaded secret key")
-        if len(key) != 16:
-            raise Exception("secret key's length has to be 16 chars, current length: %d" % len(key))
+            print("loaded secret from file: %s" % key_file)
         return key
-    if not os.path.isdir(path):
+    if not os.path.isdir(folder):
         os.makedirs(path, mode=0600)
-    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
     with open(key_file, 'w') as f:
         f.write(key)
-        print("generated and saved secret key")
+        print("Generated and saved secret to file: %s" % key_file)
     return key
 
 def prep_conf_dir(root, name):
@@ -343,7 +351,7 @@ if args.notary_mode:
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.server.conf"), nginx_conf_d)
 
-    default_alias = ''.join(random.choice(string.ascii_letters) for i in range(8))
+    default_alias = get_alias(secretkey_path)
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
 
 FNULL.close()
