@@ -3,8 +3,10 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { Statistics } from './statistics';
+import { Volumes } from './volumes';
 
-export const statisticsEndpoint = "/api/statistics";
+const statisticsEndpoint = "/api/statistics";
+const volumesEndpoint = "/api/systeminfo/volumes";
 /**
  * Declare service to handle the top repositories
  * 
@@ -26,6 +28,12 @@ export class StatisticsService {
     getStatistics(): Promise<Statistics> {
         return this.http.get(statisticsEndpoint, this.options).toPromise()
         .then(response => response.json() as Statistics)
+        .catch(error => Promise.reject(error));
+    }
+
+    getVolumes(): Promise<Volumes> {
+        return this.http.get(volumesEndpoint, this.options).toPromise()
+        .then(response => response.json() as Volumes)
         .catch(error => Promise.reject(error));
     }
 }

@@ -37,7 +37,7 @@ import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
-  { path: 'password-reset', component: ResetPasswordComponent },
+  { path: 'reset_password', component: ResetPasswordComponent },
   {
     path: 'harbor',
     component: HarborShellComponent,

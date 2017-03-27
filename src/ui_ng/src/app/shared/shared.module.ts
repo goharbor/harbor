@@ -37,6 +37,8 @@ import { MemberGuard } from './route/member-guard-activate.service';
 import { ListProjectROComponent } from './list-project-ro/list-project-ro.component';
 import { ListRepositoryROComponent } from './list-repository-ro/list-repository-ro.component';
 
+import { MessageHandlerService } from './message-handler/message-handler.service';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -88,7 +90,8 @@ import { ListRepositoryROComponent } from './list-repository-ro/list-repository-
     AuthCheckGuard,
     SignInGuard,
     LeavingConfigRouteDeactivate,
-    MemberGuard
+    MemberGuard,
+    MessageHandlerService
   ]
 })
 export class SharedModule {

@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-
+import { Subscription } from 'rxjs/Subscription';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Message } from './message';
@@ -12,13 +12,17 @@ import { AlertType, dismissInterval, httpStatusCode, CommonRoutes } from '../sha
   selector: 'global-message',
   templateUrl: 'message.component.html'
 })
-export class MessageComponent implements OnInit {
+export class MessageComponent implements OnInit, OnDestroy {
 
   @Input() isAppLevel: boolean;
   globalMessage: Message = new Message();
   globalMessageOpened: boolean;
   messageText: string = "";
   private timer: any = null;
+
+  private appLevelMsgSub: Subscription;
+  private msgSub: Subscription;
+  private clearSub: Subscription;
 
   constructor(
     private messageService: MessageService,
@@ -28,7 +32,7 @@ export class MessageComponent implements OnInit {
   ngOnInit(): void {
     //Only subscribe application level message
     if (this.isAppLevel) {
-      this.messageService.appLevelAnnounced$.subscribe(
+      this.appLevelMsgSub = this.messageService.appLevelAnnounced$.subscribe(
         message => {
           this.globalMessageOpened = true;
           this.globalMessage = message;
@@ -39,7 +43,7 @@ export class MessageComponent implements OnInit {
       )
     } else {
       //Only subscribe general messages
-      this.messageService.messageAnnounced$.subscribe(
+      this.msgSub = this.messageService.messageAnnounced$.subscribe(
         message => {
           this.globalMessageOpened = true;
           this.globalMessage = message;
@@ -53,6 +57,24 @@ export class MessageComponent implements OnInit {
         }
       );
     }
+
+    this.clearSub = this.messageService.clearChan$.subscribe(clear => {
+      this.onClose();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.appLevelMsgSub) {
+      this.appLevelMsgSub.unsubscribe();
+    }
+
+    if (this.msgSub) {
+      this.msgSub.unsubscribe();
+    }
+
+    if (this.clearSub) {
+      this.clearSub.unsubscribe();
+    }
   }
 
   //Translate or refactor the message shown to user
@@ -65,20 +87,12 @@ export class MessageComponent implements OnInit {
       }
     }
 
-    //Override key for HTTP 401 and 403
-    if (this.globalMessage.statusCode === httpStatusCode.Unauthorized) {
-      key = "UNAUTHORIZED_ERROR";
-    } else if (this.globalMessage.statusCode === httpStatusCode.Forbidden) {
-      key = "FORBIDDEN_ERROR";
-    } 
-
     this.translate.get(key, { 'param': param }).subscribe((res: string) => this.messageText = res);
   }
 
   public get needAuth(): boolean {
     return this.globalMessage ?
-      (this.globalMessage.statusCode === httpStatusCode.Unauthorized) ||
-      (this.globalMessage.statusCode === httpStatusCode.Forbidden) : false;
+      this.globalMessage.statusCode === httpStatusCode.Unauthorized : false;
   }
 
   //Show message text

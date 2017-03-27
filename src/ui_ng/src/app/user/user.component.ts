@@ -8,9 +8,10 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationState, ConfirmationTargets, AlertType, httpStatusCode } from '../shared/shared.const'
-import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
-import { MessageService } from '../global-message/message.service';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const'
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+
+import { SessionService } from '../shared/session.service';
 
 @Component({
   selector: 'harbor-user',
@@ -35,7 +36,8 @@ export class UserComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private translate: TranslateService,
     private deletionDialogService: ConfirmationDialogService,
-    private msgService: MessageService) {
+    private msgHandler: MessageHandlerService,
+    private session: SessionService) {
     this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
       if (confirmed &&
         confirmed.source === ConfirmationTargets.USER &&
@@ -43,6 +45,17 @@ export class UserComponent implements OnInit, OnDestroy {
         this.delUser(confirmed.data);
       }
     });
+  }
+
+  private isMySelf(uid: number): boolean {
+    let currentUser = this.session.getCurrentUser();
+    if (currentUser) {
+      if (currentUser.user_id === uid) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
@@ -101,6 +114,10 @@ export class UserComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isMySelf(user.user_id)) {
+      return;
+    }
+
     //Value copy
     let updatedUser: User = {
       user_id: user.user_id
@@ -118,9 +135,7 @@ export class UserComponent implements OnInit, OnDestroy {
         user.has_admin_role = updatedUser.has_admin_role;
       })
       .catch(error => {
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       })
   }
 
@@ -128,6 +143,10 @@ export class UserComponent implements OnInit, OnDestroy {
   deleteUser(user: User): void {
     if (!user) {
       return;
+    }
+
+    if (this.isMySelf(user.user_id)) {
+      return; //Double confirm
     }
 
     //Confirm deletion
@@ -148,13 +167,11 @@ export class UserComponent implements OnInit, OnDestroy {
         //and then view refreshed
         this.originalUsers.then(users => {
           this.users = users.filter(u => u.user_id != user.user_id);
-          this.msgService.announceMessage(500, "USER.DELETE_SUCCESS", AlertType.SUCCESS);
+          this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
         });
       })
       .catch(error => {
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       });
   }
 
@@ -172,9 +189,7 @@ export class UserComponent implements OnInit, OnDestroy {
       })
       .catch(error => {
         this.onGoing = false;
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       });
   }
 
