@@ -413,7 +413,11 @@
         "BACK": "Back"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later",
-    "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue the operation",
-    "FORBIDDEN_ERROR": "You are not allowed to perform this operation",
-    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}"
+    "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action",
+    "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action",
+    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}",
+    "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request",
+    "NOT_FOUND_ERROR": "Your request can not be completed because the object does not exist",
+    "CONFLICT_ERROR": "We are unable to perform your action because your submission has conflicts",
+    "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred"
 }

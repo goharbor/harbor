@@ -415,5 +415,9 @@
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限",
-    "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}"
+    "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}",
+    "BAD_REQUEST_ERROR": "错误请求导致无法完成操作",
+    "NOT_FOUND_ERROR": "对象不存在故无法完成你的请求",
+    "CONFLICT_ERROR": "你的提交包含冲突故操作无法完成",
+    "SERVER_ERROR": "服务器出现内部错误，请求无法完成"
 }
