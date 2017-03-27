@@ -14,10 +14,14 @@ import { AppConfigService } from '../../app-config.service';
 import { AppConfig } from '../../app-config';
 import { User } from '../../user/user';
 
+import { CookieService, CookieOptions } from 'angular2-cookie/core';
+
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
 export const signInStatusOnGoing = 1;
 export const signInStatusError = -1;
+const remCookieKey = "rem-username";
+const expireDays = 10;
 
 @Component({
     selector: 'sign-in',
@@ -28,6 +32,9 @@ export const signInStatusError = -1;
 export class SignInComponent implements AfterViewChecked, OnInit {
     private redirectUrl: string = "";
     private appConfig: AppConfig = new AppConfig();
+    //Remeber me indicator
+    private rememberMe: boolean = false;
+    private rememberedName: string = "";
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -47,13 +54,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         private router: Router,
         private session: SessionService,
         private route: ActivatedRoute,
-        private appConfigService: AppConfigService
+        private appConfigService: AppConfigService,
+        private cookie: CookieService
     ) { }
 
     ngOnInit(): void {
         //Make sure the updated configuration can be loaded
         this.appConfigService.load()
-        .then(updatedConfig => this.appConfig = updatedConfig);
+            .then(updatedConfig => this.appConfig = updatedConfig);
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
@@ -62,6 +70,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                     this.signUp();//Open sign up
                 }
             });
+
+        let remUsername = this.cookie.get(remCookieKey);
+        remUsername = remUsername ? remUsername.trim() : "";
+        if (remUsername) {
+            this.signInCredential.principal = remUsername;
+            this.rememberMe = true;
+            this.rememberedName = remUsername;
+        }
     }
 
     //For template accessing
@@ -82,6 +98,31 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     public get selfSignUp(): boolean {
         return this.appConfig.auth_mode === 'db_auth'
             && this.appConfig.self_registration;
+    }
+
+    private clickRememberMe($event): void {
+        if ($event && $event.target) {
+            this.rememberMe = $event.target.checked;
+            if (!this.rememberMe) {
+                //Remove cookie data
+                this.cookie.remove(remCookieKey);
+                this.rememberedName = "";
+            }
+        }
+    }
+
+    private remeberMe(): void {
+        if (this.rememberMe) {
+            if (this.rememberedName != this.signInCredential.principal) {
+                //Set expire time
+                let expires: number = expireDays * 3600 * 24 * 1000;
+                let date = new Date(Date.now() + expires); 
+                let cookieptions = new CookieOptions({
+                    expires: date
+                });
+                this.cookie.put(remCookieKey, this.signInCredential.principal, cookieptions);
+            }
+        }
     }
 
     //General error handler
@@ -149,6 +190,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             .then(() => {
                 //Set status
                 this.signInStatus = signInStatusNormal;
+
+                //Remeber me
+                this.remeberMe();
 
                 //Redirect to the right route
                 if (this.redirectUrl === "") {

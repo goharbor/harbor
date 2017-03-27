@@ -70,6 +70,13 @@ export class NavigatorComponent implements OnInit {
         return this.appConfigService.isIntegrationMode();
     }
 
+    public get canDownloadCert(): boolean {
+        return this.session.getCurrentUser() && 
+        this.session.getCurrentUser().has_admin_role>0 &&
+        this.appConfigService.getConfig() &&
+        this.appConfigService.getConfig().has_ca_root;
+    }
+
     matchLang(lang: string): boolean {
         return lang.trim() === this.selectedLang;
     }
