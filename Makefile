@@ -168,10 +168,11 @@ VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
+GITTAGVERSION=$(shell $(GITTAG))
 ifeq ($(DEVFLAG), true)        
 	VERSIONTAG=dev
 else        
-	VERSIONTAG=$(shell $(GITTAG))
+	VERSIONTAG=$(GITTAGVERSION)
 endif
 
 SEDCMD=$(shell which sed)
@@ -189,7 +190,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 version:
-	@printf $(GITTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
+	@printf $(GITTAGVERSION) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -275,13 +276,13 @@ package_online: modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
+		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME); \
 	else \
-		$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
+		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
@@ -329,14 +330,14 @@ package_offline: compile build modify_composefile
 	fi
 	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
 	else \
-		$(TARCMD) -zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
@@ -423,10 +424,10 @@ cleanversiontag:
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
-	@if [ -f $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
-	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi	
+	@if [ -f $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ; fi	
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
