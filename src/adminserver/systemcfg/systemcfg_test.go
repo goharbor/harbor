@@ -19,119 +19,81 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-// test functions in adminserver/systemcfg/systemcfg.go
-func TestSystemcfg(t *testing.T) {
-	configPath := "/tmp/config.json"
-	if _, err := os.Stat(configPath); err == nil {
-		if err := os.Remove(configPath); err != nil {
-			t.Errorf("failed to remove %s: %v", configPath, err)
-			return
-		}
-	} else if !os.IsNotExist(err) {
-		t.Errorf("failed to check the existence of %s: %v", configPath, err)
-		return
+func TestParseStringToInt(t *testing.T) {
+	cases := []struct {
+		input  string
+		result int
+	}{
+		{"1", 1},
+		{"-1", -1},
+		{"0", 0},
+		{"", 0},
 	}
 
-	if err := os.Setenv("JSON_CFG_STORE_PATH", configPath); err != nil {
-		t.Errorf("failed to set env: %v", err)
-		return
+	for _, c := range cases {
+		i, err := parseStringToInt(c.input)
+		assert.Nil(t, err)
+		assert.Equal(t, c.result, i)
+	}
+}
+
+func TestParseStringToBool(t *testing.T) {
+	cases := []struct {
+		input  string
+		result bool
+	}{
+		{"true", true},
+		{"on", true},
+		{"TRUE", true},
+		{"ON", true},
+		{"other", false},
+		{"", false},
 	}
 
-	keyPath := "/tmp/secretkey"
-	if _, err := test.GenerateKey(keyPath); err != nil {
-		t.Errorf("failed to generate key: %v", err)
-		return
+	for _, c := range cases {
+		b, _ := parseStringToBool(c.input)
+		assert.Equal(t, c.result, b)
 	}
-	defer os.Remove(keyPath)
+}
 
-	if err := os.Setenv("KEY_PATH", keyPath); err != nil {
-		t.Errorf("failed to set env: %v", err)
-		return
+func TestInitCfgStore(t *testing.T) {
+	os.Clearenv()
+	path := "/tmp/config.json"
+	if err := os.Setenv("JSON_CFG_STORE_PATH", path); err != nil {
+		t.Fatalf("failed to set env: %v", err)
 	}
+	defer os.RemoveAll(path)
+	err := initCfgStore()
+	assert.Nil(t, err)
+}
 
-	m := map[string]string{
-		"AUTH_MODE":             common.DBAuth,
-		"LDAP_SCOPE":            "1",
-		"LDAP_TIMEOUT":          "30",
-		"MYSQL_PORT":            "3306",
-		"MAX_JOB_WORKERS":       "3",
-		"TOKEN_EXPIRATION":      "30",
-		"CFG_EXPIRATION":        "5",
-		"EMAIL_PORT":            "25",
-		"MYSQL_PWD":             "",
-		"LDAP_SEARCH_PWD":       "",
-		"EMAIL_PWD":             "",
-		"HARBOR_ADMIN_PASSWORD": "",
+func TestLoadFromEnv(t *testing.T) {
+	os.Clearenv()
+	ldapURL := "ldap://ldap.com"
+	extEndpoint := "http://harbor.com"
+	if err := os.Setenv("LDAP_URL", ldapURL); err != nil {
+		t.Fatalf("failed to set env: %v", err)
 	}
+	cfgs := map[string]interface{}{}
+	err := LoadFromEnv(cfgs, true)
+	assert.Nil(t, err)
+	assert.Equal(t, ldapURL, cfgs[common.LDAPURL])
 
-	for k, v := range m {
-		if err := os.Setenv(k, v); err != nil {
-			t.Fatalf("failed to set env %s: %v", k, err)
-		}
+	os.Clearenv()
+	if err := os.Setenv("LDAP_URL", ldapURL); err != nil {
+		t.Fatalf("failed to set env: %v", err)
 	}
-
-	if err := Init(); err != nil {
-		t.Errorf("failed to initialize system configurations: %v", err)
-		return
-	}
-	defer os.Remove(configPath)
-
-	// run Init again to make sure it works well when the configuration file
-	// already exists
-	if err := Init(); err != nil {
-		t.Errorf("failed to initialize system configurations: %v", err)
-		return
+	if err := os.Setenv("EXT_ENDPOINT", extEndpoint); err != nil {
+		t.Fatalf("failed to set env: %v", err)
 	}
 
-	cfg, err := GetSystemCfg()
-	if err != nil {
-		t.Errorf("failed to get system configurations: %v", err)
-		return
-	}
-
-	if cfg[common.AUTHMode] != common.DBAuth {
-		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[common.AUTHMode], common.DBAuth)
-		return
-	}
-
-	cfg[common.AUTHMode] = common.LDAPAuth
-
-	if err = UpdateSystemCfg(cfg); err != nil {
-		t.Errorf("failed to update system configurations: %v", err)
-		return
-	}
-
-	cfg, err = GetSystemCfg()
-	if err != nil {
-		t.Errorf("failed to get system configurations: %v", err)
-		return
-	}
-
-	if cfg[common.AUTHMode] != common.LDAPAuth {
-		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[common.AUTHMode], common.DBAuth)
-		return
-	}
-
-	if err = Reset(); err != nil {
-		t.Errorf("failed to reset system configurations: %v", err)
-		return
-	}
-
-	cfg, err = GetSystemCfg()
-	if err != nil {
-		t.Errorf("failed to get system configurations: %v", err)
-		return
-	}
-
-	if cfg[common.AUTHMode] != common.DBAuth {
-		t.Errorf("unexpected auth mode: %s != %s",
-			cfg[common.AUTHMode], common.DBAuth)
-		return
-	}
+	cfgs = map[string]interface{}{}
+	err = LoadFromEnv(cfgs, false)
+	assert.Nil(t, err)
+	assert.Equal(t, extEndpoint, cfgs[common.ExtEndpoint])
+	assert.Equal(t, nil, cfgs[common.LDAPURL])
 }
