@@ -1,4 +1,10 @@
 {
+    "APP_TITLE": {
+        "HARBOR": "Harbor",
+        "VIC": "vSphere Integrated Containers",
+        "MGMT": "Management",
+        "REG": "Registry"
+    },
     "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password",
@@ -22,7 +28,9 @@
         "CLOSE": "CLOSE",
         "TEST_LDAP": "TEST LDAP SERVER",
         "MORE_INFO": "More info...",
-        "YES": "YES"
+        "YES": "YES",
+        "NO": "NO",
+        "NEGATIVE": "NEGATIVE"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com",
@@ -317,7 +325,7 @@
         "RESET_OK": "Password has been successfully reset. Click OK to login with new password"
     },
     "RECENT_LOG": {
-        "SUB_TITLE": "Show recent",
+        "SUB_TITLE": "Show",
         "SUB_TITLE_SUFIX": "logs"
     },
     "CONFIG": {
@@ -327,7 +335,7 @@
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
-        "CONFIRM_SUMMARY": "Some changes are not saved yet, do you really want to discard?",
+        "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
         "SAVE_SUCCESS": "Configurations have been successfully saved",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",
@@ -336,11 +344,11 @@
         "MAIL_FROM": "Email From",
         "MAIL_SSL": "Email SSL",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
-        "VERIFY_REMOTE_CERT": "Verify Remote Certificate",
+        "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
-        "AUTH_MODE": "Authentication",
-        "PRO_CREATION_RESTRICTION": "Project Creation Restriction",
-        "SELF_REGISTRATION": "Self Registration",
+        "AUTH_MODE": "Auth Mode",
+        "PRO_CREATION_RESTRICTION": "Project Creation",
+        "SELF_REGISTRATION": "Allow Self-Registration",
         "AUTH_MODE_DB": "Database",
         "AUTH_MODE_LDAP": "LDAP",
         "SCOPE_BASE": "Base",
@@ -351,7 +359,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION": "Enable sign up",
             "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
-            "AUTH_MODE": "By default the auth mode is db_auth, i.e. the credentials are stored in a local database. Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.",
+            "AUTH_MODE": "By default the auth mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credentials against an LDAP server.",
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
             "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD",
             "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD",

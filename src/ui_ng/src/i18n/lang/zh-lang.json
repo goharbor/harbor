@@ -1,4 +1,10 @@
 {
+    "APP_TITLE": {
+        "HARBOR": "Harbor",
+        "VIC": "vSphere Integrated Containers",
+        "MGMT": "Management",
+        "REG": "Registry"
+    },
     "SIGN_IN": {
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确",
@@ -22,7 +28,9 @@
         "CLOSE": "关闭",
         "TEST_LDAP": "测试LDAP服务器",
         "MORE_INFO": "更多信息...",
-        "YES": "确定"
+        "YES": "确定",
+        "NO": "否",
+        "NEGATIVE": "否"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com",
@@ -317,12 +325,12 @@
         "RESET_OK": "密码重置成功,点击确定按钮前往登录页登录"
     },
     "RECENT_LOG": {
-        "SUB_TITLE": "显示最近",
-        "SUB_TITLE_SUFIX": "条日志记录"
+        "SUB_TITLE": "显示",
+        "SUB_TITLE_SUFIX": "条日志"
     },
     "CONFIG": {
         "TITLE": "配置",
-        "AUTH": "认证",
+        "AUTH": "认证模式",
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
         "SYSTEM": "系统设置",
@@ -339,8 +347,8 @@
         "VERIFY_REMOTE_CERT": "验证远程证书",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
         "AUTH_MODE": "认证模式",
-        "PRO_CREATION_RESTRICTION": "项目创建限制",
-        "SELF_REGISTRATION": "自注册",
+        "PRO_CREATION_RESTRICTION": "项目创建",
+        "SELF_REGISTRATION": "允许自注册",
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
         "SCOPE_BASE": "基础",
@@ -351,7 +359,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION": "激活注册功能",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor镜像库的证书。如果远程镜像库使用的是自签或者非信任证书不要勾选此选项。",
-            "AUTH_MODE": "默认认证模式为本地认证，比如用户凭证存储在本地数据库。如果使用LDAP服务来认证用户则设置为LDAP服务。",
+            "AUTH_MODE": "默认认证模式为数据库认证，比如用户凭证存储在本地数据库。如果使用LDAP服务来认证用户则设置为LDAP服务。",
             "LDAP_SEARCH_DN": "有权搜索LDAP服务器的用户的DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN之和搜索密码。",
             "LDAP_BASE_DN": "用来在LDAP和AD中搜寻用户的基础DN。",
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
