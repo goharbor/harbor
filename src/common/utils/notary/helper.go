@@ -16,6 +16,8 @@
 package notary
 
 import (
+	"encoding/hex"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -27,6 +29,8 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+
+	"github.com/opencontainers/go-digest"
 )
 
 var (
@@ -86,4 +90,13 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 		res = append(res, Target{t.Name, t.Hashes})
 	}
 	return res, nil
+}
+
+// DigestFromTarget get a target and return the value of digest, in accordance to Docker-Content-Digest
+func DigestFromTarget(t Target) (string, error) {
+	sha, ok := t.Hashes["sha256"]
+	if !ok {
+		return "", fmt.Errorf("no valid hash, expecting sha256")
+	}
+	return digest.NewDigestFromHex("sha256", hex.EncodeToString(sha)).String(), nil
 }
