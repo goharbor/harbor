@@ -10,13 +10,15 @@ import { SessionService } from '../../shared/session.service';
 import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
+import { MessageHandlerService } from '../message-handler/message-handler.service';
 
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
   constructor(
     private authService: SessionService,
     private router: Router,
-    private appConfigService: AppConfigService) { }
+    private appConfigService: AppConfigService,
+    private msgHandler: MessageHandlerService) { }
 
   private isGuest(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const proRegExp = /\/harbor\/projects\/[\d]+\/.+/i;
@@ -29,6 +31,9 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+    //When routing change, clear
+    this.msgHandler.clear();
+    
     return new Promise((resolve, reject) => {
       //Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
       let queryParams = route.queryParams;

@@ -6,10 +6,8 @@ import { User } from './user';
 
 import { SessionService } from '../shared/session.service';
 import { UserService } from './user.service';
-import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
-import { MessageService } from '../global-message/message.service';
-import { AlertType, httpStatusCode } from '../shared/shared.const';
 import { InlineAlertComponent } from '../shared/inline-alert/inline-alert.component';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 @Component({
     selector: "new-user-modal",
@@ -26,7 +24,7 @@ export class NewUserModalComponent {
 
     constructor(private session: SessionService,
         private userService: UserService,
-        private msgService: MessageService) { }
+        private msgHandler: MessageHandlerService) { }
 
     @ViewChild(NewUserFormComponent)
     private newUserForm: NewUserFormComponent;
@@ -43,10 +41,6 @@ export class NewUserModalComponent {
 
     public get isValid(): boolean {
         return this.newUserForm.isValid && this.error == null;
-    }
-
-    public get errorMessage(): string {
-        return errorHandler(this.error);
     }
 
     formValueChange(flag: boolean): void {
@@ -114,12 +108,13 @@ export class NewUserModalComponent {
 
                 this.addNew.emit(u);
                 this.opened = false;
-                this.msgService.announceMessage(200, "USER.SAVE_SUCCESS", AlertType.SUCCESS);
+                this.msgHandler.showSuccess("USER.SAVE_SUCCESS");
             })
             .catch(error => {
                 this.onGoing = false;
                 this.error = error;
-                if(accessErrorHandler(error, this.msgService)){
+                if(this.msgHandler.isAppLevel(error)){
+                    this.msgHandler.handleError(error);
                     this.opened = false;
                 }else{
                     this.inlineAlert.showInlineError(error);
