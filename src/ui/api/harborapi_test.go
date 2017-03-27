@@ -82,12 +82,14 @@ func init() {
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
+	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
-	beego.Router("/api/repositories", &RepositoryAPI{})
-	beego.Router("/api/repositories/tags", &RepositoryAPI{}, "get:GetTags")
-	beego.Router("/api/repositories/manifests", &RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/*/tags/?:tag", &RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/targets/", &TargetAPI{}, "get:List")
 	beego.Router("/api/targets/", &TargetAPI{}, "post:Post")
@@ -505,18 +507,16 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName,
 	detail string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
-	path := "/api/repositories/tags"
+	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
 
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		RepoName string `url:"repo_name"`
-		Detail   string `url:"detail"`
+		Detail string `url:"detail"`
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{
-		RepoName: repoName,
-		Detail:   detail,
+		Detail: detail,
 	})
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {
@@ -546,16 +546,10 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName,
 func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
-	path := "/api/repositories/manifests"
+	path := fmt.Sprintf("/api/repositories/%s/tags/%s/manifest", repoName, tag)
 
 	_sling = _sling.Path(path)
 
-	type QueryParams struct {
-		RepoName string `url:"repo_name"`
-		Tag      string `url:"tag"`
-	}
-
-	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName, Tag: tag})
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
 }
