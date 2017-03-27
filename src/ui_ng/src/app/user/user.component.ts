@@ -12,6 +12,8 @@ import { ConfirmationState, ConfirmationTargets, AlertType, httpStatusCode } fro
 import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
 import { MessageService } from '../global-message/message.service';
 
+import { SessionService } from '../shared/session.service';
+
 @Component({
   selector: 'harbor-user',
   templateUrl: 'user.component.html',
@@ -35,7 +37,8 @@ export class UserComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private translate: TranslateService,
     private deletionDialogService: ConfirmationDialogService,
-    private msgService: MessageService) {
+    private msgService: MessageService,
+    private session: SessionService) {
     this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
       if (confirmed &&
         confirmed.source === ConfirmationTargets.USER &&
@@ -43,6 +46,17 @@ export class UserComponent implements OnInit, OnDestroy {
         this.delUser(confirmed.data);
       }
     });
+  }
+
+  private isMySelf(uid: number): boolean {
+    let currentUser = this.session.getCurrentUser();
+    if(currentUser){
+      if(currentUser.user_id === uid ){
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
@@ -101,6 +115,10 @@ export class UserComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if(this.isMySelf(user.user_id)){
+      return;
+    }
+
     //Value copy
     let updatedUser: User = {
       user_id: user.user_id
@@ -128,6 +146,10 @@ export class UserComponent implements OnInit, OnDestroy {
   deleteUser(user: User): void {
     if (!user) {
       return;
+    }
+
+    if(this.isMySelf(user.user_id)){
+      return; //Double confirm
     }
 
     //Confirm deletion
