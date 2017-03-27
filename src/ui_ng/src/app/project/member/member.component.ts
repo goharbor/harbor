@@ -8,8 +8,8 @@ import { MemberService } from './member.service';
 
 import { AddMemberComponent } from './add-member/add-member.component';
 
-import { MessageService } from '../../global-message/message.service';
-import { AlertType, ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -27,7 +27,6 @@ import { Subscription } from 'rxjs/Subscription';
 import { Project } from '../../project/project';
 
 @Component({
-  moduleId: module.id,
   templateUrl: 'member.component.html',
   styleUrls: ['./member.component.css']
 })
@@ -44,8 +43,11 @@ export class MemberComponent implements OnInit, OnDestroy {
   currentUser: SessionUser;
   hasProjectAdminRole: boolean;
 
-  constructor(private route: ActivatedRoute, private router: Router,
-    private memberService: MemberService, private messageService: MessageService,
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private memberService: MemberService, 
+    private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService,
     private session: SessionService) {
     
@@ -57,11 +59,11 @@ export class MemberComponent implements OnInit, OnDestroy {
           .deleteMember(this.projectId, message.data)
           .subscribe(
           response => {
-            this.messageService.announceMessage(response, 'MEMBER.DELETED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('MEMBER.DELETED_SUCCESS');
             console.log('Successful delete member: ' + message.data);
             this.retrieve(this.projectId, '');
           },
-          error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + message.data, AlertType.DANGER)
+          error => this.messageHandlerService.handleError(error)
           );
       }
     });
@@ -74,7 +76,7 @@ export class MemberComponent implements OnInit, OnDestroy {
       response => this.members = response,
       error => {
         this.router.navigate(['/harbor', 'projects']);
-        this.messageService.announceMessage(error.status, 'Failed to get project member with project ID:' + projectId, AlertType.DANGER);
+        this.messageHandlerService.handleError(error);
       });
   }
 
@@ -115,11 +117,11 @@ export class MemberComponent implements OnInit, OnDestroy {
         .changeMemberRole(this.projectId, m.user_id, roleId)
         .subscribe(
         response => {
-          this.messageService.announceMessage(response, 'MEMBER.SWITCHED_SUCCESS', AlertType.SUCCESS);
+          this.messageHandlerService.showSuccess('MEMBER.SWITCHED_SUCCESS');
           console.log('Successful change role with user ' + m.user_id + ' to roleId ' + roleId);
           this.retrieve(this.projectId, '');
         },
-        error => this.messageService.announceMessage(error.status, 'Failed to change role with user ' + m.user_id + ' to roleId ' + roleId, AlertType.DANGER)
+        error => this.messageHandlerService.handleError(error)
         );
       }
   }

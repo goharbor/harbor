@@ -4,8 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { RepositoryService } from './repository.service';
 import { Repository } from './repository';
 
-import { MessageService } from '../global-message/message.service';
-import { AlertType, ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 
 
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
@@ -17,7 +17,6 @@ import { State } from 'clarity-angular';
 import { Project } from '../project/project';
 
 @Component({
-  moduleId: module.id,
   selector: 'repository',
   templateUrl: 'repository.component.html',
   styleUrls: ['./repository.component.css']
@@ -42,7 +41,7 @@ export class RepositoryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private repositoryService: RepositoryService,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService
   ) {
     this.subscription = this.deletionDialogService
@@ -58,11 +57,11 @@ export class RepositoryComponent implements OnInit {
             .subscribe(
             response => {
               this.refresh();
-              this.messageService.announceMessage(response, 'REPOSITORY.DELETED_REPO_SUCCESS', AlertType.SUCCESS);
+              this.messageHandlerService.showSuccess('REPOSITORY.DELETED_REPO_SUCCESS');
               console.log('Successful deleted repo:' + repoName);
             },
-            error => this.messageService.announceMessage(error.status, 'Failed to delete repo:' + repoName, AlertType.DANGER)
-            );
+            error => this.messageHandlerService.handleError(error)
+          );
         }
       });
  
@@ -97,7 +96,7 @@ export class RepositoryComponent implements OnInit {
         console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
         this.changedRepositories = response.json();
       },
-      error => this.messageService.announceMessage(error.status, 'Failed to list repositories.', AlertType.DANGER)
+      error => this.messageHandlerService.handleError(error)
       );
   }
 

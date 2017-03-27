@@ -3,13 +3,11 @@ import { ReplicationService } from '../../replication/replication.service';
 
 import { CreateEditPolicyComponent } from '../../shared/create-edit-policy/create-edit-policy.component';
 
-import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 import { Policy } from '../../replication/policy';
 
 @Component({
-  moduleId: module.id,
   selector: 'total-replication',
   templateUrl: 'total-replication.component.html',
   providers: [ ReplicationService ],
@@ -27,7 +25,7 @@ export class TotalReplicationComponent implements OnInit {
 
   constructor(
     private replicationService: ReplicationService,
-    private messageService: MessageService) {}
+    private messageHandlerService: MessageHandlerService) {}
 
   ngOnInit() {
     this.retrievePolicies();
@@ -41,7 +39,7 @@ export class TotalReplicationComponent implements OnInit {
             this.changedPolicies = response;
             this.policies = this.changedPolicies;
           },
-          error=>this.messageService.announceMessage(error.status,'Failed to get policies.', AlertType.DANGER)
+          error=>this.messageHandlerService.handleError(error)
         );
   }
 

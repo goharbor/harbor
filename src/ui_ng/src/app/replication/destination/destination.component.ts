@@ -1,8 +1,7 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Target } from '../target';
 import { ReplicationService } from '../replication.service';
-import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -14,7 +13,6 @@ import { Subscription } from 'rxjs/Subscription';
 import { CreateEditDestinationComponent } from '../create-edit-destination/create-edit-destination.component';
 
 @Component({
-  moduleId: module.id,
   selector: 'destination',
   templateUrl: 'destination.component.html',
   styleUrls: ['./destination.component.css']
@@ -32,7 +30,7 @@ export class DestinationComponent implements OnInit {
 
   constructor(
     private replicationService: ReplicationService,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService) {
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
@@ -43,13 +41,12 @@ export class DestinationComponent implements OnInit {
           .deleteTarget(targetId)
           .subscribe(
           response => {
-            this.messageService.announceMessage(response, 'DESTINATION.DELETED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('DESTINATION.DELETED_SUCCESS');
             console.log('Successful deleted target with ID:' + targetId);
             this.reload();
           },
           error => { 
-            this.messageService
-                .announceMessage(error.status,'DESTINATION.DELETED_FAILED', AlertType.DANGER);
+            this.messageHandlerService.handleError(error);
             console.log('Failed to delete target with ID:' + targetId + ', error:' + error);
           });
       }
@@ -72,7 +69,7 @@ export class DestinationComponent implements OnInit {
       .listTargets(targetName)
       .subscribe(
       targets => this.targets = targets,
-      error => this.messageService.announceMessage(error.status, 'Failed to get targets:' + error, AlertType.DANGER)
+      error => this.messageHandlerService.handleError(error)
       );
   }
 
@@ -86,7 +83,7 @@ export class DestinationComponent implements OnInit {
   }
 
   reload() {
-    this.retrieve(this.targetName);
+    this.retrieve('');
   }
 
   openModal() {

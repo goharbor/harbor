@@ -5,10 +5,7 @@ import { NgForm } from '@angular/forms';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 
-
-import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
-
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -39,9 +36,9 @@ export class CreateProjectComponent implements AfterViewChecked {
   @ViewChild(InlineAlertComponent)
   private inlineAlert: InlineAlertComponent;
 
-  constructor(private projectService: ProjectService, 
-              private messageService: MessageService,
-              private translateService: TranslateService) {}
+  constructor(private projectService: ProjectService,             
+              private translateService: TranslateService,
+              private messageHandlerService: MessageHandlerService) {}
 
   onSubmit() {
     this.projectService
@@ -49,7 +46,7 @@ export class CreateProjectComponent implements AfterViewChecked {
         .subscribe(
           status=>{
             this.create.emit(true);
-            this.messageService.announceMessage(status, 'PROJECT.CREATED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('PROJECT.CREATED_SUCCESS');
             this.createProjectOpened = false;
           },
           error=>{
@@ -63,12 +60,14 @@ export class CreateProjectComponent implements AfterViewChecked {
                 this.translateService.get('PROJECT.NAME_IS_ILLEGAL').subscribe(res=>errorMessage = res); 
                 break;
               default:
-                this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res=>{
-                  errorMessage = res;
-                  this.messageService.announceMessage(error.status, errorMessage, AlertType.DANGER);
-                });
+                this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res=>errorMessage = res);
               }
-              this.inlineAlert.showInlineError(errorMessage);
+              if(this.messageHandlerService.isAppLevel(error)) {
+                this.messageHandlerService.handleError(error);
+                this.createProjectOpened = false;
+              } else {
+                this.inlineAlert.showInlineError(errorMessage);
+              }
             }
           }); 
   }

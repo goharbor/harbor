@@ -7,8 +7,7 @@ import { SessionService } from './shared/session.service';
 
 @Component({
     selector: 'harbor-app',
-    templateUrl: 'app.component.html',
-    styleUrls: []
+    templateUrl: 'app.component.html'
 })
 export class AppComponent {
     constructor(

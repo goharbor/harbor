@@ -18,7 +18,7 @@
           <input type="text" class="col-md-8" id="policy_description" [(ngModel)]="createEditPolicy.description" name="description" size="20" #description="ngModel" [disabled]="readonly"> 
         </div>
         <div class="form-group">
-          <label class="col-md-4">{{'REPLICATION.ENABLE' | translate}}</label>
+          <label class="col-md-4 form-group-label-override">{{'REPLICATION.ENABLE' | translate}}</label>
           <div class="checkbox-inline">
             <input type="checkbox" id="policy_enable" [(ngModel)]="createEditPolicy.enable" name="enable" #enable="ngModel" [disabled]="untoggleable">
             <label for="policy_enable"></label>

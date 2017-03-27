@@ -8,8 +8,7 @@ import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmati
 
 import { ConfirmationState, ConfirmationTargets } from '../../shared/shared.const';
 
-import { MessageService } from '../../global-message/message.service';
-import { AlertType } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -35,7 +34,7 @@ export class ListPolicyComponent implements OnDestroy {
     private replicationService: ReplicationService,
     private toggleConfirmDialogService: ConfirmationDialogService,
     private deletionDialogService: ConfirmationDialogService,
-    private messageService: MessageService) {
+    private messageHandlerService: MessageHandlerService) {
 
     this.toggleSubscription = this.toggleConfirmDialogService
         .confirmationConfirm$
@@ -51,10 +50,10 @@ export class ListPolicyComponent implements OnDestroy {
                    .enablePolicy(policy.id, policy.enabled)
                    .subscribe(
                       response => {
-                        this.messageService.announceMessage(response, 'REPLICATION.TOGGLED_SUCCESS', AlertType.SUCCESS);
+                        this.messageHandlerService.showSuccess('REPLICATION.TOGGLED_SUCCESS');
                         console.log('Successful toggled policy status')
                       },
-                      error => this.messageService.announceMessage(error.status, "Failed to toggle policy status.", AlertType.DANGER)
+                      error => this.messageHandlerService.handleError(error)
                    );
              }
           }
@@ -70,11 +69,11 @@ export class ListPolicyComponent implements OnDestroy {
                 .deletePolicy(message.data)
                 .subscribe(
                   response => {
-                    this.messageService.announceMessage(response, 'REPLICATION.DELETED_SUCCESS', AlertType.SUCCESS);
+                    this.messageHandlerService.showSuccess('REPLICATION.DELETED_SUCCESS');
                     console.log('Successful delete policy with ID:' + message.data);
                     this.reload.emit(true);
                   },
-                  error => this.messageService.announceMessage(error.status, 'REPLICATION.DELETED_FAILED', AlertType.DANGER)
+                  error => this.messageHandlerService.handleError(error)
                 );
         }
       }

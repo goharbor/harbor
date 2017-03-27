@@ -2,8 +2,8 @@ import { Component, Output, EventEmitter, ViewChild, AfterViewChecked } from '@a
 import { NgForm } from '@angular/forms';
 
 import { ReplicationService } from '../replication.service';
-import { MessageService } from '../../global-message/message.service';
-import { AlertType, ActionType } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { ActionType } from '../../shared/shared.const';
 
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
@@ -46,7 +46,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
   
   constructor(
     private replicationService: ReplicationService,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService) {}
 
   openCreateEditTarget(targetId?: number) {
@@ -72,8 +72,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
               this.initVal.username = this.target.username;
               this.initVal.password = this.target.password;
             },
-            error=>this.messageService
-                       .announceMessage(error.status, 'DESTINATION.FAILED_TO_GET_TARGET', AlertType.DANGER)
+            error=>this.messageHandlerService.handleError(error)
           );
     } else {
       this.actionType = ActionType.ADD_NEW;
@@ -108,7 +107,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .createTarget(this.target)
           .subscribe(
             response=>{
-              this.messageService.announceMessage(response, 'DESTINATION.CREATED_SUCCESS', AlertType.SUCCESS);
+              this.messageHandlerService.showSuccess('DESTINATION.CREATED_SUCCESS');
               console.log('Successful added target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
@@ -129,8 +128,12 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
               this.translateService
                   .get(errorMessageKey)
                   .subscribe(res=>{
-                    this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
-                    this.inlineAlert.showInlineError(res);
+                    if(this.messageHandlerService.isAppLevel(error)) {
+                      this.messageHandlerService.handleError(error);
+                      this.createEditDestinationOpened = false;
+                    } else {
+                      this.inlineAlert.showInlineError(res);
+                    }
                   });
             }
           );
@@ -140,7 +143,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .updateTarget(this.target)
           .subscribe(
             response=>{ 
-              this.messageService.announceMessage(response, 'DESTINATION.UPDATED_SUCCESS', AlertType.SUCCESS);
+              this.messageHandlerService.showSuccess('DESTINATION.UPDATED_SUCCESS');
               console.log('Successful updated target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
@@ -160,8 +163,12 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
               this.translateService
                   .get(errorMessageKey)
                   .subscribe(res=>{
-                    this.inlineAlert.showInlineError(res);
-                    this.messageService.announceMessage(error.status, errorMessageKey, AlertType.DANGER);
+                    if(this.messageHandlerService.isAppLevel(error)) {
+                      this.messageHandlerService.handleError(error);
+                      this.createEditDestinationOpened = false;
+                    } else {
+                      this.inlineAlert.showInlineError(res);
+                    }
                   });
             }
           );

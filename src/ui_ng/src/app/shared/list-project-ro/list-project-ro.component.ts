@@ -7,7 +7,6 @@ import { Project } from '../../project/project';
 import { State } from 'clarity-angular';
 
 @Component({
-  moduleId: module.id,
   selector: 'list-project-ro',
   templateUrl: 'list-project-ro.component.html'
 })

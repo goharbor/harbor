@@ -3,10 +3,8 @@ import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
  
 import { MemberService } from '../member.service';
-import { MessageService } from '../../../global-message/message.service';
-import { AlertType } from '../../../shared/shared.const';
 
-
+import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -41,17 +39,16 @@ export class AddMemberComponent implements AfterViewChecked {
   @Output() added = new EventEmitter<boolean>();
 
   constructor(private memberService: MemberService, 
-              private messageService: MessageService, 
+              private messageHandlerService: MessageHandlerService, 
               private translateService: TranslateService) {}
 
   onSubmit(): void {
     if(!this.member.username || this.member.username.length === 0) { return; }
-    console.log('Adding member:' + JSON.stringify(this.member));
     this.memberService
         .addMember(this.projectId, this.member.username, +this.member.role_id)
         .subscribe(
           response=>{
-            this.messageService.announceMessage(response, 'MEMBER.ADDED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
             console.log('Added member successfully.');
             this.added.emit(true);
             this.addMemberOpened = false;
@@ -69,9 +66,14 @@ export class AddMemberComponent implements AfterViewChecked {
               default:
                 errorMessageKey = 'MEMBER.UNKNOWN_ERROR';              
               }
+              if(this.messageHandlerService.isAppLevel(error)) {
+                this.messageHandlerService.handleError(error);
+                this.addMemberOpened = false;
+              } else {
                this.translateService
                   .get(errorMessageKey)
                   .subscribe(errorMessage=>this.inlineAlert.showInlineError(errorMessage));
+              }
             }
             console.log('Failed to add member of project:' + this.projectId, ' with error:' + error);
           }

@@ -3,8 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-edit-policy.component';
 
-import { MessageService } from '../global-message/message.service';
-import { AlertType } from '../shared/shared.const';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { SessionService } from '../shared/session.service';
 
@@ -48,7 +47,6 @@ class SearchOption {
 }
 
 @Component({
-  moduleId: module.id,
   selector: 'replicaton',
   templateUrl: 'replication.component.html',
   styleUrls: ['./replication.component.css']
@@ -84,7 +82,7 @@ export class ReplicationComponent implements OnInit {
 
    constructor(
      private sessionService: SessionService, 
-     private messageService: MessageService,
+     private messageHandlerService: MessageHandlerService,
      private replicationService: ReplicationService,
      private route: ActivatedRoute) {
      this.currentUser = this.sessionService.getCurrentUser();
@@ -122,7 +120,7 @@ export class ReplicationComponent implements OnInit {
                this.changedJobs = [];
              }
            },
-           error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)
+           error=>this.messageHandlerService.handleError(error)
          );
    }
 
@@ -151,7 +149,7 @@ export class ReplicationComponent implements OnInit {
              this.changedJobs = response.json();
              this.jobs = this.changedJobs;
            },
-           error=>this.messageService.announceMessage(error.status, 'Failed to fetch jobs with policy ID:' + this.search.policyId, AlertType.DANGER)
+           error=>this.messageHandlerService.handleError(error)
          );
    }
 
@@ -194,6 +192,7 @@ export class ReplicationComponent implements OnInit {
 
    reloadPolicies(isReady: boolean) {
      if(isReady) {
+       this.search.policyName = '';
        this.retrievePolicies();
      }
    }

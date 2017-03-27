@@ -128,7 +128,7 @@
         "MAKE": "设为",
         "NEW_POLICY": "新建策略",
         "DELETE": "删除",
-        "MY_PROJECTS": "我的项目",
+        "MY_PROJECTS": "所有项目",
         "PUBLIC_PROJECTS": "公开项目",
         "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
@@ -149,7 +149,7 @@
     "PROJECT_DETAIL": {
         "REPOSITORIES": "镜像仓库",
         "REPLICATION": "复制",
-        "USERS": "用户",
+        "USERS": "成员",
         "LOGS": "日志",
         "PROJECTS": "项目"
     },

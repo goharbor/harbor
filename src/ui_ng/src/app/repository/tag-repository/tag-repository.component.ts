@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { RepositoryService } from '../repository.service';
-import { MessageService } from '../../global-message/message.service';
-import { AlertType, ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -20,7 +20,6 @@ import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
 
 @Component({
-  moduleId: module.id,
   selector: 'tag-repository',
   templateUrl: 'tag-repository.component.html',
   styleUrls: ['./tag-repository.component.css']
@@ -42,7 +41,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService,
     private repositoryService: RepositoryService,
     private appConfigService: AppConfigService,
@@ -64,11 +63,11 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
                 .subscribe(
                 response => {
                   this.retrieve();
-                  this.messageService.announceMessage(response, 'REPOSITORY.DELETED_TAG_SUCCESS', AlertType.SUCCESS);
+                  this.messageHandlerService.showSuccess('REPOSITORY.DELETED_TAG_SUCCESS');
                   console.log('Deleted repo:' + this.repoName + ' with tag:' + tagName);
                 },
-                error => this.messageService.announceMessage(error.status, 'Failed to delete tag:' + tagName + ' under repo:' + this.repoName, AlertType.DANGER)
-                );
+                error => this.messageHandlerService.handleError(error)
+              );
             }
           }
         }
@@ -102,13 +101,13 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
           .listTagsWithVerifiedSignatures(this.repoName)
           .subscribe(
             items => this.listTags(items),
-            error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+            error => this.messageHandlerService.handleError(error));
     } else {
       this.repositoryService
           .listTags(this.repoName)
           .subscribe(
             items => this.listTags(items),
-            error => this.messageService.announceMessage(error.status, 'Failed to list tags with repo:' + this.repoName, AlertType.DANGER));
+            error => this.messageHandlerService.handleError(error));
     }
   }
 

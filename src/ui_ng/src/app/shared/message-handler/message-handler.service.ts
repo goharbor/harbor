@@ -16,14 +16,15 @@ export class MessageHandlerService {
         if (!error) {
             return;
         }
+        console.log(JSON.stringify(error));
 
-        if (!error.statusCode) {
+        if (!(error.statusCode || error.status)) {
             //treat as string message
-            let msg = "" + error;
+            let msg = '' + error;
             this.msgService.announceMessage(500, msg, AlertType.DANGER);
         } else {
             let msg = 'UNKNOWN_ERROR';
-            switch (error.statusCode) {
+            switch (error.statusCode || error.status) {
                 case 400:
                     msg = "BAD_REQUEST_ERROR";
                     break;
@@ -37,6 +38,7 @@ export class MessageHandlerService {
                 case 404:
                     msg = "NOT_FOUND_ERROR";
                     break;
+                case 412:
                 case 409:
                     msg = "CONFLICT_ERROR";
                     break;
