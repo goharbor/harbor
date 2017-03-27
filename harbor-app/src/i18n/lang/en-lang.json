@@ -1,4 +1,10 @@
 {
+    "APP_TITLE": {
+        "HARBOR": "Harbor",
+        "VIC": "vSphere Integrated Containers",
+        "MGMT": "Management",
+        "REG": "Registry"
+    },
     "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password",
