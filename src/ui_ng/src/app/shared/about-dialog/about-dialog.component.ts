@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
- 
+
+import { AppConfigService } from '../../app-config.service';
+
 @Component({
     selector: 'about-dialog',
     templateUrl: "about-dialog.component.html",
@@ -7,8 +9,14 @@ import { Component } from '@angular/core';
 })
 export class AboutDialogComponent {
     private opened: boolean = false;
-    private version: string ="0.4.1";
-    private build: string ="4276418";
+    private build: string = "4276418";
+
+    constructor(private appConfigService: AppConfigService) { }
+
+    public get version(): string {
+        let appConfig = this.appConfigService.getConfig();
+        return appConfig?appConfig.harbor_version: "n/a";
+    }
 
     public open(): void {
         this.opened = true;

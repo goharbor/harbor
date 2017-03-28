@@ -2,18 +2,24 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 import { errorHandler } from '../shared.utils';
+import { Observable } from 'rxjs/Rx';
+import { Subscription } from "rxjs";
 
 @Component({
     selector: 'inline-alert',
-    templateUrl: "inline-alert.component.html"
+    templateUrl: "inline-alert.component.html",
+    styleUrls: ['inline-alert.component.css']
 })
 export class InlineAlertComponent {
     private inlineAlertType: string = 'alert-danger';
-    private inlineAlertClosable: boolean = true;
+    private inlineAlertClosable: boolean = false;
     private alertClose: boolean = true;
     private displayedText: string = "";
     private showCancelAction: boolean = false;
     private useAppLevelStyle: boolean = false;
+    private timer: Subscription = null;
+    private count: number = 0;
+    private blinking: boolean = false;
 
     @Output() confirmEvt = new EventEmitter<boolean>();
 
@@ -45,7 +51,7 @@ export class InlineAlertComponent {
         }
         this.inlineAlertType = 'alert-warning';
         this.showCancelAction = true;
-        this.inlineAlertClosable = true;
+        this.inlineAlertClosable = false;
         this.alertClose = false;
         this.useAppLevelStyle = false;
     }
@@ -66,6 +72,9 @@ export class InlineAlertComponent {
     //Close alert
     public close(): void {
         this.alertClose = true;
+    }
+
+    public blink() {
     }
 
     private confirmCancel(): void {

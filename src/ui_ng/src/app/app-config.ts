@@ -9,6 +9,7 @@ export class AppConfig {
         this.project_creation_restriction = "everyone";
         this.self_registration = true;
         this.has_ca_root = false;
+        this.harbor_version = "0.5.0";//default
     }
     
     with_notary: boolean;
@@ -19,4 +20,5 @@ export class AppConfig {
     project_creation_restriction: string;
     self_registration: boolean;
     has_ca_root: boolean;
+    harbor_version: string;
 }
