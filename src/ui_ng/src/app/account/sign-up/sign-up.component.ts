@@ -59,8 +59,13 @@ export class SignUpComponent {
     }
 
     open(): void {
-        this.newUserForm.reset();//Reset form
+        //Reset state
+        this.newUserForm.reset();
         this.formValueChanged = false;
+        this.error = null;
+        this.onGoing = false;
+        this.inlienAlert.close();
+
         this.modal.open();
     }
 

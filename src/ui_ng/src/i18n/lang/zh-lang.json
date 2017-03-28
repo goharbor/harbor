@@ -114,7 +114,8 @@
         "SAVE_SUCCESS": "添加用户成功",
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
-        "DELETE_SUCCESS": "删除用户成功"
+        "DELETE_SUCCESS": "删除用户成功",
+        "ITEMS": "条记录"
     },
     "PROJECT": {
         "PROJECTS": "项目",

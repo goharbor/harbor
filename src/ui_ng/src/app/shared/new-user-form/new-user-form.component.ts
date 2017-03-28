@@ -21,7 +21,6 @@ import { SessionService } from '../../shared/session.service';
 
 export class NewUserFormComponent implements AfterViewChecked, OnInit {
     newUser: User = new User();
-    confirmedPwd: string = "";
     @Input() isSelfRegistration: boolean = false;
 
     newUserFormRef: NgForm;
@@ -33,17 +32,10 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
     constructor(private session: SessionService) { }
 
     ngOnInit() {
-        this.formValueChanged = false;
+        this.resetState();
     }
 
-    private validationStateMap: any = {
-        "username": true,
-        "email": true,
-        "realname": true,
-        "newPassword": true,
-        "confirmPassword": true,
-        "comment": true
-    };
+    private validationStateMap: any = {};
 
     private mailAlreadyChecked: any = {};
     private userNameAlreadyChecked: any = {};
@@ -51,10 +43,27 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
     private usernameTooltip: string = 'TOOLTIP.USER_NAME';
     private formValueChanged: boolean = false;
 
-    private checkOnGoing: any = {
-        "username": false,
-        "email": false
-    };
+    private checkOnGoing: any = {};
+
+    private resetState(): void {
+        this.mailAlreadyChecked = {};
+        this.userNameAlreadyChecked = {};
+        this.emailTooltip = 'TOOLTIP.EMAIL';
+        this.usernameTooltip = 'TOOLTIP.USER_NAME';
+        this.formValueChanged = false;
+        this.checkOnGoing = {
+            "username": false,
+            "email": false
+        };
+        this.validationStateMap = {
+            "username": true,
+            "email": true,
+            "realname": true,
+            "newPassword": true,
+            "confirmPassword": true,
+            "comment": true
+        };
+    }
 
     public isChecking(key: string): boolean {
         return !this.checkOnGoing[key];
@@ -161,7 +170,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
             pwdEqualStatus = this.newUserForm.controls["confirmPassword"].value === this.newUserForm.controls["newPassword"].value;
         }
         return this.newUserForm &&
-            this.newUserForm.valid && 
+            this.newUserForm.valid &&
             pwdEqualStatus &&
             this.validationStateMap["username"] &&
             this.validationStateMap["email"];//Backend check should be valid as well
@@ -186,6 +195,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
 
     //Reset form
     reset(): void {
+        this.resetState();
         if (this.newUserForm) {
             this.newUserForm.reset();
         }
