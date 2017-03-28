@@ -32,10 +32,15 @@ export class ForgotPasswordComponent {
     }
 
     public open(): void {
-        this.opened = true;
+        //Clear state data
         this.validationState = true;
         this.forceValid = true;
+        this.onGoing = false;
+        this.email = "";
         this.forgotPwdForm.resetForm();
+        this.inlineAlert.close();
+
+        this.opened = true;
     }
 
     public close(): void {

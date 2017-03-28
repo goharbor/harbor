@@ -55,6 +55,10 @@ export class NewUserModalComponent {
     open(): void {
         this.newUserForm.reset();//Reset form
         this.formValueChanged = false;
+        this.onGoing = false;
+        this.error = null;
+        this.inlineAlert.close();
+        
         this.opened = true;
     }
 

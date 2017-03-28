@@ -96,6 +96,7 @@ export class RecentLogComponent implements OnInit {
         let reg = new RegExp('.*' + terms + '.*', 'i');
         return reg.test(log.username) ||
             reg.test(log.repo_name) ||
-            reg.test(log.operation);
+            reg.test(log.operation) ||
+            reg.test(log.repo_tag);
     }
 }

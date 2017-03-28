@@ -93,9 +93,18 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     //Open modal dialog
     open(): void {
-        this.opened = true;
-        this.pwdForm.reset();
+        //Reset state
         this.formValueChanged = false;
+        this.onCalling = false;
+        this.error = null;
+        this.validationStateMap = {
+            "newPassword": true,
+            "reNewPassword": true
+        };
+        this.pwdForm.reset();
+        this.inlineAlert.close();
+
+        this.opened = true;
     }
 
     //Close the moal dialog
