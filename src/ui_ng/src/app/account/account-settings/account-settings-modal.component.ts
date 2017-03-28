@@ -3,10 +3,8 @@ import { NgForm } from '@angular/forms';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
-import { MessageService } from '../../global-message/message.service';
-import { AlertType, httpStatusCode } from '../../shared/shared.const';
-import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: "account-settings-modal",
@@ -38,7 +36,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     constructor(
         private session: SessionService,
-        private msgService: MessageService) { }
+        private msgHandler: MessageHandlerService) { }
 
     ngOnInit(): void {
         //Value copy
@@ -112,10 +110,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get isValid(): boolean {
-        return this.accountForm && 
-        this.accountForm.valid && 
-        this.error === null &&
-        this.validationStateMap["account_settings_email"]; //backend check is valid as well
+        return this.accountForm &&
+            this.accountForm.valid &&
+            this.error === null &&
+            this.validationStateMap["account_settings_email"]; //backend check is valid as well
     }
 
     public get showProgress(): boolean {
@@ -182,14 +180,15 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .then(() => {
                 this.isOnCalling = false;
                 this.opened = false;
-                this.msgService.announceMessage(200, "PROFILE.SAVE_SUCCESS", AlertType.SUCCESS);
+                this.msgHandler.showSuccess("PROFILE.SAVE_SUCCESS");
             })
             .catch(error => {
                 this.isOnCalling = false;
                 this.error = error;
-                if (accessErrorHandler(error, this.msgService)) {
+                if (this.msgHandler.isAppLevel(error)) {
                     this.opened = false;
-                } else {
+                    this.msgHandler.handleError(error);
+                }else{
                     this.inlineAlert.showInlineError(error);
                 }
             });

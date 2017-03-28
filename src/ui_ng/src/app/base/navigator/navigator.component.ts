@@ -9,11 +9,10 @@ import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames, CommonRoutes, AlertType } from '../../shared/shared.const';
-import { errorHandler } from '../../shared/shared.utils';
+import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { MessageService } from '../../global-message/message.service';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: 'navigator',
@@ -35,7 +34,7 @@ export class NavigatorComponent implements OnInit {
         private translate: TranslateService,
         private cookie: CookieService,
         private appConfigService: AppConfigService,
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService) { }
 
     ngOnInit(): void {
@@ -71,10 +70,10 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get canDownloadCert(): boolean {
-        return this.session.getCurrentUser() && 
-        this.session.getCurrentUser().has_admin_role>0 &&
-        this.appConfigService.getConfig() &&
-        this.appConfigService.getConfig().has_ca_root;
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0 &&
+            this.appConfigService.getConfig() &&
+            this.appConfigService.getConfig().has_ca_root;
     }
 
     matchLang(lang: string): boolean {
@@ -113,7 +112,7 @@ export class NavigatorComponent implements OnInit {
                 this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
             .catch(error => {
-                this.msgService.announceMessage(error.status | 500, errorHandler(error), AlertType.WARNING);
+                this.msgHandler.handleError(error);
             });
         //Confirm search result panel is close
         this.searchTrigger.closeSearch(true);

@@ -6,7 +6,6 @@ import { User } from '../../user/user';
 
 import { SessionService } from '../../shared/session.service';
 import { UserService } from '../../user/user.service';
-import { errorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 import { Modal } from 'clarity-angular';
