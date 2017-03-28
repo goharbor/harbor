@@ -57,7 +57,7 @@ def _get_secret(folder, filename, length=16):
             print("loaded secret from file: %s" % key_file)
         return key
     if not os.path.isdir(folder):
-        os.makedirs(path, mode=0600)
+        os.makedirs(folder, mode=0600)
     key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
     with open(key_file, 'w') as f:
         f.write(key)
@@ -349,7 +349,11 @@ if args.notary_mode:
 
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
-    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.server.conf"), nginx_conf_d)
+    render(os.path.join(templates_dir, "nginx", "notary.server.conf"), 
+            os.path.join(nginx_conf_d, "notary.server.conf"), 
+            ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
+            ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
+
 
     default_alias = get_alias(secretkey_path)
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
