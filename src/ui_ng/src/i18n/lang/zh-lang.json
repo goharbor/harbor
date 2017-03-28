@@ -379,6 +379,8 @@
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常",
+        "TEST_MAIL_FAILED": "验证邮件服务器失败，错误: {{param}}",
+        "TEST_LDAP_FAILED": "验证LDAP服务器失败，错误: {{param}}",
         "LEAVING_CONFIRMATION_TITLE": "确定离开?",
         "LEAVING_CONFIRMATION_SUMMARY": "存在未保存的配置更改, 确认离开当前配置页?"
     },
@@ -419,5 +421,7 @@
     "BAD_REQUEST_ERROR": "错误请求导致无法完成操作",
     "NOT_FOUND_ERROR": "对象不存在故无法完成你的请求",
     "CONFLICT_ERROR": "你的提交包含冲突故操作无法完成",
-    "SERVER_ERROR": "服务器出现内部错误，请求无法完成"
+    "SERVER_ERROR": "服务器出现内部错误，请求无法完成",
+    "INCONRRECT_OLD_PWD": "旧密码不正确",
+    "UNKNOWN": "n/a"
 }

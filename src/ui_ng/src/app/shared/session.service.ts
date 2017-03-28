@@ -46,6 +46,12 @@ export class SessionService {
         return Promise.reject(error.message || error);
     }
 
+    //Clear session
+    clear(): void {
+        this.currentUser = null;
+        this.projectMembers = [];
+    }
+
     //Submit signin form to backend (NOT restful service)
     signIn(signInCredential: SignInCredential): Promise<any> {
         //Build the form package

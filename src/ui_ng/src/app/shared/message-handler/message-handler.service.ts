@@ -3,11 +3,17 @@ import { Subject } from 'rxjs/Subject';
 
 import { MessageService } from '../../global-message/message.service';
 import { AlertType, httpStatusCode } from '../../shared/shared.const';
+import { errorHandler } from '../../shared/shared.utils';
+import { TranslateService } from '@ngx-translate/core';
+import { SessionService } from '../../shared/session.service';
 
 @Injectable()
 export class MessageHandlerService {
 
-    constructor(private msgService: MessageService) { }
+    constructor(
+        private msgService: MessageService,
+        private translate: TranslateService,
+        private session: SessionService) { }
 
     //Handle the error and map it to the suitable message
     //base on the status code of error.
@@ -16,40 +22,29 @@ export class MessageHandlerService {
         if (!error) {
             return;
         }
-        console.log(JSON.stringify(error));
+        let msg = errorHandler(error);
 
         if (!(error.statusCode || error.status)) {
-            //treat as string message
-            let msg = '' + error;
             this.msgService.announceMessage(500, msg, AlertType.DANGER);
         } else {
-            let msg = 'UNKNOWN_ERROR';
-            switch (error.statusCode || error.status) {
-                case 400:
-                    msg = "BAD_REQUEST_ERROR";
-                    break;
-                case 401:
-                    msg = "UNAUTHORIZED_ERROR";
-                    this.msgService.announceAppLevelMessage(error.statusCode, msg, AlertType.DANGER);
-                    return;
-                case 403:
-                    msg = "FORBIDDEN_ERROR";
-                    break;
-                case 404:
-                    msg = "NOT_FOUND_ERROR";
-                    break;
-                case 412:
-                case 409:
-                    msg = "CONFLICT_ERROR";
-                    break;
-                case 500:
-                    msg = "SERVER_ERROR";
-                    break;
-                default:
-                    break;
+            let code = error.statusCode | error.status;
+            if (code === httpStatusCode.Unauthorized) {
+                this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
+                //Session is invalida now, clare session cache
+                this.session.clear();
+            } else {
+                this.msgService.announceMessage(code, msg, AlertType.DANGER);
             }
-            this.msgService.announceMessage(error.statusCode, msg, AlertType.DANGER);
         }
+    }
+
+    public showError(message: string, params: any): void {
+        if (!params) {
+            params = {};
+        }
+        this.translate.get(message, params).subscribe((res: string) => {
+            this.msgService.announceMessage(500, res, AlertType.DANGER);
+        });
     }
 
     public showSuccess(message: string): void {

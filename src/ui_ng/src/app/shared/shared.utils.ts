@@ -8,19 +8,33 @@ import { MessageService } from '../global-message/message.service';
  * @returns {string}
  */
 export const errorHandler = function (error: any): string {
-    if (error) {
-        if (error.message) {
-            return error.message;
-        } else if (error._body) {
-            return error._body;
-        } else if (error.statusText) {
-            return error.statusText;
-        } else {
-            return error;
+    if (!error) {
+        return "UNKNOWN_ERROR";
+    }
+    console.log(JSON.stringify(error));
+
+    if (!(error.statusCode || error.status)) {
+        //treat as string message
+        return '' + error;
+    } else {
+        switch (error.statusCode || error.status) {
+            case 400:
+                return "BAD_REQUEST_ERROR";
+            case 401:
+                return "UNAUTHORIZED_ERROR";
+            case 403:
+                return "FORBIDDEN_ERROR";
+            case 404:
+                return "NOT_FOUND_ERROR";
+            case 412:
+            case 409:
+                return "CONFLICT_ERROR";
+            case 500:
+                return "SERVER_ERROR";
+            default:
+                return "UNKNOWN_ERROR";
         }
     }
-
-    return "UNKNOWN_ERROR";
 }
 
 /**
@@ -51,9 +65,6 @@ export const accessErrorHandler = function (error: any, msgService: MessageServi
     if (error && error.status && msgService) {
         if (error.status === httpStatusCode.Unauthorized) {
             msgService.announceAppLevelMessage(error.status, "UNAUTHORIZED_ERROR", AlertType.DANGER);
-            return true;
-        } else if (error.status === httpStatusCode.Forbidden) {
-            msgService.announceAppLevelMessage(error.status, "FORBIDDEN_ERROR", AlertType.DANGER);
             return true;
         }
     }

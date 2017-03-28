@@ -379,6 +379,8 @@
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified",
+        "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}",
+        "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}",
         "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
         "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet, do you really want to leave currnet page?"
     },
@@ -419,5 +421,7 @@
     "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request",
     "NOT_FOUND_ERROR": "Your request can not be completed because the object does not exist",
     "CONFLICT_ERROR": "We are unable to perform your action because your submission has conflicts",
-    "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred"
+    "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred",
+    "INCONRRECT_OLD_PWD": "The old password is incorrect",
+    "UNKNOWN": "n/a"
 }

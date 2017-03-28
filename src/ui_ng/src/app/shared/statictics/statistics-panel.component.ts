@@ -1,15 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { StatisticsService } from './statistics.service';
-import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
-import { AlertType } from '../../shared/shared.const';
-
-import { MessageService } from '../../global-message/message.service';
-
 import { Statistics } from './statistics';
 
 import { SessionService } from '../session.service';
 import { Volumes } from './volumes';
+
+import { MessageHandlerService } from '../message-handler/message-handler.service';
 
 @Component({
     selector: 'statistics-panel',
@@ -25,7 +22,7 @@ export class StatisticsPanelComponent implements OnInit {
 
     constructor(
         private statistics: StatisticsService,
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private session: SessionService) { }
 
     ngOnInit(): void {
@@ -47,9 +44,7 @@ export class StatisticsPanelComponent implements OnInit {
         this.statistics.getStatistics()
             .then(statistics => this.originalCopy = statistics)
             .catch(error => {
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 
@@ -57,9 +52,7 @@ export class StatisticsPanelComponent implements OnInit {
         this.statistics.getVolumes()
             .then(volumes => this.volumesInfo = volumes)
             .catch(error => {
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 
