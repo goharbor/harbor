@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { errorHandler } from '../../shared/shared.utils';
 import { AlertType, ListMode } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { TopRepoService } from './top-repository.service';
 import { Repository } from '../repository';
 
@@ -18,7 +18,7 @@ export class TopRepoComponent implements OnInit{
 
     constructor(
         private topRepoService: TopRepoService,
-        private msgService: MessageService
+        private messageHandlerService: MessageHandlerService
     ) { }
 
     public get listMode(): string {
@@ -35,7 +35,7 @@ export class TopRepoComponent implements OnInit{
         this.topRepoService.getTopRepos()
             .then(repos => this.topRepos = repos )
             .catch(error => {
-                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+                this.messageHandlerService.handleError(error);
             })
     }
 }

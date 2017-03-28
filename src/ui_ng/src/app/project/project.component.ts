@@ -9,10 +9,9 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 
 import { ListProjectComponent } from './list-project/list-project.component';
 
-import { MessageService } from '../global-message/message.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { Message } from '../global-message/message';
 
-import { AlertType } from '../shared/shared.const';
 import { Response } from '@angular/http';
 
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
@@ -28,7 +27,6 @@ import { SessionService } from '../shared/session.service';
 import { ProjectTypes } from '../shared/shared.const';
 
 @Component({
-  moduleId: module.id,
   selector: 'project',
   templateUrl: 'project.component.html',
   styleUrls: ['./project.component.css']
@@ -60,7 +58,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   constructor(
     private projectService: ProjectService,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private appConfigService: AppConfigService,
     private sessionService: SessionService,
     private deletionDialogService: ConfirmationDialogService) {
@@ -73,11 +71,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
           .deleteProject(projectId)
           .subscribe(
           response => {
-            this.messageService.announceMessage(response, 'PROJECT.DELETED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('PROJECT.DELETED_SUCCESS');
             console.log('Successful delete project with ID:' + projectId);
             this.retrieve();
           },
-          error => this.messageService.announceMessage(error.status, error, AlertType.WARNING)
+          error =>this.messageHandlerService.handleError(error)
           );
       }
     });
@@ -122,7 +120,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
         this.changedProjects = response.json();
       },
-      error => this.messageService.announceAppLevelMessage(error.status, error, AlertType.WARNING)
+      error => this.messageHandlerService.handleError(error)
       );
   }
 
@@ -132,6 +130,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   createProject(created: boolean) {
     if (created) {
+      this.projectName = '';
       this.retrieve();
     }
   }
@@ -156,10 +155,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
         .toggleProjectPublic(p.project_id, p.public)
         .subscribe(
         response => {
-          this.messageService.announceMessage(response, 'PROJECT.TOGGLED_SUCCESS', AlertType.SUCCESS);
+          this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
           console.log('Successful toggled project_id:' + p.project_id);
         },
-        error => this.messageService.announceMessage(error.status, error, AlertType.WARNING)
+        error => this.messageHandlerService.handleError(error)
         );
     }
   }

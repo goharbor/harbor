@@ -5,8 +5,8 @@ import { NgForm } from '@angular/forms';
 import { CreateEditPolicy } from './create-edit-policy';
 
 import { ReplicationService } from '../../replication/replication.service';
-import { MessageService } from '../../global-message/message.service';
-import { AlertType, ActionType } from '../../shared/shared.const';
+import { MessageHandlerService } from '../message-handler/message-handler.service';
+import { ActionType } from '../../shared/shared.const';
 
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
@@ -66,7 +66,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   constructor(
     private replicationService: ReplicationService,
-    private messageService: MessageService,
+    private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService) {}
   
   prepareTargets(targetId?: number) {
@@ -90,7 +90,10 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.initVal.password = this.createEditPolicy.password;
             }
           },
-          error=>this.messageService.announceMessage(error.status, 'Error occurred while get targets.', AlertType.DANGER)
+          error=>{ 
+            this.messageHandlerService.handleError(error);
+            this.createEditPolicyOpened = false;
+          }
         );
   }
 
@@ -183,13 +186,18 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         .createPolicy(this.getPolicyByForm())
         .subscribe(
           response=>{
-            this.messageService.announceMessage(response, 'REPLICATION.CREATED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('REPLICATION.CREATED_SUCCESS');
             console.log('Successful created policy: ' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
           error=>{
-            this.inlineAlert.showInlineError(error['_body']);
+            if(this.messageHandlerService.isAppLevel(error)) {
+              this.messageHandlerService.handleError(error);
+              this.createEditPolicyOpened = false;
+            } else {
+              this.inlineAlert.showInlineError(error);
+            }            
             console.log('Failed to create policy:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           });
   }
@@ -200,13 +208,18 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         .createOrUpdatePolicyWithNewTarget(this.getPolicyByForm(), this.getTargetByForm())
         .subscribe(
           response=>{
-            this.messageService.announceMessage(response, 'REPLICATION.UPDATED_SUCCESS', AlertType.SUCCESS);
+            this.messageHandlerService.showSuccess('REPLICATION.CREATED_SUCCESS');
             console.log('Successful created policy and target:' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
           error=>{
-            this.inlineAlert.showInlineError(error['_body']);
+            if(this.messageHandlerService.isAppLevel(error)) {
+              this.messageHandlerService.handleError(error);
+              this.createEditPolicyOpened = false;  
+            } else {
+              this.inlineAlert.showInlineError(error);
+            }
             console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
@@ -219,11 +232,17 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         .subscribe(
           response=>{
             console.log('Successful created policy and target:' + response);
+            this.messageHandlerService.showSuccess('REPLICATION.UPDATED_SUCCESS')
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
           error=>{
-            this.inlineAlert.showInlineError(error['_body']);
+            if(this.messageHandlerService.isAppLevel(error)) {
+              this.messageHandlerService.handleError(error);
+              this.createEditPolicyOpened = false;
+            } else {
+              this.inlineAlert.showInlineError(error);
+            }
             console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );

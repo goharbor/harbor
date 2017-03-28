@@ -6,7 +6,7 @@ import { SessionUser } from '../shared/session-user';
 
 import { AuditLogService } from './audit-log.service';
 import { SessionService } from '../shared/session.service';
-import { MessageService } from '../global-message/message.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { AlertType } from '../shared/shared.const';
 
 import { State } from 'clarity-angular';
@@ -30,7 +30,6 @@ class FilterOption {
 }
 
 @Component({
-  moduleId: module.id,
   selector: 'audit-log',
   templateUrl: './audit-log.component.html',
   styleUrls: [ './audit-log.component.css' ]
@@ -58,7 +57,7 @@ export class AuditLogComponent implements OnInit {
   totalRecordCount: number;
   totalPage: number;
   
-  constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageService: MessageService) {
+  constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageHandlerService: MessageHandlerService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['auditLogResolver']);    
   }
@@ -85,7 +84,7 @@ export class AuditLogComponent implements OnInit {
           },
           error=>{
             this.router.navigate(['/harbor', 'projects']);
-            this.messageService.announceMessage(error.status, 'Failed to list audit logs with project ID:' + this.queryParam.project_id, AlertType.DANGER);
+            this.messageHandlerService.handleError(error);
           }
         );
   }
