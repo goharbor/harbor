@@ -12,6 +12,7 @@ import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const'
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { SessionService } from '../shared/session.service';
+import { AppConfigService } from '../app-config.service';
 
 @Component({
   selector: 'harbor-user',
@@ -37,7 +38,8 @@ export class UserComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private deletionDialogService: ConfirmationDialogService,
     private msgHandler: MessageHandlerService,
-    private session: SessionService) {
+    private session: SessionService,
+    private appConfigService: AppConfigService) {
     this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
       if (confirmed &&
         confirmed.source === ConfirmationTargets.USER &&
@@ -60,6 +62,15 @@ export class UserComponent implements OnInit, OnDestroy {
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
+  }
+
+  public get canCreateUser(): boolean {
+    let appConfig = this.appConfigService.getConfig();
+    if (appConfig) {
+      return appConfig.auth_mode != 'ldap_auth';
+    } else {
+      return true;
+    }
   }
 
   isSystemAdmin(u: User): string {
