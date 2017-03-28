@@ -17,7 +17,7 @@ export class InlineAlertComponent {
 
     @Output() confirmEvt = new EventEmitter<boolean>();
 
-    constructor(private translate: TranslateService){}
+    constructor(private translate: TranslateService) { }
 
     public get errorMessage(): string {
         return this.displayedText;
@@ -26,6 +26,9 @@ export class InlineAlertComponent {
     //Show error message inline
     public showInlineError(error: any): void {
         this.displayedText = errorHandler(error);
+        if (this.displayedText) {
+            this.translate.get(this.displayedText).subscribe((res: string) => this.displayedText = res);
+        }
 
         this.inlineAlertType = 'alert-danger';
         this.showCancelAction = false;
@@ -37,7 +40,7 @@ export class InlineAlertComponent {
     //Show confirmation info with action button
     public showInlineConfirmation(warning: any): void {
         this.displayedText = "";
-        if(warning && warning.message){
+        if (warning && warning.message) {
             this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
         }
         this.inlineAlertType = 'alert-warning';
@@ -50,7 +53,7 @@ export class InlineAlertComponent {
     //Show inline sccess info
     public showInlineSuccess(info: any): void {
         this.displayedText = "";
-        if(info && info.message){
+        if (info && info.message) {
             this.translate.get(info.message).subscribe((res: string) => this.displayedText = res);
         }
         this.inlineAlertType = 'alert-success';

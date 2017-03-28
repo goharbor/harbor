@@ -4,16 +4,14 @@ import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
-import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
-import { AlertType } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: 'reset-password',
     templateUrl: "reset-password.component.html",
     styleUrls: ['password.component.css', '../../common.css']
 })
-export class ResetPasswordComponent implements OnInit{
+export class ResetPasswordComponent implements OnInit {
     opened: boolean = true;
     private onGoing: boolean = false;
     private password: string = "";
@@ -28,7 +26,7 @@ export class ResetPasswordComponent implements OnInit{
     constructor(
         private pwdService: PasswordSettingService,
         private route: ActivatedRoute,
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private router: Router) { }
 
     ngOnInit(): void {
@@ -44,9 +42,9 @@ export class ResetPasswordComponent implements OnInit{
     }
 
     public getValidationState(key: string): boolean {
-        return this.validationState && 
-        this.validationState[key] &&
-        key === 'reNewPassword'?this.samePassword():true;
+        return this.validationState &&
+            this.validationState[key] &&
+            key === 'reNewPassword' ? this.samePassword() : true;
     }
 
     public open(): void {
@@ -61,7 +59,7 @@ export class ResetPasswordComponent implements OnInit{
 
     public send(): void {
         //If already reset password ok, navigator to sign-in
-        if(this.resetOk){
+        if (this.resetOk) {
             this.router.navigate(['sign-in']);
             return;
         }
@@ -77,24 +75,24 @@ export class ResetPasswordComponent implements OnInit{
 
         this.onGoing = true;
         this.pwdService.resetPassword(this.resetUuid, this.password)
-        .then(() => {
-            this.onGoing = false;
-            this.resetOk = true;
-            this.inlineAlert.showInlineSuccess({message:'RESET_PWD.RESET_OK'});
-        })
-        .catch(error => {
-            this.onGoing = false;
-            if(accessErrorHandler(error, this.msgService)){
-                this.close();
-            }else{
-                this.inlineAlert.showInlineError(errorHandler(error));
-            }
-        });
+            .then(() => {
+                this.onGoing = false;
+                this.resetOk = true;
+                this.inlineAlert.showInlineSuccess({ message: 'RESET_PWD.RESET_OK' });
+            })
+            .catch(error => {
+                this.onGoing = false;
+                if (this.msgHandler.isAppLevel(error)) {
+                    this.close();
+                } else {
+                    this.inlineAlert.showInlineError(error);
+                }
+            });
     }
 
     public handleValidation(key: string, flag: boolean): void {
         if (flag) {
-            if(!this.validationState[key]){
+            if (!this.validationState[key]) {
                 this.validationState[key] = true;
             }
         } else {

@@ -2,13 +2,11 @@ import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/cor
 
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
-import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
-import { AlertType, ListMode } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
-
 import { SearchTriggerService } from './search-trigger.service';
 
 import { Subscription } from 'rxjs/Subscription';
+
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: "search-result",
@@ -38,7 +36,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
     constructor(
         private search: GlobalSearchService,
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService) { }
 
     ngOnInit() {
@@ -71,10 +69,6 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         }
 
         return res//Empty object
-    }
-
-    public get listMode(): string {
-        return ListMode.READONLY;
     }
 
     public get state(): boolean {
@@ -134,9 +128,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
             })
             .catch(error => {
                 this.onGoing = false;
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 }

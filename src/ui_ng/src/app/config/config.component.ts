@@ -4,9 +4,7 @@ import { NgForm } from '@angular/forms';
 
 import { ConfigurationService } from './config.service';
 import { Configuration } from './config';
-import { MessageService } from '../global-message/message.service';
-import { AlertType, ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
-import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
+import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';;
 import { StringValueItem } from './config';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
@@ -17,6 +15,7 @@ import { ConfigurationEmailComponent } from './email/config-email.component';
 
 import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 const fakePass = "fakepassword";
 const TabLinkContentMap = {
@@ -45,7 +44,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
     constructor(
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
         private confirmService: ConfirmationDialogService,
         private appConfigService: AppConfigService,
@@ -204,13 +203,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //Reload bootstrap option
                     this.appConfigService.load().catch(error => console.error("Failed to reload bootstrap option with error: ", error));
 
-                    this.msgService.announceMessage(response.status, "CONFIG.SAVE_SUCCESS", AlertType.SUCCESS);
+                    this.msgHandler.showSuccess("CONFIG.SAVE_SUCCESS");
                 })
                 .catch(error => {
                     this.onGoing = false;
-                    if (!accessErrorHandler(error, this.msgService)) {
-                        this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                    }
+                    this.msgHandler.handleError(error);
                 });
         } else {
             //Inprop situation, should not come here
@@ -262,11 +259,15 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.configService.testMailServer(mailSettings)
             .then(response => {
                 this.testingOnGoing = false;
-                this.msgService.announceMessage(200, "CONFIG.TEST_MAIL_SUCCESS", AlertType.SUCCESS);
+                this.msgHandler.showSuccess("CONFIG.TEST_MAIL_SUCCESS");
             })
             .catch(error => {
                 this.testingOnGoing = false;
-                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+                let err = error._body;
+                if(!err){
+                    err = "UNKNOWN";
+                }
+                this.msgHandler.showError("CONFIG.TEST_MAIL_FAILED", {'param': err});
             });
     }
 
@@ -279,7 +280,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         }
 
         let allChanges = this.getChanges();
-        for(let prop in allChanges){
+        for (let prop in allChanges) {
             if (prop.startsWith("ldap_")) {
                 ldapSettings[prop] = allChanges[prop];
             }
@@ -291,11 +292,15 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.configService.testLDAPServer(ldapSettings)
             .then(respone => {
                 this.testingOnGoing = false;
-                this.msgService.announceMessage(200, "CONFIG.TEST_LDAP_SUCCESS", AlertType.SUCCESS);
+                this.msgHandler.showSuccess("CONFIG.TEST_LDAP_SUCCESS");
             })
             .catch(error => {
                 this.testingOnGoing = false;
-                this.msgService.announceMessage(error.status, errorHandler(error), AlertType.WARNING);
+                let err = error._body;
+                if(!err){
+                    err = "UNKNOWN";
+                }
+                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", err);
             });
     }
 
@@ -342,9 +347,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             })
             .catch(error => {
                 this.onGoing = false;
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 

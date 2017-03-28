@@ -4,10 +4,9 @@ import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
-import { AlertType, httpStatusCode } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
-import { errorHandler, isEmptyForm, accessErrorHandler } from '../../shared/shared.utils';
+import { isEmptyForm } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: 'password-setting',
@@ -36,7 +35,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
     constructor(
         private passwordService: PasswordSettingService,
         private session: SessionService,
-        private msgService: MessageService) { }
+        private msgHandler: MessageHandlerService) { }
 
     //If form is valid
     public get isValid(): boolean {
@@ -66,10 +65,10 @@ export class PasswordSettingComponent implements AfterViewChecked {
             let cont = this.pwdForm.controls[key];
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
-                if(key === "reNewPassword" && cont.valid){
+                if (key === "reNewPassword" && cont.valid) {
                     let compareCont = this.pwdForm.controls["newPassword"];
-                    if(compareCont){
-                        this.validationStateMap[key]= cont.value === compareCont.value;
+                    if (compareCont) {
+                        this.validationStateMap[key] = cont.value === compareCont.value;
                     }
                 }
             }
@@ -145,16 +144,23 @@ export class PasswordSettingComponent implements AfterViewChecked {
             })
             .then(() => {
                 this.onCalling = false;
-                this.opened = false;
-                this.msgService.announceMessage(200, "CHANGE_PWD.SAVE_SUCCESS", AlertType.SUCCESS);
+                this.opened = false
+                this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
             })
             .catch(error => {
                 this.onCalling = false;
                 this.error = error;
-                if(accessErrorHandler(error, this.msgService)){
+                if (this.msgHandler.isAppLevel(error)) {
                     this.opened = false;
-                }else{
-                    this.inlineAlert.showInlineError(error);
+                    this.msgHandler.handleError(error);
+                } else {
+                    //Special case for 400
+                    let msg = '' + error._body;
+                    if (msg && msg.includes('old_password_is_not_correct')) {
+                        this.inlineAlert.showInlineError("INCONRRECT_OLD_PWD");
+                    } else {
+                        this.inlineAlert.showInlineError(error);
+                    }
                 }
             });
     }
