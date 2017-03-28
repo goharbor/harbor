@@ -26,8 +26,11 @@ export class StatisticsPanelComponent implements OnInit {
         private session: SessionService) { }
 
     ngOnInit(): void {
-        if (this.isValidSession) {
+        if (this.session.getCurrentUser()) {
             this.getStatistics();
+        }
+        
+        if (this.isValidSession) {
             this.getVolumes();
         }
     }

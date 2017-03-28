@@ -1,9 +1,10 @@
 <clr-alert [clrAlertType]="inlineAlertType" [clrAlertClosable]="inlineAlertClosable" [(clrAlertClosed)]="alertClose" [clrAlertAppLevel]="useAppLevelStyle">
     <div class="alert-item">
-        <span class="alert-text">
+        <span class="alert-text" [class.alert-text-blink]="blinking">
             {{errorMessage}}
         </span>
         <div class="alert-actions" *ngIf="showCancelAction">
+            <button class="btn alert-action" (click)="close()">{{'BUTTON.NO' | translate}}</button>
             <button class="btn alert-action" (click)="confirmCancel()">{{'BUTTON.YES' | translate}}</button>
         </div>
     </div>
