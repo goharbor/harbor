@@ -1,5 +1,18 @@
+
 <a *ngIf="hasSignedIn" [routerLink]="['/harbor', 'projects', projectId, 'repository']">&lt; {{'REPOSITORY.REPOSITORIES' | translate}}</a>
 <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
+
+<clr-modal [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+  <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
+  <div class="modal-body">
+    <div class="row col-md-12">
+        <textarea rows="3" (click)="selectAndCopy($event)">{{tagID}}</textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="showTagManifestOpened = false">{{'BUTTON.OK' | translate}}</button>
+  </div>
+</clr-modal>
 
 <h2 class="sub-header-title">{{repoName}} <span class="badge">{{tags ? tags.length : 0}}</span></h2>
 <clr-datagrid>
@@ -12,8 +25,10 @@
     <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
-        <clr-dg-action-overflow *ngIf="hasProjectAdminRole">
-            <button class="action-item" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="showTagID('tag', t)">{{'REPOSITORY.COPY_ID' | translate}}</button>
+            <button class="action-item" (click)="showTagID('parent', t)">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</button>
+            <button class="action-item" [hidden]="!hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-overflow>
         <clr-dg-cell>{{t.tag}}</clr-dg-cell>
         <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>

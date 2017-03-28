@@ -122,6 +122,14 @@ export class ReplicationService {
                .catch(error=>Observable.throw(error));
   }
 
+  listTargetPolicies(targetId: number): Observable<Policy[]> {
+    console.log('List target with policy.');
+    return this.http
+               .get(`/api/targets/${targetId}/policies`)
+               .map(response=>response.json() as Policy[])
+               .catch(error=>Observable.throw(error));
+  }
+
   getTarget(targetId: number): Observable<Target> {
     console.log('Get target by ID:' + targetId);
     return this.http

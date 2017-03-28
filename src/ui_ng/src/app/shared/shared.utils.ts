@@ -27,6 +27,7 @@ export const errorHandler = function (error: any): string {
             case 404:
                 return "NOT_FOUND_ERROR";
             case 412:
+                return "PRECONDITION_FAILED";
             case 409:
                 return "CONFLICT_ERROR";
             case 500:

@@ -10,3 +10,7 @@
     padding: 0px !important;
     background-color: white;
 }
+
+.content-area-override {
+    padding: 24px 36px !important;
+}

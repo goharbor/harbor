@@ -255,7 +255,8 @@
         "UPDATED_SUCCESS": "更新复制策略成功。",
         "DELETED_SUCCESS": "删除复制策略成功。",
         "DELETED_FAILED": "删除复制策略失败。",
-        "TOGGLED_SUCCESS": "切换复制策略状态成功。"
+        "TOGGLED_SUCCESS": "切换复制策略状态成功。",
+        "CANNOT_EDIT": "当复制规则启用时无法修改。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -281,7 +282,8 @@
         "CREATED_SUCCESS": "创建目标成功。",
         "UPDATED_SUCCESS": "更新目标成功。",
         "DELETED_SUCCESS": "删除目标成功。",
-        "DELETED_FAILED": "删除目标失败。"
+        "DELETED_FAILED": "删除目标失败。",
+        "CANNOT_EDIT": "当复制规则启用时目标无法修改。"
     },
     "REPOSITORY": {
         "COPY_ID": "复制ID",
@@ -312,7 +314,8 @@
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像库",
         "DELETED_REPO_SUCCESS": "删除镜像仓库成功。",
-        "DELETED_TAG_SUCCESS": "删除镜像标签成功。"
+        "DELETED_TAG_SUCCESS": "删除镜像标签成功。",
+        "COPY": "复制"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认取消?"
@@ -421,6 +424,7 @@
     "BAD_REQUEST_ERROR": "错误请求导致无法完成操作",
     "NOT_FOUND_ERROR": "对象不存在故无法完成你的请求",
     "CONFLICT_ERROR": "你的提交包含冲突故操作无法完成",
+    "PRECONDITION_FAILED": "由于前置条件包含冲突导致无法执行提交操作。",
     "SERVER_ERROR": "服务器出现内部错误，请求无法完成",
     "INCONRRECT_OLD_PWD": "旧密码不正确",
     "UNKNOWN": "n/a"

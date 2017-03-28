@@ -1,4 +1,5 @@
-<div class="config-container">
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <h2 style="display: inline-block;" class="custom-h2">{{'CONFIG.TITLE' | translate }}</h2>
     <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
     <ul id="configTabs" class="nav" role="tablist">
@@ -66,4 +67,5 @@
         <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
         <span class="spinner spinner-inline" [hidden]="!testingInProgress"></span>
     </div>
+  </div>
 </div>
