@@ -35,8 +35,8 @@
                 </div>
             </div>
         </div>
-        <div class="statistic-item-divider"></div>
-        <div class="statistic-block">
+        <div class="statistic-item-divider" [hidden]="!isValidSession"></div>
+        <div class="statistic-block" [hidden]="!isValidSession">
             <div>{{freeStorage}}GB | {{totalStorage}}GB</div>
             <div>[STORAGE]</div>
         </div>
