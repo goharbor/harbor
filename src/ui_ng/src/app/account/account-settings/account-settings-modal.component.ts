@@ -97,12 +97,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         }
 
         for (var prop in this.originalStaticData) {
-            if (this.originalStaticData[prop]) {
-                if (this.account[prop]) {
-                    if (this.originalStaticData[prop] != this.account[prop]) {
-                        return true;
-                    }
-                }
+            if (this.originalStaticData[prop] != this.account[prop]) {
+                return true;
             }
         }
 
@@ -188,7 +184,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 if (this.msgHandler.isAppLevel(error)) {
                     this.opened = false;
                     this.msgHandler.handleError(error);
-                }else{
+                } else {
                     this.inlineAlert.showInlineError(error);
                 }
             });
