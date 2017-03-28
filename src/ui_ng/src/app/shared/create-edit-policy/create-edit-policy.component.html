@@ -4,6 +4,13 @@
   <div class="modal-body">
     <form #policyForm="ngForm">
       <section class="form-block">
+        <div class="alert alert-danger" *ngIf="readonly">
+          <div class="alert-item">
+            <span class="alert-text">
+              {{'REPLICATION.CANNOT_EDIT' | translate}}
+            </span>
+          </div>
+        </div>
         <div class="form-group">
           <label for="policy_name" class="col-md-4 form-group-label-override">{{'REPLICATION.NAME' | translate}}<span style="color: red">*</span></label>
           <label for="policy_name" class="col-md-8"  aria-haspopup="true" role="tooltip" [class.invalid]="name.errors && (name.dirty || name.touched)" [class.valid]="name.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">

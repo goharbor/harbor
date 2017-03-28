@@ -44,6 +44,7 @@ func initRouters() {
 	beego.Router("/harbor/projects/:id/replication", &controllers.IndexController{})
 	beego.Router("/harbor/projects/:id/member", &controllers.IndexController{})
 	beego.Router("/harbor/projects/:id/log", &controllers.IndexController{})
+	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
 
 	beego.Router("/harbor/users", &controllers.IndexController{})
 	beego.Router("/harbor/logs", &controllers.IndexController{})

@@ -7,4 +7,6 @@ export class TagView {
   dockerVersion: string;
   architecture: string;
   os: string;
+  id: string;
+  parent: string;
 }

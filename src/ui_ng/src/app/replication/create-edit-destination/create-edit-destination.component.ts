@@ -20,6 +20,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
   modalTitle: string;
   createEditDestinationOpened: boolean;
 
+  editable: boolean;
+
   testOngoing: boolean;
   pingTestMessage: string;
   pingStatus: boolean;
@@ -49,10 +51,12 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
     private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService) {}
 
-  openCreateEditTarget(targetId?: number) {
+  openCreateEditTarget(editable: boolean, targetId?: number) {
+    
     this.target = new Target();
     this.createEditDestinationOpened = true;
-    
+    this.editable = editable;
+
     this.hasChanged = false;
     
     this.pingTestMessage = '';

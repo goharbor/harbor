@@ -87,13 +87,31 @@ export class DestinationComponent implements OnInit {
   }
 
   openModal() {
-    this.createEditDestinationComponent.openCreateEditTarget();
+    this.createEditDestinationComponent.openCreateEditTarget(true);
     this.target = new Target();
   }
 
   editTarget(target: Target) {
     if (target) {
-      this.createEditDestinationComponent.openCreateEditTarget(target.id);
+      let editable = true;
+      this.replicationService
+          .listTargetPolicies(target.id)
+          .subscribe(
+            policies=>{
+              if(policies && policies.length > 0) {
+                for(let i = 0; i < policies.length; i++){
+                  let p = policies[i];
+                  if(p.enabled === 1) {
+                    editable = false;
+                    break;
+                  }
+                }
+              }
+              this.createEditDestinationComponent.openCreateEditTarget(editable, target.id);
+            },
+            error=>this.messageHandlerService.handleError(error)
+          );
+      
     }
   }
 

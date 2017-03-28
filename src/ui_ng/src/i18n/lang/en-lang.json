@@ -255,7 +255,8 @@
         "UPDATED_SUCCESS": "Updated replication rule successfully.",
         "DELETED_SUCCESS": "Deleted replication rule successfully.",
         "DELETED_FAILED": "Deleted replication rule failed.",
-        "TOGGLED_SUCCESS": "Toggled replication rule status successfully."
+        "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
+        "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -281,7 +282,8 @@
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
         "DELETED_SUCCESS": "Deleted endpoint successfully.",
-        "DELETED_FAILED": "Deleted endpoint failed."
+        "DELETED_FAILED": "Deleted endpoint failed.",
+        "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled."
     },
     "REPOSITORY": {
         "COPY_ID": "Copy ID",
@@ -312,7 +314,8 @@
         "ITEMS": "item(s)",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
-        "DELETED_TAG_SUCCESS": "Deleted tag successfully."
+        "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
+        "COPY": "Copy"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you really want to cancel?"
@@ -421,6 +424,7 @@
     "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request",
     "NOT_FOUND_ERROR": "Your request can not be completed because the object does not exist",
     "CONFLICT_ERROR": "We are unable to perform your action because your submission has conflicts",
+    "PRECONDITION_FAILED": "We are unable to perform your action because of a precondition failure.",
     "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred",
     "INCONRRECT_OLD_PWD": "The old password is incorrect",
     "UNKNOWN": "n/a"

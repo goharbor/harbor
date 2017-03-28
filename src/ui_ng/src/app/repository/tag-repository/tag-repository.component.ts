@@ -37,6 +37,14 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   hasSignedIn: boolean;
 
+  showTagManifestOpened: boolean;
+  manifestInfoTitle: string;
+  tagID: string;
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
+
+  selectAll: boolean = false;
+
   private subscription: Subscription;
 
   constructor(
@@ -123,6 +131,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       tag.dockerVersion = data['docker_version'];
       tag.pullCommand = 'docker pull ' + this.registryUrl + '/' + t.manifest.name + ':' + t.tag;
       tag.os = data['os'];
+      tag.id = data['id'];
+      tag.parent = data['parent'];
       this.tags.push(tag);
     });
   }
@@ -149,4 +159,19 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  showTagID(type: string, tag: TagView) {
+    if(tag) {
+      if(type === 'tag') {
+        this.manifestInfoTitle = 'REPOSITORY.COPY_ID';
+        this.tagID = tag.id;
+      } else if(type === 'parent') {
+        this.manifestInfoTitle = 'REPOSITORY.COPY_PARENT_ID';
+        this.tagID = tag.parent;
+      }
+      this.showTagManifestOpened = true;
+    }
+  }
+  selectAndCopy($event) {
+    $event.target.select();
+  }
 }
