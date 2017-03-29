@@ -37,7 +37,7 @@
             <clr-icon shape="close" *ngIf="!t.signed" style="color: #C92100;"></clr-icon>
         </clr-dg-cell>
         <clr-dg-cell>{{t.author}}</clr-dg-cell>
-        <clr-dg-cell>{{t.created | date: 'yyyy/MM/dd'}}</clr-dg-cell>
+        <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{t.dockerVersion}}</clr-dg-cell>
         <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
         <clr-dg-cell>{{t.os}}</clr-dg-cell>

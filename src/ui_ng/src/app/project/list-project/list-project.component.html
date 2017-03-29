@@ -14,7 +14,7 @@
         <clr-dg-cell>{{ (p.public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
-        <clr-dg-cell>{{p.creation_time}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
         {{totalRecordCount || (projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}

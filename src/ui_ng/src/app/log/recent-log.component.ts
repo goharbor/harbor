@@ -65,11 +65,6 @@ export class RecentLogComponent implements OnInit {
         this.retrieveLogs();
     }
 
-    public formatDateTime(dateTime: string) {
-        let dt: Date = new Date(dateTime);
-        return dt.toLocaleString();
-    }
-
     private retrieveLogs(): void {
         if (this.lines < 10) {
             this.lines = 10;
