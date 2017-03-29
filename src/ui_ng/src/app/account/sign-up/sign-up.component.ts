@@ -85,6 +85,7 @@ export class SignUpComponent {
     }
 
     confirmCancel(): void {
+        this.opened = false;
         this.modal.close();
     }
 
@@ -108,6 +109,7 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
+                this.opened = false;
                 this.modal.close();
                 this.userCreation.emit(u);
             })
