@@ -135,7 +135,9 @@ export class NavigatorComponent implements OnInit {
             //TODO:
             console.error('Language ' + lang.trim() + ' is not suppoted');
         }
-        window.location.reload();
+        setTimeout(()=>{
+            window.location.reload();
+        }, 500);
     }
 
     //Handle the home action

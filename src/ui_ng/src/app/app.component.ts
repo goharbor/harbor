@@ -15,6 +15,7 @@ export class AppComponent {
         private translate: TranslateService,
         private cookie: CookieService,
         private session: SessionService) {
+
         translate.addLangs(supportedLangs);
         translate.setDefaultLang(enLang);
 
@@ -22,9 +23,9 @@ export class AppComponent {
         let langSetting = this.cookie.get("harbor-lang");
         if (!langSetting || langSetting.trim() === "") {
             //Use browser lang
-            langSetting = translate.getBrowserCultureLang();
+            langSetting = translate.getBrowserCultureLang().toLowerCase();
         }
-           
+
         let selectedLang = this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang;
         translate.use(selectedLang);
         //this.session.switchLanguage(selectedLang).catch(error => console.error(error));
