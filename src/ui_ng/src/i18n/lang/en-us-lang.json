@@ -203,7 +203,7 @@
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
         "DELETION_TITLE": "Confirm Rule Deletion",
         "DELETION_SUMMARY": "Do you want to delete rule {{param}}?",
-        "FILTER_TARGETS_PLACEHOLDER": "Filter Targets",
+        "FILTER_TARGETS_PLACEHOLDER": "Filter Endpoints",
         "DELETION_TITLE_TARGET": "Confirm Endpoint Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete the endpoint {{param}}?",
         "ADD_POLICY": "New Replication Rule",
