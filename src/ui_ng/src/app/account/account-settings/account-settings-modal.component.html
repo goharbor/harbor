@@ -13,7 +13,7 @@
                     <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='!getValidationState("account_settings_email")'>
                       <input name="account_settings_email" type="text" #eamilInput="ngModel" [(ngModel)]="account.email" 
                       required 
-                      pattern='^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$' id="account_settings_email" size="30" 
+                      pattern='^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$' id="account_settings_email" size="30" 
                       (input)='handleValidation("account_settings_email", false)' 
                       (focusout)='handleValidation("account_settings_email", true)'>
                       <span class="tooltip-content">
