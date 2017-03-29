@@ -168,7 +168,7 @@ VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
-GITTAGVERSION=$(shell $(GITTAG))
+GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
 ifeq ($(DEVFLAG), true)        
 	VERSIONTAG=dev
 else        
