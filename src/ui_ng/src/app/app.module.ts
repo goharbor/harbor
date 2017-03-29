@@ -26,7 +26,7 @@ export function initConfig(configService: AppConfigService) {
     return () => configService.load();
 }
 
-function getCurrentLanguage(translateService: TranslateService) {
+export function getCurrentLanguage(translateService: TranslateService) {
     return translateService.currentLang;
 }
 
