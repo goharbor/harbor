@@ -3,9 +3,11 @@ package controllers
 import (
 	"bytes"
 	"html/template"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
@@ -136,20 +138,22 @@ func (cc *CommonController) SendEmail() {
 		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
 	}
 
-	emailSettings, err := config.Email()
+	settings, err := config.Email()
 	if err != nil {
 		log.Errorf("failed to get email configurations: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
 	}
 
-	mail := email_util.Mail{
-		From:    emailSettings.From,
-		To:      []string{email},
-		Subject: cc.Tr("reset_email_subject"),
-		Message: message.String()}
-
-	err = mail.SendMail()
-
+	addr := net.JoinHostPort(settings.Host, strconv.Itoa(settings.Port))
+	err = email_util.Send(addr,
+		settings.Identity,
+		settings.Username,
+		settings.Password,
+		60, settings.SSL,
+		false, settings.From,
+		[]string{email},
+		cc.Tr("reset_email_subject"),
+		message.String())
 	if err != nil {
 		log.Errorf("Send email failed: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "send_email_failed")

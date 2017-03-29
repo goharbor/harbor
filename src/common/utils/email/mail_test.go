@@ -18,19 +18,80 @@ package email
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+func TestSend(t *testing.T) {
+	addr := "smtp.gmail.com:465"
+	identity := ""
+	username := "harbortestonly@gmail.com"
+	password := "harborharbor"
+	timeout := 60
+	tls := true
+	insecure := false
+	from := "from"
+	to := []string{username}
+	subject := "subject"
+	message := "message"
+
+	// tls connection
+	tls = true
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	assert.Nil(t, err)
+
+	/*not work on travis
+	// non-tls connection
+	addr = "smtp.gmail.com:25"
+	tls = false
+	err = Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	assert.Nil(t, err)
+	*/
+
+	//invalid username/password
+	username = "invalid_username"
+	err = Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err == nil {
+		t.Errorf("there should be an auth error")
+	} else {
+		if !strings.Contains(err.Error(), "535") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}
+}
 
 func TestPing(t *testing.T) {
 	addr := "smtp.gmail.com:465"
 	identity := ""
-	username := "wrong_username"
-	password := "wrong_password"
-	timeout := 60
+	username := "harbortestonly@gmail.com"
+	password := "harborharbor"
+	timeout := 0
 	tls := true
 	insecure := false
 
-	// test secure connection
+	// tls connection
 	err := Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	assert.Nil(t, err)
+
+	/*not work on travis
+	// non-tls connection
+	addr = "smtp.gmail.com:25"
+	tls = false
+	err = Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	assert.Nil(t, err)
+	*/
+
+	//invalid username/password
+	username = "invalid_username"
+	err = Ping(addr, identity, username, password,
 		timeout, tls, insecure)
 	if err == nil {
 		t.Errorf("there should be an auth error")
