@@ -11,6 +11,7 @@ import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
 import { MessageHandlerService } from '../message-handler/message-handler.service';
+import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
@@ -18,7 +19,8 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     private authService: SessionService,
     private router: Router,
     private appConfigService: AppConfigService,
-    private msgHandler: MessageHandlerService) { }
+    private msgHandler: MessageHandlerService,
+    private searchTrigger: SearchTriggerService) { }
 
   private isGuest(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const proRegExp = /\/harbor\/projects\/[\d]+\/.+/i;
@@ -33,6 +35,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     //When routing change, clear
     this.msgHandler.clear();
+    this.searchTrigger.closeSearch(true);
     
     return new Promise((resolve, reject) => {
       //Before activating, we firstly need to confirm whether the route is coming from peer part - admiral

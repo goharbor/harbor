@@ -76,6 +76,12 @@ export class NavigatorComponent implements OnInit {
             this.appConfigService.getConfig().has_ca_root;
     }
 
+    public get canChangePassword(): boolean {
+        return this.session.getCurrentUser() &&
+        this.appConfigService.getConfig() &&
+        this.appConfigService.getConfig().auth_mode != 'ldap_auth';
+    }
+
     matchLang(lang: string): boolean {
         return lang.trim() === this.selectedLang;
     }

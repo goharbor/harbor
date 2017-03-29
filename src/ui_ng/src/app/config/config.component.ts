@@ -280,13 +280,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         }
 
         let allChanges = this.getChanges();
-        for (let prop in allChanges) {
-            if (prop.startsWith("ldap_")) {
-                ldapSettings[prop] = allChanges[prop];
-            }
+        let ldapSearchPwd = allChanges["ldap_search_password"];
+        if(ldapSearchPwd){
+            ldapSettings['ldap_search_password'] = ldapSearchPwd;
+        }else{
+            delete ldapSettings['ldap_search_password'];
         }
-
-        console.info(ldapSettings);
 
         this.testingOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
@@ -300,7 +299,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 if(!err){
                     err = "UNKNOWN";
                 }
-                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", err);
+                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", {'param': err});
             });
     }
 

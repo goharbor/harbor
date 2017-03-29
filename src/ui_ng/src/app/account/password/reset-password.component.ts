@@ -15,7 +15,10 @@ export class ResetPasswordComponent implements OnInit {
     opened: boolean = true;
     private onGoing: boolean = false;
     private password: string = "";
-    private validationState: any = {};
+    private validationState: any = {
+        "newPassword": true,
+        "reNewPassword": true
+    };
     private resetUuid: string = "";
     private resetOk: boolean = false;
 
@@ -49,8 +52,15 @@ export class ResetPasswordComponent implements OnInit {
 
     public open(): void {
         this.resetOk = false;
-        this.opened = true;
+        this.onGoing = false;
+        this.validationState = {
+            "newPassword": true,
+            "reNewPassword": true
+        };
         this.resetPwdForm.resetForm();
+        this.inlineAlert.close();
+
+        this.opened = true;
     }
 
     public close(): void {

@@ -114,7 +114,8 @@
         "SAVE_SUCCESS": "New user added successfully",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
-        "DELETE_SUCCESS": "User deleted successfully"
+        "DELETE_SUCCESS": "User deleted successfully",
+        "ITEMS": "item(s)"
     },
     "PROJECT": {
         "PROJECTS": "Projects",

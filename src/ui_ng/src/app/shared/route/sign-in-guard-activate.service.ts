@@ -16,7 +16,7 @@ export class SignInGuard implements CanActivate, CanActivateChild {
     //If user has logged in, should not login again
     return new Promise((resolve, reject) => {
       let user = this.authService.getCurrentUser();
-      if (!user) {
+      if (user === null) {
         this.authService.retrieveUser()
           .then(() => {
             this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);

@@ -141,6 +141,18 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.account = Object.assign({}, this.session.getCurrentUser());
         this.formValueChanged = false;
 
+        //Confirm inline alert is closed
+        this.inlineAlert.close();
+
+        //Clear check history
+        this.mailAlreadyChecked = {};
+
+        //Reset validation status
+        this.validationStateMap = {
+            "account_settings_email": true,
+            "account_settings_full_name": true
+        };
+
         this.opened = true;
     }
 
