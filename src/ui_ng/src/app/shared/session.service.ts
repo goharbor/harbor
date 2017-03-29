@@ -161,4 +161,5 @@ export class SessionService {
     getProjectMembers(): Member[] {
         return this.projectMembers;
     }
+
 }

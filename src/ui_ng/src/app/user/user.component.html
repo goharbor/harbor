@@ -25,9 +25,7 @@
                     <clr-dg-cell>{{user.username}}</clr-dg-cell>
                     <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
                     <clr-dg-cell>{{user.email}}</clr-dg-cell>
-                    <clr-dg-cell>
-                        {{user.creation_time}}
-                    </clr-dg-cell>
+                    <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>{{users.length}} {{'USER.ITEMS' | translate}}</clr-dg-footer>
             </clr-datagrid>

@@ -25,7 +25,7 @@
                 </clr-dg-action-overflow>
                 <clr-dg-cell>{{t.name}}</clr-dg-cell>
                 <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
-                <clr-dg-cell>{{t.creation_time}}</clr-dg-cell>
+                <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{ (targets ? targets.length : 0) }} {{'DESTINATION.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>

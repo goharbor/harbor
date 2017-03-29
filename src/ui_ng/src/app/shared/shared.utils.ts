@@ -11,8 +11,7 @@ export const errorHandler = function (error: any): string {
     if (!error) {
         return "UNKNOWN_ERROR";
     }
-    console.log(JSON.stringify(error));
-
+    console.log(error);
     if (!(error.statusCode || error.status)) {
         //treat as string message
         return '' + error;
