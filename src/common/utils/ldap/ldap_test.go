@@ -63,7 +63,6 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	//	config.TokenExpiration:            30,
 	common.CfgExpiration: 5,
 	//	config.JobLogDir:                  "/var/log/jobs",
-	//	config.UseCompressedJS:            true,
 	common.AdminInitialPassword: "password",
 }
 
