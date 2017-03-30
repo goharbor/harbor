@@ -162,7 +162,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     private handleUserCreation(user: User): void {
         if (user) {
             this.currentForm.setValue({
-                "login_username": user.username
+                "login_username": user.username,
+                "login_password": ""
             });
 
         }

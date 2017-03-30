@@ -130,9 +130,7 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     //Value copy
-    let updatedUser: User = {
-      user_id: user.user_id
-    };
+    let updatedUser: User = new User(user.user_id);;
 
     if (user.has_admin_role === 0) {
       updatedUser.has_admin_role = 1;//Set as admin

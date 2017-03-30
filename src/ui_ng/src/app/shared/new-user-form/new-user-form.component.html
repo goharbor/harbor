@@ -17,7 +17,8 @@
                 <label for="email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("email")'>
                       <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" 
                       required 
-                      pattern='^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$' id="email" size="36"
+                      email
+                      id="email" size="36"
                       (input)='handleValidation("email", false)' 
                 (focusout)='handleValidation("email", true)'>
                       <span class="tooltip-content">
