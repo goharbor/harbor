@@ -74,8 +74,8 @@ before_script:
   - sudo chmod 777 /tmp/registry.db
 
 script:
-  - sudo mkdir -p /harbor_storage/ca_download
-  - sudo mv ./tests/ca.crt /harbor_storage/ca_download
+  - sudo mkdir -p /etc/ui/ca/
+  - sudo mv ./tests/ca.crt /etc/ui/ca/
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop

@@ -21,6 +21,7 @@ export class ResetPasswordComponent implements OnInit {
     };
     private resetUuid: string = "";
     private resetOk: boolean = false;
+    confirmPwd: string = "";
 
     @ViewChild("resetPwdForm") resetPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)

@@ -57,7 +57,6 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.CfgExpiration:              5,
-	common.UseCompressedJS:            true,
 	common.AdminInitialPassword:       "password",
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,

@@ -98,10 +98,6 @@ var (
 			env:   "TOKEN_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		common.UseCompressedJS: &parser{
-			env:   "USE_COMPRESSED_JS",
-			parse: parseStringToBool,
-		},
 		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
@@ -131,11 +127,6 @@ var (
 		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
-		},
-		// TODO remove this config?
-		common.UseCompressedJS: &parser{
-			env:   "USE_COMPRESSED_JS",
-			parse: parseStringToBool,
 		},
 		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",

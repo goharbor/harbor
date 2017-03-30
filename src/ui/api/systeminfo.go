@@ -20,7 +20,7 @@ type SystemInfoAPI struct {
 	isAdmin       bool
 }
 
-const defaultRootCert = "/harbor_storage/ca_download/ca.crt"
+const defaultRootCert = "/etc/ui/ca/ca.crt"
 const harborVersionFile = "/harbor/VERSION"
 
 //SystemInfo models for system info.
