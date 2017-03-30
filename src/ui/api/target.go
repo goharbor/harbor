@@ -328,7 +328,7 @@ func (t *TargetAPI) Delete() {
 	}
 
 	if len(policies) > 0 {
-		t.CustomAbort(http.StatusBadRequest, "the target is used by policies, can not be deleted")
+		t.CustomAbort(http.StatusPreconditionFailed, "the target is used by policies, can not be deleted")
 	}
 
 	if err = dao.DeleteRepTarget(id); err != nil {
