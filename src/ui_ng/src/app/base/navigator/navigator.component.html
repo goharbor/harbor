@@ -11,7 +11,7 @@
     </div>
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown bottom-left">
+        <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">
             <button class="nav-icon" clrDropdownToggle style="width: 98px;">
                 <clr-icon shape="world" style="left:-8px;"></clr-icon>
                 <span style="padding-right: 8px;">{{currentLang}}</span>
