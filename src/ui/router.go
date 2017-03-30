@@ -33,9 +33,10 @@ func initRouters() {
 	beego.Router("/", &controllers.IndexController{})
 	beego.Router("/sign-in", &controllers.IndexController{})
 	beego.Router("/sign-up", &controllers.IndexController{})
-	beego.Router("/password-reset", &controllers.IndexController{})
+	beego.Router("/reset_password", &controllers.IndexController{})
 
 	beego.Router("/harbor", &controllers.IndexController{})
+
 	beego.Router("/harbor/sign-in", &controllers.IndexController{})
 	beego.Router("/harbor/sign-up", &controllers.IndexController{})
 	beego.Router("/harbor/dashboard", &controllers.IndexController{})

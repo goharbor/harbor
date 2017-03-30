@@ -46,7 +46,11 @@ export class DestinationComponent implements OnInit {
             this.reload();
           },
           error => { 
-            this.messageHandlerService.handleError(error);
+            if(error && error.status === 412) {
+              this.messageHandlerService.showError('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED', '');
+            } else {
+              this.messageHandlerService.handleError(error);
+            }
             console.log('Failed to delete target with ID:' + targetId + ', error:' + error);
           });
       }

@@ -26,7 +26,7 @@ export class ListPolicyComponent implements OnDestroy {
 
   @Output() reload = new EventEmitter<boolean>();
   @Output() selectOne = new EventEmitter<Policy>();
-  @Output() editOne = new EventEmitter<number>();
+  @Output() editOne = new EventEmitter<Policy>();
   @Output() toggleOne = new EventEmitter<Policy>();
 
   toggleSubscription: Subscription;
@@ -106,7 +106,7 @@ export class ListPolicyComponent implements OnDestroy {
 
   editPolicy(policy: Policy) {
     console.log('Open modal to edit policy.');
-    this.editOne.emit(policy.id);
+    this.editOne.emit(policy);
   }
 
   togglePolicy(policy: Policy) {
