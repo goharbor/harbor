@@ -38,6 +38,7 @@ import { ListProjectROComponent } from './list-project-ro/list-project-ro.compon
 import { ListRepositoryROComponent } from './list-repository-ro/list-repository-ro.component';
 
 import { MessageHandlerService } from './message-handler/message-handler.service';
+import { EmailValidatorDirective } from './email.directive';
 
 @NgModule({
   imports: [
@@ -60,7 +61,8 @@ import { MessageHandlerService } from './message-handler/message-handler.service
     StatisticsComponent,
     StatisticsPanelComponent,
     ListProjectROComponent,
-    ListRepositoryROComponent
+    ListRepositoryROComponent,
+    EmailValidatorDirective
   ],
   exports: [
     CoreModule,
@@ -79,7 +81,8 @@ import { MessageHandlerService } from './message-handler/message-handler.service
     StatisticsComponent,
     StatisticsPanelComponent,
     ListProjectROComponent,
-    ListRepositoryROComponent
+    ListRepositoryROComponent,
+    EmailValidatorDirective
   ],
   providers: [
     SessionService,
