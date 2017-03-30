@@ -92,7 +92,6 @@ type SystemCfg struct {
 	MaxJobWorkers              int             `json:"max_job_workers"`
 	JobLogDir                  string          `json:"job_log_dir"`
 	InitialAdminPwd            string          `json:"initial_admin_pwd,omitempty"`
-	CompressJS                 bool            `json:"compress_js"`      //TODO remove
 	TokenExpiration            int             `json:"token_expiration"` // in minute
 	SecretKey                  string          `json:"secret_key,omitempty"`
 	CfgExpiration              int             `json:"cfg_expiration"`

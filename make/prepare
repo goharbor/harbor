@@ -138,7 +138,6 @@ ldap_scope = rcp.get("configuration", "ldap_scope")
 ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
-use_compressed_js = rcp.get("configuration", "use_compressed_js")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
     cert_key_path = rcp.get("configuration", "ssl_cert_key")
@@ -223,8 +222,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         jobservice_secret=jobservice_secret,
         token_expiration=token_expiration,
         admiral_url=admiral_url,
-        with_notary=args.notary_mode,
-        use_compressed_js=use_compressed_js
+        with_notary=args.notary_mode
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
