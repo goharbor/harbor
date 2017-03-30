@@ -145,7 +145,9 @@
         "REPLICATION_RULE": "Replication Rule",
         "CREATED_SUCCESS": "Created project successfully.",
         "DELETED_SUCCESS": "Deleted project successfully.",
-        "TOGGLED_SUCCESS": "Toggled project successfully."
+        "TOGGLED_SUCCESS": "Toggled project successfully.",
+        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules can not be deleted.",
+        "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project."
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -249,15 +251,18 @@
         "LOGS": "Logs",
         "ITEMS": "item(s)",
         "TOGGLE_ENABLE_TITLE": "Enable Rule",
-        "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project will be replicated to the destination registry. Please confirm to continue.",
+        "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project \nwill be replicated to the destination registry. \nPlease confirm to continue.",
         "TOGGLE_DISABLE_TITLE": "Disable Rule",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the rule, all unfinished replication jobs of this rule will be stopped and canceled. Please confirm to continue.",
+        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the rule, all unfinished replication jobs of this rule \nwill be stopped and canceled. \nPlease confirm to continue.",
         "CREATED_SUCCESS": "Created replication rule successfully.",
         "UPDATED_SUCCESS": "Updated replication rule successfully.",
         "DELETED_SUCCESS": "Deleted replication rule successfully.",
         "DELETED_FAILED": "Deleted replication rule failed.",
         "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
-        "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled."
+        "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
+        "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
+        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
+        "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",

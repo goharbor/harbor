@@ -6,7 +6,7 @@
       <section class="form-block">
         <div class="form-group">
           <label for="member_name" class="col-md-4 form-group-label-override">{{'MEMBER.NAME' | translate}}</label>
-          <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="memberName.invalid && (memberName.dirty || memberName.touched)" [class.valid]="memberName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+          <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="memberName.invalid && (memberName.dirty || memberName.touched)" [class.valid]="memberName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
             <input type="text" id="member_name"  [(ngModel)]="member.username" name="name" size="20" #memberName="ngModel" required targetExists="MEMBER_NAME" [projectId]="projectId">
             <span class="tooltip-content" *ngIf="memberName.errors && memberName.errors.required && (memberName.dirty || memberName.touched)">
               {{ 'MEMBER.USERNAME_IS_REQUIRED' | translate }}

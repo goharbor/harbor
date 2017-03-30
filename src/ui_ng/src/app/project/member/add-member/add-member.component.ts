@@ -13,7 +13,8 @@ import { Member } from '../member';
 
 @Component({
   selector: 'add-member',
-  templateUrl: 'add-member.component.html'
+  templateUrl: 'add-member.component.html',
+  styleUrls: [ 'add-member.component.css' ]
 })
 export class AddMemberComponent implements AfterViewChecked {
 

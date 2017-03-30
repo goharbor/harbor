@@ -17,7 +17,8 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'create-edit-policy',
-  templateUrl: 'create-edit-policy.component.html'
+  templateUrl: 'create-edit-policy.component.html',
+  styleUrls: [ 'create-edit-policy.component.css' ]
 })
 export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
@@ -195,6 +196,8 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             if(this.messageHandlerService.isAppLevel(error)) {
               this.messageHandlerService.handleError(error);
               this.createEditPolicyOpened = false;
+            } else if (error.status === 409) {
+              this.inlineAlert.showInlineError('REPLICATION.POLICY_ALREADY_EXISTS');
             } else {
               this.inlineAlert.showInlineError(error);
             }            
@@ -217,6 +220,8 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             if(this.messageHandlerService.isAppLevel(error)) {
               this.messageHandlerService.handleError(error);
               this.createEditPolicyOpened = false;  
+            } else if (error.status === 409) {
+              this.inlineAlert.showInlineError('REPLICATION.POLICY_ALREADY_EXISTS');            
             } else {
               this.inlineAlert.showInlineError(error);
             }
@@ -240,6 +245,8 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             if(this.messageHandlerService.isAppLevel(error)) {
               this.messageHandlerService.handleError(error);
               this.createEditPolicyOpened = false;
+            } else if (error.status === 409) {
+              this.inlineAlert.showInlineError('REPLICATION.POLICY_ALREADY_EXISTS');
             } else {
               this.inlineAlert.showInlineError(error);
             }
