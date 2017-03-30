@@ -16,87 +16,34 @@
 package email
 
 import (
-	"bytes"
 	tlspkg "crypto/tls"
+	"fmt"
 	"net"
-	"strconv"
+	"net/smtp"
+	"strings"
 	"time"
 
-	"net/smtp"
-	"text/template"
-
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
 )
 
-// Mail holds information about content of Email
-type Mail struct {
-	From    string
-	To      []string
-	Subject string
-	Message string
-}
+// Send ...
+func Send(addr, identity, username, password string,
+	timeout int, tls, insecure bool, from string,
+	to []string, subject, message string) error {
 
-var mc *models.Email
-
-// SendMail sends Email according to the configurations
-func (m Mail) SendMail() error {
-	var err error
-	mc, err = config.Email()
-	if err != nil {
-		return err
-	}
-
-	mailTemplate, err := template.ParseFiles("views/mail.tpl")
-	if err != nil {
-		return err
-	}
-	mailContent := new(bytes.Buffer)
-	err = mailTemplate.Execute(mailContent, m)
-	if err != nil {
-		return err
-	}
-	content := mailContent.Bytes()
-
-	auth := smtp.PlainAuth(mc.Identity, mc.Username, mc.Password, mc.Host)
-	if mc.SSL {
-		err = sendMailWithTLS(m, auth, content)
-	} else {
-		err = sendMail(m, auth, content)
-	}
-
-	return err
-}
-
-func sendMail(m Mail, auth smtp.Auth, content []byte) error {
-	return smtp.SendMail(mc.Host+":"+strconv.Itoa(mc.Port), auth, m.From, m.To, content)
-}
-
-func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
-	conn, err := tlspkg.Dial("tcp", mc.Host+":"+strconv.Itoa(mc.Port), nil)
-	if err != nil {
-		return err
-	}
-
-	client, err := smtp.NewClient(conn, mc.Host)
+	client, err := newClient(addr, identity, username,
+		password, timeout, tls, insecure)
 	if err != nil {
 		return err
 	}
 	defer client.Close()
 
-	if ok, _ := client.Extension("AUTH"); ok {
-		if err = client.Auth(auth); err != nil {
-			return err
-		}
-	}
-
-	if err = client.Mail(m.From); err != nil {
+	if err = client.Mail(from); err != nil {
 		return err
 	}
 
-	for _, to := range m.To {
-		if err = client.Rcpt(to); err != nil {
+	for _, t := range to {
+		if err = client.Rcpt(t); err != nil {
 			return err
 		}
 	}
@@ -106,7 +53,11 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 		return err
 	}
 
-	_, err = w.Write(content)
+	template := "From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\n%s\r\n"
+	data := fmt.Sprintf(template, from,
+		strings.Join(to, ","), subject, message)
+
+	_, err = w.Write([]byte(data))
 	if err != nil {
 		return err
 	}
@@ -126,18 +77,29 @@ func sendMailWithTLS(m Mail, auth smtp.Auth, content []byte) error {
 // Ping doesn't verify the server's certificate and hostname when
 // needed if the parameter insecure is ture
 func Ping(addr, identity, username, password string,
-	timeout int, tls, insecure bool) (err error) {
+	timeout int, tls, insecure bool) error {
+	client, err := newClient(addr, identity, username, password,
+		timeout, tls, insecure)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+	return nil
+}
+
+// caller needs to close the client
+func newClient(addr, identity, username, password string,
+	timeout int, tls, insecure bool) (*smtp.Client, error) {
 	log.Debugf("establishing TCP connection with %s ...", addr)
 	conn, err := net.DialTimeout("tcp", addr,
 		time.Duration(timeout)*time.Second)
 	if err != nil {
-		return
+		return nil, err
 	}
-	defer conn.Close()
 
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if tls {
@@ -147,9 +109,8 @@ func Ping(addr, identity, username, password string,
 			InsecureSkipVerify: insecure,
 		})
 		if err = tlsConn.Handshake(); err != nil {
-			return
+			return nil, err
 		}
-		defer tlsConn.Close()
 
 		conn = tlsConn
 	}
@@ -157,9 +118,8 @@ func Ping(addr, identity, username, password string,
 	log.Debugf("creating SMTP client for %s ...", host)
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
-		return
+		return nil, err
 	}
-	defer client.Close()
 
 	//try to swith to SSL/TLS
 	if !tls {
@@ -169,7 +129,7 @@ func Ping(addr, identity, username, password string,
 				ServerName:         host,
 				InsecureSkipVerify: insecure,
 			}); err != nil {
-				return
+				return nil, err
 			}
 		} else {
 			log.Debugf("the email server %s does not support STARTTLS", addr)
@@ -181,14 +141,14 @@ func Ping(addr, identity, username, password string,
 		// only support plain auth
 		if err = client.Auth(smtp.PlainAuth(identity,
 			username, password, host)); err != nil {
-			return
+			return nil, err
 		}
 	} else {
 		log.Debugf("the email server %s does not support AUTH, skip",
 			addr)
 	}
 
-	log.Debug("ping email server successfully")
+	log.Debug("create smtp client successfully")
 
-	return
+	return client, nil
 }
