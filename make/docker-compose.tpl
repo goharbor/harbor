@@ -76,6 +76,7 @@ services:
       - ./common/config/ui/app.conf:/etc/ui/app.conf
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
       - /data/secretkey:/etc/ui/key
+      - /data/ca_download/:/etc/ui/ca/
     networks:
       - harbor
     depends_on:
