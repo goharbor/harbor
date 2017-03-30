@@ -22,7 +22,7 @@ export class ListJobComponent {
       for(let i = 0; i < this.jobs.length; i++) {
         let j = this.jobs[i];
         if(j.status === 'retrying' || j.status === 'error') {
-          this.messageHandlerService.showError('', '');
+          this.messageHandlerService.showError('REPLICATION.FOUND_ERROR_IN_JOBS', '');
         }
       }
       this.paginate.emit(state);
