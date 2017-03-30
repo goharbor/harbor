@@ -300,7 +300,7 @@ func ImportUser(user models.LdapUser) (int64, error) {
 	}
 
 	u.Password = "12345678AbC"
-	u.Comment = "registered from LDAP."
+	u.Comment = "from LDAP."
 	if u.Email == "" {
 		u.Email = u.Username + "@placeholder.com"
 	}

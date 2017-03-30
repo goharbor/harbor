@@ -89,7 +89,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		u.UserID = currentUser.UserID
 	} else {
 		//		u.Password = "12345678AbC"
-		//		u.Comment = "registered from LDAP."
+		//		u.Comment = "from LDAP."
 		//		if u.Email == "" {
 		//			u.Email = u.Username + "@placeholder.com"
 		//		}
