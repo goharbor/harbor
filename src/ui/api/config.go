@@ -63,7 +63,6 @@ var (
 		common.TokenExpiration,
 		common.CfgExpiration,
 		common.JobLogDir,
-		common.UseCompressedJS,
 		common.AdminInitialPassword,
 	}
 
@@ -81,7 +80,6 @@ var (
 		common.EmailSSL,
 		common.SelfRegistration,
 		common.VerifyRemoteCert,
-		common.UseCompressedJS,
 	}
 
 	passwordKeys = []string{
