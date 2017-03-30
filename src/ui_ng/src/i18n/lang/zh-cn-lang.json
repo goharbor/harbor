@@ -112,7 +112,7 @@
         "IS_ADMIN": "是",
         "IS_NOT_ADMIN": "否",
         "ADD_USER_TITLE": "创建用户",
-        "SAVE_SUCCESS": "添加用户成功",
+        "SAVE_SUCCESS": "创建用户成功",
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "删除用户成功",

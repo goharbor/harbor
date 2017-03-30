@@ -112,7 +112,7 @@
         "IS_ADMIN": "Yes",
         "IS_NOT_ADMIN": "No",
         "ADD_USER_TITLE": "New User",
-        "SAVE_SUCCESS": "New user added successfully",
+        "SAVE_SUCCESS": "New user created successfully",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
         "DELETE_SUCCESS": "User deleted successfully",
@@ -325,7 +325,7 @@
         "COPY": "Copy"
     },
     "ALERT": {
-        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you really want to cancel?"
+        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you want to cancel?"
     },
     "RESET_PWD": {
         "TITLE": "Reset Password",
@@ -392,7 +392,7 @@
         "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}",
         "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}",
         "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
-        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet,do you really want to leave currnet page?"
+        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet, do you want to leave currnet page?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
