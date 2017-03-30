@@ -413,7 +413,9 @@
         "REPO_ITEM": "镜像库",
         "INDEX_MY": "私有",
         "INDEX_PUB": "公开",
-        "INDEX_TOTAL": "总计"
+        "INDEX_TOTAL": "总计",
+        "STORAGE": "存储",
+        "LIMIT": "容量"
     },
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",
