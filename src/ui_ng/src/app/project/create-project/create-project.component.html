@@ -1,12 +1,12 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
   <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
-  <div class="modal-body">
+  <div class="modal-body" style="height: 12.8em; overflow-y: hidden;">
     <form #projectForm="ngForm">
       <section class="form-block">
         <div class="form-group">
           <label for="create_project_name" class="col-md-4 form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
-          <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-right">
+          <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
             <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="20" required minlength="2" #projectName="ngModel" targetExists="PROJECT_NAME">
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.required && (projectName.dirty || projectName.touched)">
               {{'PROJECT.NAME_IS_REQUIRED' | translate}}
@@ -26,6 +26,9 @@
             <label for="create_project_public"></label>
           </div>
         </div>
+        <p class="inline-help-public">
+          {{'PROJECT.INLINE_HELP_PUBLIC' | translate }}
+        </p>
       </section>
     </form>
   </div>

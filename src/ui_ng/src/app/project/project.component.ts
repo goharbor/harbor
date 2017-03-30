@@ -75,8 +75,14 @@ export class ProjectComponent implements OnInit, OnDestroy {
             console.log('Successful delete project with ID:' + projectId);
             this.retrieve();
           },
-          error =>this.messageHandlerService.handleError(error)
-          );
+          error =>{
+            if(error && error.status === 412) {
+              this.messageHandlerService.showError('PROJECT.FAILED_TO_DELETE_PROJECT', '');
+            } else {
+              this.messageHandlerService.handleError(error);
+            }
+          }
+        );
       }
     });
     
@@ -121,7 +127,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         this.changedProjects = response.json();
       },
       error => this.messageHandlerService.handleError(error)
-      );
+    );
   }
 
   openModal(): void {

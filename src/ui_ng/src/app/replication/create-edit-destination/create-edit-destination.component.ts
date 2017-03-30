@@ -13,7 +13,8 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'create-edit-destination',
-  templateUrl: './create-edit-destination.component.html'
+  templateUrl: './create-edit-destination.component.html',
+  styleUrls: [ 'create-edit-destination.component.css' ]
 })
 export class CreateEditDestinationComponent implements AfterViewChecked {
 

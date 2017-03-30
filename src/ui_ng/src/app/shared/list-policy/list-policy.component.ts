@@ -75,7 +75,13 @@ export class ListPolicyComponent implements OnDestroy {
                     console.log('Successful delete policy with ID:' + message.data);
                     this.reload.emit(true);
                   },
-                  error => this.messageHandlerService.handleError(error)
+                  error => {
+                    if(error && error.status === 412) {
+                      this.messageHandlerService.handleError('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED');
+                    } else {
+                      this.messageHandlerService.handleError(error);
+                    }
+                  }
                 );
         }
       }

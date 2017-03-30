@@ -30,7 +30,7 @@
             <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
             <div class="flex-items-xs-bottom option-right-down">
                 <button class="btn btn-link" (click)="toggleSearchJobOptionalName(currentJobSearchOption)">{{toggleJobSearchOption[currentJobSearchOption] | translate}}</button>
-                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filter)="doSearchJobs($event)"></grid-filter>
+                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_JOBS_PLACEHOLDER" | translate}}' (filter)="doSearchJobs($event)"></grid-filter>
                 <a href="javascript:void(0)" (click)="refreshJobs()">
                     <clr-icon shape="refresh"></clr-icon>
                 </a>
