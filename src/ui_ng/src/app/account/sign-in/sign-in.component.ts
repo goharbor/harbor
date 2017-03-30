@@ -80,6 +80,15 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 
+    //App title
+    public get appTitle(): string {
+        if(this.appConfig && this.appConfig.with_admiral){
+            return "APP_TITLE.VIC";
+        }
+
+        return "APP_TITLE.VMW_HARBOR";
+    }
+
     //For template accessing
     public get isError(): boolean {
         return this.signInStatus === signInStatusError;
