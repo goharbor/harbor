@@ -31,3 +31,7 @@
     top: 12px;
     cursor: pointer;
 }
+
+.hide-create {
+    visibility: hidden !important;
+}
