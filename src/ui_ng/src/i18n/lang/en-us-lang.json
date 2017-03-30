@@ -413,7 +413,9 @@
         "REPO_ITEM": "REPOSITORIES",
         "INDEX_MY": "MY",
         "INDEX_PUB": "PUBLIC",
-        "INDEX_TOTAL": "TOTAL"
+        "INDEX_TOTAL": "TOTAL",
+        "STORAGE": "STORAGE",
+        "LIMIT": "Limit"
     },
     "SEARCH": {
         "IN_PROGRESS": "Search...",
