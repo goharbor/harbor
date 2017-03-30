@@ -2,7 +2,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="row flex-items-xs-between">
             <div class="flex-items-xs-middle option-left">
-                <button class="btn btn-primary" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'DESTINATION.ENDPOINT' | translate}}</button>
+                <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'DESTINATION.ENDPOINT' | translate}}</button>
                 <create-edit-destination (reload)="reload($event)"></create-edit-destination>
             </div>
             <div class="flex-items-xs-middle option-right">
@@ -25,7 +25,7 @@
                 </clr-dg-action-overflow>
                 <clr-dg-cell>{{t.name}}</clr-dg-cell>
                 <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
-                <clr-dg-cell>{{t.creation_time}}</clr-dg-cell>
+                <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{ (targets ? targets.length : 0) }} {{'DESTINATION.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>

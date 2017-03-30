@@ -206,6 +206,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
   //Add new user
   addNewUser(): void {
+    if (!this.canCreateUser) {
+      return;// No response to this hacking action
+    }
     this.newUserDialog.open();
   }
 

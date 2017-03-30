@@ -1,5 +1,6 @@
 {
     "APP_TITLE": {
+        "VMW_HARBOR": "VMware Harbor",
         "HARBOR": "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
@@ -110,7 +111,7 @@
         "COLUMN_REG_NAME": "注册时间",
         "IS_ADMIN": "是",
         "IS_NOT_ADMIN": "否",
-        "ADD_USER_TITLE": "添加用户",
+        "ADD_USER_TITLE": "创建用户",
         "SAVE_SUCCESS": "添加用户成功",
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",

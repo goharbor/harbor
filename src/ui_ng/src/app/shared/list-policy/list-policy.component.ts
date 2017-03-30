@@ -18,6 +18,8 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class ListPolicyComponent implements OnDestroy {
 
+  nullTime: string = '0001-01-01T00:00:00Z';
+
   @Input() policies: Policy[];
   @Input() projectless: boolean;
   @Input() selectedId: number;

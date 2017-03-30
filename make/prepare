@@ -138,7 +138,6 @@ ldap_scope = rcp.get("configuration", "ldap_scope")
 ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
-use_compressed_js = rcp.get("configuration", "use_compressed_js")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
     cert_key_path = rcp.get("configuration", "ssl_cert_key")
@@ -223,8 +222,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         jobservice_secret=jobservice_secret,
         token_expiration=token_expiration,
         admiral_url=admiral_url,
-        with_notary=args.notary_mode,
-        use_compressed_js=use_compressed_js
+        with_notary=args.notary_mode
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
@@ -319,27 +317,33 @@ if args.notary_mode:
         shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
     shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
     if customize_crt == 'on' and openssl_installed():
-        temp_cert_dir = os.path.join(base_dir, "cert_tmp")
-        if not os.path.exists(temp_cert_dir):
-            os.makedirs(temp_cert_dir)
-        ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
-        cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
-        signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
-        signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
-        signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
-        signer_key_path = os.path.join(temp_cert_dir, "notary-signer.key")
-        create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
-        create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
-        print("Copying certs for notary signer")
-        shutil.copy2(signer_cert_path, notary_config_dir)
-        shutil.copy2(signer_key_path, notary_config_dir)
-        shutil.copy2(signer_ca_cert, notary_config_dir)
+        try:
+            temp_cert_dir = os.path.join(base_dir, "cert_tmp")
+            if not os.path.exists(temp_cert_dir):
+                os.makedirs(temp_cert_dir)
+            ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
+            cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
+            signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
+            signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
+            signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
+            signer_key_path = os.path.join(temp_cert_dir, "notary-signer.key")
+            create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
+            create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
+            print("Copying certs for notary signer")
+            shutil.copy2(signer_cert_path, notary_config_dir)
+            shutil.copy2(signer_key_path, notary_config_dir)
+            shutil.copy2(signer_ca_cert, notary_config_dir)
+        finally:
+            srl_tmp = os.path.join(os.getcwd(), ".srl")
+            if os.path.isfile(srl_tmp):
+                os.remove(srl_tmp)
+            if os.path.isdir(temp_cert_dir):
+                shutil.rmtree(temp_cert_dir, True)
     else:
         print("Copying certs for notary signer")
         shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
         shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
         shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_dir)
-
     shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
     print("Copying notary signer configuration file")
     shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)

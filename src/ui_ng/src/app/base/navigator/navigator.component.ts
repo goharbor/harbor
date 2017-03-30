@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, Inject } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -27,7 +27,7 @@ export class NavigatorComponent implements OnInit {
 
     private selectedLang: string = enLang;
     private appTitle: string = 'APP_TITLE.HARBOR';
-
+    
     constructor(
         private session: SessionService,
         private router: Router,
@@ -35,7 +35,9 @@ export class NavigatorComponent implements OnInit {
         private cookie: CookieService,
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
-        private searchTrigger: SearchTriggerService) { }
+        private searchTrigger: SearchTriggerService) {
+            
+        }
 
     ngOnInit(): void {
         this.selectedLang = this.translate.currentLang;
@@ -118,10 +120,10 @@ export class NavigatorComponent implements OnInit {
                 this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
             })
             .catch(error => {
-                this.msgHandler.handleError(error);
+                this.msgHandler.handleError(error);       
             });
         //Confirm search result panel is close
-        this.searchTrigger.closeSearch(true);
+        this.searchTrigger.closeSearch(true);       
     }
 
     //Switch languages
@@ -133,8 +135,9 @@ export class NavigatorComponent implements OnInit {
             //TODO:
             console.error('Language ' + lang.trim() + ' is not suppoted');
         }
-        //Try to switch backend lang
-        //this.session.switchLanguage(lang).catch(error => console.error(error));
+        setTimeout(()=>{
+            window.location.reload();
+        }, 500);
     }
 
     //Handle the home action

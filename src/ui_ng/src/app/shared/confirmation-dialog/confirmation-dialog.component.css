@@ -15,4 +15,5 @@
     display: inline-block;
     vertical-align: middle;
     width: 80%;
+    white-space: pre-wrap;
 }

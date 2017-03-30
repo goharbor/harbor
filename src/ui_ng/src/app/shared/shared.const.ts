@@ -1,8 +1,8 @@
-export const supportedLangs = ['en', 'zh'];
-export const enLang = "en";
+export const supportedLangs = ['en-us', 'zh-cn'];
+export const enLang = "en-us";
 export const languageNames = {
-  "en": "English",
-  "zh": "中文简体"
+  "en-us": "English",
+  "zh-cn": "中文简体"
 };
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS

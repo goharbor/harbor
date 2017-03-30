@@ -20,9 +20,12 @@
           </template>
         </clr-dg-cell>
         <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{p.description}}</clr-dg-cell>
+        <clr-dg-cell>{{p.description ? p.description : '-'}}</clr-dg-cell>
         <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
-        <clr-dg-cell>{{p.start_time}}</clr-dg-cell>
+        <clr-dg-cell>
+          <template [ngIf]="p.start_time === nullTime">-</template>
+          <template [ngIf]="p.start_time !== nullTime">{{p.start_time | date: 'short'}}</template>
+        </clr-dg-cell>
         <clr-dg-cell>
             {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
         </clr-dg-cell>
