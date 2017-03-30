@@ -112,6 +112,13 @@ func (cc *CommonController) SendEmail() {
 		cc.CustomAbort(http.StatusNotFound, "email_does_not_exist")
 	}
 
+	uuid := utils.GenerateRandomString()
+	user := models.User{ResetUUID: uuid, Email: email}
+	if err = dao.UpdateUserResetUUID(user); err != nil {
+		log.Errorf("failed to update user reset UUID: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	messageTemplate, err := template.ParseFiles("views/reset-password-mail.tpl")
 	if err != nil {
 		log.Errorf("Parse email template file failed: %v", err)
@@ -126,7 +133,6 @@ func (cc *CommonController) SendEmail() {
 		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	uuid := utils.GenerateRandomString()
 	err = messageTemplate.Execute(message, messageDetail{
 		Hint: cc.Tr("reset_email_hint"),
 		URL:  harborURL,
@@ -157,12 +163,6 @@ func (cc *CommonController) SendEmail() {
 	if err != nil {
 		log.Errorf("Send email failed: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "send_email_failed")
-	}
-
-	user := models.User{ResetUUID: uuid, Email: email}
-	if err = dao.UpdateUserResetUUID(user); err != nil {
-		log.Errorf("failed to update user reset UUID: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 }
 
