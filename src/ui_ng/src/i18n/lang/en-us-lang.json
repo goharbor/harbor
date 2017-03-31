@@ -327,13 +327,13 @@
         "COPY": "Copy"
     },
     "ALERT": {
-        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you want to cancel?"
+        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
     },
     "RESET_PWD": {
         "TITLE": "Reset Password",
         "CAPTION": "Enter your email to reset your password",
         "EMAIL": "Email",
-        "SUCCESS": "Mail of resetting password is successfully send to your mail box",
+        "SUCCESS": "Mail with password resetting is successfully sent. You can close this dialog and check your mailbox now.",
         "CAPTION2": "Enter your new password",
         "RESET_OK": "Password has been successfully reset. Click OK to login with new password"
     },
@@ -394,7 +394,7 @@
         "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}",
         "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}",
         "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
-        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet, do you want to leave currnet page?"
+        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet. Do you want to leave currnet page?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
@@ -404,7 +404,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "COPYRIGHT": "Copyright 1998-2017 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
@@ -420,7 +420,9 @@
         "REPO_ITEM": "REPOSITORIES",
         "INDEX_MY": "MY",
         "INDEX_PUB": "PUBLIC",
-        "INDEX_TOTAL": "TOTAL"
+        "INDEX_TOTAL": "TOTAL",
+        "STORAGE": "STORAGE",
+        "LIMIT": "Limit"
     },
     "SEARCH": {
         "IN_PROGRESS": "Search...",

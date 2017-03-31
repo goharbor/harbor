@@ -109,6 +109,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             && this.appConfig.self_registration;
     }
 
+    public get showForgetPwd(): boolean {
+        return this.appConfig.auth_mode != 'ldap_auth';
+    }
+
     private clickRememberMe($event): void {
         if ($event && $event.target) {
             this.rememberMe = $event.target.checked;

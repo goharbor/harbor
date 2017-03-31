@@ -39,6 +39,7 @@ import { ListRepositoryROComponent } from './list-repository-ro/list-repository-
 
 import { MessageHandlerService } from './message-handler/message-handler.service';
 import { EmailValidatorDirective } from './email.directive';
+import { GaugeComponent } from './gauge/gauge.component';
 
 @NgModule({
   imports: [
@@ -62,7 +63,8 @@ import { EmailValidatorDirective } from './email.directive';
     StatisticsPanelComponent,
     ListProjectROComponent,
     ListRepositoryROComponent,
-    EmailValidatorDirective
+    EmailValidatorDirective,
+    GaugeComponent
   ],
   exports: [
     CoreModule,
@@ -82,7 +84,8 @@ import { EmailValidatorDirective } from './email.directive';
     StatisticsPanelComponent,
     ListProjectROComponent,
     ListRepositoryROComponent,
-    EmailValidatorDirective
+    EmailValidatorDirective,
+    GaugeComponent
   ],
   providers: [
     SessionService,
