@@ -333,7 +333,7 @@
         "TITLE": "重置密码",
         "CAPTION": "输入用来重置密码的邮箱",
         "EMAIL": "邮箱",
-        "SUCCESS": "重置密码邮件已成功发送",
+        "SUCCESS": "重置密码邮件已成功发送. 请关闭对话框并检查邮箱",
         "CAPTION2": "请输入您的新密码",
         "RESET_OK": "密码重置成功,点击确定按钮前往登录页登录"
     },
@@ -404,7 +404,7 @@
     "ABOUT": {
         "VERSION": "版本",
         "BUILD": "构建",
-        "COPYRIGHT": "Copyright 1998-2016 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "COPYRIGHT": "Copyright 1998-2017 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
         "TRADEMARK": "Vmware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "终端用户许可协议",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
@@ -420,7 +420,9 @@
         "REPO_ITEM": "镜像库",
         "INDEX_MY": "私有",
         "INDEX_PUB": "公开",
-        "INDEX_TOTAL": "总计"
+        "INDEX_TOTAL": "总计",
+        "STORAGE": "存储",
+        "LIMIT": "容量"
     },
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",

@@ -64,6 +64,10 @@ export class StatisticsPanelComponent implements OnInit {
         return user && user.has_admin_role > 0;
     }
 
+    public get isValidStorage(): boolean {
+        return this.volumesInfo.storage.total != 0;
+    }
+
     private getGBFromBytes(bytes: number): number {
         return Math.round((bytes / (1024 * 1024 * 1024)));
     }
