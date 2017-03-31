@@ -140,13 +140,9 @@ func (p *ProjectAPI) Head() {
 		return
 	}
 
-	userID := p.ValidateUser()
+	_ = p.ValidateUser()
 	if project == nil {
 		p.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
-	}
-
-	if !checkProjectPermission(userID, project.ProjectID) {
-		p.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 }
 
