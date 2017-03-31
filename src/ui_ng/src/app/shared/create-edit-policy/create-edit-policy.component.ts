@@ -50,6 +50,8 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   hasChanged: boolean;
 
+  editable: boolean;
+
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
 
@@ -100,10 +102,12 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
   ngOnInit(): void {}
 
-  openCreateEditPolicy(policyId?: number): void {
+  openCreateEditPolicy(editable: boolean, policyId?: number): void {
     this.createEditPolicyOpened = true;
     this.createEditPolicy = new CreateEditPolicy();
-   
+    
+    this.editable = editable;
+
     this.isCreateDestination = false;
     
     this.hasChanged = false;
@@ -114,7 +118,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
 
     if(policyId) {
       this.actionType = ActionType.EDIT;
-      this.translateService.get('REPLICATION.EDIT_POLICY').subscribe(res=>this.modalTitle=res);
+      this.translateService.get('REPLICATION.EDIT_POLICY_TITLE').subscribe(res=>this.modalTitle=res);
       this.replicationService
           .getPolicy(policyId)
           .subscribe(

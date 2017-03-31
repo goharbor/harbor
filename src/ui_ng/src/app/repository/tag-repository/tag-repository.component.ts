@@ -62,7 +62,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
           && message.state === ConfirmationState.CONFIRMED) {
           let tag = message.data;
           if (tag) {
-            if (tag.verified) {
+            if (tag.signed) {
               return;
             } else {
               let tagName = tag.tag;
@@ -139,15 +139,17 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   deleteTag(tag: TagView) {
     if (tag) {
-      let titleKey: string, summaryKey: string, content: string;
+      let titleKey: string, summaryKey: string, content: string, confirmOnly: boolean;
       if (tag.signed) {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
+        confirmOnly = true;
         content = 'notary -s https://' + this.registryUrl + ' -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ':' + tag.tag;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
         content = tag.tag;
+        confirmOnly = false;
       }
       let message = new ConfirmationMessage(
         titleKey,
@@ -155,6 +157,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
         content,
         tag,
         ConfirmationTargets.TAG);
+        message.confirmOnly = confirmOnly;
       this.deletionDialogService.openComfirmDialog(message);
     }
   }

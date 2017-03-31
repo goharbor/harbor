@@ -126,12 +126,18 @@ export class ReplicationComponent implements OnInit {
 
    openModal(): void {
      console.log('Open modal to create policy.');
-     this.createEditPolicyComponent.openCreateEditPolicy();
+     this.createEditPolicyComponent.openCreateEditPolicy(true);
    }
 
-   openEditPolicy(policyId: number) {
-     console.log('Open modal to edit policy ID:' + policyId);
-     this.createEditPolicyComponent.openCreateEditPolicy(policyId);
+   openEditPolicy(policy: Policy) {
+     if(policy) {
+       console.log('Open modal to edit policy ID:' + policy.id);
+       let editable = true;
+       if(policy.enabled === 1) {
+         editable = false;
+       }
+       this.createEditPolicyComponent.openCreateEditPolicy(editable, policy.id);
+     }
    }
 
    fetchPolicyJobs(state?: State) { 
@@ -148,6 +154,14 @@ export class ReplicationComponent implements OnInit {
              this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
              this.changedJobs = response.json();
              this.jobs = this.changedJobs;
+             for(let i = 0; i < this.jobs.length; i++) {
+               let j = this.jobs[i];
+               if(j.status == 'retrying' || j.status == 'error') {
+                 console.log('Error in jobs were found.')
+                 this.messageHandlerService.showError('REPLICATION.FOUND_ERROR_IN_JOBS', '');
+                 break;
+               }
+             }
            },
            error=>this.messageHandlerService.handleError(error)
          );

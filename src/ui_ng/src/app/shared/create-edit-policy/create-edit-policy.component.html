@@ -4,7 +4,7 @@
   <div class="modal-body" style="max-height: 85vh;">
     <form #policyForm="ngForm">
       <section class="form-block">
-        <div class="alert alert-warning" *ngIf="readonly">
+        <div class="alert alert-warning" *ngIf="!editable">
           <div class="alert-item">
             <span class="alert-text">
               {{'REPLICATION.CANNOT_EDIT' | translate}}
@@ -77,6 +77,6 @@
   <div class="modal-footer">
       <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
       <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="!policyForm.form.valid || testOngoing || readonly" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!policyForm.form.valid || testOngoing || !editable" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>

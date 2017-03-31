@@ -8,7 +8,7 @@
     <clr-dg-row *ngFor="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.TOGGLE_ENABLE_TITLE' : 'REPLICATION.TOGGLE_DISABLE_TITLE') | translate}}</button>
+            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
             <button class="action-item" (click)="deletePolicy(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
         </clr-dg-action-overflow>
         <clr-dg-cell>
