@@ -1,5 +1,4 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
+# this is an Harbor API in YAML
 swagger: '2.0'
 info:
   title: Harbor API
