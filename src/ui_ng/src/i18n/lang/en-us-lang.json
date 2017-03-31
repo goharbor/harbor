@@ -320,13 +320,13 @@
         "COPY": "Copy"
     },
     "ALERT": {
-        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet, do you want to cancel?"
+        "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
     },
     "RESET_PWD": {
         "TITLE": "Reset Password",
         "CAPTION": "Enter your email to reset your password",
         "EMAIL": "Email",
-        "SUCCESS": "Mail of resetting password is successfully send to your mail box",
+        "SUCCESS": "Mail with password resetting is successfully sent. You can close this dialog and check your mailbox now.",
         "CAPTION2": "Enter your new password",
         "RESET_OK": "Password has been successfully reset. Click OK to login with new password"
     },
@@ -387,7 +387,7 @@
         "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}",
         "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}",
         "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
-        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet, do you want to leave currnet page?"
+        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet. Do you want to leave currnet page?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
