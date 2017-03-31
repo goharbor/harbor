@@ -43,6 +43,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   currentUser: SessionUser;
   hasProjectAdminRole: boolean;
 
+  searchMember: string;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -108,6 +110,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   addedMember() {
+    this.searchMember = '';
     this.retrieve(this.projectId, '');
   }
 
@@ -138,7 +141,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   doSearch(searchMember) {
-    this.retrieve(this.projectId, searchMember);
+    this.searchMember = searchMember;
+    this.retrieve(this.projectId, this.searchMember);
   }
 
   refresh() {

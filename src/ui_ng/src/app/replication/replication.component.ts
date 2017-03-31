@@ -68,7 +68,7 @@ export class ReplicationComponent implements OnInit {
    changedJobs: Job[];
    initSelectedId: number;
 
-   policies: Policy[];
+   policies: Policy[];retrieve
    jobs: Job[];
 
    jobsTotalRecordCount: number;
@@ -144,7 +144,6 @@ export class ReplicationComponent implements OnInit {
      if(state) {
        this.search.page = state.page.to + 1;
      }
-     console.log('Received policy ID ' + this.search.policyId + ' by clicked row.');
      this.replicationService
          .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
            this.search.startTime, this.search.endTime, this.search.page, this.search.pageSize)
@@ -157,7 +156,6 @@ export class ReplicationComponent implements OnInit {
              for(let i = 0; i < this.jobs.length; i++) {
                let j = this.jobs[i];
                if(j.status == 'retrying' || j.status == 'error') {
-                 console.log('Error in jobs were found.')
                  this.messageHandlerService.showError('REPLICATION.FOUND_ERROR_IN_JOBS', '');
                  break;
                }
@@ -167,9 +165,13 @@ export class ReplicationComponent implements OnInit {
          );
    }
 
-   selectOne(policy: Policy) {
+   selectOnePolicy(policy: Policy) {
      if(policy) {
       this.search.policyId = policy.id;
+      this.search.repoName = '';
+      this.search.status = ''
+      this.currentJobSearchOption = 0;
+      this.currentJobStatus = { 'key': '', 'description': 'REPLICATION.ALL'};
       this.fetchPolicyJobs();
      }
    }
@@ -180,7 +182,6 @@ export class ReplicationComponent implements OnInit {
    }
 
    doFilterPolicyStatus(status: string) {
-     console.log('Do filter policies with status:' + status);
      this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
      if(status.trim() === '') {
        this.changedPolicies = this.policies;
@@ -190,13 +191,9 @@ export class ReplicationComponent implements OnInit {
    }
 
    doFilterJobStatus(status: string) {
-     console.log('Do filter jobs with status:' + status);
      this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
-     if(status.trim() === '') {
-       this.changedJobs = this.jobs;
-     } else {
-       this.changedJobs = this.jobs.filter(job=>job.status === status);
-     }
+     this.search.status = status;
+     this.doSearchJobs(this.search.repoName);
    }
 
    doSearchJobs(repoName: string) {
@@ -223,21 +220,20 @@ export class ReplicationComponent implements OnInit {
      (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
    }
 
-   doJobSearchByTimeRange(strDate: string, target: string) {
+   doJobSearchByStartTime(strDate: string) {
+     if(!strDate || strDate.trim() === '') {
+        strDate = 0 + '';
+     }     
+     (strDate === '0') ? this.search.startTime = '' : this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+     this.fetchPolicyJobs();
+   }
+
+   doJobSearchByEndTime(strDate: string) {
      if(!strDate || strDate.trim() === '') {
         strDate = 0 + '';
      }
      let oneDayOffset = 3600 * 24;
-     switch(target) {
-     case 'begin':
-       this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
-       break;
-     case 'end':
-       this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
-       break;
-     }
-     console.log('Search jobs filtered by time range, begin: ' + this.search.startTime + ', end:' + this.search.endTime);
+     (strDate === '0') ? this.search.endTime = '' : this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      this.fetchPolicyJobs();
    }
-
 }

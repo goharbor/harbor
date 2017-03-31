@@ -87,6 +87,7 @@ export class DestinationComponent implements OnInit {
   }
 
   reload() {
+    this.targetName = '';
     this.retrieve('');
   }
 

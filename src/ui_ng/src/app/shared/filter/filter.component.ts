@@ -12,16 +12,14 @@ import 'rxjs/add/operator/distinctUntilChanged';
     styleUrls: ['filter.component.css']
 })
 
-export class FilterComponent implements OnInit{
+export class FilterComponent implements OnInit {
+    
     private placeHolder: string = "";
-    private currentValue: string = "";
-    private leadingSpacesAdded: boolean = false;
-    private filerAction: Function;
-
     private filterTerms = new Subject<string>();
 
     @Output("filter") private filterEvt = new EventEmitter<string>();
 
+    @Input() currentValue;
     @Input("filterPlaceholder")
     public set flPlaceholder(placeHolder: string) {
         this.placeHolder = placeHolder;
@@ -34,6 +32,7 @@ export class FilterComponent implements OnInit{
         .subscribe(terms => {
             this.filterEvt.emit(terms);
         });
+        
     }
 
     valueChange(): void {

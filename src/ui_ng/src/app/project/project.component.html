@@ -20,7 +20,7 @@
                         <a href="javascript:void(0)" clrDropdownItem (click)="doFilterProjects(1)">{{projectTypes[1] | translate}}</a>
                     </div>
                 </clr-dropdown>
-                <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)"></grid-filter>
+                <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)" [currentValue]="projectName"></grid-filter>
                 <a href="javascript:void(0)" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </a>

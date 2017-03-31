@@ -71,6 +71,7 @@ export class TotalReplicationComponent implements OnInit {
 
   reloadPolicies(isReady: boolean) {
     if(isReady) {
+      this.policyName = '';
       this.retrievePolicies();
     }
   }
