@@ -15,7 +15,7 @@ export class ForgotPasswordComponent {
     private onGoing: boolean = false;
     private email: string = "";
     private validationState: boolean = true;
-    private forceValid: boolean = true;
+    private isSuccess: boolean = false;
 
     @ViewChild("forgotPasswordFrom") forgotPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
@@ -28,13 +28,21 @@ export class ForgotPasswordComponent {
     }
 
     public get isValid(): boolean {
-        return this.forgotPwdForm && this.forgotPwdForm.valid && this.forceValid;
+        return this.forgotPwdForm && this.forgotPwdForm.valid ;
+    }
+
+    public get btnCancelCaption(): string {
+        if(this.isSuccess){
+            return "BUTTON.CLOSE";
+        }
+
+        return "BUTTON.CANCEL";
     }
 
     public open(): void {
         //Clear state data
         this.validationState = true;
-        this.forceValid = true;
+        this.isSuccess = false;
         this.onGoing = false;
         this.email = "";
         this.forgotPwdForm.resetForm();
@@ -61,7 +69,7 @@ export class ForgotPasswordComponent {
         this.pwdService.sendResetPasswordMail(this.email)
             .then(response => {
                 this.onGoing = false;
-                this.forceValid = false;//diable the send button
+                this.isSuccess = true;
                 this.inlineAlert.showInlineSuccess({
                     message: "RESET_PWD.SUCCESS"
                 });
