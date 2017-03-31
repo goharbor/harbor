@@ -22,6 +22,7 @@ export class RecentLogComponent implements OnInit {
     private logsCache: AuditLog[];
     private onGoing: boolean = false;
     private lines: number = 10; //Support 10, 25 and 50
+    currentTerm: string;
 
     constructor(
         private session: SessionService,
@@ -35,6 +36,7 @@ export class RecentLogComponent implements OnInit {
     }
 
     private handleOnchange($event: any) {
+        this.currentTerm = '';
         if ($event && $event.target && $event.target["value"]) {
             this.lines = $event.target["value"];
             if (this.lines < 10) {
@@ -57,7 +59,7 @@ export class RecentLogComponent implements OnInit {
             this.recentLogs = this.logsCache.filter(log => log.username != "");
             return;
         }
-
+        this.currentTerm = terms;
         this.recentLogs = this.logsCache.filter(log => this.isMatched(terms, log));
     }
 

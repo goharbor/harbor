@@ -6,7 +6,7 @@
                 <create-edit-destination (reload)="reload($event)"></create-edit-destination>
             </div>
             <div class="flex-items-xs-middle option-right">
-                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)"></grid-filter>
+                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)" [currentValue]="targetName"></grid-filter>
                 <a href="javascript:void(0)" (click)="refreshTargets()">
                     <clr-icon shape="refresh"></clr-icon>
                 </a>

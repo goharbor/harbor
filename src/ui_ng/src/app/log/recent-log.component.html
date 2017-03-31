@@ -11,7 +11,7 @@
             </select>
             </div>
             <div class="item-divider"></div>
-            <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"></grid-filter>
+            <grid-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></grid-filter>
             <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>

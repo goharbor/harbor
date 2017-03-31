@@ -6,7 +6,7 @@
                 <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
             </div>
             <div class="flex-xs-middle option-right">
-                <grid-filter filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)"></grid-filter>
+                <grid-filter filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)" [currentValue]="searchMember"></grid-filter>
                 <a href="javascript:void(0)" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </a>
