@@ -24,7 +24,7 @@
             <div class="checkbox">
                 <input type="checkbox" id="rememberme" #rememberMeBox (click)="clickRememberMe($event)" [checked]="rememberMe">
                 <label for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
-                <a href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">{{'SIGN_IN.FORGOT_PWD' | translate}}</a>
+                <a *ngIf="showForgetPwd" href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">{{'SIGN_IN.FORGOT_PWD' | translate}}</a>
             </div>
             <div [class.visibility-hidden]="!isError" class="error active">
                 {{ 'SIGN_IN.INVALID_MSG' | translate }}

@@ -5,6 +5,7 @@ import { NgForm } from '@angular/forms';
 import { PasswordSettingService } from './password-setting.service';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { CommonRoutes } from '../../shared/shared.const';
 
 @Component({
     selector: 'reset-password',
@@ -45,6 +46,14 @@ export class ResetPasswordComponent implements OnInit {
         return this.resetPwdForm && this.resetPwdForm.valid && this.samePassword();
     }
 
+    public get btnCancelCaption(): string {
+        if (!this.resetOk) {
+            return 'BUTTON.CANCEL';
+        } else {
+            return 'BUTTON.CLOSE';
+        }
+    }
+
     public getValidationState(key: string): boolean {
         return this.validationState &&
             this.validationState[key] &&
@@ -65,16 +74,14 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     public close(): void {
+         //If already reset password ok, navigator to sign-in
+        if (this.resetOk) {
+            this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
+        }
         this.opened = false;
     }
 
     public send(): void {
-        //If already reset password ok, navigator to sign-in
-        if (this.resetOk) {
-            this.router.navigate(['sign-in']);
-            return;
-        }
-
         //Double confirm to avoid improper situations
         if (!this.password) {
             return;
