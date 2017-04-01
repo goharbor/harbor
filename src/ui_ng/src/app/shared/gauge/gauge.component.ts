@@ -154,7 +154,6 @@ export class GaugeComponent implements AfterViewInit {
       @ViewChild('barTwo') private barTwo: ElementRef;
 
       private determineColors() {
-            console.info(this._used, this._threasHold);
             let percent: number = 0;
             if (this._threasHold !== 0) {
                   percent = (this._used / this._threasHold) * 100;

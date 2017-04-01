@@ -25,6 +25,7 @@ import { State } from 'clarity-angular';
 import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
 import { ProjectTypes } from '../shared/shared.const';
+import { StatisticHandler } from '../shared/statictics/statistic-handler.service';
 
 @Component({
   selector: 'project',
@@ -61,7 +62,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private messageHandlerService: MessageHandlerService,
     private appConfigService: AppConfigService,
     private sessionService: SessionService,
-    private deletionDialogService: ConfirmationDialogService) {
+    private deletionDialogService: ConfirmationDialogService,
+    private statisticHandler: StatisticHandler) {
     this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
@@ -72,8 +74,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
           .subscribe(
           response => {
             this.messageHandlerService.showSuccess('PROJECT.DELETED_SUCCESS');
-            console.log('Successful delete project with ID:' + projectId);
             this.retrieve();
+            this.statisticHandler.refresh();
           },
           error =>{
             if(error && error.status === 412) {
@@ -123,7 +125,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
       response => {
         this.totalRecordCount = response.headers.get('x-total-count');
         this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
-        console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
         this.changedProjects = response.json();
       },
       error => this.messageHandlerService.handleError(error)
@@ -138,17 +139,16 @@ export class ProjectComponent implements OnInit, OnDestroy {
     if (created) {
       this.projectName = '';
       this.retrieve();
+      this.statisticHandler.refresh();
     }
   }
 
   doSearchProjects(projectName: string): void {
-    console.log('Search for project name:' + projectName);
     this.projectName = projectName;
     this.retrieve();
   }
 
   doFilterProjects(filteredType: number): void {
-    console.log('Filter projects with type:' + this.projectTypes[filteredType]);
     this.isPublic = filteredType;
     this.currentFilteredType = filteredType;
     this.retrieve();
@@ -162,7 +162,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         .subscribe(
         response => {
           this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
-          console.log('Successful toggled project_id:' + p.project_id);
+          this.statisticHandler.refresh();
         },
         error => this.messageHandlerService.handleError(error)
         );
@@ -182,6 +182,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   refresh(): void {
     this.retrieve();
+    this.statisticHandler.refresh();
   }
 
 }
