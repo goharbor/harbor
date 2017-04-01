@@ -65,10 +65,13 @@ export class PasswordSettingComponent implements AfterViewChecked {
             let cont = this.pwdForm.controls[key];
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
-                if (key === "reNewPassword" && cont.valid) {
-                    let compareCont = this.pwdForm.controls["newPassword"];
-                    if (compareCont) {
-                        this.validationStateMap[key] = cont.value === compareCont.value;
+                if (cont.valid) {
+                    if (key === "reNewPassword" || key === "newPassword") {
+                        let cpKey = key === "reNewPassword" ? "newPassword" : "reNewPassword";
+                        let compareCont = this.pwdForm.controls[cpKey];
+                        if (compareCont && compareCont.valid) {
+                            this.validationStateMap["reNewPassword"] = cont.value === compareCont.value;
+                        }
                     }
                 }
             }
