@@ -27,7 +27,7 @@ export class NavigatorComponent implements OnInit {
 
     private selectedLang: string = enLang;
     private appTitle: string = 'APP_TITLE.HARBOR';
-    
+
     constructor(
         private session: SessionService,
         private router: Router,
@@ -36,8 +36,8 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService) {
-            
-        }
+
+    }
 
     ngOnInit(): void {
         this.selectedLang = this.translate.currentLang;
@@ -80,8 +80,8 @@ export class NavigatorComponent implements OnInit {
 
     public get canChangePassword(): boolean {
         return this.session.getCurrentUser() &&
-        this.appConfigService.getConfig() &&
-        this.appConfigService.getConfig().auth_mode != 'ldap_auth';
+            this.appConfigService.getConfig() &&
+            this.appConfigService.getConfig().auth_mode != 'ldap_auth';
     }
 
     matchLang(lang: string): boolean {
@@ -114,16 +114,14 @@ export class NavigatorComponent implements OnInit {
 
     //Log out system
     logOut(): void {
-        this.session.signOff()
-            .then(() => {
-                //Naviagte to the sign in route
-                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
-            })
-            .catch(error => {
-                this.msgHandler.handleError(error);       
-            });
+        //Naviagte to the sign in route
+        //Appending 'signout' means destroy session cache
+        let navigatorExtra: NavigationExtras = {
+            queryParams: { "signout": true }
+        };
+        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
         //Confirm search result panel is close
-        this.searchTrigger.closeSearch(true);       
+        this.searchTrigger.closeSearch(true);
     }
 
     //Switch languages
@@ -135,7 +133,7 @@ export class NavigatorComponent implements OnInit {
             //TODO:
             console.error('Language ' + lang.trim() + ' is not suppoted');
         }
-        setTimeout(()=>{
+        setTimeout(() => {
             window.location.reload();
         }, 500);
     }

@@ -74,7 +74,7 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     public close(): void {
-         //If already reset password ok, navigator to sign-in
+        //If already reset password ok, navigator to sign-in
         if (this.resetOk) {
             this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
         }
@@ -114,7 +114,10 @@ export class ResetPasswordComponent implements OnInit {
                 this.validationState[key] = true;
             }
         } else {
-            this.validationState[key] = this.getControlValidationState(key)
+            this.validationState[key] = this.getControlValidationState(key);
+            if (this.validationState[key]) {
+                this.validationState["reNewPassword"] = this.samePassword();
+            }
         }
     }
 

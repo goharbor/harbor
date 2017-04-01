@@ -90,7 +90,6 @@ export class ReplicationComponent implements OnInit {
 
    ngOnInit(): void {
      this.projectId = +this.route.snapshot.parent.params['id'];
-     console.log('Get projectId from route params snapshot:' + this.projectId);
      this.search = new SearchOption();
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
@@ -125,13 +124,11 @@ export class ReplicationComponent implements OnInit {
    }
 
    openModal(): void {
-     console.log('Open modal to create policy.');
      this.createEditPolicyComponent.openCreateEditPolicy(true);
    }
 
    openEditPolicy(policy: Policy) {
      if(policy) {
-       console.log('Open modal to edit policy ID:' + policy.id);
        let editable = true;
        if(policy.enabled === 1) {
          editable = false;

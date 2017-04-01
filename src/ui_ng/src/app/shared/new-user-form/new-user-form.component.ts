@@ -142,10 +142,11 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                     }
 
                     //Check password confirmation
-                    if (key === "confirmPassword") {
-                        let peerCont = this.newUserForm.controls["newPassword"];
-                        if (peerCont) {
-                            this.validationStateMap[key] = cont.value === peerCont.value;
+                    if (key === "confirmPassword" || key === "newPassword") {
+                        let cpKey = key === "confirmPassword" ? "newPassword" : "confirmPassword";
+                        let peerCont = this.newUserForm.controls[cpKey];
+                        if (peerCont && peerCont.valid) {
+                            this.validationStateMap["confirmPassword"] = cont.value === peerCont.value;
                         }
                     }
                 }
