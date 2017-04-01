@@ -40,6 +40,7 @@ import { ListRepositoryROComponent } from './list-repository-ro/list-repository-
 import { MessageHandlerService } from './message-handler/message-handler.service';
 import { EmailValidatorDirective } from './email.directive';
 import { GaugeComponent } from './gauge/gauge.component';
+import { StatisticHandler } from './statictics/statistic-handler.service';
 
 @NgModule({
   imports: [
@@ -97,7 +98,8 @@ import { GaugeComponent } from './gauge/gauge.component';
     SignInGuard,
     LeavingConfigRouteDeactivate,
     MemberGuard,
-    MessageHandlerService
+    MessageHandlerService,
+    StatisticHandler
   ]
 })
 export class SharedModule {
