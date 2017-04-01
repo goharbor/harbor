@@ -19,7 +19,6 @@ export class ReplicationService {
     if(!projectId) {
       projectId = '';
     }
-    console.log('Get policies with project ID:' + projectId + ', policy name:' + policyName);
     return this.http
                .get(`/api/policies/replication?project_id=${projectId}&name=${policyName}`)
                .map(response=>response.json() as Policy[])
@@ -27,7 +26,6 @@ export class ReplicationService {
   }
 
   getPolicy(policyId: number): Observable<Policy> {
-    console.log('Get policy with ID:' + policyId);
     return this.http
                .get(`/api/policies/replication/${policyId}`)
                .map(response=>response.json() as Policy)
@@ -35,7 +33,6 @@ export class ReplicationService {
   }
 
   createPolicy(policy: Policy): Observable<any> {
-    console.log('Create policy with project ID:' + policy.project_id + ', policy:' + JSON.stringify(policy));
     return this.http
                .post(`/api/policies/replication`, JSON.stringify(policy))
                .map(response=>response.status)
@@ -107,7 +104,6 @@ export class ReplicationService {
 
   // /api/jobs/replication/?page=1&page_size=20&end_time=&policy_id=1&start_time=&status=&repository=
   listJobs(policyId: number, status: string = '', repoName: string = '', startTime: string = '', endTime: string = '', page: number, pageSize: number): Observable<any> {
-    console.log('Get jobs under policy ID:' + policyId);
     return this.http
                .get(`/api/jobs/replication?policy_id=${policyId}&status=${status}&repository=${repoName}&start_time=${startTime}&end_time=${endTime}&page=${page}&page_size=${pageSize}`)
                .map(response=>response)
@@ -115,7 +111,6 @@ export class ReplicationService {
   }
 
   listTargets(targetName: string): Observable<Target[]> {
-    console.log('Get targets.');
     return this.http
                .get(`/api/targets?name=${targetName}`)
                .map(response=>response.json() as Target[])
@@ -123,7 +118,6 @@ export class ReplicationService {
   }
 
   listTargetPolicies(targetId: number): Observable<Policy[]> {
-    console.log('List target with policy.');
     return this.http
                .get(`/api/targets/${targetId}/policies`)
                .map(response=>response.json() as Policy[])
@@ -131,7 +125,6 @@ export class ReplicationService {
   }
 
   getTarget(targetId: number): Observable<Target> {
-    console.log('Get target by ID:' + targetId);
     return this.http
                .get(`/api/targets/${targetId}`)
                .map(response=>response.json() as Target)
@@ -139,7 +132,6 @@ export class ReplicationService {
   }
 
   createTarget(target: Target): Observable<any> {
-    console.log('Create target:' + JSON.stringify(target));
     return this.http
                .post(`/api/targets`, JSON.stringify(target))
                .map(response=>response.status)
@@ -147,7 +139,6 @@ export class ReplicationService {
   }
 
   pingTarget(target: Target): Observable<any> {
-    console.log('Ping target.');
     let body = new URLSearchParams();
     body.set('endpoint', target.endpoint);
     body.set('username', target.username);
@@ -159,7 +150,6 @@ export class ReplicationService {
   }
 
   updateTarget(target: Target): Observable<any> {
-    console.log('Update target with target ID' + target.id);
     return this.http
                .put(`/api/targets/${target.id}`, JSON.stringify(target))
                .map(response=>response.status)
@@ -167,7 +157,6 @@ export class ReplicationService {
   }
 
   deleteTarget(targetId: number): Observable<any> {
-    console.log('Deleting  target with ID:' + targetId);
     return this.http
                .delete(`/api/targets/${targetId}`)
                .map(response=>response.status)

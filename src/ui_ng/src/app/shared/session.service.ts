@@ -93,7 +93,7 @@ export class SessionService {
         return this.http.get(signOffEndpoint, { headers: this.headers }).toPromise()
             .then(() => {
                 //Destroy current session cache
-                this.currentUser = null;
+                //this.currentUser = null;
             }) //Nothing returned
             .catch(error => this.handleError(error))
     }

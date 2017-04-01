@@ -50,7 +50,6 @@ export class TotalReplicationComponent implements OnInit {
   
   openEditPolicy(policy: Policy) {
     if(policy) {
-      console.log('Open modal to edit policy ID:' + policy.id);
       let editable = true;
       if(policy.enabled === 1) {
         editable = false;

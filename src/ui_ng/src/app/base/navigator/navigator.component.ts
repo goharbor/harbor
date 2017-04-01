@@ -118,6 +118,7 @@ export class NavigatorComponent implements OnInit {
             .then(() => {
                 //Naviagte to the sign in route
                 this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN]);
+                this.session.clear();//Destroy session cache
             })
             .catch(error => {
                 this.msgHandler.handleError(error);       
