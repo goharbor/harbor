@@ -9,6 +9,7 @@
 .start-content-padding {
     padding: 0px !important;
     background-color: white;
+    overflow-y: hidden !important;
 }
 
 .content-area-override {
