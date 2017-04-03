@@ -10,7 +10,7 @@
 .statistic-data {
     font-size: 16px;
     font-weight: 900;
-    font-family: "Metropolis Semibold";
+    font-family: 'Metropolis,"Avenir Next","Helvetica Neue",Arial,sans-serif';
     line-height: 16px;
 }
 
@@ -18,7 +18,7 @@
     font-size: 10px;
     line-height: 10px;
     text-transform: uppercase;
-    font-family: "Metropolis Regular";
+    font-family: 'Metropolis,"Avenir Next","Helvetica Neue",Arial,sans-serif';
 }
 
 .statistic-column-block {
@@ -30,7 +30,7 @@
     position: relative;
     text-transform: uppercase;
     font-size: 14px;
-    font-family: "Metropolis Regular";
+    font-family: 'Metropolis,"Avenir Next","Helvetica Neue",Arial,sans-serif';
 }
 
 .statistic-column-title-pro {

@@ -42,7 +42,6 @@ export class DestinationComponent implements OnInit {
           .subscribe(
           response => {
             this.messageHandlerService.showSuccess('DESTINATION.DELETED_SUCCESS');
-            console.log('Successful deleted target with ID:' + targetId);
             this.reload();
           },
           error => { 
@@ -51,7 +50,6 @@ export class DestinationComponent implements OnInit {
             } else {
               this.messageHandlerService.handleError(error);
             }
-            console.log('Failed to delete target with ID:' + targetId + ', error:' + error);
           });
       }
     });

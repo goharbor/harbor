@@ -36,7 +36,6 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     //When routing change, clear
     this.msgHandler.clear();
     this.searchTrigger.closeSearch(true);
-    
     return new Promise((resolve, reject) => {
       //Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
       let queryParams = route.queryParams;
