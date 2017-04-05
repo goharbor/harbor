@@ -44,7 +44,11 @@ const harborRoutes: Routes = [
     canActivateChild: [AuthCheckGuard],
     children: [
       { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
-      { path: 'sign-in', component: SignInComponent, canActivate: [SignInGuard] },
+      {
+        path: 'sign-in',
+        component: SignInComponent,
+        canActivate: [SignInGuard]
+      },
       {
         path: 'projects',
         component: ProjectComponent
