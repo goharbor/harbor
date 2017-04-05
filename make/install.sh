@@ -140,10 +140,10 @@ h2 "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-if [ -f harbor*.tgz ]
+if [ -f harbor*.tar.gz ]
 then
 	h2 "[Step $item]: loading Harbor images ..."; let item+=1
-	docker load -i ./harbor*.tgz
+	docker load -i ./harbor*.tar.gz
 fi
 echo ""
 
