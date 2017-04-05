@@ -168,10 +168,15 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // 2. the prject is public or the user is a member of the project
 func SearchProjects(userID int) ([]models.Project, error) {
 	o := GetOrmer()
-	sql := `select distinct p.project_id, p.name, p.public 
+
+	sql :=
+		`select distinct p.project_id, p.name, p.public, 
+			p.owner_id, p.creation_time, p.update_time
 		from project p 
-		left join project_member pm on p.project_id = pm.project_id 
-		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
+		left join project_member pm 
+		on p.project_id = pm.project_id 
+		where (pm.user_id = ? or p.public = 1) 
+		and p.deleted = 0 `
 
 	var projects []models.Project
 

@@ -1,0 +1,34 @@
+<clr-datagrid>
+    <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="projectless">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let p of policies;let i = index;" [clrDgItem]="p" (click)="selectPolicy(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="editPolicy(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+            <button class="action-item" (click)="togglePolicy(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
+            <button class="action-item" (click)="deletePolicy(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell>
+          <template [ngIf]="projectless">
+            <a href="javascript:void(0)" [routerLink]="['/harbor', 'projects', p.project_id, 'replication']">{{p.name}}</a>
+          </template>
+          <template [ngIf]="!projectless">
+            {{p.name}}
+          </template>
+        </clr-dg-cell>
+        <clr-dg-cell *ngIf="projectless">{{p.project_name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.description ? p.description : '-'}}</clr-dg-cell>
+        <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
+        <clr-dg-cell>
+          <template [ngIf]="p.start_time === nullTime">-</template>
+          <template [ngIf]="p.start_time !== nullTime">{{p.start_time | date: 'short'}}</template>
+        </clr-dg-cell>
+        <clr-dg-cell>
+            {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>{{ (policies ? policies.length : 0) }} {{'REPLICATION.ITEMS' | translate}}</clr-dg-footer>
+</clr-datagrid>

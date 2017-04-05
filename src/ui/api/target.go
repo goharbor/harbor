@@ -41,7 +41,12 @@ type TargetAPI struct {
 
 // Prepare validates the user
 func (t *TargetAPI) Prepare() {
-	t.secretKey = config.SecretKey()
+	var err error
+	t.secretKey, err = config.SecretKey()
+	if err != nil {
+		log.Errorf("failed to get secret key: %v", err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
 	userID := t.ValidateUser()
 	isSysAdmin, err := dao.IsAdminRole(userID)
@@ -97,7 +102,12 @@ func (t *TargetAPI) Ping() {
 		password = t.GetString("password")
 	}
 
-	registry, err := newRegistryClient(endpoint, api.GetIsInsecure(), username, password,
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		log.Errorf("failed to check whether insecure or not: %v", err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	registry, err := newRegistryClient(endpoint, !verify, username, password,
 		"", "", "")
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.
@@ -318,7 +328,7 @@ func (t *TargetAPI) Delete() {
 	}
 
 	if len(policies) > 0 {
-		t.CustomAbort(http.StatusBadRequest, "the target is used by policies, can not be deleted")
+		t.CustomAbort(http.StatusPreconditionFailed, "the target is used by policies, can not be deleted")
 	}
 
 	if err = dao.DeleteRepTarget(id); err != nil {
@@ -330,7 +340,9 @@ func (t *TargetAPI) Delete() {
 func newRegistryClient(endpoint string, insecure bool, username, password, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	credential := auth.NewBasicAuthCredential(username, password)
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
+		"", scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {

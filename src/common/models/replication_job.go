@@ -44,7 +44,7 @@ const (
 	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
 	RepOpDelete string = "delete"
 	//UISecretCookie is the cookie name to contain the UI secret
-	UISecretCookie string = "uisecret"
+	UISecretCookie string = "secret"
 )
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)

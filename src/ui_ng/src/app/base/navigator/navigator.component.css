@@ -1,0 +1,31 @@
+.sign-in-override {
+    padding-left: 0px !important;
+    padding-right: 5px !important;
+}
+
+.sign-up-override {
+    padding-left: 5px !important;
+}
+
+.custom-divider {
+    display: inline-block;
+    border-right: 2px inset snow;
+    padding: 2px 0px 2px 0px;
+    vertical-align: middle;
+    height: 24px;
+}
+
+.lang-selected {
+    font-weight: bold;
+}
+
+.nav-divider {
+    display: inline-block;
+    width: 1px;
+    height: 40px;
+    background-color: #fafafa;
+    position: relative;
+    top: 10px;
+    opacity: 0.15;
+    content: '';
+}

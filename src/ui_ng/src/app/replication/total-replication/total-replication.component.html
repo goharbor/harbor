@@ -1,0 +1,15 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="row flex-items-xs-right option-right">
+      <div class="flex-items-xs-middle">
+        <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filter)="doSearchPolicies($event)" [currentValue]="policyName"></grid-filter>
+        <a href="javascript:void(0)" (click)="refreshPolicies()"><clr-icon shape="refresh"></clr-icon></a>
+      </div>
+      <create-edit-policy [projectId]="projectId" (reload)="reloadPolicies($event)"></create-edit-policy>
+    </div>
+    
+  </div>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <list-policy [policies]="changedPolicies" [projectless]="true" (editOne)="openEditPolicy($event)" (selectOne)="selectPolicy($event)" (reload)="reloadPolicies($event)"></list-policy>
+  </div>
+</div>

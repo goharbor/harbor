@@ -1,0 +1,41 @@
+<clr-modal [(clrModalOpen)]="addMemberOpened"  [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+  <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
+  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+  <div class="modal-body">
+    <form #memberForm="ngForm">
+      <section class="form-block">
+        <div class="form-group">
+          <label for="member_name" class="col-md-4 form-group-label-override">{{'MEMBER.NAME' | translate}}</label>
+          <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="memberName.invalid && (memberName.dirty || memberName.touched)" [class.valid]="memberName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
+            <input type="text" id="member_name"  [(ngModel)]="member.username" name="name" size="20" #memberName="ngModel" required targetExists="MEMBER_NAME" [projectId]="projectId">
+            <span class="tooltip-content" *ngIf="memberName.errors && memberName.errors.required && (memberName.dirty || memberName.touched)">
+              {{ 'MEMBER.USERNAME_IS_REQUIRED' | translate }}
+            </span>
+            <span class="tooltip-content" *ngIf="memberName.errors && memberName.errors.targetExists && (memberName.dirty || memberName.touched)">
+              {{ 'MEMBER.USERNAME_ALREADY_EXISTS' | translate }}
+            </span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="col-md-4 form-group-label-override">{{'MEMBER.ROLE' | translate}}</label>
+          <div class="radio">
+            <input type="radio" name="roleRadios" id="checkrads_project_admin" [value]="1" [(ngModel)]="member.role_id">
+            <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
+          </div>
+          <div class="radio">
+            <input type="radio" name="roleRadios" id="checkrads_developer" [value]="2" [(ngModel)]="member.role_id">
+            <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
+          </div>
+          <div class="radio">
+            <input type="radio" name="roleRadios" id="checkrads_guest" [value]="3" [(ngModel)]="member.role_id">
+            <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-primary" [disabled]="memberForm.form.invalid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+  </div>
+</clr-modal>

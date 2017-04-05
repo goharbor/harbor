@@ -22,7 +22,6 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -120,6 +119,8 @@ func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 			user = nil
 		}
 		if user != nil {
+			b.SetSession("userId", user.UserID)
+			b.SetSession("username", user.Username)
 			// User login successfully no further check required.
 			return user.UserID, false, true
 		}
@@ -209,9 +210,4 @@ func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 	}
 
 	return page, pageSize
-}
-
-// GetIsInsecure ...
-func GetIsInsecure() bool {
-	return !config.VerifyRemoteCert()
 }

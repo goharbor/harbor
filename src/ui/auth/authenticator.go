@@ -50,7 +50,10 @@ func Register(name string, authenticator Authenticator) {
 // Login authenticates user credentials based on setting.
 func Login(m models.AuthModel) (*models.User, error) {
 
-	var authMode = config.AuthMode()
+	authMode, err := config.AuthMode()
+	if err != nil {
+		return nil, err
+	}
 	if authMode == "" || m.Principal == "admin" {
 		authMode = "db_auth"
 	}
