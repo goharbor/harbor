@@ -311,22 +311,22 @@ package_offline: compile build modify_composefile
 	
 	@echo "saving harbor docker image"
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
-		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERSAVE) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
-		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) vmware/harbor-notary-db:$(MARIADBVERSION); \
+		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
+		vmware/harbor-notary-db:$(MARIADBVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	else \
-		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
-		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERSAVE) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) ; \
+		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		photon:$(PHOTONVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	fi
 	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
