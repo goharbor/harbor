@@ -136,6 +136,10 @@ export class GaugeComponent implements AfterViewInit {
             this.determineColors();
       }
 
+      get used(): number {
+            return this._threasHold - this._free;
+      }
+
       @Input()
       get threasHold(): number {
             return this._threasHold;
@@ -156,8 +160,8 @@ export class GaugeComponent implements AfterViewInit {
       private determineColors() {
             let percent: number = 0;
             if (this._threasHold !== 0) {
-                  let used:number = this._threasHold - this._free;
-                  if(used < 0){
+                  let used: number = this._threasHold - this._free;
+                  if (used < 0) {
                         used = 0;
                   }
                   percent = (used / this._threasHold) * 100;
