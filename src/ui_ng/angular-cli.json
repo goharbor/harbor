@@ -28,8 +28,8 @@
             "../node_modules/clarity-icons/clarity-icons.min.js",
             "../node_modules/web-animations-js/web-animations.min.js"
         ],
+        "environmentSource": "environments/environment.ts",
         "environments": {
-            "source": "environments/environment.ts",
             "dev": "environments/environment.ts",
             "prod": "environments/environment.prod.ts"
         }
