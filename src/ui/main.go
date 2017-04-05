@@ -31,6 +31,7 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/service/token"
 )
 
 const (
@@ -64,7 +65,6 @@ func updateInitPassword(userID int, password string) error {
 }
 
 func main() {
-
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	//TODO
 	redisURL := os.Getenv("_REDIS_URL")
@@ -72,12 +72,28 @@ func main() {
 		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 	}
-	//
 	beego.AddTemplateExt("htm")
 
-	dao.InitDatabase()
+	log.Info("initializing configurations...")
+	if err := config.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
+	log.Info("configurations initialization completed")
+	token.InitCreators()
+	database, err := config.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configuration: %v", err)
+	}
 
-	if err := updateInitPassword(adminUserID, config.InitialAdminPassword()); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
+	password, err := config.InitialAdminPassword()
+	if err != nil {
+		log.Fatalf("failed to get admin's initia password: %v", err)
+	}
+	if err := updateInitPassword(adminUserID, password); err != nil {
 		log.Error(err)
 	}
 	initRouters()

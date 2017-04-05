@@ -1,0 +1,58 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="row flex-items-xs-between">
+            <div class="flex-xs-middle option-left">
+                <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
+                <create-edit-policy [projectId]="projectId" (reload)="reloadPolicies($event)"></create-edit-policy>
+            </div>
+            <div class="flex-xs-middle option-right">
+                <clr-dropdown [clrMenuPosition]="'bottom-left'">
+                    <button class="btn btn-link" clrDropdownToggle>
+              {{currentRuleStatus.description | translate}}
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+                    <div class="dropdown-menu">
+                        <a href="javascript:void(0)" clrDropdownItem *ngFor="let r of ruleStatus" (click)="doFilterPolicyStatus(r.key)"> {{r.description | translate}}</a>
+                    </div>
+                </clr-dropdown>
+                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filter)="doSearchPolicies($event)" [currentValue]="search.policyName"></grid-filter>
+                <a href="javascript:void(0)" (click)="refreshPolicies()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <list-policy [policies]="changedPolicies" [projectless]="false" [selectedId]="initSelectedId" (selectOne)="selectOnePolicy($event)" (editOne)="openEditPolicy($event)" (reload)="reloadPolicies($event)"></list-policy>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="row flex-items-xs-between">
+            <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
+            <div class="flex-items-xs-bottom option-right-down">
+                <button class="btn btn-link" (click)="toggleSearchJobOptionalName(currentJobSearchOption)">{{toggleJobSearchOption[currentJobSearchOption] | translate}}</button>
+                <grid-filter filterPlaceholder='{{"REPLICATION.FILTER_JOBS_PLACEHOLDER" | translate}}' (filter)="doSearchJobs($event)" [currentValue]="search.repoName" ></grid-filter>
+                <a href="javascript:void(0)" (click)="refreshJobs()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </a>
+            </div>
+        </div>
+        <div class="row flex-items-xs-right option-right" [hidden]="currentJobSearchOption === 0">
+            <clr-dropdown [clrMenuPosition]="'bottom-left'">
+                <button class="btn btn-link" clrDropdownToggle>
+          {{currentJobStatus.description | translate}}
+          <clr-icon shape="caret down"></clr-icon>
+        </button>
+                <div class="dropdown-menu">
+                    <a href="javascript:void(0)" clrDropdownItem *ngFor="let j of jobStatus" (click)="doFilterJobStatus(j.key)"> {{j.description | translate}}</a>
+                </div>
+            </clr-dropdown>
+            <div class="flex-items-xs-middle">
+                <clr-icon shape="date"></clr-icon><input type="date" #fromTime (change)="doJobSearchByStartTime(fromTime.value)">
+                <clr-icon shape="date"></clr-icon><input type="date" #toTime (change)="doJobSearchByEndTime(toTime.value)">
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <list-job [jobs]="changedJobs" [totalPage]="jobsTotalPage" [totalRecordCount]="jobsTotalRecordCount" (paginate)="fetchPolicyJobs($event)"></list-job>
+    </div>
+</div>

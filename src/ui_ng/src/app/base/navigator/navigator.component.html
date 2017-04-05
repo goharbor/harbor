@@ -1,0 +1,42 @@
+<clr-header class="header-5 header">
+    <div class="branding">
+        <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
+            <clr-icon shape="vm-bug"></clr-icon>
+            <span class="title">{{ appTitle | translate}}</span>
+        </a>
+    </div>
+    <div class="header-nav">
+        <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.MGMT' | translate}}</span></a>
+        <a href="javascript:void(0)" (click)="registryAction()" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.REG' | translate}}</span></a>
+    </div>
+    <global-search></global-search>
+    <div class="header-actions">
+        <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">
+            <button class="nav-icon" clrDropdownToggle style="width: 98px;">
+                <clr-icon shape="world" style="left:-8px;"></clr-icon>
+                <span style="padding-right: 8px;">{{currentLang}}</span>
+                <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <div class="dropdown-menu">
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
+            </div>
+        </clr-dropdown>
+        <clr-dropdown [clrMenuPosition]="'bottom-right'" class="dropdown" *ngIf="isSessionValid">
+            <button class="nav-text" clrDropdownToggle>
+              <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
+              <span>{{accountName}}</span>
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <div class="dropdown-menu">
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
+                <a *ngIf="canChangePassword" href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
+                <a *ngIf="canDownloadCert" href="/api/systeminfo/getcert" clrDropdownItem target="_blank">{{'ACCOUNT_SETTINGS.ROOT_CERT' | translate}}</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)="openAboutDialog()">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+                <div class="dropdown-divider"></div>
+                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
+            </div>
+        </clr-dropdown>
+        <a href="javascript:void(0)" class="nav-link nav-text" (click)="openAboutDialog()" *ngIf="isSessionValid === false">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+    </div>
+</clr-header>

@@ -20,10 +20,10 @@ http:
         addr: localhost:5001
 auth:
   token:
-    issuer: registry-token-issuer
+    issuer: harbor-token-issuer
     realm: $ui_url/service/token
     rootcertbundle: /etc/registry/root.crt
-    service: token-service
+    service: harbor-registry
 
 notifications:
   endpoints:
