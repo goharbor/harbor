@@ -158,7 +158,7 @@ func (cc *CommonController) SendEmail() {
 		60, settings.SSL,
 		false, settings.From,
 		[]string{email},
-		cc.Tr("reset_email_subject"),
+		"Reset Harbor user password",
 		message.String())
 	if err != nil {
 		log.Errorf("Send email failed: %v", err)
