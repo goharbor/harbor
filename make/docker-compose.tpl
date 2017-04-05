@@ -5,7 +5,7 @@ services:
     container_name: harbor-log 
     restart: always
     volumes:
-      - /var/log/harbor/:/var/log/docker/
+      - /var/log/harbor/:/var/log/docker/:z
     ports:
       - 1514:514
     networks:
@@ -15,8 +15,8 @@ services:
     container_name: registry
     restart: always
     volumes:
-      - /data/registry:/storage
-      - ./common/config/registry/:/etc/registry/
+      - /data/registry:/storage:z
+      - ./common/config/registry/:/etc/registry/:z
     networks:
       - harbor
     environment:
@@ -35,7 +35,7 @@ services:
     container_name: harbor-db
     restart: always
     volumes:
-      - /data/database:/var/lib/mysql
+      - /data/database:/var/lib/mysql:z
     networks:
       - harbor
     env_file:
@@ -73,10 +73,10 @@ services:
       - ./common/config/ui/env
     restart: always
     volumes:
-      - ./common/config/ui/app.conf:/etc/ui/app.conf
-      - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem
-      - /data/secretkey:/etc/ui/key
-      - /data/ca_download/:/etc/ui/ca/
+      - ./common/config/ui/app.conf:/etc/ui/app.conf:z
+      - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
+      - /data/secretkey:/etc/ui/key:z
+      - /data/ca_download/:/etc/ui/ca/:z
     networks:
       - harbor
     depends_on:
@@ -95,9 +95,9 @@ services:
       - ./common/config/jobservice/env
     restart: always
     volumes:
-      - /data/job_logs:/var/log/jobs
-      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf
-      - /data/secretkey:/etc/jobservice/key
+      - /data/job_logs:/var/log/jobs:z
+      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf:z
+      - /data/secretkey:/etc/jobservice/key:z
     networks:
       - harbor
     depends_on:
@@ -113,7 +113,7 @@ services:
     container_name: nginx
     restart: always
     volumes:
-      - ./common/config/nginx:/etc/nginx
+      - ./common/config/nginx:/etc/nginx:z
     networks:
       - harbor
     ports:
