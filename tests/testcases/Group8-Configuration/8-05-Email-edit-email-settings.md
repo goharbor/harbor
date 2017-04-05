@@ -14,11 +14,14 @@ User guide
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.  
+2. In configuration email page, change email settings.  
+3. Save settings and logout.  
+4. Login to check if email settings has been saved.  
 
 # Expected Outcome:
 
-TBD
+* In step4, email settings can be saved.
 
 # Possible Problems:
 None

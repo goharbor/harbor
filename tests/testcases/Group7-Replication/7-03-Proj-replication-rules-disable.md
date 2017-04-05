@@ -3,21 +3,23 @@ Test 7-03 Project replication rules disabe
 
 # Purpose:
 
-TBD
+To verify that an admin user can disable replication rules.  
 
 # References:
 User Guide
 
 # Environment:
 
-TBD
+* This test requires that at least two Harbor instances are running and available.  
+* Need at least one project has at least one enabled rule.
 
 # Test Steps:
-
-TBD
+1. Login UI as admin user.  
+2. In project replication page, disable a rule.
 
 # Expected outcome:
 
+* Rule can be disabled.
 
 # Possible Problems:
 None
