@@ -209,7 +209,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
         for(let i in data) {
           let current = data[i];
           let origin = this.initVal[this.mappedName[i]];
-          if(current && current !== origin) {
+          if(this.actionType === ActionType.EDIT && this.editable && !current  || current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {

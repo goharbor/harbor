@@ -309,7 +309,7 @@
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
-        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n {{param}}",
+        "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIGNED": "Signed",
