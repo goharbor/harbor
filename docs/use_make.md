@@ -13,7 +13,7 @@ HTTPPROXY          | Clarity proxy to build UI.
 ### Targets
 Target              | Description
 --------------------|-------------
-all                 | prepare env, compile binaries, build images and install images 
+all                 | prepare env, compile binaries, build images and install images
 prepare             | prepare env
 compile             | compile ui and jobservice code
 compile_ui          | compile ui binary
@@ -23,15 +23,15 @@ compile_adminserver | compile admin server binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
 install             | compile binaries, build images, prepare specific version of compose file and startup Harbor instance
-start               | startup Harbor instance 
+start               | startup Harbor instance
 down                | shutdown Harbor instance
 package_online      | prepare online install package
 package_offline     | prepare offline install package
 pushimage           | push Harbor images to specific registry server
 clean all           | remove binary, Harbor images, specific version docker-compose file, specific version tag and online/offline install package
 cleanbinary         | remove ui and jobservice binary
-cleanimage          | remove Harbor images 
-cleandockercomposefile  | remove specific version docker-compose 
+cleanimage          | remove Harbor images
+cleandockercomposefile  | remove specific version docker-compose
 cleanversiontag     | remove specific version tag
 cleanpackage        | remove online/offline install package
 version				 | set harbor version
@@ -39,10 +39,10 @@ version				 | set harbor version
 #### EXAMPLE:
 
 #### Build and run harbor from source code.
-make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=danieljt/harbor-clarity-base:0.8.4 NOTARYFLAG=true HTTPPROXY=
+make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
 
 ### Package offline installer
-make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=danieljt/harbor-clarity-base:0.8.4 NOTARYFLAG=true HTTPPROXY=
+make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
 
 ### Start harbor with notary
 make -e NOTARYFLAG=true start
