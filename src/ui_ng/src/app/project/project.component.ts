@@ -148,10 +148,12 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.retrieve();
   }
 
-  doFilterProjects(filteredType: number): void {
-    this.isPublic = filteredType;
-    this.currentFilteredType = filteredType;
-    this.retrieve();
+  doFilterProjects($event: any): void {
+    if ($event && $event.target && $event.target["value"]) {
+      this.currentFilteredType = $event.target["value"];
+      this.isPublic = this.currentFilteredType;
+      this.retrieve();
+    }
   }
 
   toggleProject(p: Project) {
