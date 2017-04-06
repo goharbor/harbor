@@ -11,6 +11,8 @@ import { Target } from '../target';
 
 import { TranslateService } from '@ngx-translate/core';
 
+const FAKE_PASSWORD = 'rjGcfuRu';
+
 @Component({
   selector: 'create-edit-destination',
   templateUrl: './create-edit-destination.component.html',
@@ -42,6 +44,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
 
   hasChanged: boolean;
 
+  endpointUrlHasChanged: boolean;
+
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
 
@@ -59,7 +63,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
     this.editable = editable;
 
     this.hasChanged = false;
-    
+    this.endpointUrlHasChanged = false;
+
     this.pingTestMessage = '';
     this.pingStatus = true;
     this.testOngoing = false;  
@@ -75,7 +80,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
               this.initVal.name = this.target.name;
               this.initVal.endpoint = this.target.endpoint;
               this.initVal.username = this.target.username;
-              this.initVal.password = this.target.password;
+              this.initVal.password = FAKE_PASSWORD;
+              this.target.password = this.initVal.password;
             },
             error=>this.messageHandlerService.handleError(error)
           );
@@ -89,8 +95,23 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
     this.translateService.get('DESTINATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
     this.pingStatus = true;
     this.testOngoing = !this.testOngoing;
+
+    let postedTarget: any = {};
+
+    if(!this.endpointUrlHasChanged) {
+       postedTarget = {
+         id: this.target.id
+       };
+    } else {
+      postedTarget = {
+        endpoint: this.target.endpoint,
+        username: this.target.username,
+        password: this.target.password
+      };
+    }
+
     this.replicationService
-        .pingTarget(this.target)
+        .pingTarget(postedTarget)
         .subscribe(
           response=>{
             this.pingStatus = true;
@@ -103,6 +124,13 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
             this.testOngoing = !this.testOngoing;
           }
         )
+  }
+
+  clearPassword($event: any) {
+    if(this.editable) {
+      this.target.password = '';
+      this.endpointUrlHasChanged = true;
+    }
   }
 
   onSubmit() {
@@ -144,6 +172,10 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           );
         break;
     case ActionType.EDIT:
+      if(!this.endpointUrlHasChanged) {
+        this.createEditDestinationOpened = false;
+        return;
+      } 
       this.replicationService
           .updateTarget(this.target)
           .subscribe(
@@ -209,7 +241,7 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
         for(let i in data) {
           let current = data[i];
           let origin = this.initVal[this.mappedName[i]];
-          if((this.actionType === ActionType.EDIT && this.editable && !current)  || (current && current !== origin)) {
+          if(((this.actionType === ActionType.EDIT && this.editable && !current)  || current) && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
