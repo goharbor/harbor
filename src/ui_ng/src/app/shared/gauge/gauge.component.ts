@@ -29,7 +29,7 @@ export class GaugeComponent implements AfterViewInit {
       private _colorTwo: string;
       private _size: string = "small"; //Support small, medium, large
       private _title: string = "UNKNOWN"; //Lang key
-      private _used: number = 0;
+      private _free: number = 0;
       private _threasHold: number = 0;
 
       /**
@@ -127,13 +127,17 @@ export class GaugeComponent implements AfterViewInit {
       }
 
       @Input()
-      get used(): number {
-            return this._used;
+      get free(): number {
+            return this._free;
       }
 
-      set used(u: number) {
-            this._used = u;
+      set free(u: number) {
+            this._free = u;
             this.determineColors();
+      }
+
+      get used(): number {
+            return this._threasHold - this._free;
       }
 
       @Input()
@@ -156,7 +160,11 @@ export class GaugeComponent implements AfterViewInit {
       private determineColors() {
             let percent: number = 0;
             if (this._threasHold !== 0) {
-                  percent = (this._used / this._threasHold) * 100;
+                  let used: number = this._threasHold - this._free;
+                  if (used < 0) {
+                        used = 0;
+                  }
+                  percent = (used / this._threasHold) * 100;
             }
 
             while (percent > 100) {
