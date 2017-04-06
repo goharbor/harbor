@@ -6,7 +6,7 @@
                 <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("username")'>
                 <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="36" 
                 (input)='handleValidation("username", false)' 
-                (focusout)='handleValidation("username", true)'>
+                (blur)='handleValidation("username", true)'>
                 <span class="tooltip-content">
                     {{usernameTooltip | translate}}
                 </span>
@@ -20,7 +20,7 @@
                       email
                       id="email" size="36"
                       (input)='handleValidation("email", false)' 
-                (focusout)='handleValidation("email", true)'>
+                (blur)='handleValidation("email", true)'>
                       <span class="tooltip-content">
                           {{emailTooltip | translate}}
                       </span>
@@ -33,7 +33,7 @@
                 <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("realname")'>
                       <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="36"
                       (input)='handleValidation("realname", false)' 
-                (focusout)='handleValidation("realname", true)'>
+                (blur)='handleValidation("realname", true)'>
                       <span class="tooltip-content">
                           {{'TOOLTIP.FULL_NAME' | translate}}
                       </span>
@@ -49,7 +49,7 @@
                     [(ngModel)]="newUser.password"
                     #newPassInput="ngModel" size="36" 
                     (input)='handleValidation("newPassword", false)' 
-                (focusout)='handleValidation("newPassword", true)'>
+                (blur)='handleValidation("newPassword", true)'>
                 <span class="tooltip-content">
                     {{'TOOLTIP.PASSWORD' | translate}}
                 </span>
@@ -66,7 +66,7 @@
                     [(ngModel)]="confirmedPwd"
                     #confirmPassInput="ngModel" size="36" 
                     (input)='handleValidation("confirmPassword", false)' 
-                (focusout)='handleValidation("confirmPassword", true)'>
+                (blur)='handleValidation("confirmPassword", true)'>
                 <span class="tooltip-content">
                     {{'TOOLTIP.CONFIRM_PWD' | translate}}
                 </span>
@@ -77,7 +77,7 @@
                 <label for="comment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("comment")'>
                 <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="36" 
                 (input)='handleValidation("comment", false)' 
-                (focusout)='handleValidation("comment", true)'>
+                (blur)='handleValidation("comment", true)'>
                 <span class="tooltip-content">
                     {{'TOOLTIP.COMMENT' | translate}}
                 </span>

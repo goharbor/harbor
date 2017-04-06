@@ -13,5 +13,15 @@
 }
 
 .content-area-override {
-    padding: 24px 36px !important;
+    padding: 36px !important;
+    padding-right: 21px !important;
+}
+
+.global-message-alert {
+    position: fixed;
+    top: 55px;
+    left: 260px;
+    width: 100%;
+    z-index: 999;
+    padding-right: 276px;
 }

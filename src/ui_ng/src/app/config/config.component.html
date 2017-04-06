@@ -65,7 +65,8 @@
             <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
             <button type="button" class="btn btn-outline" (click)="testMailServer()" *ngIf="showTestServerBtn" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL' | translate}}</button>
             <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
-            <span class="spinner spinner-inline" [hidden]="!testingInProgress"></span>
+            <span id="forTestingMail" class="spinner spinner-inline" [hidden]="hideMailTestingSpinner"></span>
+            <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
         </div>
     </div>
 </div>

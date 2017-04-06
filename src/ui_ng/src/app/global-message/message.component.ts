@@ -53,7 +53,7 @@ export class MessageComponent implements OnInit, OnDestroy {
 
           // Make the message alert bar dismiss after several intervals.
           //Only for this case
-          this.timer = setTimeout(() => this.onClose(), dismissInterval);
+          //this.timer = setTimeout(() => this.onClose(), dismissInterval);
         }
       );
     }
