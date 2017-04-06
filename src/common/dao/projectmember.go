@@ -58,7 +58,8 @@ func DeleteProjectMember(projectID int64, userID int) error {
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
 	o := GetOrmer()
 	u := []models.User{}
-	sql := `select u.user_id, u.username, r.name rolename, r.role_id as role
+	sql := `select u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
+			r.role_id as role
 		from user u 
 		join project_member pm 
 		on pm.project_id = ? and u.user_id = pm.user_id 
@@ -73,7 +74,7 @@ func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, er
 		sql += " and u.username like ? "
 		queryParam = append(queryParam, "%"+escape(queryUser.Username)+"%")
 	}
-	sql += ` order by u.user_id `
+	sql += ` order by u.username `
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)
 	return u, err
 }
