@@ -8,6 +8,6 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" *ngIf="!confirmOnly" (click)="cancel()">{{'BUTTON.NO' | translate}}</button>
-        <button type="button" class="btn btn-primary" (click)="confirm()">{{'BUTTON.YES' | translate}}</button>
+        <button type="button" class="btn btn-primary" (click)="confirm()">{{ buttonKey | translate}}</button>
     </div>
 </clr-modal>

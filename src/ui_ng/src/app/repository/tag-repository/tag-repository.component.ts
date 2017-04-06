@@ -144,7 +144,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
         confirmOnly = true;
-        content = 'notary -s https://' + this.registryUrl + ' -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ':' + tag.tag;
+        content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.tag;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';

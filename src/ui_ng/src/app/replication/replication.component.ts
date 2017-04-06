@@ -68,7 +68,7 @@ export class ReplicationComponent implements OnInit {
    changedJobs: Job[];
    initSelectedId: number;
 
-   policies: Policy[];retrieve
+   policies: Policy[];
    jobs: Job[];
 
    jobsTotalRecordCount: number;
