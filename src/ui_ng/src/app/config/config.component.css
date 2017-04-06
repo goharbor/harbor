@@ -1,0 +1,11 @@
+.custom-h2 {
+    margin-top: 0px !important;
+}
+
+.info-tips-icon {
+    color: grey;
+}
+
+.info-tips-icon:hover {
+    color: #007CBB;
+}

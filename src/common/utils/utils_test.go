@@ -17,6 +17,7 @@ package utils
 
 import (
 	"encoding/base64"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -176,5 +177,14 @@ func TestParseLink(t *testing.T) {
 	next := `/api/users?page=3&page_size=100`
 	if links.Next() != next {
 		t.Errorf("unexpected prev: %s != %s", links.Next(), next)
+	}
+}
+
+func TestTestTCPConn(t *testing.T) {
+	server := httptest.NewServer(nil)
+	defer server.Close()
+	addr := strings.TrimLeft(server.URL, "http://")
+	if err := TestTCPConn(addr, 60, 2); err != nil {
+		t.Fatalf("failed to test tcp connection of %s: %v", addr, err)
 	}
 }

@@ -1,0 +1,14 @@
+dn: uid=test,dc=example,dc=com
+uid: test
+cn: test
+sn: 3
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+loginShell: /bin/bash
+homeDirectory: /home/test
+uidNumber: 1001
+gidNumber: 1001
+userPassword: 123456
+mail: test@example.com
+gecos: test
