@@ -17,7 +17,7 @@ import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
-const fakePass = "fakepassword";
+const fakePass = "aWpLOSYkIzJTTU4wMDkx";
 const TabLinkContentMap = {
     "config-auth": "authentication",
     "config-replication": "replication",
@@ -36,7 +36,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     private currentTabId: string = "config-auth";//default tab
     private originalCopy: Configuration;
     private confirmSub: Subscription;
-    private testingOnGoing: boolean = false;
+    private testingMailOnGoing: boolean = false;
+    private testingLDAPOnGoing: boolean = false;
 
     @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
     @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
@@ -131,10 +132,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.onGoing;
     }
 
-    public get testingInProgress(): boolean {
-        return this.testingOnGoing;
-    }
-
     public isValid(): boolean {
         return this.repoConfigForm &&
             this.repoConfigForm.valid &&
@@ -152,7 +149,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public isMailConfigValid(): boolean {
         return this.mailConfig &&
-            this.mailConfig.isValid();
+            this.mailConfig.isValid() &&
+            !this.testingMailOnGoing;
     }
 
     public get showTestServerBtn(): boolean {
@@ -165,8 +163,18 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             this.allConfig.auth_mode.value === "ldap_auth";
     }
 
+    public get hideMailTestingSpinner(): boolean {
+        return !this.testingMailOnGoing || !this.showTestServerBtn;
+    }
+
+    public get hideLDAPTestingSpinner(): boolean {
+        return !this.testingLDAPOnGoing || !this.showLdapServerBtn;
+    }
+
     public isLDAPConfigValid(): boolean {
-        return this.authConfig && this.authConfig.isValid();
+        return this.authConfig &&
+            this.authConfig.isValid() &&
+            !this.testingLDAPOnGoing;
     }
 
     public tabLinkClick(tabLink: string) {
@@ -239,6 +247,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     public testMailServer(): void {
+        if(this.testingMailOnGoing){
+            return;//Should not come here
+        }
         let mailSettings = {};
         for (let prop in this.allConfig) {
             if (prop.startsWith("email_")) {
@@ -255,23 +266,27 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             delete mailSettings["email_password"];
         }
 
-        this.testingOnGoing = true;
+        this.testingMailOnGoing = true;
         this.configService.testMailServer(mailSettings)
             .then(response => {
-                this.testingOnGoing = false;
+                this.testingMailOnGoing = false;
                 this.msgHandler.showSuccess("CONFIG.TEST_MAIL_SUCCESS");
             })
             .catch(error => {
-                this.testingOnGoing = false;
+                this.testingMailOnGoing = false;
                 let err = error._body;
-                if(!err){
+                if (!err) {
                     err = "UNKNOWN";
                 }
-                this.msgHandler.showError("CONFIG.TEST_MAIL_FAILED", {'param': err});
+                this.msgHandler.showError("CONFIG.TEST_MAIL_FAILED", { 'param': err });
             });
     }
 
     public testLDAPServer(): void {
+        if(this.testingLDAPOnGoing){
+            return;//Should not come here
+        }
+
         let ldapSettings = {};
         for (let prop in this.allConfig) {
             if (prop.startsWith("ldap_")) {
@@ -281,25 +296,25 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
         let allChanges = this.getChanges();
         let ldapSearchPwd = allChanges["ldap_search_password"];
-        if(ldapSearchPwd){
+        if (ldapSearchPwd) {
             ldapSettings['ldap_search_password'] = ldapSearchPwd;
-        }else{
+        } else {
             delete ldapSettings['ldap_search_password'];
         }
 
-        this.testingOnGoing = true;
+        this.testingLDAPOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
             .then(respone => {
-                this.testingOnGoing = false;
+                this.testingLDAPOnGoing = false;
                 this.msgHandler.showSuccess("CONFIG.TEST_LDAP_SUCCESS");
             })
             .catch(error => {
-                this.testingOnGoing = false;
+                this.testingLDAPOnGoing = false;
                 let err = error._body;
-                if(!err){
+                if (!err) {
                     err = "UNKNOWN";
                 }
-                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", {'param': err});
+                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", { 'param': err });
             });
     }
 
