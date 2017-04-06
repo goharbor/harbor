@@ -17,10 +17,11 @@ package auth
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/docker/distribution/registry/client/auth"
+	ch "github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
@@ -60,16 +61,21 @@ func (s *simpleAuthorizer) Authorize(req *http.Request,
 
 func TestModify(t *testing.T) {
 	authorizer := &simpleAuthorizer{}
-	challenge := auth.Challenge{
+	challenge := ch.Challenge{
 		Scheme: "bearer",
 	}
 
+	ping, err := url.Parse("http://example.com/v2/")
+	if err != nil {
+		t.Fatalf("failed to parse URL: %v", err)
+	}
 	as := &AuthorizerStore{
 		authorizers: []Authorizer{authorizer},
-		challenges:  []auth.Challenge{challenge},
+		ping:        ping,
+		challenges:  []ch.Challenge{challenge},
 	}
 
-	req, err := http.NewRequest("GET", "http://example.com", nil)
+	req, err := http.NewRequest("GET", "http://example.com/v2/ubuntu/manifests/14.04", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -85,5 +91,19 @@ func TestModify(t *testing.T) {
 
 	if !strings.HasPrefix(header, "Bearer") {
 		t.Fatal("\"Authorization\" header does not start with \"Bearer\"")
+	}
+
+	req, err = http.NewRequest("GET", "http://example.com", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	if err = as.Modify(req); err != nil {
+		t.Fatalf("failed to modify request: %v", err)
+	}
+
+	header = req.Header.Get("Authorization")
+	if len(header) != 0 {
+		t.Fatal("\"Authorization\" header should not be added")
 	}
 }

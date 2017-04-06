@@ -1,0 +1,12 @@
+.option-left {
+  padding-left: 16px;
+  margin-top: 24px;
+}
+.option-right {
+  padding-right: 16px;
+  margin-top: 18px;
+}
+
+.datagrid-foot {
+  margin-bottom: 0.5px;
+}

@@ -18,12 +18,12 @@ package auth
 import (
 	"net/http"
 
-	au "github.com/docker/distribution/registry/client/auth"
+	"github.com/docker/distribution/registry/client/auth/challenge"
 )
 
 // ParseChallengeFromResponse ...
-func ParseChallengeFromResponse(resp *http.Response) []au.Challenge {
-	challenges := au.ResponseChallenges(resp)
+func ParseChallengeFromResponse(resp *http.Response) []challenge.Challenge {
+	challenges := challenge.ResponseChallenges(resp)
 
 	return challenges
 }

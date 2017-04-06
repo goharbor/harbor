@@ -1,0 +1,28 @@
+{
+	"server": {
+		"http_addr": ":4443"
+	},
+	"trust_service": {
+		"type": "remote",
+		"hostname": "notarysigner",
+		"port": "7899",
+		"tls_ca_file": "./notary-signer-ca.crt",
+		"key_algorithm": "ecdsa"
+	},
+	"logging": {
+		"level": "debug"
+	},
+	"storage": {
+		"backend": "mysql",
+		"db_url": "server@tcp(mysql:3306)/notaryserver?parseTime=True"
+	},
+    "auth": {
+        "type": "token",
+        "options": {
+            "realm": "$token_endpoint/service/token",
+            "service": "harbor-notary",
+            "issuer": "harbor-token-issuer",
+            "rootcertbundle": "/config/root.crt"
+        }
+    }
+}

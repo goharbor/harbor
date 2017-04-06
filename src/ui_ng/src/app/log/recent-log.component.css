@@ -1,0 +1,42 @@
+.h2-log-override {
+    margin-top: 0px !important;
+}
+
+.action-head-pos {
+    padding-right: 18px;
+}
+
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #00bfff;
+}
+
+.custom-lines-button {
+    padding: 0px !important;
+    min-width: 25px !important;
+}
+
+.lines-button-toggole {
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+.log-select {
+    width: 130px;
+    display: inline-block;
+    top: 1px;
+}
+
+.item-divider {
+    height: 24px;
+    display: inline-block;
+    width: 1px;
+    background-color: #ccc;
+    opacity: 0.55;
+    margin-left: 12px;
+    top: 8px;
+    position: relative;
+}

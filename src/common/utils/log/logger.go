@@ -22,8 +22,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/vmware/harbor/src/common/config"
 )
 
 var logger = New(os.Stdout, NewTextFormatter(), WarningLevel)
@@ -31,7 +29,7 @@ var logger = New(os.Stdout, NewTextFormatter(), WarningLevel)
 func init() {
 	logger.callDepth = 4
 
-	lvl := config.LogLevel()
+	lvl := os.Getenv("LOG_LEVEL")
 	if len(lvl) == 0 {
 		logger.SetLevel(InfoLevel)
 		return

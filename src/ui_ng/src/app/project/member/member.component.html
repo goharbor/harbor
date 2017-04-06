@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="row flex-items-xs-between">
+            <div class="flex-xs-middle option-left">
+                <button *ngIf="hasProjectAdminRole" class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> {{'MEMBER.MEMBER' | translate }}</button>
+                <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
+            </div>
+            <div class="flex-xs-middle option-right">
+                <grid-filter filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)" [currentValue]="searchMember"></grid-filter>
+                <a href="javascript:void(0)" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-datagrid>
+            <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
+            <clr-dg-row *ngFor="let m of members">
+                <clr-dg-action-overflow [hidden]="m.user_id === currentUser.user_id || !hasProjectAdminRole">
+                    <button class="action-item" (click)="changeRole(m, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
+                    <button class="action-item" (click)="changeRole(m, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
+                    <button class="action-item" (click)="changeRole(m, 3)">{{'MEMBER.GUEST' | translate}}</button>
+                    <button class="action-item" (click)="deleteMember(m)">{{'MEMBER.DELETE' | translate}}</button>
+                </clr-dg-action-overflow>
+                <clr-dg-cell>{{m.username}}</clr-dg-cell>
+                <clr-dg-cell>{{roleInfo[m.role_id] | translate}}</clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>{{ (members ? members.length : 0) }} {{'MEMBER.ITEMS' | translate}}</clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>

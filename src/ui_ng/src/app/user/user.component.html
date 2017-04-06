@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</h2>
+        <div class="action-panel-pos">
+            <span>
+        <button [class.hide-create]="!canCreateUser" type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()"><clr-icon shape="add"></clr-icon>  {{'USER.ADD_ACTION' | translate}}</button>
+      </span>
+            <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></grid-filter>
+            <span class="refresh-btn" (click)="refreshUser()">
+        <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
+        <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+            </span>
+        </div>
+        <div>
+            <clr-datagrid>
+                <clr-dg-column>{{'USER.COLUMN_NAME' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
+                <clr-dg-row *ngFor="let user of users" [clrDgItem]="user">
+                    <clr-dg-action-overflow [hidden]="isMySelf(user.user_id)">
+                        <button class="action-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</button>
+                        <button class="action-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</button>
+                    </clr-dg-action-overflow>
+                    <clr-dg-cell>{{user.username}}</clr-dg-cell>
+                    <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
+                    <clr-dg-cell>{{user.email}}</clr-dg-cell>
+                    <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
+                </clr-dg-row>
+                <clr-dg-footer>{{users.length}} {{'USER.ITEMS' | translate}}</clr-dg-footer>
+            </clr-datagrid>
+        </div>
+        <new-user-modal (addNew)="addUserToList($event)"></new-user-modal>
+    </div>
+</div>

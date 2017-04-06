@@ -1,0 +1,24 @@
+<clr-datagrid (clrDgRefresh)="refresh($event)">
+    <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let j of jobs" [clrDgItem]='j'>
+        <clr-dg-cell>{{j.repository}}</clr-dg-cell>
+        <clr-dg-cell>{{j.status}}</clr-dg-cell>
+        <clr-dg-cell>{{j.operation}}</clr-dg-cell>
+        <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>
+            <a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK">
+                <clr-icon shape="clipboard"></clr-icon>
+            </a>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        {{ totalRecordCount }} {{'REPLICATION.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

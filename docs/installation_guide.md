@@ -56,7 +56,7 @@ The parameters are described below - note that at the very least, you will need 
 	* email_server_port = 25
 	* email_username = sample_admin@mydomain.com
 	* email_password = abc
-	* email_from = `admin \<sample_admin@mydomain.com\>`
+	* email_from = admin <sample_admin@mydomain.com>  
 	* email_ssl = false
 
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
@@ -72,6 +72,7 @@ The parameters are described below - note that at the very least, you will need 
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register themselves. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **use_compressed_js**: (**on** or **off**. Default is **on**) For production use, turn this flag to **on**. In development mode, set it to **off** so that js files can be modified separately.
 * **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
+* **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
 
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 

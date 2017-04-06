@@ -1,0 +1,13 @@
+.inline-help-public {
+  color: #CCCCCC;
+  font-size: 12px;
+  line-height: 1.5em;
+  letter-spacing: 0.01em;
+  margin-top: 0;
+  padding: 0 14px;
+}
+
+.form-group-label-override {
+    font-size: 14px;
+    font-weight: 400;
+}

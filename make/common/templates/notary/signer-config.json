@@ -1,0 +1,15 @@
+{
+	"server": {
+		"grpc_addr": ":7899",
+		"tls_cert_file": "./notary-signer.crt",
+		"tls_key_file": "./notary-signer.key"
+	},
+	"logging": {
+		"level": "debug"
+	},
+	"storage": {
+		"backend": "mysql",
+		"db_url": "signer@tcp(mysql:3306)/notarysigner?parseTime=True",
+        "default_alias":"defaultalias"
+	}
+}

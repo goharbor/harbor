@@ -1,0 +1,15 @@
+.sub-header-title {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.sub-nav-bg-color {
+  background-color: #fafafa;
+}
+
+.role-label {
+  color: #CCCCCC;
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}

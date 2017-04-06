@@ -1,0 +1,32 @@
+.wrapper-back {
+    position: absolute;
+    top: 50%;
+    height: 240px;
+    margin-top: -120px;
+    text-align: center;
+    left: 50%;
+    margin-left: -300px;
+}
+
+.status-code {
+    font-weight: bolder;
+    font-size: 4em;
+    vertical-align: middle;
+}
+
+.status-text {
+    font-weight: bold;
+    font-size: 3em;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.status-subtitle {
+    font-size: 18px;
+}
+
+.second-number {
+    font-weight: bold;
+    font-size: 2em;
+    color: #EB8D00;
+}
