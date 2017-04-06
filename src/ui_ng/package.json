@@ -4,7 +4,7 @@
     "description": "Harbor UI with Clarity",
     "angular-cli": {},
     "scripts": {
-        "start": "ng serve --ssl 1 --ssl-key --ssl-cert --host 0.0.0.0 --proxy-config proxy.config.json",
+        "start": "ng serve --ssl 1 --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
         "lint": "tslint \"src/**/*.ts\"",
         "test": "ng test --single-run",
         "pree2e": "webdriver-manager update",

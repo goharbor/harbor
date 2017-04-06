@@ -56,8 +56,7 @@ export class ResetPasswordComponent implements OnInit {
 
     public getValidationState(key: string): boolean {
         return this.validationState &&
-            this.validationState[key] &&
-            key === 'reNewPassword' ? this.samePassword() : true;
+            this.validationState[key];
     }
 
     public open(): void {
@@ -109,10 +108,8 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     public handleValidation(key: string, flag: boolean): void {
-        if (flag) {
-            if (!this.validationState[key]) {
-                this.validationState[key] = true;
-            }
+        if (!flag) {
+            this.validationState[key] = true;
         } else {
             this.validationState[key] = this.getControlValidationState(key);
             if (this.validationState[key]) {

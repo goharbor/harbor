@@ -16,7 +16,7 @@
                       email
                       id="account_settings_email" size="30" 
                       (input)='handleValidation("account_settings_email", false)' 
-                      (focusout)='handleValidation("account_settings_email", true)'>
+                      (blur)='handleValidation("account_settings_email", true)'>
                       <span class="tooltip-content">
                           {{emailTooltip | translate}}
                       </span>
@@ -25,7 +25,7 @@
                 <div class="form-group form-group-override">
                     <label for="account_settings_full_name" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
                     <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='!getValidationState("account_settings_full_name")'>
-                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)' (focusout)='handleValidation("account_settings_full_name", true)'>
+                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)' (blur)='handleValidation("account_settings_full_name", true)'>
                       <span class="tooltip-content">
                           {{'TOOLTIP.FULL_NAME' | translate}}
                       </span>
