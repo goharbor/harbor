@@ -293,7 +293,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         for(let i in data) {
           let origin = this.initVal[i];          
           let current = data[i];
-          if(current && current !== origin) {
+          if((this.actionType === ActionType.EDIT && !this.readonly && !current) || (current && current !== origin)) {
             this.hasChanged = true;
             break;
           } else {
