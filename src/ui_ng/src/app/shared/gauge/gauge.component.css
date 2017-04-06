@@ -61,7 +61,7 @@
     width: 60px;
     height: 30px;
     top: -8px;
-    left: 8px;
+    left: 4px;
 }
 
 .esxc-gauge-small .esxc-gauge-circle-fill {
@@ -181,6 +181,7 @@
     text-align: center;
     position: relative;
     top: -8px;
+    width: 70px;
 }
 
 .esxc-gauge-small .esxc-limit .esxc-value {
