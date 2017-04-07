@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/api"
@@ -203,9 +202,13 @@ func getRepoList(projectID int64) ([]string, error) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			dump, _ := httputil.DumpResponse(resp, true)
-			log.Debugf("response: %q", dump)
-			return repositories, fmt.Errorf("Unexpected status code when getting repository list: %d", resp.StatusCode)
+			b, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return repositories, err
+			}
+			return repositories,
+				fmt.Errorf("failed to get repo list, response code: %d, error: %s",
+					resp.StatusCode, string(b))
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
