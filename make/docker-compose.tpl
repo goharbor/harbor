@@ -109,7 +109,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: nginx:1.11.5
+    image: vmware/nginx:1.11.5-patched
     container_name: nginx
     restart: always
     volumes:
