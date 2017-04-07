@@ -84,7 +84,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 	rootJSON := path.Join(notaryCachePath, "tuf", fqRepo, "metadata/root.json")
 	rmErr := os.Remove(rootJSON)
 	if rmErr != nil {
-		log.Warningf("Failed to clear cached root.json: %s, error: %v, when repo is removed from notary the signature status maybe incorrect")
+		log.Warningf("Failed to clear cached root.json: %s, error: %v, when repo is removed from notary the signature status maybe incorrect", rootJSON, rmErr)
 	}
 	for _, t := range targets {
 		res = append(res, Target{t.Name, t.Hashes})
