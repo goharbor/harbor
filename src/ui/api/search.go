@@ -78,20 +78,16 @@ func (s *SearchAPI) Get() {
 		}
 
 		if userID != dao.NonExistUserID {
-			if isSysAdmin {
-				p.Role = models.PROJECTADMIN
-			} else {
-				roles, err := dao.GetUserProjectRoles(userID, p.ProjectID)
-				if err != nil {
-					log.Errorf("failed to get user's project role: %v", err)
-					s.CustomAbort(http.StatusInternalServerError, "")
-				}
-				if len(roles) != 0 {
-					p.Role = roles[0].RoleID
-				}
+			roles, err := dao.GetUserProjectRoles(userID, p.ProjectID)
+			if err != nil {
+				log.Errorf("failed to get user's project role: %v", err)
+				s.CustomAbort(http.StatusInternalServerError, "")
+			}
+			if len(roles) != 0 {
+				p.Role = roles[0].RoleID
 			}
 
-			if p.Role == models.PROJECTADMIN {
+			if p.Role == models.PROJECTADMIN || isSysAdmin {
 				p.Togglable = true
 			}
 		}
