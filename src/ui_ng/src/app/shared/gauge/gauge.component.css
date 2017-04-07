@@ -151,7 +151,7 @@
 
 .esxc-gauge-small .esxc-gauge-circle-caption .esxc-value {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .esxc-gauge-small .esxc-gauge-circle-caption .esxc-unit {
@@ -159,11 +159,11 @@
 }
 
 .esxc-gauge-small .esxc-gauge-circle-caption .esxc-loading {
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .esxc-gauge-small .esxc-title {
-    font-size: 16px;
+    font-size: 10px;
     text-align: center;
     margin-top: 3px;
     position: relative;
@@ -185,15 +185,15 @@
 }
 
 .esxc-gauge-small .esxc-limit .esxc-value {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .esxc-gauge-small .esxc-limit .esxc-unit {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .esxc-gauge-small .esxc-limit .esxc-label {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .esxc-gauge-small .esxc-limit .esxc-bar-limit {
