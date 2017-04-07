@@ -54,9 +54,9 @@ services:
       - ./common/config/adminserver/env
     restart: always
     volumes:
-      - /data/config/:/etc/adminserver/
-      - /data/secretkey:/etc/adminserver/key
-      - /data/:/data/
+      - /data/config/:/etc/adminserver/config/:z
+      - /data/secretkey:/etc/adminserver/key:z
+      - /data/:/data/:z
     networks:
       - harbor
     depends_on:
