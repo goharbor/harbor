@@ -302,7 +302,10 @@ func (p *ProjectAPI) List() {
 				log.Errorf("failed to get user's project role: %v", err)
 				p.CustomAbort(http.StatusInternalServerError, "")
 			}
-			projectList[i].Role = roles[0].RoleID
+			if len(roles) != 0 {
+				projectList[i].Role = roles[0].RoleID
+			}
+
 			if projectList[i].Role == models.PROJECTADMIN ||
 				isAdmin {
 				projectList[i].Togglable = true
