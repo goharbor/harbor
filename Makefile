@@ -80,7 +80,7 @@ REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
 REGISTRYVERSION=photon-2.6.0
-NGINXVERSION=1.11.5
+NGINXVERSION=1.11.5-patched
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
@@ -301,7 +301,7 @@ package_offline: compile build modify_composefile
 			
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
-	@$(DOCKERPULL) nginx:$(NGINXVERSION)
+	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
@@ -316,7 +316,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
 		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
 		vmware/harbor-notary-db:$(MARIADBVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	else \
@@ -325,7 +325,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
 		photon:$(PHOTONVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	fi
 	
