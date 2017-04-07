@@ -8,7 +8,7 @@
     },
     "SIGN_IN": {
         "REMEMBER": "Remember me",
-        "INVALID_MSG": "Invalid user name or password",
+        "INVALID_MSG": "Invalid user name or password.",
         "FORGOT_PWD": "Forgot password",
         "HEADER_LINK": "Sign In"
     },
@@ -34,22 +34,22 @@
         "NEGATIVE": "NEGATIVE"
     },
     "TOOLTIP": {
-        "EMAIL": "Email should be a valid email address like name@example.com",
-        "USER_NAME": "Can not contain \"~#$% and maxinum length should be less than 20 characters",
-        "FULL_NAME": "Max length should be less than 20 characters",
-        "COMMENT": "Length of comment should be less than 20 characters",
-        "CURRENT_PWD": "Current password is required",
-        "PASSWORD": "Password should be at least 8 characters with 1 uppercase, 1 lowercase and 1 number",
-        "CONFIRM_PWD": "Password should be same as the password above",
-        "SIGN_IN_USERNAME": "Username is required",
-        "SIGN_IN_PWD": "Password is required",
-        "SIGN_UP_MAIL": "Email is only used for resetting your password",
-        "SIGN_UP_REAL_NAME": "First name and last name",
-        "ITEM_REQUIRED": "Field is required",
-        "NUMBER_REQUIRED": "Field is required and should be numbers",
-        "PORT_REQUIRED": "Field is required and should be valid port number",
-        "EMAIL_EXISTING": "Email address is already existing",
-        "USER_EXISTING": "Username is already used"
+        "EMAIL": "Email should be a valid email address like name@example.com.",
+        "USER_NAME": "Cannot contain special characters and maximum length should be 20 characters.",
+        "FULL_NAME": "Maximum length should be 20 characters.",
+        "COMMENT": "Length of comment should be less than 20 characters.",
+        "CURRENT_PWD": "Current password is required.",
+        "PASSWORD": "Password should be at least 8 characters with at least 1 uppercase, 1 lowercase and 1 number.",
+        "CONFIRM_PWD": "Passwords do not match.",
+        "SIGN_IN_USERNAME": "Username is required.",
+        "SIGN_IN_PWD": "Password is required.",
+        "SIGN_UP_MAIL": "Email is only used for resetting your password.",
+        "SIGN_UP_REAL_NAME": "First and last name",
+        "ITEM_REQUIRED": "Field is required.",
+        "NUMBER_REQUIRED": "Field is required and should be numbers.",
+        "PORT_REQUIRED": "Field is required and should be valid port number.",
+        "EMAIL_EXISTING": "Email address already exists.",
+        "USER_EXISTING": "Username is already in use."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -68,15 +68,15 @@
         "FULL_NAME": "First and last name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
-        "SAVE_SUCCESS": "User profile saved successfully"
+        "SAVE_SUCCESS": "User profile saved successfully."
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
         "CURRENT_PWD": "Current Password",
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
-        "SAVE_SUCCESS": "User password changed successfully",
-        "PASS_TIPS": "At least 8 chars with 1 uppercase, 1 lowercase and 1 number"
+        "SAVE_SUCCESS": "User password changed successfully.",
+        "PASS_TIPS": "At least 8 characters with 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
@@ -101,8 +101,8 @@
     },
     "USER": {
         "ADD_ACTION": "USER",
-        "ENABLE_ADMIN_ACTION": "Enable administrator",
-        "DISABLE_ADMIN_ACTION": "Disable administrator",
+        "ENABLE_ADMIN_ACTION": "Set as Administrator",
+        "DISABLE_ADMIN_ACTION": "Revoke Administrator",
         "DEL_ACTION": "Delete",
         "FILTER_PLACEHOLDER": "Filter users",
         "COLUMN_NAME": "Name",
@@ -112,10 +112,10 @@
         "IS_ADMIN": "Yes",
         "IS_NOT_ADMIN": "No",
         "ADD_USER_TITLE": "New User",
-        "SAVE_SUCCESS": "New user created successfully",
+        "SAVE_SUCCESS": "New user created successfully.",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
-        "DELETE_SUCCESS": "User deleted successfully",
+        "DELETE_SUCCESS": "User deleted successfully.",
         "ITEMS": "item(s)"
     },
     "PROJECT": {
@@ -147,7 +147,7 @@
         "CREATED_SUCCESS": "Created project successfully.",
         "DELETED_SUCCESS": "Deleted project successfully.",
         "TOGGLED_SUCCESS": "Toggled project successfully.",
-        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules can not be deleted.",
+        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project."
     },
     "PROJECT_DETAIL": {
@@ -282,8 +282,8 @@
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",
-        "CONFLICT_NAME": "Name or endpoint URL already exists.",
-        "INVALID_NAME": "Invalid destination name.",
+        "CONFLICT_NAME": "Endpoint name or URL already exists.",
+        "INVALID_NAME": "Invalid endpoint name.",
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time",
         "ITEMS": "item(s)",
@@ -292,7 +292,7 @@
         "DELETED_SUCCESS": "Deleted endpoint successfully.",
         "DELETED_FAILED": "Deleted endpoint failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete endpoint in which being used."
+        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use."
     },
     "REPOSITORY": {
         "COPY_ID": "Copy ID",
@@ -308,7 +308,7 @@
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{param}}?",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
-        "DELETION_TITLE_TAG_DENIED": "Signed Tag can't be deleted",
+        "DELETION_TITLE_TAG_DENIED": "Signed tag cannot be deleted",
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
@@ -333,9 +333,9 @@
         "TITLE": "Reset Password",
         "CAPTION": "Enter your email to reset your password",
         "EMAIL": "Email",
-        "SUCCESS": "Mail with password resetting is successfully sent. You can close this dialog and check your mailbox now.",
+        "SUCCESS": "Mail with password resetting link is successfully sent. You can close this dialog and check your mailbox.",
         "CAPTION2": "Enter your new password",
-        "RESET_OK": "Password has been successfully reset. Click OK to login with new password"
+        "RESET_OK": "Password has been successfully reset. Click OK to login with new password."
     },
     "RECENT_LOG": {
         "SUB_TITLE": "Show",
@@ -349,7 +349,7 @@
         "SYSTEM": "System Settings",
         "CONFIRM_TITLE": "Confirm to cancel",
         "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
-        "SAVE_SUCCESS": "Configurations have been successfully saved",
+        "SAVE_SUCCESS": "Configuration has been successfully saved.",
         "MAIL_SERVER": "Email Server",
         "MAIL_SERVER_PORT": "Email Server Port",
         "MAIL_USERNAME": "Email Username",
@@ -370,15 +370,15 @@
         "PRO_CREATION_EVERYONE": "Everyone",
         "PRO_CREATION_ADMIN": "Admin Only",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "Enable sign up",
-            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Habor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
-            "AUTH_MODE": "By default the auth mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credentials against an LDAP server.",
+            "SELF_REGISTRATION": "Enable sign up.",
+            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
+            "AUTH_MODE": "By default the authentication mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credential against an LDAP server.",
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
-            "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD",
-            "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD",
+            "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD.",
+            "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD.",
             "LDAP_SCOPE": "The scope to search for users",
-            "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes",
-            "PRO_CREATION_RESTRICTION": "The flag to control what users have permission to create projects. By default everyone can create a project. Set to 'adminonly' so only an admin can create a project."
+            "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
+            "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -389,16 +389,16 @@
             "UID": "LDAP UID",
             "SCOPE": "LDAP Scope"
         },
-        "TEST_MAIL_SUCCESS": "Connection to mail server is verified",
-        "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified",
-        "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}",
-        "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}",
+        "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
+        "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",
+        "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}.",
+        "TEST_LDAP_FAILED": "Failed to verify LDAP server with error: {{param}}.",
         "LEAVING_CONFIRMATION_TITLE": "Confirm to leave",
-        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet. Do you want to leave currnet page?"
+        "LEAVING_CONFIRMATION_SUMMARY": "Changes have not been saved yet. Do you want to leave current page?"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page not found",
-        "SUB_TITLE": "Redirect to Harbor page in",
+        "SUB_TITLE": "Redirecting to main page in",
         "UNIT": "seconds..."
     },
     "ABOUT": {
@@ -428,15 +428,15 @@
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
     },
-    "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later",
-    "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action",
-    "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action",
-    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}",
-    "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request",
-    "NOT_FOUND_ERROR": "Your request can not be completed because the object does not exist",
-    "CONFLICT_ERROR": "We are unable to perform your action because your submission has conflicts",
+    "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
+    "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",
+    "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action.",
+    "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}.",
+    "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request.",
+    "NOT_FOUND_ERROR": "Your request cannot be completed because the object does not exist.",
+    "CONFLICT_ERROR": "We are unable to perform your action because your submission has conflicts.",
     "PRECONDITION_FAILED": "We are unable to perform your action because of a precondition failure.",
-    "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred",
-    "INCONRRECT_OLD_PWD": "The old password is incorrect",
+    "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred.",
+    "INCONRRECT_OLD_PWD": "The old password is incorrect.",
     "UNKNOWN": "n/a"
 }
