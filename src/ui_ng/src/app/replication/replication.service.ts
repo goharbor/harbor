@@ -140,6 +140,9 @@ export class ReplicationService {
 
   pingTarget(target: Target): Observable<any> {
     let body = new URLSearchParams();
+    if(target.id) {
+      body.set('id', target.id + '');
+    }
     body.set('endpoint', target.endpoint);
     body.set('username', target.username);
     body.set('password', target.password);

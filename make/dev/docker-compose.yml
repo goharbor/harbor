@@ -48,7 +48,7 @@ services:
       - ../common/config/adminserver/env
     restart: always
     volumes:
-      - /data/config/:/etc/adminserver/
+      - /data/config/:/etc/adminserver/config/
       - /data/secretkey:/etc/adminserver/key
       - /data/:/data/
     depends_on:

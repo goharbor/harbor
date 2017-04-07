@@ -15,6 +15,8 @@ import { Target } from '../../replication/target';
 
 import { TranslateService } from '@ngx-translate/core';
 
+const FAKE_PASSWORD: string = 'ywJZnDTM';
+
 @Component({
   selector: 'create-edit-policy',
   templateUrl: 'create-edit-policy.component.html',
@@ -85,7 +87,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
               this.createEditPolicy.targetName = initialTarget.name;
               this.createEditPolicy.endpointUrl = initialTarget.endpoint;
               this.createEditPolicy.username = initialTarget.username;
-              this.createEditPolicy.password = initialTarget.password;
+              this.createEditPolicy.password = FAKE_PASSWORD;
 
               this.initVal.targetId = this.createEditPolicy.targetId;
               this.initVal.endpointUrl = this.createEditPolicy.endpointUrl;
@@ -160,7 +162,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
       this.createEditPolicy.targetId = result.id;
       this.createEditPolicy.endpointUrl = result.endpoint;
       this.createEditPolicy.username = result.username;
-      this.createEditPolicy.password = result.password;
+      this.createEditPolicy.password = FAKE_PASSWORD;
     }
   }
     
@@ -293,7 +295,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
         for(let i in data) {
           let origin = this.initVal[i];          
           let current = data[i];
-          if((this.actionType === ActionType.EDIT && !this.readonly && !current) || (current && current !== origin)) {
+          if(((this.actionType === ActionType.EDIT && !this.readonly && !current ) || current) && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
@@ -309,10 +311,14 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
     this.pingStatus = true;
     this.translateService.get('REPLICATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
     this.testOngoing = !this.testOngoing;
-    let pingTarget = new Target();
-    pingTarget.endpoint = this.createEditPolicy.endpointUrl;
-    pingTarget.username = this.createEditPolicy.username;
-    pingTarget.password = this.createEditPolicy.password;
+    let pingTarget: Target | any = {};
+    if(this.isCreateDestination) {
+      pingTarget.endpoint = this.createEditPolicy.endpointUrl;
+      pingTarget.username = this.createEditPolicy.username;
+      pingTarget.password = this.createEditPolicy.password;
+    } else {
+      pingTarget.id = this.createEditPolicy.targetId;
+    }
     this.replicationService
         .pingTarget(pingTarget)
         .subscribe(

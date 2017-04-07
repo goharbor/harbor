@@ -147,17 +147,7 @@ func (t *TargetAPI) Get() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	// The reason why the password is returned is that when user just wants to
-	// modify other fields of target he does not need to input the password again.
-	// The security issue can be fixed by enable https.
-	if len(target.Password) != 0 {
-		pwd, err := utils.ReversibleDecrypt(target.Password, t.secretKey)
-		if err != nil {
-			log.Errorf("failed to decrypt password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		target.Password = pwd
-	}
+	target.Password = ""
 
 	t.Data["json"] = target
 	t.ServeJSON()
@@ -173,16 +163,7 @@ func (t *TargetAPI) List() {
 	}
 
 	for _, target := range targets {
-		if len(target.Password) == 0 {
-			continue
-		}
-
-		str, err := utils.ReversibleDecrypt(target.Password, t.secretKey)
-		if err != nil {
-			log.Errorf("failed to decrypt password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		target.Password = str
+		target.Password = ""
 	}
 
 	t.Data["json"] = targets
