@@ -34,7 +34,6 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
 })
 export class ProjectComponent implements OnInit, OnDestroy {
 
-  selected = [];
   changedProjects: Project[];
   projectTypes = ProjectTypes;
 

@@ -24,7 +24,7 @@ export class SearchTriggerService {
   }
 
   //Clear search term
-  clear(event): void {
+  clear(event: any): void {
     this.searchClearSource.next(event);
   }
 

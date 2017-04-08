@@ -113,7 +113,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.appConfig.auth_mode != 'ldap_auth';
     }
 
-    private clickRememberMe($event): void {
+    private clickRememberMe($event: any): void {
         if ($event && $event.target) {
             this.rememberMe = $event.target.checked;
             if (!this.rememberMe) {
@@ -139,7 +139,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
 
     //General error handler
-    private handleError(error) {
+    private handleError(error: any) {
         //Set error status
         this.signInStatus = signInStatusError;
 

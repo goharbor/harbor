@@ -41,7 +41,7 @@ export class NavigatorComponent implements OnInit {
 
     ngOnInit(): void {
         this.selectedLang = this.translate.currentLang;
-        this.translate.onLangChange.subscribe(langChange => {
+        this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
             this.cookie.put("harbor-lang", langChange.lang);

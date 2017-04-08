@@ -174,7 +174,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       this.showTagManifestOpened = true;
     }
   }
-  selectAndCopy($event) {
+  selectAndCopy($event: any) {
     $event.target.select();
   }
 }

@@ -140,7 +140,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }
 
-  doSearch(searchMember) {
+  doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
   }

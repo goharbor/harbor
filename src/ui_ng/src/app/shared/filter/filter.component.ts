@@ -19,7 +19,7 @@ export class FilterComponent implements OnInit {
 
     @Output("filter") private filterEvt = new EventEmitter<string>();
 
-    @Input() currentValue;
+    @Input() currentValue: any;
     @Input("filterPlaceholder")
     public set flPlaceholder(placeHolder: string) {
         this.placeHolder = placeHolder;

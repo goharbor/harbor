@@ -28,4 +28,5 @@ src/ui_ng/typings/
 **/ssl/
 **/proxy.config.json
 
-
+src/ui_ng/src/app/**/*.js
+src/ui_ng/src/app/**/*.js.map

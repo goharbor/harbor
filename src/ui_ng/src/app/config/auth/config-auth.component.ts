@@ -39,7 +39,7 @@ export class ConfigurationAuthComponent {
         return this.authForm && this.authForm.valid;
     }
 
-    private handleOnChange($event): void {
+    private handleOnChange($event: any): void {
         if ($event && $event.target && $event.target["value"]) {
             let authMode = $event.target["value"];
             if (authMode === 'ldap_auth') {

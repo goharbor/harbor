@@ -443,7 +443,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    private isEmpty(obj) {
+    private isEmpty(obj: any) {
         for (let key in obj) {
             if (obj.hasOwnProperty(key))
                 return false;
