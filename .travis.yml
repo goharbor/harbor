@@ -80,7 +80,7 @@ script:
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
   - sudo ./tests/testprepare.sh 
-  - docker-compose -f ./make/docker-compose.test.yml up -d
+  - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
@@ -91,7 +91,7 @@ script:
   - sudo ./ldapprepare.sh 
   - cd .. 
   - go test -i ./src/ui ./src/adminserver ./src/jobservice
-  - ./tests/coverage4gotest.sh
+  - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down

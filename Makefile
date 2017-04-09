@@ -262,8 +262,13 @@ modify_composefile:
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+
+modify_sourcefiles:
+	@echo "change mode of source files."
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
+	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
 	
-install: compile build prepare modify_composefile start
+install: compile build modify_sourcefiles prepare modify_composefile start
 	
 package_online: modify_composefile
 	@echo "packing online package ..."
@@ -292,7 +297,7 @@ package_online: modify_composefile
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 		
-package_offline: compile build modify_composefile
+package_offline: compile build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	
