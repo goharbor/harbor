@@ -17,7 +17,7 @@ export class TargetExistsValidatorDirective implements Validator, OnChanges {
   @Input() targetExists: string;
   @Input() projectId: number;
 
-  private valFn = Validators.nullValidator;
+  valFn = Validators.nullValidator;
 
   constructor(
     private projectService: ProjectService,

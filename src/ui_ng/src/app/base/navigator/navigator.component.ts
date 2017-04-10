@@ -7,7 +7,7 @@ import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
-import { CookieService } from 'angular2-cookie/core';
+import { NgXCookies } from 'ngx-cookies';
 
 import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
@@ -25,14 +25,13 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
-    private selectedLang: string = enLang;
-    private appTitle: string = 'APP_TITLE.HARBOR';
+    selectedLang: string = enLang;
+    appTitle: string = 'APP_TITLE.HARBOR';
 
     constructor(
         private session: SessionService,
         private router: Router,
         private translate: TranslateService,
-        private cookie: CookieService,
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService) {
@@ -44,7 +43,7 @@ export class NavigatorComponent implements OnInit {
         this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
-            this.cookie.put("harbor-lang", langChange.lang);
+            NgXCookies.setCookie("harbor-lang", langChange.lang);
         });
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';

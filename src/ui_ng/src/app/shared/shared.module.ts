@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
-import { CookieService } from 'angular2-cookie/core';
 
 import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';
@@ -91,7 +90,6 @@ import { StatisticHandler } from './statictics/statistic-handler.service';
   providers: [
     SessionService,
     MessageService,
-    CookieService,
     ConfirmationDialogService,
     SystemAdminGuard,
     AuthCheckGuard,

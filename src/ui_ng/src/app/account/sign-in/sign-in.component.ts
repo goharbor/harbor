@@ -14,7 +14,7 @@ import { AppConfigService } from '../../app-config.service';
 import { AppConfig } from '../../app-config';
 import { User } from '../../user/user';
 
-import { CookieService, CookieOptions } from 'angular2-cookie/core';
+import { NgXCookies } from 'ngx-cookies';
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -30,11 +30,11 @@ const expireDays = 10;
 })
 
 export class SignInComponent implements AfterViewChecked, OnInit {
-    private redirectUrl: string = "";
-    private appConfig: AppConfig = new AppConfig();
+    redirectUrl: string = "";
+    appConfig: AppConfig = new AppConfig();
     //Remeber me indicator
-    private rememberMe: boolean = false;
-    private rememberedName: string = "";
+    rememberMe: boolean = false;
+    rememberedName: string = "";
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -54,8 +54,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         private router: Router,
         private session: SessionService,
         private route: ActivatedRoute,
-        private appConfigService: AppConfigService,
-        private cookie: CookieService
+        private appConfigService: AppConfigService
     ) { }
 
     ngOnInit(): void {
@@ -71,7 +70,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 }
             });
 
-        let remUsername = this.cookie.get(remCookieKey);
+        let remUsername = NgXCookies.getCookie(remCookieKey);
         remUsername = remUsername ? remUsername.trim() : "";
         if (remUsername) {
             this.signInCredential.principal = remUsername;
@@ -113,33 +112,29 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.appConfig.auth_mode != 'ldap_auth';
     }
 
-    private clickRememberMe($event: any): void {
+    clickRememberMe($event: any): void {
         if ($event && $event.target) {
             this.rememberMe = $event.target.checked;
             if (!this.rememberMe) {
                 //Remove cookie data
-                this.cookie.remove(remCookieKey);
+                NgXCookies.deleteCookie(remCookieKey);
                 this.rememberedName = "";
             }
         }
     }
 
-    private remeberMe(): void {
+    remeberMe(): void {
         if (this.rememberMe) {
             if (this.rememberedName != this.signInCredential.principal) {
                 //Set expire time
                 let expires: number = expireDays * 3600 * 24 * 1000;
-                let date = new Date(Date.now() + expires); 
-                let cookieptions = new CookieOptions({
-                    expires: date
-                });
-                this.cookie.put(remCookieKey, this.signInCredential.principal, cookieptions);
+                NgXCookies.setCookie(remCookieKey, this.signInCredential.principal, expires, 'days');
             }
         }
     }
 
     //General error handler
-    private handleError(error: any) {
+    handleError(error: any) {
         //Set error status
         this.signInStatus = signInStatusError;
 
@@ -148,7 +143,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
 
     //Hande form values changes
-    private formChanged() {
+    formChanged() {
         if (this.currentForm === this.signInForm) {
             return;
         }
@@ -163,7 +158,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
 
     //Fill the new user info into the sign in form
-    private handleUserCreation(user: User): void {
+    handleUserCreation(user: User): void {
         if (user) {
             this.currentForm.setValue({
                 "login_username": user.username,

@@ -1,9 +1,8 @@
 import { Component, ReflectiveInjector, LOCALE_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { CookieService } from 'angular2-cookie/core';
-
 import { supportedLangs, enLang } from './shared/shared.const';
 import { SessionService } from './shared/session.service';
+import { NgXCookies } from 'ngx-cookies';
 
 
 @Component({
@@ -13,14 +12,13 @@ import { SessionService } from './shared/session.service';
 export class AppComponent {
     constructor(
         private translate: TranslateService,
-        private cookie: CookieService,
         private session: SessionService) {
 
         translate.addLangs(supportedLangs);
         translate.setDefaultLang(enLang);
 
         //If user has selected lang, then directly use it
-        let langSetting = this.cookie.get("harbor-lang");
+        let langSetting = NgXCookies.getCookie("harbor-lang");
         if (!langSetting || langSetting.trim() === "") {
             //Use browser lang
             langSetting = translate.getBrowserCultureLang().toLowerCase();
@@ -31,7 +29,7 @@ export class AppComponent {
         //this.session.switchLanguage(selectedLang).catch(error => console.error(error));
     }
 
-    private isLangMatch(browserLang: string, supportedLangs: string[]) {
+    isLangMatch(browserLang: string, supportedLangs: string[]) {
         if (supportedLangs && supportedLangs.length > 0) {
             return supportedLangs.find(lang => lang === browserLang);
         }

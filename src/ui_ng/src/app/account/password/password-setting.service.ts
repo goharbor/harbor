@@ -10,11 +10,11 @@ const resetPasswordEndpoint = "/reset";
 
 @Injectable()
 export class PasswordSettingService {
-    private headers: Headers = new Headers({
+    headers: Headers = new Headers({
         "Accept": 'application/json',
         "Content-Type": 'application/json'
     });
-    private options: RequestOptions = new RequestOptions({
+    options: RequestOptions = new RequestOptions({
         'headers': this.headers
     });
 

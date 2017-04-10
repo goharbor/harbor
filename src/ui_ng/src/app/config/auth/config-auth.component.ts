@@ -10,7 +10,7 @@ import { Configuration } from '../config';
     styleUrls: ['../config.component.css']
 })
 export class ConfigurationAuthComponent {
-    private changeSub: Subscription;
+    changeSub: Subscription;
     @Input("ldapConfig") currentConfig: Configuration = new Configuration();
 
     @ViewChild("authConfigFrom") authForm: NgForm;
@@ -31,7 +31,7 @@ export class ConfigurationAuthComponent {
         }
     }
 
-    private disabled(prop: any): boolean {
+    disabled(prop: any): boolean {
         return !(prop && prop.editable);
     }
 
@@ -39,7 +39,7 @@ export class ConfigurationAuthComponent {
         return this.authForm && this.authForm.valid;
     }
 
-    private handleOnChange($event: any): void {
+    handleOnChange($event: any): void {
         if ($event && $event.target && $event.target["value"]) {
             let authMode = $event.target["value"];
             if (authMode === 'ldap_auth') {

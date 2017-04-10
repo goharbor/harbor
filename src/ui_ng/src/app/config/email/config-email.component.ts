@@ -15,7 +15,7 @@ export class ConfigurationEmailComponent {
 
     constructor() { }
 
-    private disabled(prop: any): boolean {
+    disabled(prop: any): boolean {
         return !(prop && prop.editable);
     }
 
