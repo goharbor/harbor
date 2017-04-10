@@ -24,19 +24,17 @@ export class ProjectRoutingResolver implements Resolve<Project>{
                   if(project) {
                     let currentUser = this.sessionService.getCurrentUser();
                     if(currentUser) {
+                      let projectMembers = this.sessionService.getProjectMembers();
+                      if(projectMembers) {
+                        let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
+                        if(currentMember) {
+                          project.is_member = true;
+                          project.has_project_admin_role = (currentMember.role_name === 'projectAdmin');
+                          project.role_name = currentMember.role_name;
+                        } 
+                      }
                       if(currentUser.has_admin_role === 1) {
                         project.has_project_admin_role = true;
-                        project.role_name = 'sysAdmin';
-                      } else {
-                        let projectMembers = this.sessionService.getProjectMembers();
-                        if(projectMembers) {
-                          let currentMember = projectMembers.find(m=>m.user_id === currentUser.user_id);
-                          if(currentMember) {
-                            project.is_member = true;
-                            project.has_project_admin_role = (currentMember.role_name === 'projectAdmin');
-                            project.role_name = currentMember.role_name;
-                          } 
-                        }
                       }
                     }
                     return project;

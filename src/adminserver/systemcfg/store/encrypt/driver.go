@@ -62,7 +62,7 @@ func (c *cfgStore) Read() (map[string]interface{}, error) {
 
 		str, ok := v.(string)
 		if !ok {
-			log.Warningf("%v is not string, skip decrypt", v)
+			log.Warningf("the value of %s is not string, skip decrypt", key)
 			continue
 		}
 

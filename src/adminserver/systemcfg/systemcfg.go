@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	defaultJSONCfgStorePath string = "/etc/adminserver/config.json"
+	defaultJSONCfgStorePath string = "/etc/adminserver/config/config.json"
 	defaultKeyPath          string = "/etc/adminserver/key"
 )
 

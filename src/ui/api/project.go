@@ -297,17 +297,17 @@ func (p *ProjectAPI) List() {
 
 	for i := 0; i < len(projectList); i++ {
 		if public != 1 {
-			if isAdmin {
-				projectList[i].Role = models.PROJECTADMIN
-			} else {
-				roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
-				if err != nil {
-					log.Errorf("failed to get user's project role: %v", err)
-					p.CustomAbort(http.StatusInternalServerError, "")
-				}
+			roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
+			if err != nil {
+				log.Errorf("failed to get user's project role: %v", err)
+				p.CustomAbort(http.StatusInternalServerError, "")
+			}
+			if len(roles) != 0 {
 				projectList[i].Role = roles[0].RoleID
 			}
-			if projectList[i].Role == models.PROJECTADMIN {
+
+			if projectList[i].Role == models.PROJECTADMIN ||
+				isAdmin {
 				projectList[i].Togglable = true
 			}
 		}

@@ -96,6 +96,7 @@ func init() {
 	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
+	beego.Router("/api/targets/:id([0-9]+)/ping", &TargetAPI{}, "post:PingByID")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
@@ -628,11 +629,24 @@ func (a testapi) ListTargets(authInfo usrInfo, targetName string) (int, []apilib
 	return httpStatusCode, successPayload, err
 }
 
-//Ping target by targetID
-func (a testapi) PingTargetsByID(authInfo usrInfo, targetID string) (int, error) {
+//Ping target
+func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
-	path := "/api/targets/ping?id=" + targetID
+	path := "/api/targets/ping"
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(body)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
+}
+
+//PingTargetByID ...
+func (a testapi) PingTargetByID(authInfo usrInfo, id int) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := fmt.Sprintf("/api/targets/%d/ping", id)
 
 	_sling = _sling.Path(path)
 

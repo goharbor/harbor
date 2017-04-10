@@ -4,7 +4,7 @@
             <div class="form-group form-group-override">
                 <label for="username" class="required form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                 <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("username")'>
-                <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="36" 
+                <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30" 
                 (input)='handleValidation("username", false)' 
                 (blur)='handleValidation("username", true)'>
                 <span class="tooltip-content">
@@ -18,7 +18,7 @@
                       <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" 
                       required 
                       email
-                      id="email" size="36"
+                      id="email" size="30"
                       (input)='handleValidation("email", false)' 
                 (blur)='handleValidation("email", true)'>
                       <span class="tooltip-content">
@@ -31,7 +31,7 @@
             <div class="form-group form-group-override">
                 <label for="realname" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
                 <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("realname")'>
-                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="36"
+                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="30"
                       (input)='handleValidation("realname", false)' 
                 (blur)='handleValidation("realname", true)'>
                       <span class="tooltip-content">
@@ -47,7 +47,7 @@
                     pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$"
                     name="newPassword"
                     [(ngModel)]="newUser.password"
-                    #newPassInput="ngModel" size="36" 
+                    #newPassInput="ngModel" size="30" 
                     (input)='handleValidation("newPassword", false)' 
                 (blur)='handleValidation("newPassword", true)'>
                 <span class="tooltip-content">
@@ -64,7 +64,7 @@
                     pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$"
                     name="confirmPassword"
                     [(ngModel)]="confirmedPwd"
-                    #confirmPassInput="ngModel" size="36" 
+                    #confirmPassInput="ngModel" size="30" 
                     (input)='handleValidation("confirmPassword", false)' 
                 (blur)='handleValidation("confirmPassword", true)'>
                 <span class="tooltip-content">
@@ -75,7 +75,7 @@
             <div class="form-group form-group-override">
                 <label for="comment" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
                 <label for="comment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("comment")'>
-                <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="36" 
+                <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="30" 
                 (input)='handleValidation("comment", false)' 
                 (blur)='handleValidation("comment", true)'>
                 <span class="tooltip-content">

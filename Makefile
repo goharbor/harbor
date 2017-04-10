@@ -80,7 +80,7 @@ REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
 REGISTRYVERSION=photon-2.6.0
-NGINXVERSION=1.11.5
+NGINXVERSION=1.11.5-patched
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
@@ -262,8 +262,13 @@ modify_composefile:
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+
+modify_sourcefiles:
+	@echo "change mode of source files."
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
+	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
 	
-install: compile build prepare modify_composefile start
+install: compile build modify_sourcefiles prepare modify_composefile start
 	
 package_online: modify_composefile
 	@echo "packing online package ..."
@@ -292,7 +297,7 @@ package_online: modify_composefile
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 		
-package_offline: compile build modify_composefile
+package_offline: compile build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	
@@ -301,7 +306,7 @@ package_offline: compile build modify_composefile
 			
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
-	@$(DOCKERPULL) nginx:$(NGINXVERSION)
+	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
@@ -316,7 +321,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
 		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
 		vmware/harbor-notary-db:$(MARIADBVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	else \
@@ -325,7 +330,7 @@ package_offline: compile build modify_composefile
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
 		photon:$(PHOTONVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	fi
 	

@@ -54,9 +54,9 @@ services:
       - ./common/config/adminserver/env
     restart: always
     volumes:
-      - /data/config/:/etc/adminserver/
-      - /data/secretkey:/etc/adminserver/key
-      - /data/:/data/
+      - /data/config/:/etc/adminserver/config/:z
+      - /data/secretkey:/etc/adminserver/key:z
+      - /data/:/data/:z
     networks:
       - harbor
     depends_on:
@@ -109,7 +109,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: nginx:1.11.5
+    image: vmware/nginx:1.11.5-patched
     container_name: nginx
     restart: always
     volumes:
