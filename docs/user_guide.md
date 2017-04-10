@@ -1,5 +1,5 @@
-#User Guide  
-##Overview  
+# User Guide  
+## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
 * Manage your projects.
@@ -14,7 +14,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * Delete repositories and images.
 
 
-##Role Based Access Control  
+## Role Based Access Control  
 
 ![rbac](img/rbac.png)
 
@@ -29,7 +29,7 @@ Besides the above three roles, there are two system-wide roles:
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator and delete users. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
-##User account
+## User account
 Harbor supports two authentication modes:  
 
 * **Database(db_auth)**  
@@ -55,7 +55,7 @@ Harbor supports two authentication modes:
 	
 	Self-registration, changing password and resetting password are not supported anymore under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
-##Managing projects
+## Managing projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
 
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
@@ -73,18 +73,18 @@ All logs can be listed by clicking "Logs". You can apply a filter by username, o
 
 ![browse project](img/new_project_log.png)  
 
-##Managing members of a project  
-###Adding members  
+## Managing members of a project  
+### Adding members  
 You can add members with different roles to an existing project.  
 
 ![browse project](img/new_add_member.png)
 
-###Updating and removing members
+### Updating and removing members
 You can update or remove a member by clicking the icon on the left.  
 
 ![browse project](img/new_remove_update_member.png)
 
-##Replicating images  
+## Replicating images  
 Images replication is used to replicate repositories from one Harbor instance to another.  
 
 The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project will be replicated to the remote registry. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. When a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination. The member information will not be replicated.  
@@ -103,52 +103,52 @@ Click a rule, jobs which belong to this rule will be listed. A job represents th
 
 ![browse project](img/new_rule_list.png)
 
-##Searching projects and repositories  
+## Searching projects and repositories  
 Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access privilege to.  
 
 ![browse project](img/new_search.png)
 
-##Administrator options  
-###Managing user  
+## Administrator options  
+### Managing user  
 Administrator can add "administrator" role to an ordinary user by click button on the left and select enable administrator. To delete a user, select delete. 
 
 ![browse project](img/new_set_admin_remove_user.png)
 
-###Managing endpoint  
+### Managing endpoint  
 You can list, add, edit and delete endpoints in the "endpoints" tab. Only endpoints which are not referenced by any rules can be edited.  
 
 ![browse project](img/new_manage_endpoint.png)
 
-###Managing replication  
+### Managing replication  
 You can list, edit, enable and disable rules in the "Replication" tab. Make sure the policy is disabled before you edit it.  
 
 ![browse project](img/new_manage_replication.png)
 
-###Managing authentication
+### Managing authentication
 You can change authentication mode between DB(by default) and LDAP before any user added,once user added,you cannot change it anymore.
 ![browse project](img/new_auth.png)
 
-###Managing project creation
+### Managing project creation
 You can manage if a non-admin user can create a project.  
 ![browse project](img/new_proj_create.png)
 
-###Managing self registration
+### Managing self registration
 You can manage if user can self registration.(DB mode only)  
 ![browse project](img/new_self_reg.png)
 
-###Managing verify remote cert
+### Managing verify remote cert
 You  can choose to whether to verify remote endpoint's certification.  
 ![browse project](img/new_remote_cert.png)
 
-###Managing email settings
+### Managing email settings
 You can change Harbor's email settings.  
 ![browse project](img/new_config_email.png)
 
-###Managing Token expire time
+### Managing Token expire time
 You can manage expire time of token.  
 ![browse project](img/new_config_token.png)
 
-##Pulling and pushing images using Docker client  
+## Pulling and pushing images using Docker client  
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
@@ -160,7 +160,7 @@ If this private registry supports only HTTP or HTTPS with an unknown CA certific
 In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag;  
 simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com:5000/ca.crt*  
 
-###Content trust  
+### Content trust  
 If you want to enable content trust to ensure that images are signed by someone, declare two environment variables in the terminal before push or pull any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
@@ -169,7 +169,7 @@ export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust,https access is necessary.**
 
-###Pulling images  
+### Pulling images  
 If the project that the image belongs to is private, you should sign in first:  
 
 ```sh
@@ -184,7 +184,7 @@ $ docker pull 10.117.169.182/library/ubuntu:14.04
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.You cannot pull a unsigned image if you enabled content trust.**
 
-###Pushing images  
+### Pushing images  
 Before pushing an image, you must create a corresponding project on Harbor web UI. 
 
 First, log in from Docker client:  
@@ -207,7 +207,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.**
 
-##Deleting repositories  
+## Deleting repositories  
 
 Repository deletion runs in two steps.  
 
