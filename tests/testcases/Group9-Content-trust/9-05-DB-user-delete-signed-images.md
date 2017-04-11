@@ -16,8 +16,8 @@ User guide
 # Test Steps:
 
 1. Login UI and create a project.  
-2. On a Docker client, 
-run```sh 
+2. On a Docker client,run   
+```sh 
 export DOCKER_CONTENT_TRUST=1   
 export DOCKER_CONTENT_TRUST_SERVER=https://<harbor_ip>:4443  
 ```
