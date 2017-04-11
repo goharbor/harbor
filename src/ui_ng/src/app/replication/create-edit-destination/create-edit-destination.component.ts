@@ -44,7 +44,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
 
   hasChanged: boolean;
 
-  endpointUrlHasChanged: boolean;
+  endpointHasChanged: boolean;
+  targetNameHasChanged: boolean;
 
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
@@ -63,7 +64,8 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
     this.editable = editable;
 
     this.hasChanged = false;
-    this.endpointUrlHasChanged = false;
+    this.endpointHasChanged = false;
+    this.targetNameHasChanged = false;
 
     this.pingTestMessage = '';
     this.pingStatus = true;
@@ -96,22 +98,17 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
     this.pingStatus = true;
     this.testOngoing = !this.testOngoing;
 
-    let postedTarget: any = {};
-
-    if(!this.endpointUrlHasChanged) {
-       postedTarget = {
-         id: this.target.id
-       };
+    let payload: Target = new Target();
+    if(this.endpointHasChanged) {
+      payload.endpoint = this.target.endpoint;
+      payload.username = this.target.username;
+      payload.password = this.target.password;
     } else {
-      postedTarget = {
-        endpoint: this.target.endpoint,
-        username: this.target.username,
-        password: this.target.password
-      };
+      payload.id = this.target.id;
     }
 
     this.replicationService
-        .pingTarget(postedTarget)
+        .pingTarget(payload)
         .subscribe(
           response=>{
             this.pingStatus = true;
@@ -126,10 +123,16 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
         )
   }
 
+  changedTargetName($event: any) {
+    if(this.editable) {
+      this.targetNameHasChanged = true;
+    }
+  }
+
   clearPassword($event: any) {
     if(this.editable) {
       this.target.password = '';
-      this.endpointUrlHasChanged = true;
+      this.endpointHasChanged = true;
     }
   }
 
@@ -172,12 +175,21 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           );
         break;
     case ActionType.EDIT:
-      if(!this.endpointUrlHasChanged) {
+      if(!(this.targetNameHasChanged || this.endpointHasChanged)) {
         this.createEditDestinationOpened = false;
         return;
       } 
+      let payload: Target = new Target();
+      if(this.targetNameHasChanged) {
+        payload.name = this.target.name;
+      }
+      if (this.endpointHasChanged) {
+        payload.endpoint = this.target.endpoint;
+        payload.username = this.target.username;
+        payload.password = this.target.password;
+      } 
       this.replicationService
-          .updateTarget(this.target)
+          .updateTarget(payload, this.target.id)
           .subscribe(
             response=>{ 
               this.messageHandlerService.showSuccess('DESTINATION.UPDATED_SUCCESS');
