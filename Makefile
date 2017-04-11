@@ -266,7 +266,10 @@ modify_composefile:
 modify_sourcefiles:
 	@echo "change mode of source files."
 	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.crt
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer-ca.crt
 	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
+	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
 	
 install: compile build modify_sourcefiles prepare modify_composefile start
 	
