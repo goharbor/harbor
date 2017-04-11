@@ -404,9 +404,9 @@
     "ABOUT": {
         "VERSION": "版本",
         "BUILD": "构建",
-        "COPYRIGHT": "版权所有 © 1998-2017 VMware. Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
+        "COPYRIGHT": "版权所有 © 1998-2017 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
         "COPYRIGHT_SUFIX": "上列出的一项或多项专利保护。",
-        "TRADEMARK": "VMware徽标及设计都是VMware. Inc.在美国和/或其他法律辖区的注册商标或者商标。此处提到的其他所有商标和名称分别是其各自公司的商标。",
+        "TRADEMARK": "VMware徽标及设计都是VMware, Inc.在美国和/或其他法律辖区的注册商标或者商标。此处提到的其他所有商标和名称分别是其各自公司的商标。",
         "END_USER_LICENSE": "终端用户许可协议",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
