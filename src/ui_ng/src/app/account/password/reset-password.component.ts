@@ -14,19 +14,19 @@ import { CommonRoutes } from '../../shared/shared.const';
 })
 export class ResetPasswordComponent implements OnInit {
     opened: boolean = true;
-    private onGoing: boolean = false;
-    private password: string = "";
+    onGoing: boolean = false;
+    password: string = "";
     private validationState: any = {
         "newPassword": true,
         "reNewPassword": true
     };
-    private resetUuid: string = "";
-    private resetOk: boolean = false;
+    resetUuid: string = "";
+    resetOk: boolean = false;
     confirmPwd: string = "";
 
     @ViewChild("resetPwdForm") resetPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
-    private inlineAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
     constructor(
         private pwdService: PasswordSettingService,
@@ -118,7 +118,7 @@ export class ResetPasswordComponent implements OnInit {
         }
     }
 
-    private getControlValidationState(key: string): boolean {
+    getControlValidationState(key: string): boolean {
         if (this.resetPwdForm) {
             let control = this.resetPwdForm.controls[key];
             if (control) {
@@ -129,7 +129,7 @@ export class ResetPasswordComponent implements OnInit {
         return false;
     }
 
-    private samePassword(): boolean {
+    samePassword(): boolean {
         if (this.resetPwdForm) {
             let control1 = this.resetPwdForm.controls["newPassword"];
             let control2 = this.resetPwdForm.controls["reNewPassword"];

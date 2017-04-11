@@ -32,7 +32,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
 
 export class MaxLengthExtValidatorDirective implements Validator, OnChanges {
     @Input() maxLengthExt: number;
-    private valFn = Validators.nullValidator;
+    valFn = Validators.nullValidator;
 
     ngOnChanges(changes: SimpleChanges): void {
         const change = changes['maxLengthExt'];

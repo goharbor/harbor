@@ -9,7 +9,7 @@ import { SessionUser } from '../../shared/session-user';
     styleUrls: ['start.component.css']
 })
 export class StartPageComponent implements OnInit{
-    private isSessionValid: boolean = false;
+    isSessionValid: boolean = false;
 
     constructor(
         private session: SessionService

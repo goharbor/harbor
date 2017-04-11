@@ -14,10 +14,10 @@ const searchEndpoint = "/api/search";
  */
 @Injectable()
 export class GlobalSearchService {
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
-    private options = new RequestOptions({
+    options = new RequestOptions({
         headers: this.headers
     });
 

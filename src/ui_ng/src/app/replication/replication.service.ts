@@ -139,22 +139,21 @@ export class ReplicationService {
   }
 
   pingTarget(target: Target): Observable<any> {
-    let body = new URLSearchParams();
     if(target.id) {
-      body.set('id', target.id + '');
+      return this.http
+               .post(`/api/targets/${target.id}/ping`, {})
+               .map(response=>response.status)
+               .catch(error=>Observable.throw(error));
     }
-    body.set('endpoint', target.endpoint);
-    body.set('username', target.username);
-    body.set('password', target.password);
     return this.http
-               .post(`/api/targets/ping`, body)
+               .post(`/api/targets/ping`, target)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
-  updateTarget(target: Target): Observable<any> {
+  updateTarget(target: Target, targetId: number): Observable<any> {
     return this.http
-               .put(`/api/targets/${target.id}`, JSON.stringify(target))
+               .put(`/api/targets/${targetId}`, JSON.stringify(target))
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

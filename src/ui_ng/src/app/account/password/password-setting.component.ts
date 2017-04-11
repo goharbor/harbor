@@ -20,8 +20,8 @@ export class PasswordSettingComponent implements AfterViewChecked {
     reNewPwd: string = "";
     error: any = null;
 
-    private formValueChanged: boolean = false;
-    private onCalling: boolean = false;
+    formValueChanged: boolean = false;
+    onCalling: boolean = false;
     private validationStateMap: any = {
         "newPassword": true,
         "reNewPassword": true
@@ -30,7 +30,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
-    private inlineAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
     constructor(
         private passwordService: PasswordSettingService,
@@ -55,11 +55,11 @@ export class PasswordSettingComponent implements AfterViewChecked {
         return this.onCalling;
     }
 
-    private getValidationState(key: string): boolean {
+    getValidationState(key: string): boolean {
         return this.validationStateMap[key];
     }
 
-    private handleValidation(key: string, flag: boolean): void {
+    handleValidation(key: string, flag: boolean): void {
         if (flag) {
             //Checking
             let cont = this.pwdForm.controls[key];
@@ -126,7 +126,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
         }
     }
 
-    confirmCancel(): void {
+    confirmCancel($event: any): void {
         this.opened = false;
     }
 

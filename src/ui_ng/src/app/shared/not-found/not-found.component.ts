@@ -10,8 +10,8 @@ const defaultLeftTime = 5;
     styleUrls: ['not-found.component.css']
 })
 export class PageNotFoundComponent implements OnInit, OnDestroy{
-    private leftSeconds: number = defaultLeftTime;
-    private timeInterval: any = null;
+    leftSeconds: number = defaultLeftTime;
+    timeInterval: any = null;
 
     constructor(private router: Router){}
 

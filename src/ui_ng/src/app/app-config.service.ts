@@ -3,7 +3,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { AppConfig } from './app-config';
-import { CookieService } from 'angular2-cookie/core';
+import { NgXCookies } from 'ngx-cookies';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas } from './shared/shared.utils';
 
@@ -17,19 +17,18 @@ export const systemInfoEndpoint = "/api/systeminfo";
  */
 @Injectable()
 export class AppConfigService {
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
-    private options = new RequestOptions({
+    options = new RequestOptions({
         headers: this.headers
     });
 
     //Store the application configuration
-    private configurations: AppConfig = new AppConfig();
+    configurations: AppConfig = new AppConfig();
 
     constructor(
-        private http: Http,
-        private cookie: CookieService) { }
+        private http: Http) { }
 
     public load(): Promise<AppConfig> {
         return this.http.get(systemInfoEndpoint, this.options).toPromise()
@@ -37,7 +36,7 @@ export class AppConfigService {
                 this.configurations = response.json() as AppConfig;
 
                 //Read admiral endpoint from cookie if existing
-                let admiralUrlFromCookie: string = this.cookie.get(CookieKeyOfAdmiral);
+                let admiralUrlFromCookie: string = NgXCookies.getCookie(CookieKeyOfAdmiral);
                 if(admiralUrlFromCookie){
                     //Override the endpoint from configuration file
                     this.configurations.admiral_endpoint = decodeURIComponent(admiralUrlFromCookie);
@@ -77,7 +76,7 @@ export class AppConfigService {
         }
 
         //Save back to cookie
-        this.cookie.put(CookieKeyOfAdmiral, endpoint);
+        NgXCookies.setCookie(CookieKeyOfAdmiral, endpoint);
         this.configurations.admiral_endpoint = endpoint;
     }
 }

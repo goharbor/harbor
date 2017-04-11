@@ -17,15 +17,15 @@ const deBounceTime = 500; //ms
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     //Keep search term as Subject
-    private searchTerms = new Subject<string>();
+    searchTerms = new Subject<string>();
 
     //Keep subscription for future use
-    private searchSub: Subscription;
-    private closeSub: Subscription;
+    searchSub: Subscription;
+    closeSub: Subscription;
 
     //To indicate if the result panel is opened
-    private isResPanelOpened: boolean = false;
-    private searchTerm: string = "";
+    isResPanelOpened: boolean = false;
+    searchTerm: string = "";
 
     constructor(
         private searchTrigger: SearchTriggerService,

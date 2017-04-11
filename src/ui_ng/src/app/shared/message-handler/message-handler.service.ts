@@ -69,7 +69,7 @@ export class MessageHandlerService {
         this.msgService.clear();
     }
 
-    public isAppLevel(error): boolean {
+    public isAppLevel(error: any): boolean {
         return error && error.statusCode === httpStatusCode.Unauthorized;
     }
 }
