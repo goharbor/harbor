@@ -17,12 +17,13 @@ User guide
 1. Login UI as admin user.  
 2. In configuration page,change authentication mode from DB to LDAP or from LDAP to DB.  
 3. Save the configuration.  
-4. Change the configuration again.  
+4. Add or sign up a user.(For LDAP, login a user)
+5. Change the configuration again.  
 
 # Expected Outcome:
 
 * In step2, user can change authentication mode.  
-* In step4, user cannot change authentication mode.
+* In step5, user cannot change authentication mode.
 
 # Possible Problems:
 None
