@@ -107,4 +107,7 @@ func initRouters() {
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
+
+	//Error pages
+	beego.ErrorController(&controllers.ErrorController{})
 }
