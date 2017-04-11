@@ -335,7 +335,7 @@ if args.notary_mode:
             print("Copying certs for notary signer")
 	    os.chmod(signer_cert_path, 0600)
 	    os.chmod(signer_key_path, 0600)
-	    os.chmod(signer_ca_path, 0600)
+	    os.chmod(signer_ca_cert, 0600)
             shutil.copy2(signer_cert_path, notary_config_dir)
             shutil.copy2(signer_key_path, notary_config_dir)
             shutil.copy2(signer_ca_cert, notary_config_dir)
