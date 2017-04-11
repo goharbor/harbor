@@ -57,12 +57,6 @@ a.underline, .underline{
     font-size: 18px;
 }
 
-.second-number {
-    font-weight: bold;
-    font-size: 2em;
-    color: #EB8D00;
-}
-
 </style>
 </head>
 <body>
@@ -73,7 +67,7 @@ a.underline, .underline{
 		        <span class="status-text">Page Not Found</span>
 		    </div>
 		    <div class="status-subtitle">
-		        <p class="big-font"> <a href="/harbor" class="underline">Home</p>
+		        <p> <a href="/harbor" class="underline">Home</p>
 		    </div>
         </div>
     </div>
