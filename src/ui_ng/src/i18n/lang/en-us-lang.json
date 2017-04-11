@@ -404,9 +404,9 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Copyright 1998-2017 VMware. Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
         "COPYRIGHT_SUFIX": ".",
-        "TRADEMARK": "VMware is a registered trademark or trademark of VMware. Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
+        "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
