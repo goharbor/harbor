@@ -245,6 +245,13 @@ func (t *TargetAPI) Put() {
 	if hasEnabledPolicy {
 		t.CustomAbort(http.StatusBadRequest, "the target is associated with policy which is enabled")
 	}
+	if len(target.Password) != 0 {
+		target.Password, err = utils.ReversibleDecrypt(target.Password, t.secretKey)
+		if err != nil {
+			log.Errorf("failed to decrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+	}
 
 	req := struct {
 		Name     *string `json:"name"`
