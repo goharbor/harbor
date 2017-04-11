@@ -3,22 +3,26 @@ Test 7-01 - Create Replication Policy
 
 # Purpose:
 
-To verify that an admin user can create a replication policy.
+To verify that admin user can create a replication rule.
 
 # References:
+
 User guide
 
 # Environment:
-* This test requires that a Harbor instance is running and available.
-* A linux host with Docker CLI installed (Docker client).
+
+* This test requires that at least two Harbor instances are running and available.
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.
+2. In Project replication page, add a replication rule.
+3. Add another rule with different name use the same endpoint.  
 
 # Expected Outcome:
 
-TBD
+* In step2, a rule with given name will be added.  
+* In step3, rule add will fail.  
 
 # Possible Problems:
 None
