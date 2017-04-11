@@ -2,32 +2,39 @@
 
 set +e
 
-SWAGGERFILE=https://raw.githubusercontent.com/vmware/harbor/$1/docs/swagger.yaml
-VALIDATOR=http://online.swagger.io/validator/debug?url=$SWAGGERFILE
-
-echo $SWAGGERFILE
-
-TIMEOUT=10
-while [ $TIMEOUT -gt 0 ]; do
-    STATUS=$(curl --insecure -s -o /dev/null -w '%{http_code}' $VALIDATOR)
-    if [ $STATUS -eq 200 ]; then
-		break
-    fi
-    TIMEOUT=$(($TIMEOUT - 1))
-    sleep 2
-done
-
-if [ $TIMEOUT -eq 0 ]; then
-    echo "Swagger online checke cannot reach, would not fail travis here."
-    exit 0
-fi
-
-curl -X GET $VALIDATOR | grep "{}"  > /dev/null
-if [ $? -eq 0 ]; then 
-	echo "Swagger yaml check success."
-else
-	echo "Swagger yaml check fail."
-	echo $(curl -X GET $VALIDATOR)
+if [ -z "$1" ]; then
+	echo '* Required input `git branch` not provided!'
 	exit 1
 fi
- 
+
+SWAGGER_VALIDATOR="http://online.swagger.io/validator"
+SWAGGER_FILE="https://raw.githubusercontent.com/vmware/harbor/$1/docs/swagger.yaml"
+VALIDATOR="$SWAGGER_VALIDATOR/debug?url=$SWAGGER_FILE"
+echo $SWAGGER_FILE
+
+# Now try to validate swagger online validator, then to use it to do the validation.
+eval curl -f -I $SWAGGER_VALIDATOR
+curl_ping_res=$?
+if [ ${curl_ping_res} -eq 0 ]; then
+	echo "* cURL ping swagger validator returned success"
+else
+	echo "* cURL ping swagger validator returned an error (${curl_ping_res})"
+	exit ${curl_ping_res}
+fi
+
+# Use the validator to validate the swagger file.
+eval curl -s $VALIDATOR > output.json
+curl_validate_res=$?
+validate_expected_results="{}"
+validate_actual_results=$(cat < output.json)
+
+if [ ${curl_ping_res} -eq 0 ]; then
+	if [ $validate_actual_results = $validate_expected_results ]; then
+		echo "* cURL check swagger file returned success"
+	else
+		echo "* cURL check swagger file returned an error ($validate_actual_results)"
+	fi
+else
+	echo "* cURL check swagger file returned an error (${curl_validate_res})"
+	exit ${curl_validate_res}
+fi
