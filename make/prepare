@@ -62,6 +62,7 @@ def _get_secret(folder, filename, length=16):
     with open(key_file, 'w') as f:
         f.write(key)
         print("Generated and saved secret to file: %s" % key_file)
+    os.chmod(key_file, 0600)
     return key
 
 def prep_conf_dir(root, name):
@@ -303,6 +304,7 @@ if customize_crt == 'on' and openssl_installed():
     private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
+    os.chmod(private_key_pem, 0600)
 else:
     print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
@@ -331,6 +333,7 @@ if args.notary_mode:
             create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
             print("Copying certs for notary signer")
             shutil.copy2(signer_cert_path, notary_config_dir)
+ 	    os.chmod(signer_key_path, 0600)
             shutil.copy2(signer_key_path, notary_config_dir)
             shutil.copy2(signer_ca_cert, notary_config_dir)
         finally:

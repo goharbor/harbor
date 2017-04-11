@@ -104,11 +104,47 @@ func TestTargetPing(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	fmt.Println("Testing Targets Ping Post API")
+	//case 1
+	body := struct {
+		Endpoint string `json:"endpoint"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}{
+		Endpoint: os.Getenv("REGISTRY_URL"),
+		Username: adminName,
+		Password: adminPwd,
+	}
+	httpStatusCode, err = apiTest.PingTarget(*admin, body)
+	if err != nil {
+		t.Error("Error while ping target", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "")
+	}
+
+	//case 2
+	body.Endpoint = ""
+	httpStatusCode, err = apiTest.PingTarget(*admin, body)
+	if err != nil {
+		t.Error("Error while ping target", err.Error())
+	} else {
+		assert.Equal(int(400), httpStatusCode, "")
+	}
+}
+
+func TestTargetPingByID(t *testing.T) {
+	var httpStatusCode int
+	var err error
+
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	fmt.Println("Testing Targets Ping Post API")
 
 	//-------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
-	id := strconv.Itoa(addTargetID)
-	httpStatusCode, err = apiTest.PingTargetsByID(*admin, id)
+	id := addTargetID
+	httpStatusCode, err = apiTest.PingTargetByID(*admin, id)
 	if err != nil {
 		t.Error("Error whihle ping target", err.Error())
 		t.Log(err)
@@ -118,26 +154,15 @@ func TestTargetPing(t *testing.T) {
 
 	//--------------case 2 : response code = 404,target not found------------//
 	fmt.Println("case 2 : response code = 404,target not found")
-	id = "1111"
-	httpStatusCode, err = apiTest.PingTargetsByID(*admin, id)
+
+	id = 1111
+	httpStatusCode, err = apiTest.PingTargetByID(*admin, id)
 	if err != nil {
 		t.Error("Error whihle ping target", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
-
-	//------------case 3 : response code = 400,targetID is invalid-----------//
-	fmt.Println("case 2 : response code = 400,target not found")
-	id = "cc"
-	httpStatusCode, err = apiTest.PingTargetsByID(*admin, id)
-	if err != nil {
-		t.Error("Error whihle ping target", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
 }
 
 func TestTargetGetByID(t *testing.T) {

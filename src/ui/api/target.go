@@ -60,48 +60,7 @@ func (t *TargetAPI) Prepare() {
 	}
 }
 
-// Ping validates whether the target is reachable and whether the credential is valid
-func (t *TargetAPI) Ping() {
-	var endpoint, username, password string
-
-	idStr := t.GetString("id")
-	if len(idStr) != 0 {
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			t.CustomAbort(http.StatusBadRequest, fmt.Sprintf("id %s is invalid", idStr))
-		}
-
-		target, err := dao.GetRepTarget(id)
-		if err != nil {
-			log.Errorf("failed to get target %d: %v", id, err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		if target == nil {
-			t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
-		}
-
-		endpoint = target.URL
-		username = target.Username
-		password = target.Password
-
-		if len(password) != 0 {
-			password, err = utils.ReversibleDecrypt(password, t.secretKey)
-			if err != nil {
-				log.Errorf("failed to decrypt password: %v", err)
-				t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-		}
-	} else {
-		endpoint = t.GetString("endpoint")
-		if len(endpoint) == 0 {
-			t.CustomAbort(http.StatusBadRequest, "id or endpoint is needed")
-		}
-
-		username = t.GetString("username")
-		password = t.GetString("password")
-	}
-
+func (t *TargetAPI) ping(endpoint, username, password string) {
 	verify, err := config.VerifyRemoteCert()
 	if err != nil {
 		log.Errorf("failed to check whether insecure or not: %v", err)
@@ -131,6 +90,48 @@ func (t *TargetAPI) Ping() {
 		log.Errorf("failed to ping registry %s: %v", registry.Endpoint.String(), err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+}
+
+// PingByID ping target by ID
+func (t *TargetAPI) PingByID() {
+	id := t.GetIDFromURL()
+
+	target, err := dao.GetRepTarget(id)
+	if err != nil {
+		log.Errorf("failed to get target %d: %v", id, err)
+		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	if target == nil {
+		t.CustomAbort(http.StatusNotFound, fmt.Sprintf("target %d not found", id))
+	}
+
+	endpoint := target.URL
+	username := target.Username
+	password := target.Password
+	if len(password) != 0 {
+		password, err = utils.ReversibleDecrypt(password, t.secretKey)
+		if err != nil {
+			log.Errorf("failed to decrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+	}
+	t.ping(endpoint, username, password)
+}
+
+// Ping validates whether the target is reachable and whether the credential is valid
+func (t *TargetAPI) Ping() {
+	req := struct {
+		Endpoint string `json:"endpoint"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}{}
+	t.DecodeJSONReq(&req)
+
+	if len(req.Endpoint) == 0 {
+		t.CustomAbort(http.StatusBadRequest, "endpoint is required")
+	}
+
+	t.ping(req.Endpoint, req.Username, req.Password)
 }
 
 // Get ...
@@ -217,13 +218,13 @@ func (t *TargetAPI) Post() {
 func (t *TargetAPI) Put() {
 	id := t.GetIDFromURL()
 
-	originalTarget, err := dao.GetRepTarget(id)
+	target, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if originalTarget == nil {
+	if target == nil {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
@@ -244,11 +245,41 @@ func (t *TargetAPI) Put() {
 	if hasEnabledPolicy {
 		t.CustomAbort(http.StatusBadRequest, "the target is associated with policy which is enabled")
 	}
+	if len(target.Password) != 0 {
+		target.Password, err = utils.ReversibleDecrypt(target.Password, t.secretKey)
+		if err != nil {
+			log.Errorf("failed to decrypt password: %v", err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+	}
 
-	target := &models.RepTarget{}
-	t.DecodeJSONReqAndValidate(target)
+	req := struct {
+		Name     *string `json:"name"`
+		Endpoint *string `json:"endpoint"`
+		Username *string `json:"username"`
+		Password *string `json:"password"`
+	}{}
+	t.DecodeJSONReq(&req)
 
-	if target.Name != originalTarget.Name {
+	originalName := target.Name
+	originalURL := target.URL
+
+	if req.Name != nil {
+		target.Name = *req.Name
+	}
+	if req.Endpoint != nil {
+		target.URL = *req.Endpoint
+	}
+	if req.Username != nil {
+		target.Username = *req.Username
+	}
+	if req.Password != nil {
+		target.Password = *req.Password
+	}
+
+	t.Validate(target)
+
+	if target.Name != originalName {
 		ta, err := dao.GetRepTargetByName(target.Name)
 		if err != nil {
 			log.Errorf("failed to get target %s: %v", target.Name, err)
@@ -260,7 +291,7 @@ func (t *TargetAPI) Put() {
 		}
 	}
 
-	if target.URL != originalTarget.URL {
+	if target.URL != originalURL {
 		ta, err := dao.GetRepTargetByEndpoint(target.URL)
 		if err != nil {
 			log.Errorf("failed to get target [ %s ]: %v", target.URL, err)
@@ -271,8 +302,6 @@ func (t *TargetAPI) Put() {
 			t.CustomAbort(http.StatusConflict, fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
 		}
 	}
-
-	target.ID = id
 
 	if len(target.Password) != 0 {
 		target.Password, err = utils.ReversibleEncrypt(target.Password, t.secretKey)
