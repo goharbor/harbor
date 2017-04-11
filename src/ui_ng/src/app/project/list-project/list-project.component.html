@@ -5,7 +5,7 @@
     <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
-        <clr-dg-action-overflow [hidden]="p.current_user_role_id !== 1">
+        <clr-dg-action-overflow [hidden]="!(p.current_user_role_id === 1 || isSystemAdmin)">
             <button class="action-item" (click)="newReplicationRule(p)" [hidden]="!isSystemAdmin">{{'PROJECT.REPLICATION_RULE' | translate}}</button>
             <button class="action-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </button>
             <button class="action-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</button>
