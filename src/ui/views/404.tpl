@@ -40,16 +40,6 @@ a.underline, .underline{
 	text-align: center;
 }
 
-.wrapper-back {
-    position: absolute;
-    top: 50%;
-    height: 240px;
-    margin-top: -120px;
-    text-align: center;
-    left: 50%;
-    margin-left: -300px;
-}
-
 .status-code {
     font-weight: bolder;
     font-size: 4em;
