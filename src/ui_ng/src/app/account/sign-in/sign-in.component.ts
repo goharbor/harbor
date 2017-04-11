@@ -82,7 +82,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     //App title
     public get appTitle(): string {
-        if(this.appConfig && this.appConfig.with_admiral){
+        if (this.appConfig && this.appConfig.with_admiral) {
             return "APP_TITLE.VIC";
         }
 
@@ -129,7 +129,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             if (this.rememberedName != this.signInCredential.principal) {
                 //Set expire time
                 let expires: number = expireDays * 3600 * 24 * 1000;
-                let date = new Date(Date.now() + expires); 
+                let date = new Date(Date.now() + expires);
                 let cookieptions = new CookieOptions({
                     expires: date
                 });
@@ -191,7 +191,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     //Trigger the signin action
     signIn(): void {
         //Should validate input firstly
-        if (!this.isValid || this.isOnGoing) {
+        if (!this.isValid) {
+            //Set error status
+            this.signInStatus = signInStatusError;
+            return;
+        }
+
+        if (this.isOnGoing) {
+            //Ongoing, directly return
             return;
         }
 
@@ -202,7 +209,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         this.session.signIn(this.signInCredential)
             .then(() => {
                 //Set status
-                this.signInStatus = signInStatusNormal;
+                //Keep it ongoing to keep the button 'disabled'
+                //this.signInStatus = signInStatusNormal;
 
                 //Remeber me
                 this.remeberMe();
