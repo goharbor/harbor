@@ -8,12 +8,12 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 		exit 1
 	fi
 	
-	mysqld --user=mysql --datadir=/var/lib/mysql
+	mysqld_install_db --user=mysql --datadir=/var/lib/mysql
 	
 	# These statements _must_ be on individual lines, and _must_ end with
 	# semicolons (no line breaks or comments are permitted).
 	# TODO proper SQL escaping on ALL the things D:
-    printf -v MYSQL_ROOT_PASSWORD "%q" ${MYSQL_ROOT_PASSWORD}
+    #printf -v MYSQL_ROOT_PASSWORD "%q" ${MYSQL_ROOT_PASSWORD}
 	TEMP_FILE='/tmp/mysql-first-time.sql'
 	cat > "$TEMP_FILE" <<-EOSQL
 		DELETE FROM mysql.user ;
@@ -40,5 +40,5 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	set -- "$@" --init-file="$TEMP_FILE"
 fi
 
-chown -R root:root /var/lib/mysql
+chown -R mysql:mysql /var/lib/mysql
 exec "$@"
