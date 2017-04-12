@@ -86,7 +86,8 @@
         "ROOT_CERT": "Download Root Cert"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "Search Harbor..."
+        "PLACEHOLDER": "Search Harbor...",
+        "PLACEHOLDER_VIC": "Search Registry..."
     },
     "SIDE_NAV": {
         "DASHBOARD": "Dashboard",

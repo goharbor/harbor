@@ -86,7 +86,8 @@
         "ROOT_CERT": "下载根证书"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "搜索 Harbor..."
+        "PLACEHOLDER": "搜索 Harbor...",
+        "PLACEHOLDER_VIC": "搜索 Registry..."
     },
     "SIDE_NAV": {
         "DASHBOARD": "仪表板",

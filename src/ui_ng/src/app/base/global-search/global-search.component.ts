@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { SearchTriggerService } from './search-trigger.service';
 
+import { AppConfigService } from '../../app-config.service';
+
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 
@@ -27,9 +29,13 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     private isResPanelOpened: boolean = false;
     private searchTerm: string = "";
 
+    //Placeholder text
+    placeholderText: string = "GLOBAL_SEARCH.PLACEHOLDER";
+
     constructor(
         private searchTrigger: SearchTriggerService,
-        private router: Router) { }
+        private router: Router,
+        private appConfigService: AppConfigService) { }
 
     //Implement ngOnIni
     ngOnInit(): void {
@@ -42,6 +48,10 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         this.closeSub = this.searchTrigger.searchClearChan$.subscribe(clear => {
             this.searchTerm = "";
         });
+
+        if(this.appConfigService.isIntegrationMode()){
+            this.placeholderText = "GLOBAL_SEARCH.PLACEHOLDER_VIC";
+        }
     }
 
     ngOnDestroy(): void {
