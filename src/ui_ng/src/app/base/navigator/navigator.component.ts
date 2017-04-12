@@ -7,7 +7,7 @@ import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService, CookieOptions } from 'angular2-cookie/core';
 
 import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
@@ -44,7 +44,8 @@ export class NavigatorComponent implements OnInit {
         this.translate.onLangChange.subscribe(langChange => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
-            this.cookie.put("harbor-lang", langChange.lang);
+            let opt = new CookieOptions({path: '/', expires: new Date(Date.now() + 3600*1000*24*31)});
+            this.cookie.put("harbor-lang", langChange.lang, opt);
         });
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
@@ -126,16 +127,14 @@ export class NavigatorComponent implements OnInit {
 
     //Switch languages
     switchLanguage(lang: string): void {
+        let selectedLang: string = enLang;//Default
         if (supportedLangs.find(supportedLang => supportedLang === lang.trim())) {
-            this.translate.use(lang);
+            selectedLang = lang;
         } else {
-            this.translate.use(enLang);//Use default
-            //TODO:
-            console.error('Language ' + lang.trim() + ' is not suppoted');
+            console.error('Language ' + lang.trim() + ' is not suppoted yet');
         }
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
+
+        this.translate.use(selectedLang).subscribe(() => window.location.reload());
     }
 
     //Handle the home action
