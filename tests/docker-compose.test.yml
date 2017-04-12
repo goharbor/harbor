@@ -12,7 +12,7 @@ services:
       - 5000:5000
     command:
       ["serve", "/etc/docker/registry/config.yml"]
-  mysql:		
+  mysql:
     image: vmware/harbor-db:0.5.0
     restart: always
     volumes:
