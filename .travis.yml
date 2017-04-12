@@ -74,12 +74,16 @@ before_script:
   - sudo chmod 777 /tmp/registry.db
 
 script:
+  - docker version
   - sudo mkdir -p /etc/ui/ca/
   - sudo mv ./tests/ca.crt /etc/ui/ca/
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
   - sudo ./tests/testprepare.sh 
+  - cat ./make/docker-compose.test.yml
+  - cat ./make/common/db/Dockerfile
+  - cat ./make/common/db/docker-entrypoint.sh
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
@@ -89,20 +93,23 @@ script:
   - ./tests/pushimage.sh
   - cd tests
   - sudo ./ldapprepare.sh 
+  - docker ps
+  - docker logs make_mysql_1
   - cd .. 
   - go test -i ./src/ui ./src/adminserver ./src/jobservice
-  - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
+  - netstat -tulpn
+  - ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
   - sudo rm -rf /data/config/*  
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true
-  
-  - docker ps
-  - ./tests/notarytest.sh
-  - ./tests/startuptest.sh
-  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
+#  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true
+#  
+#  - docker ps
+#  - ./tests/notarytest.sh
+#  - ./tests/startuptest.sh
+#  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests

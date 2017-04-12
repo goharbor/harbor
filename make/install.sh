@@ -33,13 +33,13 @@ h2() { printf "\n${underline}${bold}${white}%s${reset}\n" "$@"
 }
 debug() { printf "${white}%s${reset}\n" "$@"
 }
-info() { printf "${white}➜ %s${reset}\n" "$@"
+info() { printf "${white}%s${reset}\n" "$@"
 }
-success() { printf "${green}✔ %s${reset}\n" "$@"
+success() { printf "${green}%s${reset}\n" "$@"
 }
-error() { printf "${red}✖ %s${reset}\n" "$@"
+error() { printf "${red}%s${reset}\n" "$@"
 }
-warn() { printf "${tan}➜ %s${reset}\n" "$@"
+warn() { printf "${tan}%s${reset}\n" "$@"
 }
 bold() { printf "${bold}%s${reset}\n" "$@"
 }
