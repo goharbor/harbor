@@ -8,7 +8,7 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 		exit 1
 	fi
 	
-	mysql_install_db --user=mysql --datadir=/var/lib/mysql
+	mysqld --user=mysql --datadir=/var/lib/mysql
 	
 	# These statements _must_ be on individual lines, and _must_ end with
 	# semicolons (no line breaks or comments are permitted).
@@ -40,5 +40,5 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	set -- "$@" --init-file="$TEMP_FILE"
 fi
 
-chown -R mysql:mysql /var/lib/mysql
+chown -R root:root /var/lib/mysql
 exec "$@"
