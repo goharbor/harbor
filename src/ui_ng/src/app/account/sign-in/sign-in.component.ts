@@ -131,6 +131,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 let expires: number = expireDays * 3600 * 24 * 1000;
                 let date = new Date(Date.now() + expires);
                 let cookieptions = new CookieOptions({
+                    path: "/",
                     expires: date
                 });
                 this.cookie.put(remCookieKey, this.signInCredential.principal, cookieptions);
