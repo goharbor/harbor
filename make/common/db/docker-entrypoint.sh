@@ -8,7 +8,7 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 		exit 1
 	fi
 	
-	mysqld_install_db --user=mysql --datadir=/var/lib/mysql
+	mysql_install_db --user=mysql --datadir=/var/lib/mysql
 	
 	# These statements _must_ be on individual lines, and _must_ end with
 	# semicolons (no line breaks or comments are permitted).
