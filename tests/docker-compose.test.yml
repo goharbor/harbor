@@ -21,6 +21,7 @@ services:
       - ./common/config/db/env
     ports:
       - 3306:3306
+    privileged: true
   adminserver:
     build:
       context: ../
