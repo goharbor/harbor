@@ -101,6 +101,7 @@ script:
   
   - docker ps
   - ./tests/notarytest.sh
+  - ./tests/swaggerchecker.sh
   - ./tests/startuptest.sh
   - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 
