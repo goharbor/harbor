@@ -16,7 +16,7 @@ User guide
 # Test Steps:
 
 1. Login UI and create a project.  
-2. On Docker clinet, follow [Set up notary](../../../docs/use_notary.md)to set up notary and login Harbor.  
+2. On Docker clinet, follow [Set up notary](../../../../docs/use_notary.md) to set up notary and login Harbor.  
 3. Push an image to the project created in step1.  
 
 

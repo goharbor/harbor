@@ -18,7 +18,7 @@ NOTE:
 In below test, project X should be replaced by an existing project.
 
 1. Login UI.
-2. On Docker client, follow [Set up notary](../../../docs/use_notary.md) to set up notary and login Harobr.  
+2. On Docker client, follow [Set up notary](../../../../docs/use_notary.md) to set up notary and login Harobr.  
 3. Pull an image from project X.  
 
 # Expected Outcome:
