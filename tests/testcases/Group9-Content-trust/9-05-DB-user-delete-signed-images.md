@@ -16,12 +16,7 @@ User guide
 # Test Steps:
 
 1. Login UI and create a project.  
-2. On a Docker client,run   
-```sh 
-export DOCKER_CONTENT_TRUST=1   
-export DOCKER_CONTENT_TRUST_SERVER=https://<harbor_ip>:4443  
-```
-and login Harbor.  
+2. On a Docker client,follow [Set up notary](../../../docs/use_notary.md) to set up notary and login Harbor.  
 3. Push an image to project created in step1.  
 4. Delete the pushed image.  
 5. Delete notary tag according to message from UI in step4.  
