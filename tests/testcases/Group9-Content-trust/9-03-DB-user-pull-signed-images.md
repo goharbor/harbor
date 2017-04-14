@@ -3,21 +3,27 @@ Test 9-03 User pull signed images(DB mode)
 
 # Purpose:
 
-TBD
+To verify user can pull signed images.
 
 # References:
 User guide
 
 # Environment:
 
+* This test requires one Harbor instance is running and available.
+* A Linux machine with Docker CLI(Docker client) installed.
 
 # Test Steps:
+NOTE:  
+In below test, project X should be replaced by an existing project.
 
-TBD
+1. Login UI.
+2. On Docker client, set environment DOCKER_CONTENT_TRUST and DOCKER_CONTENT_TRUST_SERVER properly and login Harobr.  
+3. Pull an image from project X.  
 
 # Expected Outcome:
 
-TBD
+* Image can be pulled successful.
 
 # Possible Problems:
 None
