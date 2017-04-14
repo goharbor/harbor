@@ -1,0 +1,5 @@
+build:
+image: golang 
+commands:
+ - echo 'hello world'
+drone exec
