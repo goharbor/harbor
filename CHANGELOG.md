@@ -7,9 +7,9 @@
 - User can update configuration through Harbor UI
 - Redesign of Harbor's UI using Clarity
 - Some changes to API
-- Fix some security issue in token service
+- Fix some security issues in token service
 - Upgrade base image of nginx for latest openssl version
-
+- Various bug fixes.
 
 ## v0.5.0 (2016-12-6)
 
