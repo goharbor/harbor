@@ -20,28 +20,22 @@ The notary feature allows publishers to sign their images offline and to push th
 ### 2. Vulnerability Scanning
 The capability to scan images for vulnerability.
 
-### 3. Image replication between Harbor instances (Completed)
-Enable images to be replicated between two or more Harbor instances. This is useful to have multiple registry servers servicing a large cluster of nodes, or have distributed registry instances with identical images.
+### 3. Image replication enhancement 
+To provide more sophisticated rule for image replication. 
+- Image filtering by tags
+- Replication can be scheduled at a certain time using a rule like: one time only, daily, weekly, etc.
+- Image deletion can have the option not to be replicated to a remote instance.
+- Global replication rule: Instead of setting the rule of individual project, system admin can set a global rule for all projects.
+- Project admin can set replication policy of the project.
 
-### 4. Image deletion and garbage collection (Completed)
-a) Images can be deleted from UI. The files of deleted images are not removed immediately. 
-
-b) The files of deleted images are recycled by an administrator during system maintenance(Garbage collection). The registry service must be shut down during the process of garbage collection.
-
-
-### 5. Authentication (OAuth2) 
+### 4. Authentication (OAuth2) 
 In addition to LDAP/AD and local users, OAuth 2.0 can be used to authenticate a user.
 
-### 6. High Availability (in progress)
+### 5. High Availability 
 Support multi-node deployment of Harbor for high availability, scalability and load-balancing purposes.
 
-### 7. Statistics and description for repositories
+### 6. Statistics and description for repositories
 User can add a description to a repository. The access count of a repo can be aggregated and displayed.
 
-
-### 8. Audit all operations in the system
-Currently only image related operations are logged. Other operations in Harbor, such as user creation/deletion, role changes, password reset, should be tracked as well.
-
-
-### 9. Migration tool to move from an existing registry to Harbor 
+### 7. Migration tool to move from an existing registry to Harbor 
 A tool to migrate images from a vanilla registry server to Harbor, without the need to export/import a large amount of data.
