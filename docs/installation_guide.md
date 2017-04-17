@@ -12,7 +12,7 @@ This guide describes the steps to install and configure Harbor by using the onli
 
 If you run a previous version of Harbor, you may need to migrate the data to fit the new database schema. For more details, please refer to **[Data Migration Guide](migration_guide.md)**.
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to set up [Harbor on Kubernetes](kubernetes_deployment.md) for details.
+In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
@@ -46,15 +46,15 @@ Offline installer:
 Configuration parameters are located in the file **harbor.cfg**. 
 
 There are two categories of parameters in harbor.cfg, **required parameters** and **optional parameters**.  
-* **required parameters**: These parameters are required to be set in the configuration file, and they will take effect if user updates them in harbor.cfg, rerun the ```install.sh``` script to reinstall Harbor.
-* **optional parameters**: These parameters are optional, and only take effect in the initial installation, user can leave them empty and update them on UI after Harbor is started, subsequential update to these parameters in ```harbor.cfg``` will be ignored.
+* **required parameters**: These parameters are required to be set in the configuration file, and they will take effect if a user updates them in harbor.cfg, rerun the ```install.sh``` script to reinstall Harbor.
+* **optional parameters**: These parameters are optional, and only take effect in the initial installation.  The user can leave them blank and update them on Web UI after Harbor is started. Subsequent update to these parameters in ```harbor.cfg``` will be ignored.
 
 The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
 
 ##### Required parameters:
 
 * **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parm has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 * **db_password**: The root password for the MySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
@@ -80,7 +80,7 @@ The parameters are described below - note that at the very least, you will need 
 * **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
 * **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
 * **ldap_scope**: The scope to search for a user, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE. Default is 3. 
-* **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register themselves. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
+* **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 * **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.
 * **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** bypasses the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
@@ -227,16 +227,10 @@ proxy:
         tag: "proxy"
 ```
 
-2.Modify templates/registry/config.yml  
-Add the customized port, e.g. ":8888", after "$ui_url".  
+2.Modify harbor.cfg, add the port to the parameter "hostname"  
 
 ```  
-auth:
-  token:
-    issuer: registry-token-issuer
-    realm: $ui_url:8888/service/token
-    rootcertbundle: /etc/registry/root.crt
-    service: token-service
+hostname = 192.168.0.2:8888
 ```
 
 3.Run install.sh to update and start Harbor.  
@@ -270,22 +264,22 @@ proxy:
         tag: "proxy"
 ```
 
-3.Modify templates/registry/config.yml  
-Add the customized port, e.g. ":4443", after "$ui_url".  
+3.Modify harbor.cfg, add the port to the parameter "hostname"  
 
 ```  
-auth:
-  token:
-    issuer: registry-token-issuer
-    realm: $ui_url:4443/service/token
-    rootcertbundle: /etc/registry/root.crt
-    service: token-service
+hostname = 192.168.0.2:8888
 ```
 
 4.Run install.sh to update and start Harbor.  
 ```sh
 $ sudo docker-compose down -v
 $ sudo install.sh
+```
+
+**Note**:  When Harbor's installed in "Notary mode", the parameter "--with-notary" needs to be added to ```docker-compose``` and ```install.sh```, so the commands should be:
+```sh
+$ sudo docker-compose --with-notary down -v
+$ sudo install.sh --with-notary
 ```
 
 ## Troubleshooting
@@ -296,7 +290,7 @@ $ sudo install.sh
   -----------------------------------------------------------------------------------------------------
   harbor-db           docker-entrypoint.sh mysqld      Up      3306/tcp                                 
   harbor-jobservice   /harbor/harbor_jobservice        Up                                               
-  harbor-log          /bin/sh -c crond && rsyslo ...   Up      0.0.0.0:1514->514/tcp                    
+  harbor-log          /bin/sh -c crond && rsyslo ...   Up      127.0.0.1:1514->514/tcp                    
   harbor-ui           /harbor/harbor_ui                Up                                               
   nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
   registry            /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
@@ -313,4 +307,10 @@ And run the following commands to restart Harbor:
 $ sudo docker-compose down -v
 $ sudo ./prepare
 $ sudo docker-compose up -d
+```
+**Note**:  When Harbor is installed in "Notary mode", the parameter "--with-notary" has to be added to ```docker-compose``` and ```prepare```, so the commands should be:
+```sh
+$ sudo docker-compose --with-notary down -v
+$ sudo ./prepare --with-notary
+$ sudo docker-compose --with-notary up -d
 ```
