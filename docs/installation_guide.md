@@ -245,7 +245,7 @@ hostname = 192.168.0.2:8888
 ### For HTTPS protocol
 1.Enable HTTPS in Harbor by following this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md).  
 2.Modify docker-compose.yml  
-Replace the first "443" to a customized port, e.g. 4443:443.  
+Replace the first "443" to a customized port, e.g. 8888:443.  
 
 ```
 proxy:
@@ -255,7 +255,7 @@ proxy:
       - ./config/nginx:/etc/nginx
     ports:
       - 80:80
-      - 4443:443
+      - 8888:443
     depends_on:
       - mysql
       - registry
