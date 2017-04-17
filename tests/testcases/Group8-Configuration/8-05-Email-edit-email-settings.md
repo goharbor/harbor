@@ -18,10 +18,12 @@ User guide
 2. In configuration email page, change email settings.  
 3. Save settings and logout.  
 4. Login to check if email settings has been saved.  
+5. Click test mail server.  
 
 # Expected Outcome:
 
 * In step4, email settings can be saved.
+* In step5, if email settings are correct, test will successful.
 
 # Possible Problems:
 None
