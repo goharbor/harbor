@@ -37,7 +37,7 @@ Harbor supports two authentication modes:
 
 	Users are stored in the local database.  
 	
-	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md) for initial configuration, or disable this feature in [Administration Options](#administration). When self-registration is disabled, the system administrator can add users into Harbor.  
+	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
 	
 	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
@@ -109,7 +109,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ![browse project](img/new_search.png)
 
-## <span id="administration">Administrator options</span>  
+## Administrator options  
 ### Managing user  
 Administrator can add "Administrator" role to an ordinary user by click button on the left and select "set as Administrator". To delete a user, select "Delete". 
 
@@ -128,7 +128,7 @@ You can list, edit, enable and disable rules in the "Replication" tab. Make sure
 ### Managing authentication
 You can change authentication mode between DB(by default) and LDAP before any user is added,when there is at least one user(besides admin) in Harbor,you cannot change the authentication mode.  
 ![browse project](img/new_auth.png)
-When use ldap_auth,self-registration is disabled.  
+When use LDAP mode, self-registration is disabled.The parameters with stars are essential, for more info,refer to [User account](#user-account).   
 ![browse project](img/ldap_auth.png)
 
 ### Managing project creation
@@ -136,20 +136,16 @@ You can manage if a non-admin user can create a project.
 ![browse project](img/new_proj_create.png)
 
 ### Managing self registration
-You can manage if user can self registration.(DB mode only)  
+You can manage if an unregistered user can sign up for an account. This option is not availiable if you use LDAP authentication.  
 ![browse project](img/new_self_reg.png)
 
 ### Managing verify remote cert
-You  can choose to whether to verify remote endpoint's certification.  
+You  can choose to whether to verify remote endpoint's certification. You must disable certificate verification if the remote registry uses a self-signed or an untrusted certificate.  
 ![browse project](img/new_remote_cert.png)
 
 ### Managing email settings
-You can change Harbor's email settings.  
+You can change Harbor's email settings, the mail server is used to send responses to users who request to reset their password.  
 ![browse project](img/new_config_email.png)
-
-### Managing Token expiration time
-You can manage expiration time of token.  
-![browse project](img/new_config_token.png)
 
 ## Pulling and pushing images using Docker client  
 
@@ -244,5 +240,7 @@ export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
 ```
 If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. when an images is signed, it is shown in the Web UI.  
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust,HTTPS must be enabled in Harbor.**  
-When an image is signed, image will have a tick show in UI.
+  
+
+When an image is signed, image will have a tick show in UI, unsigned will have a cross show in UI.  
 ![browse project](img/content_trust.png)
