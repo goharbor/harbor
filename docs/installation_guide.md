@@ -54,7 +54,7 @@ The parameters are described below - note that at the very least, you will need 
 ##### Required parameters:
 
 * **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parm has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 * **db_password**: The root password for the MySQL database used for **db_auth**. _Change this password for any production use!_ 
 * **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
@@ -64,12 +64,12 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Optional parameters
 * **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.
-	* email_server = smtp.mydomain.com 
-	* email_server_port = 25
-	* email_username = sample_admin@mydomain.com
-	* email_password = abc
-	* email_from = admin <sample_admin@mydomain.com>  
-	* email_ssl = false
+  * email_server = smtp.mydomain.com 
+  * email_server_port = 25
+  * email_username = sample_admin@mydomain.com
+  * email_password = abc
+  * email_from = admin <sample_admin@mydomain.com>  
+  * email_ssl = false
 
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
@@ -166,13 +166,12 @@ Starting registry ... done
 Starting proxy ... done
 ```  
 
-To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
+To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run prepare script to populate the configuration, and then re-create and start Harbor's instance:
 ```
 $ sudo docker-compose down -v
-
 $ vim harbor.cfg
-
-$ sudo install.sh
+$ sudo prepare
+$ sudo docker-compose up -d
 ``` 
 
 Removing Harbor's containers while keeping the image data and Harbor's database files on the file system:
@@ -186,9 +185,18 @@ $ rm -r /data/database
 $ rm -r /data/registry
 ```
 
-**Note** When Harbor is installed with Notary, user needs to add extra template file to docker-compose command, so the docker-compose commands to manage the lifecycle of Harbor will be:
+#### _Managing lifecycle of Harbor when it's installed with Notary_ 
+
+When Harbor is installed with Notary, user needs to add extra template file ```docker-compose.notary.yml``` to docker-compose command, so the docker-compose commands to manage the lifecycle of Harbor will be:
 ```
-sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml [ up|down|stop|start ]
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml [ up|down|ps|stop|start ]
+```
+For example, if user want's to change ```harbor.cfg``` and re-deploy Harbor when it's installed with Notary, the following commands should be used:
+```sh
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml down -v
+$ vim harbor.cfg
+$ sudo prepare --with-notary
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml up -d
 ```
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
@@ -273,14 +281,10 @@ hostname = 192.168.0.2:8888
 4.Run install.sh to update and start Harbor.  
 ```sh
 $ sudo docker-compose down -v
-$ sudo install.sh
+$ sudo prepare
+$ sudo docker-compose up -d
 ```
 
-**Note**:  When Harbor's installed in "Notary mode", the parameter "--with-notary" needs to be added to ```docker-compose``` and ```install.sh```, so the commands should be:
-```sh
-$ sudo docker-compose --with-notary down -v
-$ sudo install.sh --with-notary
-```
 
 ## Troubleshooting
 1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
@@ -307,10 +311,4 @@ And run the following commands to restart Harbor:
 $ sudo docker-compose down -v
 $ sudo ./prepare
 $ sudo docker-compose up -d
-```
-**Note**:  When Harbor is installed in "Notary mode", the parameter "--with-notary" has to be added to ```docker-compose``` and ```prepare```, so the commands should be:
-```sh
-$ sudo docker-compose --with-notary down -v
-$ sudo ./prepare --with-notary
-$ sudo docker-compose --with-notary up -d
 ```
