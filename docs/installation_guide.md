@@ -241,11 +241,7 @@ proxy:
 hostname = 192.168.0.2:8888
 ```
 
-3.Run install.sh to update and start Harbor.  
-```sh
-$ sudo docker-compose down
-$ sudo install.sh
-```
+3.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle".
 ### For HTTPS protocol
 1.Enable HTTPS in Harbor by following this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md).  
 2.Modify docker-compose.yml  
@@ -278,12 +274,7 @@ proxy:
 hostname = 192.168.0.2:8888
 ```
 
-4.Run install.sh to update and start Harbor.  
-```sh
-$ sudo docker-compose down -v
-$ sudo prepare
-$ sudo docker-compose up -d
-```
+4.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle". 
 
 
 ## Troubleshooting
@@ -306,9 +297,4 @@ If a container is not in **UP** state, check the log file of that container in d
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
-And run the following commands to restart Harbor:
-```sh
-$ sudo docker-compose down -v
-$ sudo ./prepare
-$ sudo docker-compose up -d
-```
+and re-deploy Harbor refer to the previous section "Managing Harbor's lifecycle".
