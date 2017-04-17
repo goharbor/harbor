@@ -128,7 +128,7 @@ You can list, edit, enable and disable rules in the "Replication" tab. Make sure
 ### Managing authentication
 You can change authentication mode between DB(by default) and LDAP before any user is added,when there is at least one user(besides admin) in Harbor,you cannot change the authentication mode.  
 ![browse project](img/new_auth.png)
-When use LDAP mode, self-registration is disabled.The parameters with stars are essential, for more info,refer to [User account](#user-account).   
+When use LDAP mode, self-registration is disabled.The parameters with stars are essential, for more info, refer to [User account](#user-account).   
 ![browse project](img/ldap_auth.png)
 
 ### Managing project creation
