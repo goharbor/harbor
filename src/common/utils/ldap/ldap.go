@@ -31,7 +31,7 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-var attributes = []string{"uid", "cn", "mail", "email"}
+var attributes = []string{"uid", "cn", "mail", "email", "sAMAccountName"}
 
 // GetSystemLdapConf ...
 func GetSystemLdapConf() (models.LdapConf, error) {
@@ -215,6 +215,8 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 			case "mail":
 				u.Email = val
 			case "email":
+				u.Email = val
+			case "sAMAccountName":
 				u.Email = val
 			}
 		}
