@@ -5,14 +5,12 @@ clone:
   tags: true
 
 build:
-  vicui:
-    image: $${TEST_BUILD_IMAGE=gcr.io/eminent-nation-87317/vic-integration-test:1.26}
+  harbor:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.26}
     pull: true
     environment:
       BIN: bin
     commands:
-      - make mark
-      - make vic-ui-plugins
-      - make sincemark
+      - make install -e DEVFLAG=true
     when:
       success: true
