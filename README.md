@@ -16,7 +16,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
-* **Easy deployment**: Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.
+* **Easy deployment**: Provide both an online and offline installer. 
 
 ### Install & Run
 
