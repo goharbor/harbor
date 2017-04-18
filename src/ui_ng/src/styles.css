@@ -1,1 +1,9 @@
-/* You can add global styles to this file, and also import other style files */
+.app-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -54px;
+    margin-left: -54px;
+    width: 108px !important;
+    height: 108px !important;
+}

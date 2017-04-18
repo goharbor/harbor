@@ -1,3 +1,16 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -5,17 +18,17 @@ import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
 
 import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
-import { SearchResultComponent } from '../global-search/search-result.component';
 import { PasswordSettingComponent } from '../../account/password/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
-import { SearchStartComponent } from '../global-search/search-start.component';
 
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 
 import { Subscription } from 'rxjs/Subscription';
+
+import { CommonRoutes } from '../../shared/shared.const';
 
 @Component({
     selector: 'harbor-shell',
@@ -28,9 +41,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     @ViewChild(AccountSettingsModalComponent)
     private accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(SearchResultComponent)
-    private searchResultComponet: SearchResultComponent;
-
     @ViewChild(PasswordSettingComponent)
     private pwdSetting: PasswordSettingComponent;
 
@@ -39,9 +49,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     @ViewChild(AboutDialogComponent)
     private aboutDialog: AboutDialogComponent;
-
-    @ViewChild(SearchStartComponent)
-    private searchSatrt: SearchStartComponent;
 
     //To indicator whwther or not the search results page is displayed
     //We need to use this property to do some overriding work
@@ -52,20 +59,19 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService) { }
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
-            this.doSearch(searchEvt);
+            if(searchEvt && searchEvt.trim() != ""){
+                this.isSearchResultsOpened = true;
+            }
         });
 
         this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
-            if (close) {
-                this.searchClose();
-            }else{
-                this.watchClickEvt();//reuse
-            }
+           this.isSearchResultsOpened = false;
         });
     }
 
@@ -77,6 +83,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         if (this.searchCloseSub) {
             this.searchCloseSub.unsubscribe();
         }
+    }
+
+    public get shouldOverrideContent(): boolean {
+        return this.router.routerState.snapshot.url.toString().startsWith(CommonRoutes.EMBEDDED_SIGN_IN);
     }
 
     public get showSearch(): boolean {
@@ -108,38 +118,5 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             default:
                 break;
         }
-    }
-
-    //Handle the global search event and then let the result page to trigger api
-    doSearch(event: string): void {
-        if (event === "") {
-            if (!this.isSearchResultsOpened) {
-                //Will not open search result panel if term is empty
-                return;
-            } else {
-                //If opened, then close the search result panel
-                this.isSearchResultsOpened = false;
-                this.searchResultComponet.close();
-                return;
-            }
-        }
-        //Once this method is called
-        //the search results page must be opened
-        this.isSearchResultsOpened = true;
-
-        //Call the child component to do the real work
-        this.searchResultComponet.doSearch(event);
-    }
-
-    //Search results page closed
-    //remove the related ovevriding things
-    searchClose(): void {
-        this.isSearchResultsOpened = false;
-    }
-
-    //Close serch result panel if existing
-    watchClickEvt(): void {
-        this.searchResultComponet.close();
-        this.isSearchResultsOpened = false;
     }
 }

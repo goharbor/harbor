@@ -31,6 +31,7 @@ env:
 
 before_install:
    - sudo ./tests/hostcfg.sh
+   - sudo ./tests/generateCerts.sh
    - sudo ./make/prepare
 
 install: 
@@ -73,11 +74,13 @@ before_script:
   - sudo chmod 777 /tmp/registry.db
 
 script:
-  - sudo mkdir -p /harbor_storage/ca_download
-  - sudo mv ./tests/ca.crt /harbor_storage/ca_download
+  - sudo mkdir -p /etc/ui/ca/
+  - sudo mv ./tests/ca.crt /etc/ui/ca/
+  - sudo mkdir -p /harbor
+  - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
   - sudo ./tests/testprepare.sh 
-  - docker-compose -f ./make/docker-compose.test.yml up -d
+  - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
@@ -88,17 +91,19 @@ script:
   - sudo ./ldapprepare.sh 
   - cd .. 
   - go test -i ./src/ui ./src/adminserver ./src/jobservice
-  - ./tests/coverage4gotest.sh
+  - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo make/prepare
-  - sudo rm -rf /data/config/*
-  - docker-compose -f make/dev/docker-compose.yml up -d
+  - sudo rm -rf /data/config/*  
+  - ls /data/cert
+  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true
   
   - docker ps
-  - go run tests/startuptest.go http://localhost/
-  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+  - ./tests/notarytest.sh
+  - ./tests/swaggerchecker.sh
+  - ./tests/startuptest.sh
+  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests

@@ -1,21 +1,21 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -65,6 +65,22 @@ func (l *LdapAPI) Ping() {
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
+		v := map[string]interface{}{}
+		if err := json.Unmarshal(l.Ctx.Input.RequestBody,
+			&v); err != nil {
+			log.Errorf("failed to unmarshal LDAP server settings: %v", err)
+			l.RenderError(http.StatusInternalServerError, "")
+			return
+		}
+		if _, ok := v["ldap_search_password"]; !ok {
+			settings, err := ldapUtils.GetSystemLdapConf()
+			if err != nil {
+				log.Errorf("Can't load system configuration, error: %v", err)
+				l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+				return
+			}
+			ldapConfs.LdapSearchPassword = settings.LdapSearchPassword
+		}
 	}
 
 	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)

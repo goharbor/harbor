@@ -1,16 +1,18 @@
 FROM node:7.5.0
 
-RUN git clone https://github.com/vmware/clarity-seed.git /clarity-seed
+RUN mkdir -p /clarity-seed
 
-COPY index.html /clarity-seed
-COPY entrypoint.sh /clarity-seed
+COPY src/ui_ng/package.json /clarity-seed
+COPY src/ui_ng/tslint.json /clarity-seed
+COPY src/ui_ng/typings.json /clarity-seed
+COPY src/ui_ng/yarn.lock /clarity-seed
+COPY make/dev/nodeclarity/angular-cli.json /clarity-seed
+COPY make/dev/nodeclarity/entrypoint.sh /
 
 WORKDIR /clarity-seed
 
-RUN npm install -g @angular/cli && \
-    npm install && \
-    chmod u+x entrypoint.sh
+RUN npm install -g @angular/cli  && \
+	npm install && \
+    chmod u+x /entrypoint.sh
 
-VOLUME ["/clarity-seed/src/app", "/clarity-seed/dist"]
-
-ENTRYPOINT ["/clarity-seed/entrypoint.sh"]
+VOLUME ["/clarity-seed", "/clarity-seed/dist"]

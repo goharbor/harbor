@@ -6,7 +6,7 @@
 		"type": "remote",
 		"hostname": "notarysigner",
 		"port": "7899",
-		"tls_ca_file": "./root-ca.crt",
+		"tls_ca_file": "./notary-signer-ca.crt",
 		"key_algorithm": "ecdsa"
 	},
 	"logging": {

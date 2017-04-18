@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
@@ -269,75 +268,28 @@ func TestGetTopRepos(t *testing.T) {
 	err = DeleteProject(deletedPublicProject.ProjectID)
 	require.NoError(err)
 
-	var topRepos []models.TopRepo
+	var topRepos []*models.RepoRecord
 
 	// anonymous should retrieve public non-deleted repositories
 	topRepos, err = GetTopRepos(NonExistUserID, 100)
 	require.NoError(err)
 	require.Len(topRepos, 1)
-	require.Equal(topRepos, []models.TopRepo{
-		models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
-		},
-	})
+	require.Equal(topRepos[0].Name, repository.Name)
 
 	// admin should retrieve all repositories
 	topRepos, err = GetTopRepos(admin.UserID, 100)
 	require.NoError(err)
 	require.Len(topRepos, 4)
-	require.Equal(topRepos, []models.TopRepo{
-		models.TopRepo{
-			RepoName:    repository3.Name,
-			AccessCount: repository3.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository2.Name,
-			AccessCount: repository2.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository1.Name,
-			AccessCount: repository1.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
-		},
-	})
 
 	// user should retrieve visible repositories
 	topRepos, err = GetTopRepos(user.UserID, 100)
 	require.NoError(err)
 	require.Len(topRepos, 2)
-	require.Equal(topRepos, []models.TopRepo{
-		models.TopRepo{
-			RepoName:    repository3.Name,
-			AccessCount: repository3.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
-		},
-	})
 
 	// limit by count
 	topRepos, err = GetTopRepos(admin.UserID, 3)
 	require.NoError(err)
 	require.Len(topRepos, 3)
-	require.Equal(topRepos, []models.TopRepo{
-		models.TopRepo{
-			RepoName:    repository3.Name,
-			AccessCount: repository3.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository2.Name,
-			AccessCount: repository2.PullCount,
-		},
-		models.TopRepo{
-			RepoName:    repository1.Name,
-			AccessCount: repository1.PullCount,
-		},
-	})
 }
 
 func TestGetTotalOfRepositoriesByProject(t *testing.T) {

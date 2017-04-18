@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
@@ -58,7 +57,8 @@ func DeleteProjectMember(projectID int64, userID int) error {
 func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
 	o := GetOrmer()
 	u := []models.User{}
-	sql := `select u.user_id, u.username, r.name rolename, r.role_id as role
+	sql := `select u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
+			r.role_id as role
 		from user u 
 		join project_member pm 
 		on pm.project_id = ? and u.user_id = pm.user_id 
@@ -73,7 +73,7 @@ func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, er
 		sql += " and u.username like ? "
 		queryParam = append(queryParam, "%"+escape(queryUser.Username)+"%")
 	}
-	sql += ` order by u.user_id `
+	sql += ` order by u.username `
 	_, err := o.Raw(sql, queryParam).QueryRows(&u)
 	return u, err
 }

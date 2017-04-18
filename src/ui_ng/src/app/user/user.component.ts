@@ -1,16 +1,31 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
 
 import { UserService } from './user.service';
 import { User } from './user';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
-import { DeletionTargets, AlertType, httpStatusCode } from '../shared/shared.const'
-import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
-import { MessageService } from '../global-message/message.service';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const'
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+
+import { SessionService } from '../shared/session.service';
+import { AppConfigService } from '../app-config.service';
 
 @Component({
   selector: 'harbor-user',
@@ -28,23 +43,49 @@ export class UserComponent implements OnInit, OnDestroy {
   private adminColumn: string = "";
   private deletionSubscription: Subscription;
 
+  currentTerm: string;
+
   @ViewChild(NewUserModalComponent)
   private newUserDialog: NewUserModalComponent;
 
   constructor(
     private userService: UserService,
     private translate: TranslateService,
-    private deletionDialogService: DeletionDialogService,
-    private msgService: MessageService) {
-    this.deletionSubscription = deletionDialogService.deletionConfirm$.subscribe(confirmed => {
-      if (confirmed && confirmed.targetId === DeletionTargets.USER) {
+    private deletionDialogService: ConfirmationDialogService,
+    private msgHandler: MessageHandlerService,
+    private session: SessionService,
+    private appConfigService: AppConfigService) {
+    this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
+      if (confirmed &&
+        confirmed.source === ConfirmationTargets.USER &&
+        confirmed.state === ConfirmationState.CONFIRMED) {
         this.delUser(confirmed.data);
       }
     });
   }
 
+  private isMySelf(uid: number): boolean {
+    let currentUser = this.session.getCurrentUser();
+    if (currentUser) {
+      if (currentUser.user_id === uid) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
+  }
+
+  public get canCreateUser(): boolean {
+    let appConfig = this.appConfigService.getConfig();
+    if (appConfig) {
+      return appConfig.auth_mode != 'ldap_auth';
+    } else {
+      return true;
+    }
   }
 
   isSystemAdmin(u: User): string {
@@ -74,13 +115,14 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if(this.deletionSubscription){
+    if (this.deletionSubscription) {
       this.deletionSubscription.unsubscribe();
     }
   }
 
   //Filter items by keywords
   doFilter(terms: string): void {
+    this.currentTerm = terms;
     this.originalUsers.then(users => {
       if (terms.trim() === "") {
         this.users = users;
@@ -99,10 +141,13 @@ export class UserComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isMySelf(user.user_id)) {
+      return;
+    }
+
     //Value copy
-    let updatedUser: User = {
-      user_id: user.user_id
-    };
+    let updatedUser: User = new User();
+    updatedUser.user_id = user.user_id;
 
     if (user.has_admin_role === 0) {
       updatedUser.has_admin_role = 1;//Set as admin
@@ -116,9 +161,7 @@ export class UserComponent implements OnInit, OnDestroy {
         user.has_admin_role = updatedUser.has_admin_role;
       })
       .catch(error => {
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       })
   }
 
@@ -128,13 +171,17 @@ export class UserComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isMySelf(user.user_id)) {
+      return; //Double confirm
+    }
+
     //Confirm deletion
-    let msg: DeletionMessage = new DeletionMessage(
+    let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
       user.username,
       user,
-      DeletionTargets.USER
+      ConfirmationTargets.USER
     );
     this.deletionDialogService.openComfirmDialog(msg);
   }
@@ -144,21 +191,21 @@ export class UserComponent implements OnInit, OnDestroy {
       .then(() => {
         //Remove it from current user list
         //and then view refreshed
+        this.currentTerm = '';
         this.originalUsers.then(users => {
           this.users = users.filter(u => u.user_id != user.user_id);
-          this.msgService.announceMessage(500, "USER.DELETE_SUCCESS", AlertType.SUCCESS);
+          this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
         });
       })
       .catch(error => {
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       });
   }
 
   //Refresh the user list
   refreshUser(): void {
     //Start to get
+    this.currentTerm = '';
     this.onGoing = true;
 
     this.originalUsers = this.userService.getUsers()
@@ -170,14 +217,15 @@ export class UserComponent implements OnInit, OnDestroy {
       })
       .catch(error => {
         this.onGoing = false;
-        if (!accessErrorHandler(error, this.msgService)) {
-          this.msgService.announceMessage(500, errorHandler(error), AlertType.DANGER);
-        }
+        this.msgHandler.handleError(error);
       });
   }
 
   //Add new user
   addNewUser(): void {
+    if (!this.canCreateUser) {
+      return;// No response to this hacking action
+    }
     this.newUserDialog.open();
   }
 

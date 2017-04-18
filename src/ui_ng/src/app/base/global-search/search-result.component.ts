@@ -1,12 +1,25 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
-import { errorHandler, accessErrorHandler } from '../../shared/shared.utils';
-import { AlertType } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
-
 import { SearchTriggerService } from './search-trigger.service';
+
+import { Subscription } from 'rxjs/Subscription';
+
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: "search-result",
@@ -16,7 +29,7 @@ import { SearchTriggerService } from './search-trigger.service';
     providers: [GlobalSearchService]
 })
 
-export class SearchResultComponent {
+export class SearchResultComponent implements OnInit, OnDestroy {
     private searchResults: SearchResults = new SearchResults();
     private originalCopy: SearchResults;
 
@@ -30,13 +43,32 @@ export class SearchResultComponent {
     //Whether or not mouse point is onto the close indicator
     private mouseOn: boolean = false;
 
+    //Watch message channel
+    private searchSub: Subscription;
+    private closeSearchSub: Subscription;
+
     constructor(
         private search: GlobalSearchService,
-        private msgService: MessageService,
+        private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService) { }
 
-    private doFilterProjects(event: string) {
-        this.searchResults.project = this.originalCopy.project.filter(pro => pro.name.indexOf(event) != -1);
+    ngOnInit() {
+        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(term => {
+            this.doSearch(term);
+        });
+        this.closeSearchSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
+            this.close();
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
+
+        if (this.closeSearchSub) {
+            this.closeSearchSub.unsubscribe();
+        }
     }
 
     private clone(src: SearchResults): SearchResults {
@@ -64,27 +96,23 @@ export class SearchResultComponent {
         return this.mouseOn;
     }
 
-    //Handle mouse event of close indicator
-    mouseAction(over: boolean): void {
-        this.mouseOn = over;
-    }
-
     //Show the results
     show(): void {
         this.stateIndicator = true;
-        this.searchTrigger.searchInputStat(true);
     }
 
     //Close the result page
     close(): void {
-        //Tell shell close
-        this.searchTrigger.closeSearch(true);
-        this.searchTrigger.searchInputStat(false);
         this.stateIndicator = false;
+        this.searchTrigger.clear(true);
     }
 
     //Call search service to complete the search request
     doSearch(term: string): void {
+        //Only search none empty term
+        if (!term || term.trim() === "") {
+            return;
+        }
         //Do nothing if search is ongoing
         if (this.onGoing) {
             return;
@@ -113,9 +141,7 @@ export class SearchResultComponent {
             })
             .catch(error => {
                 this.onGoing = false;
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 }

@@ -1,0 +1,13 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false" [clrModalStaticBackdrop]="true">
+    <h3 class="modal-title" class="confirmation-title" style="margin-top: 0px;">{{dialogTitle}}</h3>
+    <div class="modal-body">
+        <div class="confirmation-icon-inline">
+            <clr-icon shape="warning" class="is-warning" size="64"></clr-icon>
+        </div>
+        <div class="confirmation-content">{{dialogContent}}</div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" *ngIf="!confirmOnly" (click)="cancel()">{{'BUTTON.NO' | translate}}</button>
+        <button type="button" class="btn btn-primary" (click)="confirm()">{{ buttonKey | translate}}</button>
+    </div>
+</clr-modal>

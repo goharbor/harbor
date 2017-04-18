@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -56,6 +55,16 @@ type repoResp struct {
 	TagsCount    int64     `json:"tags_count"`
 	CreationTime time.Time `json:"creation_time"`
 	UpdateTime   time.Time `json:"update_time"`
+}
+
+type detailedTagResp struct {
+	Tag      string      `json:"tag"`
+	Manifest interface{} `json:"manifest"`
+}
+
+type manifestResp struct {
+	Manifest interface{} `json:"manifest"`
+	Config   interface{} `json:"config,omitempty" `
 }
 
 // Get ...
@@ -129,6 +138,10 @@ func getRepositories(projectID int64, keyword string,
 		return result, nil
 	}
 
+	return populateTagsCount(repositories)
+}
+
+func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
 	result := []*repoResp{}
 	for _, repository := range repositories {
 		repo := &repoResp{
@@ -150,16 +163,13 @@ func getRepositories(projectID int64, keyword string,
 		repo.TagsCount = int64(len(tags))
 		result = append(result, repo)
 	}
-
 	return result, nil
 }
 
 // Delete ...
 func (ra *RepositoryAPI) Delete() {
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
+	// using :splat to get * part in path
+	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
@@ -184,7 +194,7 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	tags := []string{}
-	tag := ra.GetString("tag")
+	tag := ra.GetString(":tag")
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
@@ -211,6 +221,36 @@ func (ra *RepositoryAPI) Delete() {
 		user, err = ra.getUsername()
 		if err != nil {
 			log.Errorf("failed to get user: %v", err)
+		}
+	}
+
+	if config.WithNotary() {
+		var digest string
+		signedTags := make(map[string]struct{})
+		targets, err := getNotaryTargets(user, repoName)
+		if err != nil {
+			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
+			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
+		}
+		for _, tgt := range targets {
+			digest, err = notary.DigestFromTarget(tgt)
+			if err != nil {
+				log.Errorf("Failed to get disgest from target, error: %v", err)
+				ra.CustomAbort(http.StatusInternalServerError, err.Error())
+			}
+			signedTags[digest] = struct{}{}
+		}
+		for _, t := range tags {
+			digest, _, err := rc.ManifestExist(t)
+			if err != nil {
+				log.Errorf("Failed to Check the digest of tag: %s, error: %v", t, err.Error())
+				ra.CustomAbort(http.StatusInternalServerError, err.Error())
+			}
+			log.Debugf("Tag: %s, digest: %s", t, digest)
+			if _, ok = signedTags[digest]; ok {
+				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
+				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
+			}
 		}
 	}
 
@@ -253,12 +293,10 @@ type tag struct {
 	Tags []string `json:"tags"`
 }
 
-// GetTags handles GET /api/repositories/tags
+// GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
+	repoName := ra.GetString(":splat")
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
 
 	projectName, _ := utils.ParseRepository(repoName)
 	project, err := dao.GetProjectByName(projectName)
@@ -294,8 +332,34 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 	}
 
-	ra.Data["json"] = tags
+	if !detail {
+		ra.Data["json"] = tags
+		ra.ServeJSON()
+		return
+	}
+
+	result := []detailedTagResp{}
+
+	for _, tag := range tags {
+		manifest, err := getManifest(client, tag, "v1")
+		if err != nil {
+			if regErr, ok := err.(*registry_error.Error); ok {
+				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+			}
+
+			log.Errorf("failed to get manifest of %s:%s: %v", repoName, tag, err)
+			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		}
+
+		result = append(result, detailedTagResp{
+			Tag:      tag,
+			Manifest: manifest.Manifest,
+		})
+	}
+
+	ra.Data["json"] = result
 	ra.ServeJSON()
+
 }
 
 func listTag(client *registry.Repository) ([]string, error) {
@@ -312,6 +376,8 @@ func listTag(client *registry.Repository) ([]string, error) {
 			regErr.StatusCode == http.StatusNotFound {
 			return tags, nil
 		}
+
+		return nil, err
 	}
 
 	tags = append(tags, ts...)
@@ -320,14 +386,10 @@ func listTag(client *registry.Repository) ([]string, error) {
 	return tags, nil
 }
 
-// GetManifests handles GET /api/repositories/manifests
+// GetManifests returns the manifest of a tag
 func (ra *RepositoryAPI) GetManifests() {
-	repoName := ra.GetString("repo_name")
-	tag := ra.GetString("tag")
-
-	if len(repoName) == 0 || len(tag) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name or tag is nil")
-	}
+	repoName := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
 
 	version := ra.GetString("version")
 	if len(version) == 0 {
@@ -362,20 +424,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	result := struct {
-		Manifest interface{} `json:"manifest"`
-		Config   interface{} `json:"config,omitempty" `
-	}{}
-
-	mediaTypes := []string{}
-	switch version {
-	case "v1":
-		mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
-	case "v2":
-		mediaTypes = append(mediaTypes, schema2.MediaTypeManifest)
-	}
-
-	_, mediaType, payload, err := rc.PullManifest(tag, mediaTypes)
+	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
 		if regErr, ok := err.(*registry_error.Error); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
@@ -385,33 +434,50 @@ func (ra *RepositoryAPI) GetManifests() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
+	ra.Data["json"] = manifest
+	ra.ServeJSON()
+}
+
+func getManifest(client *registry.Repository,
+	tag, version string) (*manifestResp, error) {
+	result := &manifestResp{}
+
+	mediaTypes := []string{}
+	switch version {
+	case "v1":
+		mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
+	case "v2":
+		mediaTypes = append(mediaTypes, schema2.MediaTypeManifest)
+	}
+
+	_, mediaType, payload, err := client.PullManifest(tag, mediaTypes)
+	if err != nil {
+		return nil, err
+	}
+
 	manifest, _, err := registry.UnMarshal(mediaType, payload)
 	if err != nil {
-		log.Errorf("an error occurred while parsing manifest of %s:%s: %v", repoName, tag, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		return nil, err
 	}
 
 	result.Manifest = manifest
 
 	deserializedmanifest, ok := manifest.(*schema2.DeserializedManifest)
 	if ok {
-		_, data, err := rc.PullBlob(deserializedmanifest.Target().Digest.String())
+		_, data, err := client.PullBlob(deserializedmanifest.Target().Digest.String())
 		if err != nil {
-			log.Errorf("failed to get config of manifest %s:%s: %v", repoName, tag, err)
-			ra.CustomAbort(http.StatusInternalServerError, "")
+			return nil, err
 		}
 
 		b, err := ioutil.ReadAll(data)
 		if err != nil {
-			log.Errorf("failed to read config of manifest %s:%s: %v", repoName, tag, err)
-			ra.CustomAbort(http.StatusInternalServerError, "")
+			return nil, err
 		}
 
 		result.Config = string(b)
 	}
 
-	ra.Data["json"] = result
-	ra.ServeJSON()
+	return result, nil
 }
 
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
@@ -471,7 +537,7 @@ func (ra *RepositoryAPI) getUsername() (string, error) {
 	return "", nil
 }
 
-//GetTopRepos handles request GET /api/repositories/top
+//GetTopRepos returns the most populor repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
@@ -488,36 +554,61 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
-	ra.Data["json"] = repos
+
+	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
+	if !detail {
+		result := []*models.TopRepo{}
+
+		for _, repo := range repos {
+			result = append(result, &models.TopRepo{
+				RepoName:    repo.Name,
+				AccessCount: repo.PullCount,
+			})
+		}
+
+		ra.Data["json"] = result
+		ra.ServeJSON()
+		return
+	}
+
+	result, err := populateTagsCount(repos)
+	if err != nil {
+		log.Errorf("failed to popultate tags count to repositories: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
+	}
+
+	ra.Data["json"] = result
 	ra.ServeJSON()
 }
 
-//GetSignatures handles request GET /api/repositories/signatures
+//GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
 	//use this func to init session.
 	ra.GetUserIDForRequest()
-	repoName := ra.GetString("repo_name")
-	if len(repoName) == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
-	}
-	ext, err := config.ExtEndpoint()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
-	}
-	endpoint := strings.Split(ext, "//")[1]
-	fqRepo := path.Join(endpoint, repoName)
 	username, err := ra.getUsername()
 	if err != nil {
 		log.Warningf("Error when getting username: %v", err)
 	}
-	targets, err := notary.GetTargets(username, fqRepo)
+	repoName := ra.GetString(":splat")
+
+	targets, err := getNotaryTargets(username, repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
+}
+
+func getNotaryTargets(username string, repo string) ([]notary.Target, error) {
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		return nil, err
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repo)
+	return notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
 }
 
 func newRepositoryClient(endpoint string, insecure bool, username, password, repository, scopeType, scopeName string,

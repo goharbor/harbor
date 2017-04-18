@@ -1,3 +1,16 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package ldap
 
 import (
@@ -6,7 +19,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -15,24 +28,24 @@ import (
 )
 
 var adminServerLdapTestConfig = map[string]interface{}{
-	config.ExtEndpoint:   "host01.com",
-	config.AUTHMode:      "ldap_auth",
-	config.DatabaseType:  "mysql",
-	config.MySQLHost:     "127.0.0.1",
-	config.MySQLPort:     3306,
-	config.MySQLUsername: "root",
-	config.MySQLPassword: "root123",
-	config.MySQLDatabase: "registry",
-	config.SQLiteFile:    "/tmp/registry.db",
+	common.ExtEndpoint:   "host01.com",
+	common.AUTHMode:      "ldap_auth",
+	common.DatabaseType:  "mysql",
+	common.MySQLHost:     "127.0.0.1",
+	common.MySQLPort:     3306,
+	common.MySQLUsername: "root",
+	common.MySQLPassword: "root123",
+	common.MySQLDatabase: "registry",
+	common.SQLiteFile:    "/tmp/registry.db",
 	//config.SelfRegistration: true,
-	config.LDAPURL:       "ldap://127.0.0.1",
-	config.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
-	config.LDAPSearchPwd: "admin",
-	config.LDAPBaseDN:    "dc=example,dc=com",
-	config.LDAPUID:       "uid",
-	config.LDAPFilter:    "",
-	config.LDAPScope:     3,
-	config.LDAPTimeout:   30,
+	common.LDAPURL:       "ldap://127.0.0.1",
+	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd: "admin",
+	common.LDAPBaseDN:    "dc=example,dc=com",
+	common.LDAPUID:       "uid",
+	common.LDAPFilter:    "",
+	common.LDAPScope:     3,
+	common.LDAPTimeout:   30,
 	//	config.TokenServiceURL:            "",
 	//	config.RegistryURL:                "",
 	//	config.EmailHost:                  "",
@@ -46,10 +59,9 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	//	config.VerifyRemoteCert:           false,
 	//	config.MaxJobWorkers:              3,
 	//	config.TokenExpiration:            30,
-	config.CfgExpiration: 5,
+	common.CfgExpiration: 5,
 	//	config.JobLogDir:                  "/var/log/jobs",
-	//	config.UseCompressedJS:            true,
-	config.AdminInitialPassword: "password",
+	common.AdminInitialPassword: "password",
 }
 
 func TestMain(t *testing.T) {

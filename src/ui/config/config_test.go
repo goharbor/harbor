@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package config
 
 import (
@@ -119,5 +118,38 @@ func TestConfig(t *testing.T) {
 
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
+	}
+	if InternalNotaryEndpoint() != "http://notary-server:4443" {
+		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
+	}
+	if WithNotary() {
+		t.Errorf("Withnotary should be false")
+	}
+	if !WithAdmiral() {
+		t.Errorf("WithAdmiral should be true")
+	}
+	if AdmiralEndpoint() != "http://www.vmware.com" {
+		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
+	}
+
+	extURL, err := ExtURL()
+	if err != nil {
+		t.Errorf("Unexpected error getting external URL: %v", err)
+	}
+	if extURL != "host01.com" {
+		t.Errorf(`extURL should be "host01.com".`)
+	}
+
+	// reset configurations
+	if err = Reset(); err != nil {
+		t.Errorf("failed to reset configurations: %v", err)
+		return
+	}
+	mode, err = AuthMode()
+	if err != nil {
+		t.Fatalf("failed to get auth mode: %v", err)
+	}
+	if mode != "db_auth" {
+		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
 }

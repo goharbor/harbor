@@ -1,3 +1,16 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
@@ -6,13 +19,14 @@ import { SessionUser } from '../shared/session-user';
 
 import { AuditLogService } from './audit-log.service';
 import { SessionService } from '../shared/session.service';
-import { MessageService } from '../global-message/message.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { AlertType } from '../shared/shared.const';
 
-export const optionalSearch: {} = {0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE'};
+import { State } from 'clarity-angular';
 
+const optionalSearch: {} = {0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE'};
 
-export class FilterOption {
+class FilterOption {
   key: string;
   description: string;
   checked: boolean;
@@ -31,7 +45,7 @@ export class FilterOption {
 @Component({
   selector: 'audit-log',
   templateUrl: './audit-log.component.html',
-  styleUrls: [ 'audit-log.css' ]
+  styleUrls: [ './audit-log.component.css' ]
 })
 export class AuditLogComponent implements OnInit {
 
@@ -51,7 +65,12 @@ export class AuditLogComponent implements OnInit {
     new FilterOption('others', 'AUDIT_LOG.OTHERS', true) 
  ];
 
-  constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageService: MessageService) {
+  pageOffset: number = 1;
+  pageSize: number = 15;
+  totalRecordCount: number;
+  totalPage: number;
+  
+  constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageHandlerService: MessageHandlerService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['auditLogResolver']);    
   }
@@ -60,24 +79,32 @@ export class AuditLogComponent implements OnInit {
     this.projectId = +this.route.snapshot.parent.params['id'];
     console.log('Get projectId from route params snapshot:' + this.projectId);
     this.queryParam.project_id = this.projectId;
-    this.retrieve(this.queryParam);
+    this.queryParam.page_size = this.pageSize;
   }
 
-  retrieve(queryParam: AuditLog): void {
+  retrieve(state?: State): void {
+    if(state) {
+      this.queryParam.page = state.page.to + 1;
+    }
     this.auditLogService
-        .listAuditLogs(queryParam)
+        .listAuditLogs(this.queryParam)
         .subscribe(
-          response=>this.auditLogs = response,
+          response=>{
+            this.totalRecordCount = response.headers.get('x-total-count');
+            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
+            this.auditLogs = response.json();
+          },
           error=>{
             this.router.navigate(['/harbor', 'projects']);
-            this.messageService.announceMessage(error.status, 'Failed to list audit logs with project ID:' + queryParam.project_id, AlertType.DANGER);
+            this.messageHandlerService.handleError(error);
           }
         );
   }
 
   doSearchAuditLogs(searchUsername: string): void {
     this.queryParam.username = searchUsername;
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 
   doSearchByTimeRange(strDate: string, target: string): void {
@@ -91,7 +118,7 @@ export class AuditLogComponent implements OnInit {
       break;
     }
     console.log('Search audit log filtered by time range, begin: ' + this.queryParam.begin_timestamp + ', end:' + this.queryParam.end_timestamp);
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 
   doSearchByOptions() {
@@ -109,7 +136,7 @@ export class AuditLogComponent implements OnInit {
       operationFilter = [];
     }
     this.queryParam.keywords = operationFilter.join('/');
-    this.retrieve(this.queryParam);
+    this.retrieve();
     console.log('Search option filter:' + operationFilter.join('/'));
   }
 
@@ -137,6 +164,6 @@ export class AuditLogComponent implements OnInit {
     this.doSearchByOptions();
   }
   refresh(): void {
-    this.retrieve(this.queryParam);
+    this.retrieve();
   }
 }

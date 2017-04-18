@@ -78,10 +78,17 @@ COMPILETAG=compile_normal
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
-NORTARYFLAG=false
+NOTARYFLAG=false
+REGISTRYVERSION=photon-2.6.0
+NGINXVERSION=1.11.5-patched
+PHOTONVERSION=1.0
+NOTARYVERSION=server-0.5.0
+NOTARYSIGNERVERSION=signer-0.5.0
+MARIADBVERSION=mariadb-10.1.10
+HTTPPROXY=
 
 #clarity parameters
-CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
+CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
 CLARITYSEEDPATH=/clarity-seed
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
@@ -157,14 +164,15 @@ DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 
 # version prepare
-VERSIONFILEPATH=$(SRCPATH)/ui/views/sections
-VERSIONFILENAME=header-content.htm
+VERSIONFILEPATH=$(CURDIR)
+VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
+GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
 ifeq ($(DEVFLAG), true)        
 	VERSIONTAG=dev
 else        
-	VERSIONTAG=$(shell $(GITTAG))
+	VERSIONTAG=$(GITTAGVERSION)
 endif
 
 SEDCMD=$(shell which sed)
@@ -182,9 +190,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 version:
-	@if [ "$(DEVFLAG)" = "false" ] ; then \
-		$(SEDCMD) -i 's/version=\"{{.Version}}\"/version=\"$(VERSIONTAG)\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME) ; \
-	fi
+	@printf $(GITTAGVERSION) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -206,10 +212,14 @@ compile_jobservice:
 	
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
-	@$(DOCKERCMD) run --rm -v $(UIPATH)/static/new-ui:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src -v $(UINGPATH)/src/app:$(CLARITYSEEDPATH)/src/app $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT)
+	@if [ "$(HTTPPROXY)" != "" ] ; then \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+	else \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+	fi
 	@echo "Done."
 	
-compile_normal: compile_clarity, compile_adminserver compile_ui compile_jobservice
+compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
 
 compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
@@ -251,9 +261,17 @@ build: build_$(BASEIMAGE)
 modify_composefile: 
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/image\: vmware.*/&:$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+
+modify_sourcefiles:
+	@echo "change mode of source files."
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.crt
+	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer-ca.crt
+	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
+	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
 	
-install: compile build prepare modify_composefile start
+install: compile build modify_sourcefiles prepare modify_composefile start
 	
 package_online: modify_composefile
 	@echo "packing online package ..."
@@ -264,19 +282,25 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@$(TARCMD) -zcvf harbor-online-installer-$(VERSIONTAG).tgz \
-	          --exclude=$(HARBORPKG)/common/db --exclude=$(HARBORPKG)/common/config\
-			  --exclude=$(HARBORPKG)/photon --exclude=$(HARBORPKG)/kubernetes \
-			  --exclude=$(HARBORPKG)/dev --exclude=$(DOCKERCOMPOSETPLFILENAME) \
-			  --exclude=$(HARBORPKG)/checkenv.sh \
-			  --exclude=$(HARBORPKG)/jsminify.sh \
-			  --exclude=$(HARBORPKG)/pushimage.sh \
-			  $(HARBORPKG)
-			
+
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME); \
+	else \
+		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/harbor.cfg ; \
+	fi
+						
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-	
-package_offline: compile build modify_composefile
+		
+package_offline: compile build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	
@@ -284,35 +308,50 @@ package_offline: compile build modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 			
 	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) registry:2.5.1
-	@$(DOCKERPULL) nginx:1.11.5
+	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
+	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		echo "pulling notary and mariadb..."; \
-		$(DOCKERPULL) jiangd/notary:server-0.5.0-fix; \
-		$(DOCKERPULL) notary:signer-0.5.0; \
-		$(DOCKERPULL) mariadb:10.1.10; \
+		echo "pulling notary and harbor-notary-db..."; \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
+		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
+		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
 	fi	
 	
 	@echo "saving harbor docker image"
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
-		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERSAVE) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 \
-		jiangd/notary:server-0.5.0-fix notary:signer-0.5.0 mariadb:10.1.10; \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) photon:$(PHOTONVERSION) \
+		vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
+		vmware/harbor-notary-db:$(MARIADBVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	else \
-		$(DOCKERSAVE) -o $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tgz \
-		$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERSAVE) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		nginx:1.11.5 registry:2.5.1 photon:1.0 ; \
+		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		photon:$(PHOTONVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	fi
 	
+	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
+		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
+				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
+	else \
+		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
+		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
+				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
+	fi
+
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
@@ -353,11 +392,16 @@ start:
 	@echo "Start complete. You can visit harbor now."
 	
 down:
+	@echo "Please make sure to set -e NOTARYFLAG=true if you are using Notary in Harbor, otherwise the Notary containers cannot be stop automaticlly."
+	@while [ -z "$$CONTINUE" ]; do \
+        read -r -p "Type anything but Y or y to exit. [Y/N]: " CONTINUE; \
+    done ; \
+    [ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "stoping harbor instance..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down -v ; \
 	else \
-		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down ; \
+		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v ; \
 	fi	
 	@echo "Done."
 
@@ -374,7 +418,7 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-#	- $(DOCKERRMIMAGE) -f registry:2.5.1
+#	- $(DOCKERRMIMAGE) -f registry:$(REGISTRYVERSION)
 #	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
@@ -383,15 +427,15 @@ cleandockercomposefile:
 
 cleanversiontag:
 	@echo "cleaning version TAG"
-	@$(SEDCMD) -i 's/version=\"$(VERSIONTAG)\"/version=\"{{.Version}}\"/' -i $(VERSIONFILEPATH)/$(VERSIONFILENAME)
+	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)	
 	
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
-	@if [ -f $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
-	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi	
+	@if [ -f $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ; fi	
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage

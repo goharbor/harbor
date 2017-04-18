@@ -1,21 +1,42 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
 import { ConfigurationService } from './config.service';
 import { Configuration } from './config';
-import { MessageService } from '../global-message/message.service';
-import { AlertType, DeletionTargets } from '../shared/shared.const';
-import { errorHandler, accessErrorHandler } from '../shared/shared.utils';
+import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';;
 import { StringValueItem } from './config';
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message'
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message'
 
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 
-const fakePass = "fakepassword";
+import { AppConfigService } from '../app-config.service';
+import { SessionService } from '../shared/session.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+
+const fakePass = "aWpLOSYkIzJTTU4wMDkx";
+const TabLinkContentMap = {
+    "config-auth": "authentication",
+    "config-replication": "replication",
+    "config-email": "email",
+    "config-system": "system_settings"
+};
 
 @Component({
     selector: 'config',
@@ -25,9 +46,11 @@ const fakePass = "fakepassword";
 export class ConfigurationComponent implements OnInit, OnDestroy {
     private onGoing: boolean = false;
     allConfig: Configuration = new Configuration();
-    private currentTabId: string = "";
+    private currentTabId: string = "config-auth";//default tab
     private originalCopy: Configuration;
     private confirmSub: Subscription;
+    private testingMailOnGoing: boolean = false;
+    private testingLDAPOnGoing: boolean = false;
 
     @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
     @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
@@ -35,16 +58,80 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
     constructor(
+        private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
-        private msgService: MessageService,
-        private confirmService: DeletionDialogService) { }
+        private confirmService: ConfirmationDialogService,
+        private appConfigService: AppConfigService,
+        private session: SessionService) { }
+
+    private isCurrentTabLink(tabId: string): boolean {
+        return this.currentTabId === tabId;
+    }
+
+    private isCurrentTabContent(contentId: string): boolean {
+        return TabLinkContentMap[this.currentTabId] === contentId;
+    }
+
+    private hasUnsavedChangesOfCurrentTab(): any {
+        let allChanges = this.getChanges();
+        if (this.isEmpty(allChanges)) {
+            return null;
+        }
+
+        let properties = [];
+        switch (this.currentTabId) {
+            case "config-auth":
+                for (let prop in allChanges) {
+                    if (prop.startsWith("ldap_")) {
+                        return allChanges;
+                    }
+                }
+                properties = ["auth_mode", "project_creation_restriction", "self_registration"];
+                break;
+            case "config-email":
+                for (let prop in allChanges) {
+                    if (prop.startsWith("email_")) {
+                        return allChanges;
+                    }
+                }
+                return null;
+            case "config-replication":
+                properties = ["verify_remote_cert"];
+                break;
+            case "config-system":
+                properties = ["token_expiration"];
+                break;
+            default:
+                return null;
+        }
+
+        for (let prop in allChanges) {
+            if (properties.indexOf(prop) != -1) {
+                return allChanges;
+            }
+        }
+
+        return null;
+    }
 
     ngOnInit(): void {
         //First load
-        this.retrieveConfig();
+        //Double confirm the current use has admin role
+        let currentUser = this.session.getCurrentUser();
+        if (currentUser && currentUser.has_admin_role > 0) {
+            this.retrieveConfig();
+        }
 
-        this.confirmSub = this.confirmService.deletionConfirm$.subscribe(confirmation => {
-            this.reset(confirmation.data);
+        this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
+            if (confirmation &&
+                confirmation.state === ConfirmationState.CONFIRMED) {
+                if (confirmation.source === ConfirmationTargets.CONFIG) {
+                    this.reset(confirmation.data);
+                } else if (confirmation.source === ConfirmationTargets.CONFIG_TAB) {
+                    this.reset(confirmation.data["changes"]);
+                    this.currentTabId = confirmation.data["tabId"];
+                }
+            }
         });
     }
 
@@ -75,15 +162,43 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public isMailConfigValid(): boolean {
         return this.mailConfig &&
-            this.mailConfig.isValid();
+            this.mailConfig.isValid() &&
+            !this.testingMailOnGoing;
     }
 
     public get showTestServerBtn(): boolean {
         return this.currentTabId === 'config-email';
     }
 
-    public tabLinkChanged(tabLink: any) {
-        this.currentTabId = tabLink.id;
+    public get showLdapServerBtn(): boolean {
+        return this.currentTabId === 'config-auth' &&
+            this.allConfig.auth_mode &&
+            this.allConfig.auth_mode.value === "ldap_auth";
+    }
+
+    public get hideMailTestingSpinner(): boolean {
+        return !this.testingMailOnGoing || !this.showTestServerBtn;
+    }
+
+    public get hideLDAPTestingSpinner(): boolean {
+        return !this.testingLDAPOnGoing || !this.showLdapServerBtn;
+    }
+
+    public isLDAPConfigValid(): boolean {
+        return this.authConfig &&
+            this.authConfig.isValid() &&
+            !this.testingLDAPOnGoing;
+    }
+
+    public tabLinkClick(tabLink: string) {
+        //Whether has unsave changes in current tab
+        let changes = this.hasUnsavedChangesOfCurrentTab();
+        if (!changes) {
+            this.currentTabId = tabLink;
+            return;
+        }
+
+        this.confirmUnsavedTabChanges(changes, tabLink);
     }
 
     /**
@@ -105,13 +220,15 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //or force refresh by calling service.
                     //HERE we choose force way
                     this.retrieveConfig();
-                    this.msgService.announceMessage(response.status, "CONFIG.SAVE_SUCCESS", AlertType.SUCCESS);
+
+                    //Reload bootstrap option
+                    this.appConfigService.load().catch(error => console.error("Failed to reload bootstrap option with error: ", error));
+
+                    this.msgHandler.showSuccess("CONFIG.SAVE_SUCCESS");
                 })
                 .catch(error => {
                     this.onGoing = false;
-                    if (!accessErrorHandler(error, this.msgService)) {
-                        this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                    }
+                    this.msgHandler.handleError(error);
                 });
         } else {
             //Inprop situation, should not come here
@@ -128,14 +245,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     public cancel(): void {
         let changes = this.getChanges();
         if (!this.isEmpty(changes)) {
-            let msg = new DeletionMessage(
-                "CONFIG.CONFIRM_TITLE",
-                "CONFIG.CONFIRM_SUMMARY",
-                "",
-                changes,
-                DeletionTargets.EMPTY
-            );
-            this.confirmService.openComfirmDialog(msg);
+            this.confirmUnsavedChanges(changes);
         } else {
             //Inprop situation, should not come here
             console.error("Nothing changed");
@@ -150,7 +260,102 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     public testMailServer(): void {
+        if(this.testingMailOnGoing){
+            return;//Should not come here
+        }
+        let mailSettings = {};
+        for (let prop in this.allConfig) {
+            if (prop.startsWith("email_")) {
+                mailSettings[prop] = this.allConfig[prop].value;
+            }
+        }
+        //Confirm port is number
+        mailSettings["email_port"] = +mailSettings["email_port"];
+        let allChanges = this.getChanges();
+        let password = allChanges["email_password"]
+        if (password) {
+            mailSettings["email_password"] = password;
+        } else {
+            delete mailSettings["email_password"];
+        }
 
+        this.testingMailOnGoing = true;
+        this.configService.testMailServer(mailSettings)
+            .then(response => {
+                this.testingMailOnGoing = false;
+                this.msgHandler.showSuccess("CONFIG.TEST_MAIL_SUCCESS");
+            })
+            .catch(error => {
+                this.testingMailOnGoing = false;
+                let err = error._body;
+                if (!err) {
+                    err = "UNKNOWN";
+                }
+                this.msgHandler.showError("CONFIG.TEST_MAIL_FAILED", { 'param': err });
+            });
+    }
+
+    public testLDAPServer(): void {
+        if(this.testingLDAPOnGoing){
+            return;//Should not come here
+        }
+
+        let ldapSettings = {};
+        for (let prop in this.allConfig) {
+            if (prop.startsWith("ldap_")) {
+                ldapSettings[prop] = this.allConfig[prop].value;
+            }
+        }
+
+        let allChanges = this.getChanges();
+        let ldapSearchPwd = allChanges["ldap_search_password"];
+        if (ldapSearchPwd) {
+            ldapSettings['ldap_search_password'] = ldapSearchPwd;
+        } else {
+            delete ldapSettings['ldap_search_password'];
+        }
+
+        this.testingLDAPOnGoing = true;
+        this.configService.testLDAPServer(ldapSettings)
+            .then(respone => {
+                this.testingLDAPOnGoing = false;
+                this.msgHandler.showSuccess("CONFIG.TEST_LDAP_SUCCESS");
+            })
+            .catch(error => {
+                this.testingLDAPOnGoing = false;
+                let err = error._body;
+                if (!err) {
+                    err = "UNKNOWN";
+                }
+                this.msgHandler.showError("CONFIG.TEST_LDAP_FAILED", { 'param': err });
+            });
+    }
+
+    private confirmUnsavedChanges(changes: any) {
+        let msg = new ConfirmationMessage(
+            "CONFIG.CONFIRM_TITLE",
+            "CONFIG.CONFIRM_SUMMARY",
+            "",
+            changes,
+            ConfirmationTargets.CONFIG
+        );
+
+        this.confirmService.openComfirmDialog(msg);
+    }
+
+    private confirmUnsavedTabChanges(changes: any, tabId: string) {
+        let msg = new ConfirmationMessage(
+            "CONFIG.CONFIRM_TITLE",
+            "CONFIG.CONFIRM_SUMMARY",
+            "",
+            {
+                "changes": changes,
+                "tabId": tabId
+            },
+            ConfirmationTargets.CONFIG_TAB
+        );
+
+        this.confirmService.openComfirmDialog(msg);
     }
 
     private retrieveConfig(): void {
@@ -169,9 +374,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             })
             .catch(error => {
                 this.onGoing = false;
-                if (!accessErrorHandler(error, this.msgService)) {
-                    this.msgService.announceMessage(error.status, errorHandler(error), AlertType.DANGER);
-                }
+                this.msgHandler.handleError(error);
             });
     }
 
