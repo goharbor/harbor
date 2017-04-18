@@ -154,8 +154,7 @@ You can change Harbor's email settings, the mail server is used to send out resp
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to ```/etc/default/docker``` (ubuntu) or ```/etc/sysconfig/docker``` (centos) and restart Docker:    
   
 
-*FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
-Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
+Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.   
   
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
