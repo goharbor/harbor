@@ -12,6 +12,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/registry/client"
+	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
 )
 
@@ -58,7 +59,7 @@ type CredentialStore interface {
 // schemes. The handlers are tried in order, the higher priority authentication
 // methods should be first. The challengeMap holds a list of challenges for
 // a given root API endpoint (for example "https://registry-1.docker.io/v2/").
-func NewAuthorizer(manager ChallengeManager, handlers ...AuthenticationHandler) transport.RequestModifier {
+func NewAuthorizer(manager challenge.Manager, handlers ...AuthenticationHandler) transport.RequestModifier {
 	return &endpointAuthorizer{
 		challenges: manager,
 		handlers:   handlers,
@@ -66,21 +67,25 @@ func NewAuthorizer(manager ChallengeManager, handlers ...AuthenticationHandler) 
 }
 
 type endpointAuthorizer struct {
-	challenges ChallengeManager
+	challenges challenge.Manager
 	handlers   []AuthenticationHandler
 	transport  http.RoundTripper
 }
 
 func (ea *endpointAuthorizer) ModifyRequest(req *http.Request) error {
-	v2Root := strings.Index(req.URL.Path, "/v2/")
-	if v2Root == -1 {
+	pingPath := req.URL.Path
+	if v2Root := strings.Index(req.URL.Path, "/v2/"); v2Root != -1 {
+		pingPath = pingPath[:v2Root+4]
+	} else if v1Root := strings.Index(req.URL.Path, "/v1/"); v1Root != -1 {
+		pingPath = pingPath[:v1Root] + "/v2/"
+	} else {
 		return nil
 	}
 
 	ping := url.URL{
 		Host:   req.URL.Host,
 		Scheme: req.URL.Scheme,
-		Path:   req.URL.Path[:v2Root+4],
+		Path:   pingPath,
 	}
 
 	challenges, err := ea.challenges.GetChallenges(ping)
@@ -90,11 +95,11 @@ func (ea *endpointAuthorizer) ModifyRequest(req *http.Request) error {
 
 	if len(challenges) > 0 {
 		for _, handler := range ea.handlers {
-			for _, challenge := range challenges {
-				if challenge.Scheme != handler.Scheme() {
+			for _, c := range challenges {
+				if c.Scheme != handler.Scheme() {
 					continue
 				}
-				if err := handler.AuthorizeRequest(req, challenge.Parameters); err != nil {
+				if err := handler.AuthorizeRequest(req, c.Parameters); err != nil {
 					return err
 				}
 			}
@@ -142,13 +147,31 @@ type Scope interface {
 // to a repository.
 type RepositoryScope struct {
 	Repository string
+	Class      string
 	Actions    []string
 }
 
 // String returns the string representation of the repository
 // using the scope grammar
 func (rs RepositoryScope) String() string {
-	return fmt.Sprintf("repository:%s:%s", rs.Repository, strings.Join(rs.Actions, ","))
+	repoType := "repository"
+	if rs.Class != "" {
+		repoType = fmt.Sprintf("%s(%s)", repoType, rs.Class)
+	}
+	return fmt.Sprintf("%s:%s:%s", repoType, rs.Repository, strings.Join(rs.Actions, ","))
+}
+
+// RegistryScope represents a token scope for access
+// to resources in the registry.
+type RegistryScope struct {
+	Name    string
+	Actions []string
+}
+
+// String returns the string representation of the user
+// using the scope grammar
+func (rs RegistryScope) String() string {
+	return fmt.Sprintf("registry:%s:%s", rs.Name, strings.Join(rs.Actions, ","))
 }
 
 // TokenHandlerOptions is used to configure a new token handler

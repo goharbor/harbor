@@ -1,23 +1,24 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,148 +26,132 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/adminserver/systemcfg"
-	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/common"
 )
 
-func TestConfigAPI(t *testing.T) {
-	configPath := "/tmp/config.json"
-	secretKeyPath := "/tmp/secretkey"
+type fakeCfgStore struct {
+	cfgs map[string]interface{}
+	err  error
+}
 
-	_, err := test.GenerateKey(secretKeyPath)
-	if err != nil {
-		t.Errorf("failed to generate secret key: %v", err)
-		return
-	}
-	defer os.Remove(secretKeyPath)
+func (f *fakeCfgStore) Name() string {
+	return "fake"
+}
 
-	secret := "secret"
-	envs := map[string]string{
+func (f *fakeCfgStore) Read() (map[string]interface{}, error) {
+	return f.cfgs, f.err
+}
 
-		"JSON_CFG_STORE_PATH":   configPath,
-		"KEY_PATH":              secretKeyPath,
-		"UI_SECRET":             secret,
-		"MYSQL_PORT":            "3306",
-		"TOKEN_EXPIRATION":      "30",
-		"CFG_EXPIRATION":        "5",
-		"MAX_JOB_WORKERS":       "3",
-		"LDAP_SCOPE":            "3",
-		"LDAP_TIMEOUT":          "30",
-		"EMAIL_PORT":            "25",
-		"MYSQL_PWD":             "",
-		"LDAP_SEARCH_PWD":       "",
-		"EMAIL_PWD":             "",
-		"HARBOR_ADMIN_PASSWORD": "",
-	}
+func (f *fakeCfgStore) Write(cfgs map[string]interface{}) error {
+	f.cfgs = cfgs
+	return f.err
+}
 
-	for k, v := range envs {
-		if err := os.Setenv(k, v); err != nil {
-			t.Errorf("failed to set env %s: %v", k, err)
-			return
-		}
-	}
-	defer os.Remove(configPath)
-
-	if err := systemcfg.Init(); err != nil {
-		t.Errorf("failed to initialize system configurations: %v", err)
-		return
-	}
-
-	r, err := http.NewRequest("GET", "", nil)
-	if err != nil {
-		t.Errorf("failed to create request: %v", err)
-		return
+func TestListCfgs(t *testing.T) {
+	// 500
+	systemcfg.CfgStore = &fakeCfgStore{
+		cfgs: nil,
+		err:  errors.New("error"),
 	}
 
 	w := httptest.NewRecorder()
-	ListCfgs(w, r)
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusUnauthorized)
-		return
+	ListCfgs(w, nil)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	// 200
+	key := "key"
+	value := "value"
+	cfgs := map[string]interface{}{
+		key: value,
 	}
-
-	r.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: secret,
-	})
-
+	systemcfg.CfgStore = &fakeCfgStore{
+		cfgs: cfgs,
+		err:  nil,
+	}
 	w = httptest.NewRecorder()
-	ListCfgs(w, r)
-	if w.Code != http.StatusOK {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
-		return
-	}
-
-	m, err := parse(w.Body)
+	ListCfgs(w, nil)
+	assert.Equal(t, http.StatusOK, w.Code)
+	result, err := parse(w.Body)
 	if err != nil {
-		t.Errorf("failed to parse response body: %v", err)
-		return
+		t.Fatalf("failed to parse response body: %v", err)
 	}
+	assert.Equal(t, value, result[key])
+}
 
-	scope := int(m[comcfg.LDAPScope].(float64))
-	if scope != 3 {
-		t.Errorf("unexpected ldap scope: %d != %d", scope, 3)
-		return
-	}
-
-	// modify configurations
-	c := map[string]interface{}{
-		comcfg.AUTHMode: comcfg.LDAPAuth,
-	}
-
-	b, err := json.Marshal(c)
+func TestUpdateCfgs(t *testing.T) {
+	// 400
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest("", "", bytes.NewReader([]byte{'a'}))
 	if err != nil {
-		t.Errorf("failed to marshal configuartions: %v", err)
-		return
+		t.Fatalf("failed to create request: %v", err)
 	}
-
-	w = httptest.NewRecorder()
-	r, err = http.NewRequest("GET", "", bytes.NewReader(b))
-	if err != nil {
-		t.Errorf("failed to create request: %v", err)
-		return
-	}
-	r.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: secret,
-	})
 
 	UpdateCfgs(w, r)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
-		return
+	// 500
+	systemcfg.CfgStore = &fakeCfgStore{
+		cfgs: nil,
+		err:  errors.New("error"),
 	}
-
-	// confirm the modification is done
-	r, err = http.NewRequest("GET", "", nil)
-	if err != nil {
-		t.Errorf("failed to create request: %v", err)
-		return
-	}
-	r.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: secret,
-	})
 	w = httptest.NewRecorder()
-	ListCfgs(w, r)
-	if w.Code != http.StatusOK {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusOK)
-		return
-	}
-
-	m, err = parse(w.Body)
+	r, err = http.NewRequest("", "", bytes.NewBufferString("{}"))
 	if err != nil {
-		t.Errorf("failed to parse response body: %v", err)
-		return
+		t.Fatalf("failed to create request: %v", err)
 	}
 
-	mode := m[comcfg.AUTHMode].(string)
-	if mode != comcfg.LDAPAuth {
-		t.Errorf("unexpected ldap scope: %s != %s", mode, comcfg.LDAPAuth)
-		return
+	UpdateCfgs(w, r)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	// 200
+	key := "key"
+	value := "value"
+	systemcfg.CfgStore = &fakeCfgStore{
+		cfgs: nil,
+		err:  nil,
 	}
+	w = httptest.NewRecorder()
+	r, err = http.NewRequest("", "",
+		bytes.NewBufferString(fmt.Sprintf(`{"%s":"%s"}`, key, value)))
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	UpdateCfgs(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+}
+
+func TestResetCfgs(t *testing.T) {
+	// 500
+	systemcfg.CfgStore = &fakeCfgStore{
+		cfgs: nil,
+		err:  errors.New("error"),
+	}
+	w := httptest.NewRecorder()
+
+	ResetCfgs(w, nil)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	// 200
+	os.Clearenv()
+	key := "LDAP_URL"
+	value := "ldap://ldap.com"
+	if err := os.Setenv(key, value); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+	store := &fakeCfgStore{
+		cfgs: nil,
+		err:  nil,
+	}
+	systemcfg.CfgStore = store
+	w = httptest.NewRecorder()
+
+	ResetCfgs(w, nil)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, value, store.cfgs[common.LDAPURL])
 }
 
 func parse(reader io.Reader) (map[string]interface{}, error) {

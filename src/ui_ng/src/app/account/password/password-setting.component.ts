@@ -1,17 +1,30 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, ViewChild, AfterViewChecked } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
-import { AlertType, httpStatusCode } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
-import { errorHandler, isEmptyForm, accessErrorHandler } from '../../shared/shared.utils';
+import { isEmptyForm } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: 'password-setting',
-    templateUrl: "password-setting.component.html"
+    templateUrl: "password-setting.component.html",
+    styleUrls: ['../../common.css']
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     opened: boolean = false;
@@ -22,6 +35,10 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     private formValueChanged: boolean = false;
     private onCalling: boolean = false;
+    private validationStateMap: any = {
+        "newPassword": true,
+        "reNewPassword": true
+    };
 
     pwdFormRef: NgForm;
     @ViewChild("changepwdForm") pwdForm: NgForm;
@@ -31,7 +48,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
     constructor(
         private passwordService: PasswordSettingService,
         private session: SessionService,
-        private msgService: MessageService) { }
+        private msgHandler: MessageHandlerService) { }
 
     //If form is valid
     public get isValid(): boolean {
@@ -51,6 +68,32 @@ export class PasswordSettingComponent implements AfterViewChecked {
         return this.onCalling;
     }
 
+    private getValidationState(key: string): boolean {
+        return this.validationStateMap[key];
+    }
+
+    private handleValidation(key: string, flag: boolean): void {
+        if (flag) {
+            //Checking
+            let cont = this.pwdForm.controls[key];
+            if (cont) {
+                this.validationStateMap[key] = cont.valid;
+                if (cont.valid) {
+                    if (key === "reNewPassword" || key === "newPassword") {
+                        let cpKey = key === "reNewPassword" ? "newPassword" : "reNewPassword";
+                        let compareCont = this.pwdForm.controls[cpKey];
+                        if (compareCont && compareCont.valid) {
+                            this.validationStateMap["reNewPassword"] = cont.value === compareCont.value;
+                        }
+                    }
+                }
+            }
+        } else {
+            //Reset
+            this.validationStateMap[key] = true;
+        }
+    }
+
     ngAfterViewChecked() {
         if (this.pwdFormRef != this.pwdForm) {
             this.pwdFormRef = this.pwdForm;
@@ -66,9 +109,18 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     //Open modal dialog
     open(): void {
-        this.opened = true;
-        this.pwdForm.reset();
+        //Reset state
         this.formValueChanged = false;
+        this.onCalling = false;
+        this.error = null;
+        this.validationStateMap = {
+            "newPassword": true,
+            "reNewPassword": true
+        };
+        this.pwdForm.reset();
+        this.inlineAlert.close();
+
+        this.opened = true;
     }
 
     //Close the moal dialog
@@ -117,16 +169,23 @@ export class PasswordSettingComponent implements AfterViewChecked {
             })
             .then(() => {
                 this.onCalling = false;
-                this.close();
-                this.msgService.announceMessage(200, "CHANGE_PWD.SAVE_SUCCESS", AlertType.SUCCESS);
+                this.opened = false
+                this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
             })
             .catch(error => {
                 this.onCalling = false;
                 this.error = error;
-                if(accessErrorHandler(error, this.msgService)){
+                if (this.msgHandler.isAppLevel(error)) {
                     this.opened = false;
-                }else{
-                    this.inlineAlert.showInlineError(error);
+                    this.msgHandler.handleError(error);
+                } else {
+                    //Special case for 400
+                    let msg = '' + error._body;
+                    if (msg && msg.includes('old_password_is_not_correct')) {
+                        this.inlineAlert.showInlineError("INCONRRECT_OLD_PWD");
+                    } else {
+                        this.inlineAlert.showInlineError(error);
+                    }
                 }
             });
     }

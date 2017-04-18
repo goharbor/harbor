@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -20,7 +19,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 func TestGetConfig(t *testing.T) {
@@ -46,8 +46,13 @@ func TestGetConfig(t *testing.T) {
 		return
 	}
 
-	mode := cfg[config.AUTHMode].Value.(string)
-	assert.Equal(config.DBAuth, mode, fmt.Sprintf("the auth mode should be %s", config.DBAuth))
+	mode := cfg[common.AUTHMode].Value.(string)
+	assert.Equal(common.DBAuth, mode, fmt.Sprintf("the auth mode should be %s", common.DBAuth))
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
 }
 
 func TestPutConfig(t *testing.T) {
@@ -56,7 +61,7 @@ func TestPutConfig(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	cfg := map[string]string{
-		config.VerifyRemoteCert: "0",
+		common.VerifyRemoteCert: "0",
 	}
 
 	code, err := apiTest.PutConfig(*admin, cfg)
@@ -67,4 +72,49 @@ func TestPutConfig(t *testing.T) {
 	if !assert.Equal(200, code, "the status code of modifying configurations with admin user should be 200") {
 		return
 	}
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
+}
+
+func TestResetConfig(t *testing.T) {
+	fmt.Println("Testing resetting configurations")
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	code, err := apiTest.ResetConfig(*admin)
+	if err != nil {
+		t.Errorf("failed to get configurations: %v", err)
+		return
+	}
+
+	if !assert.Equal(200, code, "unexpected response code") {
+		return
+	}
+
+	code, cfgs, err := apiTest.GetConfig(*admin)
+	if err != nil {
+		t.Errorf("failed to get configurations: %v", err)
+		return
+	}
+
+	if !assert.Equal(200, code, "unexpected response code") {
+		return
+	}
+
+	value, ok := cfgs[common.VerifyRemoteCert]
+	if !ok {
+		t.Errorf("%s not found", common.VerifyRemoteCert)
+		return
+	}
+
+	assert.Equal(value.Value.(bool), true, "unexpected value")
+
+	ccc, err := config.GetSystemCfg()
+	if err != nil {
+		t.Logf("failed to get system configurations: %v", err)
+	}
+	t.Logf("%v", ccc)
 }

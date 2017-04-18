@@ -1,34 +1,42 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package config
 
 import (
-	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 
+	"github.com/vmware/harbor/src/adminserver/client"
+	"github.com/vmware/harbor/src/adminserver/client/auth"
+	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-const defaultKeyPath string = "/etc/ui/key"
+const (
+	defaultKeyPath   string = "/etc/ui/key"
+	secretCookieName string = "secret"
+)
 
 var (
-	mg          *comcfg.Manager
-	keyProvider comcfg.KeyProvider
+	// AdminserverClient is a client for adminserver
+	AdminserverClient client.Client
+	mg                *comcfg.Manager
+	keyProvider       comcfg.KeyProvider
 )
 
 // Init configurations
@@ -40,14 +48,17 @@ func Init() error {
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
-	log.Debugf("admin server URL: %s", adminServerURL)
-	mg = comcfg.NewManager(adminServerURL, UISecret(), true)
 
-	if err := mg.Init(); err != nil {
-		return err
+	log.Infof("initializing client for adminserver %s ...", adminServerURL)
+	authorizer := auth.NewSecretAuthorizer(secretCookieName, UISecret())
+	AdminserverClient = client.NewClient(adminServerURL, authorizer)
+	if err := AdminserverClient.Ping(); err != nil {
+		return fmt.Errorf("failed to ping adminserver: %v", err)
 	}
 
-	if _, err := mg.Load(); err != nil {
+	mg = comcfg.NewManager(AdminserverClient, true)
+
+	if err := Load(); err != nil {
 		return err
 	}
 
@@ -70,28 +81,19 @@ func Load() error {
 	return err
 }
 
+// Reset configurations
+func Reset() error {
+	return mg.Reset()
+}
+
 // Upload uploads all system configutations to admin server
 func Upload(cfg map[string]interface{}) error {
-	b, err := json.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	return mg.Upload(b)
+	return mg.Upload(cfg)
 }
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	raw, err := mg.Loader.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := mg.Parser.Parse(raw)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return mg.Load()
 }
 
 // AuthMode ...
@@ -100,7 +102,7 @@ func AuthMode() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.AUTHMode].(string), nil
+	return cfg[common.AUTHMode].(string), nil
 }
 
 // LDAP returns the setting of ldap server
@@ -111,14 +113,14 @@ func LDAP() (*models.LDAP, error) {
 	}
 
 	ldap := &models.LDAP{}
-	ldap.URL = cfg[comcfg.LDAPURL].(string)
-	ldap.SearchDN = cfg[comcfg.LDAPSearchDN].(string)
-	ldap.SearchPassword = cfg[comcfg.LDAPSearchPwd].(string)
-	ldap.BaseDN = cfg[comcfg.LDAPBaseDN].(string)
-	ldap.UID = cfg[comcfg.LDAPUID].(string)
-	ldap.Filter = cfg[comcfg.LDAPFilter].(string)
-	ldap.Scope = int(cfg[comcfg.LDAPScope].(float64))
-	ldap.Timeout = int(cfg[comcfg.LDAPTimeout].(float64))
+	ldap.URL = cfg[common.LDAPURL].(string)
+	ldap.SearchDN = cfg[common.LDAPSearchDN].(string)
+	ldap.SearchPassword = cfg[common.LDAPSearchPwd].(string)
+	ldap.BaseDN = cfg[common.LDAPBaseDN].(string)
+	ldap.UID = cfg[common.LDAPUID].(string)
+	ldap.Filter = cfg[common.LDAPFilter].(string)
+	ldap.Scope = int(cfg[common.LDAPScope].(float64))
+	ldap.Timeout = int(cfg[common.LDAPTimeout].(float64))
 
 	return ldap, nil
 }
@@ -129,16 +131,29 @@ func TokenExpiration() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return int(cfg[comcfg.TokenExpiration].(float64)), nil
+	return int(cfg[common.TokenExpiration].(float64)), nil
 }
 
-// ExtEndpoint returns the external URL of Harbor: protocal://host:port
+// ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.ExtEndpoint].(string), nil
+	return cfg[common.ExtEndpoint].(string), nil
+}
+
+// ExtURL returns the external URL: host:port
+func ExtURL() (string, error) {
+	endpoint, err := ExtEndpoint()
+	if err != nil {
+		return "", err
+	}
+	l := strings.Split(endpoint, "://")
+	if len(l) > 0 {
+		return l[1], nil
+	}
+	return endpoint, nil
 }
 
 // SecretKey returns the secret key to encrypt the password of target
@@ -152,7 +167,7 @@ func SelfRegistration() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return cfg[comcfg.SelfRegistration].(bool), nil
+	return cfg[common.SelfRegistration].(bool), nil
 }
 
 // RegistryURL ...
@@ -161,7 +176,7 @@ func RegistryURL() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.RegistryURL].(string), nil
+	return cfg[common.RegistryURL].(string), nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
@@ -174,13 +189,19 @@ func InternalTokenServiceEndpoint() string {
 	return "http://ui/service/token"
 }
 
+// InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
+// This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
+func InternalNotaryEndpoint() string {
+	return "http://notary-server:4443"
+}
+
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return "", err
 	}
-	return cfg[comcfg.AdminInitialPassword].(string), nil
+	return cfg[common.AdminInitialPassword].(string), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
@@ -189,7 +210,7 @@ func OnlyAdminCreateProject() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	return cfg[comcfg.ProjectCreationRestriction].(string) == comcfg.ProCrtRestrAdmOnly, nil
+	return cfg[common.ProjectCreationRestriction].(string) == common.ProCrtRestrAdmOnly, nil
 }
 
 // VerifyRemoteCert returns bool value.
@@ -198,7 +219,7 @@ func VerifyRemoteCert() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	return cfg[comcfg.VerifyRemoteCert].(bool), nil
+	return cfg[common.VerifyRemoteCert].(bool), nil
 }
 
 // Email returns email server settings
@@ -209,13 +230,13 @@ func Email() (*models.Email, error) {
 	}
 
 	email := &models.Email{}
-	email.Host = cfg[comcfg.EmailHost].(string)
-	email.Port = int(cfg[comcfg.EmailPort].(float64))
-	email.Username = cfg[comcfg.EmailUsername].(string)
-	email.Password = cfg[comcfg.EmailPassword].(string)
-	email.SSL = cfg[comcfg.EmailSSL].(bool)
-	email.From = cfg[comcfg.EmailFrom].(string)
-	email.Identity = cfg[comcfg.EmailIdentity].(string)
+	email.Host = cfg[common.EmailHost].(string)
+	email.Port = int(cfg[common.EmailPort].(float64))
+	email.Username = cfg[common.EmailUsername].(string)
+	email.Password = cfg[common.EmailPassword].(string)
+	email.SSL = cfg[common.EmailSSL].(bool)
+	email.From = cfg[common.EmailFrom].(string)
+	email.Identity = cfg[common.EmailIdentity].(string)
 
 	return email, nil
 }
@@ -227,16 +248,16 @@ func Database() (*models.Database, error) {
 		return nil, err
 	}
 	database := &models.Database{}
-	database.Type = cfg[comcfg.DatabaseType].(string)
+	database.Type = cfg[common.DatabaseType].(string)
 	mysql := &models.MySQL{}
-	mysql.Host = cfg[comcfg.MySQLHost].(string)
-	mysql.Port = int(cfg[comcfg.MySQLPort].(float64))
-	mysql.Username = cfg[comcfg.MySQLUsername].(string)
-	mysql.Password = cfg[comcfg.MySQLPassword].(string)
-	mysql.Database = cfg[comcfg.MySQLDatabase].(string)
+	mysql.Host = cfg[common.MySQLHost].(string)
+	mysql.Port = int(cfg[common.MySQLPort].(float64))
+	mysql.Username = cfg[common.MySQLUsername].(string)
+	mysql.Password = cfg[common.MySQLPassword].(string)
+	mysql.Database = cfg[common.MySQLDatabase].(string)
 	database.MySQL = mysql
 	sqlite := &models.SQLite{}
-	sqlite.File = cfg[comcfg.SQLiteFile].(string)
+	sqlite.File = cfg[common.SQLiteFile].(string)
 	database.SQLite = sqlite
 
 	return database, nil
@@ -252,4 +273,33 @@ func UISecret() string {
 // other component
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
+}
+
+// WithNotary returns a bool value to indicate if Harbor's deployed with Notary
+func WithNotary() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithNotary == false")
+		return false
+	}
+	return cfg[common.WithNotary].(bool)
+}
+
+// AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
+func AdmiralEndpoint() string {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint")
+
+		return ""
+	}
+	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
+		cfg[common.AdmiralEndpoint] = ""
+	}
+	return cfg[common.AdmiralEndpoint].(string)
+}
+
+// WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
+func WithAdmiral() bool {
+	return len(AdmiralEndpoint()) > 0
 }

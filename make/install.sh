@@ -49,14 +49,20 @@ note() { printf "\n${underline}${bold}${blue}Note:${reset} ${blue}%s${reset}\n" 
 set -e
 set +o noglob
 
-usage=$'Please set hostname and other necessary attributes in harbor.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.'
+usage=$'Please set hostname and other necessary attributes in harbor.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
+Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.cfg bacause notary must run under https.'
 item=0
+
+# notary is not enabled by default
+with_notary=$false
 
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
             note "$usage"
             exit 0;;
+            --with-notary)
+            with_notary=true;;	 	
             *)
             note "$usage"
             exit 1;;
@@ -134,10 +140,10 @@ h2 "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-if [ -f harbor*.tgz ]
+if [ -f harbor*.tar.gz ]
 then
 	h2 "[Step $item]: loading Harbor images ..."; let item+=1
-	docker load -i ./harbor*.tgz
+	docker load -i ./harbor*.tar.gz
 fi
 echo ""
 
@@ -146,19 +152,38 @@ if [ -n "$host" ]
 then
 	sed "s/^hostname = .*/hostname = $host/g" -i ./harbor.cfg
 fi
-./prepare
+if [ $with_notary ]
+then
+	./prepare --with-notary
+else
+	./prepare
+fi
 echo ""
 
 h2 "[Step $item]: checking existing instance of Harbor ..."; let item+=1
-if [ -n "$(docker-compose -f docker-compose*.yml ps -q)"  ]
-then
-	note "stopping existing Harbor instance ..."
-	docker-compose -f docker-compose*.yml down
+if [ $with_notary ]
+then 
+	if [ -n "$(docker-compose -f docker-compose.yml -f docker-compose.notary.yml ps -q)"  ]
+	then
+		note "stopping existing Harbor instance ..." 
+		docker-compose -f docker-compose.yml -f docker-compose.notary.yml down -v
+	fi
+else
+	if [ -n "$(docker-compose -f docker-compose.yml ps -q)" ]
+	then
+		note "stopping existing Harbor instance ..." 
+		docker-compose -f docker-compose.yml down -v
+	fi	
 fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
-docker-compose -f docker-compose*.yml up -d
+if [ $with_notary ]
+then
+	docker-compose -f docker-compose.yml -f docker-compose.notary.yml up -d
+else
+	docker-compose -f docker-compose.yml up -d
+fi
 
 protocol=http
 hostname=reg.mydomain.com

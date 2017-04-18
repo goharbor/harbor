@@ -1,4 +1,17 @@
-import { Component, Output, ViewChild } from '@angular/core';
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
@@ -6,8 +19,9 @@ import { User } from '../../user/user';
 
 import { SessionService } from '../../shared/session.service';
 import { UserService } from '../../user/user.service';
-import { errorHandler } from '../../shared/shared.utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+
+import { Modal } from 'clarity-angular';
 
 @Component({
     selector: 'sign-up',
@@ -20,6 +34,8 @@ export class SignUpComponent {
     private onGoing: boolean = false;
     private formValueChanged: boolean = false;
 
+    @Output() userCreation = new EventEmitter<User>();
+
     constructor(
         private session: SessionService,
         private userService: UserService) { }
@@ -29,6 +45,9 @@ export class SignUpComponent {
 
     @ViewChild(InlineAlertComponent)
     private inlienAlert: InlineAlertComponent;
+
+    @ViewChild(Modal)
+    private modal: Modal;
 
     private getNewUser(): User {
         return this.newUserForm.getData();
@@ -53,9 +72,14 @@ export class SignUpComponent {
     }
 
     open(): void {
-        this.newUserForm.reset();//Reset form
+        //Reset state
+        this.newUserForm.reset();
         this.formValueChanged = false;
-        this.opened = true;
+        this.error = null;
+        this.onGoing = false;
+        this.inlienAlert.close();
+
+        this.modal.open();
     }
 
     close(): void {
@@ -75,6 +99,7 @@ export class SignUpComponent {
 
     confirmCancel(): void {
         this.opened = false;
+        this.modal.close();
     }
 
     //Create new user
@@ -97,7 +122,9 @@ export class SignUpComponent {
         this.userService.addUser(u)
             .then(() => {
                 this.onGoing = false;
-                this.close();
+                this.opened = false;
+                this.modal.close();
+                this.userCreation.emit(u);
             })
             .catch(error => {
                 this.onGoing = false;

@@ -1,3 +1,16 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -22,6 +35,7 @@ export class RecentLogComponent implements OnInit {
     private logsCache: AuditLog[];
     private onGoing: boolean = false;
     private lines: number = 10; //Support 10, 25 and 50
+    currentTerm: string;
 
     constructor(
         private session: SessionService,
@@ -34,17 +48,23 @@ export class RecentLogComponent implements OnInit {
         this.retrieveLogs();
     }
 
-    public get inProgress(): boolean {
-        return this.onGoing;
+    private handleOnchange($event: any) {
+        this.currentTerm = '';
+        if ($event && $event.target && $event.target["value"]) {
+            this.lines = $event.target["value"];
+            if (this.lines < 10) {
+                this.lines = 10;
+            }
+            this.retrieveLogs();
+        }
     }
 
-    public setLines(lines: number): void {
-        this.lines = lines;
-        if (this.lines < 10) {
-            this.lines = 10;
-        }
+    public get logNumber(): number {
+        return this.recentLogs?this.recentLogs.length:0;
+    }
 
-        this.retrieveLogs();
+    public get inProgress(): boolean {
+        return this.onGoing;
     }
 
     public doFilter(terms: string): void {
@@ -52,17 +72,12 @@ export class RecentLogComponent implements OnInit {
             this.recentLogs = this.logsCache.filter(log => log.username != "");
             return;
         }
-
+        this.currentTerm = terms;
         this.recentLogs = this.logsCache.filter(log => this.isMatched(terms, log));
     }
 
     public refresh(): void {
         this.retrieveLogs();
-    }
-
-    public formatDateTime(dateTime: string){
-        let dt: Date = new Date(dateTime);
-        return dt.toLocaleString();
     }
 
     private retrieveLogs(): void {
@@ -91,6 +106,7 @@ export class RecentLogComponent implements OnInit {
         let reg = new RegExp('.*' + terms + '.*', 'i');
         return reg.test(log.username) ||
             reg.test(log.repo_name) ||
-            reg.test(log.operation);
+            reg.test(log.operation) ||
+            reg.test(log.repo_tag);
     }
 }

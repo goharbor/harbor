@@ -1,5 +1,33 @@
 # Changelog
 
+
+## v1.1.0 (2017-4-18)
+
+- Add in Notary support
+- User can update configuration through Harbor UI
+- Redesign of Harbor's UI using Clarity
+- Some changes to API
+- Fix some security issues in token service
+- Upgrade base image of nginx for latest openssl version
+- Various bug fixes.
+
+## v0.5.0 (2016-12-6)
+
+- Refactory for a new build process
+- Easier configuration for HTTPS in prepare script
+- Script to collect logs of a Harbor deployment
+- User can view the storage usage (default location) of Harbor.
+- Add an attribute to disable normal user to create project
+- Various bug fixes.
+
+For Harbor virtual appliance:
+
+- Improve the bootstrap process of ova installation.
+- Enable HTTPS by default for .ova deployment, users can download the default root cert from UI for docker client or VCH.
+- Preload a photon:1.0 image to Harbor for users who have no internet connection.
+
+
+
 ## v0.4.5 (2016-10-31)
 
 - Virtual appliance of Harbor for vSphere.

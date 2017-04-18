@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package systemcfg
 
@@ -21,118 +20,121 @@ import (
 	"strconv"
 	"strings"
 
+	enpt "github.com/vmware/harbor/src/adminserver/systemcfg/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
+	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
-	defaultCfgStoreDriver   string = "json"
-	defaultJSONCfgStorePath string = "/etc/adminserver/config.json"
+	defaultJSONCfgStorePath string = "/etc/adminserver/config/config.json"
 	defaultKeyPath          string = "/etc/adminserver/key"
 )
 
 var (
-	cfgStore    store.Driver
-	keyProvider comcfg.KeyProvider
+	// CfgStore is a storage driver that configurations
+	// can be read from and wrote to
+	CfgStore store.Driver
 
 	// attrs need to be encrypted or decrypted
 	attrs = []string{
-		comcfg.EmailPassword,
-		comcfg.LDAPSearchPwd,
-		comcfg.MySQLPassword,
-		comcfg.AdminInitialPassword,
+		common.EmailPassword,
+		common.LDAPSearchPwd,
+		common.MySQLPassword,
+		common.AdminInitialPassword,
 	}
 
 	// all configurations need read from environment variables
 	allEnvs = map[string]interface{}{
-		comcfg.ExtEndpoint: "EXT_ENDPOINT",
-		comcfg.AUTHMode:    "AUTH_MODE",
-		comcfg.SelfRegistration: &parser{
+		common.ExtEndpoint: "EXT_ENDPOINT",
+		common.AUTHMode:    "AUTH_MODE",
+		common.SelfRegistration: &parser{
 			env:   "SELF_REGISTRATION",
 			parse: parseStringToBool,
 		},
-		comcfg.DatabaseType: "DATABASE_TYPE",
-		comcfg.MySQLHost:    "MYSQL_HOST",
-		comcfg.MySQLPort: &parser{
+		common.DatabaseType: "DATABASE_TYPE",
+		common.MySQLHost:    "MYSQL_HOST",
+		common.MySQLPort: &parser{
 			env:   "MYSQL_PORT",
 			parse: parseStringToInt,
 		},
-		comcfg.MySQLUsername: "MYSQL_USR",
-		comcfg.MySQLPassword: "MYSQL_PWD",
-		comcfg.MySQLDatabase: "MYSQL_DATABASE",
-		comcfg.SQLiteFile:    "SQLITE_FILE",
-		comcfg.LDAPURL:       "LDAP_URL",
-		comcfg.LDAPSearchDN:  "LDAP_SEARCH_DN",
-		comcfg.LDAPSearchPwd: "LDAP_SEARCH_PWD",
-		comcfg.LDAPBaseDN:    "LDAP_BASE_DN",
-		comcfg.LDAPFilter:    "LDAP_FILTER",
-		comcfg.LDAPUID:       "LDAP_UID",
-		comcfg.LDAPScope: &parser{
+		common.MySQLUsername: "MYSQL_USR",
+		common.MySQLPassword: "MYSQL_PWD",
+		common.MySQLDatabase: "MYSQL_DATABASE",
+		common.SQLiteFile:    "SQLITE_FILE",
+		common.LDAPURL:       "LDAP_URL",
+		common.LDAPSearchDN:  "LDAP_SEARCH_DN",
+		common.LDAPSearchPwd: "LDAP_SEARCH_PWD",
+		common.LDAPBaseDN:    "LDAP_BASE_DN",
+		common.LDAPFilter:    "LDAP_FILTER",
+		common.LDAPUID:       "LDAP_UID",
+		common.LDAPScope: &parser{
 			env:   "LDAP_SCOPE",
 			parse: parseStringToInt,
 		},
-		comcfg.LDAPTimeout: &parser{
+		common.LDAPTimeout: &parser{
 			env:   "LDAP_TIMEOUT",
 			parse: parseStringToInt,
 		},
-		comcfg.EmailHost: "EMAIL_HOST",
-		comcfg.EmailPort: &parser{
+		common.EmailHost: "EMAIL_HOST",
+		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",
 			parse: parseStringToInt,
 		},
-		comcfg.EmailUsername: "EMAIL_USR",
-		comcfg.EmailPassword: "EMAIL_PWD",
-		comcfg.EmailSSL: &parser{
+		common.EmailUsername: "EMAIL_USR",
+		common.EmailPassword: "EMAIL_PWD",
+		common.EmailSSL: &parser{
 			env:   "EMAIL_SSL",
 			parse: parseStringToBool,
 		},
-		comcfg.EmailFrom:     "EMAIL_FROM",
-		comcfg.EmailIdentity: "EMAIL_IDENTITY",
-		comcfg.RegistryURL:   "REGISTRY_URL",
-		comcfg.TokenExpiration: &parser{
+		common.EmailFrom:     "EMAIL_FROM",
+		common.EmailIdentity: "EMAIL_IDENTITY",
+		common.RegistryURL:   "REGISTRY_URL",
+		common.TokenExpiration: &parser{
 			env:   "TOKEN_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.UseCompressedJS: &parser{
-			env:   "USE_COMPRESSED_JS",
-			parse: parseStringToBool,
-		},
-		comcfg.CfgExpiration: &parser{
+		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
 		},
-		comcfg.MaxJobWorkers: &parser{
+		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
-		comcfg.VerifyRemoteCert: &parser{
+		common.VerifyRemoteCert: &parser{
 			env:   "VERIFY_REMOTE_CERT",
 			parse: parseStringToBool,
 		},
-		comcfg.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
-		comcfg.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+		common.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
+		common.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
+		common.AdmiralEndpoint:            "ADMIRAL_URL",
+		common.WithNotary: &parser{
+			env:   "WITH_NOTARY",
+			parse: parseStringToBool,
+		},
 	}
 
 	// configurations need read from environment variables
 	// every time the system startup
 	repeatLoadEnvs = map[string]interface{}{
-		comcfg.ExtEndpoint:   "EXT_ENDPOINT",
-		comcfg.MySQLPassword: "MYSQL_PWD",
-		comcfg.MaxJobWorkers: &parser{
+		common.ExtEndpoint:   "EXT_ENDPOINT",
+		common.MySQLPassword: "MYSQL_PWD",
+		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
-		// TODO remove this config?
-		comcfg.UseCompressedJS: &parser{
-			env:   "USE_COMPRESSED_JS",
-			parse: parseStringToBool,
-		},
-		comcfg.CfgExpiration: &parser{
+		common.CfgExpiration: &parser{
 			env:   "CFG_EXPIRATION",
 			parse: parseStringToInt,
+		},
+		common.AdmiralEndpoint: "ADMIRAL_URL",
+		common.WithNotary: &parser{
+			env:   "WITH_NOTARY",
+			parse: parseStringToBool,
 		},
 	}
 )
@@ -146,6 +148,9 @@ type parser struct {
 }
 
 func parseStringToInt(str string) (interface{}, error) {
+	if len(str) == 0 {
+		return 0, nil
+	}
 	return strconv.Atoi(str)
 }
 
@@ -154,75 +159,65 @@ func parseStringToBool(str string) (interface{}, error) {
 		strings.ToLower(str) == "on", nil
 }
 
-// Init system configurations. Read from config store first,
-// if null read from env
+// Init system configurations. If env RESET is set or configurations
+// read from storage driver is null, load all configurations from env
 func Init() (err error) {
-	//init configuation store
 	if err = initCfgStore(); err != nil {
 		return err
 	}
 
-	//init key provider
-	initKeyProvider()
+	loadAll := false
+	cfgs := map[string]interface{}{}
 
-	cfg, err := GetSystemCfg()
-	if err != nil {
+	if os.Getenv("RESET") == "true" {
+		log.Info("RESET is set, will load all configurations from environment variables")
+		loadAll = true
+	}
+
+	if !loadAll {
+		cfgs, err = CfgStore.Read()
+		if cfgs == nil {
+			log.Info("configurations read from storage driver are null, will load them from environment variables")
+			loadAll = true
+			cfgs = map[string]interface{}{}
+		}
+	}
+
+	if err = LoadFromEnv(cfgs, loadAll); err != nil {
 		return err
 	}
 
-	if cfg != nil {
-		if err = loadFromEnv(cfg, false); err != nil {
-			return err
-		}
-	} else {
-		log.Info("configurations read from store driver are null, initializing system from environment variables...")
-		cfg = make(map[string]interface{})
-		if err = loadFromEnv(cfg, true); err != nil {
-			return err
-		}
-	}
-
-	//sync configurations into cfg store
-	log.Info("updating system configurations...")
-	return UpdateSystemCfg(cfg)
+	return CfgStore.Write(cfgs)
 }
 
 func initCfgStore() (err error) {
-	t := os.Getenv("CFG_STORE_DRIVER")
-	if len(t) == 0 {
-		t = defaultCfgStoreDriver
-	}
-	log.Infof("configuration store driver: %s", t)
-
-	switch t {
-	case "json":
-		path := os.Getenv("JSON_CFG_STORE_PATH")
-		if len(path) == 0 {
-			path = defaultJSONCfgStorePath
-		}
-		log.Infof("json configuration store path: %s", path)
-
-		cfgStore, err = json.NewCfgStore(path)
-	default:
-		err = fmt.Errorf("unsupported configuration store driver %s", t)
-	}
-
-	return err
-}
-
-func initKeyProvider() {
-	path := os.Getenv("KEY_PATH")
+	path := os.Getenv("JSON_CFG_STORE_PATH")
 	if len(path) == 0 {
-		path = defaultKeyPath
+		path = defaultJSONCfgStorePath
 	}
-	log.Infof("key path: %s", path)
+	log.Infof("the path of json configuration storage: %s", path)
 
-	keyProvider = comcfg.NewFileKeyProvider(path)
+	CfgStore, err = json.NewCfgStore(path)
+	if err != nil {
+		return
+	}
+
+	kp := os.Getenv("KEY_PATH")
+	if len(kp) == 0 {
+		kp = defaultKeyPath
+	}
+	log.Infof("the path of key used by key provider: %s", kp)
+
+	encryptor := enpt.NewAESEncryptor(
+		comcfg.NewFileKeyProvider(kp), nil)
+
+	CfgStore = encrypt.NewCfgStore(encryptor, attrs, CfgStore)
+	return nil
 }
 
-// load the configurations from allEnvs, if all is false, it just loads
+// LoadFromEnv loads the configurations from allEnvs, if all is false, it just loads
 // the repeatLoadEnvs
-func loadFromEnv(cfg map[string]interface{}, all bool) error {
+func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 	envs := repeatLoadEnvs
 	if all {
 		envs = allEnvs
@@ -230,7 +225,7 @@ func loadFromEnv(cfg map[string]interface{}, all bool) error {
 
 	for k, v := range envs {
 		if str, ok := v.(string); ok {
-			cfg[k] = os.Getenv(str)
+			cfgs[k] = os.Getenv(str)
 			continue
 		}
 
@@ -239,86 +234,12 @@ func loadFromEnv(cfg map[string]interface{}, all bool) error {
 			if err != nil {
 				return err
 			}
-			cfg[k] = i
+			cfgs[k] = i
 			continue
 		}
 
 		return fmt.Errorf("%v is not string or parse type", v)
 	}
 
-	return nil
-}
-
-// GetSystemCfg returns the system configurations
-func GetSystemCfg() (map[string]interface{}, error) {
-	m, err := cfgStore.Read()
-	if err != nil {
-		return nil, err
-	}
-
-	key, err := keyProvider.Get(nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get key: %v", err)
-	}
-
-	if err = decrypt(m, attrs, key); err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-// UpdateSystemCfg updates the system configurations
-func UpdateSystemCfg(cfg map[string]interface{}) error {
-
-	key, err := keyProvider.Get(nil)
-	if err != nil {
-		return fmt.Errorf("failed to get key: %v", err)
-	}
-
-	if err := encrypt(cfg, attrs, key); err != nil {
-		return err
-	}
-
-	return cfgStore.Write(cfg)
-}
-
-func encrypt(m map[string]interface{}, keys []string, secretKey string) error {
-	for _, key := range keys {
-		v, ok := m[key]
-		if !ok {
-			continue
-		}
-
-		if len(v.(string)) == 0 {
-			continue
-		}
-
-		cipherText, err := utils.ReversibleEncrypt(v.(string), secretKey)
-		if err != nil {
-			return err
-		}
-		m[key] = cipherText
-	}
-	return nil
-}
-
-func decrypt(m map[string]interface{}, keys []string, secretKey string) error {
-	for _, key := range keys {
-		v, ok := m[key]
-		if !ok {
-			continue
-		}
-
-		if len(v.(string)) == 0 {
-			continue
-		}
-
-		text, err := utils.ReversibleDecrypt(v.(string), secretKey)
-		if err != nil {
-			return err
-		}
-		m[key] = text
-	}
 	return nil
 }

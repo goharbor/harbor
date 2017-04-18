@@ -1,6 +1,19 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 
-import { Router }  from '@angular/router';
+import { Router } from '@angular/router';
 
 import { Project } from './project';
 import { ProjectService } from './project.service';
@@ -9,32 +22,35 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 
 import { ListProjectComponent } from './list-project/list-project.component';
 
-import { MessageService } from '../global-message/message.service';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { Message } from '../global-message/message';
 
-import { AlertType } from '../shared/shared.const';
 import { Response } from '@angular/http';
 
-import { DeletionDialogService } from '../shared/deletion-dialog/deletion-dialog.service';
-import { DeletionMessage } from '../shared/deletion-dialog/deletion-message';
-import { DeletionTargets } from '../shared/shared.const';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
+import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 
 import { Subscription } from 'rxjs/Subscription';
 
+import { State } from 'clarity-angular';
 
-const types: {} = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS'};
+import { AppConfigService } from '../app-config.service';
+import { SessionService } from '../shared/session.service';
+import { ProjectTypes } from '../shared/shared.const';
+import { StatisticHandler } from '../shared/statictics/statistic-handler.service';
 
 @Component({
-    selector: 'project',
-    templateUrl: 'project.component.html',
-    styleUrls: [ 'project.css' ]
+  selector: 'project',
+  templateUrl: 'project.component.html',
+  styleUrls: ['./project.component.css']
 })
-export class ProjectComponent implements OnInit {
-    
+export class ProjectComponent implements OnInit, OnDestroy {
+
   selected = [];
   changedProjects: Project[];
-  projectTypes = types;
-  
+  projectTypes = ProjectTypes;
+
   @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
 
@@ -42,63 +58,115 @@ export class ProjectComponent implements OnInit {
   listProject: ListProjectComponent;
 
   currentFilteredType: number = 0;
-  lastFilteredType: number = 0;
 
   subscription: Subscription;
 
+  projectName: string;
+  isPublic: number;
+
+  page: number = 1;
+  pageSize: number = 15;
+
+  totalPage: number;
+  totalRecordCount: number;
+
   constructor(
     private projectService: ProjectService,
-    private messageService: MessageService,
-    private deletionDialogService: DeletionDialogService){
-      this.subscription = deletionDialogService.deletionConfirm$.subscribe(message => {
-        if (message && message.targetId === DeletionTargets.PROJECT) {
-          let projectId = message.data;
-          this.projectService
-              .deleteProject(projectId)
-              .subscribe(
-                response=>{
-                  console.log('Successful delete project with ID:' + projectId);
-                  this.retrieve('', this.lastFilteredType);
-                },
-                error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
-              );
-        }
-      });
-    }
-
-  ngOnInit(): void {
-    this.retrieve('', this.lastFilteredType);
+    private messageHandlerService: MessageHandlerService,
+    private appConfigService: AppConfigService,
+    private sessionService: SessionService,
+    private deletionDialogService: ConfirmationDialogService,
+    private statisticHandler: StatisticHandler) {
+    this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
+      if (message &&
+        message.state === ConfirmationState.CONFIRMED &&
+        message.source === ConfirmationTargets.PROJECT) {
+        let projectId = message.data;
+        this.projectService
+          .deleteProject(projectId)
+          .subscribe(
+          response => {
+            this.messageHandlerService.showSuccess('PROJECT.DELETED_SUCCESS');
+            this.retrieve();
+            this.statisticHandler.refresh();
+          },
+          error =>{
+            if(error && error.status === 412) {
+              this.messageHandlerService.showError('PROJECT.FAILED_TO_DELETE_PROJECT', '');
+            } else {
+              this.messageHandlerService.handleError(error);
+            }
+          }
+        );
+      }
+    });
+    
   }
 
-  retrieve(name: string, isPublic: number): void {
+  ngOnInit(): void {
+    this.projectName = '';
+    this.isPublic = 0;
+    
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  get projectCreationRestriction(): boolean {
+    let account = this.sessionService.getCurrentUser();
+    if(account) {
+      switch(this.appConfigService.getConfig().project_creation_restriction) {
+      case 'adminonly':
+        return (account.has_admin_role === 1);
+      case 'everyone':
+        return true;
+      } 
+    }
+    return false;
+  }
+
+  retrieve(state?: State): void {
+    if (state) {
+      this.page = state.page.to + 1;
+    }
     this.projectService
-        .listProjects(name, isPublic)
-        .subscribe(
-          response => this.changedProjects = <Project[]>response,
-          error => this.messageService.announceAppLevelMessage(error.status, error, AlertType.WARNING)
-        );
+      .listProjects(this.projectName, this.isPublic, this.page, this.pageSize)
+      .subscribe(
+      response => {
+        this.totalRecordCount = response.headers.get('x-total-count');
+        this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+        this.changedProjects = response.json();
+      },
+      error => this.messageHandlerService.handleError(error)
+    );
   }
 
   openModal(): void {
     this.creationProject.newProject();
   }
-  
+
   createProject(created: boolean) {
-    if(created) {
-      this.retrieve('', this.lastFilteredType);
+    if (created) {
+      this.projectName = '';
+      this.retrieve();
+      this.statisticHandler.refresh();
     }
   }
 
   doSearchProjects(projectName: string): void {
-    console.log('Search for project name:' + projectName);
-    this.retrieve(projectName, this.lastFilteredType);
+    this.projectName = projectName;
+    this.retrieve();
   }
 
-  doFilterProjects(filteredType: number): void {
-    console.log('Filter projects with type:' + types[filteredType]);
-    this.lastFilteredType = filteredType;
-    this.currentFilteredType = filteredType;
-    this.retrieve('', this.lastFilteredType);
+  doFilterProjects($event: any): void {
+    if ($event && $event.target && $event.target["value"]) {
+      this.currentFilteredType = $event.target["value"];
+      this.isPublic = this.currentFilteredType;
+      this.retrieve();
+    }
   }
 
   toggleProject(p: Project) {
@@ -107,25 +175,29 @@ export class ProjectComponent implements OnInit {
       this.projectService
         .toggleProjectPublic(p.project_id, p.public)
         .subscribe(
-          response=>console.log('Successful toggled project_id:' + p.project_id),
-          error=>this.messageService.announceMessage(error.status, error, AlertType.WARNING)
+        response => {
+          this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
+          this.statisticHandler.refresh();
+        },
+        error => this.messageHandlerService.handleError(error)
         );
     }
   }
 
   deleteProject(p: Project) {
-    let deletionMessage = new DeletionMessage(
+    let deletionMessage = new ConfirmationMessage(
       'PROJECT.DELETION_TITLE',
       'PROJECT.DELETION_SUMMARY',
       p.name,
       p.project_id,
-      DeletionTargets.PROJECT
+      ConfirmationTargets.PROJECT
     );
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }
 
   refresh(): void {
-    this.retrieve('', this.lastFilteredType);
+    this.retrieve();
+    this.statisticHandler.refresh();
   }
 
 }

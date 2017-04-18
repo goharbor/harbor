@@ -1,5 +1,18 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ModalEvent } from '../modal-event';
@@ -7,9 +20,12 @@ import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService, CookieOptions } from 'angular2-cookie/core';
 
-import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
+import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
+import { AppConfigService } from '../../app-config.service';
+import { SearchTriggerService } from '../global-search/search-trigger.service';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
     selector: 'navigator',
@@ -22,35 +38,64 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
-    private sessionUser: SessionUser = null;
     private selectedLang: string = enLang;
+    private appTitle: string = 'APP_TITLE.HARBOR';
 
     constructor(
         private session: SessionService,
         private router: Router,
         private translate: TranslateService,
-        private cookie: CookieService) { }
+        private cookie: CookieService,
+        private appConfigService: AppConfigService,
+        private msgHandler: MessageHandlerService,
+        private searchTrigger: SearchTriggerService) {
+
+    }
 
     ngOnInit(): void {
-        this.sessionUser = this.session.getCurrentUser();
         this.selectedLang = this.translate.currentLang;
         this.translate.onLangChange.subscribe(langChange => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
-            this.cookie.put("harbor-lang", langChange.lang);
+            let opt = new CookieOptions({path: '/', expires: new Date(Date.now() + 3600*1000*24*31)});
+            this.cookie.put("harbor-lang", langChange.lang, opt);
         });
+        if (this.appConfigService.isIntegrationMode()) {
+            this.appTitle = 'APP_TITLE.VIC';
+        }
     }
 
     public get isSessionValid(): boolean {
-        return this.sessionUser != null;
+        return this.session.getCurrentUser() != null;
     }
 
     public get accountName(): string {
-        return this.sessionUser ? this.sessionUser.username : "";
+        return this.session.getCurrentUser() ? this.session.getCurrentUser().username : "N/A";
     }
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
+    }
+
+    public get admiralLink(): string {
+        return this.appConfigService.getAdmiralEndpoint(window.location.href);
+    }
+
+    public get isIntegrationMode(): boolean {
+        return this.appConfigService.isIntegrationMode();
+    }
+
+    public get canDownloadCert(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0 &&
+            this.appConfigService.getConfig() &&
+            this.appConfigService.getConfig().has_ca_root;
+    }
+
+    public get canChangePassword(): boolean {
+        return this.session.getCurrentUser() &&
+            this.appConfigService.getConfig() &&
+            this.appConfigService.getConfig().auth_mode != 'ldap_auth';
     }
 
     matchLang(lang: string): boolean {
@@ -83,36 +128,43 @@ export class NavigatorComponent implements OnInit {
 
     //Log out system
     logOut(): void {
-        this.session.signOff()
-            .then(() => {
-                this.sessionUser = null;
-                //Naviagte to the sign in route
-                this.router.navigate(["/sign-in"]);
-            })
-            .catch()//TODO:
+        //Naviagte to the sign in route
+        //Appending 'signout' means destroy session cache
+        let navigatorExtra: NavigationExtras = {
+            queryParams: { "signout": true }
+        };
+        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+        //Confirm search result panel is close
+        this.searchTrigger.closeSearch(true);
     }
 
     //Switch languages
     switchLanguage(lang: string): void {
-        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())){
-            this.translate.use(lang);
-        }else{
-            this.translate.use(enLang);//Use default
-            //TODO:
-            console.error('Language '+lang.trim()+' is not suppoted');
+        let selectedLang: string = enLang;//Default
+        if (supportedLangs.find(supportedLang => supportedLang === lang.trim())) {
+            selectedLang = lang;
+        } else {
+            console.error('Language ' + lang.trim() + ' is not suppoted yet');
         }
-        //Try to switch backend lang
-        //this.session.switchLanguage(lang).catch(error => console.error(error));
+
+        this.translate.use(selectedLang).subscribe(() => window.location.reload());
     }
 
     //Handle the home action
     homeAction(): void {
-        if(this.sessionUser != null){
+        if (this.session.getCurrentUser() != null) {
             //Navigate to default page
-            this.router.navigate(['harbor']);
-        }else{
+            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        } else {
             //Naviagte to signin page
-            this.router.navigate(['sign-in']);
+            this.router.navigate([CommonRoutes.HARBOR_ROOT]);
         }
+
+        //Confirm search result panel is close
+        this.searchTrigger.closeSearch(true);
+    }
+
+    registryAction(): void {
+        this.searchTrigger.closeSearch(true);
     }
 }

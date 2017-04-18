@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
@@ -103,10 +102,12 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 }
 
 //GetTopRepos returns the most popular repositories
-func GetTopRepos(userID int, count int) ([]models.TopRepo, error) {
-	topRepos := []models.TopRepo{}
-
-	sql := `select r.name, r.pull_count from repository r
+func GetTopRepos(userID int, count int) ([]*models.RepoRecord, error) {
+	sql :=
+		`select r.repository_id, r.name, r.owner_id, 
+			r.project_id, r.description, r.pull_count, 
+			r.star_count, r.creation_time, r.update_time
+		from repository r
 		inner join project p on r.project_id = p.project_id
 		where (
 			p.deleted = 0 and (
@@ -122,18 +123,8 @@ func GetTopRepos(userID int, count int) ([]models.TopRepo, error) {
 		order by r.pull_count desc, r.name limit ?`
 	repositories := []*models.RepoRecord{}
 	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, userID, count).QueryRows(&repositories)
-	if err != nil {
-		return topRepos, err
-	}
 
-	for _, repository := range repositories {
-		topRepos = append(topRepos, models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
-		})
-	}
-
-	return topRepos, nil
+	return repositories, err
 }
 
 // GetTotalOfRepositories ...

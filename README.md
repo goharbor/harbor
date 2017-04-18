@@ -12,6 +12,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 * **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
 * **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management.
 * **Image deletion & garbage collection**: Images can be deleted and their space can be recycled. 
+* **Notary**: Image authenticity can be ensured. 
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
@@ -44,6 +45,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-* Docker Registry 2.5: [docker image](https://hub.docker.com/_/registry/), [license](https://github.com/docker/distribution/blob/master/LICENSE)
+* Docker Registry 2.6: [docker image](https://hub.docker.com/_/registry/), [license](https://github.com/docker/distribution/blob/master/LICENSE)
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 * NGINX 1.11.5: [docker image](https://hub.docker.com/_/nginx/), [license](https://github.com/nginxinc/docker-nginx/blob/master/LICENSE)

@@ -1,10 +1,22 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-edit-policy.component';
 
-import { MessageService } from '../global-message/message.service';
-import { AlertType } from '../shared/shared.const';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { SessionService } from '../shared/session.service';
 
@@ -14,6 +26,8 @@ import { SessionUser } from '../shared/session-user';
 import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
+
+import { State } from 'clarity-angular';
 
 const ruleStatus = [
   { 'key':  '', 'description': 'REPLICATION.ALL_STATUS'},
@@ -41,11 +55,14 @@ class SearchOption {
   status: string = '';
   startTime: string = '';
   endTime: string = '';
+  page: number = 1;
+  pageSize: number = 5;
 }
 
 @Component({
   selector: 'replicaton',
-  templateUrl: 'replication.component.html'
+  templateUrl: 'replication.component.html',
+  styleUrls: ['./replication.component.css']
 })
 export class ReplicationComponent implements OnInit {
    
@@ -62,9 +79,13 @@ export class ReplicationComponent implements OnInit {
 
    changedPolicies: Policy[];
    changedJobs: Job[];
+   initSelectedId: number;
 
    policies: Policy[];
    jobs: Job[];
+
+   jobsTotalRecordCount: number;
+   jobsTotalPage: number;
 
    toggleJobSearchOption = optionalSearch;
    currentJobSearchOption: number;
@@ -74,7 +95,7 @@ export class ReplicationComponent implements OnInit {
 
    constructor(
      private sessionService: SessionService, 
-     private messageService: MessageService,
+     private messageHandlerService: MessageHandlerService,
      private replicationService: ReplicationService,
      private route: ActivatedRoute) {
      this.currentUser = this.sessionService.getCurrentUser();
@@ -82,12 +103,16 @@ export class ReplicationComponent implements OnInit {
 
    ngOnInit(): void {
      this.projectId = +this.route.snapshot.parent.params['id'];
-     console.log('Get projectId from route params snapshot:' + this.projectId);
      this.search = new SearchOption();
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
      this.retrievePolicies();
+
+     let isCreate = this.route.snapshot.parent.queryParams['is_create'];
+     if (isCreate && <boolean>isCreate) {
+       this.openModal();
+     }
    }
 
    retrievePolicies(): void {
@@ -96,54 +121,77 @@ export class ReplicationComponent implements OnInit {
          .subscribe(
            response=>{
              this.changedPolicies = response;
+             if(this.changedPolicies && this.changedPolicies.length > 0) {
+               this.initSelectedId = this.changedPolicies[0].id;
+             }
              this.policies = this.changedPolicies;
              if(this.changedPolicies && this.changedPolicies.length > 0) {
-               this.fetchPolicyJobs(this.changedPolicies[0].id);
+               this.search.policyId = this.changedPolicies[0].id;
+               this.fetchPolicyJobs();
              } else {
                this.changedJobs = [];
              }
            },
-           error=>this.messageService.announceMessage(error.status,'Failed to get policies with project ID:' + this.projectId, AlertType.DANGER)
+           error=>this.messageHandlerService.handleError(error)
          );
    }
 
    openModal(): void {
-     console.log('Open modal to create policy.');
-     this.createEditPolicyComponent.openCreateEditPolicy();
+     this.createEditPolicyComponent.openCreateEditPolicy(true);
    }
 
-   openEditPolicy(policyId: number) {
-     console.log('Open modal to edit policy ID:' + policyId);
-     this.createEditPolicyComponent.openCreateEditPolicy(policyId);
-   }
-
-   fetchPolicyJobs(policyId: number) { 
-     this.search.policyId = policyId;
-     console.log('Received policy ID ' + this.search.policyId + ' by clicked row.');
-     this.replicationService
-         .listJobs(this.search.policyId, this.search.status, this.search.repoName, this.search.startTime, this.search.endTime)
-         .subscribe(
-           response=>{
-             this.changedJobs = response;
-             this.jobs = this.changedJobs;
-           },
-           error=>this.messageService.announceMessage(error.status, 'Failed to fetch jobs with policy ID:' + this.search.policyId, AlertType.DANGER)
-         );
-   }
-
-   selectOne(policy: Policy) {
+   openEditPolicy(policy: Policy) {
      if(policy) {
-      this.fetchPolicyJobs(policy.id);
+       let editable = true;
+       if(policy.enabled === 1) {
+         editable = false;
+       }
+       this.createEditPolicyComponent.openCreateEditPolicy(editable, policy.id);
      }
    }
 
+   fetchPolicyJobs(state?: State) { 
+     if(state) {
+       this.search.page = state.page.to + 1;
+     }
+     this.replicationService
+         .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
+           this.search.startTime, this.search.endTime, this.search.page, this.search.pageSize)
+         .subscribe(
+           response=>{
+             this.jobsTotalRecordCount = response.headers.get('x-total-count');
+             this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
+             this.changedJobs = response.json();
+             this.jobs = this.changedJobs;
+             for(let i = 0; i < this.jobs.length; i++) {
+               let j = this.jobs[i];
+               if(j.status == 'retrying' || j.status == 'error') {
+                 this.messageHandlerService.showError('REPLICATION.FOUND_ERROR_IN_JOBS', '');
+                 break;
+               }
+             }
+           },
+           error=>this.messageHandlerService.handleError(error)
+         );
+   }
+
+   selectOnePolicy(policy: Policy) {
+     if(policy) {
+      this.search.policyId = policy.id;
+      this.search.repoName = '';
+      this.search.status = ''
+      this.currentJobSearchOption = 0;
+      this.currentJobStatus = { 'key': '', 'description': 'REPLICATION.ALL'};
+      this.fetchPolicyJobs();
+     }
+   }
+   
    doSearchPolicies(policyName: string) {
      this.search.policyName = policyName;
      this.retrievePolicies();
    }
 
    doFilterPolicyStatus(status: string) {
-     console.log('Do filter policies with status:' + status);
      this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
      if(status.trim() === '') {
        this.changedPolicies = this.policies;
@@ -153,22 +201,19 @@ export class ReplicationComponent implements OnInit {
    }
 
    doFilterJobStatus(status: string) {
-     console.log('Do filter jobs with status:' + status);
      this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
-     if(status.trim() === '') {
-       this.changedJobs = this.jobs;
-     } else {
-       this.changedJobs = this.jobs.filter(job=>job.status === status);
-     }
+     this.search.status = status;
+     this.doSearchJobs(this.search.repoName);
    }
 
    doSearchJobs(repoName: string) {
      this.search.repoName = repoName;
-     this.fetchPolicyJobs(this.search.policyId);
+     this.fetchPolicyJobs();
    }
 
    reloadPolicies(isReady: boolean) {
      if(isReady) {
+       this.search.policyName = '';
        this.retrievePolicies();
      }
    }
@@ -178,28 +223,27 @@ export class ReplicationComponent implements OnInit {
    }
 
    refreshJobs() {
-     this.fetchPolicyJobs(this.search.policyId);
+     this.fetchPolicyJobs();
    }
 
    toggleSearchJobOptionalName(option: number) {
      (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
    }
 
-   doJobSearchByTimeRange(strDate: string, target: string) {
+   doJobSearchByStartTime(strDate: string) {
+     if(!strDate || strDate.trim() === '') {
+        strDate = 0 + '';
+     }     
+     (strDate === '0') ? this.search.startTime = '' : this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+     this.fetchPolicyJobs();
+   }
+
+   doJobSearchByEndTime(strDate: string) {
      if(!strDate || strDate.trim() === '') {
         strDate = 0 + '';
      }
      let oneDayOffset = 3600 * 24;
-     switch(target) {
-     case 'begin':
-       this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
-       break;
-     case 'end':
-       this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
-       break;
-     }
-     console.log('Search jobs filtered by time range, begin: ' + this.search.startTime + ', end:' + this.search.endTime);
-     this.fetchPolicyJobs(this.search.policyId);
+     (strDate === '0') ? this.search.endTime = '' : this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
+     this.fetchPolicyJobs();
    }
-
 }

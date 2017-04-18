@@ -1,8 +1,23 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Injectable } from '@angular/core';
 import { Headers, Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SessionUser } from './session-user';
+import { Member } from '../project/member/member';
+
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const'
 
@@ -11,6 +26,7 @@ const currentUserEndpint = "/api/users/current";
 const signOffEndpoint = "/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
+const userExistsEndpoint = "/userExists";
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
@@ -26,6 +42,8 @@ const langMap = {
 export class SessionService {
     currentUser: SessionUser = null;
 
+    projectMembers: Member[];
+
     private headers = new Headers({
         "Content-Type": 'application/json'
     });
@@ -39,6 +57,12 @@ export class SessionService {
     //Handle the related exceptions
     private handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
+    }
+
+    //Clear session
+    clear(): void {
+        this.currentUser = null;
+        this.projectMembers = [];
     }
 
     //Submit signin form to backend (NOT restful service)
@@ -64,10 +88,7 @@ export class SessionService {
      */
     retrieveUser(): Promise<SessionUser> {
         return this.http.get(currentUserEndpint, { headers: this.headers }).toPromise()
-            .then(response => {
-                this.currentUser = response.json() as SessionUser;
-                return this.currentUser;
-            })
+            .then(response => this.currentUser = response.json() as SessionUser)
             .catch(error => this.handleError(error))
     }
 
@@ -85,7 +106,7 @@ export class SessionService {
         return this.http.get(signOffEndpoint, { headers: this.headers }).toPromise()
             .then(() => {
                 //Destroy current session cache
-                this.currentUser = null;
+                //this.currentUser = null;
             }) //Nothing returned
             .catch(error => this.handleError(error))
     }
@@ -121,13 +142,37 @@ export class SessionService {
         }
 
         let backendLang = langMap[lang];
-        if(!backendLang){
+        if (!backendLang) {
             backendLang = langMap[enLang];
         }
 
         let getUrl = langEndpoint + "?lang=" + backendLang;
         return this.http.get(getUrl).toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error))
+            .then(() => null)
+            .catch(error => this.handleError(error))
     }
+
+    checkUserExisting(target: string, value: string): Promise<boolean> {
+        //Build the form package
+        const body = new URLSearchParams();
+        body.set('target', target);
+        body.set('value', value);
+
+        //Trigger Http
+        return this.http.post(userExistsEndpoint, body.toString(), { headers: this.formHeaders })
+            .toPromise()
+            .then(response => {
+                return response.json();
+            })
+            .catch(error => this.handleError(error));
+    }
+
+    setProjectMembers(projectMembers: Member[]): void {
+        this.projectMembers = projectMembers;
+    }
+
+    getProjectMembers(): Member[] {
+        return this.projectMembers;
+    }
+
 }

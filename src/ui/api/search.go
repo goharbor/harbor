@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -73,30 +72,34 @@ func (s *SearchAPI) Get() {
 	sort.Sort(projectSorter)
 	projectResult := []models.Project{}
 	for _, p := range projects {
-		match := true
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
-			match = false
+			continue
 		}
-		if match {
-			if userID != dao.NonExistUserID {
-				if isSysAdmin {
-					p.Role = models.PROJECTADMIN
-				}
-				if p.Role == models.PROJECTADMIN {
-					p.Togglable = true
-				}
-			}
 
-			repos, err := dao.GetRepositoryByProjectName(p.Name)
+		if userID != dao.NonExistUserID {
+			roles, err := dao.GetUserProjectRoles(userID, p.ProjectID)
 			if err != nil {
-				log.Errorf("failed to get repositories of project %s: %v", p.Name, err)
+				log.Errorf("failed to get user's project role: %v", err)
 				s.CustomAbort(http.StatusInternalServerError, "")
 			}
+			if len(roles) != 0 {
+				p.Role = roles[0].RoleID
+			}
 
-			p.RepoCount = len(repos)
-
-			projectResult = append(projectResult, p)
+			if p.Role == models.PROJECTADMIN || isSysAdmin {
+				p.Togglable = true
+			}
 		}
+
+		repos, err := dao.GetRepositoryByProjectName(p.Name)
+		if err != nil {
+			log.Errorf("failed to get repositories of project %s: %v", p.Name, err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		p.RepoCount = len(repos)
+
+		projectResult = append(projectResult, p)
 	}
 
 	repositoryResult, err := filterRepositories(projects, keyword)

@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package token
 
@@ -43,14 +42,14 @@ func InitCreators() {
 		},
 		"registry": &registryFilter{},
 	}
-	ext, err := config.ExtEndpoint()
+	ext, err := config.ExtURL()
 	if err != nil {
-		log.Warningf("Failed to get ext enpoint, err: %v, the token service will not be functional with notary requests", err)
+		log.Warningf("Failed to get ext url, err: %v, the token service will not be functional with notary requests", err)
 	} else {
 		notaryFilterMap = map[string]accessFilter{
 			"repository": &repositoryFilter{
 				parser: &endpointParser{
-					endpoint: strings.Split(ext, "//")[1],
+					endpoint: ext,
 				},
 			},
 		}
@@ -138,6 +137,10 @@ func (reg registryFilter) filter(user userInfo, a *token.ResourceActions) error 
 	//Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
+	}
+	if !user.allPerm {
+		//Set the actions to empty is the user is not admin
+		a.Actions = []string{}
 	}
 	return nil
 }

@@ -1,5 +1,18 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Headers, Http, RequestOptions, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { PasswordSetting } from './password-setting';
@@ -52,10 +65,18 @@ export class PasswordSettingService {
             return Promise.reject("Invalid reset uuid or password");
         }
 
-        return this.http.post(resetPasswordEndpoint, JSON.stringify({
-            "reset_uuid": uuid,
-            "password": newPassword
-        }), this.options)
+        let formHeaders = new Headers({
+            "Content-Type": 'application/x-www-form-urlencoded'
+        });
+        let formOptions: RequestOptions = new RequestOptions({
+            headers: formHeaders
+        });
+        
+        let body: URLSearchParams = new URLSearchParams();
+        body.set("reset_uuid", uuid);
+        body.set("password", newPassword);
+
+        return this.http.post(resetPasswordEndpoint, body.toString(), formOptions)
             .toPromise()
             .then(response => response)
             .catch(error => {
