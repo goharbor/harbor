@@ -52,7 +52,7 @@ Harbor supports two authentication modes:
 
 	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
 	
-	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it successes, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
 	
 	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
@@ -111,7 +111,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ## Administrator options  
 ### Managing user  
-Administrator can add "Administrator" role to an ordinary user by click button on the left and select "set as Administrator". To delete a user, select "Delete". 
+Administrator can add "Administrator" role to an ordinary user by click button on the left and select "Set as Administrator". To delete a user, select "Delete". 
 
 ![browse project](img/new_set_admin_remove_user.png)
 
@@ -126,42 +126,43 @@ You can list, edit, enable and disable rules in the "Replication" tab. Make sure
 ![browse project](img/new_manage_replication.png)
 
 ### Managing authentication
-You can change authentication mode between DB(by default) and LDAP before any user is added,when there is at least one user(besides admin) in Harbor,you cannot change the authentication mode.  
+You can change authentication mode between **Database**(default) and **LDAP** before any user is added,when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
 ![browse project](img/new_auth.png)
-When use LDAP mode, self-registration is disabled.The parameters with stars are essential, for more info, refer to [User account](#user-account).   
+When using LDAP mode, user's self-registration is disabled.The parameters of LDAP server must be filled in. For more info, refer to [User account](#user-account).   
 ![browse project](img/ldap_auth.png)
 
 ### Managing project creation
-You can manage if a non-admin user can create a project.  
+Use the **Project Creation** drop-down menu toset which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
 ![browse project](img/new_proj_create.png)
 
 ### Managing self registration
-You can manage if an unregistered user can sign up for an account. This option is not availiable if you use LDAP authentication.  
+You can manage whether a user can sign up for a new account. This option is not availiable if you use LDAP authentication.  
 ![browse project](img/new_self_reg.png)
 
-### Managing verify remote cert
-You  can choose to whether to verify remote endpoint's certification. You must disable certificate verification if the remote registry uses a self-signed or an untrusted certificate.  
+### Managing verification of remote certificate
+You  can choose whether to verify remote endpoint's certification. You may need to disable certificate verification if the remote registry uses a self-signed or an untrusted certificate.  
 ![browse project](img/new_remote_cert.png)
 
 ### Managing email settings
-You can change Harbor's email settings, the mail server is used to send responses to users who request to reset their password.  
+You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  
 ![browse project](img/new_config_email.png)
 
 ## Pulling and pushing images using Docker client  
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
-Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to /etc/default/docker (ubuntu) or /etc/sysconfig/docker (centos) and restart Docker:    
+Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to ```/etc/default/docker``` (ubuntu) or ```/etc/sysconfig/docker``` (centos) and restart Docker:    
+  
+
 *FATA[0000] Error response from daemon: v1 ping attempt failed with error:  
 Get https://myregistrydomain.com:5000/v1/_ping: tls: oversized record received with length 20527.   
   
 
-If this private registry supports only HTTP or HTTPS with an unknown CA certificate,please add   
-`--insecure-registry myregistrydomain.com:5000` to the daemon's arguments.  
+If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
+`--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
   
 
-In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag;  
-simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com:5000/ca.crt*  
+In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt*  
 
 ### Pulling images  
 If the project that the image belongs to is private, you should sign in first:  
@@ -233,7 +234,7 @@ $ docker-compose start
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Content trust  
-If you want to enable content trust to ensure that images are signed, set two environment variables in the terminal before push or pull any image:
+If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
@@ -242,5 +243,5 @@ If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust,HTTPS must be enabled in Harbor.**  
   
 
-When an image is signed, image will have a tick show in UI, unsigned will have a cross show in UI.  
+When an image is signed, it has a tick show in UI; otherwise,a cross is displayed instead.  
 ![browse project](img/content_trust.png)
