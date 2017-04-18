@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
@@ -21,20 +21,20 @@ import { State } from 'clarity-angular';
 
 @Component({
   selector: 'list-project-ro',
-  templateUrl: 'list-project-ro.component.html'
+  templateUrl: 'list-project-ro.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListProjectROComponent {
   @Input() projects: Project[];
-
-  @Input() totalPage: number;
-  @Input() totalRecordCount: number;
-  pageOffset: number = 1;
-
   @Output() paginate = new EventEmitter<State>();
 
   constructor(
     private searchTrigger: SearchTriggerService,
-    private router: Router) { }
+    private router: Router,
+    private ref: ChangeDetectorRef) {
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
+  }
 
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(true);

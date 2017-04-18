@@ -24,7 +24,7 @@
     <clr-dg-column>{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
-    <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
+    <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
         <clr-dg-action-overflow>
             <button class="action-item" (click)="showTagID('tag', t)">{{'REPOSITORY.COPY_ID' | translate}}</button>
             <button class="action-item" (click)="showTagID('parent', t)">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</button>

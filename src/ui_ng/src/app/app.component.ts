@@ -43,8 +43,7 @@ export class AppComponent {
         }
 
         let selectedLang = this.isLangMatch(langSetting, supportedLangs) ? langSetting : enLang;
-        translate.use(selectedLang);
-        //this.session.switchLanguage(selectedLang).catch(error => console.error(error));
+        translate.use(selectedLang);       
 
         //Override page title
         let key: string = "APP_TITLE.HARBOR";

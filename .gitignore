@@ -28,4 +28,10 @@ src/ui_ng/typings/
 **/ssl/
 **/proxy.config.json
 
+src/ui_ng/src/**/*.js
+src/ui_ng/src/**/*.js.map
+src/ui_ng/src/**/*.json
 
+src/ui_ng/aot/**/*.js
+src/ui_ng/aot/**/*.js.map
+src/ui_ng/aot/**/*.json

@@ -11,14 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Job } from '../job';
 import { State } from 'clarity-angular';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
 @Component({
   selector: 'list-job',
-  templateUrl: 'list-job.component.html'
+  templateUrl: 'list-job.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListJobComponent {
   @Input() jobs: Job[];
@@ -26,7 +27,12 @@ export class ListJobComponent {
   @Input() totalPage: number;
   @Output() paginate = new EventEmitter<State>();
 
-  constructor(private messageHandlerService: MessageHandlerService) {}
+  constructor(
+    private messageHandlerService: MessageHandlerService,
+    private ref: ChangeDetectorRef) {
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);         
+  }
 
   pageOffset: number = 1;
 
