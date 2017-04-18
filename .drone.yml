@@ -1,0 +1,5 @@
+# Harbor drone integration.
+---
+clone:
+  path: github.com/vmware/harbor
+  tags: true
