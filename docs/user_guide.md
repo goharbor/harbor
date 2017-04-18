@@ -135,8 +135,8 @@ When using LDAP mode, user's self-registration is disabled. The parameters of LD
 Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
 ![browse project](img/new_proj_create.png)
 
-### Managing self registration
-You can manage whether a user can sign up for a new account. This option is not availiable if you use LDAP authentication.  
+### Managing self-registration
+You can manage whether a user can sign up for a new account. This option is not available if you use LDAP authentication.  
 ![browse project](img/new_self_reg.png)
 
 ### Managing verification of remote certificate
@@ -154,7 +154,7 @@ You can change Harbor's email settings, the mail server is used to send out resp
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to add '--insecure-registry' option to ```/etc/default/docker``` (ubuntu) or ```/etc/sysconfig/docker``` (centos) and restart Docker:    
   
 
-Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.   
+```Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.```   
   
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
@@ -242,9 +242,9 @@ If you want to enable content trust to ensure that images are signed, please set
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
 ```
-If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. When an images is signed, it is indicated in the Web UI.  
+If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. When an image is signed, it is indicated in the Web UI.  
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.**  
   
 
-When an image is signed, it has a tick shown in UI; otherwise, a cross is displayed instead.  
+When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
