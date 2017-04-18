@@ -126,13 +126,13 @@ You can list, edit, enable and disable rules in the "Replication" tab. Make sure
 ![browse project](img/new_manage_replication.png)
 
 ### Managing authentication
-You can change authentication mode between **Database**(default) and **LDAP** before any user is added,when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
+You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
 ![browse project](img/new_auth.png)
-When using LDAP mode, user's self-registration is disabled.The parameters of LDAP server must be filled in. For more info, refer to [User account](#user-account).   
+When using LDAP mode, user's self-registration is disabled. The parameters of LDAP server must be filled in. For more information, refer to [User account](#user-account).   
 ![browse project](img/ldap_auth.png)
 
 ### Managing project creation
-Use the **Project Creation** drop-down menu toset which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
+Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
 ![browse project](img/new_proj_create.png)
 
 ### Managing self registration
@@ -161,7 +161,7 @@ If this private registry supports only HTTP or HTTPS with an unknown CA certific
 `--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
   
 
-In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt*  
+In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt .   
 
 ### Pulling images  
 If the project that the image belongs to is private, you should sign in first:  
@@ -242,9 +242,9 @@ If you want to enable content trust to ensure that images are signed, please set
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
 ```
-If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. when an images is signed, it is shown in the Web UI.  
-**Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust,HTTPS must be enabled in Harbor.**  
+If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. When an images is signed, it is indicated in the Web UI.  
+**Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.**  
   
 
-When an image is signed, it has a tick show in UI; otherwise,a cross is displayed instead.  
+When an image is signed, it has a tick shown in UI; otherwise, a cross is displayed instead.  
 ![browse project](img/content_trust.png)
