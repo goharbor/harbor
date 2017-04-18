@@ -37,7 +37,7 @@ Harbor supports two authentication modes:
 
 	Users are stored in the local database.  
 	
-	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide_ova.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
+	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
 	
 	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
