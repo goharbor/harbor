@@ -13,7 +13,9 @@ jobservice/test
 src/ui/static/*.html
 src/ui/static/*.bundle.js
 src/ui/static/*.bundle.js.map
-src/ui/static/harbor-log.*.png
+src/ui/static/harbor-logo.*.png
+src/ui/static/i18n/lang/en-us-lang.json
+src/ui/static/i18n/lang/zh-cn-lang.json
 
 src/ui_ng/coverage/
 src/ui_ng/dist/
