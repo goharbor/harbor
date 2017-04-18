@@ -27,5 +27,5 @@ src/ui_ng/typings/
 **/node_modules
 **/ssl/
 **/proxy.config.json
-
+**/npm*.log
 
