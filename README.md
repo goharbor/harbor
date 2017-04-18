@@ -16,15 +16,13 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
-* **Easy deployment**: Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.
+* **Easy deployment**: Provide both an online and offline installer. 
 
 ### Install & Run
 
 **System requirements:**
 
 **On a Linux host:** docker 1.10.0+ and docker-compose 1.6.0+ .
-
-**On vSphere:** vCenter 5.5+ for deployment of Harbor's virtual appliance. 
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
