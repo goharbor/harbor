@@ -217,7 +217,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 			case "email":
 				u.Email = val
 			case "sAMAccountName":
-				u.Email = val
+				u.Realname = val
 			}
 		}
 		ldapUsers = append(ldapUsers, u)
