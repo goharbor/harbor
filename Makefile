@@ -88,7 +88,7 @@ MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
 
 #clarity parameters
-CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
+CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
 CLARITYSEEDPATH=/clarity-seed
 CLARITYBUILDSCRIPT=/entrypoint.sh
 

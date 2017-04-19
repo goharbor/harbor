@@ -7,13 +7,12 @@ WORKDIR /go/src/github.com/vmware/harbor/src/ui
 
 RUN go build -v -a -o /go/bin/harbor_ui
 
-ENV MYSQL_USR root \
-    MYSQL_PWD root \
-    REGISTRY_URL localhost:5000
-
 COPY src/ui/views /go/bin/views
 COPY src/ui/static /go/bin/static
 COPY src/favicon.ico /go/bin/favicon.ico
+
+RUN mkdir /go/bin/harbor/
+COPY VERSION /go/bin/harbor/VERSION
 
 RUN chmod u+x /go/bin/harbor_ui
 

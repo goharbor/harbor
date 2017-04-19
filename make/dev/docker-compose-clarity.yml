@@ -1,7 +1,0 @@
-version: '2'
-services:
-  nodeclarity:
-    image : danieljt/harbor-clarity-base:0.8.1 
-    volumes:
-      - ../../src/ui/static/new-ui:/clarity-seed/dist
-      - ../../src/ui_ng:/clarity-seed

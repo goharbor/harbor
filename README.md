@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
 [![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=dev)](https://coveralls.io/github/vmware/harbor?branch=dev)
 
+**Note**: The `master` branch may be in an *unstable or even broken state* during development.
+Please use [releases] instead of the `master` branch in order to get stable binaries.
+
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
 Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
@@ -16,15 +19,13 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
-* **Easy deployment**: Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.
+* **Easy deployment**: Provide both an online and offline installer. 
 
 ### Install & Run
 
 **System requirements:**
 
 **On a Linux host:** docker 1.10.0+ and docker-compose 1.6.0+ .
-
-**On vSphere:** vCenter 5.5+ for deployment of Harbor's virtual appliance. 
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
