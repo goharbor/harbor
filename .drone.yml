@@ -3,3 +3,14 @@
 clone:
   path: github.com/vmware/harbor
   tags: true
+
+build:
+  harbor:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.26
+    pull: true
+    environment:
+      BIN: bin
+    commands:
+      - make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
+    when:
+      success: true
