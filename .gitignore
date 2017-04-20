@@ -30,4 +30,5 @@ src/ui_ng/typings/
 **/ssl/
 **/proxy.config.json
 **/npm*.log
-
+**/*ngsummary.json
+**/*ngfactory.ts
