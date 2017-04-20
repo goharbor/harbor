@@ -31,8 +31,6 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-var attributes = []string{"uid", "cn", "mail", "email"}
-
 // GetSystemLdapConf ...
 func GetSystemLdapConf() (models.LdapConf, error) {
 	var err error
@@ -205,8 +203,9 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 		var u models.LdapUser
 		for _, attr := range ldapEntry.Attributes {
 			val := attr.Values[0]
-			switch attr.Name {
-			case ldapConfs.LdapUID:
+			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
+			switch strings.ToLower(attr.Name) {
+			case strings.ToLower(ldapConfs.LdapUID):
 				u.Username = val
 			case "uid":
 				u.Realname = val
@@ -358,6 +357,11 @@ func searchLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.SearchRes
 	ldapScope := ldapConfs.LdapScope
 	ldapFilter := ldapConfs.LdapFilter
 
+	attributes := []string{"uid", "cn", "mail", "email"}
+	lowerUID := strings.ToLower(ldapConfs.LdapUID)
+	if lowerUID != "uid" && lowerUID != "cn" && lowerUID != "mail" && lowerUID != "email" {
+		attributes = append(attributes, ldapConfs.LdapUID)
+	}
 	searchRequest := goldap.NewSearchRequest(
 		ldapBaseDn,
 		ldapScope,
