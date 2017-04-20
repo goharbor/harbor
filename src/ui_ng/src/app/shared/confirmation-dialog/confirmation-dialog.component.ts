@@ -33,7 +33,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
     buttonKey: string = 'BUTTON.OK';
     confirmOnly: boolean = false;
     message: ConfirmationMessage;
-    private annouceSubscription: Subscription;
+    annouceSubscription: Subscription;
 
     constructor(
         private confirmationService: ConfirmationDialogService,

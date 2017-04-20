@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, ReflectiveInjector, LOCALE_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService } from 'ngx-cookie';
 
 import { supportedLangs, enLang } from './shared/shared.const';
 import { SessionService } from './shared/session.service';
@@ -56,7 +56,7 @@ export class AppComponent {
         });
     }
 
-    private isLangMatch(browserLang: string, supportedLangs: string[]) {
+    isLangMatch(browserLang: string, supportedLangs: string[]) {
         if (supportedLangs && supportedLangs.length > 0) {
             return supportedLangs.find(lang => lang === browserLang);
         }

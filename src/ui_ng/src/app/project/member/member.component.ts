@@ -49,7 +49,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   members: Member[];
   projectId: number;
   roleInfo = RoleInfo;
-  private delSub: Subscription;
+  delSub: Subscription;
 
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
@@ -124,7 +124,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.addMemberComponent.openAddMemberModal();
   }
 
-  addedMember() {
+  addedMember($event: any) {
     this.searchMember = '';
     this.retrieve(this.projectId, '');
   }
@@ -154,7 +154,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }
 
-  doSearch(searchMember) {
+  doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
   }

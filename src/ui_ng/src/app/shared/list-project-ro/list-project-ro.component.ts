@@ -27,6 +27,7 @@ import { State } from 'clarity-angular';
 export class ListProjectROComponent {
   @Input() projects: Project[];
   @Output() paginate = new EventEmitter<State>();
+  
 
   constructor(
     private searchTrigger: SearchTriggerService,

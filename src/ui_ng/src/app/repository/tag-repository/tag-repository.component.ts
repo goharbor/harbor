@@ -59,7 +59,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   selectAll: boolean = false;
 
-  private subscription: Subscription;
+  subscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -133,7 +133,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  private listTags(tags: Tag[]): void {
+  listTags(tags: Tag[]): void {
     tags.forEach(t => {
       let tag = new TagView();
       tag.tag = t.tag;
@@ -190,7 +190,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       this.showTagManifestOpened = true;
     }
   }
-  selectAndCopy($event) {
+  selectAndCopy($event: any) {
     $event.target.select();
   }
 }

@@ -37,13 +37,13 @@ const RESOURCE_COLOR_GREY600: string = '#C7D1D6';
 })
 
 export class GaugeComponent implements AfterViewInit {
-      private _backgroundColor: string;
-      private _colorOne: string;
-      private _colorTwo: string;
-      private _size: string = "small"; //Support small, medium, large
-      private _title: string = "UNKNOWN"; //Lang key
-      private _free: number = 0;
-      private _threasHold: number = 0;
+      _backgroundColor: string;
+      _colorOne: string;
+      _colorTwo: string;
+      _size: string = "small"; //Support small, medium, large
+      _title: string = "UNKNOWN"; //Lang key
+      _free: number = 0;
+      _threasHold: number = 0;
 
       /**
        * Background color of the component. Default is white.
@@ -60,7 +60,7 @@ export class GaugeComponent implements AfterViewInit {
             this._backgroundColor = value;
       }
 
-      private _positionOne: number;
+      _positionOne: number;
       /**
        * Keep these two properties
        * Percentage of the total width for the first portion of the bar.
@@ -77,7 +77,7 @@ export class GaugeComponent implements AfterViewInit {
             this.setBars();
       }
 
-      private _positionTwo: number;
+      _positionTwo: number;
       /**
        * Percentage of the total width for the second portion of the bar
        */
@@ -91,7 +91,7 @@ export class GaugeComponent implements AfterViewInit {
             this.setBars();
       }
 
-      private _animate: boolean;
+      _animate: boolean;
       /**
        * Whether to animate transitions in the bars
        */
@@ -170,7 +170,7 @@ export class GaugeComponent implements AfterViewInit {
       @ViewChild('barOne') private barOne: ElementRef;
       @ViewChild('barTwo') private barTwo: ElementRef;
 
-      private determineColors() {
+      determineColors() {
             let percent: number = 0;
             if (this._threasHold !== 0) {
                   let used: number = this._threasHold - this._free;
@@ -200,7 +200,7 @@ export class GaugeComponent implements AfterViewInit {
             this.setAnimate();
       }
 
-      private setBars() {
+      setBars() {
             if (!this.barOne || !this.barTwo) {
                   return;
             }
@@ -238,7 +238,7 @@ export class GaugeComponent implements AfterViewInit {
             });
       }
 
-      private setColors() {
+      setColors() {
             if (!this.barOne || !this.barTwo) {
                   return;
             }
@@ -259,7 +259,7 @@ export class GaugeComponent implements AfterViewInit {
             });
       }
 
-      private setAnimate() {
+      setAnimate() {
             if (!this.barOne || !this.barTwo) {
                   return;
             }

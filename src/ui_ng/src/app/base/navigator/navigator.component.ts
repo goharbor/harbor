@@ -20,7 +20,7 @@ import { modalEvents } from '../modal-events.const';
 
 import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
-import { CookieService, CookieOptions } from 'angular2-cookie/core';
+import { CookieService, CookieOptions } from 'ngx-cookie';
 
 import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
@@ -38,8 +38,8 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
-    private selectedLang: string = enLang;
-    private appTitle: string = 'APP_TITLE.HARBOR';
+    selectedLang: string = enLang;
+    appTitle: string = 'APP_TITLE.HARBOR';
 
     constructor(
         private session: SessionService,
@@ -54,10 +54,10 @@ export class NavigatorComponent implements OnInit {
 
     ngOnInit(): void {
         this.selectedLang = this.translate.currentLang;
-        this.translate.onLangChange.subscribe(langChange => {
+        this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
-            let opt = new CookieOptions({path: '/', expires: new Date(Date.now() + 3600*1000*24*31)});
+            let opt:CookieOptions = {path: '/', expires: new Date(Date.now() + 3600*1000*24*31)};
             this.cookie.put("harbor-lang", langChange.lang, opt);
         });
         if (this.appConfigService.isIntegrationMode()) {

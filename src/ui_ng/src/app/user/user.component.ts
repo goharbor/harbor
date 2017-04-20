@@ -38,15 +38,15 @@ import { AppConfigService } from '../app-config.service';
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
-  private onGoing: boolean = false;
-  private adminMenuText: string = "";
-  private adminColumn: string = "";
-  private deletionSubscription: Subscription;
+  onGoing: boolean = false;
+  adminMenuText: string = "";
+  adminColumn: string = "";
+  deletionSubscription: Subscription;
 
   currentTerm: string;
 
   @ViewChild(NewUserModalComponent)
-  private newUserDialog: NewUserModalComponent;
+  newUserDialog: NewUserModalComponent;
 
   constructor(
     private userService: UserService,
@@ -67,7 +67,7 @@ export class UserComponent implements OnInit, OnDestroy {
     setTimeout(()=>clearInterval(hnd), 1000);
   }
 
-  private isMySelf(uid: number): boolean {
+  isMySelf(uid: number): boolean {
     let currentUser = this.session.getCurrentUser();
     if (currentUser) {
       if (currentUser.user_id === uid) {
@@ -78,7 +78,7 @@ export class UserComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
+  isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
   }
 
@@ -193,7 +193,7 @@ export class UserComponent implements OnInit, OnDestroy {
     this.deletionDialogService.openComfirmDialog(msg);
   }
 
-  private delUser(user: User): void {
+  delUser(user: User): void {
     this.userService.deleteUser(user.user_id)
       .then(() => {
         //Remove it from current user list

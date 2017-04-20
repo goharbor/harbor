@@ -32,10 +32,11 @@ import { StatisticHandler } from './statistic-handler.service';
 
 export class StatisticsPanelComponent implements OnInit, OnDestroy {
 
-    private originalCopy: Statistics = new Statistics();
-    private volumesInfo: Volumes = new Volumes();
+    originalCopy: Statistics = new Statistics();
+    volumesInfo: Volumes = new Volumes();
     refreshSub: Subscription;
-
+    small: number;
+    
     constructor(
         private statistics: StatisticsService,
         private msgHandler: MessageHandlerService,
@@ -97,7 +98,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         return this.volumesInfo.storage.total != 0;
     }
 
-    private getGBFromBytes(bytes: number): number {
+    getGBFromBytes(bytes: number): number {
         return Math.round((bytes / (1024 * 1024 * 1024)));
     }
 }

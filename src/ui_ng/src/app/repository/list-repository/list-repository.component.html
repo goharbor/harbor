@@ -11,7 +11,7 @@
      <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
-    {{totalRecordCount || (repositories ? repositories.length : 0)}} {{'REPOSITORY.ITEMS' | translate}}
+    {{(repositories ? repositories.length : 0)}} {{'REPOSITORY.ITEMS' | translate}}
     <clr-dg-pagination [clrDgPageSize]="15"></clr-dg-pagination>
   </clr-dg-footer>
 </clr-datagrid>

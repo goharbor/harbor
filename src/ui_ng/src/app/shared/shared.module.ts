@@ -13,7 +13,7 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService } from 'ngx-cookie';
 
 import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';

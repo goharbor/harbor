@@ -10,7 +10,7 @@
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-        {{totalRecordCount || (projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
+        {{(projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
         <clr-dg-pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>

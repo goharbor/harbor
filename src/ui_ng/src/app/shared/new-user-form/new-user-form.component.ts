@@ -42,23 +42,25 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
     //Notify the form value changes
     @Output() valueChange = new EventEmitter<boolean>();
 
+    confirmedPwd: string;
+
     constructor(private session: SessionService) { }
 
     ngOnInit() {
         this.resetState();
     }
 
-    private validationStateMap: any = {};
+    validationStateMap: any = {};
 
-    private mailAlreadyChecked: any = {};
-    private userNameAlreadyChecked: any = {};
-    private emailTooltip: string = 'TOOLTIP.EMAIL';
-    private usernameTooltip: string = 'TOOLTIP.USER_NAME';
-    private formValueChanged: boolean = false;
+    mailAlreadyChecked: any = {};
+    userNameAlreadyChecked: any = {};
+    emailTooltip: string = 'TOOLTIP.EMAIL';
+    usernameTooltip: string = 'TOOLTIP.USER_NAME';
+    formValueChanged: boolean = false;
 
-    private checkOnGoing: any = {};
+    checkOnGoing: any = {};
 
-    private resetState(): void {
+    resetState(): void {
         this.mailAlreadyChecked = {};
         this.userNameAlreadyChecked = {};
         this.emailTooltip = 'TOOLTIP.EMAIL';
@@ -82,11 +84,11 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
         return !this.checkOnGoing[key];
     }
 
-    private getValidationState(key: string): boolean {
+    getValidationState(key: string): boolean {
         return !this.validationStateMap[key];
     }
 
-    private handleValidation(key: string, flag: boolean): void {
+    handleValidation(key: string, flag: boolean): void {
         if (flag) {
             //Checking
             let cont = this.newUserForm.controls[key];

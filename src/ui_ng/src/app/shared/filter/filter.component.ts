@@ -27,12 +27,12 @@ import 'rxjs/add/operator/distinctUntilChanged';
 
 export class FilterComponent implements OnInit {
     
-    private placeHolder: string = "";
-    private filterTerms = new Subject<string>();
+    placeHolder: string = "";
+    filterTerms = new Subject<string>();
 
     @Output("filter") private filterEvt = new EventEmitter<string>();
 
-    @Input() currentValue;
+    @Input() currentValue: string;
     @Input("filterPlaceholder")
     public set flPlaceholder(placeHolder: string) {
         this.placeHolder = placeHolder;

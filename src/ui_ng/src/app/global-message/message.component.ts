@@ -31,11 +31,11 @@ export class MessageComponent implements OnInit, OnDestroy {
   globalMessage: Message = new Message();
   globalMessageOpened: boolean;
   messageText: string = "";
-  private timer: any = null;
+  timer: any = null;
 
-  private appLevelMsgSub: Subscription;
-  private msgSub: Subscription;
-  private clearSub: Subscription;
+  appLevelMsgSub: Subscription;
+  msgSub: Subscription;
+  clearSub: Subscription;
 
   constructor(
     private messageService: MessageService,

@@ -42,7 +42,7 @@ export function portValidator(): ValidatorFn {
 })
 
 export class PortValidatorDirective implements Validator {
-    private valFn = portValidator();
+    valFn = portValidator();
 
     validate(control: AbstractControl): { [key: string]: any } {
         return this.valFn(control);
