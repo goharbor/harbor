@@ -39,3 +39,6 @@ src/ui_ng/src/**/*.json
 src/ui_ng/aot/**/*.js
 src/ui_ng/aot/**/*.js.map
 src/ui_ng/aot/**/*.json
+
+**/*ngsummary.json
+**/*ngfactory.ts
