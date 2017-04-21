@@ -25,6 +25,7 @@ sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 ./node_modules/.bin/rollup -c rollup-config.js
 
 cp -r ./src/i18n/ dist/
+cp ./src/styles.css dist/
 
 cp ./node_modules/clarity-icons/clarity-icons.min.css dist/
 cp ./node_modules/mutationobserver-shim/dist/mutationobserver.min.js dist/
