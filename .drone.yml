@@ -1,5 +1,36 @@
+# Harbor drone integration.
+---
+clone:
+  path: github.com/vmware/harbor
+  tags: true
+
 build:
-image: golang 
-commands:
- - echo 'hello world'
-drone exec
+  harbor:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.26
+    pull: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+    commands:
+      - echo `ls .`
+      - echo $DRONE_BRANCH
+      - echo `ls /drone/src/github.com/vmware/harbor`
+      - cd make
+      - export DOCKER_HOST="unix:///var/run/docker.sock"
+      - docker-compose up -d
+#      - make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
+    when:
+      success: true
+  get-vm-machine:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.26
+    pull: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+    commands:
+      - echo `ls .`
+      - govc
+    when:
+      success: true
