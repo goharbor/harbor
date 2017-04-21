@@ -11,8 +11,8 @@ COPY make/dev/nodeclarity/entrypoint.sh /
 
 WORKDIR /clarity-seed
 
-RUN npm install -g @angular/cli  && \
-	npm install && \
+RUN npm __proxy__ install -g @angular/cli  && \
+	npm __proxy__ install && \
     chmod u+x /entrypoint.sh
 
 VOLUME ["/clarity-seed", "/clarity-seed/dist"]

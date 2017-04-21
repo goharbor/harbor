@@ -19,7 +19,16 @@ if [ ! -z "$npm_proxy" -a "$npm_proxy" != " " ]; then
 fi
 
 npm install
-ng build
+
+./node_modules/.bin/ngc -p tsconfig-aot.json
+sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
+./node_modules/.bin/rollup -c rollup-config.js
 
 cp -r ./src/i18n/ dist/
 
+cp ./node_modules/clarity-icons/clarity-icons.min.css dist/
+cp ./node_modules/mutationobserver-shim/dist/mutationobserver.min.js dist/
+cp ./node_modules/@webcomponents/custom-elements/custom-elements.min.js dist/
+cp ./node_modules/clarity-icons/clarity-icons.min.js dist/
+cp ./node_modules/clarity-ui/clarity-ui.min.css dist/
+cp -r ./node_modules/clarity-icons/shapes/ dist/
