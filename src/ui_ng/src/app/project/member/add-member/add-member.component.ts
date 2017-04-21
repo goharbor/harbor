@@ -63,7 +63,6 @@ export class AddMemberComponent implements AfterViewChecked {
         .subscribe(
           response=>{
             this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
-            console.log('Added member successfully.');
             this.added.emit(true);
             this.addMemberOpened = false;
           },
@@ -89,7 +88,6 @@ export class AddMemberComponent implements AfterViewChecked {
                   .subscribe(errorMessage=>this.inlineAlert.showInlineError(errorMessage));
               }
             }
-            console.log('Failed to add member of project:' + this.projectId, ' with error:' + error);
           }
         );
   }

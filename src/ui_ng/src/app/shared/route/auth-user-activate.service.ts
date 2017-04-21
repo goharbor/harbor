@@ -35,7 +35,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     private msgHandler: MessageHandlerService,
     private searchTrigger: SearchTriggerService) { }
 
-  private isGuest(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+  isGuest(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const proRegExp = /\/harbor\/projects\/[\d]+\/.+/i;
     const libRegExp = /\/harbor\/tags\/[\d]+\/.+/i;
     if (proRegExp.test(state.url) || libRegExp.test(state.url)) {

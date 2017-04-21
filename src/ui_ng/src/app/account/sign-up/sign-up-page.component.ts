@@ -29,9 +29,9 @@ import { MessageService } from '../../global-message/message.service';
     templateUrl: "sign-up-page.component.html"
 })
 export class SignUpPageComponent implements OnInit {
-    private error: any;
-    private onGoing: boolean = false;
-    private formValueChanged: boolean = false;
+    error: any;
+    onGoing: boolean = false;
+    formValueChanged: boolean = false;
 
     constructor(
         private userService: UserService,
@@ -39,9 +39,9 @@ export class SignUpPageComponent implements OnInit {
         private router: Router) { }
 
     @ViewChild(NewUserFormComponent)
-    private newUserForm: NewUserFormComponent;
+    newUserForm: NewUserFormComponent;
 
-    private getNewUser(): User {
+    getNewUser(): User {
         return this.newUserForm.getData();
     }
 

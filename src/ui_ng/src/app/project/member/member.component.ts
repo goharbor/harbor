@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Response } from '@angular/http';
 
@@ -41,14 +41,15 @@ import { Project } from '../../project/project';
 
 @Component({
   templateUrl: 'member.component.html',
-  styleUrls: ['./member.component.css']
+  styleUrls: ['./member.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MemberComponent implements OnInit, OnDestroy {
 
   members: Member[];
   projectId: number;
   roleInfo = RoleInfo;
-  private delSub: Subscription;
+  delSub: Subscription;
 
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
@@ -64,7 +65,8 @@ export class MemberComponent implements OnInit, OnDestroy {
     private memberService: MemberService, 
     private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService,
-    private session: SessionService) {
+    private session: SessionService,
+    private ref: ChangeDetectorRef) {
     
     this.delSub = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
@@ -75,20 +77,25 @@ export class MemberComponent implements OnInit, OnDestroy {
           .subscribe(
           response => {
             this.messageHandlerService.showSuccess('MEMBER.DELETED_SUCCESS');
-            console.log('Successful delete member: ' + message.data);
             this.retrieve(this.projectId, '');
           },
           error => this.messageHandlerService.handleError(error)
           );
       }
     });
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   retrieve(projectId: number, username: string) {
     this.memberService
       .listMembers(projectId, username)
       .subscribe(
-      response => this.members = response,
+      response => {
+        this.members = response;
+        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+        setTimeout(()=>clearInterval(hnd), 1000);
+      },
       error => {
         this.router.navigate(['/harbor', 'projects']);
         this.messageHandlerService.handleError(error);
@@ -103,18 +110,13 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     //Get projectId from route params snapshot.          
-    this.projectId = +this.route.snapshot.parent.params['id'];
-    console.log('Get projectId from route params snapshot:' + this.projectId);
-    
+    this.projectId = +this.route.snapshot.parent.params['id'];   
     this.currentUser = this.session.getCurrentUser();
     //Get current user from registered resolver.
     let resolverData = this.route.snapshot.parent.data;
     if(resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
-
-   
-
     this.retrieve(this.projectId, '');
   }
 
@@ -122,7 +124,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.addMemberComponent.openAddMemberModal();
   }
 
-  addedMember() {
+  addedMember($event: any) {
     this.searchMember = '';
     this.retrieve(this.projectId, '');
   }
@@ -134,7 +136,6 @@ export class MemberComponent implements OnInit, OnDestroy {
         .subscribe(
         response => {
           this.messageHandlerService.showSuccess('MEMBER.SWITCHED_SUCCESS');
-          console.log('Successful change role with user ' + m.user_id + ' to roleId ' + roleId);
           this.retrieve(this.projectId, '');
         },
         error => this.messageHandlerService.handleError(error)
@@ -153,7 +154,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }
 
-  doSearch(searchMember) {
+  doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
   }

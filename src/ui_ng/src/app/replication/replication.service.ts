@@ -100,7 +100,6 @@ export class ReplicationService {
   }
 
   enablePolicy(policyId: number, enabled: number): Observable<any> {
-    console.log('Enable or disable policy ID:' + policyId + ' with activation status:' + enabled);
     return this.http
                .put(`/api/policies/replication/${policyId}/enablement`, {enabled: enabled})
                .map(response=>response.status)
@@ -108,7 +107,6 @@ export class ReplicationService {
   }
 
   deletePolicy(policyId: number): Observable<any> {
-    console.log('Delete policy ID:' + policyId);
     return this.http
                .delete(`/api/policies/replication/${policyId}`)
                .map(response=>response.status)
