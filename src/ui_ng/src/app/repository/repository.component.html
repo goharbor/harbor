@@ -1,0 +1,13 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <div class="row flex-items-xs-right option-right">
+      <div class="flex-xs-middle">
+        <grid-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></grid-filter>  
+        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)" [totalPage]="totalPage" [totalRecordCount]="totalRecordCount" [hasProjectAdminRole]="hasProjectAdminRole" (paginate)="retrieve($event)"></list-repository>
+  </div>
+</div>

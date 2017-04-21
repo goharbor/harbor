@@ -3,7 +3,7 @@ sudo: true
 language: go
 
 go: 
-  - 1.6.2
+  - 1.7.3
 
 go_import_path: github.com/vmware/harbor
 
@@ -13,25 +13,25 @@ services:
 dist: trusty
 
 env:
-  DB_HOST: 127.0.0.1
-  DB_PORT: 3306 
-  DB_USR: root 
-  DB_PWD: root123
   MYSQL_HOST: localhost
   MYSQL_PORT: 3306 
   MYSQL_USR: root 
   MYSQL_PWD: root123
+  MYSQL_DATABASE: registry
+  SQLITE_FILE: /tmp/registry.db
+  ADMIN_SERVER_URL: http://127.0.0.1:8888
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
   UI_SECRET: tempString  
   MAX_JOB_WORKERS: 3
-  SECRET_KEY: 1234567890123456 
   AUTH_MODE: db_auth
-  SELF_REGISTRATION: "on"
+  SELF_REGISTRATION: on
+  KEY_PATH: /data/secretkey
 
 before_install:
    - sudo ./tests/hostcfg.sh
+   - sudo ./tests/generateCerts.sh
    - sudo ./make/prepare
 
 install: 
@@ -70,28 +70,40 @@ install:
 before_script:
   # create tables and load data
   # - mysql < ./make/db/registry.sql -uroot --verbose
-  - sudo sqlite3 /registry.db < make/common/db/registry_sqlite.sql
+  - sudo sqlite3 /tmp/registry.db < make/common/db/registry_sqlite.sql
+  - sudo chmod 777 /tmp/registry.db
 
 script:
+  - sudo mkdir -p /etc/ui/ca/
+  - sudo mv ./tests/ca.crt /etc/ui/ca/
+  - sudo mkdir -p /harbor
+  - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
   - sudo ./tests/testprepare.sh 
-  - docker-compose -f ./make/docker-compose.test.yml up -d
+  - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
-  - ./tests/pushimage.sh 
-  - ./tests/coverage4gotest.sh
+  - ./tests/pushimage.sh
+  - cd tests
+  - sudo ./ldapprepare.sh 
+  - cd .. 
+  - go test -i ./src/ui ./src/adminserver ./src/jobservice
+  - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
-  
-  - docker-compose -f make/dev/docker-compose.yml up -d
+  - sudo rm -rf /data/config/*  
+  - ls /data/cert
+  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true
   
   - docker ps
-  - go run tests/startuptest.go http://localhost/
-  - go run tests/userlogintest.go -name ${HARBOR_ADMIN} -passwd ${HARBOR_ADMIN_PASSWD}
+  - ./tests/notarytest.sh
+  - ./tests/swaggerchecker.sh
+  - ./tests/startuptest.sh
+  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests

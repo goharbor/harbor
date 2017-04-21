@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -44,7 +43,8 @@ type projectReq struct {
 }
 
 const projectNameMaxLen int = 30
-const projectNameMinLen int = 4
+const projectNameMinLen int = 2
+const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
@@ -77,7 +77,13 @@ func (p *ProjectAPI) Post() {
 	if err != nil {
 		log.Errorf("Failed to check admin role: %v", err)
 	}
-	if !isSysAdmin && config.OnlyAdminCreateProject() {
+
+	onlyAdmin, err := config.OnlyAdminCreateProject()
+	if err != nil {
+		log.Errorf("failed to determine whether only admin can create projects: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	if !isSysAdmin && onlyAdmin {
 		log.Errorf("Only sys admin can create project")
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
 		return
@@ -133,13 +139,9 @@ func (p *ProjectAPI) Head() {
 		return
 	}
 
-	userID := p.ValidateUser()
+	_ = p.ValidateUser()
 	if project == nil {
 		p.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
-	}
-
-	if !checkProjectPermission(userID, project.ProjectID) {
-		p.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 }
 
@@ -294,17 +296,17 @@ func (p *ProjectAPI) List() {
 
 	for i := 0; i < len(projectList); i++ {
 		if public != 1 {
-			if isAdmin {
-				projectList[i].Role = models.PROJECTADMIN
-			} else {
-				roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
-				if err != nil {
-					log.Errorf("failed to get user's project role: %v", err)
-					p.CustomAbort(http.StatusInternalServerError, "")
-				}
+			roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
+			if err != nil {
+				log.Errorf("failed to get user's project role: %v", err)
+				p.CustomAbort(http.StatusInternalServerError, "")
+			}
+			if len(roles) != 0 {
 				projectList[i].Role = roles[0].RoleID
 			}
-			if projectList[i].Role == models.PROJECTADMIN {
+
+			if projectList[i].Role == models.PROJECTADMIN ||
+				isAdmin {
 				projectList[i].Togglable = true
 			}
 		}
@@ -417,9 +419,9 @@ func isProjectAdmin(userID int, pid int64) bool {
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
 	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("Project name is illegal in length. (greater than 4 or less than 30)")
+		return fmt.Errorf("Project name is illegal in length. (greater than 2 or less than 30)")
 	}
-	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
+	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
 	legal := validProjectName.MatchString(pn)
 	if !legal {
 		return fmt.Errorf("project name is not in lower case or contains illegal characters")

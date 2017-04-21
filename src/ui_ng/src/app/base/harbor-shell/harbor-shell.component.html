@@ -1,0 +1,33 @@
+<clr-main-container>
+    <global-message [isAppLevel]="true"></global-message>
+    <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
+    <div class="content-container">
+        <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent" [class.start-content-padding]="shouldOverrideContent">
+            <div class="global-message-alert">
+                <global-message [isAppLevel]="false"></global-message>
+            </div>
+            <!-- Only appear when searching -->
+            <search-result></search-result>
+            <router-outlet></router-outlet>
+        </div>
+        <nav class="sidenav" style="padding: 12px 36px;" *ngIf="isUserExisting">
+            <section class="sidenav-content">
+                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link">{{'SIDE_NAV.PROJECTS' | translate}}</a>
+                <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link" style="margin-top: 4px;">{{'SIDE_NAV.LOGS' | translate}}</a>
+                <section class="nav-group collapsible" *ngIf="isSystemAdmin" style="margin-top: 4px;">
+                    <input id="tabsystem" type="checkbox">
+                    <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/replications/endpoints" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a></li>
+                        <li><a class="nav-link" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}</a></li>
+                    </ul>
+                </section>
+            </section>
+        </nav>
+    </div>
+</clr-main-container>
+<account-settings-modal></account-settings-modal>
+<password-setting></password-setting>
+<confiramtion-dialog></confiramtion-dialog>
+<about-dialog></about-dialog>

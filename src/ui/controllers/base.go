@@ -1,176 +1,54 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package controllers
 
 import (
+	"bytes"
+	"html/template"
+	"net"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
+	"regexp"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
+	email_util "github.com/vmware/harbor/src/common/utils/email"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
-// BaseController wraps common methods such as i18n support, forward,  which can be leveraged by other UI render controllers.
-type BaseController struct {
-	beego.Controller
-	i18n.Locale
-	SelfRegistration bool
-	IsAdmin          bool
-	AuthMode         string
-	UseCompressedJS  bool
-}
-
-type langType struct {
-	Lang string
-	Name string
-}
-
-const (
-	viewPath        = "sections"
-	prefixNg        = ""
-	defaultLang     = "en-US"
-	defaultRootCert = "/harbor_storage/ca_download/ca.crt"
-)
-
-var supportLanguages map[string]langType
-var mappingLangNames map[string]string
-
-// Prepare extracts the language information from request and populate data for rendering templates.
-func (b *BaseController) Prepare() {
-
-	var lang string
-	var langHasChanged bool
-
-	var showDownloadCert bool
-
-	langRequest := b.GetString("lang")
-	if langRequest != "" {
-		lang = langRequest
-		langHasChanged = true
-	} else {
-		langCookie, err := b.Ctx.Request.Cookie("language")
-		if err != nil {
-			log.Errorf("Error occurred in Request.Cookie: %v", err)
-		}
-		if langCookie != nil {
-			lang = langCookie.Value
-		} else {
-			al := b.Ctx.Request.Header.Get("Accept-Language")
-			if len(al) > 4 {
-				al = al[:5] // Only compare first 5 letters.
-				if i18n.IsExist(al) {
-					lang = al
-				}
-			}
-			langHasChanged = true
-		}
-	}
-
-	if langHasChanged {
-		if _, exist := supportLanguages[lang]; !exist { //Check if support the request language.
-			lang = defaultLang //Set default language if not supported.
-		}
-		cookies := &http.Cookie{
-			Name:     "language",
-			Value:    lang,
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(b.Ctx.ResponseWriter, cookies)
-	}
-
-	curLang := langType{
-		Lang: lang,
-	}
-
-	restLangs := make([]*langType, 0, len(langTypes)-1)
-	for _, v := range langTypes {
-		if lang != v.Lang {
-			restLangs = append(restLangs, v)
-		} else {
-			curLang.Name = v.Name
-		}
-	}
-
-	// Set language properties.
-	b.Lang = lang
-	b.Data["Lang"] = curLang.Lang
-	b.Data["CurLang"] = curLang.Name
-	b.Data["RestLangs"] = restLangs
-
-	authMode := config.AuthMode()
-	if authMode == "" {
-		authMode = "db_auth"
-	}
-	b.AuthMode = authMode
-	b.Data["AuthMode"] = b.AuthMode
-
-	useCompressedJS := os.Getenv("USE_COMPRESSED_JS")
-	if useCompressedJS == "on" {
-		b.UseCompressedJS = true
-	}
-
-	m, err := filepath.Glob(filepath.Join("static", "resources", "js", "harbor.app.min.*.js"))
-	if err != nil || len(m) == 0 {
-		b.UseCompressedJS = false
-	}
-
-	b.SelfRegistration = config.SelfRegistration()
-
-	b.Data["SelfRegistration"] = config.SelfRegistration()
-
-	sessionUserID := b.GetSession("userId")
-	if sessionUserID != nil {
-		isAdmin, err := dao.IsAdminRole(sessionUserID.(int))
-		if err != nil {
-			log.Errorf("Error occurred in IsAdminRole: %v", err)
-		}
-		if isAdmin {
-			if _, err := os.Stat(defaultRootCert); !os.IsNotExist(err) {
-				showDownloadCert = true
-			}
-		}
-	}
-	b.Data["ShowDownloadCert"] = showDownloadCert
-}
-
-// Forward to setup layout and template for content for a page.
-func (b *BaseController) Forward(title, templateName string) {
-	b.Layout = filepath.Join(prefixNg, "layout.htm")
-	b.TplName = filepath.Join(prefixNg, templateName)
-	b.Data["Title"] = b.Tr(title)
-	b.LayoutSections = make(map[string]string)
-	b.LayoutSections["HeaderInclude"] = filepath.Join(prefixNg, viewPath, "header-include.htm")
-
-	if b.UseCompressedJS {
-		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-min-include.htm")
-	} else {
-		b.LayoutSections["HeaderScriptInclude"] = filepath.Join(prefixNg, viewPath, "script-include.htm")
-	}
-
-	log.Debugf("Loaded HeaderScriptInclude file: %s", b.LayoutSections["HeaderScriptInclude"])
-
-	b.LayoutSections["FooterInclude"] = filepath.Join(prefixNg, viewPath, "footer-include.htm")
-	b.LayoutSections["HeaderContent"] = filepath.Join(prefixNg, viewPath, "header-content.htm")
-	b.LayoutSections["FooterContent"] = filepath.Join(prefixNg, viewPath, "footer-content.htm")
-
-}
-
-var langTypes []*langType
-
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
 type CommonController struct {
-	BaseController
+	beego.Controller
+	i18n.Locale
 }
 
 // Render returns nil.
 func (cc *CommonController) Render() error {
 	return nil
+}
+
+type messageDetail struct {
+	Hint string
+	URL  string
+	UUID string
 }
 
 // Login handles login request from UI.
@@ -200,18 +78,6 @@ func (cc *CommonController) LogOut() {
 	cc.DestroySession()
 }
 
-// SwitchLanguage User can swith to prefered language
-func (cc *CommonController) SwitchLanguage() {
-	lang := cc.GetString("lang")
-	hash := cc.GetString("hash")
-	if _, exist := supportLanguages[lang]; !exist {
-		lang = defaultLang
-	}
-	cc.SetSession("lang", lang)
-	cc.Data["Lang"] = lang
-	cc.Redirect(cc.Ctx.Request.Header.Get("Referer")+hash, http.StatusFound)
-}
-
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
 	target := cc.GetString("target")
@@ -234,33 +100,126 @@ func (cc *CommonController) UserExists() {
 	cc.ServeJSON()
 }
 
-func init() {
+// SendEmail verifies the Email address and contact SMTP server to send reset password Email.
+func (cc *CommonController) SendEmail() {
 
+	email := cc.GetString("email")
+
+	valid, err := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, email)
+	if err != nil {
+		log.Errorf("failed to match regexp: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+
+	if !valid {
+		cc.CustomAbort(http.StatusBadRequest, "invalid email")
+	}
+
+	queryUser := models.User{Email: email}
+	exist, err := dao.UserExists(queryUser, "email")
+	if err != nil {
+		log.Errorf("Error occurred in UserExists: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if !exist {
+		log.Debugf("email %s not found", email)
+		cc.CustomAbort(http.StatusNotFound, "email_does_not_exist")
+	}
+
+	uuid := utils.GenerateRandomString()
+	user := models.User{ResetUUID: uuid, Email: email}
+	if err = dao.UpdateUserResetUUID(user); err != nil {
+		log.Errorf("failed to update user reset UUID: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	messageTemplate, err := template.ParseFiles("views/reset-password-mail.tpl")
+	if err != nil {
+		log.Errorf("Parse email template file failed: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
+
+	message := new(bytes.Buffer)
+
+	harborURL, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("failed to get domain name: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	err = messageTemplate.Execute(message, messageDetail{
+		Hint: cc.Tr("reset_email_hint"),
+		URL:  harborURL,
+		UUID: uuid,
+	})
+
+	if err != nil {
+		log.Errorf("Message template error: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
+	}
+
+	settings, err := config.Email()
+	if err != nil {
+		log.Errorf("failed to get email configurations: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
+	}
+
+	addr := net.JoinHostPort(settings.Host, strconv.Itoa(settings.Port))
+	err = email_util.Send(addr,
+		settings.Identity,
+		settings.Username,
+		settings.Password,
+		60, settings.SSL,
+		false, settings.From,
+		[]string{email},
+		"Reset Harbor user password",
+		message.String())
+	if err != nil {
+		log.Errorf("Send email failed: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "send_email_failed")
+	}
+}
+
+// ResetPassword handles request from the reset page and reset password
+func (cc *CommonController) ResetPassword() {
+
+	resetUUID := cc.GetString("reset_uuid")
+	if resetUUID == "" {
+		cc.CustomAbort(http.StatusBadRequest, "Reset uuid is blank.")
+	}
+
+	queryUser := models.User{ResetUUID: resetUUID}
+	user, err := dao.GetUser(queryUser)
+	if err != nil {
+		log.Errorf("Error occurred in GetUser: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	if user == nil {
+		log.Error("User does not exist")
+		cc.CustomAbort(http.StatusBadRequest, "User does not exist")
+	}
+
+	password := cc.GetString("password")
+
+	if password != "" {
+		user.Password = password
+		err = dao.ResetUserPassword(*user)
+		if err != nil {
+			log.Errorf("Error occurred in ResetUserPassword: %v", err)
+			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+	} else {
+		cc.CustomAbort(http.StatusBadRequest, "password_is_required")
+	}
+}
+
+func init() {
 	//conf/app.conf -> os.Getenv("config_path")
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		beego.LoadAppConfig("ini", configPath)
-	}
-
-	beego.AddFuncMap("i18n", i18n.Tr)
-
-	langs := strings.Split(beego.AppConfig.String("lang::types"), "|")
-	names := strings.Split(beego.AppConfig.String("lang::names"), "|")
-
-	supportLanguages = make(map[string]langType)
-
-	langTypes = make([]*langType, 0, len(langs))
-
-	for i, lang := range langs {
-		t := langType{
-			Lang: lang,
-			Name: names[i],
-		}
-		langTypes = append(langTypes, &t)
-		supportLanguages[lang] = t
-		if err := i18n.SetMessage(lang, "static/i18n/"+"locale_"+lang+".ini"); err != nil {
-			log.Errorf("Fail to set message file: %s", err.Error())
+		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+			log.Errorf("failed to load app config: %v", err)
 		}
 	}
 

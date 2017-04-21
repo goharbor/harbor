@@ -1,0 +1,23 @@
+<clr-datagrid (clrDgRefresh)="refresh($event)">
+    <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="showRoleInfo">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
+        <clr-dg-action-overflow [hidden]="!(p.current_user_role_id === 1 || isSystemAdmin)">
+            <button class="action-item" (click)="newReplicationRule(p)" [hidden]="!isSystemAdmin">{{'PROJECT.REPLICATION_RULE' | translate}}</button>
+            <button class="action-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </button>
+            <button class="action-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
+        <clr-dg-cell>{{ (p.public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
+        <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>
+        <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        {{totalRecordCount || (projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

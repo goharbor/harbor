@@ -1,27 +1,27 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -39,27 +39,32 @@ type Database interface {
 }
 
 // InitDatabase initializes the database
-func InitDatabase() {
-	database, err := getDatabase()
+func InitDatabase(database *models.Database) error {
+	db, err := getDatabase(database)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	log.Infof("initializing database: %s", database.String())
-	if err := database.Register(); err != nil {
-		panic(err)
+	log.Infof("initializing database: %s", db.String())
+	if err := db.Register(); err != nil {
+		return err
 	}
+	log.Info("initialize database completed")
+	return nil
 }
 
-func getDatabase() (db Database, err error) {
-	switch config.Database() {
+func getDatabase(database *models.Database) (db Database, err error) {
+	switch database.Type {
 	case "", "mysql":
-		db = NewMySQL(config.MySQL().Host, config.MySQL().Port, config.MySQL().User,
-			config.MySQL().Password, config.MySQL().Database)
+		db = NewMySQL(database.MySQL.Host,
+			strconv.Itoa(database.MySQL.Port),
+			database.MySQL.Username,
+			database.MySQL.Password,
+			database.MySQL.Database)
 	case "sqlite":
-		db = NewSQLite(config.SQLite().FilePath)
+		db = NewSQLite(database.SQLite.File)
 	default:
-		err = fmt.Errorf("invalid database: %s", config.Database())
+		err = fmt.Errorf("invalid database: %s", database.Type)
 	}
 	return
 }

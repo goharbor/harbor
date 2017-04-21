@@ -1,7 +1,7 @@
 version: '2'
 services:
   registry:
-    image: library/registry:2.5.0
+    image: library/registry:2.6.0
     restart: always
     volumes:
       - /data/registry:/storage
@@ -21,3 +21,16 @@ services:
       - ./common/config/db/env
     ports:
       - 3306:3306
+  adminserver:
+    build:
+      context: ../
+      dockerfile: make/dev/adminserver/Dockerfile
+    env_file:
+      - ./common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/adminserver/config/
+      - /data/secretkey:/etc/adminserver/key
+      - /data/:/data/
+    ports:
+      - 8888:80

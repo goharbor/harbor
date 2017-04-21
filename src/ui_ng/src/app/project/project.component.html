@@ -1,0 +1,29 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="row flex-items-xs-between flex-items-xs-top" style="padding-left: 15px; padding-right: 15px;">
+            <h2 class="header-title">{{'PROJECT.PROJECTS' | translate}}</h2>
+            <div>
+                <statistics-panel></statistics-panel>
+            </div>
+        </div>
+        <div class="row flex-items-xs-between">
+            <div class="option-left">
+                <button *ngIf="projectCreationRestriction" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.PROJECT' | translate}}</button>
+                <create-project (create)="createProject($event)"></create-project>
+            </div>
+            <div class="option-right">
+                <div class="select" style="float: left;">
+                    <select (change)="doFilterProjects($event)">
+                    <option value="0">{{projectTypes[0] | translate}}</option>
+                    <option value="1">{{projectTypes[1] | translate}}</option>
+                  </select>
+                </div>
+                <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)" [currentValue]="projectName"></grid-filter>
+                <a href="javascript:void(0)" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </a>
+            </div>
+        </div>
+        <list-project [projects]="changedProjects" [filteredType]="projectTypes[currentFilteredType]" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)" [totalPage]="totalPage" [totalRecordCount]="totalRecordCount"></list-project>
+    </div>
+</div>

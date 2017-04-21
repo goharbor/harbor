@@ -1,0 +1,28 @@
+.side-nav-override {
+    box-shadow: 6px 0px 0px 0px #ccc;
+}
+
+.container-override {
+    position: relative !important;
+}
+
+.start-content-padding {
+    padding: 0px !important;
+    background-color: white;
+    overflow-y: hidden !important;
+}
+
+.content-area-override {
+    padding: 36px !important;
+    padding-right: 21px !important;
+}
+
+
+/*.global-message-alert {
+    position: fixed;
+    top: 55px;
+    left: 260px;
+    width: 100%;
+    z-index: 999;
+    padding-right: 276px;
+}*/

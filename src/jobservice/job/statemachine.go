@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package job
 
@@ -20,12 +19,12 @@ import (
 	"sync"
 
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/replication"
-	"github.com/vmware/harbor/src/jobservice/utils"
 	"github.com/vmware/harbor/src/common/models"
 	uti "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/replication"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 // RepJobParm wraps the parm of a job
@@ -184,14 +183,17 @@ func (sm *SM) Init() {
 }
 
 // Reset resets the state machine so it will start handling another job.
-func (sm *SM) Reset(jid int64) error {
+func (sm *SM) Reset(jid int64) (err error) {
 	//To ensure the new jobID is visible to the thread to stop the SM
 	sm.lock.Lock()
 	sm.JobID = jid
 	sm.desiredState = ""
 	sm.lock.Unlock()
 
-	sm.Logger = utils.NewLogger(sm.JobID)
+	sm.Logger, err = utils.NewLogger(sm.JobID)
+	if err != nil {
+		return
+	}
 	//init parms
 	job, err := dao.GetRepJob(sm.JobID)
 	if err != nil {
@@ -207,13 +209,22 @@ func (sm *SM) Reset(jid int64) error {
 	if policy == nil {
 		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
 	}
+
+	regURL, err := config.LocalRegURL()
+	if err != nil {
+		return err
+	}
+	verify, err := config.VerifyRemoteCert()
+	if err != nil {
+		return err
+	}
 	sm.Parms = &RepJobParm{
-		LocalRegURL: config.LocalRegURL(),
+		LocalRegURL: regURL,
 		Repository:  job.Repository,
 		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
-		Insecure:    !config.VerifyRemoteCert(),
+		Insecure:    !verify,
 	}
 	if policy.Enabled == 0 {
 		//worker will cancel this job
@@ -231,7 +242,11 @@ func (sm *SM) Reset(jid int64) error {
 	pwd := target.Password
 
 	if len(pwd) != 0 {
-		pwd, err = uti.ReversibleDecrypt(pwd, config.SecretKey())
+		key, err := config.SecretKey()
+		if err != nil {
+			return err
+		}
+		pwd, err = uti.ReversibleDecrypt(pwd, key)
 		if err != nil {
 			return fmt.Errorf("failed to decrypt password: %v", err)
 		}
@@ -269,7 +284,7 @@ func addTestTransition(sm *SM) error {
 }
 
 func addImgTransferTransition(sm *SM) {
-	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.UISecret(),
+	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.JobserviceSecret(),
 		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
 		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
 

@@ -1,0 +1,72 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <h2 style="display: inline-block;" class="custom-h2">{{'CONFIG.TITLE' | translate }}</h2>
+        <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+        <ul id="configTabs" class="nav" role="tablist">
+            <li role="presentation" class="nav-item">
+                <button id="config-auth" class="btn btn-link nav-link active" aria-controls="authentication" [class.active]='isCurrentTabLink("config-auth")' type="button" (click)='tabLinkClick("config-auth")'>{{'CONFIG.AUTH' | translate }}</button>
+            </li>
+            <li role="presentation" class="nav-item">
+                <button id="config-replication" class="btn btn-link nav-link" aria-controls="replication" [class.active]='isCurrentTabLink("config-replication")' type="button" (click)='tabLinkClick("config-replication")'>{{'CONFIG.REPLICATION' | translate }}</button>
+            </li>
+            <li role="presentation" class="nav-item">
+                <button id="config-email" class="btn btn-link nav-link" aria-controls="email" [class.active]='isCurrentTabLink("config-email")' type="button" (click)='tabLinkClick("config-email")'>{{'CONFIG.EMAIL' | translate }}</button>
+            </li>
+            <li role="presentation" class="nav-item">
+                <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
+            </li>
+        </ul>
+        <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
+            <config-auth [ldapConfig]="allConfig"></config-auth>
+        </section>
+        <section id="replication" role="tabpanel" aria-labelledby="config-replication" [hidden]='!isCurrentTabContent("replication")'>
+            <form #repoConfigFrom="ngForm" class="form">
+                <section class="form-block">
+                    <div class="form-group">
+                        <label for="verifyRemoteCert">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
+                        <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="allConfig.verify_remote_cert.value" [disabled]="disabled(allConfig.verify_remote_cert)">
+                            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top:-8px;">
+                                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                                <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate }}</span>
+                            </a>
+                        </clr-checkbox>
+                    </div>
+                </section>
+            </form>
+        </section>
+        <section id="email" role="tabpanel" aria-labelledby="config-email" [hidden]='!isCurrentTabContent("email")'>
+            <config-email [mailConfig]="allConfig"></config-email>
+        </section>
+        <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
+            <form #systemConfigFrom="ngForm" class="form">
+                <section class="form-block">
+                    <div class="form-group">
+                        <label for="tokenExpiration" class="required">{{'CONFIG.TOKEN_EXPIRATION' | translate}}</label>
+                        <label for="tokenExpiration" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="tokenExpirationInput.invalid && (tokenExpirationInput.dirty || tokenExpirationInput.touched)">
+                      <input name="tokenExpiration" type="text" #tokenExpirationInput="ngModel" [(ngModel)]="allConfig.token_expiration.value" 
+                      required 
+                      pattern="^[1-9]{1}[\d]*$"
+                      id="tokenExpiration" 
+                      size="40" [disabled]="disabled(allConfig.token_expiration)">
+                      <span class="tooltip-content">
+                          {{'TOOLTIP.NUMBER_REQUIRED' | translate}}
+                      </span>
+                    </label>
+                        <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                            <span class="tooltip-content">{{'CONFIG.TOOLTIP.TOKEN_EXPIRATION' | translate}}</span>
+                        </a>
+                    </div>
+                </section>
+            </form>
+        </section>
+        <div>
+            <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
+            <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
+            <button type="button" class="btn btn-outline" (click)="testMailServer()" *ngIf="showTestServerBtn" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL' | translate}}</button>
+            <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
+            <span id="forTestingMail" class="spinner spinner-inline" [hidden]="hideMailTestingSpinner"></span>
+            <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
+        </div>
+    </div>
+</div>

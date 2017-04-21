@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -20,20 +19,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
+	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/service/cache"
 )
 
 func checkProjectPermission(userID int, projectID int64) bool {
@@ -242,7 +239,7 @@ func addAuthentication(req *http.Request) {
 // SyncRegistry syncs the repositories of registry with database.
 func SyncRegistry() error {
 
-	log.Debugf("Start syncing repositories from registry to DB... ")
+	log.Infof("Start syncing repositories from registry to DB... ")
 
 	reposInRegistry, err := catalog()
 	if err != nil {
@@ -304,7 +301,7 @@ func SyncRegistry() error {
 		}
 	}
 
-	log.Debugf("Sync repositories from registry to DB is done.")
+	log.Infof("Sync repositories from registry to DB is done.")
 	return nil
 }
 
@@ -350,8 +347,11 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			}
 
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint := config.InternalRegistryURL()
-			client, err := cache.NewRepositoryClient(endpoint, true,
+			endpoint, err := config.RegistryURL()
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
+			client, err := NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
@@ -372,8 +372,11 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 			j++
 		} else {
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint := config.InternalRegistryURL()
-			client, err := cache.NewRepositoryClient(endpoint, true,
+			endpoint, err := config.RegistryURL()
+			if err != nil {
+				return needsAdd, needsDel, err
+			}
+			client, err := NewRepositoryClient(endpoint, true,
 				"admin", repoInR, "repository", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
@@ -422,35 +425,21 @@ func projectExists(repository string) (bool, error) {
 }
 
 func initRegistryClient() (r *registry.Registry, err error) {
-	endpoint := config.InternalRegistryURL()
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
 
 	addr := endpoint
-	if strings.Contains(endpoint, "/") {
-		addr = endpoint[strings.LastIndex(endpoint, "/")+1:]
+	if strings.Contains(endpoint, "://") {
+		addr = strings.Split(endpoint, "://")[1]
 	}
 
-	ch := make(chan int, 1)
-	go func() {
-		var err error
-		var c net.Conn
-		for {
-			c, err = net.DialTimeout("tcp", addr, 20*time.Second)
-			if err == nil {
-				c.Close()
-				ch <- 1
-			} else {
-				log.Errorf("failed to connect to registry client, retry after 2 seconds :%v", err)
-				time.Sleep(2 * time.Second)
-			}
-		}
-	}()
-	select {
-	case <-ch:
-	case <-time.After(60 * time.Second):
-		panic("Failed to connect to registry client after 60 seconds")
+	if err := utils.TestTCPConn(addr, 60, 2); err != nil {
+		return nil, err
 	}
 
-	registryClient, err := cache.NewRegistryClient(endpoint, true, "admin",
+	registryClient, err := NewRegistryClient(endpoint, true, "admin",
 		"registry", "catalog", "*")
 	if err != nil {
 		return nil, err
@@ -495,10 +484,6 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 	return repositories, nil
 }
 
-func getAllRepos() ([]string, error) {
-	return cache.GetRepoFromCache()
-}
-
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
@@ -508,4 +493,39 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 		return false, err
 	}
 	return len(tags) != 0, nil
+}
+
+// NewRegistryClient ...
+func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Registry, error) {
+	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// NewRepositoryClient ...
+func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
+	scopeActions ...string) (*registry.Repository, error) {
+
+	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
+
+	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

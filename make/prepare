@@ -19,8 +19,10 @@ if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
     import io as StringIO
 
-def validate(conf): 
+def validate(conf, args): 
     protocol = rcp.get("configuration", "ui_url_protocol")
+    if protocol != "https" and args.notary_mode:
+        raise Exception("Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
         if not rcp.has_option("configuration", "ssl_cert"):
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
@@ -38,32 +40,64 @@ def validate(conf):
         raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
 
 def get_secret_key(path):
-    key_file = os.path.join(path, "secretkey")
+    secret_key = _get_secret(path, "secretkey") 
+    if len(secret_key) != 16:
+        raise Exception("secret key's length has to be 16 chars, current length: %d" % len(secret_key))
+    return secret_key
+
+def get_alias(path):
+    alias = _get_secret(path, "defaultalias", length=8)
+    return alias
+
+def _get_secret(folder, filename, length=16):
+    key_file = os.path.join(folder, filename)
     if os.path.isfile(key_file):
         with open(key_file, 'r') as f:
             key = f.read()
-            print("loaded secret key")
-        if len(key) != 16:
-            raise Exception("secret key's length has to be 16 chars, current length: %d" % len(key))
+            print("loaded secret from file: %s" % key_file)
         return key
-    if not os.path.isdir(path):
-        os.makedirs(path, mode=0600)
-    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+    if not os.path.isdir(folder):
+        os.makedirs(folder, mode=0600)
+    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
     with open(key_file, 'w') as f:
         f.write(key)
-        print("generated and saved secret key")
+        print("Generated and saved secret to file: %s" % key_file)
+    os.chmod(key_file, 0600)
     return key
+
+def prep_conf_dir(root, name):
+    absolute_path = os.path.join(root, name)
+    if not os.path.exists(absolute_path):
+        os.makedirs(absolute_path)
+    return absolute_path
+
+def render(src, dest, **kw):
+    t = Template(open(src, 'r').read())
+    with open(dest, 'w') as f:
+        f.write(t.substitute(**kw))
+    print("Generated configuration file: %s" % dest)
 
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "common/config")
 templates_dir = os.path.join(base_dir, "common/templates")
-    
-parser = argparse.ArgumentParser()
-parser.add_argument('-conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
-parser.add_argument('--data-volume', dest='data_volume', default='/data/',type=str,help="the path of Harbor data volume, which is set in template of docker-compose.")
+def delfile(src):
+    if os.path.isfile(src):
+        try:
+            os.remove(src)
+            print("Clearing the configuration file: %s" % src)
+        except:
+            pass
+    elif os.path.isdir(src):
+        for item in os.listdir(src):
+            itemsrc=os.path.join(src,item)
+            delfile(itemsrc)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
+parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 args = parser.parse_args()
 
+delfile(config_dir)
 #Read configurations
 conf = StringIO.StringIO()
 conf.write("[configuration]\n")
@@ -72,16 +106,16 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
-validate(rcp)
+validate(rcp, args)
 
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
 email_identity = rcp.get("configuration", "email_identity")
-email_server = rcp.get("configuration", "email_server")
-email_server_port = rcp.get("configuration", "email_server_port")
-email_username = rcp.get("configuration", "email_username")
-email_password = rcp.get("configuration", "email_password")
+email_host = rcp.get("configuration", "email_server")
+email_port = rcp.get("configuration", "email_server_port")
+email_usr = rcp.get("configuration", "email_username")
+email_pwd = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
@@ -102,56 +136,40 @@ else:
     ldap_filter = ""
 ldap_uid = rcp.get("configuration", "ldap_uid")
 ldap_scope = rcp.get("configuration", "ldap_scope")
+ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
 self_registration = rcp.get("configuration", "self_registration")
-use_compressed_js = rcp.get("configuration", "use_compressed_js")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
     cert_key_path = rcp.get("configuration", "ssl_cert_key")
 customize_crt = rcp.get("configuration", "customize_crt")
-crt_country = rcp.get("configuration", "crt_country")
-crt_state = rcp.get("configuration", "crt_state")
-crt_location = rcp.get("configuration", "crt_location")
-crt_organization = rcp.get("configuration", "crt_organization")
-crt_organizationalunit = rcp.get("configuration", "crt_organizationalunit")
-crt_commonname = rcp.get("configuration", "crt_commonname")
-crt_email = rcp.get("configuration", "crt_email")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
-#secret_key = rcp.get("configuration", "secret_key")
-secret_key = get_secret_key(args.data_volume)
+secretkey_path = rcp.get("configuration", "secretkey_path")
+if rcp.has_option("configuration", "admiral_url"):
+    admiral_url = rcp.get("configuration", "admiral_url")
+else:
+    admiral_url = ""
+secret_key = get_secret_key(secretkey_path)
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
-ui_config_dir = os.path.join(config_dir,"ui")
-if not os.path.exists(ui_config_dir):
-    os.makedirs(os.path.join(config_dir, "ui"))
+adminserver_config_dir = os.path.join(config_dir,"adminserver")
+if not os.path.exists(adminserver_config_dir):
+    os.makedirs(os.path.join(config_dir, "adminserver"))
 
-db_config_dir = os.path.join(config_dir, "db")
-if not os.path.exists(db_config_dir):
-    os.makedirs(os.path.join(config_dir, "db"))
+ui_config_dir = prep_conf_dir(config_dir,"ui")
+db_config_dir = prep_conf_dir(config_dir, "db")
+job_config_dir = prep_conf_dir(config_dir, "jobservice")
+registry_config_dir = prep_conf_dir(config_dir, "registry")
+nginx_config_dir = prep_conf_dir (config_dir, "nginx")
+nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 
-job_config_dir = os.path.join(config_dir, "jobservice")
-if not os.path.exists(job_config_dir):
-    os.makedirs(job_config_dir)
-
-registry_config_dir = os.path.join(config_dir, "registry")
-if not os.path.exists(registry_config_dir):
-    os.makedirs(registry_config_dir)
-
-nginx_config_dir = os.path.join(config_dir, "nginx")
-if not os.path.exists(nginx_config_dir):
-    os.makedirs(nginx_config_dir)
-
-def render(src, dest, **kw):
-    t = Template(open(src, 'r').read())
-    with open(dest, 'w') as f:
-        f.write(t.substitute(**kw))
-    print("Generated configuration file: %s" % dest)
-
+adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
 jobservice_conf = os.path.join(config_dir, "jobservice", "app.conf")
@@ -160,18 +178,6 @@ db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert") 
-def delfile(src):
-    if os.path.isfile(src):
-        try:
-            os.remove(src)
-            print("Clearing the configuration file: %s" % src)
-        except:
-            pass
-    elif os.path.isdir(src):
-        for item in os.listdir(src):
-            itemsrc=os.path.join(src,item)
-            delfile(itemsrc)
-delfile(config_dir)
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -187,14 +193,12 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
-
-render(os.path.join(templates_dir, "ui", "env"),
-        ui_conf_env,
-        hostname=hostname,
-        db_password=db_password,
+		
+render(os.path.join(templates_dir, "adminserver", "env"),
+        adminserver_conf_env,
         ui_url=ui_url,
         auth_mode=auth_mode,
-        harbor_admin_password=harbor_admin_password,
+        self_registration=self_registration,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -202,26 +206,33 @@ render(os.path.join(templates_dir, "ui", "env"),
         ldap_filter=ldap_filter,
         ldap_uid=ldap_uid,
         ldap_scope=ldap_scope,
-	self_registration=self_registration,
-	use_compressed_js=use_compressed_js,
-        ui_secret=ui_secret,
-        secret_key=secret_key,
-	verify_remote_cert=verify_remote_cert,
-        project_creation_restriction=proj_cre_restriction,
-	token_expiration=token_expiration)
-
-render(os.path.join(templates_dir, "ui", "app.conf"),
-        ui_conf,
-        email_identity=email_identity,
-        email_server=email_server,
-        email_server_port=email_server_port,
-        email_username=email_username,
-        email_password=email_password,
-        email_from=email_from,
+        ldap_timeout=ldap_timeout,
+        db_password=db_password,
+        email_host=email_host,
+        email_port=email_port,
+        email_usr=email_usr,
+        email_pwd=email_pwd,
         email_ssl=email_ssl,
-        ui_url=ui_url)
+        email_from=email_from,
+        email_identity=email_identity,
+        harbor_admin_password=harbor_admin_password,
+        project_creation_restriction=proj_cre_restriction,
+        verify_remote_cert=verify_remote_cert,
+        max_job_workers=max_job_workers,
+        ui_secret=ui_secret,
+        jobservice_secret=jobservice_secret,
+        token_expiration=token_expiration,
+        admiral_url=admiral_url,
+        with_notary=args.notary_mode
+	)
 
-render(os.path.join(templates_dir, "registry", "config.yml"),
+render(os.path.join(templates_dir, "ui", "env"), 
+        ui_conf_env, 
+        ui_secret=ui_secret,
+        jobservice_secret=jobservice_secret,)
+
+render(os.path.join(templates_dir, "registry", 
+		"config.yml"),
         registry_conf,
         ui_url=ui_url)
 
@@ -231,15 +242,15 @@ render(os.path.join(templates_dir, "db", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
-        db_password=db_password,
         ui_secret=ui_secret,
-        max_job_workers=max_job_workers,
-        secret_key=secret_key,
-        ui_url=ui_url,
-        verify_remote_cert=verify_remote_cert)
-		
+        jobservice_secret=jobservice_secret)
+
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
+
+print("Generated configuration file: %s" % ui_conf)
+shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \
@@ -251,51 +262,112 @@ FNULL = open(os.devnull, 'w')
 from functools import wraps
 def stat_decorator(func):
     @wraps(func)
-    def check_wrapper(*args, **kwargs):
-        stat = func(*args, **kwargs)
-        message = "Generated configuration file: %s" % kwargs['path'] \
-                if stat == 0 else "Fail to generate %s" % kwargs['path']
+    def check_wrapper(*args, **kw):
+        stat = func(*args, **kw)
+        message = "Generated certificate, key file: %s, cert file: %s" % (kw['key_path'], kw['cert_path']) \
+                if stat == 0 else "Fail to generate key file: %s, cert file: %s" % (kw['key_path'], kw['cert_path'])
         print(message)
         if stat != 0:
             sys.exit(1)
     return check_wrapper
 
 @stat_decorator
-def check_private_key_stat(*args, **kwargs):
-    return subprocess.call(["openssl", "genrsa", "-out", kwargs['path'], "4096"],\
-        stdout=FNULL, stderr=subprocess.STDOUT)
+def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
+   rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "4096"], stdout=FNULL, stderr=subprocess.STDOUT)
+   if rc != 0:
+        return rc
+   return subprocess.call(["openssl", "req", "-new", "-x509", "-key", key_path,\
+        "-out", cert_path, "-days", "3650", "-subj", subj], stdout=FNULL, stderr=subprocess.STDOUT)
 
 @stat_decorator
-def check_certificate_stat(*args, **kwargs):
-    dirty_subj = "/C={0}/ST={1}/L={2}/O={3}/OU={4}/CN={5}/emailAddress={6}"\
-        .format(crt_country, crt_state, crt_location, crt_organization,\
-        crt_organizationalunit, crt_commonname, crt_email)
-    subj = validate_crt_subj(dirty_subj)
-    return subprocess.call(["openssl", "req", "-new", "-x509", "-key",\
-        private_key_pem, "-out", root_crt, "-days", "3650", "-subj", subj], \
-        stdout=FNULL, stderr=subprocess.STDOUT)
+def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt"):
+    cert_dir = os.path.dirname(cert_path)
+    csr_path = os.path.join(cert_dir, "tmp.csr")
+    rc = subprocess.call(["openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
+        "-out", csr_path, "-subj", subj], stdout=FNULL, stderr=subprocess.STDOUT)
+    if rc != 0:
+        return rc
+    return subprocess.call(["openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
+        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path], stdout=FNULL, stderr=subprocess.STDOUT)
 
-def openssl_is_installed(stat):
-    if stat == 0:
-        return True
-    else:
+def openssl_installed():
+    shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
+    if shell_stat != 0:
         print("Cannot find openssl installed in this computer\nUse default SSL certificate file")
         return False
+    return True
+        
 
-if customize_crt == 'on':
+if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
-    if openssl_is_installed(shell_stat):
-        private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
-        root_crt = os.path.join(config_dir, "registry", "root.crt")
-
-        check_private_key_stat(path=private_key_pem)
-        check_certificate_stat(path=root_crt)
-		
+    empty_subj = "/C=/ST=/L=/O=/CN=/"
+    private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
+    root_crt = os.path.join(config_dir, "registry", "root.crt")
+    create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
+    os.chmod(private_key_pem, 0600)
+    os.chmod(root_crt, 0600)
 else:
-    print("Generated configuration file: %s" % ui_config_dir + "private_key.pem")
+    print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
-    print("Generated configuration file: %s" % registry_config_dir + "root.crt")
+    print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 	
+if args.notary_mode:
+    notary_config_dir = prep_conf_dir(config_dir, "notary")
+    notary_temp_dir = os.path.join(templates_dir, "notary") 
+    print("Copying sql file for notary DB")
+    if os.path.exists(os.path.join(notary_config_dir, "mysql-initdb.d")):
+        shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
+    shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
+    if customize_crt == 'on' and openssl_installed():
+        try:
+            temp_cert_dir = os.path.join(base_dir, "cert_tmp")
+            if not os.path.exists(temp_cert_dir):
+                os.makedirs(temp_cert_dir)
+            ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
+            cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
+            signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
+            signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
+            signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
+            signer_key_path = os.path.join(temp_cert_dir, "notary-signer.key")
+            create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
+            create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
+            print("Copying certs for notary signer")
+	    os.chmod(signer_cert_path, 0600)
+	    os.chmod(signer_key_path, 0600)
+	    os.chmod(signer_ca_cert, 0600)
+            shutil.copy2(signer_cert_path, notary_config_dir)
+            shutil.copy2(signer_key_path, notary_config_dir)
+            shutil.copy2(signer_ca_cert, notary_config_dir)
+        finally:
+            srl_tmp = os.path.join(os.getcwd(), ".srl")
+            if os.path.isfile(srl_tmp):
+                os.remove(srl_tmp)
+            if os.path.isdir(temp_cert_dir):
+                shutil.rmtree(temp_cert_dir, True)
+    else:
+        print("Copying certs for notary signer")
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_dir)
+    shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
+    print("Copying notary signer configuration file")
+    shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
+    render(os.path.join(notary_temp_dir, "server-config.json"),
+        os.path.join(notary_config_dir, "server-config.json"),
+        token_endpoint=ui_url)
+
+    print("Copying nginx configuration file for notary")
+    shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
+    render(os.path.join(templates_dir, "nginx", "notary.server.conf"), 
+            os.path.join(nginx_conf_d, "notary.server.conf"), 
+            ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
+            ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
+
+
+    default_alias = get_alias(secretkey_path)
+    render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
+
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
+

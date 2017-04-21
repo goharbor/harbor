@@ -1,0 +1,126 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
+import { TranslateService } from '@ngx-translate/core';
+
+import { Message } from './message';
+import { MessageService } from './message.service';
+
+import { AlertType, dismissInterval, httpStatusCode, CommonRoutes } from '../shared/shared.const';
+
+@Component({
+  selector: 'global-message',
+  templateUrl: 'message.component.html'
+})
+export class MessageComponent implements OnInit, OnDestroy {
+
+  @Input() isAppLevel: boolean;
+  globalMessage: Message = new Message();
+  globalMessageOpened: boolean;
+  messageText: string = "";
+  private timer: any = null;
+
+  private appLevelMsgSub: Subscription;
+  private msgSub: Subscription;
+  private clearSub: Subscription;
+
+  constructor(
+    private messageService: MessageService,
+    private router: Router,
+    private translate: TranslateService) { }
+
+  ngOnInit(): void {
+    //Only subscribe application level message
+    if (this.isAppLevel) {
+      this.appLevelMsgSub = this.messageService.appLevelAnnounced$.subscribe(
+        message => {
+          this.globalMessageOpened = true;
+          this.globalMessage = message;
+          this.messageText = message.message;
+
+          this.translateMessage(message);
+        }
+      )
+    } else {
+      //Only subscribe general messages
+      this.msgSub = this.messageService.messageAnnounced$.subscribe(
+        message => {
+          this.globalMessageOpened = true;
+          this.globalMessage = message;
+          this.messageText = message.message;
+
+          this.translateMessage(message);
+
+          // Make the message alert bar dismiss after several intervals.
+          //Only for this case
+          this.timer = setTimeout(() => this.onClose(), dismissInterval);
+        }
+      );
+    }
+
+    this.clearSub = this.messageService.clearChan$.subscribe(clear => {
+      this.onClose();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.appLevelMsgSub) {
+      this.appLevelMsgSub.unsubscribe();
+    }
+
+    if (this.msgSub) {
+      this.msgSub.unsubscribe();
+    }
+
+    if (this.clearSub) {
+      this.clearSub.unsubscribe();
+    }
+  }
+
+  //Translate or refactor the message shown to user
+  translateMessage(msg: Message): void {
+    let key = "UNKNOWN_ERROR", param = "";
+    if (msg && msg.message) {
+      key = (typeof msg.message === "string" ? msg.message.trim() : msg.message);
+      if (key === "") {
+        key = "UNKNOWN_ERROR";
+      }
+    }
+
+    this.translate.get(key, { 'param': param }).subscribe((res: string) => this.messageText = res);
+  }
+
+  public get needAuth(): boolean {
+    return this.globalMessage ?
+      this.globalMessage.statusCode === httpStatusCode.Unauthorized : false;
+  }
+
+  //Show message text
+  public get message(): string {
+    return this.messageText;
+  }
+
+  signIn(): void {
+    this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
+  }
+
+  onClose() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.globalMessageOpened = false;
+  }
+}

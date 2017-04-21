@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -20,17 +19,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/jobservice/job"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/utils"
 	"github.com/vmware/harbor/src/common/models"
 	u "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/job"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 // ReplicationJob handles /api/replicationJobs /api/replicationJobs/:id/log
@@ -171,7 +169,13 @@ func (rj *ReplicationJob) GetLog() {
 		rj.RenderError(http.StatusBadRequest, "Invalid job id")
 		return
 	}
-	logFile := utils.GetJobLogPath(jid)
+	logFile, err := utils.GetJobLogPath(jid)
+	if err != nil {
+		log.Errorf("failed to get log path of job %s: %v", idStr, err)
+		rj.RenderError(http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError))
+		return
+	}
 	rj.Ctx.Output.Download(logFile)
 }
 
@@ -188,7 +192,7 @@ func getRepoList(projectID int64) ([]string, error) {
 			return repositories, err
 		}
 
-		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.UISecret()})
+		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()})
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -197,9 +201,13 @@ func getRepoList(projectID int64) ([]string, error) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			dump, _ := httputil.DumpResponse(resp, true)
-			log.Debugf("response: %q", dump)
-			return repositories, fmt.Errorf("Unexpected status code when getting repository list: %d", resp.StatusCode)
+			b, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return repositories, err
+			}
+			return repositories,
+				fmt.Errorf("failed to get repo list, response code: %d, error: %s",
+					resp.StatusCode, string(b))
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)

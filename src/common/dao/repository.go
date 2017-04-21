@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
@@ -50,7 +49,8 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 func GetAllRepositories() ([]models.RepoRecord, error) {
 	o := GetOrmer()
 	var repos []models.RepoRecord
-	_, err := o.QueryTable("repository").All(&repos)
+	_, err := o.QueryTable("repository").
+		OrderBy("Name").All(&repos)
 	return repos, err
 }
 
@@ -102,23 +102,29 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 }
 
 //GetTopRepos returns the most popular repositories
-func GetTopRepos(count int) ([]models.TopRepo, error) {
-	topRepos := []models.TopRepo{}
-
+func GetTopRepos(userID int, count int) ([]*models.RepoRecord, error) {
+	sql :=
+		`select r.repository_id, r.name, r.owner_id, 
+			r.project_id, r.description, r.pull_count, 
+			r.star_count, r.creation_time, r.update_time
+		from repository r
+		inner join project p on r.project_id = p.project_id
+		where (
+			p.deleted = 0 and (
+				p.public = 1 or (
+					? <> ? and (
+						exists (
+							select 1 from user u
+							where u.user_id = ? and u.sysadmin_flag = 1
+						) or exists (
+							select 1 from project_member pm
+							where pm.project_id = p.project_id and pm.user_id = ?
+		)))))
+		order by r.pull_count desc, r.name limit ?`
 	repositories := []*models.RepoRecord{}
-	if _, err := GetOrmer().QueryTable(&models.RepoRecord{}).
-		OrderBy("-PullCount", "Name").Limit(count).All(&repositories); err != nil {
-		return topRepos, err
-	}
+	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, userID, count).QueryRows(&repositories)
 
-	for _, repository := range repositories {
-		topRepos = append(topRepos, models.TopRepo{
-			RepoName:    repository.Name,
-			AccessCount: repository.PullCount,
-		})
-	}
-
-	return topRepos, nil
+	return repositories, err
 }
 
 // GetTotalOfRepositories ...
@@ -168,4 +174,35 @@ func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) 
 	var total int64
 	err := GetOrmer().Raw(sql, params).QueryRow(&total)
 	return total, err
+}
+
+// GetTotalOfRepositoriesByProject ...
+func GetTotalOfRepositoriesByProject(projectID int64, name string) (int64, error) {
+	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
+		Filter("ProjectID", projectID)
+
+	if len(name) != 0 {
+		qs = qs.Filter("Name__contains", name)
+	}
+
+	return qs.Count()
+}
+
+// GetRepositoriesByProject ...
+func GetRepositoriesByProject(projectID int64, name string,
+	limit, offset int64) ([]*models.RepoRecord, error) {
+
+	repositories := []*models.RepoRecord{}
+
+	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
+		Filter("ProjectID", projectID)
+
+	if len(name) != 0 {
+		qs = qs.Filter("Name__contains", name)
+	}
+
+	_, err := qs.Limit(limit).
+		Offset(offset).All(&repositories)
+
+	return repositories, err
 }

@@ -1,0 +1,44 @@
+.progress-size-small {
+    height: 0.5em !important;
+}
+
+.visibility-hidden {
+    visibility: hidden;
+}
+
+.forgot-password-link {
+    position: relative;
+    line-height: 36px;
+    font-size: 14px;
+    float: right;
+    top: -5px;
+}
+
+.popular-repo-wrapper {
+    background-color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-grow: 1;
+    margin-top: 24px;
+    justify-content: center;
+    flex-direction: column;
+    height: auto;
+    position: relative;
+    margin-left: 1px;
+}
+
+.login-wrapper-override {
+    flex-wrap: wrap;
+}
+
+.repo-container {
+    width: 100%;
+    margin-top: -250px;
+}
+
+.more-info-link {
+    position: relative;
+    top: 80px;
+    left: 294px;
+    padding-right: 36px;
+}

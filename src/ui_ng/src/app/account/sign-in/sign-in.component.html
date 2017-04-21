@@ -1,0 +1,44 @@
+<div class="login-wrapper login-wrapper-override">
+    <form #signInForm="ngForm" class="login">
+        <label class="title">{{appTitle | translate}}<span class="trademark">&#8482;</span>
+    </label>
+        <div class="login-group">
+            <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
+                <input class="username" type="text" required
+                [(ngModel)]="signInCredential.principal" 
+                name="login_username" id="login_username" placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}'
+                #userNameInput='ngModel'>
+                <span class="tooltip-content">
+                    {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
+                </span>
+            </label>
+            <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
+                <input class="password" type="password" required 
+                [(ngModel)]="signInCredential.password" 
+                name="login_password" id="login_password" placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}'
+                #passwordInput="ngModel">
+                <span class="tooltip-content">
+                    {{ 'TOOLTIP.SIGN_IN_PWD' | translate }}
+                </span>
+            </label>
+            <div class="checkbox">
+                <input type="checkbox" id="rememberme" #rememberMeBox (click)="clickRememberMe($event)" [checked]="rememberMe">
+                <label for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
+                <a *ngIf="showForgetPwd" href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">{{'SIGN_IN.FORGOT_PWD' | translate}}</a>
+            </div>
+            <div [class.visibility-hidden]="!isError" class="error active">
+                {{ 'SIGN_IN.INVALID_MSG' | translate }}
+            </div>
+            <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
+            <a href="javascript:void(0)" class="signup" (click)="signUp()" *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
+        </div>
+        <div>
+            <a href="https://github.com/vmware/harbor" target="_blank" class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
+        </div>
+    </form>
+    <div id="pop_repo" class="popular-repo-wrapper">
+        <top-repo class="repo-container"></top-repo>
+    </div>
+</div>
+<sign-up #signupDialog (userCreation)="handleUserCreation($event)"></sign-up>
+<forgot-password #forgotPwdDialog></forgot-password>

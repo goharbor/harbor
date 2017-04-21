@@ -1,0 +1,62 @@
+<div class="config-container">
+    <h2 style="display: inline-block;" class="custom-h2">{{'CONFIG.TITLE' | translate }}</h2>
+    <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+    <clr-tabs (clrTabsCurrentTabLinkChanged)="tabLinkChanged($event)">
+        <clr-tab-link [clrTabLinkId]="'config-auth'" [clrTabLinkActive]='isCurrentTabLink("config-auth")'>{{'CONFIG.AUTH' | translate }}</clr-tab-link>
+        <clr-tab-link [clrTabLinkId]="'config-replication'" [clrTabLinkActive]='isCurrentTabLink("config-replication")'>{{'CONFIG.REPLICATION' | translate }}</clr-tab-link>
+        <clr-tab-link [clrTabLinkId]="'config-email'" [clrTabLinkActive]='isCurrentTabLink("config-email")'>{{'CONFIG.EMAIL' | translate }}</clr-tab-link>
+        <clr-tab-link [clrTabLinkId]="'config-system'" [clrTabLinkActive]='isCurrentTabLink("config-system")'>{{'CONFIG.SYSTEM' | translate }}</clr-tab-link>
+
+        <clr-tab-content [clrTabContentId]="'authentication'" [clrTabContentActive]='isCurrentTabContent("authentication")'>
+            <config-auth [ldapConfig]="allConfig"></config-auth>
+        </clr-tab-content>
+        <clr-tab-content [clrTabContentId]="'replication'" [clrTabContentActive]='isCurrentTabContent("replication")'>
+            <form #repoConfigFrom="ngForm" class="form">
+                <section class="form-block">
+                    <div class="form-group">
+                        <label for="verifyRemoteCert">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
+                        <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="allConfig.verify_remote_cert.value" [disabled]="disabled(allConfig.verify_remote_cert)">
+                            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top:-8px;">
+                                <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
+                                <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate }}</span>
+                            </a>
+                        </clr-checkbox>
+                    </div>
+                </section>
+            </form>
+        </clr-tab-content>
+        <clr-tab-content [clrTabContentId]="'email'" [clrTabContentActive]='isCurrentTabContent("email")'>
+            <config-email [mailConfig]="allConfig"></config-email>
+        </clr-tab-content>
+        <clr-tab-content [clrTabContentId]="'system_settings'" [clrTabContentActive]='isCurrentTabContent("system_settings")'>
+            <form #systemConfigFrom="ngForm" class="form">
+                <section class="form-block">
+                    <div class="form-group">
+                        <label for="tokenExpiration" class="required">{{'CONFIG.TOKEN_EXPIRATION' | translate}}</label>
+                        <label for="tokenExpiration" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="tokenExpirationInput.invalid && (tokenExpirationInput.dirty || tokenExpirationInput.touched)">
+                      <input name="tokenExpiration" type="text" #tokenExpirationInput="ngModel" [(ngModel)]="allConfig.token_expiration.value" 
+                      required 
+                      pattern="^[1-9]{1}[\d]*$"
+                      id="tokenExpiration" 
+                      size="40" [disabled]="disabled(allConfig.token_expiration)">
+                      <span class="tooltip-content">
+                          {{'TOOLTIP.NUMBER_REQUIRED' | translate}}
+                      </span>
+                    </label>
+                        <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                            <clr-icon shape="info-circle" class="is-info" size="24"></clr-icon>
+                            <span class="tooltip-content">{{'CONFIG.TOOLTIP.TOKEN_EXPIRATION' | translate}}</span>
+                        </a>
+                    </div>
+                </section>
+            </form>
+        </clr-tab-content>
+    </clr-tabs>
+    <div>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
+        <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-outline" (click)="testMailServer()" *ngIf="showTestServerBtn" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL' | translate}}</button>
+        <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
+        <span class="spinner spinner-inline" [hidden]="!testingInProgress"></span>
+    </div>
+</div>

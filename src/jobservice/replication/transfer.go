@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package replication
 
@@ -33,6 +32,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/jobservice/config"
 )
 
 const (
@@ -137,7 +137,7 @@ func (i *Initializer) enter() (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	srcClient, err := newRepositoryClient(i.srcURL, i.insecure, srcCred,
-		i.repository, "repository", i.repository, "pull", "push", "*")
+		config.InternalTokenServiceEndpoint(), i.repository, "repository", i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return "", err
@@ -146,7 +146,7 @@ func (i *Initializer) enter() (string, error) {
 
 	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
 	dstClient, err := newRepositoryClient(i.dstURL, i.insecure, dstCred,
-		i.repository, "repository", i.repository, "pull", "push", "*")
+		"", i.repository, "repository", i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return "", err
@@ -322,12 +322,6 @@ func (m *ManifestPuller) enter() (string, error) {
 		blobs = append(blobs, discriptor.Digest.String())
 	}
 
-	// config is also need to be transferred if the schema of manifest is v2
-	manifest2, ok := manifest.(*schema2.DeserializedManifest)
-	if ok {
-		blobs = append(blobs, manifest2.Target().Digest.String())
-	}
-
 	m.logger.Infof("all blobs of %s:%s from %s: %v", name, tag, m.srcURL, blobs)
 
 	for _, blob := range blobs {
@@ -457,10 +451,11 @@ func (m *ManifestPusher) enter() (string, error) {
 	return StatePullManifest, nil
 }
 
-func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential, repository, scopeType, scopeName string,
+func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
+	tokenServiceEndpoint, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
-
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure, scopeType, scopeName, scopeActions...)
+	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
+		tokenServiceEndpoint, scopeType, scopeName, scopeActions...)
 
 	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
 	if err != nil {

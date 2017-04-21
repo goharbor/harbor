@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package main
 
@@ -26,49 +25,57 @@ import (
 
 func initRouters() {
 
-	beego.SetStaticPath("static/resources", "static/resources")
-	beego.SetStaticPath("static/vendors", "static/vendors")
+	beego.SetStaticPath("/static", "./static")
+	beego.SetStaticPath("/i18n", "./static/i18n")
 
 	//Page Controllers:
 	beego.Router("/", &controllers.IndexController{})
-	beego.Router("/dashboard", &controllers.DashboardController{})
-	beego.Router("/project", &controllers.ProjectController{})
-	beego.Router("/repository", &controllers.RepositoryController{})
-	beego.Router("/sign_up", &controllers.SignUpController{})
-	beego.Router("/add_new", &controllers.AddNewController{})
-	beego.Router("/account_setting", &controllers.AccountSettingController{})
-	beego.Router("/change_password", &controllers.ChangePasswordController{})
-	beego.Router("/admin_option", &controllers.AdminOptionController{})
-	beego.Router("/forgot_password", &controllers.ForgotPasswordController{})
-	beego.Router("/reset_password", &controllers.ResetPasswordController{})
-	beego.Router("/search", &controllers.SearchController{})
+	beego.Router("/sign-in", &controllers.IndexController{})
+	beego.Router("/sign-up", &controllers.IndexController{})
+	beego.Router("/reset_password", &controllers.IndexController{})
+
+	beego.Router("/harbor", &controllers.IndexController{})
+
+	beego.Router("/harbor/sign-in", &controllers.IndexController{})
+	beego.Router("/harbor/sign-up", &controllers.IndexController{})
+	beego.Router("/harbor/dashboard", &controllers.IndexController{})
+	beego.Router("/harbor/projects", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/repository", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/replication", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/member", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/log", &controllers.IndexController{})
+	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
+
+	beego.Router("/harbor/users", &controllers.IndexController{})
+	beego.Router("/harbor/logs", &controllers.IndexController{})
+	beego.Router("/harbor/replications", &controllers.IndexController{})
+	beego.Router("/harbor/replications/endpoints", &controllers.IndexController{})
+	beego.Router("/harbor/replications/rules", &controllers.IndexController{})
+	beego.Router("/harbor/tags", &controllers.IndexController{})
+	beego.Router("/harbor/configs", &controllers.IndexController{})
 
 	beego.Router("/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
-	beego.Router("/language", &controllers.CommonController{}, "get:SwitchLanguage")
-
-	beego.Router("/optional_menu", &controllers.OptionalMenuController{})
-	beego.Router("/navigation_header", &controllers.NavigationHeaderController{})
-	beego.Router("/navigation_detail", &controllers.NavigationDetailController{})
-	beego.Router("/sign_in", &controllers.SignInController{})
 
 	//API:
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
-	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
-	beego.Router("/api/projects/:id", &api.ProjectAPI{})
-	beego.Router("/api/projects/:id/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
-	beego.Router("/api/statistics", &api.StatisticAPI{})
+	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post;head:Head")
+	beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
+	beego.Router("/api/projects/:id([0-9]+)/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
-	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
-	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/*/tags/?:tag", &api.RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
@@ -81,13 +88,25 @@ func initRouters() {
 	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
+	beego.Router("/api/targets/:id([0-9]+)/ping", &api.TargetAPI{}, "post:PingByID")
 	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/logs", &api.LogAPI{})
+	beego.Router("/api/configurations", &api.ConfigAPI{})
+	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 
+	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
+	beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
+	beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
+	beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
+	beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
+
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
+
+	//Error pages
+	beego.ErrorController(&controllers.ErrorController{})
 }

@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
@@ -168,10 +167,15 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // 2. the prject is public or the user is a member of the project
 func SearchProjects(userID int) ([]models.Project, error) {
 	o := GetOrmer()
-	sql := `select distinct p.project_id, p.name, p.public 
+
+	sql :=
+		`select distinct p.project_id, p.name, p.public, 
+			p.owner_id, p.creation_time, p.update_time
 		from project p 
-		left join project_member pm on p.project_id = pm.project_id 
-		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
+		left join project_member pm 
+		on p.project_id = pm.project_id 
+		where (pm.user_id = ? or p.public = 1) 
+		and p.deleted = 0 `
 
 	var projects []models.Project
 

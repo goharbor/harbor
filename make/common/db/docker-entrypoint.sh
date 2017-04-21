@@ -13,6 +13,7 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	# These statements _must_ be on individual lines, and _must_ end with
 	# semicolons (no line breaks or comments are permitted).
 	# TODO proper SQL escaping on ALL the things D:
+    printf -v MYSQL_ROOT_PASSWORD "%q" ${MYSQL_ROOT_PASSWORD}
 	TEMP_FILE='/tmp/mysql-first-time.sql'
 	cat > "$TEMP_FILE" <<-EOSQL
 		DELETE FROM mysql.user ;

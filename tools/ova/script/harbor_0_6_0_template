@@ -1,0 +1,103 @@
+## Configuration file of Harbor
+
+#The IP address or hostname to access admin UI and registry service.
+#DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
+hostname = $hostname
+
+#The protocol for accessing the UI and token/notification service, by default it is http.
+#It can be set to https if ssl is enabled on nginx.
+ui_url_protocol = $ui_url_protocol
+
+#The password for the root user of mysql db, change this before any production use.
+db_password = $db_password
+
+#Determine whether the UI should use compressed js files.
+#For production, set it to on. For development, set it to off.
+use_compressed_js = $use_compressed_js
+
+#Maximum number of job workers in job service
+max_job_workers = $max_job_workers
+
+#Determine whether or not to generate certificate for the registry's token.
+#If the value is on, the prepare script creates new root cert and private key
+#for generating token to access the registry. If the value is off the default key/cert will be used.
+#This flag also controls the creation of the notary signer's cert.
+customize_crt = $customize_crt
+
+#The path of cert and key files for nginx, they are applied only the protocol is set to https
+ssl_cert = $ssl_cert
+ssl_cert_key = $ssl_cert_key
+
+#The path of secretkey storage
+secretkey_path = /data
+
+#Admiral's url, comment this attribute, or set its value to to NA when Harbor is standalone
+admiral_url = NA
+
+#NOTES: The properties between BEGIN INITIAL PROPERTIES and END INITIAL PROPERTIES
+#only take effect in the first boot, the subsequent changes of these properties
+#should be performed on web ui
+#************************BEGIN INITIAL PROPERTIES************************
+
+#Email account settings for sending out password resetting emails.
+
+#Email server uses the given username and password to authenticate on TLS connections to host and act as identity.
+#Identity left blank to act as username.
+email_identity = $email_identity
+
+email_server = $email_server
+email_server_port = $email_server_port
+email_username = $email_username
+email_password = $email_password
+email_from = $email_from
+email_ssl = $email_ssl
+
+##The initial password of Harbor admin, only works for the first time when Harbor starts.
+#It has no effect after the first launch of Harbor.
+#Change the admin password from UI after launching Harbor.
+harbor_admin_password = $harbor_admin_password
+
+##By default the auth mode is db_auth, i.e. the credentials are stored in a local database.
+#Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.
+auth_mode = $auth_mode
+
+#The url for an ldap endpoint.
+ldap_url = $ldap_url
+
+#A user's DN who has the permission to search the LDAP/AD server.
+#If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.
+#ldap_searchdn = uid=searchuser,ou=people,dc=mydomain,dc=com
+
+#the password of the ldap_searchdn
+#ldap_search_pwd = password
+
+#The base DN from which to look up a user in LDAP/AD
+ldap_basedn = $ldap_basedn
+
+#Search filter for LDAP/AD, make sure the syntax of the filter is correct.
+#ldap_filter = (objectClass=person)
+
+# The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD
+ldap_uid = $ldap_uid
+
+#the scope to search for users, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE
+ldap_scope = $ldap_scope
+
+#Timeout (in seconds)  when connecting to an LDAP Server. The default value (and most reasonable) is 5 seconds.
+ldap_timeout = 5
+
+#Turn on or off the self-registration feature
+self_registration = $self_registration
+
+#The expiration time (in minute) of token created by token service, default is 30 minutes
+token_expiration = $token_expiration
+
+#The flag to control what users have permission to create projects
+#Be default everyone can create a project, set to "adminonly" such that only admin can create project.
+project_creation_restriction = $project_creation_restriction
+
+#Determine whether the job service should verify the ssl cert when it connects to a remote registry.
+#Set this flag to off when the remote registry uses a self-signed or untrusted certificate.
+verify_remote_cert = $verify_remote_cert
+#************************BEGIN INITIAL PROPERTIES************************
+#############

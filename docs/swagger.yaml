@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: Harbor API
@@ -517,7 +515,6 @@ paths:
       responses:
         200:
           description: Get current user information successfully.
-          in: body
           schema:
             $ref: '#/definitions/User'
         401:
@@ -659,6 +656,11 @@ paths:
           format: int32
           required: true
           description: Relevant project ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Get detail info or not.
         - name: q
           in: query
           type: string
@@ -680,11 +682,11 @@ paths:
         - Products
       responses:
         200:
-          description: Searched for respositories successfully.
+          description: If detail is false, the response body is a string array which contains the names of repositories, or the response body contains an object array as described in schema.
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/Repository'
           headers:
             X-Total-Count:
               description: The total count of repositories
@@ -700,26 +702,27 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
+  /repositories/{repo_name}/tags/{tag}:
     delete:
-      summary: Delete a repository or a tag in a repository.
+      summary: Delete a tag in a repository.
       description: |
-        This endpoint let user delete repositories and tags with repo name and tag.
+        This endpoint let user delete tags with repo name and tag.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: The name of repository which will be deleted.
         - name: tag
-          in: query
+          in: path
           type: string
-          required: false
+          required: true
           description: Tag of a repository.
       tags:
         - Products
       responses:
         200:
-          description: Delete repository or tag successfully.
+          description: Delete tag successfully.
         400:
           description: Invalid repo_name.
         401:
@@ -728,41 +731,69 @@ paths:
           description: Repository or tag not found.
         403:
           description: Forbidden.
-  /repositories/tags:
+  /repositories/{repo_name}/tags:
     get:
       summary: Get tags of a relevant repository.
       description: |
         This endpoint aims to retrieve tags from a relevant repository.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: Relevant repository name.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: If detail is true, the manifests is returned too.
       tags:
        - Products
       responses:
         200:
-          description: Retrieved tags from a relevant repository successfully.
+          description: If detail is false, the response body is a string array, or the response body contains the manifest informations as described in schema.
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/DetailedTag'
         500:
           description: Unexpected internal errors.
-  /repositories/manifests:
+    delete:
+      summary: Delete all tags of a repository.
+      description: |
+        This endpoint let user delete all tags with repo name.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository which will be deleted.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete successfully.
+        400:
+          description: Invalid repo_name.
+        401:
+          description: Unauthorized.
+        404:
+          description: Repository not found.
+        403:
+          description: Forbidden.
+  /repositories/{repo_name}/tags/{tag}/manifest:
     get:
       summary: Get manifests of a relevant repository.
       description: |
         This endpoint aims to retreive manifests from a relevant repository.
       parameters:
         - name: repo_name
-          in: query
+          in: path
           type: string
           required: true
           description: Repository name
         - name: tag
-          in: query
+          in: path
           type: string
           required: true
           description: Tag name
@@ -777,11 +808,37 @@ paths:
         200:
           description: Retrieved manifests from a relevant repository successfully.
           schema:
-            $ref: '#/definitions/Repository'
+            $ref: '#/definitions/Manifest'
         404:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
+  /repositories/{repo_name}/signatures:
+    get:
+      summary: Get signature information of a repository
+      description: |
+        This endpoint aims to retrieve signature information of a repository, the data is
+        from the nested notary instance of Harbor.
+        If the repository does not have any signature information in notary, this API will
+        return an empty list with response code 200, instead of 404
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: repository name.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Retrieved signatures.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RepoSignature'
+        500:
+          description: Server side error.
+      
   /repositories/top:
     get:
       summary: Get public repositories which are accessed most.
@@ -794,15 +851,20 @@ paths:
           format: int32
           required: false
           description: The number of the requested public repositories, default is 10 if not provided.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Get detail info or not.
       tags:
        - Products
       responses:
         200:
-          description: Retrieved top repositories successfully.
+          description: If detail is true, the response is described as the schema, or the response contains a TopRepo array.
           schema:
             type: array
             items:
-              $ref: '#/definitions/TopRepo'
+              $ref: '#/definitions/Repository'
         400:
           description: Bad request because of invalid count.
         500:
@@ -1168,12 +1230,12 @@ paths:
       description: |
         This endpoint is for ping validates whether the target is reachable and whether the credential is valid.
       parameters:
-        - name: id
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: The replication's policy ID.
+        - name: target
+          in: body
+          description: The target object.
+          required: true
+          schema:
+            $ref: '#/definitions/PingTarget'
       tags:
         - Products  
       responses:
@@ -1185,6 +1247,31 @@ paths:
           description: User need to log in first or wrong username/password for remote target.
         404:
           description: Target not found.
+        500:
+          description: Unexpected internal errors.
+  /targets/{id}/ping: 
+    post:
+      summary: Ping target.
+      description: |
+        This endpoint is for ping target.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The replication's target ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping replication's target successfully.
+        400:
+          description: Can not ping target.
+        401:
+          description: User need to log in first.
+        404:
+          description: Target ID does not exist.
         500:
           description: Unexpected internal errors.
   /targets/{id}: 
@@ -1203,7 +1290,7 @@ paths:
           in: body
           required: true 
           schema:
-            $ref: '#/definitions/RepTargetPost'
+            $ref: '#/definitions/PutTarget'
           description: Updates of replication's target.
       tags:
         - Products
@@ -1309,7 +1396,229 @@ paths:
         403:
           description: User does not have permission of admin role.
         500:
-          description: Unexpected internal errors.   		
+          description: Unexpected internal errors. 
+  /systeminfo:
+    get:
+      summary: Get general system info
+      description: |
+        This API is for retrieving general system info, this can be called by anonymous request.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get general info successfully.
+          schema:
+            type: object
+            items:
+              $ref: "#/definitions/GeneralInfo"
+        500:
+          description: Unexpected internal error.
+  /systeminfo/volumes:
+    get:
+      summary: Get system volume info (total/free size).
+      description: |
+        This endpoint is for retrieving system volume info that only provides for admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system volumes successfully.
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/SystemInfo'
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /systeminfo/getcert:
+    get:
+      summary: Get default root certificate under OVA deployment.
+      description: |
+        This endpoint is for downloading a default root certificate that only provides for admin user under OVA deployment.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get default root certificate successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: Not found the default root certificate.
+        500:
+          description: Unexpected internal errors.
+  /ldap/ping:
+    post:
+      summary: Ping available ldap service.
+      description: |
+        This endpoint ping the available ldap service for test related configuration parameters. 
+      parameters:
+        - name: ldapconf
+          in: body
+          description: ldap configuration. support input ldap service configuration. If it's a empty request, will load current configuration from the system.
+          required: false
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping ldap service successfully.
+        400:
+          description: Inviald ldap configuration parameters.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Unexpected internal errors.        
+  /ldap/users/search:
+    post:
+      summary: Search available ldap users.
+      description: |
+        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Registered user ID
+        - name: ldap_conf
+          in: body
+          description: ldap search configuration. ldapconf field can input ldap service configuration. If this item are blank, will load default configuration will load current configuration from the system. 
+          required: false
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Search ldap users successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapUsers'
+        400:
+          description: Inviald ldap configuration parameters.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Unexpected internal errors. 
+  /ldap/users/import:
+    post:
+      summary: Import selected available ldap users.
+      description: |
+        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. 
+        If have errors when import user, will return the list of importing failed uid and the failed reason.
+      parameters:
+        - name: uid_list
+          in: body
+          description: The uid listed for importing. This list will check users validity of ldap service based on configuration from the system.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapImportUsers'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Add ldap users successfully.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Failed import some users. 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapFailedImportUsers'
+  /configurations:
+    get:
+      summary: Get system configurations.
+      description: |
+        This endpoint is for retrieving system configurations that only provides for admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system configurations successfully. The response body is a map.
+          schema:
+            type: object
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+    put:
+      summary: Modify system configurations.
+      description: |
+        This endpoint is for modifying system configurations that only provides for admin user.
+      tags:
+        - Products
+      parameters:
+        - name: configurations
+          in: body
+          required: true 
+          schema:
+            type: object
+          description: The configurations map need to be modified, the following are keys "auth_mode", "email_from", "email_host", "email_identity", "email_password", "email_port", "email_ssl", "email_username", "ldap_base_dn", "ldap_filter", "ldap_scope", "ldap_search_dn", "ldap_search_password", "ldap_timeout", "ldap_uid", "ldap_url", "project_creation_restriction", "self_registration", "verify_remote_cert".
+      responses:
+        200:
+          description: Modify system configurations successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /configurations/reset:
+    post:
+      summary: Reset system configurations.
+      description: |
+        Reset system configurations from environment variables. Can only be accessed by admin user.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Reset system configurations successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /email/ping:
+    post:
+      summary: Test connection and authentication with email server.
+      description: |
+        Test connection and authentication with email server. 
+      parameters:
+        - name: settings
+          in: body
+          description: Email server settings, if some of the settings are not assigned, they will be read from system configuration.
+          required: false
+          schema:
+            $ref: '#/definitions/EmailServerSetting'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Ping email server successfully.
+        400:
+          description: Inviald email server settings.
+        401:
+          description: User need to login first.
+        403:
+          description: Only admin has this authority.
+        500:
+          description: Unexpected internal errors.        
 definitions:
   Search:
     type: object
@@ -1318,26 +1627,12 @@ definitions:
         description: Search results of the projects that matched the filter keywords.
         type: array
         items:
-          $ref: '#/definitions/SearchProject'
+          $ref: '#/definitions/Project'
       repositories:
         description: Search results of the repositories that matched the filter keywords.
         type: array
         items:
           $ref: '#/definitions/SearchRepository'
-  SearchProject:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-        description: The ID of project
-      name:
-        type: string
-        description: The name of the project
-      public:
-        type: integer
-        format: int
-        description: The flag to indicate the publicity of the project (1 is public, 0 is non-public)
   SearchRepository:
     type: object
     properties:
@@ -1353,6 +1648,12 @@ definitions:
       repository_name:
         type: string
         description: The name of the repository
+      pull_count:
+        type: integer
+        description: The count how many times the repository is pulled
+      tags_count:
+        type: integer
+        description: The count of tags in the repository		
   ProjectReq:
     type: object
     properties:
@@ -1403,7 +1704,7 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
-  Repository:
+  Manifest:
     type: object
     properties:
       manifest:
@@ -1522,7 +1823,7 @@ definitions:
   TopRepo:
     type: object
     properties:
-      repo_name: 
+      name: 
         type: string
         description: The name of the repo 
       count:
@@ -1723,6 +2024,33 @@ definitions:
       password: 
         type: string
         description: The target server password.
+  PingTarget:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: The target address URL string.
+      username: 
+        type: string
+        description: The target server username.
+      password: 
+        type: string
+        description: The target server password.
+  PutTarget:
+    type: object
+    properties:
+      name: 
+        type: string
+        description: The target name.
+      endpoint:
+        type: string
+        description: The target address URL string.
+      username: 
+        type: string
+        description: The target server username.
+      password: 
+        type: string
+        description: The target server password.
   HasAdminRole:
     type: object
     properties:
@@ -1741,3 +2069,179 @@ definitions:
       comment:
         type: string
         description: The new comment.
+  Storage:
+    type: object
+    properties:
+      total: 
+        type: integer
+        format: int64
+        description: Total volume size.
+      free:
+        type: integer
+        format: int64
+        description: Free volume size.
+  GeneralInfo:
+    type: object
+    properties:
+      with_notary:
+        type: boolean
+        description: If the Harbor instance is deployed with nested notary.
+      with_admiral:
+        type: boolean
+        description: If the Harbor instance is deployed with Admiral.
+      admiral_endpoint:
+        type: string
+        description: The url of the endpoint of admiral instance.
+      auth_mode:
+        type: string
+        description: The auth mode of current Harbor instance.
+      project_creation_restriction:
+        type: string
+        description: Indicate who can create projects, it could be 'adminonly' or 'everyone'.
+      self_registration:
+        type: boolean
+        description: Indicate whether the Harbor instance enable user to register himself.
+      has_ca_root:
+        type: boolean
+        description: Indicate whether there is a ca root cert file ready for download in the file system.
+      harbor_version:
+        type: string
+        description: The build version of Harbor.		
+  SystemInfo:
+    type: object
+    properties:
+      storage: 
+        type: array
+        description: The storage of system.
+        items:
+          $ref: '#/definitions/Storage'
+  LdapConf:
+    type: object
+    properties:
+      ldap_url: 
+        type: string
+        description: The url of ldap service.
+      ldap_search_dn:
+        type: string
+        description: The search dn of ldap service.
+      ldap_search_password:
+        type: string
+        description: The search password of ldap service.
+      ldap_base_dn:
+        type: string
+        description: The base dn of ldap service.
+      ldap_filter:
+        type: string
+        description: The serach filter of ldap service.
+      ldap_uid:
+        type: string
+        description: The serach uid from ldap service attributes.
+      ldap_scope:
+        type: integer
+        format: int64
+        description: The serach scope of ldap service.
+      ldap_connection_timeout:
+        type: integer
+        format: int64
+        description: The connect timeout of ldap service(second).
+  LdapUsers:
+    type: object
+    properties:
+      ldap_username: 
+        type: string
+        description: search ldap user name based on ldapconf.
+      ldap_realname:
+        type: string
+        description: system will try to guess the user realname form "uid" or "cn" attribute.
+      ldap_email:
+        type: string
+        description: system will try to guess the user email address form "mail" or "email" attribute.
+  LdapImportUsers:
+    type: object
+    properties:
+      ldap_uid_list:
+        type: array
+        description: selected uid list
+        items:
+          type: string
+  LdapFailedImportUsers:
+    type: object
+    properties:
+      ldap_uid:
+        type: string
+        description: the uid can't add to system.
+      error:
+        type: string
+        description: fail reason.
+  EmailServerSetting:
+    type: object
+    properties:
+      email_host: 
+        type: string
+        description: The host of email server.
+      email_port:
+        type: integer
+        description: The port of email server.
+      email_username:
+        type: string
+        description: The username of email server.
+      email_password:
+        type: string
+        description: The password of email server.
+      email_ssl:
+        type: boolean
+        description: Use ssl/tls or not.
+      email_identity:
+        type: string
+        description: The dentity of email server.
+  RepoSignature:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The tag of image.
+      hashes:
+        type: object
+        description: The JSON object of the hash of the image.
+  DetailedTag:
+    type: object
+    properties:
+      tag:
+        type: string
+        description: The tag of image.
+      manifest:
+        type: object
+        description: The detail of manifest.
+  Repository:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The ID of repository.
+      name:
+        type: string
+        description: The name of repository.
+      owner_id:
+        type: integer
+        description: The owner ID of repository.
+      project_id:
+        type: integer
+        description: The project ID of repository.
+      description:
+        type: string
+        description: The description of repository.
+      pull_count:
+        type: integer
+        description: The pull count of repository.
+      star_count:
+        type: integer
+        description: The star count of repository.
+      tags_count:
+        type: integer
+        description: The tags count of repository.
+      creation_time:
+        type: string
+        description: The creation time of repository.
+      update_time:
+        type: string
+        description: The update time of repository.
