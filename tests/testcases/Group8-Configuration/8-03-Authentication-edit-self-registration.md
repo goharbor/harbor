@@ -6,6 +6,7 @@ Test 8-03 - Update self-registration
 To verify that an admin user can update self-registration setting.
 
 # References:
+
 User guide
 
 # Environment:
@@ -14,11 +15,13 @@ User guide
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.  
+2. In configuration page, uncheck self registration.  
+3. Save configuration and logout.  
 
 # Expected Outcome:
 
-TBD
+* In login page, sign up link will disappear.
 
 # Possible Problems:
 None
