@@ -60,6 +60,10 @@ func GetUser(query models.User) (*models.User, error) {
 		return nil, nil
 	}
 
+	if n > 1 {
+		return nil, fmt.Errorf("got more than one user when executing: %s param: %v", sql, queryParam)
+	}
+
 	return &u[0], nil
 }
 
