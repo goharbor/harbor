@@ -57,7 +57,7 @@ export class DestinationComponent implements OnInit {
           .subscribe(
           response => {
             this.messageHandlerService.showSuccess('DESTINATION.DELETED_SUCCESS');
-            this.reload('');
+            this.reload(true);
           },
           error => { 
             if(error && error.status === 412) {

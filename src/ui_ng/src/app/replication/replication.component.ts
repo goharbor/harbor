@@ -18,11 +18,8 @@ import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-e
 
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
-import { SessionService } from '../shared/session.service';
-
 import { ReplicationService } from './replication.service';
 
-import { SessionUser } from '../shared/session-user';
 import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
@@ -65,8 +62,7 @@ class SearchOption {
   styleUrls: ['./replication.component.css']
 })
 export class ReplicationComponent implements OnInit {
-   
-   currentUser: SessionUser;
+    
    projectId: number;
 
    search: SearchOption;
@@ -94,11 +90,9 @@ export class ReplicationComponent implements OnInit {
    createEditPolicyComponent: CreateEditPolicyComponent;
 
    constructor(
-     private sessionService: SessionService, 
      private messageHandlerService: MessageHandlerService,
      private replicationService: ReplicationService,
-     private route: ActivatedRoute) {
-     this.currentUser = this.sessionService.getCurrentUser();       
+     private route: ActivatedRoute) { 
    }
 
    ngOnInit(): void {

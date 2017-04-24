@@ -4,7 +4,7 @@ import uglify      from 'rollup-plugin-uglify';
 
 export default {
   entry: 'src/main-aot.js',
-  dest: 'dist/build.js', // output a single application bundle
+  dest: 'dist/build.min.js', // output a single application compressed file.
   sourceMap: false,
   format: 'iife',
   onwarn: function(warning) {
