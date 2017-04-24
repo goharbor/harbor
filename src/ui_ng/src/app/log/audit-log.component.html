@@ -14,7 +14,11 @@
           <clr-icon shape="caret down"></clr-icon>
         </button>
         <div class="dropdown-menu">
-          <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description | translate}}</a>
+          <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)">
+            <clr-icon shape="check" [hidden]="!f.checked"></clr-icon>
+            <ng-template [ngIf]="!f.checked"><span style="display: inline-block;width: 16px;"></span></ng-template>
+            {{f.description | translate}}
+          </a> 
         </div>
       </clr-dropdown>
       <div class="flex-xs-middle">

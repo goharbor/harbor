@@ -20,6 +20,7 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 import { ReplicationService } from './replication.service';
 
+import { SessionUser } from '../shared/session-user';
 import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
@@ -27,13 +28,13 @@ import { Target } from './target';
 import { State } from 'clarity-angular';
 
 const ruleStatus = [
-  { 'key':  '', 'description': 'REPLICATION.ALL_STATUS'},
+  { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS'},
   { 'key': '1', 'description': 'REPLICATION.ENABLED'},
   { 'key': '0', 'description': 'REPLICATION.DISABLED'}
 ];
 
 const jobStatus = [
-  { 'key': '', 'description': 'REPLICATION.ALL' },
+  { 'key': 'all', 'description': 'REPLICATION.ALL' },
   { 'key': 'pending',  'description': 'REPLICATION.PENDING' },
   { 'key': 'running',  'description': 'REPLICATION.RUNNING' },
   { 'key': 'error',    'description': 'REPLICATION.ERROR' },
@@ -62,7 +63,7 @@ class SearchOption {
   styleUrls: ['./replication.component.css']
 })
 export class ReplicationComponent implements OnInit {
-    
+   
    projectId: number;
 
    search: SearchOption;
@@ -92,7 +93,7 @@ export class ReplicationComponent implements OnInit {
    constructor(
      private messageHandlerService: MessageHandlerService,
      private replicationService: ReplicationService,
-     private route: ActivatedRoute) { 
+     private route: ActivatedRoute) {
    }
 
    ngOnInit(): void {
@@ -171,9 +172,9 @@ export class ReplicationComponent implements OnInit {
      if(policy) {
       this.search.policyId = policy.id;
       this.search.repoName = '';
-      this.search.status = ''
+      this.search.status = '';
       this.currentJobSearchOption = 0;
-      this.currentJobStatus = { 'key': '', 'description': 'REPLICATION.ALL'};
+      this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
       this.fetchPolicyJobs();
      }
    }
@@ -183,19 +184,28 @@ export class ReplicationComponent implements OnInit {
      this.retrievePolicies();
    }
 
-   doFilterPolicyStatus(status: string) {
-     this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
-     if(status.trim() === '') {
-       this.changedPolicies = this.policies;
-     } else {
-       this.changedPolicies = this.policies.filter(policy=>policy.enabled === +this.currentRuleStatus.key);
+   doFilterPolicyStatus($event: any) {
+     if ($event && $event.target && $event.target["value"]) {
+       let status = $event.target["value"];
+       this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
+       if(this.currentRuleStatus.key === 'all') {
+         this.changedPolicies = this.policies;
+       } else {
+         this.changedPolicies = this.policies.filter(policy=>policy.enabled === +this.currentRuleStatus.key);
+       }
      }
    }
 
-   doFilterJobStatus(status: string) {
-     this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
-     this.search.status = status;
-     this.doSearchJobs(this.search.repoName);
+   doFilterJobStatus($event: any) {
+     if ($event && $event.target && $event.target["value"]) {
+       let status = $event.target["value"];
+       this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
+       if(this.currentJobStatus.key === 'all') {
+         status = '';
+       }
+       this.search.status = status;
+       this.doSearchJobs(this.search.repoName);
+     }
    }
 
    doSearchJobs(repoName: string) {

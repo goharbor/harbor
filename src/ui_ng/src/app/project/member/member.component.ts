@@ -111,8 +111,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   ngOnInit() {
     //Get projectId from route params snapshot.          
     this.projectId = +this.route.snapshot.parent.params['id'];   
-    this.currentUser = this.session.getCurrentUser();
     //Get current user from registered resolver.
+    this.currentUser = this.session.getCurrentUser();
     let resolverData = this.route.snapshot.parent.data;
     if(resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;

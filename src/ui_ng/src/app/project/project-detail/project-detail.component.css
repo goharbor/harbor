@@ -7,6 +7,10 @@
   background-color: #fafafa;
 }
 
+.subnav .nav {
+  padding-left: 0;
+}
+
 .role-label {
   color: #CCCCCC;
   font-size: 14px;

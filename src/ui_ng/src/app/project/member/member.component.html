@@ -19,9 +19,9 @@
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let m of members">
                 <clr-dg-action-overflow [hidden]="m.user_id === currentUser.user_id || !hasProjectAdminRole">
-                    <button class="action-item" (click)="changeRole(m, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
-                    <button class="action-item" (click)="changeRole(m, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
-                    <button class="action-item" (click)="changeRole(m, 3)">{{'MEMBER.GUEST' | translate}}</button>
+                    <button class="action-item" [hidden]="m.role_id === 1" (click)="changeRole(m, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
+                    <button class="action-item" [hidden]="m.role_id === 2" (click)="changeRole(m, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>
+                    <button class="action-item" [hidden]="m.role_id === 3" (click)="changeRole(m, 3)">{{'MEMBER.GUEST' | translate}}</button>
                     <button class="action-item" (click)="deleteMember(m)">{{'MEMBER.DELETE' | translate}}</button>
                 </clr-dg-action-overflow>
                 <clr-dg-cell>{{m.username}}</clr-dg-cell>
