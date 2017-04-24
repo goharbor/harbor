@@ -5,14 +5,16 @@ import { ReplicationService, ReplicationDefaultService } from './replication.ser
 describe('ReplicationService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{
-        provide: ReplicationService,
-        useClass: ReplicationDefaultService
-      }]
+      providers: [
+        ReplicationDefaultService,
+        {
+          provide: ReplicationService,
+          useClass: ReplicationDefaultService
+        }]
     });
   });
 
-  it('should ...', inject([ReplicationDefaultService], (service: ReplicationService) => {
+  it('should be initialized', inject([ReplicationDefaultService], (service: ReplicationService) => {
     expect(service).toBeTruthy();
   }));
 });

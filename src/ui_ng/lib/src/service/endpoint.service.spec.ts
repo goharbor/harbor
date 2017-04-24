@@ -5,14 +5,16 @@ import { EndpointService, EndpointDefaultService } from './endpoint.service';
 describe('EndpointService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{
-        provide: EndpointService,
-        useClass: EndpointDefaultService
-      }]
+      providers: [
+        EndpointDefaultService,
+        {
+          provide: EndpointService,
+          useClass: EndpointDefaultService
+        }]
     });
   });
 
-  it('should ...', inject([EndpointDefaultService], (service: EndpointService) => {
+  it('should be initialized', inject([EndpointDefaultService], (service: EndpointService) => {
     expect(service).toBeTruthy();
   }));
 });
