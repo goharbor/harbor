@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Target } from '../target';
 import { ReplicationService } from '../replication.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
@@ -28,7 +28,8 @@ import { CreateEditDestinationComponent } from '../create-edit-destination/creat
 @Component({
   selector: 'destination',
   templateUrl: 'destination.component.html',
-  styleUrls: ['./destination.component.css']
+  styleUrls: ['./destination.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DestinationComponent implements OnInit {
 
@@ -44,7 +45,8 @@ export class DestinationComponent implements OnInit {
   constructor(
     private replicationService: ReplicationService,
     private messageHandlerService: MessageHandlerService,
-    private deletionDialogService: ConfirmationDialogService) {
+    private deletionDialogService: ConfirmationDialogService,
+    private ref: ChangeDetectorRef) {
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.source === ConfirmationTargets.TARGET &&
@@ -55,7 +57,7 @@ export class DestinationComponent implements OnInit {
           .subscribe(
           response => {
             this.messageHandlerService.showSuccess('DESTINATION.DELETED_SUCCESS');
-            this.reload();
+            this.reload(true);
           },
           error => { 
             if(error && error.status === 412) {
@@ -66,6 +68,8 @@ export class DestinationComponent implements OnInit {
           });
       }
     });
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   ngOnInit(): void {
@@ -83,7 +87,11 @@ export class DestinationComponent implements OnInit {
     this.replicationService
       .listTargets(targetName)
       .subscribe(
-      targets => this.targets = targets,
+      targets => {
+        this.targets = targets || [];
+        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+        setTimeout(()=>clearInterval(hnd), 1000);
+      },
       error => this.messageHandlerService.handleError(error)
       );
   }
@@ -97,7 +105,7 @@ export class DestinationComponent implements OnInit {
     this.retrieve('');
   }
 
-  reload() {
+  reload($event: any) {
     this.targetName = '';
     this.retrieve('');
   }
@@ -124,6 +132,8 @@ export class DestinationComponent implements OnInit {
                 }
               }
               this.createEditDestinationComponent.openCreateEditTarget(editable, target.id);
+              let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+              setTimeout(()=>clearInterval(hnd), 1000);
             },
             error=>this.messageHandlerService.handleError(error)
           );

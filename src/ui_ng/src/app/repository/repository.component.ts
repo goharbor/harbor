@@ -41,9 +41,6 @@ export class RepositoryComponent implements OnInit {
 
   lastFilteredRepoName: string;
 
-  page: number = 1;
-  pageSize: number = 15;
-
   totalPage: number;
   totalRecordCount: number;
 
@@ -71,7 +68,6 @@ export class RepositoryComponent implements OnInit {
             response => {
               this.refresh();
               this.messageHandlerService.showSuccess('REPOSITORY.DELETED_REPO_SUCCESS');
-              console.log('Successful deleted repo:' + repoName);
             },
             error => this.messageHandlerService.handleError(error)
           );
@@ -97,16 +93,10 @@ export class RepositoryComponent implements OnInit {
   }
 
   retrieve(state?: State) {
-    if (state) {
-      this.page = state.page.to + 1;
-    }
     this.repositoryService
-      .listRepositories(this.projectId, this.lastFilteredRepoName, this.page, this.pageSize)
+      .listRepositories(this.projectId, this.lastFilteredRepoName)
       .subscribe(
       response => {
-        this.totalRecordCount = response.headers.get('x-total-count');
-        this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
-        console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
         this.changedRepositories = response.json();
       },
       error => this.messageHandlerService.handleError(error)

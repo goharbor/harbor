@@ -19,9 +19,9 @@ import { AlertType } from '../shared/shared.const';
 @Injectable()
 export class MessageService {
 
-  private messageAnnouncedSource = new Subject<Message>();
-  private appLevelAnnouncedSource = new Subject<Message>();
-  private clearSource = new Subject<boolean>();
+  messageAnnouncedSource = new Subject<Message>();
+  appLevelAnnouncedSource = new Subject<Message>();
+  clearSource = new Subject<boolean>();
 
   messageAnnounced$ = this.messageAnnouncedSource.asObservable();
   appLevelAnnounced$ = this.appLevelAnnouncedSource.asObservable();

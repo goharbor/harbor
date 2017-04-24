@@ -47,7 +47,6 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
 })
 export class ProjectComponent implements OnInit, OnDestroy {
 
-  selected = [];
   changedProjects: Project[];
   projectTypes = ProjectTypes;
 
@@ -63,12 +62,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   projectName: string;
   isPublic: number;
-
-  page: number = 1;
-  pageSize: number = 15;
-
-  totalPage: number;
-  totalRecordCount: number;
 
   constructor(
     private projectService: ProjectService,
@@ -129,15 +122,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   retrieve(state?: State): void {
-    if (state) {
-      this.page = state.page.to + 1;
-    }
     this.projectService
-      .listProjects(this.projectName, this.isPublic, this.page, this.pageSize)
+      .listProjects(this.projectName, this.isPublic)
       .subscribe(
       response => {
-        this.totalRecordCount = response.headers.get('x-total-count');
-        this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
         this.changedProjects = response.json();
       },
       error => this.messageHandlerService.handleError(error)

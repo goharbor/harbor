@@ -17,7 +17,7 @@
         <clr-datagrid>
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-            <clr-dg-row *ngFor="let m of members">
+            <clr-dg-row *clrDgItems="let m of members">
                 <clr-dg-action-overflow [hidden]="m.user_id === currentUser.user_id || !hasProjectAdminRole">
                     <button class="action-item" (click)="changeRole(m, 1)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
                     <button class="action-item" (click)="changeRole(m, 2)">{{'MEMBER.DEVELOPER' | translate}}</button>

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -31,22 +31,22 @@ import { AppConfigService } from '../app-config.service';
   selector: 'harbor-user',
   templateUrl: 'user.component.html',
   styleUrls: ['user.component.css'],
-
-  providers: [UserService]
+  providers: [UserService],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
-  private onGoing: boolean = false;
-  private adminMenuText: string = "";
-  private adminColumn: string = "";
-  private deletionSubscription: Subscription;
+  onGoing: boolean = false;
+  adminMenuText: string = "";
+  adminColumn: string = "";
+  deletionSubscription: Subscription;
 
   currentTerm: string;
 
   @ViewChild(NewUserModalComponent)
-  private newUserDialog: NewUserModalComponent;
+  newUserDialog: NewUserModalComponent;
 
   constructor(
     private userService: UserService,
@@ -54,7 +54,8 @@ export class UserComponent implements OnInit, OnDestroy {
     private deletionDialogService: ConfirmationDialogService,
     private msgHandler: MessageHandlerService,
     private session: SessionService,
-    private appConfigService: AppConfigService) {
+    private appConfigService: AppConfigService,
+    private ref: ChangeDetectorRef) {
     this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
       if (confirmed &&
         confirmed.source === ConfirmationTargets.USER &&
@@ -62,9 +63,11 @@ export class UserComponent implements OnInit, OnDestroy {
         this.delUser(confirmed.data);
       }
     });
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
-  private isMySelf(uid: number): boolean {
+  isMySelf(uid: number): boolean {
     let currentUser = this.session.getCurrentUser();
     if (currentUser) {
       if (currentUser.user_id === uid) {
@@ -75,7 +78,7 @@ export class UserComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
+  isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.indexOf(terms) != -1;
   }
 
@@ -132,6 +135,8 @@ export class UserComponent implements OnInit, OnDestroy {
         })
       }
     });
+    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   //Disable the admin role for the specified user
@@ -159,6 +164,8 @@ export class UserComponent implements OnInit, OnDestroy {
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
+        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+        setTimeout(()=>clearInterval(hnd), 1000);
       })
       .catch(error => {
         this.msgHandler.handleError(error);
@@ -186,7 +193,7 @@ export class UserComponent implements OnInit, OnDestroy {
     this.deletionDialogService.openComfirmDialog(msg);
   }
 
-  private delUser(user: User): void {
+  delUser(user: User): void {
     this.userService.deleteUser(user.user_id)
       .then(() => {
         //Remove it from current user list
@@ -195,6 +202,8 @@ export class UserComponent implements OnInit, OnDestroy {
         this.originalUsers.then(users => {
           this.users = users.filter(u => u.user_id != user.user_id);
           this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
+          let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+          setTimeout(()=>clearInterval(hnd), 1000);
         });
       })
       .catch(error => {
@@ -211,7 +220,6 @@ export class UserComponent implements OnInit, OnDestroy {
     this.originalUsers = this.userService.getUsers()
       .then(users => {
         this.onGoing = false;
-
         this.users = users;
         return users;
       })
@@ -219,6 +227,8 @@ export class UserComponent implements OnInit, OnDestroy {
         this.onGoing = false;
         this.msgHandler.handleError(error);
       });
+      let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+      setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   //Add new user

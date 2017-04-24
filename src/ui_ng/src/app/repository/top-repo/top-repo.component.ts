@@ -27,7 +27,7 @@ import { Repository } from '../repository';
     providers: [TopRepoService]
 })
 export class TopRepoComponent implements OnInit{
-    private topRepos: Repository[] = [];
+    topRepos: Repository[] = [];
 
     constructor(
         private topRepoService: TopRepoService,

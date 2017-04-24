@@ -77,7 +77,6 @@ export class AuditLogComponent implements OnInit {
 
   ngOnInit(): void {
     this.projectId = +this.route.snapshot.parent.params['id'];
-    console.log('Get projectId from route params snapshot:' + this.projectId);
     this.queryParam.project_id = this.projectId;
     this.queryParam.page_size = this.pageSize;
   }
@@ -92,7 +91,6 @@ export class AuditLogComponent implements OnInit {
           response=>{
             this.totalRecordCount = response.headers.get('x-total-count');
             this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
-            console.log('TotalRecordCount:' + this.totalRecordCount + ', totalPage:' + this.totalPage);
             this.auditLogs = response.json();
           },
           error=>{
@@ -117,7 +115,6 @@ export class AuditLogComponent implements OnInit {
       this.queryParam.end_timestamp = new Date(strDate).getTime() / 1000 + oneDayOffset;
       break;
     }
-    console.log('Search audit log filtered by time range, begin: ' + this.queryParam.begin_timestamp + ', end:' + this.queryParam.end_timestamp);
     this.retrieve();
   }
 
@@ -136,8 +133,7 @@ export class AuditLogComponent implements OnInit {
       operationFilter = [];
     }
     this.queryParam.keywords = operationFilter.join('/');
-    this.retrieve();
-    console.log('Search option filter:' + operationFilter.join('/'));
+    this.retrieve();    
   }
 
   toggleOptionalName(option: number): void {

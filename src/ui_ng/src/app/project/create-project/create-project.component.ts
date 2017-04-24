@@ -47,7 +47,7 @@ export class CreateProjectComponent implements AfterViewChecked {
 
   @Output() create = new EventEmitter<boolean>();
   @ViewChild(InlineAlertComponent)
-  private inlineAlert: InlineAlertComponent;
+  inlineAlert: InlineAlertComponent;
 
   constructor(private projectService: ProjectService,             
               private translateService: TranslateService,

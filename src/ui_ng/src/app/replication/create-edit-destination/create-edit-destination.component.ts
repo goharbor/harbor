@@ -157,7 +157,6 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .subscribe(
             response=>{
               this.messageHandlerService.showSuccess('DESTINATION.CREATED_SUCCESS');
-              console.log('Successful added target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
             },
@@ -206,7 +205,6 @@ export class CreateEditDestinationComponent implements AfterViewChecked {
           .subscribe(
             response=>{ 
               this.messageHandlerService.showSuccess('DESTINATION.UPDATED_SUCCESS');
-              console.log('Successful updated target.');
               this.createEditDestinationOpened = false;
               this.reload.emit(true);
             },

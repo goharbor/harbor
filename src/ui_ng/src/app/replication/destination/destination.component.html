@@ -18,7 +18,7 @@
             <clr-dg-column>{{'DESTINATION.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'DESTINATION.URL' | translate}}</clr-dg-column>
             <clr-dg-column>{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
-            <clr-dg-row *ngFor="let t of targets" [clrDgItem]='t'>
+            <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                 <clr-dg-action-overflow>
                     <button class="action-item" (click)="editTarget(t)">{{'DESTINATION.TITLE_EDIT' | translate}}</button>
                     <button class="action-item" (click)="deleteTarget(t)">{{'DESTINATION.DELETE' | translate}}</button>

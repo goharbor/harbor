@@ -4,7 +4,7 @@
     <clr-dg-column *ngIf="showRoleInfo">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
-    <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
+    <clr-dg-row *clrDgItems="let p of projects">
         <clr-dg-action-overflow [hidden]="!(p.current_user_role_id === 1 || isSystemAdmin)">
             <button class="action-item" (click)="newReplicationRule(p)" [hidden]="!isSystemAdmin">{{'PROJECT.REPLICATION_RULE' | translate}}</button>
             <button class="action-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.public === 0 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </button>
@@ -17,7 +17,7 @@
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-        {{totalRecordCount || (projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
-        <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>
+        {{(projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="15"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
