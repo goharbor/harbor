@@ -15,6 +15,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -23,22 +24,59 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 )
 
+var factories = make(map[string]AuthenticatorFactory)
+
+// Authenticator authenticates users according to the principal and credential
+type Authenticator interface {
+	// Authenticate the user and if success put the user information
+	// into the context
+	// principal: username/token/session ID/secret
+	// credential: password
+	Authenticate(ctx context.Context, principal string,
+		credential ...string) (context.Context, error)
+}
+
+// AuthenticatorFactory is a factory which can create Authenticator
+type AuthenticatorFactory interface {
+	// Create the Authenticator according to the parameters
+	Create(parameters map[string]interface{}) (Authenticator, error)
+}
+
+// Register the AuthenticatorFactory to the factories map
+func Register(name string, factory AuthenticatorFactory) {
+	if _, ok := factories[name]; ok {
+		panic(fmt.Sprintf("AuthenticatorFactory of %s already registered", name))
+	}
+
+	factories[name] = factory
+	log.Infof("AuthenticatorFactory of %s registered", name)
+}
+
+// Create an Authenticator accordint to the name and parameters
+func Create(name string, parameters map[string]interface{}) (Authenticator, error) {
+	factory, ok := factories[name]
+	if !ok {
+		return nil, fmt.Errorf("AuthenticatorFactory of %s not found", name)
+	}
+	return factory.Create(parameters)
+}
+
 // 1.5 seconds
 const frozenTime time.Duration = 1500 * time.Millisecond
 
 var lock = NewUserLock(frozenTime)
 
-// Authenticator provides interface to authenticate user credentials.
-type Authenticator interface {
+// AuthenticatorOld provides interface to authenticate user credentials.
+type AuthenticatorOld interface {
 
 	// Authenticate ...
 	Authenticate(m models.AuthModel) (*models.User, error)
 }
 
-var registry = make(map[string]Authenticator)
+var registry = make(map[string]AuthenticatorOld)
 
-// Register add different authenticators to registry map.
-func Register(name string, authenticator Authenticator) {
+// RegisterOld add different authenticators to registry map.
+func RegisterOld(name string, authenticator AuthenticatorOld) {
 	if _, dup := registry[name]; dup {
 		log.Infof("authenticator: %s has been registered", name)
 		return
