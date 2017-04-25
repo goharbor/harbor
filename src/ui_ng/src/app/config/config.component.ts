@@ -315,6 +315,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             delete ldapSettings['ldap_search_password'];
         }
 
+        //Fix: Confirm ldap scope is number
+        ldapSettings['ldap_scope'] = +ldapSettings['ldap_scope'];
+
         this.testingLDAPOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
             .then(respone => {
@@ -401,6 +404,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //Fix boolean issue
                     if (typeof field.value === "boolean") {
                         changes[prop] = changes[prop] ? "1" : "0";
+                    }
+
+                    //Trim string value
+                    if(typeof field.value === "string") {
+                        changes[prop] = (''+changes[prop]).trim();
                     }
                 }
             }

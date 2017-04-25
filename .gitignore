@@ -27,5 +27,17 @@ src/ui_ng/typings/
 **/node_modules
 **/ssl/
 **/proxy.config.json
+
+src/ui_ng/src/**/*.js
+src/ui_ng/src/**/*.js.map
+src/ui_ng/src/**/*.json
+
 **/npm*.log
 
+src/ui_ng/aot/**/*.js
+src/ui_ng/aot/**/*.js.map
+src/ui_ng/aot/**/*.json
+
+**/*ngsummary.json
+**/*ngfactory.ts
+**/aot
