@@ -122,4 +122,10 @@ func TestAuthenticate(t *testing.T) {
 	if user.Username != "test" {
 		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
 	}
+	person.Principal = "test"
+	person.Password = "1"
+	_, err = auth.Authenticate(person)
+	if err == nil {
+		t.Errorf("Expected error for wrong password")
+	}
 }

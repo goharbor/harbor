@@ -151,7 +151,7 @@ func ConnectTest(ldapConfs models.LdapConf) error {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs)
 
 	if err != nil {
 		return err
@@ -175,7 +175,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs)
 
 	if err != nil {
 		return nil, err
@@ -217,6 +217,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 				u.Email = val
 			}
 		}
+		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 	}
 
@@ -312,11 +313,25 @@ func ImportUser(user models.LdapUser) (int64, error) {
 	return UserID, nil
 }
 
-func dialLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error) {
+// Bind establish a connection to ldap based on ldapConfs and bind the user with given parameters.
+func Bind(ldapConfs models.LdapConf, dn string, password string) error {
+	conn, err := dialLDAP(ldapConfs)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	if ldapConfs.LdapSearchDn != "" {
+		if err := bindLDAPSearchDN(ldapConfs, conn); err != nil {
+			return err
+		}
+	}
+	return conn.Bind(dn, password)
+}
+
+func dialLDAP(ldapConfs models.LdapConf) (*goldap.Conn, error) {
+
 	var err error
-
-	//log.Debug("ldapConfs.LdapURL:", ldapConfs.LdapURL)
-
+	var ldap *goldap.Conn
 	splitLdapURL := strings.Split(ldapConfs.LdapURL, "://")
 	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
 
