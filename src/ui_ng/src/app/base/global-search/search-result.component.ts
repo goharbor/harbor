@@ -24,7 +24,7 @@ import { MessageHandlerService } from '../../shared/message-handler/message-hand
 @Component({
     selector: "search-result",
     templateUrl: "search-result.component.html",
-    styleUrls: ["search-result.component.css"],
+    styleUrls: ["search.component.css"],
 
     providers: [GlobalSearchService]
 })
