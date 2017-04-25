@@ -26,3 +26,7 @@
     z-index: 999;
     padding-right: 276px;
 }*/
+
+.nav-link-override {
+    width: 126px !important;
+}
