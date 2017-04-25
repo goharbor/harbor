@@ -52,7 +52,9 @@ class SearchOption {
   repoName: string = '';
   status: string = '';
   startTime: string = '';
+  startTimestamp: string = '';
   endTime: string = '';
+  endTimestamp: string = '';
   page: number = 1;
   pageSize: number = 5;
 }
@@ -66,7 +68,7 @@ export class ReplicationComponent implements OnInit {
    
    projectId: number;
 
-   search: SearchOption;
+   search: SearchOption = new SearchOption();
 
    ruleStatus = ruleStatus;
    currentRuleStatus: {key: string, description: string};
@@ -98,7 +100,6 @@ export class ReplicationComponent implements OnInit {
 
    ngOnInit(): void {
      this.projectId = +this.route.snapshot.parent.params['id'];
-     this.search = new SearchOption();
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
@@ -149,7 +150,7 @@ export class ReplicationComponent implements OnInit {
      }
      this.replicationService
          .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
-           this.search.startTime, this.search.endTime, this.search.page, this.search.pageSize)
+           this.search.startTimestamp, this.search.endTimestamp, this.search.page, this.search.pageSize)
          .subscribe(
            response=>{
              this.jobsTotalRecordCount = response.headers.get('x-total-count');
@@ -241,21 +242,20 @@ export class ReplicationComponent implements OnInit {
    }
 
    doJobSearchByStartTime(valid: boolean, strDate: string) {
-     this.search.startTime = '';
+     this.search.startTimestamp = '';
      if(valid && strDate) {
        strDate = this.convertDate(strDate);
-       console.log(strDate);
-       this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+       this.search.startTimestamp = new Date(strDate).getTime() / 1000 + '';
      }
      this.fetchPolicyJobs();
    }
 
    doJobSearchByEndTime(valid: boolean, strDate: string) {
-     this.search.endTime = '';
+     this.search.endTimestamp = '';
      if(valid && strDate) {
        strDate = this.convertDate(strDate);
        let oneDayOffset = 3600 * 24;
-       this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
+       this.search.endTimestamp = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      }
      this.fetchPolicyJobs();
    }
