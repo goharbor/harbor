@@ -1,3 +1,4 @@
+# Harbor drone integration.
 ---
 clone:
   path: github.com/vmware/harbor
@@ -30,5 +31,3 @@ build:
       LOG_TEMP_DIR: install-logs
     commands:
       - tests/integration.sh
-    when:
-      success: true
