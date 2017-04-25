@@ -2,6 +2,7 @@
 Documentation  It's an demo case to test robot and drone.
 Resource  ../resources/Harbor-Util.robot
 Suite Setup  Install Harbor To Test Server
+Default Tags  regression
 
 *** Test Cases ***
 Install Harbor to Test Server and add user.
