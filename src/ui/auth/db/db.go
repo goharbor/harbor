@@ -69,7 +69,11 @@ func (d *database) Authenticate(ctx context.Context,
 		return ctx, err
 	}
 
-	ctx = context.WithValue(ctx, common.CtxKeyUser, user)
+	if user == nil {
+		return ctx, fmt.Errorf("invalid principal or credential")
+	}
+
+	ctx = context.WithValue(ctx, common.CtxKeyUser, *user)
 	log.Infof("user %s authenticated by database has been added into context", user.Username)
 	return ctx, nil
 }
