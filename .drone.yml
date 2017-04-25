@@ -12,7 +12,7 @@ build:
       GOPATH: /drone
       SHELL: /bin/bash
     commands:
-      - ls -la /drone/src
+      - ls -la /drone/src/github.com/vmware/harbor
       # - cp -r /drone/src/github.com/vmware/harbor/ui/static /clarity-seed/dist
       # - cp -r /drone/src/github.com/vmware/harbor/src/ui_ng/src /clarity-seed/src
       # - /entrypoint.sh
