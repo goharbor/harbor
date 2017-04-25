@@ -28,6 +28,16 @@ build:
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
+      GITHUB_AUTOMATION_API_KEY:  $$GITHUB_AUTOMATION_API_KEY
+      DRONE_SERVER:  $$DRONE_SERVER
+      DRONE_TOKEN:  $$DRONE_TOKEN
+      TEST_URL_ARRAY:  $$TEST_URL_ARRAY
+      TEST_USERNAME:  $$TEST_USERNAME
+      TEST_PASSWORD:  $$TEST_PASSWORD
+      TEST_DATASTORE: $$TEST_DATASTORE
+      TEST_TIMEOUT: $$TEST_TIMEOUT
+      REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
+      DOMAIN: $$CI_DOMAIN
     commands:
       - tests/integration.sh
     when:

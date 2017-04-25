@@ -34,6 +34,8 @@ buildinfo=$(drone build info vmware/vic $DRONE_BUILD_NUMBER)
 #     pybot --removekeywords TAG:secret --exclude skip --include regression tests/test-cases
 # fi
 
+echo TEST_USERNAME
+
 pybot --removekeywords TAG:secret --exclude skip --include regression tests/robot-cases/harbor-create-user.robot
 rc="$?"
 
