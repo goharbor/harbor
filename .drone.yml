@@ -1,5 +1,33 @@
+---
+clone:
+  path: github.com/vmware/harbor
+  tags: true
+
 build:
-image: golang 
-commands:
- - echo 'hello world'
-drone exec
+  harbor-clarity-compile:
+    image: vmware/harbor-clarity-ui-builder:0.8.4
+    pull: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+    commands:
+      - cp -r /drone/src/github.com/vmware/harbor/ui/static /clarity-seed/dist
+      - cp -r /drone/src/github.com/vmware/harbor/src/ui_ng/src /clarity-seed/src
+      - /entrypoint.sh -p http://proxy.vmware.com:3128
+    when:
+      success: true
+
+  integration-test-on-pr:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
+    pull: true
+    privileged: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+      LOG_TEMP_DIR: install-logs
+    commands:
+      - tests/integration.sh
+    when:
+      success: true

@@ -1,0 +1,32 @@
+Close All Connections
+Close Connection
+Directory Should Exist
+Directory Should Not Exist
+Enable Ssh Logging
+Execute Command
+File Should Exist
+File Should Not Exist
+Get Connection
+Get Connections
+Get Directory
+Get File
+List Directories In Directory
+List Directory
+List Files In Directory
+Login
+Login With Public Key
+Open Connection
+Put Directory
+Put File
+Read
+Read Command Output
+Read Until
+Read Until Prompt
+Read Until Regexp
+Set Client Configuration
+Set Default Configuration
+Start Command
+Switch Connection
+Write
+Write Bare
+Write Until Expected Output
