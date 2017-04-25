@@ -28,7 +28,8 @@ const deBounceTime = 500; //ms
 
 @Component({
     selector: 'global-search',
-    templateUrl: "global-search.component.html"
+    templateUrl: "global-search.component.html",
+    styleUrls: ["search.component.css"]
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     //Keep search term as Subject
@@ -62,7 +63,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
             this.searchTerm = "";
         });
 
-        if(this.appConfigService.isIntegrationMode()){
+        if (this.appConfigService.isIntegrationMode()) {
             this.placeholderText = "GLOBAL_SEARCH.PLACEHOLDER_VIC";
         }
     }
