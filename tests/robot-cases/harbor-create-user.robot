@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation  It's an demo case to test robot and drone.
-Resource  ../../resources/Harbor-Util.robot
+Resource  ../resources/Harbor-Util.robot
 Suite Setup  Install Harbor To Test Server
 
 *** Test Cases ***
