@@ -54,3 +54,14 @@
 .search-header a:hover {
     text-decoration: none;
 }
+
+.search::after {
+    position: absolute;
+    content: '';
+    display: inline-block;
+    background: #fafafa;
+    opacity: .15;
+    height: 40px;
+    width: 1px;
+    top: 10px;
+}

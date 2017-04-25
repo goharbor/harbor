@@ -1,6 +1,18 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpModule } from '@angular/http';
 
 import { SystemComponent } from './system.component';
+import { SystemInfoService } from './providers/system-info.service';
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+
+export const testConfig: IServiceConfig = {
+  systemInfoEndpoint: "/api/systeminfo",
+  repositoryBaseEndpoint: "",
+  logBaseEndpoint: "",
+  targetBaseEndpoint: "",
+  replicationRuleEndpoint: "",
+  replicationJobEndpoint: ""
+};
 
 describe('SystemComponent', () => {
   let component: SystemComponent;
@@ -8,7 +20,12 @@ describe('SystemComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [SystemComponent]
+      imports: [HttpModule],
+      declarations: [SystemComponent],
+      providers: [
+        { provide: SERVICE_CONFIG, useValue: testConfig },
+        SystemInfoService
+      ]
     })
       .compileComponents();
   }));
@@ -19,7 +36,7 @@ describe('SystemComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should be created', () => {
     expect(component).toBeTruthy();
   });
 });

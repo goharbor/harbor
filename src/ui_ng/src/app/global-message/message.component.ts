@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { TranslateService } from '@ngx-translate/core';
@@ -23,7 +23,8 @@ import { AlertType, dismissInterval, httpStatusCode, CommonRoutes } from '../sha
 
 @Component({
   selector: 'global-message',
-  templateUrl: 'message.component.html'
+  templateUrl: 'message.component.html',
+  styleUrls: ['message.component.css']
 })
 export class MessageComponent implements OnInit, OnDestroy {
 
@@ -32,12 +33,14 @@ export class MessageComponent implements OnInit, OnDestroy {
   globalMessageOpened: boolean;
   messageText: string = "";
   timer: any = null;
+  hideOuter: boolean = true;
 
   appLevelMsgSub: Subscription;
   msgSub: Subscription;
   clearSub: Subscription;
 
   constructor(
+    private elementRef: ElementRef,
     private messageService: MessageService,
     private router: Router,
     private translate: TranslateService) { }
@@ -67,6 +70,19 @@ export class MessageComponent implements OnInit, OnDestroy {
           // Make the message alert bar dismiss after several intervals.
           //Only for this case
           this.timer = setTimeout(() => this.onClose(), dismissInterval);
+
+          //Hack the Clarity Alert style with native dom
+          setTimeout(() => {
+            let nativeDom: any = this.elementRef.nativeElement;
+            let queryDoms: any[] = nativeDom.getElementsByClassName("alert");
+            if (queryDoms && queryDoms.length > 0) {
+              let hackDom: any = queryDoms[0];
+              hackDom.className += ' alert-global alert-global-align';
+            }
+
+            this.hideOuter = false;
+          }, 0);
+
         }
       );
     }
@@ -122,5 +138,6 @@ export class MessageComponent implements OnInit, OnDestroy {
       clearTimeout(this.timer);
     }
     this.globalMessageOpened = false;
+    this.hideOuter = true;
   }
 }

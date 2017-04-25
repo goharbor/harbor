@@ -5,14 +5,16 @@ import { AccessLogService, AccessLogDefaultService } from './access-log.service'
 describe('AccessLogService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{
-        provide: AccessLogService,
-        useClass: AccessLogDefaultService
-      }]
+      providers: [
+        AccessLogDefaultService,
+        {
+          provide: AccessLogService,
+          useClass: AccessLogDefaultService
+        }]
     });
   });
 
-  it('should ...', inject([AccessLogDefaultService], (service: AccessLogService) => {
+  it('should be initialized', inject([AccessLogDefaultService], (service: AccessLogService) => {
     expect(service).toBeTruthy();
   }));
 });

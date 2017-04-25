@@ -38,6 +38,7 @@
                 <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </div>
         </clr-dropdown>
-        <a href="javascript:void(0)" class="nav-link nav-text" (click)="openAboutDialog()" *ngIf="isSessionValid === false">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+        <div class="nav-divider" *ngIf="!isSessionValid"></div>
+        <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
     </div>
 </clr-header>
