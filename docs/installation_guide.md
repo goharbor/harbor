@@ -10,7 +10,7 @@ All installers can be downloaded from the **[official release](https://github.co
 
 This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
 
-If you run a previous version of Harbor, you may need to migrate the data to fit the new database schema. For more details, please refer to **[Data Migration Guide](migration_guide.md)**.
+If you run a previous version of Harbor, you may need to update ```harbor.cfg``` and migrate the data to fit the new database schema. For more details, please refer to **[Harbor Migration Guide](migration_guide.md)**.
 
 In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
@@ -46,8 +46,14 @@ Offline installer:
 Configuration parameters are located in the file **harbor.cfg**. 
 
 There are two categories of parameters in harbor.cfg, **required parameters** and **optional parameters**.  
-* **required parameters**: These parameters are required to be set in the configuration file, and they will take effect if a user updates them in harbor.cfg, rerun the ```install.sh``` script to reinstall Harbor.
-* **optional parameters**: These parameters are optional, and only take effect in the initial installation.  The user can leave them blank and update them on Web UI after Harbor is started. Subsequent update to these parameters in ```harbor.cfg``` will be ignored.
+* **required parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.cfg``` and run the ```install.sh``` script to reinstall Harbor.
+* **optional parameters**: These parameters are optional. If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
+Subsequent update to these parameters in ```harbor.cfg``` will be ignored. 
+The user can leave them blank and update them on Web UI after Harbor is started.  
+
+    **Note:** If you choose to set these parameters via the UI, be sure to do so right after Harbor
+is started. In particular, you must set the desired **auth_mode** before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), 
+**auth_mode** cannot be changed.
 
 The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
 
@@ -72,7 +78,11 @@ The parameters are described below - note that at the very least, you will need 
   * email_ssl = false
 
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
-* **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. For LDAP authentication, set this to **ldap_auth**.  
+* **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
+For LDAP authentication, set this to **ldap_auth**.  
+
+   **IMPORTANT:** When upgrading from an existing Harbor instance, you must make sure **auth_mode** is the same in ```harbor.cfg``` before launching the new version of Harbor. Otherwise, users 
+may not be able to log in after the upgrade.
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
 * **ldap_searchdn**: The DN of a user who has the permission to search an LDAP/AD server (e.g. `uid=admin,ou=people,dc=mydomain,dc=com`).
 * **ldap_search_pwd**: The password of the user specified by *ldap_searchdn*.
@@ -110,14 +120,14 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 #### Finishing installation and starting Harbor
 Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
-##### Default installation
-After version 1.1.0, Harbor has integrated with Notary, but by default the installation does not include notary support.
+##### Default installation (without Notary)
+After version 1.1.0, Harbor has integrated with Notary, but by default the installation does not include Notary service.
 
 ```sh
     $ sudo ./install.sh
 ```
 
-If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your harbor.cfg). Note that the default administrator username/password are admin/Harbor12345 .
+If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```harbor.cfg```). Note that the default administrator username/password are admin/Harbor12345 .
 
 Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (By default, the registry server listens on port 80):
 ```sh
@@ -127,13 +137,13 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 **IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. 
 
 ##### Installation with Notary
-To install Harbor with Notary support, add a parameter when you run ```install.sh```
+To install Harbor with Notary service, add a parameter when you run ```install.sh```:
 ```sh
     $ sudo ./install.sh --with-notary
 ```
-**Note**: For installation with Notary the parameter "ui_url_protocol" must be set to "https", for configuring HTTPS certificate please refer to the following sections.
+**Note**: For installation with Notary the parameter **ui_url_protocol** must be set to "https". For configuring HTTPS please refer to the following sections.
 
-More information about Notary and Docker Content Trust, please refer to docker's documentation: 
+More information about Notary and Docker Content Trust, please refer to Docker's documentation: 
 https://docs.docker.com/engine/security/trust/content_trust/
 
 For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
@@ -166,7 +176,7 @@ Starting registry ... done
 Starting proxy ... done
 ```  
 
-To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run prepare script to populate the configuration, and then re-create and start Harbor's instance:
+To change Harbor's configuration, first stop existing Harbor instance and update ```harbor.cfg```. Then run ```prepare``` script to populate the configuration. Finally re-create and start Harbor's instance:
 ```
 $ sudo docker-compose down -v
 $ vim harbor.cfg
@@ -187,11 +197,11 @@ $ rm -r /data/registry
 
 #### _Managing lifecycle of Harbor when it's installed with Notary_ 
 
-When Harbor is installed with Notary, user needs to add extra template file ```docker-compose.notary.yml``` to docker-compose command, so the docker-compose commands to manage the lifecycle of Harbor will be:
+When Harbor is installed with Notary, an extra template file ```docker-compose.notary.yml``` is needed for docker-compose commands. The docker-compose commands to manage the lifecycle of Harbor are:
 ```
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml [ up|down|ps|stop|start ]
 ```
-For example, if user want's to change ```harbor.cfg``` and re-deploy Harbor when it's installed with Notary, the following commands should be used:
+For example, if you want to change configuration in ```harbor.cfg``` and re-deploy Harbor when it's installed with Notary, the following commands should be used:
 ```sh
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml down -v
 $ vim harbor.cfg
@@ -202,7 +212,7 @@ $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml up 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
 
 ### Persistent data and log files
-By default, registry data is persisted in the target host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.  
+By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated.  
 
 In addition, Harbor uses *rsyslog* to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host for troubleshooting.  
 
