@@ -232,20 +232,31 @@ export class ReplicationComponent implements OnInit {
      (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
    }
 
-   doJobSearchByStartTime(strDate: string) {
-     if(!strDate || strDate.trim() === '') {
-        strDate = 0 + '';
-     }     
-     (strDate === '0') ? this.search.startTime = '' : this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+   convertDate(strDate: string): string {
+     if(/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/.test(strDate)) {
+        let parts = strDate.split(/[-\/]/);
+        strDate = parts[2] /*Year*/ + '-' +parts[1] /*Month*/ + '-' + parts[0] /*Date*/;  
+      }
+      return strDate;
+   }
+
+   doJobSearchByStartTime(valid: boolean, strDate: string) {
+     this.search.startTime = '';
+     if(valid && strDate) {
+       strDate = this.convertDate(strDate);
+       console.log(strDate);
+       this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+     }
      this.fetchPolicyJobs();
    }
 
-   doJobSearchByEndTime(strDate: string) {
-     if(!strDate || strDate.trim() === '') {
-        strDate = 0 + '';
+   doJobSearchByEndTime(valid: boolean, strDate: string) {
+     this.search.endTime = '';
+     if(valid && strDate) {
+       strDate = this.convertDate(strDate);
+       let oneDayOffset = 3600 * 24;
+       this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      }
-     let oneDayOffset = 3600 * 24;
-     (strDate === '0') ? this.search.endTime = '' : this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      this.fetchPolicyJobs();
    }
 }

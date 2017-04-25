@@ -39,8 +39,20 @@
           </select>
         </div>
         <div class="flex-items-xs-middle">
-          <clr-icon shape="date"></clr-icon><input type="date" #fromTime (change)="doJobSearchByStartTime(fromTime.value)">
-          <clr-icon shape="date"></clr-icon><input type="date" #toTime (change)="doJobSearchByEndTime(toTime.value)">
+          <clr-icon shape="date"></clr-icon>
+          <label for="fromDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="fromTime.errors && fromTime.errors.dateValidator && (fromTime.dirty || fromTime.touched)" [class.valid]="fromTime.valid" class="tooltip tooltip-validation invalid tooltip-sm">
+            <input id="fromDateInput" type="date" #fromTime="ngModel" name="from" [(ngModel)]="currentJobSearchOption.fromTime" dateValidator placeholder="dd/mm/yyyy" (change)="doJobSearchByStartTime(!(fromTime.errors && fromTime.errors.dateValidator), fromTime.value)">
+            <span *ngIf="fromTime.errors && fromTime.errors.dateValidator && (fromTime.dirty || fromTime.touched)" class="tooltip-content">
+               {{'AUDIT_LOG.INVALID_DATE' | translate }}
+            </span>
+          </label>
+          <clr-icon shape="date"></clr-icon>
+          <label for="toDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="toTime.errors && toTime.errors.dateValidator && (toTime.dirty || toTime.touched)" [class.valid]="toTime.valid" class="tooltip tooltip-validation invalid tooltip-sm">
+            <input id="toDateInput" type="date" #toTime="ngModel" name="to" [(ngModel)]="currentJobSearchOption.toTime" dateValidator placeholder="dd/mm/yyyy" (change)="doJobSearchByEndTime(!(toTime.errors && toTime.errors.dateValidator),toTime.value)">
+            <span *ngIf="toTime.errors && toTime.errors.dateValidator && (toTime.dirty || toTime.touched)" class="tooltip-content">
+               {{'AUDIT_LOG.INVALID_DATE' | translate }}
+            </span>
+          </label>
         </div>
       </div>
     </div>

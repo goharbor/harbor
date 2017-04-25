@@ -19,7 +19,7 @@ import { MessageHandlerService } from '../../shared/message-handler/message-hand
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
 
-import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -149,7 +149,8 @@ export class DestinationComponent implements OnInit {
         'REPLICATION.DELETION_SUMMARY_TARGET',
         target.name,
         target.id,
-        ConfirmationTargets.TARGET);
+        ConfirmationTargets.TARGET,
+        ConfirmationButtons.DELETE_CANCEL);
       this.deletionDialogService.openComfirmDialog(deletionMessage);
     }
   }

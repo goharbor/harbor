@@ -16,7 +16,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { RepositoryService } from '../repository.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -155,25 +155,25 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   deleteTag(tag: TagView) {
     if (tag) {
-      let titleKey: string, summaryKey: string, content: string, confirmOnly: boolean;
+      let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
       if (tag.signed) {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
-        confirmOnly = true;
+        buttons = ConfirmationButtons.CLOSE;
         content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.tag;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+        buttons = ConfirmationButtons.DELETE_CANCEL;
         content = tag.tag;
-        confirmOnly = false;
       }
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
         content,
         tag,
-        ConfirmationTargets.TAG);
-        message.confirmOnly = confirmOnly;
+        ConfirmationTargets.TAG,
+        buttons);
       this.deletionDialogService.openComfirmDialog(message);
     }
   }

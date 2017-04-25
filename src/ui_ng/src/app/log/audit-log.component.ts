@@ -105,15 +105,29 @@ export class AuditLogComponent implements OnInit {
     this.retrieve();
   }
 
-  doSearchByTimeRange(strDate: string, target: string): void {
-    let oneDayOffset = 3600 * 24;
-    switch(target) {
-    case 'begin':
+  convertDate(strDate: string): string {
+    if(/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/.test(strDate)) {
+      let parts = strDate.split(/[-\/]/);
+      strDate = parts[2] /*Year*/ + '-' +parts[1] /*Month*/ + '-' + parts[0] /*Date*/;  
+    }
+    return strDate;
+  }
+
+  doSearchByStartTime(valid: boolean, strDate: string): void {
+    this.queryParam.begin_timestamp = 0;
+    if(valid && strDate){
+      strDate = this.convertDate(strDate);
       this.queryParam.begin_timestamp = new Date(strDate).getTime() / 1000;
-      break;
-    case 'end':
+    }
+    this.retrieve();
+  }
+
+  doSearchByEndTime(valid: boolean, strDate: string): void {
+    this.queryParam.end_timestamp = 0;
+    if(valid && strDate) {
+      strDate = this.convertDate(strDate);
+      let oneDayOffset = 3600 * 24;
       this.queryParam.end_timestamp = new Date(strDate).getTime() / 1000 + oneDayOffset;
-      break;
     }
     this.retrieve();
   }

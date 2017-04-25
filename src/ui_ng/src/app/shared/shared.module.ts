@@ -54,6 +54,7 @@ import { MessageHandlerService } from './message-handler/message-handler.service
 import { EmailValidatorDirective } from './email.directive';
 import { GaugeComponent } from './gauge/gauge.component';
 import { StatisticHandler } from './statictics/statistic-handler.service';
+import { DateValidatorDirective } from '../shared/date-validator.directive';
 
 @NgModule({
   imports: [
@@ -78,7 +79,8 @@ import { StatisticHandler } from './statictics/statistic-handler.service';
     ListProjectROComponent,
     ListRepositoryROComponent,
     EmailValidatorDirective,
-    GaugeComponent
+    GaugeComponent,
+    DateValidatorDirective
   ],
   exports: [
     CoreModule,
@@ -99,7 +101,8 @@ import { StatisticHandler } from './statictics/statistic-handler.service';
     ListProjectROComponent,
     ListRepositoryROComponent,
     EmailValidatorDirective,
-    GaugeComponent
+    GaugeComponent,
+    DateValidatorDirective
   ],
   providers: [
     SessionService,

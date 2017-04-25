@@ -22,7 +22,7 @@ import { MemberService } from './member.service';
 import { AddMemberComponent } from './add-member/add-member.component';
 
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -149,7 +149,8 @@ export class MemberComponent implements OnInit, OnDestroy {
       'MEMBER.DELETION_SUMMARY',
       m.username,
       m.user_id,
-      ConfirmationTargets.PROJECT_MEMBER
+      ConfirmationTargets.PROJECT_MEMBER,
+      ConfirmationButtons.DELETE_CANCEL
     );
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }

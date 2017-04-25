@@ -18,7 +18,7 @@ import { RepositoryService } from './repository.service';
 import { Repository } from './repository';
 
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 
 
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
@@ -115,7 +115,8 @@ export class RepositoryComponent implements OnInit {
       'REPOSITORY.DELETION_SUMMARY_REPO',
       repoName,
       repoName,
-      ConfirmationTargets.REPOSITORY);
+      ConfirmationTargets.REPOSITORY,
+      ConfirmationButtons.DELETE_CANCEL);
     this.deletionDialogService.openComfirmDialog(message);
   }
 

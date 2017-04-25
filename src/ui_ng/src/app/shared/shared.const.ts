@@ -67,6 +67,9 @@ export const CookieKeyOfAdmiral = "admiral.endpoint.latest";
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+export const enum ConfirmationButtons {
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
+}
 
 export const ProjectTypes = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
 export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
