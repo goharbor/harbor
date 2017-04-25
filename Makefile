@@ -282,17 +282,21 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
+	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
+	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
 
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME); \
 	else \
 		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg ; \
 	fi
@@ -306,6 +310,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
+	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
+	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
 			
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
@@ -342,12 +348,14 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
 	else \
 		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
 	fi
