@@ -3,9 +3,7 @@
     <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent" [class.start-content-padding]="shouldOverrideContent">
-            <div class="global-message-alert">
-                <global-message [isAppLevel]="false"></global-message>
-            </div>
+            <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
             <router-outlet></router-outlet>
