@@ -1,0 +1,7 @@
+.global-message-alert {
+    position: fixed;
+    top: 60px;
+    left: 0px;
+    width: 100%;
+    z-index: 9999;
+}
