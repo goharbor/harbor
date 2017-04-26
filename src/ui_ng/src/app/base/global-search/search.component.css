@@ -55,7 +55,7 @@
     text-decoration: none;
 }
 
-.search::after {
+.search::before {
     position: absolute;
     content: '';
     display: inline-block;
