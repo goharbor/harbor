@@ -79,7 +79,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	log.Debugf("username: %s, dn: %s", u.Username, dn)
 	if err := ldapUtils.Bind(ldapConfs, dn, m.Password); err != nil {
-		return nil, fmt.Errorf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
+		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
+		return nil, nil
 	}
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
