@@ -13,6 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { NgModel } from '@angular/forms';
 
 import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-edit-policy.component';
 
@@ -91,6 +92,17 @@ export class ReplicationComponent implements OnInit {
 
    @ViewChild(CreateEditPolicyComponent) 
    createEditPolicyComponent: CreateEditPolicyComponent;
+
+   @ViewChild('fromTime') fromTimeInput: NgModel;
+   @ViewChild('toTime') toTimeInput: NgModel;
+
+   get fromTimeInvalid(): boolean {
+     return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched);
+   }
+
+   get toTimeInvalid(): boolean {
+     return this.toTimeInput.errors && this.toTimeInput.errors.dateValidator && (this.toTimeInput.dirty || this.toTimeInput.touched);
+   }
 
    constructor(
      private messageHandlerService: MessageHandlerService,
@@ -241,18 +253,18 @@ export class ReplicationComponent implements OnInit {
       return strDate;
    }
 
-   doJobSearchByStartTime(valid: boolean, strDate: string) {
+   doJobSearchByStartTime(strDate: string) {
      this.search.startTimestamp = '';
-     if(valid && strDate) {
+     if(this.fromTimeInput.valid && strDate) {
        strDate = this.convertDate(strDate);
        this.search.startTimestamp = new Date(strDate).getTime() / 1000 + '';
      }
      this.fetchPolicyJobs();
    }
 
-   doJobSearchByEndTime(valid: boolean, strDate: string) {
+   doJobSearchByEndTime(strDate: string) {
      this.search.endTimestamp = '';
-     if(valid && strDate) {
+     if(this.toTimeInput.valid && strDate) {
        strDate = this.convertDate(strDate);
        let oneDayOffset = 3600 * 24;
        this.search.endTimestamp = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';

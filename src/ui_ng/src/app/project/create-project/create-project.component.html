@@ -6,7 +6,7 @@
       <section class="form-block">
         <div class="form-group" style="padding-left: 135px;">
           <label for="create_project_name" class="col-md-3 form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
-          <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" [class.valid]="projectName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
+          <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
             <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="38" required minlength="2" #projectName="ngModel" targetExists="PROJECT_NAME">
             <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.required && (projectName.dirty || projectName.touched)">
               {{'PROJECT.NAME_IS_REQUIRED' | translate}}

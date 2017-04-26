@@ -11,7 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgModel } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
 import { AuditLog } from './audit-log';
@@ -70,6 +71,17 @@ export class AuditLogComponent implements OnInit {
   totalRecordCount: number;
   totalPage: number;
   
+  @ViewChild('fromTime') fromTimeInput: NgModel;
+  @ViewChild('toTime') toTimeInput: NgModel;
+
+  get fromTimeInvalid(): boolean {
+    return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched)
+  }
+
+  get toTimeInvalid(): boolean {
+    return this.toTimeInput.errors && this.toTimeInput.errors.dateValidator && (this.toTimeInput.dirty || this.toTimeInput.touched);
+  }
+
   constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageHandlerService: MessageHandlerService) {
     //Get current user from registered resolver.
     this.route.data.subscribe(data=>this.currentUser = <SessionUser>data['auditLogResolver']);    
@@ -79,6 +91,7 @@ export class AuditLogComponent implements OnInit {
     this.projectId = +this.route.snapshot.parent.params['id'];
     this.queryParam.project_id = this.projectId;
     this.queryParam.page_size = this.pageSize;
+    
   }
 
   retrieve(state?: State): void {
@@ -113,18 +126,18 @@ export class AuditLogComponent implements OnInit {
     return strDate;
   }
 
-  doSearchByStartTime(valid: boolean, strDate: string): void {
+  doSearchByStartTime(strDate: string): void {
     this.queryParam.begin_timestamp = 0;
-    if(valid && strDate){
+    if(this.fromTimeInput.valid && strDate){
       strDate = this.convertDate(strDate);
       this.queryParam.begin_timestamp = new Date(strDate).getTime() / 1000;
     }
     this.retrieve();
   }
 
-  doSearchByEndTime(valid: boolean, strDate: string): void {
+  doSearchByEndTime(strDate: string): void {
     this.queryParam.end_timestamp = 0;
-    if(valid && strDate) {
+    if(this.toTimeInput.valid && strDate) {
       strDate = this.convertDate(strDate);
       let oneDayOffset = 3600 * 24;
       this.queryParam.end_timestamp = new Date(strDate).getTime() / 1000 + oneDayOffset;
