@@ -5,29 +5,42 @@ clone:
   tags: true
 
 build:
-  harbor-clarity-compile:
-    image: vmware/harbor-clarity-ui-builder:0.8.4
-    pull: true
-    environment:
-      BIN: bin
-      GOPATH: /drone
-      SHELL: /bin/bash
-    commands:
-      - ls -la /drone/src
-      # - cp -r /drone/src/github.com/vmware/harbor/ui/static /clarity-seed/dist
-      # - cp -r /drone/src/github.com/vmware/harbor/src/ui_ng/src /clarity-seed/src
-      # - /entrypoint.sh
-    when:
-      success: true
+  # harbor-clarity-compile:
+  #   image: vmware/harbor-clarity-ui-builder:0.8.4
+  #   pull: true
+  #   environment:
+  #     BIN: bin
+  #     GOPATH: /drone
+  #     SHELL: /bin/bash
+  #   commands:
+  #     - ls -la /drone/src/github.com/vmware/harbor
+  #     - cp -r /drone/src/github.com/vmware/harbor/src/ui/static /clarity-seed/dist
+  #     - cp -r /drone/src/github.com/vmware/harbor/src/ui_ng/src /clarity-seed/src
+  #     # - /entrypoint.sh
+  #   when:
+  #     success: true
 
   integration-test-on-pr:
     image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
     pull: true
-    privileged: true
+    privileged: false
     environment:
       BIN: bin
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
+      GITHUB_AUTOMATION_API_KEY:  $$GITHUB_AUTOMATION_API_KEY
+      DRONE_SERVER:  $$DRONE_SERVER
+      DRONE_TOKEN:  $$DRONE_TOKEN
+      TEST_URL_ARRAY:  $$TEST_URL_ARRAY
+      TEST_USERNAME:  $$TEST_USERNAME
+      TEST_PASSWORD:  $$TEST_PASSWORD
+      TEST_DATASTORE: $$TEST_DATASTORE
+      TEST_TIMEOUT: $$TEST_TIMEOUT
+      REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
+      DOMAIN: $$CI_DOMAIN
     commands:
+      # - /usr/local/bin/dockerd-entrypoint.sh dockerd &>/dev/null &
+      # - sleep 10
+      # - docker pull vmware/harbor-ui:v1.1.0
       - tests/integration.sh

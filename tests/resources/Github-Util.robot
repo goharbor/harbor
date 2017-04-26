@@ -13,19 +13,16 @@
 # limitations under the License
 
 *** Settings ***
-Documentation  This resource contains any keywords related to using the Drone CI Build System
+Documentation  This resource provides keywords to interact with Github
 
 *** Keywords ***
-Get State Of Drone Build
+Get State Of Github Issue
     [Arguments]  ${num}
-    Return From Keyword If  '${num}' == '0'  local
-    ${out}=  Run  drone build info vmware/vic ${num}
-    ${lines}=  Split To Lines  ${out}
-    [Return]  @{lines}[2]
-
-Get Title of Drone Build
-    [Arguments]  ${num}
-    Return From Keyword If  '${num}' == '0'  local
-    ${out}=  Run  drone build info vmware/vic ${num}
-    ${lines}=  Split To Lines  ${out}
-    [Return]  @{lines}[-1]
+    [Tags]  secret
+    :FOR  ${idx}  IN RANGE  0  5
+    \   ${status}  ${result}=  Run Keyword And Ignore Error  Get  https://api.github.com/repos/vmware/vic/issues/${num}?access_token\=%{GITHUB_AUTOMATION_API_KEY}
+    \   Exit For Loop If  '${status}'
+    \   Sleep  1
+    Should Be Equal  ${result.status_code}  ${200}
+    ${status}=  Get From Dictionary  ${result.json()}  state
+    [Return]  ${status}

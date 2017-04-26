@@ -564,7 +564,7 @@ Basic Docker Command With Harbor
 
     # Docker run image
     Log To Console  docker run...
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST"
+    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST" 
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  END_OF_THE_TEST

@@ -1,0 +1,8 @@
+simple:
+  image: busybox:latest
+  labels: 
+    com.example.department: "Finance"
+  command: top
+another:
+  image: busybox:latest
+  command: ls

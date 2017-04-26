@@ -1,0 +1,7 @@
+service:
+  image: busybox:latest
+  command: top
+
+  environment:
+    foo: bar
+    hello: world
