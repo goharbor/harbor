@@ -40,6 +40,7 @@ build:
       DOMAIN: $$CI_DOMAIN
     commands:
       - dockerd &>/dev/null &
+      - sleep 10
       - docker pull vmware/harbor-ui:v1.1.0
       - tests/integration.sh
     when:
