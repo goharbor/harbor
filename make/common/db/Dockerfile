@@ -1,8 +1,8 @@
-FROM mysql:5.6
+FROM mysql:5.6.35
 
 WORKDIR /tmp
 
-ADD registry.sql r.sql 
+ADD registry.sql r.sql
 
 ADD docker-entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh 
+RUN chmod u+x /entrypoint.sh
