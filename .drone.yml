@@ -39,9 +39,9 @@ build:
       REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
       DOMAIN: $$CI_DOMAIN
     commands:
-      - /usr/local/bin/dockerd-entrypoint.sh dockerd &>/dev/null &
-      - sleep 10
-      - docker pull vmware/harbor-ui:v1.1.0
+      # - /usr/local/bin/dockerd-entrypoint.sh dockerd &>/dev/null &
+      # - sleep 10
+      # - docker pull vmware/harbor-ui:v1.1.0
       - tests/integration.sh
     when:
       success: true

@@ -4,7 +4,12 @@ Resource  ../resources/Harbor-Util.robot
 Suite Setup  Install Harbor To Test Server
 Default Tags  regression
 
+*** Variables ***
+${dockerd-params} 
+
 *** Test Cases ***
 Install Harbor to Test Server and add user.
+    ${output}=  Run  Start Docker Daemon Locally
+    Log  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  Log Into Harbor
     Should Be Equal As Integers  ${rc}  0
