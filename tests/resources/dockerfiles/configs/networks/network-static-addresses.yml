@@ -1,0 +1,19 @@
+version: '2.1'
+
+services:
+  app:
+    image: busybox
+    command: /bin/top
+    networks:
+      app_net:
+        ipv4_address: 172.20.238.10
+
+networks:
+  app_net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.20.238.0/24
+        gateway: 172.20.238.1

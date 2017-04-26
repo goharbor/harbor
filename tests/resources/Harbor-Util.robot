@@ -23,7 +23,7 @@ ${MY_PROJECTS_TABLE}  div.table-body-container > table.table.table-pane
 
 *** Keywords ***
 Install Harbor To Test Server
-    [Arguments]  ${user}=%{TEST_USERNAME}  ${password}=%{TEST_PASSWORD}  ${host}=%{TEST_URL_ARRAY}  ${datastore}=%{TEST_DATASTORE}  ${network}=network  ${name}=harbor  ${protocol}=http  ${verify}=off  ${datacenter}=%{TEST_DATACENTER}  ${cluster}=%{TEST_RESOURCE}
+    [Arguments]  ${user}=%{TEST_USERNAME}  ${password}=%{TEST_PASSWORD}  ${host}=%{TEST_URL_ARRAY}  ${datastore}=%{TEST_DATASTORE}  ${network}=%{BRIDGE_NETWORK}  ${name}=harbor  ${protocol}=http  ${verify}=off  ${datacenter}=%{TEST_DATACENTER}  ${cluster}=%{TEST_RESOURCE}
     ${status}  ${message}=  Run Keyword And Ignore Error  Environment Variable Should Be Set  DRONE_BUILD_NUMBER
     Run Keyword If  '${status}' == 'FAIL'  Set Environment Variable  DRONE_BUILD_NUMBER  0
 
@@ -564,7 +564,7 @@ Basic Docker Command With Harbor
 
     # Docker run image
     Log To Console  docker run...
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST"
+    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST" 
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  END_OF_THE_TEST
