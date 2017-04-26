@@ -18,13 +18,13 @@ if sys.version_info[:3][0] == 3:
 parser = argparse.ArgumentParser()
 parser.add_argument('--source-loc', dest='source_loc', type=str,help="the path of Harbor 0.5.0 configuration file")
 parser.add_argument('--source-version', dest='source_ver', type=str,help="the Harbor instance is to be deployed with notary")
-parser.add_argument('--target-loc', dest='target_loc', type=str,help="the path of Harbor 0.6.0 configuration file")
+parser.add_argument('--target-loc', dest='target_loc', type=str,help="the path of Harbor 1.1.x configuration file")
 parser.add_argument('--target-version', dest='target_ver', type=str, help="the Harbor instance is to be deployed with notary")
 upgrade_args = parser.parse_args()
 
-# NOTE: the script only support to upgrade from 0.5.0.to 0.6.0.
+# NOTE: the script only support to upgrade from 0.5.0.to 1.1.x.
 def validate():
-    if upgrade_args.source_ver == '0.5.0' and upgrade_args.target_ver == '0.6.0':
+    if upgrade_args.source_ver == '0.5.0' and upgrade_args.target_ver == '1.1.x':
         return
     raise Exception("Unable to support upgrade from %s to %s" % (upgrade_args.source_ver, upgrade_args.target_ver))
 
@@ -84,7 +84,7 @@ def render(src, dest, **kw):
 delfile(upgrade_args.target_loc)
 
 base_dir = os.path.dirname(__file__)
-config_template = os.path.join(base_dir, "harbor_0_6_0_template")
+config_template = os.path.join(base_dir, "harbor_1_1_0_template")
 
 render(config_template,
         upgrade_args.target_loc,
