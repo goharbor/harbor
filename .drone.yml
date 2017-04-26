@@ -22,7 +22,7 @@ build:
   integration-test-on-pr:
     image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
     pull: true
-    privileged: false
+    privileged: true
     environment:
       BIN: bin
       GOPATH: /drone
