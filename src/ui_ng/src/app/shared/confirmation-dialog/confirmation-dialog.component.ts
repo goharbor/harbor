@@ -18,7 +18,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from './confirmation-dialog.service';
 import { ConfirmationMessage } from './confirmation-message';
 import { ConfirmationAcknowledgement } from './confirmation-state-message';
-import { ConfirmationState, ConfirmationTargets } from '../shared.const';
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared.const';
 
 @Component({
     selector: 'confiramtion-dialog',
@@ -30,10 +30,9 @@ export class ConfirmationDialogComponent implements OnDestroy {
     opened: boolean = false;
     dialogTitle: string = "";
     dialogContent: string = "";
-    buttonKey: string = 'BUTTON.OK';
-    confirmOnly: boolean = false;
     message: ConfirmationMessage;
     annouceSubscription: Subscription;
+    buttons: ConfirmationButtons;
 
     constructor(
         private confirmationService: ConfirmationDialogService,
@@ -42,11 +41,10 @@ export class ConfirmationDialogComponent implements OnDestroy {
             this.dialogTitle = msg.title;
             this.dialogContent = msg.message;
             this.message = msg;
-            this.confirmOnly = this.message.confirmOnly;
-            this.buttonKey = this.confirmOnly ? 'BUTTON.CLOSE' : 'BUTTON.OK';
             this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
             this.translate.get(this.dialogContent, { 'param': msg.param }).subscribe((res: string) => this.dialogContent = res);
             //Open dialog
+            this.buttons = msg.buttons;
             this.open();
         });
     }

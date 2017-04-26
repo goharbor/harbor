@@ -124,6 +124,7 @@
         "NAME": "Nombre del Proyecto",
         "ROLE": "Rol",
         "PUBLIC_OR_PRIVATE": "Público",
+        "ACCESS_LEVEL": "Nivel de acceso",
         "REPO_COUNT": "Contador de repositorios",
         "CREATION_TIME": "Fecha de creación",
         "PUBLIC": "Público",
@@ -197,7 +198,8 @@
         "ADVANCED": "Avanzado",
         "SIMPLE": "Simple",
         "ITEMS": "elemento(s)",
-        "FILTER_PLACEHOLDER": "Filtrar logs"
+        "FILTER_PLACEHOLDER": "Filtrar logs",
+        "INVALID_DATE": "Fecha invalida."
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Reglas de Replicación",
@@ -265,7 +267,8 @@
         "CANNOT_EDIT": "La regla de replicación no se puede cambiar mientras esté activa.",
         "POLICY_ALREADY_EXISTS": "La regla de replicación ya existe.",
         "FAILED_TO_DELETE_POLICY_ENABLED": "No se puede eliminar la regla: tiene trabajo(s) sin finalizar o está activa.",
-        "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos."
+        "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos.",
+        "INVALID_DATE": "Fecha invalida."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",

@@ -91,7 +91,7 @@ NEWCLARITYVERSION=
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
-CLARITYSEEDPATH=/clarity-seed
+CLARITYSEEDPATH=/harbor_ui
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters

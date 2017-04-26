@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /clarity-seed
+cd /harbor_ui
 rm -rf dist/*
 
 npm_proxy=

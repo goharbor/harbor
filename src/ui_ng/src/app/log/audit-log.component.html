@@ -14,12 +14,28 @@
           <clr-icon shape="caret down"></clr-icon>
         </button>
         <div class="dropdown-menu">
-          <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)"><clr-icon shape="check" [hidden]="!f.checked"></clr-icon> {{f.description | translate}}</a>
+          <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)">
+            <clr-icon shape="check" [hidden]="!f.checked"></clr-icon>
+            <ng-template [ngIf]="!f.checked"><span style="display: inline-block;width: 16px;"></span></ng-template>
+            {{f.description | translate}}
+          </a> 
         </div>
       </clr-dropdown>
       <div class="flex-xs-middle">
-      <clr-icon shape="date"></clr-icon><input type="date" #fromTime  (change)="doSearchByTimeRange(fromTime.value, 'begin')">
-      <clr-icon shape="date"></clr-icon><input type="date" #toTime  (change)="doSearchByTimeRange(toTime.value, 'end')">
+          <clr-icon shape="date"></clr-icon>
+          <label for="fromDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="fromTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
+            <input id="fromDateInput" type="date" #fromTime="ngModel" name="from" [(ngModel)]="queryParam.fromTime" dateValidator placeholder="dd/mm/yyyy" (change)="doSearchByStartTime(fromTime.value)">
+            <span *ngIf="fromTimeInvalid" class="tooltip-content">
+               {{'AUDIT_LOG.INVALID_DATE' | translate }}
+            </span>
+          </label>
+          <clr-icon shape="date"></clr-icon>
+          <label for="toDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="toTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
+            <input id="toDateInput" type="date" #toTime="ngModel" name="to" [(ngModel)]="queryParam.toTime" dateValidator placeholder="dd/mm/yyyy" (change)="doSearchByEndTime(toTime.value)">
+            <span *ngIf="toTimeInvalid" class="tooltip-content">
+               {{'AUDIT_LOG.INVALID_DATE' | translate }}
+            </span>
+          </label>
       </div>
     </div>
   </div>

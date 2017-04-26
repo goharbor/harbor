@@ -1,6 +1,6 @@
 <clr-datagrid (clrDgRefresh)="refresh($event)">
     <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'PROJECT.PUBLIC_OR_PRIVATE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p">

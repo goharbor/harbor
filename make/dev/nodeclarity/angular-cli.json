@@ -1,7 +1,7 @@
 {
     "project": {
-        "version": "1.0.0-beta.20-4",
-        "name": "clarity-seed"
+        "version": "1.1.0",
+        "name": "Harbor"
     },
     "apps": [
         {

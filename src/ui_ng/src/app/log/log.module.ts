@@ -21,7 +21,8 @@ import { RecentLogComponent } from './recent-log.component';
   imports: [SharedModule],
   declarations: [
     AuditLogComponent,
-    RecentLogComponent],
+    RecentLogComponent
+  ],
   providers: [AuditLogService],
   exports: [
     AuditLogComponent,

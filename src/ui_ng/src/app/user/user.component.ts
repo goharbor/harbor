@@ -21,7 +21,7 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const'
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const'
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { SessionService } from '../shared/session.service';
@@ -188,7 +188,8 @@ export class UserComponent implements OnInit, OnDestroy {
       "USER.DELETION_SUMMARY",
       user.username,
       user,
-      ConfirmationTargets.USER
+      ConfirmationTargets.USER,
+      ConfirmationButtons.DELETE_CANCEL
     );
     this.deletionDialogService.openComfirmDialog(msg);
   }

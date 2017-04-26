@@ -19,7 +19,7 @@ import { Policy } from '../../replication/policy';
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
 
-import { ConfirmationState, ConfirmationTargets } from '../../shared/shared.const';
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../../shared/shared.const';
 
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
@@ -135,7 +135,8 @@ export class ListPolicyComponent implements OnDestroy {
       'REPLICATION.DELETION_SUMMARY',
       policy.name,
       policy.id,
-      ConfirmationTargets.POLICY);
+      ConfirmationTargets.POLICY,
+      ConfirmationButtons.DELETE_CANCEL);
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }
 

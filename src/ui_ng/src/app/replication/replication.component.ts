@@ -13,6 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { NgModel } from '@angular/forms';
 
 import { CreateEditPolicyComponent } from '../shared/create-edit-policy/create-edit-policy.component';
 
@@ -20,6 +21,7 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 import { ReplicationService } from './replication.service';
 
+import { SessionUser } from '../shared/session-user';
 import { Policy } from './policy';
 import { Job } from './job';
 import { Target } from './target';
@@ -27,13 +29,13 @@ import { Target } from './target';
 import { State } from 'clarity-angular';
 
 const ruleStatus = [
-  { 'key':  '', 'description': 'REPLICATION.ALL_STATUS'},
+  { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS'},
   { 'key': '1', 'description': 'REPLICATION.ENABLED'},
   { 'key': '0', 'description': 'REPLICATION.DISABLED'}
 ];
 
 const jobStatus = [
-  { 'key': '', 'description': 'REPLICATION.ALL' },
+  { 'key': 'all', 'description': 'REPLICATION.ALL' },
   { 'key': 'pending',  'description': 'REPLICATION.PENDING' },
   { 'key': 'running',  'description': 'REPLICATION.RUNNING' },
   { 'key': 'error',    'description': 'REPLICATION.ERROR' },
@@ -51,7 +53,9 @@ class SearchOption {
   repoName: string = '';
   status: string = '';
   startTime: string = '';
+  startTimestamp: string = '';
   endTime: string = '';
+  endTimestamp: string = '';
   page: number = 1;
   pageSize: number = 5;
 }
@@ -62,10 +66,10 @@ class SearchOption {
   styleUrls: ['./replication.component.css']
 })
 export class ReplicationComponent implements OnInit {
-    
+   
    projectId: number;
 
-   search: SearchOption;
+   search: SearchOption = new SearchOption();
 
    ruleStatus = ruleStatus;
    currentRuleStatus: {key: string, description: string};
@@ -89,15 +93,25 @@ export class ReplicationComponent implements OnInit {
    @ViewChild(CreateEditPolicyComponent) 
    createEditPolicyComponent: CreateEditPolicyComponent;
 
+   @ViewChild('fromTime') fromTimeInput: NgModel;
+   @ViewChild('toTime') toTimeInput: NgModel;
+
+   get fromTimeInvalid(): boolean {
+     return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched);
+   }
+
+   get toTimeInvalid(): boolean {
+     return this.toTimeInput.errors && this.toTimeInput.errors.dateValidator && (this.toTimeInput.dirty || this.toTimeInput.touched);
+   }
+
    constructor(
      private messageHandlerService: MessageHandlerService,
      private replicationService: ReplicationService,
-     private route: ActivatedRoute) { 
+     private route: ActivatedRoute) {
    }
 
    ngOnInit(): void {
      this.projectId = +this.route.snapshot.parent.params['id'];
-     this.search = new SearchOption();
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
@@ -148,7 +162,7 @@ export class ReplicationComponent implements OnInit {
      }
      this.replicationService
          .listJobs(this.search.policyId, this.search.status, this.search.repoName, 
-           this.search.startTime, this.search.endTime, this.search.page, this.search.pageSize)
+           this.search.startTimestamp, this.search.endTimestamp, this.search.page, this.search.pageSize)
          .subscribe(
            response=>{
              this.jobsTotalRecordCount = response.headers.get('x-total-count');
@@ -171,9 +185,9 @@ export class ReplicationComponent implements OnInit {
      if(policy) {
       this.search.policyId = policy.id;
       this.search.repoName = '';
-      this.search.status = ''
+      this.search.status = '';
       this.currentJobSearchOption = 0;
-      this.currentJobStatus = { 'key': '', 'description': 'REPLICATION.ALL'};
+      this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
       this.fetchPolicyJobs();
      }
    }
@@ -183,19 +197,28 @@ export class ReplicationComponent implements OnInit {
      this.retrievePolicies();
    }
 
-   doFilterPolicyStatus(status: string) {
-     this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
-     if(status.trim() === '') {
-       this.changedPolicies = this.policies;
-     } else {
-       this.changedPolicies = this.policies.filter(policy=>policy.enabled === +this.currentRuleStatus.key);
+   doFilterPolicyStatus($event: any) {
+     if ($event && $event.target && $event.target["value"]) {
+       let status = $event.target["value"];
+       this.currentRuleStatus = this.ruleStatus.find(r=>r.key === status);
+       if(this.currentRuleStatus.key === 'all') {
+         this.changedPolicies = this.policies;
+       } else {
+         this.changedPolicies = this.policies.filter(policy=>policy.enabled === +this.currentRuleStatus.key);
+       }
      }
    }
 
-   doFilterJobStatus(status: string) {
-     this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
-     this.search.status = status;
-     this.doSearchJobs(this.search.repoName);
+   doFilterJobStatus($event: any) {
+     if ($event && $event.target && $event.target["value"]) {
+       let status = $event.target["value"];
+       this.currentJobStatus = this.jobStatus.find(r=>r.key === status);
+       if(this.currentJobStatus.key === 'all') {
+         status = '';
+       }
+       this.search.status = status;
+       this.doSearchJobs(this.search.repoName);
+     }
    }
 
    doSearchJobs(repoName: string) {
@@ -222,20 +245,30 @@ export class ReplicationComponent implements OnInit {
      (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
    }
 
+   convertDate(strDate: string): string {
+     if(/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/.test(strDate)) {
+        let parts = strDate.split(/[-\/]/);
+        strDate = parts[2] /*Year*/ + '-' +parts[1] /*Month*/ + '-' + parts[0] /*Date*/;  
+      }
+      return strDate;
+   }
+
    doJobSearchByStartTime(strDate: string) {
-     if(!strDate || strDate.trim() === '') {
-        strDate = 0 + '';
-     }     
-     (strDate === '0') ? this.search.startTime = '' : this.search.startTime = (new Date(strDate).getTime() / 1000) + '';
+     this.search.startTimestamp = '';
+     if(this.fromTimeInput.valid && strDate) {
+       strDate = this.convertDate(strDate);
+       this.search.startTimestamp = new Date(strDate).getTime() / 1000 + '';
+     }
      this.fetchPolicyJobs();
    }
 
    doJobSearchByEndTime(strDate: string) {
-     if(!strDate || strDate.trim() === '') {
-        strDate = 0 + '';
+     this.search.endTimestamp = '';
+     if(this.toTimeInput.valid && strDate) {
+       strDate = this.convertDate(strDate);
+       let oneDayOffset = 3600 * 24;
+       this.search.endTimestamp = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      }
-     let oneDayOffset = 3600 * 24;
-     (strDate === '0') ? this.search.endTime = '' : this.search.endTime = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
      this.fetchPolicyJobs();
    }
 }
