@@ -19,8 +19,8 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego/context"
+	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/security"
 )
 
 const (
