@@ -30,6 +30,7 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/filter"
 	"github.com/vmware/harbor/src/ui/service/token"
 )
 
@@ -95,6 +96,9 @@ func main() {
 	if err := updateInitPassword(adminUserID, password); err != nil {
 		log.Error(err)
 	}
+
+	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
+
 	initRouters()
 	if err := api.SyncRegistry(); err != nil {
 		log.Error(err)
