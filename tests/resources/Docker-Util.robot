@@ -57,15 +57,15 @@ Get Container IP
 # docker:1.13-dind
 # If you are running this keyword in a container, make sure it is run with --privileged turned on
 Start Docker Daemon Locally
-    [Arguments]  ${dockerd-params}  ${dockerd-path}=/usr/local/bin/dockerd-entrypoint.sh  ${log}=./daemon-local.log
-    OperatingSystem.File Should Exist  ${dockerd-path}
-    ${handle}=  Start Process  ${dockerd-path} ${dockerd-params} >${log} 2>&1  shell=True
+    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
+    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd >./daemon-local.log 2>&1  shell=True
     Process Should Be Running  ${handle}
     :FOR  ${IDX}  IN RANGE  5
     \   ${pid}=  Run  pidof dockerd
     \   Run Keyword If  '${pid}' != '${EMPTY}'  Set Test Variable  ${dockerd-pid}  ${pid}
     \   Exit For Loop If  '${pid}' != '${EMPTY}'
-    \   Sleep  1s
+    \   Sleep  2s
+    Sleep  2s
     Should Not Be Equal  '${dockerd-pid}'  '${EMPTY}'
     [Return]  ${handle}  ${dockerd-pid}
 
