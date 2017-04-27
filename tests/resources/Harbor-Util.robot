@@ -60,6 +60,24 @@ Install Harbor To Test Server
     \  Sleep  30
     Fail  Harbor failed to come up properly!
 
+Config Harbor cfg
+    # Will change the IP and Protocol in the harbor.cfg
+    [Arguments]  ${http_proxy}=http
+    ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${output}
+    ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc  sed "s/^ui_url_protocol = .*/ui_url_protocol = ${http_proxy}/g" -i ./make/harbor.cfg
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+
+Compile and Up Harbor With Source Code
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=false
+    ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
 Restart Docker With Insecure Registry Option
     # Requires you to edit /etc/systemd/system/docker.service.d/overlay.conf or docker.conf to be:
     # ExecStart=/bin/bash -c "usr/bin/docker daemon -H fd:// -s overlay $DOCKER_OPTS --insecure-registry='cat /tmp/harbor'"
@@ -564,7 +582,7 @@ Basic Docker Command With Harbor
 
     # Docker run image
     Log To Console  docker run...
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST" 
+    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} run --name ${container_name} %{HARBOR_IP}/${project}/${image} /bin/ash -c "dmesg;echo END_OF_THE_TEST"
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  END_OF_THE_TEST
