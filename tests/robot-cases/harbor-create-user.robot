@@ -17,9 +17,11 @@ Install Harbor to Test Server and add user
     Process Should Be Running  ${handle}
     :FOR  ${IDX}  IN RANGE  5
     \   ${pid}=  Run  pidof dockerd
+    \   Log To Console  \n${pid}
     \   Run Keyword If  '${pid}' != '${EMPTY}'  Set Test Variable  ${dockerd-pid}  ${pid}
+    \   Log To Console  \n${dockerd-pid}
     \   Exit For Loop If  '${pid}' != '${EMPTY}'
     \   Sleep  1s
     Should Not Be Equal  '${dockerd-pid}'  '${EMPTY}'
     ${output}=  Run  docker pull hello-world
-    Log  ${output}
+    Log To Console  \n${output}
