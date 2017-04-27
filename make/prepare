@@ -95,6 +95,7 @@ def delfile(src):
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
+parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
 args = parser.parse_args()
 
 delfile(config_dir)
@@ -223,7 +224,8 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         jobservice_secret=jobservice_secret,
         token_expiration=token_expiration,
         admiral_url=admiral_url,
-        with_notary=args.notary_mode
+        with_notary=args.notary_mode,
+        scanner=args.clair_mode and "clair" or "none"
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
@@ -364,9 +366,17 @@ if args.notary_mode:
             ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
             ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
 
-
     default_alias = get_alias(secretkey_path)
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
+
+if args.clair_mode:
+    pg_password = "password"
+    clair_temp_dir = os.path.join(templates_dir, "clair")
+    clair_config_dir = prep_conf_dir(config_dir, "clair")
+    postgres_env = os.path.join(clair_config_dir, "postgres_env") 
+    render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = pg_password)
+    clair_conf = os.path.join(clair_config_dir, "config.yaml")
+    render(os.path.join(clair_temp_dir, "config.yaml"), clair_conf, password = pg_password)
 
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
