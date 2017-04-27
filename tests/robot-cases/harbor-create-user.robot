@@ -18,8 +18,7 @@ Install Harbor to Test Server and add user
     :FOR  ${IDX}  IN RANGE  5
     \   ${pid}=  Run  pidof dockerd
     \   Log To Console  \n${pid}
-    \   Run Keyword If  '${pid}' != '${EMPTY}'  Set Test Variable  ${dockerd-pid}  ${pid}
-    \   Log To Console  \n${dockerd-pid}
+    \   Log To Console  \n${pid}
     \   Exit For Loop If  '${pid}' != '${EMPTY}'
     \   Sleep  1s
     Should Not Be Equal  '${dockerd-pid}'  '${EMPTY}'
