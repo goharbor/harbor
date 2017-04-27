@@ -13,7 +13,7 @@ ${log}  ./daemon-local.log
 Install Harbor to Test Server and add user
     OperatingSystem.File Should Exist  ${dockerd-path}
     ${handle}=  Start Process  ${dockerd-path} ${dockerd-params} >${log} 2>&1  shell=True
-    Log  ${handle}
+    Log To Console  \n${handle}
     Process Should Be Running  ${handle}
     :FOR  ${IDX}  IN RANGE  5
     \   ${pid}=  Run  pidof dockerd
