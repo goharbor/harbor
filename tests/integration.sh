@@ -20,7 +20,7 @@ set +x
 
 dpkg -l > package.list
 
-buildinfo=$(drone build info vmware/vic $DRONE_BUILD_NUMBER)
+buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 
 # if [ $DRONE_BRANCH = "master" ] && [ $DRONE_REPO = "vmware/harbor" ]; then
 #     pybot --removekeywords TAG:secret --exclude skip tests/test-cases
@@ -36,7 +36,7 @@ buildinfo=$(drone build info vmware/vic $DRONE_BUILD_NUMBER)
 
 echo TEST_USERNAME
 
-pybot --removekeywords TAG:secret --exclude skip --include regression tests/robot-cases/harbor-create-user.robot
+pybot --removekeywords TAG:secret --exclude skip --include regression tests/robot-cases/Group1-user-management
 rc="$?"
 
 timestamp=$(date +%s)
