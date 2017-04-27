@@ -12,9 +12,9 @@ ${log}  ./daemon-local.log
 *** Test Cases ***
 Install Harbor to Test Server and add user
     OperatingSystem.File Should Exist  ${dockerd-path}
-    ${handle}=  Start Process  ${dockerd-path} dockerd &>/dev/null &  shell=True
+    ${handle}=  Start Process  ${dockerd-path} dockerd >${log} &  shell=True
     Log To Console  \n${handle}
-    Sleep  10s
+    Sleep  5s
     ${output}=  Run  docker pull hello-world
     Log To Console  \n${output}
     ${rc}  ${output}=  Run And Return Rc And Output  make compile_clarity GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
