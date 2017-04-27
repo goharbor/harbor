@@ -124,11 +124,8 @@ func CommonPolicyEabled(policyID int, enabled int) {
 
 func CommonAddRepository() {
 	commonRepository := &models.RepoRecord{
-		RepositoryID: "1",
+		RepositoryID: 1,
 		Name:         TestRepoName,
-		OwnerName:    AdminName,
-		OwnerID:      1,
-		ProjectName:  DefaultProjectName,
 		ProjectID:    1,
 		PullCount:    1,
 	}

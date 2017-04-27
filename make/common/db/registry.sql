@@ -116,7 +116,6 @@ create table repository (
  repository_id int NOT NULL AUTO_INCREMENT,
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
- owner_id int NOT NULL,
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,

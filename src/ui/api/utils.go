@@ -270,18 +270,21 @@ func SyncRegistry() error {
 		log.Debugf("Start adding repositories into DB... ")
 		for _, repoToAdd := range reposToAdd {
 			project, _ := utils.ParseRepository(repoToAdd)
-			user, err := dao.GetAccessLogCreator(repoToAdd)
-			if err != nil {
-				log.Errorf("Error happens when getting the repository owner from access log: %v", err)
-			}
-			if len(user) == 0 {
-				user = "anonymous"
-			}
 			pullCount, err := dao.CountPull(repoToAdd)
 			if err != nil {
 				log.Errorf("Error happens when counting pull count from access log: %v", err)
 			}
-			repoRecord := models.RepoRecord{Name: repoToAdd, OwnerName: user, ProjectName: project, PullCount: pullCount}
+			pro, err := dao.GetProjectByName(project)
+			if err != nil {
+				log.Errorf("failed to get project %s: %v", project, err)
+				continue
+			}
+			repoRecord := models.RepoRecord{
+				Name:      repoToAdd,
+				ProjectID: pro.ProjectID,
+				PullCount: pullCount,
+			}
+
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
 			} else {
