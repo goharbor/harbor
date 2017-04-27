@@ -75,8 +75,8 @@ Config Harbor cfg
 Compile and Up Harbor With Source Code
     [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
-    Should Be Equal As Integers  ${rc}  0
     Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
 
 Restart Docker With Insecure Registry Option
     # Requires you to edit /etc/systemd/system/docker.service.d/overlay.conf or docker.conf to be:
