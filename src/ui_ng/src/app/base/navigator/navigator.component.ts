@@ -93,9 +93,10 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get canChangePassword(): boolean {
-        return this.session.getCurrentUser() &&
-            this.appConfigService.getConfig() &&
-            this.appConfigService.getConfig().auth_mode != 'ldap_auth';
+        let user = this.session.getCurrentUser();
+        let config = this.appConfigService.getConfig();
+        
+        return user && ((config && config.auth_mode != 'ldap_auth') || (user.user_id === 1 && user.username === 'admin'));
     }
 
     matchLang(lang: string): boolean {

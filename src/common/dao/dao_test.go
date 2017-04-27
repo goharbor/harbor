@@ -22,6 +22,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	//"github.com/vmware/harbor/src/common/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -402,6 +403,10 @@ func TestGetUser(t *testing.T) {
 	if currentUser.Email != "tester01@vmware.com" {
 		t.Errorf("the user's email does not match, expected: tester01@vmware.com, actual: %s", currentUser.Email)
 	}
+
+	queryUser = models.User{}
+	_, err = GetUser(queryUser)
+	assert.NotNil(t, err)
 }
 
 func TestListUsers(t *testing.T) {
