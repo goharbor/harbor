@@ -12,14 +12,8 @@ ${log}  ./daemon-local.log
 *** Test Cases ***
 Install Harbor to Test Server and add user
     OperatingSystem.File Should Exist  ${dockerd-path}
-    ${handle}=  Start Process  ${dockerd-path} ${dockerd-params} >${log} 2>&1  shell=True
+    ${handle}=  Start Process  ${dockerd-path} >${log} 2>&1  shell=True
     Log To Console  \n${handle}
-    Process Should Be Running  ${handle}
-    :FOR  ${IDX}  IN RANGE  5
-    \   ${pid}=  Run  pidof dockerd
-    \   Log To Console  \n${pid}
-    \   Log To Console  \n${pid}
-    \   Exit For Loop If  '${pid}' != '${EMPTY}'
-    \   Sleep  1s
+    Sleep  5s
     ${output}=  Run  docker pull hello-world
     Log To Console  \n${output}
