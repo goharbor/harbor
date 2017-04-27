@@ -14,9 +14,7 @@ Install Harbor to Test Server and add user
     OperatingSystem.File Should Exist  ${dockerd-path}
     ${handle}=  Start Process  ${dockerd-path} dockerd &>/dev/null &  shell=True
     Log To Console  \n${handle}
-    Run  export http_proxy=http://proxy.vmware.com:3128
-    Run  export https_proxy=https://proxy.vmware.com:3128
-    Sleep  5s
+    Sleep  10s
     ${output}=  Run  docker pull hello-world
     Log To Console  \n${output}
     ${rc}  ${output}=  Run And Return Rc And Output  make compile_clarity GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
