@@ -4,21 +4,6 @@ clone:
   tags: true
 
 build:
-  # harbor-clarity-compile:
-  #   image: vmware/harbor-clarity-ui-builder:0.8.4
-  #   pull: true
-  #   environment:
-  #     BIN: bin
-  #     GOPATH: /drone
-  #     SHELL: /bin/bash
-  #   commands:
-  #     - ls -la /drone/src/github.com/vmware/harbor
-  #     - cp -r /drone/src/github.com/vmware/harbor/src/ui/static /clarity-seed/dist
-  #     - cp -r /drone/src/github.com/vmware/harbor/src/ui_ng/src /clarity-seed/src
-  #     # - /entrypoint.sh
-  #   when:
-  #     success: true
-
   integration-test-on-pr:
     image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
     pull: true
@@ -40,18 +25,5 @@ build:
       DOMAIN: $$CI_DOMAIN
     commands:
       - tests/integration.sh
-    when:
-      success: true
-
-  get-logs:
-    image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
-    pull: true
-    privileged: true
-    environment:
-      BIN: bin
-      GOPATH: /drone
-      SHELL: /bin/bash
-    commands:
-      - cat daemon-local.log
     when:
       success: true
