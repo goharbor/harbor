@@ -21,6 +21,5 @@ Install Harbor to Test Server and add user
     \   Log To Console  \n${pid}
     \   Exit For Loop If  '${pid}' != '${EMPTY}'
     \   Sleep  1s
-    Should Not Be Equal  '${dockerd-pid}'  '${EMPTY}'
     ${output}=  Run  docker pull hello-world
     Log To Console  \n${output}
