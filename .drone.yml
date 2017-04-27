@@ -42,3 +42,16 @@ build:
       - tests/integration.sh
     when:
       success: true
+
+  get-logs:
+    image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
+    pull: true
+    privileged: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+    commands:
+      - cat daemon-local.log
+    when:
+      success: true
