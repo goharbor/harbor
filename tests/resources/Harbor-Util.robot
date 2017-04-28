@@ -77,7 +77,7 @@ Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
-    Sleep  20
+    Sleep  30
 
 Restart Docker With Insecure Registry Option
     # Requires you to edit /etc/systemd/system/docker.service.d/overlay.conf or docker.conf to be:
