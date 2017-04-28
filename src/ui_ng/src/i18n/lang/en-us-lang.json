@@ -123,7 +123,7 @@
         "PROJECTS": "Projects",
         "NAME": "Project Name",
         "ROLE": "Role",
-        "PUBLIC_OR_PRIVATE": "Public",
+        "PUBLIC_OR_PRIVATE": "Access Level",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
         "PUBLIC": "Public",
