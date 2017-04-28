@@ -4,6 +4,20 @@ clone:
   tags: true
 
 build:
+  build:
+    prevent-concurrent-builds:
+      image: $${TEST_BUILD_IMAGE=gcr.io/eminent-nation-87317/vic-integration-test:1.28}
+      pull: true
+      environment:
+        BIN: bin
+        GOPATH: /drone
+        SHELL: /bin/bash
+        TEST_URL_ARRAY:  $$TEST_URL_ARRAY
+        DRONE_SERVER:  $$DRONE_SERVER
+        DRONE_TOKEN:  $$DRONE_TOKEN
+      commands:
+        - tests/wait_until_previous_builds_complete.sh
+
   integration-test-on-pr:
     image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
     pull: true
