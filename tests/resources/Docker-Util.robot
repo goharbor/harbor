@@ -62,12 +62,10 @@ Start Docker Daemon Locally
     Process Should Be Running  ${handle}
     :FOR  ${IDX}  IN RANGE  5
     \   ${pid}=  Run  pidof dockerd
-    \   Run Keyword If  '${pid}' != '${EMPTY}'  Set Test Variable  ${dockerd-pid}  ${pid}
     \   Exit For Loop If  '${pid}' != '${EMPTY}'
     \   Sleep  2s
     Sleep  2s
-    Should Not Be Equal  '${dockerd-pid}'  '${EMPTY}'
-    [Return]  ${handle}  ${dockerd-pid}
+    [Return]  ${handle}
 
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}

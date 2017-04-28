@@ -1,14 +1,11 @@
 *** Settings ***
 Documentation  It's an demo case to deploy Harbor with Drone.
 Resource  ../../resources/Util.robot
-Library  OperatingSystem
-Library  Process
+Suite Setup  Start Docker Daemon Locally
 Default Tags  regression
 
 *** Test Cases ***
 Install Harbor to Test Server
-    Log To Console  \nstart docker
-    Run Keywords  Start Docker Daemon Locally
     Log To Console  \ndocker started success, config harbor cfg
     Run Keywords  Config Harbor cfg
     Log To Console  \ncomplile and up harbor now
@@ -19,3 +16,4 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  curl -s -L -H "Accept: application/json" http://localhost/
     Log To Console  \n${output}
     Should Be Equal As Integers  ${rc}  0
+    Run  Log Into Harbor
