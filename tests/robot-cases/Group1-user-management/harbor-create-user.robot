@@ -14,6 +14,7 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  curl --insecure -s -L -H "Accept: application/json" http://localhost/
+    Sleep 10s
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -s -L -H "Accept: application/json" http://localhost/
     Log To Console  \n${output}
     Should Be Equal As Integers  ${rc}  0
