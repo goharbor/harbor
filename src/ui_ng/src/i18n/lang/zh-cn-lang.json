@@ -123,7 +123,7 @@
         "PROJECTS": "项目",
         "NAME": "项目名称",
         "ROLE": "角色",
-        "PUBLIC_OR_PRIVATE": "公开",
+        "PUBLIC_OR_PRIVATE": "访问级别",
         "REPO_COUNT": "镜像仓库数",
         "CREATION_TIME": "创建时间",
         "PUBLIC": "公开",
