@@ -94,6 +94,7 @@ const harborRoutes: Routes = [
       {
         path: 'tags/:id/:repo',
         component: TagRepositoryComponent,
+        canActivate: [MemberGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
         }
