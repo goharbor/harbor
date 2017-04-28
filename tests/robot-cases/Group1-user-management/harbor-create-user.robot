@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation  It's an demo case to test robot and drone.
+Documentation  It's an demo case to deploy Harbor with Drone.
 Resource  ../../resources/Util.robot
 Default Tags  regression
 
@@ -14,3 +14,6 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  curl --insecure -s -L -H "Accept: application/json" https://localhost/
+    Log To Console  \n${output}
+    Should Be Equal As Integers  ${rc}  0
