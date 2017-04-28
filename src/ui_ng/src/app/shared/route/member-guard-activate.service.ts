@@ -33,6 +33,9 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     let projectId = route.params['id'];
     this.sessionService.setProjectMembers([]);
     return new Promise((resolve, reject) => {
+      let projectId = route.params['id'];
+      this.sessionService.setProjectMembers([]);
+      return new Promise((resolve, reject) => {
         this.projectService.checkProjectMember(projectId)
           .subscribe(
             res=>{
@@ -47,6 +50,7 @@ export class MemberGuard implements CanActivate, CanActivateChild {
               this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
               return resolve(false);
             });
+      });
     });
   }
 
