@@ -1,6 +1,8 @@
 *** Settings ***
 Documentation  It's an demo case to deploy Harbor with Drone.
 Resource  ../../resources/Util.robot
+Library  OperatingSystem
+Library  Process
 Default Tags  regression
 
 *** Test Cases ***
@@ -14,7 +16,7 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
-    OperatingSystem.Sleep 10s
+    Sleep 10s
     ${rc}  ${output}=  Run And Return Rc And Output  curl -s -L -H "Accept: application/json" http://localhost/
     Log To Console  \n${output}
     Should Be Equal As Integers  ${rc}  0
