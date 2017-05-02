@@ -105,7 +105,7 @@ class HarborClient(object):
         return result
 
     # POST /projects
-    def create_project(self, project_name, is_public=False):
+    def create_project(self, project_name, is_public=0):
         result = False
         path = '%s://%s/api/projects' % (self.protocol, self.host)
         request_body = json.dumps({'project_name': project_name,
