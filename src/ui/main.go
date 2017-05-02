@@ -31,6 +31,7 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
+	"github.com/vmware/harbor/src/ui/proxy"
 	"github.com/vmware/harbor/src/ui/service/token"
 )
 
@@ -103,5 +104,8 @@ func main() {
 	if err := api.SyncRegistry(); err != nil {
 		log.Error(err)
 	}
+	log.Info("Init proxy")
+	proxy.Init()
+	//go proxy.StartProxy()
 	beego.Run()
 }
