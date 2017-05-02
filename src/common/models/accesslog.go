@@ -20,7 +20,7 @@ import (
 
 // AccessLog holds information about logs which are used to record the actions that user take to the resourses.
 type AccessLog struct {
-	LogID          int       `orm:"pk;column(log_id)" json:"log_id"`
+	LogID          int       `orm:"pk;auto;column(log_id)" json:"log_id"`
 	UserID         int       `orm:"column(user_id)"  json:"user_id"`
 	ProjectID      int64     `orm:"column(project_id)"  json:"project_id"`
 	RepoName       string    `orm:"column(repo_name)" json:"repo_name"`
