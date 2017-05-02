@@ -43,3 +43,4 @@ src/ui_ng/aot/**/*.json
 **/*ngsummary.json
 **/*ngfactory.ts
 **/aot
+**/dist
