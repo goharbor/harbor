@@ -13,3 +13,76 @@
 // limitations under the License.
 
 package db
+
+import (
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/pms"
+)
+
+// SecurityContext implements security.Context interface based on database
+type SecurityContext struct {
+	user *models.User
+	pms  pms.PMS
+}
+
+// NewSecurityContext ...
+func NewSecurityContext(user *models.User, pms pms.PMS) *SecurityContext {
+	return &SecurityContext{
+		user: user,
+		pms:  pms,
+	}
+}
+
+// IsAuthenticated returns true if the user has been authenticated
+func (s *SecurityContext) IsAuthenticated() bool {
+	return s.user != nil
+}
+
+// GetUsername returns the username of the authenticated user
+// It returns null if the user has not been authenticated
+func (s *SecurityContext) GetUsername() string {
+	if !s.IsAuthenticated() {
+		return ""
+	}
+	return s.user.Username
+}
+
+// IsSysAdmin returns whether the authenticated user is system admin
+// It returns false if the user has not been authenticated
+func (s *SecurityContext) IsSysAdmin() bool {
+	if !s.IsAuthenticated() {
+		return false
+	}
+	return s.user.HasAdminRole == 1
+}
+
+// HasReadPerm returns whether the user has read permission to the project
+func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+	// public project
+	if s.pms.IsPublic(projectIDOrName) {
+		return true
+	}
+
+	// private project
+	if !s.IsAuthenticated() {
+		return false
+	}
+
+	return s.pms.HasReadPerm(s.GetUsername(), projectIDOrName)
+}
+
+// HasWritePerm returns whether the user has write permission to the project
+func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
+	if !s.IsAuthenticated() {
+		return false
+	}
+	return s.pms.HasWritePerm(s.GetUsername(), projectIDOrName)
+}
+
+// HasAllPerm returns whether the user has all permissions to the project
+func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
+	if !s.IsAuthenticated() {
+		return false
+	}
+	return s.pms.HasAllPerm(s.GetUsername(), projectIDOrName)
+}
