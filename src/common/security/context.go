@@ -18,15 +18,14 @@ package security
 type Context interface {
 	// IsAuthenticated returns whether the context has been authenticated or not
 	IsAuthenticated() bool
+	// GetUsername returns the username of user related to the context
+	GetUsername() string
 	// IsSysAdmin returns whether the user is system admin
 	IsSysAdmin() bool
 	// HasReadPerm returns whether the user has read permission to the project
-	// whose ID is projectID
-	HasReadPerm(projectID int64) bool
+	HasReadPerm(projectIDOrName interface{}) bool
 	// HasWritePerm  returns whether the user has write permission to the project
-	// whose ID is projectID
-	HasWritePerm(projectID int64) bool
+	HasWritePerm(projectIDOrName interface{}) bool
 	// HasAllPerm  returns whether the user has all permissions to the project
-	// whose ID is projectID
-	HasAllPerm(projectID int64) bool
+	HasAllPerm(projectIDOrName interface{}) bool
 }
