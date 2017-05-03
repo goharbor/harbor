@@ -73,7 +73,7 @@ export class SessionService {
         body.set('password', signInCredential.password);
 
         //Trigger Http
-        return this.http.post(signInUrl, body.toString(), { headers: this.formHeaders })
+        return this.http.post(signInUrl, encodeURIComponent(body.toString()), { headers: this.formHeaders })
             .toPromise()
             .then(() => null)
             .catch(error => this.handleError(error));
