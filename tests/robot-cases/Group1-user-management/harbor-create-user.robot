@@ -14,4 +14,4 @@ Install Harbor to Test Server
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
     Start Selenium Standalone Server Locally
-    Run Keywords  Sign In Harbor
+    Run Keywords  Sign In Harbor  user=admin  pwd=Harbor12345
