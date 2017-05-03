@@ -103,6 +103,8 @@ Sign In Harbor
     Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1920  1080
     sleep  10
+    Log To Console  ${user}
+    Log To Console  ${pw}
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
