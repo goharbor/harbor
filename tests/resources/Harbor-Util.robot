@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  ExtendedSelenium2Library
+Library  Selenium2Library
 
 *** Variables ***
 ${HARBOR_SHORT_VERSION}  0.5.0
