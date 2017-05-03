@@ -7,7 +7,7 @@ clone:
 build:
   build:
     prevent-concurrent-builds:
-      image: $${TEST_BUILD_IMAGE=gcr.io/eminent-nation-87317/vic-integration-test:1.28}
+      image: $${TEST_BUILD_IMAGE=vmware/harbor-e2e-engine:1.29}
       pull: true
       environment:
         BIN: bin
@@ -20,7 +20,7 @@ build:
         - tests/wait_until_previous_builds_complete.sh
 
   integration-test-on-pr:
-    image: gcr.io/eminent-nation-87317/vic-integration-test:1.28
+    image: vmware/harbor-e2e-engine:1.29
     pull: true
     privileged: true
     environment:

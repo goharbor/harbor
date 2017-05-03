@@ -36,7 +36,7 @@ buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 
 echo TEST_USERNAME
 
-pybot --removekeywords TAG:secret --exclude skip --include regression tests/robot-cases/Group1-user-management
+pybot --removekeywords TAG:secret --exclude skip tests/robot-cases/Group1-user-management
 rc="$?"
 
 timestamp=$(date +%s)

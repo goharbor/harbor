@@ -13,22 +13,14 @@
 # limitations under the License
 
 *** Settings ***
+Documentation  This resource provides helper functions for docker operations
 Library  OperatingSystem
-Library  String
-Library  Collections
-Library  requests
 Library  Process
-Library  SSHLibrary  1 minute
-Library  DateTime
-Library  Selenium2Library  10  10
-Resource  Nimbus-Util.robot
-Resource  Vsphere-Util.robot
-Resource  VCH-Util.robot
-Resource  Drone-Util.robot
-Resource  Github-Util.robot
-Resource  Harbor-Util.robot
-Resource  Docker-Util.robot
-Resource  Admiral-Util.robot
-Resource  OVA-Util.robot
-Resource  Cert-Util.robot
-Resource  SeleniumUtil.robot
+
+*** Keywords ***
+Start Selenium Standalone Server Locally
+    OperatingSystem.File Should Exist  /go/selenium-server-standalone-3.4.0.jar
+    ${handle}=  Start Process  java -jar /go/selenium-server-standalone-3.4.0.jar >./selenium-local.log 2>&1  shell=True
+    Process Should Be Running  ${handle}
+    Sleep  10s
+    [Return]  ${handle}
