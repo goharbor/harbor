@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation  It's an demo case to deploy Harbor with Drone.
 Resource  ../../resources/Util.robot
-Suite Setup  Start Docker Daemon Locally
+Suite Setup  Start Docker Daemon Locally  Start Selenium Standalone ServerLocally
 Default Tags  regression
 
 *** Test Cases ***
