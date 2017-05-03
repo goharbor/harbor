@@ -97,7 +97,6 @@ Install Harbor Self Signed Cert
     ${out}=  Run  systemctl restart docker
 
 Sign In Harbor
-    [Arguments]  ${user}=%{HARBOR_ADMIN}  ${pw}=%{HARBOR_PWD}
     ${chrome_switches} =         Create List          enable-logging       v=1
     ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
     Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
@@ -106,8 +105,8 @@ Sign In Harbor
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-    Input Text  login_username  ${user}
-    Input Text  login_password  ${pw}
+    Input Text  login_username  %{HARBOR_ADMIN}
+    Input Text  login_password  ${HARBOR_PWD}
     sleep  2
     Click button  css=.btn
     sleep  5
