@@ -325,7 +325,8 @@
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
-        "COPY": "复制"
+        "COPY": "复制",
+        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
