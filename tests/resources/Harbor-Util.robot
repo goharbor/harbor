@@ -105,8 +105,8 @@ Sign In Harbor
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-    Input Text  login_username  %{HARBOR_ADMIN}
-    Input Text  login_password  ${HARBOR_PWD}
+    Input Text  login_username  admin
+    Input Text  login_password  Harbor12345
     sleep  2
     Click button  css=.btn
     sleep  5
