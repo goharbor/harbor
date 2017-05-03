@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
+Library  ExtendedSelenium2Library
 
 *** Variables ***
 ${HARBOR_SHORT_VERSION}  0.5.0
@@ -96,16 +96,23 @@ Install Harbor Self Signed Cert
     ${out}=  Run  systemctl daemon-reload
     ${out}=  Run  systemctl restart docker
 
-Log Into Harbor
+Sign In Harbor
     [Arguments]  ${user}=%{TEST_USERNAME}  ${pw}=%{TEST_PASSWORD}
-    Maximize Browser Window
-    Sleep 10s
-    Input Text  #login_username  ${user}
-    Input Text  #login_password  ${pw}
-    Click button  css=body > harbor-app > harbor-shell > clr-main-container > div > div > sign-in > div > form > div.login-group > button
-    Wait Until Page Contains  Summary
-    Wait Until Page Contains  My Projects:
-    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//optional-menu/div/a[contains(., '${user}')]
+    ${chrome_switches} =         Create List          enable-logging       v=1
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
+    Set Window Size  1920  1080
+    sleep  10
+    ${title}=  Get Title
+    Log To Console  ${title}
+    Should Be Equal  ${title}  Harbor
+    Input Text  login_username  ${user}
+    Input Text  login_password  ${pw}
+    sleep  2
+    Click button  css=.btn
+    sleep  5
+    Wait Until Page Contains  Replication
+    Close browser
 
 Create A New Project
     [Arguments]  ${name}  ${public}=${true}

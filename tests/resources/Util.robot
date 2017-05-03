@@ -20,7 +20,7 @@ Library  requests
 Library  Process
 Library  SSHLibrary  1 minute
 Library  DateTime
-Library  Selenium2Library  3  3
+Library  Selenium2Library  10  10
 Resource  Nimbus-Util.robot
 Resource  Vsphere-Util.robot
 Resource  VCH-Util.robot
