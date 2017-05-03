@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { RepositoryService } from '../repository.service';
@@ -35,7 +35,8 @@ import { Project } from '../../project/project';
 @Component({
   selector: 'tag-repository',
   templateUrl: 'tag-repository.component.html',
-  styleUrls: ['./tag-repository.component.css']
+  styleUrls: ['./tag-repository.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagRepositoryComponent implements OnInit, OnDestroy {
 
@@ -66,7 +67,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private deletionDialogService: ConfirmationDialogService,
     private repositoryService: RepositoryService,
     private appConfigService: AppConfigService,
-    private session: SessionService){
+    private session: SessionService,
+    private ref: ChangeDetectorRef){
     
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(
       message => {
@@ -117,19 +119,31 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   retrieve() {
     this.tags = [];
+    this.repositoryService
+        .listTags(this.repoName)
+        .subscribe(
+          items => this.listTags(items),
+          error => this.messageHandlerService.handleError(error));
+   
     if(this.withNotary) {
       this.repositoryService
-          .listTagsWithVerifiedSignatures(this.repoName)
+          .listNotarySignatures(this.repoName)
           .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    } else {
-      this.repositoryService
-          .listTags(this.repoName)
-          .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    }
+            signatures => {
+              this.tags.forEach((t, n)=>{
+                let signed = false;
+                for(let i = 0; i < signatures.length; i++) {
+                  if (signatures[i].tag === t.tag) {
+                    signed = true;
+                    break;
+                  }
+                }
+                this.tags[n].signed = (signed) ? 1 : 0;
+                this.ref.markForCheck();
+              });
+            },
+            error => console.error('Cannot determine the signature of this tag.'));
+      }
   }
 
   private listTags(tags: Tag[]): void {
@@ -148,6 +162,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       tag.parent = data['parent'];
       this.tags.push(tag);
     });
+    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   deleteTag(tag: TagView) {

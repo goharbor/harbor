@@ -28,10 +28,11 @@ export class RepositoryService {
   constructor(private http: Http){}
 
   listRepositories(projectId: number, repoName: string, page?: number, pageSize?: number): Observable<any> {
-    console.log('List repositories with project ID:' + projectId);
     let params = new URLSearchParams();
-    params.set('page', page + '');
-    params.set('page_size', pageSize + '');
+    if(page && pageSize) {
+      params.set('page', page + '');
+      params.set('page_size', pageSize + '');
+    }
     return this.http
                .get(`/api/repositories?project_id=${projectId}&q=${repoName}&detail=1`, {search: params})
                .map(response=>response)
@@ -60,7 +61,7 @@ export class RepositoryService {
                     tags.forEach(t=>{
                       for(let i = 0; i < signatures.length; i++) {
                         if(signatures[i].tag === t.tag) {
-                          t.signed = true;
+                          t.signed = 1;
                           break;
                         }
                       }
@@ -68,14 +69,13 @@ export class RepositoryService {
                     return tags;
                   })
                   .catch(error=>{
-                    return tags;
+                    return Observable.of(tags);
                   })
                })
                .catch(error=>Observable.throw(error));
   }
 
   deleteRepository(repoName: string): Observable<any> {
-    console.log('Delete repository with repo name:' + repoName);
     return this.http
                .delete(`/api/repositories/${repoName}/tags`)
                .map(response=>response.status)
@@ -83,7 +83,6 @@ export class RepositoryService {
   }
 
   deleteRepoByTag(repoName: string, tag: string): Observable<any> {
-    console.log('Delete repository with repo name:' + repoName + ', tag:' + tag);
     return this.http
                .delete(`/api/repositories/${repoName}/tags/${tag}`)
                .map(response=>response.status)

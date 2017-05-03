@@ -14,7 +14,7 @@
 export class TagView {
   tag: string;
   pullCommand: string;
-  signed: boolean;
+  signed: number = -1;
   author: string;
   created: Date;
   dockerVersion: string;
