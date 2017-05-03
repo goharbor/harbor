@@ -17,7 +17,7 @@ Documentation  This resource provides helper functions for docker operations
 Library  OperatingSystem
 Library  Process
 
-Start Selenium Standalone ServerLocally
+Start Selenium Standalone Server Locally
     OperatingSystem.File Should Exist  /go/selenium-server-standalone-3.4.0.jar
     ${handle}=  Start Process  java -jar /go/selenium-server-standalone-3.4.0.jar >./selenium-local.log 2>&1  shell=True
     Process Should Be Running  ${handle}

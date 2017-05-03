@@ -31,3 +31,4 @@ Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
+Resource  SeleniumUtil.robot
