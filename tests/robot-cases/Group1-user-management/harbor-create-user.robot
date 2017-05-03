@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation  It's an demo case to deploy Harbor with Drone.
 Resource  ../../resources/Util.robot
-Suite Setup  Start Docker Daemon Locally  Start Selenium Standalone ServerLocally
+Suite Setup  Start Docker Daemon Locally
 Default Tags  regression
 
 *** Test Cases ***
@@ -13,4 +13,5 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
+    Start Selenium Standalone Server Locally
     Run Keywords  Sign In Harbor
