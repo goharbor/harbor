@@ -267,7 +267,19 @@ func (ra *RepositoryAPI) Delete() {
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			if err := dao.AccessLog(user, projectName, repoName, tag, "delete"); err != nil {
+			project, err := dao.GetProjectByName(projectName)
+			if err != nil {
+				log.Errorf("failed to get project by name %s: %v", projectName, err)
+				return
+			}
+			if err := dao.AddAccessLog(models.AccessLog{
+				Username:  user,
+				ProjectID: project.ProjectID,
+				RepoName:  repoName,
+				RepoTag:   tag,
+				Operation: "delete",
+				OpTime:    time.Now(),
+			}); err != nil {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}(t)

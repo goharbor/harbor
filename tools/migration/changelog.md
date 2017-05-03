@@ -41,3 +41,6 @@ Changelog for harbor database schema
 ## 1.2.0
 
   - delete column `owner_id` from table `repository`
+  - delete column `user_id` from table `access_log`
+  - delete foreign key (user_id) references user(user_id)from table `access_log`
+  - add column `username` varchar (32) to table `access_log`

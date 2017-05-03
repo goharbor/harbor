@@ -19,10 +19,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 //LogAPI handles request api/logs
@@ -75,8 +75,16 @@ func (l *LogAPI) Get() {
 		linesNum = 10
 	}
 
+	user, err := dao.GetUser(models.User{
+		UserID: l.userID,
+	})
+	if err != nil {
+		log.Errorf("failed to get user by user ID %d: %v", l.userID, err)
+		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	var logList []models.AccessLog
-	logList, err = dao.GetRecentLogs(l.userID, linesNum, startTime, endTime)
+	logList, err = dao.GetRecentLogs(user.Username, linesNum, startTime, endTime)
 	if err != nil {
 		log.Errorf("Get recent logs error, err: %v", err)
 		l.CustomAbort(http.StatusInternalServerError, "Internal error")

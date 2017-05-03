@@ -118,6 +118,29 @@ func (p *ProjectAPI) Post() {
 		}
 		return
 	}
+
+	user, err := dao.GetUser(models.User{
+		UserID: p.userID,
+	})
+	if err != nil {
+		log.Errorf("failed to get user by ID %d: %v", p.userID, err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	accessLog := models.AccessLog{
+		Username:  user.Username,
+		ProjectID: projectID,
+		RepoName:  project.Name + "/",
+		RepoTag:   "N/A",
+		GUID:      "N/A",
+		Operation: "create",
+		OpTime:    time.Now(),
+	}
+	if err = dao.AddAccessLog(accessLog); err != nil {
+		log.Errorf("failed to add access log: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
@@ -200,12 +223,21 @@ func (p *ProjectAPI) Delete() {
 	}
 
 	go func() {
+		user, err := dao.GetUser(models.User{
+			UserID: userID,
+		})
+		if err != nil {
+			log.Errorf("failed to get user by ID %d: %v", userID, err)
+			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
 		if err := dao.AddAccessLog(models.AccessLog{
-			UserID:    userID,
+			Username:  user.Username,
 			ProjectID: p.projectID,
 			RepoName:  p.projectName + "/",
 			RepoTag:   "N/A",
 			Operation: "delete",
+			OpTime:    time.Now(),
 		}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
 		}

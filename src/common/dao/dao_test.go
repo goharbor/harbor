@@ -73,11 +73,8 @@ func clearUp(username string) {
 
 	err = execUpdate(o, `delete 
 		from access_log 
-		where user_id = (
-			select user_id
-			from user
-			where username = ?
-		)`, username)
+		where username = ?
+		`, username)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
@@ -559,8 +556,22 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestGetAccessLog(t *testing.T) {
+
+	accessLog := models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/",
+		RepoTag:   "N/A",
+		GUID:      "N/A",
+		Operation: "create",
+		OpTime:    time.Now(),
+	}
+	if err := AddAccessLog(accessLog); err != nil {
+		t.Errorf("failed to add access log: %v", err)
+	}
+
 	queryAccessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 	}
 	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
@@ -577,7 +588,7 @@ func TestGetAccessLog(t *testing.T) {
 
 func TestGetTotalOfAccessLogs(t *testing.T) {
 	queryAccessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 	}
 	total, err := GetTotalOfAccessLogs(queryAccessLog)
@@ -594,7 +605,7 @@ func TestAddAccessLog(t *testing.T) {
 	var err error
 	var accessLogList []models.AccessLog
 	accessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 		RepoName:  currentProject.Name + "/",
 		RepoTag:   repoTag,
@@ -621,47 +632,38 @@ func TestAddAccessLog(t *testing.T) {
 	}
 }
 
-func TestAccessLog(t *testing.T) {
-	var err error
-	var accessLogList []models.AccessLog
-	accessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/",
-		RepoTag:   repoTag2,
-		Operation: "create",
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/", repoTag2, "create")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
-	}
-	if len(accessLogList) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
-	}
-	if accessLogList[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
-	}
-	if accessLogList[0].RepoTag != repoTag2 {
-		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag2, accessLogList[0].RepoTag)
-	}
-}
-
 func TestCountPull(t *testing.T) {
 	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
@@ -973,7 +975,7 @@ func TestChangeUserProfile(t *testing.T) {
 }
 
 func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(currentUser.UserID, 10, "2016-05-13 00:00:00", time.Now().String())
+	logs, err := GetRecentLogs(currentUser.Username, 10, "2016-05-13 00:00:00", time.Now().String())
 	if err != nil {
 		t.Errorf("error occured in getting recent logs, error: %v", err)
 	}

@@ -99,7 +99,7 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
- user_id int NOT NULL,
+ username varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
@@ -108,7 +108,6 @@ create table access_log (
  op_time timestamp,
  primary key (log_id),
  INDEX pid_optime (project_id, op_time),
- FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 

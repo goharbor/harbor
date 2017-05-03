@@ -45,13 +45,7 @@ func AddProject(project models.Project) (int64, error) {
 		return 0, err
 	}
 
-	if err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN); err != nil {
-		return projectID, err
-	}
-
-	accessLog := models.AccessLog{UserID: project.OwnerID, ProjectID: projectID, RepoName: project.Name + "/", RepoTag: "N/A", GUID: "N/A", Operation: "create", OpTime: time.Now()}
-	err = AddAccessLog(accessLog)
-
+	err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN)
 	return projectID, err
 }
 
