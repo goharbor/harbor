@@ -18,7 +18,5 @@ package pms
 // the operations related to projects
 type PMS interface {
 	IsPublic(projectIDOrName interface{}) bool
-	HasReadPerm(username string, projectIDOrName interface{}, token ...string) bool
-	HasWritePerm(username string, projectIDOrName interface{}, token ...string) bool
-	HasAllPerm(username string, projectIDOrName interface{}, token ...string) bool
+	GetRoles(username string, projectIDOrName interface{}) []int
 }
