@@ -97,7 +97,7 @@ Install Harbor Self Signed Cert
     ${out}=  Run  systemctl restart docker
 
 Sign In Harbor
-    [Arguments]  ${user}=%{HARBOR_ADMIN}  ${pw}=%{HARBOR_PWD}
+    [Arguments]  ${user}=admin  ${pw}=Harbor12345
     ${chrome_switches} =         Create List          enable-logging       v=1
     ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
     Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
@@ -112,7 +112,41 @@ Sign In Harbor
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  Replication
-    Close browser
+    Close Browser
+
+Create An New User
+    [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
+    ${chrome_switches} =         Create List          enable-logging       v=1
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
+    Set Window Size  1920  1080
+    sleep  10
+    ${title}=  Get Title
+    Log To Console  ${title}
+    Should Be Equal  ${title}  Harbor
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
+    sleep  3
+    Input Text  xpath=//*[@id="username"]  ${username}
+    sleep  1
+    Input Text  xpath=//*[@id="email"]  ${email}
+    sleep  1
+    Input Text  xpath=//*[@id="realname"]  ${realname}
+    sleep  1
+    Input Text  xpath=//*[@id="newPassword"]  ${newPassword}
+    sleep  1
+    Input Text  xpath=//*[@id="confirmPassword"]  ${newPassword}
+    sleep  1
+    Input Text  xpath=//*[@id="comment"]  ${comment}
+    sleep  2
+    Click button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[3]/button[2]
+    sleep  5
+    Input Text  login_username  ${username}
+    Input Text  login_password  ${newPassword}
+    sleep  2
+    Click button  css=.btn
+    sleep  5
+    Wait Until Page Contains  ${username}
+    Close Browser
 
 Create A New Project
     [Arguments]  ${name}  ${public}=${true}

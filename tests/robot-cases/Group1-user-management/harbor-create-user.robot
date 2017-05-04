@@ -13,5 +13,7 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
-    Start Selenium Standalone Server Locally
-    Run Keywords  Sign In Harbor  user=admin  pwd=Harbor12345
+
+Test Harbor To Create An New User
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  username=test${d}  email=test${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
