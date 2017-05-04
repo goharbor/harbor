@@ -22,6 +22,7 @@ import {
 import { SharedModule } from './shared/shared.module';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
 import { TranslateService } from '@ngx-translate/core';
+import { CookieService } from 'ngx-cookie';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -75,7 +76,7 @@ export interface HarborModuleConfig {
  * @param {AppConfigService} configService
  * @returns
  */
-export function initConfig(translateService: TranslateService, config: IServiceConfig) {
+export function initConfig(translateService: TranslateService, config: IServiceConfig, cookie: CookieService) {
   return (init);
   function init() {
     let selectedLang: string = DEFAULT_LANG;
@@ -85,7 +86,7 @@ export function initConfig(translateService: TranslateService, config: IServiceC
 
     if (config.enablei18Support) {
       //If user has selected lang, then directly use it
-      let langSetting = this.cookie.get(config.langCookieKey);
+      let langSetting: string = cookie.get(config.langCookieKey ? config.langCookieKey : DEFAULT_LANG_COOKIE_KEY);
       if (!langSetting || langSetting.trim() === "") {
         //Use browser lang
         langSetting = translateService.getBrowserCultureLang().toLowerCase();
