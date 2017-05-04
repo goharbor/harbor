@@ -15,5 +15,6 @@ Install Harbor to Test Server
     Log To Console  \n${output}
 
 Test Harbor To Create An New User
+    Start Selenium Standalone Server Locally
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  username=test${d}  email=test${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
