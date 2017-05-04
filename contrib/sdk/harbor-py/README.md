@@ -1,69 +1,58 @@
 ## Introduction
 
-[harbor](https://github.com/vmware/harbor) is the enterprise-class registry server for docker distribution.
-
-[harbor-py](https://github.com/tobegit3hub/harbor-py) is the native and compatible python SDK for harbor. The supported APIs are list below.
-
-- [x] Projects APIs
-  - [x] [Get projects](./examples/get_projects.py)
-  - [x] [Create project](./examples/create_project.py)
-  - [x] [Check project exist](./examples/check_project_exist.py)
-  - [x] [Set project publicity](./examples/set_project_publicity.py)
-  - [x] [Get project id from name](./examples/get_project_id_from_name.py)
-  - [ ] Get project access logs
-  - [ ] Get project member
-  - [ ] Get project and user member
-- [x] Users APIs
-  - [x] [Get users](./examples/get_users.py)
-  - [x] [Create user](./examples/create_user.py)
-  - [x] [Update user profile](./examples/update_user_profile.py)
-  - [x] [Delete user](./examples/delete_user.py)
-  - [x] [Change password](./examples/change_password.py)
-  - [x] [Promote as admin](./examples/promote_as_admin.py)
-- [x] Repositories APIs
-  - [x] [Get repositories](./examples/get_repositories.py)
-  - [x] [Delete repository](./examples/delete_repository.py)
-  - [x] [Get repository tags](./examples/get_repository_tags.py)
-  - [x] [Get repository manifests](./examples/get_repository_manifests.py)
-- [x] Others APIs
-  - [x] [Search](./examples/search.py)
-  - [x] [Get statistics](./examples/get_statistics.py)
-  - [x] [Get top accessed repositories](./examples/get_top_accessed_repositories.py)
-  - [x] [Get logs](./examples/get_logs.py)
+**harbor-py** is the native python SDK and cli tool for Harbor. In the **harborclient** directory, ```harborsdk.py``` is the python SDK for Harbor, ```harborcli.py``` is the command line tool for Harbor. Also, you can develop your own cli tool based on the SDK. The SDK supports all APIs of Harbor. 
 
 ## Installation
 
+Run command below:
 ```
-pip install harbor-py
+sudo python setup.py install 
 ```
 
 ## Usage
 
+First, export Harbor environment variables under your bash console.
+
 ```
-from harborclient import harborclient
-
-host = "127.0.0.1"
-user = "admin"
-password = "Harbor12345"
-
-client = harborclient.HarborClient(host, user, password)
-
-client.get_projects()
-client.get_users()
-client.get_statistics()
-client.get_top_accessed_repositories()
-client.search("library")
+export HARBOR_HOSTNAME=HarborIP
+export HARBOR_USER=username
+export HARBOR_PASSWORD=password
 ```
 
-For more usage, please refer to the [examples](./examples/).
+If your Harbor uses https, export one more enviroment variable:
+
+```
+export HARBOR_URL_PROTOCOL=https
+```
+
+```harborcli``` has a lot of subcommands, to get help infomation:
+
+```
+harborcli <subcommand> -h
+```
+
+Some examples are listed below.
+
+**Getting project information:**
+```
+harborcli get-projects -n <project_name> -i <public> -o <owner> -p <page> -s <page_size>
+```
+
+**Creating a new user:**
+```
+harborcli create-user <username> <email> <password> <realname> -c <comment>
+```
+
+**Creating a new project:**
+```
+harborcli create-project <project_name> <public> -e <enable_content_trust> \
+                                             -p <prevent_vulnerable_images_from_running> \
+                                             -s <prevent_vulnerable_images_from_running_severity> \
+                                             -a <automatically_scan_images_on_push>
+```
+
+For more usage, please refer to **harborcli -h**.
 
 ## Contribution
 
-If you have any suggestion, feel free to submit [issues](https://github.com/tobegit3hub/harbor-py/issues) or send [pull-requests](https://github.com/tobegit3hub/harbor-py/pulls) for `harbor-py`.
-
-Publish `harbor-py` package to [pypi](https://pypi.python.org/pypi/harbor-py/) server with the following commands.
-
-```
-python setup.py register -r pypi
-python setup.py sdist upload  -r pypi
-```
+If you have any suggestions, feel free to submit [issues](https://github.com/vmware/harbor/issues) or send us pull requests.
