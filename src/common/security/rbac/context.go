@@ -17,20 +17,20 @@ package rbac
 import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/pms"
+	"github.com/vmware/harbor/src/ui/pm"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user *models.User
-	pms  pms.PMS
+	pm   pm.PM
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pms pms.PMS) *SecurityContext {
+func NewSecurityContext(user *models.User, pm pm.PM) *SecurityContext {
 	return &SecurityContext{
 		user: user,
-		pms:  pms,
+		pm:   pm,
 	}
 }
 
@@ -60,7 +60,7 @@ func (s *SecurityContext) IsSysAdmin() bool {
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	// public project
-	if s.pms.IsPublic(projectIDOrName) {
+	if s.pm.IsPublic(projectIDOrName) {
 		return true
 	}
 
@@ -74,7 +74,7 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	roles := s.pms.GetRoles(s.GetUsername(), projectIDOrName)
+	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -98,7 +98,7 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	roles := s.pms.GetRoles(s.GetUsername(), projectIDOrName)
+	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -120,7 +120,7 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	roles := s.pms.GetRoles(s.GetUsername(), projectIDOrName)
+	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin:
