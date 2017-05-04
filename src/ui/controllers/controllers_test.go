@@ -25,10 +25,10 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	//"github.com/dghubble/sling"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/proxy"
 )
 
 //const (
@@ -48,6 +48,10 @@ func init() {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
+	if err := proxy.Init(); err != nil {
+		log.Fatalf("Failed to initialize the proxy: %v", err)
+	}
+
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
@@ -61,6 +65,7 @@ func init() {
 	beego.Router("/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/sendEmail", &CommonController{}, "get:SendEmail")
+	beego.Router("/registryproxy/*", &RegistryProxy{}, "*:Handle")
 
 	//Init user Info
 	//admin = &usrInfo{adminName, adminPwd}
@@ -106,4 +111,8 @@ func TestMain(t *testing.T) {
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(400), w.Code, "'/sendEmail' httpStatusCode should be 400")
 
+	r, _ = http.NewRequest("GET", "/registryproxy/v2/", nil)
+	w = httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	assert.Equal(int(200), w.Code, "ping v2 should get a 200 response")
 }

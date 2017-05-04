@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
@@ -24,17 +24,12 @@ import { State } from 'clarity-angular';
 
 @Component({
   selector: 'list-project',
-  templateUrl: 'list-project.component.html'
+  templateUrl: 'list-project.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListProjectComponent implements OnInit {
+export class ListProjectComponent {
 
   @Input() projects: Project[];
-
-
-  @Input() totalPage: number;
-  @Input() totalRecordCount: number;
-  pageOffset: number = 1;
-
   @Input() filteredType: string;
 
   @Output() paginate = new EventEmitter<State>();
@@ -47,10 +42,11 @@ export class ListProjectComponent implements OnInit {
   constructor(
     private session: SessionService,
     private router: Router,
-    private searchTrigger: SearchTriggerService) { }
-
-  ngOnInit(): void {
-  }
+    private searchTrigger: SearchTriggerService,
+    private ref: ChangeDetectorRef) {
+    let hnd = setInterval(()=>ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
+  }  
 
   get showRoleInfo(): boolean {
     return this.filteredType === ProjectTypes[0];

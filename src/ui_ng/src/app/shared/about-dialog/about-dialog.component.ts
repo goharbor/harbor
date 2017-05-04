@@ -21,8 +21,8 @@ import { AppConfigService } from '../../app-config.service';
     styleUrls: ["about-dialog.component.css"]
 })
 export class AboutDialogComponent {
-    private opened: boolean = false;
-    private build: string = "4276418";
+    opened: boolean = false;
+    build: string = "4276418";
 
     constructor(private appConfigService: AppConfigService) { }
 

@@ -192,7 +192,7 @@ func testForMySQL(m *testing.M) int {
 		},
 	}
 
-	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %s, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	return testForAll(m, database)
 }
@@ -647,26 +647,6 @@ func TestAccessLog(t *testing.T) {
 	}
 	if accessLogList[0].RepoTag != repoTag2 {
 		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag2, accessLogList[0].RepoTag)
-	}
-}
-
-func TestGetAccessLogCreator(t *testing.T) {
-	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-
-	user, err := GetAccessLogCreator(currentProject.Name + "/tomcat")
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLogCreator: %v", err)
-	}
-	if user != currentUser.Username {
-		t.Errorf("The access log creator does not match, expected: %s, actual: %s", currentUser.Username, user)
 	}
 }
 
@@ -1595,8 +1575,7 @@ func TestGetOrmer(t *testing.T) {
 func TestAddRepository(t *testing.T) {
 	repoRecord := models.RepoRecord{
 		Name:        currentProject.Name + "/" + repositoryName,
-		OwnerName:   currentUser.Username,
-		ProjectName: currentProject.Name,
+		ProjectID:   currentProject.ProjectID,
 		Description: "testing repo",
 		PullCount:   0,
 		StarCount:   0,

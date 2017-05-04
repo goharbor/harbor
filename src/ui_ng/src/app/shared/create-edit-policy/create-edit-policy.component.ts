@@ -157,7 +157,6 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   } 
 
   newDestination(checkedAddNew: boolean): void {
-    console.log('CheckedAddNew:' + checkedAddNew);
     this.isCreateDestination = checkedAddNew;
     if(this.isCreateDestination) {
       this.createEditPolicy.targetName = '';
@@ -201,13 +200,11 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
   }
 
   createPolicy(): void {
-    console.log('Create policy with existing target in component.');
     this.replicationService
         .createPolicy(this.getPolicyByForm())
         .subscribe(
           response=>{
             this.messageHandlerService.showSuccess('REPLICATION.CREATED_SUCCESS');
-            console.log('Successful created policy: ' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
@@ -220,18 +217,16 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             } else {
               this.inlineAlert.showInlineError(error);
             }            
-            console.log('Failed to create policy:' + error.status + ', error message:' + JSON.stringify(error['_body']));
+            console.error('Failed to create policy:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           });
   }
 
   createOrUpdatePolicyAndCreateTarget(): void {
-    console.log('Creating policy with new created target.');
     this.replicationService
         .createOrUpdatePolicyWithNewTarget(this.getPolicyByForm(), this.getTargetByForm())
         .subscribe(
           response=>{
             this.messageHandlerService.showSuccess('REPLICATION.CREATED_SUCCESS');
-            console.log('Successful created policy and target:' + response);
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
           },
@@ -244,18 +239,16 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             } else {
               this.inlineAlert.showInlineError(error);
             }
-            console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
+            console.error('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
   }
 
   updatePolicy(): void {
-    console.log('Creating policy with existing target.');
     this.replicationService
         .updatePolicy(this.getPolicyByForm())
         .subscribe(
           response=>{
-            console.log('Successful created policy and target:' + response);
             this.messageHandlerService.showSuccess('REPLICATION.UPDATED_SUCCESS')
             this.createEditPolicyOpened = false;
             this.reload.emit(true);
@@ -269,7 +262,7 @@ export class CreateEditPolicyComponent implements OnInit, AfterViewChecked {
             } else {
               this.inlineAlert.showInlineError(error);
             }
-            console.log('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
+            console.error('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
   }

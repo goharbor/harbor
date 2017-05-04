@@ -25,7 +25,7 @@ export const logEndpoint = "/api/logs";
 
 @Injectable()
 export class AuditLogService {
-  private httpOptions = new RequestOptions({
+  httpOptions = new RequestOptions({
     headers: new Headers({
       "Content-Type": 'application/json',
       "Accept": 'application/json'

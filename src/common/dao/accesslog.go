@@ -215,24 +215,6 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 	return logs, nil
 }
 
-// GetAccessLogCreator ...
-func GetAccessLogCreator(repoName string) (string, error) {
-	o := GetOrmer()
-	sql := "select * from user where user_id = (select user_id from access_log where operation = 'push' and repo_name = ? order by op_time desc limit 1)"
-
-	var u []models.User
-	n, err := o.Raw(sql, repoName).QueryRows(&u)
-
-	if err != nil {
-		return "", err
-	}
-	if n == 0 {
-		return "", nil
-	}
-
-	return u[0].Username, nil
-}
-
 // CountPull ...
 func CountPull(repoName string) (int64, error) {
 	o := GetOrmer()

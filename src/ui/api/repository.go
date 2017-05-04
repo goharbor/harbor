@@ -45,9 +45,8 @@ type RepositoryAPI struct {
 }
 
 type repoResp struct {
-	ID           string    `json:"id"`
+	ID           int64     `json:"id"`
 	Name         string    `json:"name"`
-	OwnerID      int64     `json:"owner_id"`
 	ProjectID    int64     `json:"project_id"`
 	Description  string    `json:"description"`
 	PullCount    int64     `json:"pull_count"`
@@ -147,7 +146,6 @@ func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
 		repo := &repoResp{
 			ID:           repository.RepositoryID,
 			Name:         repository.Name,
-			OwnerID:      repository.OwnerID,
 			ProjectID:    repository.ProjectID,
 			Description:  repository.Description,
 			PullCount:    repository.PullCount,

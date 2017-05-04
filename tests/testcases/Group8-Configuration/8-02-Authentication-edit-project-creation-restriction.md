@@ -14,11 +14,15 @@ User guide
 
 # Test Steps:
 
-TBD
+1. Login UI as admin user.  
+2. In configuration page, change Project Creation Restriction from everyone to admin only.  
+3. Logout admin user.  
+4. Login as non-admin user.  
+5. Try to add a project.  
 
 # Expected Outcome:
 
-TBD
+* In step5, non-admin user will not see the add project button.
 
 # Possible Problems:
 None
