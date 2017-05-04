@@ -24,7 +24,10 @@ import (
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/projectmanager/db"
 )
 
 const (
@@ -33,10 +36,15 @@ const (
 )
 
 var (
+	// SecretStore manages secrets
+	SecretStore *secret.Store
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
-	mg                *comcfg.Manager
-	keyProvider       comcfg.KeyProvider
+	// DBProjectManager is the project manager based on database,
+	// it is initialized only the deploy mode is standalone
+	DBProjectManager projectmanager.ProjectManager
+	mg               *comcfg.Manager
+	keyProvider      comcfg.KeyProvider
 )
 
 // Init configurations
@@ -62,6 +70,12 @@ func Init() error {
 		return err
 	}
 
+	// init secret store
+	initSecretStore()
+
+	// init project manager based on database
+	initDBProjectManager()
+
 	return nil
 }
 
@@ -73,6 +87,20 @@ func initKeyProvider() {
 	log.Infof("key path: %s", path)
 
 	keyProvider = comcfg.NewFileKeyProvider(path)
+}
+
+func initSecretStore() {
+	m := map[string]string{}
+	m[secret.JobserviceUser] = JobserviceSecret()
+	SecretStore = secret.NewStore(m)
+}
+
+func initDBProjectManager() {
+	if len(DeployMode()) == 0 ||
+		DeployMode() == common.DeployModeStandAlone {
+		log.Info("initializing the project manager based on database...")
+		DBProjectManager = &db.ProjectManager{}
+	}
 }
 
 // Load configurations
@@ -271,6 +299,7 @@ func UISecret() string {
 
 // JobserviceSecret returns a secret to mark Jobservice when communicate with
 // other component
+// TODO replace it with method of SecretStore
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
@@ -302,4 +331,10 @@ func AdmiralEndpoint() string {
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
+}
+
+// DeployMode returns the deploy mode
+// TODO read from adminserver
+func DeployMode() string {
+	return common.DeployModeStandAlone
 }

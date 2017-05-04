@@ -21,11 +21,11 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// PM implements pm.PM interface based on database
-type PM struct{}
+// ProjectManager implements pm.PM interface based on database
+type ProjectManager struct{}
 
 // IsPublic returns whether the project is public or not
-func (p *PM) IsPublic(projectIDOrName interface{}) bool {
+func (p *ProjectManager) IsPublic(projectIDOrName interface{}) bool {
 	var project *models.Project
 	var err error
 	switch projectIDOrName.(type) {
@@ -53,7 +53,7 @@ func (p *PM) IsPublic(projectIDOrName interface{}) bool {
 }
 
 // GetRoles return a role list which contains the user's roles to the project
-func (p *PM) GetRoles(username string, projectIDOrName interface{}) []int {
+func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) []int {
 	roles := []int{}
 
 	user, err := dao.GetUser(models.User{

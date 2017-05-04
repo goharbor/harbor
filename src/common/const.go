@@ -29,6 +29,9 @@ const (
 	RoleDeveloper    = 3
 	RoleGuest        = 4
 
+	DeployModeStandAlone  = "standalone"
+	DeployModeIntegration = "integration"
+
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
 	DatabaseType               = "database_type"

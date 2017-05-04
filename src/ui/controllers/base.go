@@ -71,6 +71,7 @@ func (cc *CommonController) Login() {
 
 	cc.SetSession("userId", user.UserID)
 	cc.SetSession("username", user.Username)
+	cc.SetSession("isSysAdmin", user.HasAdminRole == 1)
 }
 
 // LogOut Habor UI
