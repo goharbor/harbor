@@ -76,7 +76,15 @@ func (n *NotificationHandler) Post() {
 					return
 				}
 				log.Debugf("Add repository %s into DB.", repository)
-				repoRecord := models.RepoRecord{Name: repository, OwnerName: user, ProjectName: project}
+				pro, err := dao.GetProjectByName(project)
+				if err != nil {
+					log.Errorf("failed to get project %s: %v", project, err)
+					return
+				}
+				repoRecord := models.RepoRecord{
+					Name:      repository,
+					ProjectID: pro.ProjectID,
+				}
 				if err := dao.AddRepository(repoRecord); err != nil {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}

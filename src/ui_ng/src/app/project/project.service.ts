@@ -42,8 +42,10 @@ export class ProjectService {
 
   listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<any>{    
     let params = new URLSearchParams();
-    params.set('page', page + '');
-    params.set('page_size', pageSize + '');
+    if(page && pageSize) {
+      params.set('page', page + '');
+      params.set('page_size', pageSize + '');
+    }
     return this.http
                .get(`/api/projects?project_name=${name}&is_public=${isPublic}`, {search: params})
                .map(response=>response)

@@ -28,19 +28,20 @@ const deBounceTime = 500; //ms
 
 @Component({
     selector: 'global-search',
-    templateUrl: "global-search.component.html"
+    templateUrl: "global-search.component.html",
+    styleUrls: ["search.component.css"]
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     //Keep search term as Subject
-    private searchTerms = new Subject<string>();
+    searchTerms = new Subject<string>();
 
     //Keep subscription for future use
-    private searchSub: Subscription;
-    private closeSub: Subscription;
+    searchSub: Subscription;
+    closeSub: Subscription;
 
     //To indicate if the result panel is opened
-    private isResPanelOpened: boolean = false;
-    private searchTerm: string = "";
+    isResPanelOpened: boolean = false;
+    searchTerm: string = "";
 
     //Placeholder text
     placeholderText: string = "GLOBAL_SEARCH.PLACEHOLDER";
@@ -62,7 +63,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
             this.searchTerm = "";
         });
 
-        if(this.appConfigService.isIntegrationMode()){
+        if (this.appConfigService.isIntegrationMode()) {
             this.placeholderText = "GLOBAL_SEARCH.PLACEHOLDER_VIC";
         }
     }

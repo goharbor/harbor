@@ -20,7 +20,7 @@ import (
 
 // User holds the details of a user.
 type User struct {
-	UserID   int    `orm:"pk;column(user_id)" json:"user_id"`
+	UserID   int    `orm:"pk;auto;column(user_id)" json:"user_id"`
 	Username string `orm:"column(username)" json:"username"`
 	Email    string `orm:"column(email)" json:"email"`
 	Password string `orm:"column(password)" json:"password"`

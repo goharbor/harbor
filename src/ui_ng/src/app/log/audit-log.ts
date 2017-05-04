@@ -42,4 +42,6 @@ export class AuditLog {
   keywords: string;
   page: number;
   page_size: number;
+  fromTime: string;
+  toTime: string;
 }

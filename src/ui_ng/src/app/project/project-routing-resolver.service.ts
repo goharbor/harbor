@@ -29,7 +29,6 @@ export class ProjectRoutingResolver implements Resolve<Project>{
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<Project> {
     let projectId = route.params['id'];  
-    console.log('Project resolver, projectID:' + projectId);
     return this.projectService
                .getProject(projectId)
                .toPromise()

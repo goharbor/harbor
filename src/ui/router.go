@@ -107,6 +107,8 @@ func initRouters() {
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
 
+	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
+
 }

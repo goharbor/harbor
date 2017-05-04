@@ -29,7 +29,7 @@ import { Response } from '@angular/http';
 
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../shared/shared.const';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -47,7 +47,6 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
 })
 export class ProjectComponent implements OnInit, OnDestroy {
 
-  selected = [];
   changedProjects: Project[];
   projectTypes = ProjectTypes;
 
@@ -63,12 +62,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   projectName: string;
   isPublic: number;
-
-  page: number = 1;
-  pageSize: number = 15;
-
-  totalPage: number;
-  totalRecordCount: number;
 
   constructor(
     private projectService: ProjectService,
@@ -129,15 +122,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   retrieve(state?: State): void {
-    if (state) {
-      this.page = state.page.to + 1;
-    }
     this.projectService
-      .listProjects(this.projectName, this.isPublic, this.page, this.pageSize)
+      .listProjects(this.projectName, this.isPublic)
       .subscribe(
       response => {
-        this.totalRecordCount = response.headers.get('x-total-count');
-        this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
         this.changedProjects = response.json();
       },
       error => this.messageHandlerService.handleError(error)
@@ -190,7 +178,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
       'PROJECT.DELETION_SUMMARY',
       p.name,
       p.project_id,
-      ConfirmationTargets.PROJECT
+      ConfirmationTargets.PROJECT,
+      ConfirmationButtons.DELETE_CANCEL
     );
     this.deletionDialogService.openComfirmDialog(deletionMessage);
   }

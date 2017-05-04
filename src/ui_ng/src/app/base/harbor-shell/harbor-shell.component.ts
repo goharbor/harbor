@@ -39,23 +39,23 @@ import { CommonRoutes } from '../../shared/shared.const';
 export class HarborShellComponent implements OnInit, OnDestroy {
 
     @ViewChild(AccountSettingsModalComponent)
-    private accountSettingsModal: AccountSettingsModalComponent;
+    accountSettingsModal: AccountSettingsModalComponent;
 
     @ViewChild(PasswordSettingComponent)
-    private pwdSetting: PasswordSettingComponent;
+    pwdSetting: PasswordSettingComponent;
 
     @ViewChild(NavigatorComponent)
-    private navigator: NavigatorComponent;
+    navigator: NavigatorComponent;
 
     @ViewChild(AboutDialogComponent)
-    private aboutDialog: AboutDialogComponent;
+    aboutDialog: AboutDialogComponent;
 
     //To indicator whwther or not the search results page is displayed
     //We need to use this property to do some overriding work
-    private isSearchResultsOpened: boolean = false;
+    isSearchResultsOpened: boolean = false;
 
-    private searchSub: Subscription;
-    private searchCloseSub: Subscription;
+    searchSub: Subscription;
+    searchCloseSub: Subscription;
 
     constructor(
         private route: ActivatedRoute,

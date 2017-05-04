@@ -17,7 +17,7 @@ import { Subject } from 'rxjs/Subject';
 @Injectable()
 export class StatisticHandler {
 
-  private refreshSource = new Subject<boolean>();
+  refreshSource = new Subject<boolean>();
 
   refreshChan$ = this.refreshSource.asObservable();
 

@@ -140,6 +140,10 @@ func TestGenerateRandomString(t *testing.T) {
 	if len(str) != 32 {
 		t.Errorf("unexpected length: %d != %d", len(str), 32)
 	}
+	str2 := GenerateRandomString()
+	if str2 == str {
+		t.Errorf("Two identical random strings in a row: %s", str)
+	}
 }
 
 func TestParseLink(t *testing.T) {

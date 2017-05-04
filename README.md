@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
 [![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=dev)](https://coveralls.io/github/vmware/harbor?branch=dev)
 
+**Note**: The `master` branch may be in an *unstable or even broken state* during development.
+Please use [releases] instead of the `master` branch in order to get stable binaries.
+
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
 Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
