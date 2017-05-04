@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package project
+package pms
 
 // PMS is the project mamagement service which abstracts
 // the operations related to projects
 type PMS interface {
+	IsPublic(projectIDOrName interface{}) bool
+	GetRoles(username string, projectIDOrName interface{}) []int
 }
