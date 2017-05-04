@@ -4,6 +4,7 @@
         "rootDir": ".",
         "declaration": true,
         "stripInternal": true,
+        "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "strictNullChecks": true,
         "noImplicitAny": true,
@@ -11,6 +12,10 @@
         "moduleResolution": "node",
         "paths": {
             "@angular/core": ["node_modules/@angular/core"],
+            "@angular/common": ["node_modules/@angular/common"],
+            "@angular/forms": ["node_modules/@angular/forms"],
+            "@angular/http": ["node_modules/@angular/http"],
+            "clarity-angular": ["node_modules/clarity-angular"],
             "rxjs/*": ["node_modules/rxjs/*"]
         },
         "outDir": "dist",
@@ -41,6 +46,7 @@
         "index.ts"
     ],
     "angularCompilerOptions": {
+        "genDir": "dist",
         "strictMetadataEmit": true
     }
 }

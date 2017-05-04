@@ -9,9 +9,9 @@
         "test:once": "karma start karma.conf.js --single-run",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
-        "cleanup": "rimraf dist/bundles dist/src dist/index.d.ts dist/index.metadata.json dist/index.js dist/index.js.map dist/LICENSE dist/AUTHORS",
+        "cleanup": "rimraf dist/bundles dist/src dist/index.d.ts dist/index.ngsummary.json dist/index.metadata.json dist/index.js dist/index.js.map dist/LICENSE dist/AUTHORS",
         "copy": "copyfiles -f LICENSE AUTHORS pkg/package.json dist",
-        "transpile": "ngc",
+        "transpile": "ngc -p tsconfig.json",
         "package": "rollup -c",
         "minify": "uglifyjs dist/bundles/harborui.umd.js --screw-ie8 --compress --mangle --comments --output dist/bundles/harborui.umd.min.js",
         "build": "npm run cleanup && npm run transpile && npm run package && npm run minify && npm run copy"
@@ -36,7 +36,10 @@
         "rxjs": "^5.0.1",
         "ts-helpers": "^1.1.1",
         "zone.js": "^0.8.4",
-        "mutationobserver-shim": "^0.3.2"
+        "mutationobserver-shim": "^0.3.2",
+        "@ngx-translate/core": "^6.0.0",
+        "@ngx-translate/http-loader": "0.0.3",
+        "ngx-cookie": "^1.0.0"
     },
     "devDependencies": {
         "@angular/cli": "^1.0.0",
