@@ -14,6 +14,9 @@
 
 package common
 
+// CtxKey defines the key type used in context.Context
+type CtxKey int
+
 // const variables
 const (
 	DBAuth              = "db_auth"
@@ -23,6 +26,8 @@ const (
 	LDAPScopeBase       = "1"
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
+
+	CtxKeyUser CtxKey = 1
 
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"

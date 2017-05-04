@@ -107,5 +107,5 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 }
 
 func init() {
-	auth.Register("ldap_auth", &Auth{})
+	auth.RegisterOld("ldap_auth", &Auth{})
 }

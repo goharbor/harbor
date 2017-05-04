@@ -11,16 +11,37 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package db
+
+package auth
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+type fakeAuthenticator struct{}
+
+func (f *fakeAuthenticator) Authenticate(context context.Context,
+	principal string, credential ...string) (context.Context, error) {
+	return nil, nil
+}
+
+type fakeAuthenticatorFactory struct{}
+
+func (f *fakeAuthenticatorFactory) Create(parameters map[string]interface{}) (
+	Authenticator, error) {
+	return &fakeAuthenticator{}, nil
+}
+
 func TestCreate(t *testing.T) {
-	factory := &databaseAuthenticatorFactory{}
-	_, err := factory.Create(nil)
+	_, err := Create("fake", nil)
+	assert.NotNil(t, err)
+
+	factory := &fakeAuthenticatorFactory{}
+	Register("fake", factory)
+
+	_, err = Create("fake", nil)
 	assert.Nil(t, err)
 }
