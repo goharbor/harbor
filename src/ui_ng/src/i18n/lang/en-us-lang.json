@@ -327,7 +327,8 @@
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
-        "COPY": "Copy"
+        "COPY": "Copy",
+        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag."
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"

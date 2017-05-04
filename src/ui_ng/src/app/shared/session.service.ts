@@ -68,12 +68,11 @@ export class SessionService {
     //Submit signin form to backend (NOT restful service)
     signIn(signInCredential: SignInCredential): Promise<any> {
         //Build the form package
-        const body = new URLSearchParams();
-        body.set('principal', signInCredential.principal);
-        body.set('password', signInCredential.password);
+        let queryParam:string = 'principal=' + encodeURIComponent(signInCredential.principal) + 
+        '&password=' + encodeURIComponent(signInCredential.password);
 
         //Trigger Http
-        return this.http.post(signInUrl, body.toString(), { headers: this.formHeaders })
+        return this.http.post(signInUrl, queryParam, { headers: this.formHeaders })
             .toPromise()
             .then(() => null)
             .catch(error => this.handleError(error));

@@ -61,7 +61,7 @@ export class RepositoryService {
                     tags.forEach(t=>{
                       for(let i = 0; i < signatures.length; i++) {
                         if(signatures[i].tag === t.tag) {
-                          t.signed = true;
+                          t.signed = 1;
                           break;
                         }
                       }
@@ -69,7 +69,7 @@ export class RepositoryService {
                     return tags;
                   })
                   .catch(error=>{
-                    return tags;
+                    return Observable.of(tags);
                   })
                })
                .catch(error=>Observable.throw(error));

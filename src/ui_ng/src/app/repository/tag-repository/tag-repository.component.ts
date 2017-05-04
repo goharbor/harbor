@@ -69,7 +69,6 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private appConfigService: AppConfigService,
     private session: SessionService,
     private ref: ChangeDetectorRef){
-
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(
       message => {
         if (message &&
@@ -118,19 +117,31 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   retrieve() {
     this.tags = [];
+    this.repositoryService
+        .listTags(this.repoName)
+        .subscribe(
+          items => this.listTags(items),
+          error => this.messageHandlerService.handleError(error));
+   
     if(this.withNotary) {
       this.repositoryService
-          .listTagsWithVerifiedSignatures(this.repoName)
+          .listNotarySignatures(this.repoName)
           .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    } else {
-      this.repositoryService
-          .listTags(this.repoName)
-          .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    }
+            signatures => {
+              this.tags.forEach((t, n)=>{
+                let signed = false;
+                for(let i = 0; i < signatures.length; i++) {
+                  if (signatures[i].tag === t.tag) {
+                    signed = true;
+                    break;
+                  }
+                }
+                this.tags[n].signed = (signed) ? 1 : 0;
+                this.ref.markForCheck();
+              });
+            },
+            error => console.error('Cannot determine the signature of this tag.'));
+      }
   }
 
   listTags(tags: Tag[]): void {
