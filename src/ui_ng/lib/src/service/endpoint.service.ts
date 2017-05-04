@@ -23,7 +23,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Endpoint[];
+    abstract getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[];
 
     /**
      * Get the specified endpoint.
@@ -34,7 +34,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract getEndpoint(endpointId: number | string): Observable<Endpoint> | Endpoint;
+    abstract getEndpoint(endpointId: number | string): Observable<Endpoint> | Promise<Endpoint> | Endpoint;
 
     /**
      * Create new endpoint.
@@ -45,7 +45,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract createEndpoint(endpoint: Endpoint): Observable<any> | any;
+    abstract createEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any;
 
     /**
      * Update the specified endpoint.
@@ -57,7 +57,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | any;
+    abstract updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | Promise<any> | any;
 
     /**
      * Delete the specified endpoint.
@@ -68,7 +68,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract deleteEndpoint(endpointId: number | string): Observable<any> | any;
+    abstract deleteEndpoint(endpointId: number | string): Observable<any> | Promise<any> | any;
 
     /**
      * Ping the specified endpoint.
@@ -79,7 +79,7 @@ export abstract class EndpointService {
      * 
      * @memberOf EndpointService
      */
-    abstract pingEndpoint(endpoint: Endpoint): Observable<any> | any;
+    abstract pingEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any;
 }
 
 /**
@@ -91,27 +91,27 @@ export abstract class EndpointService {
  */
 @Injectable()
 export class EndpointDefaultService extends EndpointService {
-    public getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Endpoint[] {
+    public getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[] {
         return Observable.of([]);
     }
 
-    public getEndpoint(endpointId: number | string): Observable<Endpoint> | Endpoint {
+    public getEndpoint(endpointId: number | string): Observable<Endpoint> | Promise<Endpoint> | Endpoint {
         return Observable.of({});
     }
 
-    public createEndpoint(endpoint: Endpoint): Observable<any> | any {
+    public createEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
         return Observable.of({});
     }
 
-    public updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | any {
+    public updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | Promise<any> | any {
         return Observable.of({});
     }
 
-    public deleteEndpoint(endpointId: number | string): Observable<any> | any {
+    public deleteEndpoint(endpointId: number | string): Observable<any> | Promise<any> | any {
         return Observable.of({});
     }
 
-    public pingEndpoint(endpoint: Endpoint): Observable<any> | any {
+    public pingEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
         return Observable.of({});
     }
 }

@@ -1,8 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
 import { AccessLog } from './interface';
-import { Injectable } from "@angular/core";
+import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import { Http, URLSearchParams } from '@angular/http';
+import { HTTP_JSON_OPTIONS } from '../utils';
 
 /**
  * Define service methods to handle the access log related things.
@@ -25,7 +28,7 @@ export abstract class AccessLogService {
      * 
      * @memberOf AccessLogService
      */
-    abstract getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | AccessLog[];
+    abstract getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[];
 
     /**
      * Get the recent logs.
@@ -36,7 +39,7 @@ export abstract class AccessLogService {
      * 
      * @memberOf AccessLogService
      */
-    abstract getRecentLogs(lines: number): Observable<AccessLog[]> | AccessLog[];
+    abstract getRecentLogs(lines: number): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[];
 }
 
 /**
@@ -48,11 +51,24 @@ export abstract class AccessLogService {
  */
 @Injectable()
 export class AccessLogDefaultService extends AccessLogService {
-    public getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | AccessLog[] {
+    constructor(
+        private http: Http,
+        @Inject(SERVICE_CONFIG) private config: IServiceConfig) {
+        super();
+    }
+
+    public getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[] {
         return Observable.of([]);
     }
 
-    public getRecentLogs(lines: number): Observable<AccessLog[]> | AccessLog[] {
-        return Observable.of([]);
+    public getRecentLogs(lines: number): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[] {
+        let url: string = this.config.logBaseEndpoint ? this.config.logBaseEndpoint : "";
+        if (url === '') {
+            url = '/api/logs';
+        }
+
+        return this.http.get(url+`?lines=${lines}`, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response.json() as AccessLog[])
+            .catch(error => Promise.reject(error));
     }
 }

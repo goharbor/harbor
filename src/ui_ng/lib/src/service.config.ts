@@ -3,7 +3,7 @@ import { OpaqueToken } from '@angular/core';
 export let SERVICE_CONFIG = new OpaqueToken("service.config");
 
 export interface IServiceConfig {
-    systemInfoEndpoint: string;
+    systemInfoEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the repositories of registry and/or tags of repository.
@@ -17,7 +17,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    repositoryBaseEndpoint: string;
+    repositoryBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the recent access logs.
@@ -25,7 +25,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    logBaseEndpoint: string;
+    logBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the registry targets.
@@ -38,7 +38,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    targetBaseEndpoint: string;
+    targetBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the replication rules.
@@ -50,7 +50,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    replicationRuleEndpoint: string;
+    replicationRuleEndpoint?: string;
 
 
     /**
@@ -60,5 +60,29 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    replicationJobEndpoint: string;
+    replicationJobEndpoint?: string;
+
+    /**
+     * The cookie key used to store the current used language preference.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    langCookieKey?: string,
+
+    /**
+     * Declare what languages are supported.
+     * 
+     * @type {string[]}
+     * @memberOf IServiceConfig
+     */
+    supportedLangs?: string[],
+
+    /**
+     * To determine whether to not enable the i18 multiple languages supporting.
+     * 
+     * @type {boolean}
+     * @memberOf IServiceConfig
+     */
+    enablei18Support?: boolean
 }

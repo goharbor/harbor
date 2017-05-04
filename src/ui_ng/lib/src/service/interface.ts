@@ -60,4 +60,15 @@ export interface ReplicationJob { }
  * @export
  * @interface AccessLog
  */
-export interface AccessLog { }
+export interface AccessLog {
+    log_id: number,
+    project_id: number,
+    repo_name: string,
+    repo_tag: string,
+    operation: string,
+    op_time: string | Date,
+    user_id: number,
+    username: string,
+    keywords?: string, //NOT used now
+    guid?: string //NOT used now
+}
