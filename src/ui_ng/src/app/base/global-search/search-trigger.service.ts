@@ -18,9 +18,9 @@ import { AlertType } from '../../shared/shared.const';
 @Injectable()
 export class SearchTriggerService {
 
-  private searchTriggerSource = new Subject<string>();
-  private searchCloseSource = new Subject<boolean>();
-  private searchClearSource = new Subject<boolean>();
+  searchTriggerSource = new Subject<string>();
+  searchCloseSource = new Subject<boolean>();
+  searchClearSource = new Subject<boolean>();
 
   searchTriggerChan$ = this.searchTriggerSource.asObservable();
   searchCloseChan$ = this.searchCloseSource.asObservable();
@@ -37,7 +37,7 @@ export class SearchTriggerService {
   }
 
   //Clear search term
-  clear(event): void {
+  clear(event: any): void {
     this.searchClearSource.next(event);
   }
 

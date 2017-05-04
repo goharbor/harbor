@@ -25,7 +25,7 @@
             <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
-            <clr-dg-row *ngFor="let l of recentLogs">
+            <clr-dg-row *clrDgItems="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>

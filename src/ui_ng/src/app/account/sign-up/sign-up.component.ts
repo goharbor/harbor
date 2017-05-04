@@ -30,9 +30,9 @@ import { Modal } from 'clarity-angular';
 export class SignUpComponent {
     opened: boolean = false;
     staticBackdrop: boolean = true;
-    private error: any;
-    private onGoing: boolean = false;
-    private formValueChanged: boolean = false;
+    error: any;
+    onGoing: boolean = false;
+    formValueChanged: boolean = false;
 
     @Output() userCreation = new EventEmitter<User>();
 
@@ -41,15 +41,15 @@ export class SignUpComponent {
         private userService: UserService) { }
 
     @ViewChild(NewUserFormComponent)
-    private newUserForm: NewUserFormComponent;
+    newUserForm: NewUserFormComponent;
 
     @ViewChild(InlineAlertComponent)
-    private inlienAlert: InlineAlertComponent;
+    inlienAlert: InlineAlertComponent;
 
     @ViewChild(Modal)
-    private modal: Modal;
+    modal: Modal;
 
-    private getNewUser(): User {
+    getNewUser(): User {
         return this.newUserForm.getData();
     }
 
@@ -97,7 +97,7 @@ export class SignUpComponent {
         }
     }
 
-    confirmCancel(): void {
+    confirmCancel($event: any): void {
         this.opened = false;
         this.modal.close();
     }

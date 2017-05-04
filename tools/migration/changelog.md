@@ -37,3 +37,7 @@ Changelog for harbor database schema
   - alter column `name` on table `project`: varchar(30)->varchar(41)
   - create table `repository`
   - alter column `password` on table `replication_target`: varchar(40)->varchar(128)
+
+## 1.2.0
+
+  - delete column `owner_id` from table `repository`

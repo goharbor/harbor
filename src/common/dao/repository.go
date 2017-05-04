@@ -24,13 +24,15 @@ import (
 
 // AddRepository adds a repo to the database.
 func AddRepository(repo models.RepoRecord) error {
-	o := GetOrmer()
-	sql := "insert into repository (owner_id, project_id, name, description, pull_count, star_count, creation_time, update_time) " +
-		"select (select user_id as owner_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, ?, NULL "
+	if repo.ProjectID == 0 {
+		return fmt.Errorf("invalid project ID: %d", repo.ProjectID)
+	}
 
-	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description,
-		repo.PullCount, repo.StarCount, time.Now()).Exec()
+	o := GetOrmer()
+	now := time.Now()
+	repo.CreationTime = now
+	repo.UpdateTime = now
+	_, err := o.Insert(&repo)
 	return err
 }
 
@@ -104,7 +106,7 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 //GetTopRepos returns the most popular repositories
 func GetTopRepos(userID int, count int) ([]*models.RepoRecord, error) {
 	sql :=
-		`select r.repository_id, r.name, r.owner_id, 
+		`select r.repository_id, r.name,
 			r.project_id, r.description, r.pull_count, 
 			r.star_count, r.creation_time, r.update_time
 		from repository r

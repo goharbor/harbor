@@ -29,10 +29,10 @@ const volumesEndpoint = "/api/systeminfo/volumes";
  */
 @Injectable()
 export class StatisticsService {
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
-    private options = new RequestOptions({
+    options = new RequestOptions({
         headers: this.headers
     });
 

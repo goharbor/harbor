@@ -24,15 +24,15 @@ import { Subscription } from "rxjs";
     styleUrls: ['inline-alert.component.css']
 })
 export class InlineAlertComponent {
-    private inlineAlertType: string = 'alert-danger';
-    private inlineAlertClosable: boolean = false;
-    private alertClose: boolean = true;
-    private displayedText: string = "";
-    private showCancelAction: boolean = false;
-    private useAppLevelStyle: boolean = false;
-    private timer: Subscription = null;
-    private count: number = 0;
-    private blinking: boolean = false;
+    inlineAlertType: string = 'alert-danger';
+    inlineAlertClosable: boolean = false;
+    alertClose: boolean = true;
+    displayedText: string = "";
+    showCancelAction: boolean = false;
+    useAppLevelStyle: boolean = false;
+    timer: Subscription = null;
+    count: number = 0;
+    blinking: boolean = false;
 
     @Output() confirmEvt = new EventEmitter<boolean>();
 
@@ -90,7 +90,7 @@ export class InlineAlertComponent {
     public blink() {
     }
 
-    private confirmCancel(): void {
+    confirmCancel(): void {
         this.confirmEvt.emit(true);
     }
 }

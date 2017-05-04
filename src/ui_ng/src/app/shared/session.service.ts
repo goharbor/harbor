@@ -44,18 +44,18 @@ export class SessionService {
 
     projectMembers: Member[];
 
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
 
-    private formHeaders = new Headers({
+    formHeaders = new Headers({
         "Content-Type": 'application/x-www-form-urlencoded'
     });
 
     constructor(private http: Http) { }
 
     //Handle the related exceptions
-    private handleError(error: any): Promise<any> {
+    handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
 

@@ -27,9 +27,8 @@ var (
 	project    = "library"
 	name       = "library/repository-test"
 	repository = &models.RepoRecord{
-		Name:        name,
-		OwnerName:   "admin",
-		ProjectName: project,
+		Name:      name,
+		ProjectID: 1,
 	}
 )
 
@@ -214,9 +213,8 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 
 	repository1 := &models.RepoRecord{
-		Name:        fmt.Sprintf("%v/repository1", project1.Name),
-		OwnerName:   admin.Username,
-		ProjectName: project1.Name,
+		Name:      fmt.Sprintf("%v/repository1", project1.Name),
+		ProjectID: project1.ProjectID,
 	}
 	err = AddRepository(*repository1)
 	require.NoError(err)
@@ -225,9 +223,8 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 
 	repository2 := &models.RepoRecord{
-		Name:        fmt.Sprintf("%v/repository2", project1.Name),
-		OwnerName:   admin.Username,
-		ProjectName: project1.Name,
+		Name:      fmt.Sprintf("%v/repository2", project1.Name),
+		ProjectID: project1.ProjectID,
 	}
 	err = AddRepository(*repository2)
 	require.NoError(err)
@@ -237,9 +234,8 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 
 	repository3 := &models.RepoRecord{
-		Name:        fmt.Sprintf("%v/repository3", project2.Name),
-		OwnerName:   admin.Username,
-		ProjectName: project2.Name,
+		Name:      fmt.Sprintf("%v/repository3", project2.Name),
+		ProjectID: project2.ProjectID,
 	}
 	err = AddRepository(*repository3)
 	require.NoError(err)
@@ -259,9 +255,8 @@ func TestGetTopRepos(t *testing.T) {
 	deletedPublicProject.ProjectID, err = AddProject(deletedPublicProject)
 	require.NoError(err)
 	deletedPublicRepository1 := &models.RepoRecord{
-		Name:        fmt.Sprintf("%v/repository1", deletedPublicProject.Name),
-		OwnerName:   admin.Username,
-		ProjectName: deletedPublicProject.Name,
+		Name:      fmt.Sprintf("%v/repository1", deletedPublicProject.Name),
+		ProjectID: deletedPublicProject.ProjectID,
 	}
 	err = AddRepository(*deletedPublicRepository1)
 	require.NoError(err)
@@ -303,9 +298,8 @@ func TestGetTotalOfRepositoriesByProject(t *testing.T) {
 	}
 
 	if err := addRepository(&models.RepoRecord{
-		Name:        repoName,
-		OwnerName:   "admin",
-		ProjectName: "library",
+		Name:      repoName,
+		ProjectID: projectID,
 	}); err != nil {
 		t.Errorf("failed to add repository %s: %v", repoName, err)
 		return
@@ -333,9 +327,8 @@ func TestGetRepositoriesByProject(t *testing.T) {
 	repoName := "library/repository"
 
 	if err := addRepository(&models.RepoRecord{
-		Name:        repoName,
-		OwnerName:   "admin",
-		ProjectName: "library",
+		Name:      repoName,
+		ProjectID: projectID,
 	}); err != nil {
 		t.Errorf("failed to add repository %s: %v", repoName, err)
 		return

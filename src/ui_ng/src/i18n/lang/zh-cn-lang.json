@@ -197,7 +197,8 @@
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
         "ITEMS": "条记录",
-        "FILTER_PLACEHOLDER": "过滤日志"
+        "FILTER_PLACEHOLDER": "过滤日志",
+        "INVALID_DATE": "无效日期。"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "复制规则",
@@ -265,7 +266,8 @@
         "CANNOT_EDIT": "当复制规则启用时无法修改。",
         "POLICY_ALREADY_EXISTS": "规则已存在。",
         "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务或规则未停用。",
-        "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。"
+        "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
+        "INVALID_DATE": "无效日期。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
