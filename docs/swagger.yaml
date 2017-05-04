@@ -1781,6 +1781,9 @@ definitions:
       log_id:
         type: integer
         description: The ID of the log entry.
+      username:
+        type: string
+        description: Username of the user in this log entry.
       repo_name:
         type: string
         description: Name of the repository in this log entry.
@@ -2221,9 +2224,6 @@ definitions:
       name:
         type: string
         description: The name of repository.
-      owner_id:
-        type: integer
-        description: The owner ID of repository.
       project_id:
         type: integer
         description: The project ID of repository.
