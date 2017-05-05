@@ -31,7 +31,7 @@ export default {
         '@angular/platform-browser': 'ng.platformBrowser',
         'rxjs': 'rxjs',
         'rxjs/Subject': 'rxjs.Subject',
-        'rxjs/Observable': 'rxjs/Observable',
+        'rxjs/Observable': 'Rx',
         'rxjs/ReplaySubject': 'Rx',
         'rxjs/add/operator/map': 'Rx.Observable.prototype',
         'rxjs/add/operator/mergeMap': 'Rx.Observable.prototype',

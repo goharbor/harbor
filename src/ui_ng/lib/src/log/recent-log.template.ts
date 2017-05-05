@@ -35,7 +35,7 @@ export const LOG_TEMPLATE: string = `
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
-                <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
+                <clr-dg-cell>{{l.op_time}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{ (recentLogs ? recentLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>
