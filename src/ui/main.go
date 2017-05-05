@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
+	_ "github.com/vmware/harbor/src/ui/auth/keystone"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
 )
