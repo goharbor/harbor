@@ -35,6 +35,12 @@ type LDAPSetting struct {
 	Scope     string
 }
 
+// KeySetting wraps the setting of an LDAP server
+type KeyStoneSetting struct {
+	URL        string
+	DomainName string
+}
+
 type uiParser struct{}
 
 // Parse parses the auth settings url settings and other configuration consumed by code under src/ui
@@ -52,6 +58,18 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 		}
 		config["ldap"] = setting
 	}
+
+	if mode == "keystone_auth" {
+		setting := KeyStoneSetting{
+			URL:        raw["KEYSTONE_URL"],
+			DomainName: raw["DOMAIN_NAME"],
+		}
+		if setting.DomainName == "" {
+			setting.DomainName = "default"
+		}
+		config["keystone"] = setting
+	}
+
 	config["auth_mode"] = mode
 	var tokenExpiration = 30 //minutes
 	if len(raw["TOKEN_EXPIRATION"]) > 0 {
@@ -64,6 +82,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 			tokenExpiration = i
 		}
 	}
+
 	config["token_exp"] = tokenExpiration
 	config["admin_password"] = raw["HARBOR_ADMIN_PASSWORD"]
 	config["ext_reg_url"] = raw["EXT_REG_URL"]
@@ -83,7 +102,7 @@ func (up *uiParser) Parse(raw map[string]string, config map[string]interface{}) 
 var uiConfig *commonConfig.Config
 
 func init() {
-	uiKeys := []string{"AUTH_MODE", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
+	uiKeys := []string{"AUTH_MODE", "KEYSTONE_URL", "LDAP_URL", "LDAP_BASE_DN", "LDAP_SEARCH_DN", "LDAP_SEARCH_PWD", "LDAP_UID", "LDAP_FILTER", "LDAP_SCOPE", "TOKEN_EXPIRATION", "HARBOR_ADMIN_PASSWORD", "EXT_REG_URL", "UI_SECRET", "SECRET_KEY", "SELF_REGISTRATION", "PROJECT_CREATION_RESTRICTION", "REGISTRY_URL", "JOB_SERVICE_URL"}
 	uiConfig = &commonConfig.Config{
 		Config: make(map[string]interface{}),
 		Loader: &commonConfig.EnvConfigLoader{Keys: uiKeys},
@@ -107,6 +126,11 @@ func AuthMode() string {
 // LDAP returns the setting of ldap server
 func LDAP() LDAPSetting {
 	return uiConfig.Config["ldap"].(LDAPSetting)
+}
+
+// KeyStone returns the setting of KeyStone server
+func KeyStone() KeyStoneSetting {
+	return uiConfig.Config["keystone"].(KeyStoneSetting)
 }
 
 // TokenExpiration returns the token expiration time (in minute)
