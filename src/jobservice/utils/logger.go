@@ -38,7 +38,7 @@ func NewLogger(jobID int64) (*log.Logger, error) {
 			log.Errorf("Failed to create directory for log file %s, the error: %v", logFile, err)
 		}
 	}
-	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
 		log.Errorf("Failed to open log file %s, the log of job %d will be printed to standard output, the error: %v", logFile, jobID, err)
 		f = os.Stdout
