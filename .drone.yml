@@ -55,5 +55,5 @@ notify:
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
-      branch: [ master, drone, releases/*, refs/tags/* ]
-      failure: false
+      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
+      failure: true
