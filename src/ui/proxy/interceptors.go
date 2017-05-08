@@ -24,7 +24,8 @@ const (
 	tokenUsername = "admin"
 )
 
-var notaryEndpoint = config.InternalNotaryEndpoint()
+// NotaryEndpoint,  exported for testing.
+var NotaryEndpoint = config.InternalNotaryEndpoint()
 
 // EnvChecker is the instance of envPolicyChecker
 var EnvChecker = envPolicyChecker{}
@@ -159,7 +160,7 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 }
 
 func matchNotaryDigest(img imageInfo, digest string) (bool, error) {
-	targets, err := notary.GetInternalTargets(notaryEndpoint, tokenUsername, img.repository)
+	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err
 	}
