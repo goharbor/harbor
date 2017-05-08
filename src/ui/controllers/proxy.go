@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"strings"
-
 	"github.com/astaxie/beego"
 	"github.com/vmware/harbor/src/ui/proxy"
 )
@@ -16,9 +14,7 @@ type RegistryProxy struct {
 func (p *RegistryProxy) Handle() {
 	req := p.Ctx.Request
 	rw := p.Ctx.ResponseWriter
-	req.URL.Path = strings.TrimPrefix(req.URL.Path, proxy.RegistryProxyPrefix)
-	//TODO interceptors
-	proxy.Proxy.ServeHTTP(rw, req)
+	proxy.Handle(rw, req)
 }
 
 // Render ...

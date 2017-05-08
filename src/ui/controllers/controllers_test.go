@@ -115,4 +115,14 @@ func TestMain(t *testing.T) {
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "ping v2 should get a 200 response")
+
+	r, _ = http.NewRequest("GET", "/registryproxy/v2/noproject/manifests/1.0", nil)
+	w = httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	assert.Equal(int(400), w.Code, "GET v2/noproject/manifests/1.0 should get a 400 response")
+
+	r, _ = http.NewRequest("GET", "/registryproxy/v2/project/notexist/manifests/1.0", nil)
+	w = httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	assert.Equal(int(404), w.Code, "GET v2/noproject/manifests/1.0 should get a 404 response")
 }

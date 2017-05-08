@@ -17,7 +17,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
+	utilstest "github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"net/http/httptest"
 	"os"
@@ -27,15 +30,39 @@ import (
 
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
+var adminServer *httptest.Server
 
 func TestMain(m *testing.M) {
 	notaryServer = notarytest.NewNotaryServer(endpoint)
 	defer notaryServer.Close()
+	var defaultConfig = map[string]interface{}{
+		common.ExtEndpoint:   "https://" + endpoint,
+		common.WithNotary:    true,
+		common.CfgExpiration: 5,
+	}
+	adminServer, err := utilstest.NewAdminserver(defaultConfig)
+	if err != nil {
+		panic(err)
+	}
+	defer adminServer.Close()
+	if err := os.Setenv("ADMIN_SERVER_URL", adminServer.URL); err != nil {
+		panic(err)
+	}
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
 	notaryCachePath = "/tmp/notary"
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
 	}
+}
+
+func TestGetInternalTargets(t *testing.T) {
+	targets, err := GetInternalTargets(notaryServer.URL, "admin", "notary-demo/busybox")
+	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
+	assert.Equal(t, 1, len(targets), "")
+	assert.Equal(t, "1.0", targets[0].Tag, "")
 }
 
 func TestGetTargets(t *testing.T) {
