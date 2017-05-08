@@ -54,6 +54,6 @@ notify:
       build https://ci.vmware.run/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status
     when:
       repo: vmware/harbor
-      event: [ push, tag ]
+      event: [ push, pull_request, tag ]
       branch: [ master, drone, releases/*, refs/tags/* ]
       failure: true
