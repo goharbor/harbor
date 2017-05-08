@@ -18,13 +18,13 @@ import (
 type contextKey string
 
 const (
-	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+(?:[a-z0-9]+(?:[._-][a-z0-9]+)*))/manifests/([\w][\w.:-]{0,127})`
+	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
 	imageInfoCtxKey    = contextKey("ImageInfo")
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "admin"
 )
 
-// NotaryEndpoint,  exported for testing.
+// NotaryEndpoint , exported for testing.
 var NotaryEndpoint = config.InternalNotaryEndpoint()
 
 // EnvChecker is the instance of envPolicyChecker
@@ -39,6 +39,7 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 	re := regexp.MustCompile(manifestURLPattern)
 	s := re.FindStringSubmatch(req.URL.Path)
 	if len(s) == 3 {
+		s[1] = strings.TrimSuffix(s[1], "/")
 		return true, s[1], s[2]
 	}
 	return false, "", ""
@@ -140,6 +141,10 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rec, req)
 		img, _ := req.Context().Value(imageInfoCtxKey).(imageInfo)
 		if getPolicyChecker().contentTrustEnabled(img.projectName) {
+			if rec.Result().StatusCode != http.StatusOK {
+				copyResp(rec, rw)
+				return
+			}
 			log.Debugf("showing digest")
 			digest := rec.Header().Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 			log.Debugf("digest: %s", digest)

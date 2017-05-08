@@ -76,6 +76,12 @@ func TestMatchPullManifest(t *testing.T) {
 	assert.True(res6, "%s %v is a request to pull manifest", req6.Method, req6.URL)
 	assert.Equal("myproject/registry", repo6)
 	assert.Equal("sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", tag6)
+
+	req7, _ := http.NewRequest("GET", "https://myregistry.com/v2/myproject/manifests/sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", nil)
+	res7, repo7, tag7 := MatchPullManifest(req7)
+	assert.True(res7, "%s %v is a request to pull manifest", req7.Method, req7.URL)
+	assert.Equal("myproject", repo7)
+	assert.Equal("sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", tag7)
 }
 
 func TestEnvPolicyChecker(t *testing.T) {
