@@ -67,4 +67,5 @@ zip -9 $outfile output.xml log.html package.list *container-logs.zip *.log
 #   rm -f $keyfile
 # fi
 #
-# exit $rc
+
+exit $rc

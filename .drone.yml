@@ -51,9 +51,9 @@ notify:
     channel: harbor-ci-results
     username: drone
     template: >
-      build https://ci.vmware.run/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status, find the logs here: https://console.cloud.google.com/m/cloudstorage/b/harbor-ci-logs/o/integration_logs_{{ build.number }}_{{ build.commit }}.zip?authuser=1
+      build https://ci.vmware.run/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status
     when:
       repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ master, drone, releases/*, refs/tags/* ]
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
       failure: true
