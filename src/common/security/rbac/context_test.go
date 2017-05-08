@@ -22,15 +22,15 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
-type fakePMS struct {
+type fakePM struct {
 	public string
 	roles  map[string][]int
 }
 
-func (f *fakePMS) IsPublic(projectIDOrName interface{}) bool {
+func (f *fakePM) IsPublic(projectIDOrName interface{}) bool {
 	return f.public == projectIDOrName.(string)
 }
-func (f *fakePMS) GetRoles(username string, projectIDOrName interface{}) []int {
+func (f *fakePM) GetRoles(username string, projectIDOrName interface{}) []int {
 	return f.roles[projectIDOrName.(string)]
 }
 
@@ -78,7 +78,7 @@ func TestIsSysAdmin(t *testing.T) {
 }
 
 func TestHasReadPerm(t *testing.T) {
-	pms := &fakePMS{
+	pm := &fakePM{
 		public: "public_project",
 		roles: map[string][]int{
 			"has_read_perm_project": []int{common.RoleGuest},
@@ -86,35 +86,35 @@ func TestHasReadPerm(t *testing.T) {
 	}
 
 	// public project, unauthenticated
-	ctx := NewSecurityContext(nil, pms)
+	ctx := NewSecurityContext(nil, pm)
 	assert.True(t, ctx.HasReadPerm("public_project"))
 
 	// private project, unauthenticated
-	ctx = NewSecurityContext(nil, pms)
+	ctx = NewSecurityContext(nil, pm)
 	assert.False(t, ctx.HasReadPerm("has_read_perm_project"))
 
 	// private project, authenticated, has no perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.False(t, ctx.HasReadPerm("has_no_perm_project"))
 
 	// private project, authenticated, has read perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasReadPerm("has_read_perm_project"))
 
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "test",
 		HasAdminRole: 1,
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasReadPerm("has_no_perm_project"))
 }
 
 func TestHasWritePerm(t *testing.T) {
-	pms := &fakePMS{
+	pm := &fakePM{
 		roles: map[string][]int{
 			"has_read_perm_project":  []int{common.RoleGuest},
 			"has_write_perm_project": []int{common.RoleGuest, common.RoleDeveloper},
@@ -122,31 +122,31 @@ func TestHasWritePerm(t *testing.T) {
 	}
 
 	// unauthenticated
-	ctx := NewSecurityContext(nil, pms)
+	ctx := NewSecurityContext(nil, pm)
 	assert.False(t, ctx.HasWritePerm("has_write_perm_project"))
 
 	// authenticated, has read perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.False(t, ctx.HasWritePerm("has_read_perm_project")) // authenticated, has read perm
 
 	// authenticated, has write perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasWritePerm("has_write_perm_project"))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "test",
 		HasAdminRole: 1,
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasReadPerm("has_no_perm_project"))
 }
 
 func TestHasAllPerm(t *testing.T) {
-	pms := &fakePMS{
+	pm := &fakePM{
 		roles: map[string][]int{
 			"has_read_perm_project":  []int{common.RoleGuest},
 			"has_write_perm_project": []int{common.RoleGuest, common.RoleDeveloper},
@@ -155,31 +155,31 @@ func TestHasAllPerm(t *testing.T) {
 	}
 
 	// unauthenticated
-	ctx := NewSecurityContext(nil, pms)
+	ctx := NewSecurityContext(nil, pm)
 	assert.False(t, ctx.HasAllPerm("has_all_perm_project"))
 
 	// authenticated, has read perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.False(t, ctx.HasAllPerm("has_read_perm_project"))
 
 	// authenticated, has write perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.False(t, ctx.HasAllPerm("has_write_perm_project"))
 
 	// authenticated, has all perms
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasAllPerm("has_all_perm_project"))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "test",
 		HasAdminRole: 1,
-	}, pms)
+	}, pm)
 	assert.True(t, ctx.HasReadPerm("has_no_perm_project"))
 }
