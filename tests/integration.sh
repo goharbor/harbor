@@ -22,21 +22,18 @@ dpkg -l > package.list
 
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 
-# if [ $DRONE_BRANCH = "master" ] && [ $DRONE_REPO = "vmware/harbor" ]; then
-#     pybot --removekeywords TAG:secret --exclude skip tests/test-cases
-# elif grep -q "\[full ci\]" <(drone build info vmware/harbor $DRONE_BUILD_NUMBER); then
-#     pybot --removekeywords TAG:secret --exclude skip tests/test-cases
-# elif (echo $buildinfo | grep -q "\[specific ci="); then
-#     buildtype=$(echo $buildinfo | grep "\[specific ci=")
-#     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
-#     pybot --removekeywords TAG:secret --suite $testsuite --suite 7-01-Regression tests/test-cases
-# else
-#     pybot --removekeywords TAG:secret --exclude skip --include regression tests/test-cases
-# fi
+if [ $DRONE_BRANCH = "master" ] && [ $DRONE_REPO = "vmware/harbor" ]; then
+    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif grep -q "\[full ci\]" <(drone build info vmware/harbor $DRONE_BUILD_NUMBER); then
+    pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
+elif (echo $buildinfo | grep -q "\[specific ci="); then
+    buildtype=$(echo $buildinfo | grep "\[specific ci=")
+    testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
+    pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
+else
+    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+fi
 
-echo TEST_USERNAME
-
-pybot --removekeywords TAG:secret --exclude skip tests/robot-cases/Group1-user-management
 rc="$?"
 
 timestamp=$(date +%s)
