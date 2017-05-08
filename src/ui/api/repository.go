@@ -587,7 +587,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	}
 	repoName := ra.GetString(":splat")
 
-	targets, err := notary.GetInternalTargets(username, repoName)
+	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(), username, repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")

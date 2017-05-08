@@ -58,7 +58,7 @@ func init() {
 }
 
 // GetInternalTargets wraps GetTargets to read config values for getting full-qualified repo from internal notary instance.
-func GetInternalTargets(username string, repo string) ([]Target, error) {
+func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]Target, error) {
 	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("Error while reading external endpoint: %v", err)
@@ -66,7 +66,7 @@ func GetInternalTargets(username string, repo string) ([]Target, error) {
 	}
 	endpoint := strings.Split(ext, "//")[1]
 	fqRepo := path.Join(endpoint, repo)
-	return GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
+	return GetTargets(notaryEndpoint, username, fqRepo)
 }
 
 // GetTargets is a help function called by API to fetch signature information of a given repository.

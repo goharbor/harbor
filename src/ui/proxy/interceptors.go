@@ -15,12 +15,16 @@ import (
 	"strings"
 )
 
+type contextKey string
+
 const (
 	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+(?:[a-z0-9]+(?:[._-][a-z0-9]+)*))/manifests/([\w][\w.:-]{0,127})`
-	imageInfoCtxKey    = "ImageInfo"
+	imageInfoCtxKey    = contextKey("ImageInfo")
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "admin"
 )
+
+var notaryEndpoint = config.InternalNotaryEndpoint()
 
 // EnvChecker is the instance of envPolicyChecker
 var EnvChecker = envPolicyChecker{}
@@ -155,7 +159,7 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 }
 
 func matchNotaryDigest(img imageInfo, digest string) (bool, error) {
-	targets, err := notary.GetInternalTargets(tokenUsername, img.repository)
+	targets, err := notary.GetInternalTargets(notaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err
 	}
