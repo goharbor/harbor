@@ -18,9 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -225,7 +223,7 @@ func (ra *RepositoryAPI) Delete() {
 	if config.WithNotary() {
 		var digest string
 		signedTags := make(map[string]struct{})
-		targets, err := getNotaryTargets(user, repoName)
+		targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(), user, repoName)
 		if err != nil {
 			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
 			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
@@ -589,24 +587,13 @@ func (ra *RepositoryAPI) GetSignatures() {
 	}
 	repoName := ra.GetString(":splat")
 
-	targets, err := getNotaryTargets(username, repoName)
+	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(), username, repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
-}
-
-func getNotaryTargets(username string, repo string) ([]notary.Target, error) {
-	ext, err := config.ExtEndpoint()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint: %v", err)
-		return nil, err
-	}
-	endpoint := strings.Split(ext, "//")[1]
-	fqRepo := path.Join(endpoint, repo)
-	return notary.GetTargets(config.InternalNotaryEndpoint(), username, fqRepo)
 }
 
 func newRepositoryClient(endpoint string, insecure bool, username, password, repository, scopeType, scopeName string,
