@@ -37,8 +37,23 @@ build:
       TEST_DATASTORE: $$TEST_DATASTORE
       TEST_TIMEOUT: $$TEST_TIMEOUT
       HARBOR_ADMIN: $$HARBOR_ADMIN
-      HARBOR_PASSWORD: $$HARBOR_PASSWORD      
+      HARBOR_PASSWORD: $$HARBOR_PASSWORD
       REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
       DOMAIN: $$CI_DOMAIN
     commands:
       - tests/integration.sh
+    when:
+      success: true
+
+notify:
+  slack:
+    webhook_url: $$SLACK_URL
+    channel: harbor-ci-results
+    username: drone
+    template: >
+      build https://ci.vmware.run/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status, find the logs here: https://console.cloud.google.com/m/cloudstorage/b/harbor-ci-logs/o/integration_logs_{{ build.number }}_{{ build.commit }}.zip?authuser=1
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ master, drone, releases/*, refs/tags/* ]
+      failure: true
