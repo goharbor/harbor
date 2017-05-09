@@ -40,6 +40,9 @@ build:
       HARBOR_PASSWORD: $$HARBOR_PASSWORD
       REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
       DOMAIN: $$CI_DOMAIN
+      GS_PROJECT_ID: $$GS_PROJECT_ID
+      GS_CLIENT_EMAIL: $$GS_CLIENT_EMAIL
+      GS_PRIVATE_KEY: $$GS_PRIVATE_KEY      
     commands:
       - tests/integration.sh
     when:

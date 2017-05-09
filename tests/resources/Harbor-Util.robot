@@ -65,6 +65,7 @@ Sign In Harbor
     sleep  2
     Click button  css=.btn
     sleep  5
+		Log To Console  ${user}
     Wait Until Page Contains  ${user}
 
 Create An New User
