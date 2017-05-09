@@ -4,6 +4,7 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
@@ -11,10 +12,16 @@ import (
 // Proxy is the instance of the reverse proxy in this package.
 var Proxy *httputil.ReverseProxy
 
+var handlers handlerChain
+
 // RegistryProxyPrefix is the prefix of url on UI.
 const RegistryProxyPrefix = "/registryproxy"
 
-// Init initialize the Proxy instance.
+type handlerChain struct {
+	head http.Handler
+}
+
+// Init initialize the Proxy instance and handler chain.
 func Init(urls ...string) error {
 	var err error
 	var registryURL string
@@ -34,9 +41,11 @@ func Init(urls ...string) error {
 		return err
 	}
 	Proxy = httputil.NewSingleHostReverseProxy(targetURL)
+	handlers = handlerChain{head: urlHandler{next: contentTrustHandler{next: Proxy}}}
 	return nil
 }
 
-//func StartProxy(registryURL string) {
-//http.ListenAndServe(":5000", Proxy)
-//}
+// Handle handles the request.
+func Handle(rw http.ResponseWriter, req *http.Request) {
+	handlers.head.ServeHTTP(rw, req)
+}
