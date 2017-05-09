@@ -1,4 +1,4 @@
-{
+export const EN_US_LANG: any = {
     "APP_TITLE": {
         "VMW_HARBOR": "VMware Harbor",
         "HARBOR": "Harbor",
@@ -445,4 +445,4 @@
     "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred.",
     "INCONRRECT_OLD_PWD": "The old password is incorrect.",
     "UNKNOWN": "n/a"
-}
+};

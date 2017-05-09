@@ -7,9 +7,14 @@ import { TranslateModule, TranslateLoader, TranslateService, MissingTranslationH
 import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Http } from '@angular/http';
+import { TranslatorJsonLoader } from '../i18n/local-json.loader';
 
-export function HttpLoaderFactory(http: Http) {
+/*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
+}*/
+
+export function LocalJsonLoaderFactory() {
+    return new TranslatorJsonLoader();
 }
 
 /**
@@ -28,8 +33,7 @@ export function HttpLoaderFactory(http: Http) {
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (HttpLoaderFactory),
-                deps: [Http]
+                useFactory: (LocalJsonLoaderFactory)
             },
             missingTranslationHandler: {
                 provide: MissingTranslationHandler,

@@ -100,6 +100,7 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     }
 
     translateService.use(selectedLang);
+     console.log('initConfig => ', translateService.currentLang);
   };
 }
 
