@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/toPromise';
 import { RequestOptions, Headers } from '@angular/http';
+import { RequestQueryParams } from './service/RequestQueryParams';
 
 /**
  * Convert the different async channels to the Promise<T> type.
@@ -40,6 +41,29 @@ export const DEFAULT_LANG = 'en-us';
 
 export const HTTP_JSON_OPTIONS: RequestOptions = new RequestOptions({
     headers: new Headers({
-        "Content-Type": 'application/json'
+        "Content-Type": 'application/json',
+        "Accept": 'application/json'
     })
 });
+
+/**
+ * Build http request options
+ * 
+ * @export
+ * @param {RequestQueryParams} params
+ * @returns {RequestOptions}
+ */
+export function buildHttpRequestOptions(params: RequestQueryParams): RequestOptions {
+    let reqOptions: RequestOptions = new RequestOptions({
+        headers: new Headers({
+            "Content-Type": 'application/json',
+            "Accept": 'application/json'
+        })
+    });
+
+    if (params) {
+        reqOptions.search = params;
+    }
+
+    return reqOptions;
+}

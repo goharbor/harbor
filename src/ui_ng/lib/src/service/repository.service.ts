@@ -1,8 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
 import { Repository } from './interface';
-import { Injectable } from "@angular/core";
+import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
+import { Http } from '@angular/http';
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
 
 /**
  * Define service methods for handling the repository related things.
@@ -24,22 +27,22 @@ export abstract class RepositoryService {
      * @param {(number | string)} projectId
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<Repository[]> | Repository[])}
+     * @returns {(Observable<Repository[]> | Promise<Repository[]> | Repository[])}
      * 
      * @memberOf RepositoryService
      */
-    abstract getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Repository[];
+    abstract getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Promise<Repository[]> | Repository[];
 
     /**
      * DELETE the specified repository.
      * 
      * @abstract
      * @param {string} repositoryName
-     * @returns {(Observable<any> | any)}
+     * @returns {(Observable<any> | Promise<any> | any)}
      * 
      * @memberOf RepositoryService
      */
-    abstract deleteRepository(repositoryName: string): Observable<any> | any;
+    abstract deleteRepository(repositoryName: string): Observable<any> | Promise<any> | any;
 }
 
 /**
@@ -51,11 +54,43 @@ export abstract class RepositoryService {
  */
 @Injectable()
 export class RepositoryDefaultService extends RepositoryService {
-    public getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Repository[] {
-        return Observable.of([]);
+    constructor(
+        private http: Http,
+        @Inject(SERVICE_CONFIG) private config: IServiceConfig
+    ) {
+        super();
     }
 
-    public deleteRepository(repositoryName: string): Observable<any> | any {
-        return Observable.of({});
+    public getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Promise<Repository[]> | Repository[] {
+        if (!projectId) {
+            return Promise.reject("Bad argument");
+        }
+
+        if (!queryParams) {
+            queryParams = new RequestQueryParams();
+        }
+
+        queryParams.set('project_id', "" + projectId);
+        queryParams.set('detail', '1');
+        if (repositoryName && repositoryName.trim() !== '') {
+            queryParams.set('q', repositoryName);
+        }
+
+        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : "/api/repositories";
+        return this.http.get(url, buildHttpRequestOptions(queryParams)).toPromise()
+            .then(response => response.json() as Repository[])
+            .catch(error => Promise.reject(error));
+    }
+
+    public deleteRepository(repositoryName: string): Observable<any> | Promise<any> | any {
+        if (!repositoryName) {
+            return Promise.reject('Bad argument');
+        }
+        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        url = `${url}/${repositoryName}/tags`;
+
+        return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response)
+            .catch(error => { Promise.reject(error) });
     }
 }

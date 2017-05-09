@@ -24,7 +24,7 @@ export abstract class AccessLogService {
      * @abstract
      * @param {(number | string)} projectId
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<AccessLog[]> | AccessLog[])}
+     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
      * 
      * @memberOf AccessLogService
      */
@@ -35,7 +35,7 @@ export abstract class AccessLogService {
      * 
      * @abstract
      * @param {number} lines : Specify how many lines should be returned.
-     * @returns {(Observable<AccessLog[]> | AccessLog[])}
+     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
      * 
      * @memberOf AccessLogService
      */
