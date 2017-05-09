@@ -12,6 +12,30 @@ export interface Base {
 }
 
 /**
+ * Interface for tag history
+ * 
+ * @export
+ * @interface TagCompatibility
+ */
+export interface TagCompatibility {
+    v1Compatibility: string;
+}
+
+/**
+ * Interface for tag manifest
+ * 
+ * @export
+ * @interface TagManifest
+ */
+export interface TagManifest {
+    schemaVersion: number;
+    name: string;
+    tag: string;
+    architecture: string;
+    history: TagCompatibility[];
+}
+
+/**
  * Interface for Repository
  * 
  * @export
@@ -35,7 +59,11 @@ export interface Repository extends Base {
  * @interface Tag
  * @extends {Base}
  */
-export interface Tag extends Base { }
+export interface Tag extends Base { 
+    tag: string;
+    manifest: TagManifest;
+    signed?: number; //May NOT exist
+}
 
 /**
  * Interface for registry endpoints.
@@ -69,14 +97,14 @@ export interface ReplicationJob { }
  * @interface AccessLog
  */
 export interface AccessLog {
-    log_id: number,
-    project_id: number,
-    repo_name: string,
-    repo_tag: string,
-    operation: string,
-    op_time: string | Date,
-    user_id: number,
-    username: string,
-    keywords?: string, //NOT used now
-    guid?: string //NOT used now
+    log_id: number;
+    project_id: number;
+    repo_name: string;
+    repo_tag: string;
+    operation: string;
+    op_time: string | Date;
+    user_id: number;
+    username: string;
+    keywords?: string; //NOT used now
+    guid?: string; //NOT used now
 }
