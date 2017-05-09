@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pm
+package projectmanager
 
-// PM is the project mamager which abstracts the operations related
+// ProjectManager is the project mamager which abstracts the operations related
 // to projects
-type PM interface {
+type ProjectManager interface {
 	IsPublic(projectIDOrName interface{}) bool
 	GetRoles(username string, projectIDOrName interface{}) []int
 }

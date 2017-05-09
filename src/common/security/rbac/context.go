@@ -17,17 +17,17 @@ package rbac
 import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/pm"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user *models.User
-	pm   pm.PM
+	pm   projectmanager.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pm pm.PM) *SecurityContext {
+func NewSecurityContext(user *models.User, pm projectmanager.ProjectManager) *SecurityContext {
 	return &SecurityContext{
 		user: user,
 		pm:   pm,

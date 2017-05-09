@@ -71,7 +71,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestIsPublic(t *testing.T) {
-	pms := &PM{}
+	pms := &ProjectManager{}
 	// project name
 	assert.True(t, pms.IsPublic("library"))
 	// project ID
@@ -83,7 +83,7 @@ func TestIsPublic(t *testing.T) {
 }
 
 func TestGetRoles(t *testing.T) {
-	pm := &PM{}
+	pm := &ProjectManager{}
 
 	// non exist user
 	assert.Equal(t, []int{},

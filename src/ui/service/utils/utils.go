@@ -22,6 +22,7 @@ import (
 )
 
 // VerifySecret verifies the UI_SECRET cookie in a http request.
+// TODO remove
 func VerifySecret(r *http.Request, expectedSecret string) bool {
 	c, err := r.Cookie("secret")
 	if err != nil {
