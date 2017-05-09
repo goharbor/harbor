@@ -9,7 +9,7 @@
         "test:once": "karma start karma.conf.js --single-run",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
-        "cleanup": "rimraf dist/bundles dist/src dist/index.d.ts dist/index.ngsummary.json dist/index.metadata.json dist/index.js dist/index.js.map dist/LICENSE dist/AUTHORS",
+        "cleanup": "rimraf dist",
         "copy": "copyfiles -f LICENSE AUTHORS pkg/package.json dist",
         "transpile": "ngc -p tsconfig.json",
         "package": "rollup -c",

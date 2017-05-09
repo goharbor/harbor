@@ -1,4 +1,4 @@
-{
+export const ZH_CN_LANG: any = {
     "APP_TITLE": {
         "VMW_HARBOR": "VMware Harbor",
         "HARBOR": "Harbor",
@@ -445,4 +445,4 @@
     "SERVER_ERROR": "服务器出现内部错误，请求无法完成。",
     "INCONRRECT_OLD_PWD": "旧密码不正确。",
     "UNKNOWN": "未知"
-}
+};
