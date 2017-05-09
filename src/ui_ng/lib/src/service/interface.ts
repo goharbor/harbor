@@ -18,7 +18,15 @@ export interface Base {
  * @interface Repository
  * @extends {Base}
  */
-export interface Repository extends Base { }
+export interface Repository extends Base {
+    name: string;
+    tags_count: number;
+    owner_id?: number;
+    project_id?: number;
+    description?: string;
+    start_count?: number;
+    pull_count?: number;
+}
 
 /**
  * Interface for the tag of repository
