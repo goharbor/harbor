@@ -111,3 +111,21 @@ Logout Harbor
 		sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/div/a[4]
     Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//*[@id="pop_repo"]/top-repo/div/div[1]/h3
+
+Create An New Project
+		[Arguments]  ${projectname}
+		${chrome_switches} =         Create List          enable-logging       v=1
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
+    Set Window Size  1920  1080
+		sleep  1
+		Click Button  css=.btn
+		sleep  1
+		Log To Console  Project Name: ${projectname}
+		Input Text  css=#create_project_name  ${projectname}
+		Click Element  css=html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
+		sleep  2
+		Capture Page Screenshot
+		Wait Until Page Contains  ${projectname}
+		Wait Until Page Contains  Project Admin
+		Capture Page Screenshot

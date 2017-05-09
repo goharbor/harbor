@@ -12,3 +12,8 @@ Test Case - Create An New User
 
 Test Case - Sign With Admin
     Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+
+Test Case - Create An New Project
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Create An New Project  test${d}
