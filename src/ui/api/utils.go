@@ -42,6 +42,7 @@ func checkProjectPermission(userID int, projectID int64) bool {
 	return len(roles) > 0
 }
 
+// TODO remove
 func hasProjectAdminRole(userID int, projectID int64) bool {
 	roles, err := listRoles(userID, projectID)
 	if err != nil {
