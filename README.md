@@ -1,7 +1,7 @@
 # Harbor
 
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
-[![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=dev)](https://coveralls.io/github/vmware/harbor?branch=dev)
+[![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=master)](https://coveralls.io/github/vmware/harbor?branch=master)
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases] instead of the `master` branch in order to get stable binaries.
