@@ -96,14 +96,13 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id INTEGER PRIMARY KEY,
- user_id int NOT NULL,
+ username varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
  op_time timestamp,
- FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
 );
 
