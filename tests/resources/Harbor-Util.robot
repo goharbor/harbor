@@ -33,7 +33,7 @@ Install Harbor to Test Server
 
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
-    [Arguments]  ${http_proxy}=http
+    [Arguments]  ${http_proxy}=https
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${output}
     ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
@@ -44,7 +44,7 @@ Config Harbor cfg
     Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=false
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
