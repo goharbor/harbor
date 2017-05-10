@@ -40,11 +40,11 @@ describe('TagService', () => {
     }
   }];
 
-  beforeEach(() => {
-    const mockConfig: IServiceConfig = {
-      repositoryBaseEndpoint: "/api/repositories/testing"
-    };
+  const mockConfig: IServiceConfig = {
+    repositoryBaseEndpoint: "/api/repositories/testing"
+  };
 
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
