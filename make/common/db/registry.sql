@@ -107,8 +107,7 @@ create table access_log (
  operation varchar(20) NOT NULL,
  op_time timestamp,
  primary key (log_id),
- INDEX pid_optime (project_id, op_time),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
+ INDEX pid_optime (project_id, op_time)
 );
 
 create table repository (
