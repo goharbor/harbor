@@ -5,7 +5,7 @@
  * @interface Base
  */
 export interface Base {
-    id?: string;
+    id?: string | number;
     name?: string;
     creation_time?: Date;
     update_time?: Date;
@@ -59,7 +59,7 @@ export interface Repository extends Base {
  * @interface Tag
  * @extends {Base}
  */
-export interface Tag extends Base { 
+export interface Tag extends Base {
     tag: string;
     manifest: TagManifest;
     signed?: number; //May NOT exist
@@ -80,7 +80,18 @@ export interface Endpoint extends Base { }
  * @export
  * @interface ReplicationRule
  */
-export interface ReplicationRule { }
+export interface ReplicationRule extends Base {
+    project_id: number;
+    project_name: string;
+    target_id: number;
+    target_name: string;
+    enabled: number;
+    description?: string;
+    cron_str?: string;
+    start_time?: Date;
+    error_job_count?: number;
+    deleted: number;
+}
 
 /**
  * Interface for replication job.
@@ -88,7 +99,13 @@ export interface ReplicationRule { }
  * @export
  * @interface ReplicationJob
  */
-export interface ReplicationJob { }
+export interface ReplicationJob extends Base {
+    status: string;
+    repository: string;
+    policy_id: number;
+    operation: string;
+    tags: string;
+}
 
 /**
  * Interface for access log.

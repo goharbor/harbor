@@ -5,11 +5,13 @@ import { SharedModule } from '../shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
 describe('AccessLogService', () => {
-  beforeEach(() => {
-    const mockConfig:IServiceConfig = {
-      logBaseEndpoint:"/api/logs/testing"
-    };
+  const mockConfig: IServiceConfig = {
+    logBaseEndpoint: "/api/logs/testing"
+  };
 
+  let config: IServiceConfig;
+
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
@@ -19,14 +21,22 @@ describe('AccessLogService', () => {
         {
           provide: AccessLogService,
           useClass: AccessLogDefaultService
-        },{
+        }, {
           provide: SERVICE_CONFIG,
           useValue: mockConfig
         }]
     });
+
+    config = TestBed.get(SERVICE_CONFIG);
   });
 
   it('should be initialized', inject([AccessLogDefaultService], (service: AccessLogService) => {
     expect(service).toBeTruthy();
   }));
+
+  it('should inject the right config', () => {
+    expect(config).toBeTruthy();
+    expect(config.logBaseEndpoint).toEqual("/api/logs/testing");
+  });
+
 });
