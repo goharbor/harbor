@@ -118,7 +118,14 @@ func (p *ProjectManager) GetPublic() []models.Project {
 
 // GetByMember returns all projects which the user is a member of
 func (p *ProjectManager) GetByMember(username string) []models.Project {
-	projects, err := dao.GetProjects(username)
+	user, err := dao.GetUser(models.User{
+		Username: username,
+	})
+	if err != nil {
+		log.Errorf("failed to get user %s: %v", username, err)
+		return []models.Project{}
+	}
+	projects, err := dao.GetUserRelevantProjects(user.UserID, "")
 	if err != nil {
 		log.Errorf("failed to get projects of %s: %v", username, err)
 		return []models.Project{}

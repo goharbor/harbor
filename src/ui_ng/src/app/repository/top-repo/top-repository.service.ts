@@ -17,7 +17,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { Repository } from '../repository';
 
-export const topRepoEndpoint = "/api/repositories/top?detail=1";
+export const topRepoEndpoint = "/api/repositories/top";
 /**
  * Declare service to handle the top repositories
  * 

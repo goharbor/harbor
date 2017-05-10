@@ -656,11 +656,6 @@ paths:
           format: int32
           required: true
           description: Relevant project ID.
-        - name: detail
-          in: query
-          type: boolean
-          required: false
-          description: Get detail info or not.
         - name: q
           in: query
           type: string
@@ -682,7 +677,7 @@ paths:
         - Products
       responses:
         200:
-          description: If detail is false, the response body is a string array which contains the names of repositories, or the response body contains an object array as described in schema.
+          description: Get repositories successfully.
           schema:
             type: array
             items:
@@ -742,16 +737,11 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
-        - name: detail
-          in: query
-          type: boolean
-          required: false
-          description: If detail is true, the manifests is returned too.
       tags:
        - Products
       responses:
         200:
-          description: If detail is false, the response body is a string array, or the response body contains the manifest informations as described in schema.
+          description: Get tags successfully.
           schema:
             type: array
             items:
@@ -851,16 +841,11 @@ paths:
           format: int32
           required: false
           description: The number of the requested public repositories, default is 10 if not provided.
-        - name: detail
-          in: query
-          type: boolean
-          required: false
-          description: Get detail info or not.
       tags:
        - Products
       responses:
         200:
-          description: If detail is true, the response is described as the schema, or the response contains a TopRepo array.
+          description: Get popular repositories successfully.
           schema:
             type: array
             items:

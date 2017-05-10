@@ -103,7 +103,8 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 	return repos, err
 }
 
-//GetTopRepos returns the most popular repositories
+//GetTopRepos returns the most popular repositories whose project ID is
+// in projectIDs
 func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
 	_, err := GetOrmer().QueryTable(&models.RepoRecord{}).

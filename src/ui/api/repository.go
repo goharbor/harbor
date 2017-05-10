@@ -164,7 +164,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(ra.SecurityCxt.GetUsername(), repoName)
+	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -288,7 +288,7 @@ func (ra *RepositoryAPI) GetTags() {
 		}
 	}
 
-	client, err := ra.initRepositoryClient(ra.SecurityCxt.GetUsername(), repoName)
+	client, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -383,7 +383,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		}
 	}
 
-	rc, err := ra.initRepositoryClient(ra.SecurityCxt.GetUsername(), repoName)
+	rc, err := ra.initRepositoryClient(repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -445,14 +445,14 @@ func getManifest(client *registry.Repository,
 	return result, nil
 }
 
-func (ra *RepositoryAPI) initRepositoryClient(username, repoName string) (r *registry.Repository, err error) {
+func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewRepositoryClient(endpoint, true, username, repoName,
-		"repository", repoName, "pull", "push", "*")
+	return NewRepositoryClient(endpoint, true, ra.SecurityCxt.GetUsername(),
+		repoName, "repository", repoName, "pull", "push", "*")
 }
 
 //GetTopRepos returns the most populor repositories
