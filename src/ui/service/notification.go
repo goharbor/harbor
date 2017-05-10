@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -65,7 +66,19 @@ func (n *NotificationHandler) Post() {
 		}
 
 		go func() {
-			if err := dao.AccessLog(user, project, repository, tag, action); err != nil {
+			pro, err := dao.GetProjectByName(project)
+			if err != nil {
+				log.Errorf("failed to get project by name %s: %v", project, err)
+				return
+			}
+			if err := dao.AddAccessLog(models.AccessLog{
+				Username:  user,
+				ProjectID: pro.ProjectID,
+				RepoName:  repository,
+				RepoTag:   tag,
+				Operation: action,
+				OpTime:    time.Now(),
+			}); err != nil {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}()
