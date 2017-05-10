@@ -60,7 +60,8 @@ Compile and Up Harbor With Source Code
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
     ${chrome_switches} =         Create List          enable-logging       v=1
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
     Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1280  1024
     sleep  10
@@ -79,7 +80,7 @@ Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
     ${chrome_switches} =         Create List          enable-logging       v=1
     ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
-    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
+    Open Browser  url=https://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1920  1080
     sleep  10
     ${title}=  Get Title
