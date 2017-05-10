@@ -78,8 +78,9 @@ Sign In Harbor
 
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-    ${chrome_switches} =         Create List          enable-logging       v=1
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+		${chrome_switches} =         Create List          enable-logging       v=1
+		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
     Open Browser  url=https://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1920  1080
     sleep  10
