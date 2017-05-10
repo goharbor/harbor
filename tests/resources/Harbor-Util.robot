@@ -25,6 +25,7 @@ Install Harbor to Test Server
 		Start Docker Daemon Locally
     Log To Console  \nconfig harbor cfg
     Run Keywords  Config Harbor cfg
+		Run Keywords  Prepare Cert
     Log To Console  \ncomplile and up harbor now
     Run Keywords  Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
@@ -33,7 +34,7 @@ Install Harbor to Test Server
 
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
-    [Arguments]  ${http_proxy}=http
+    [Arguments]  ${http_proxy}=https
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${output}
     ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
@@ -43,8 +44,14 @@ Config Harbor cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
 
+Prepare Cert
+    # Will change the IP and Protocol in the harbor.cfg
+		${rc}=  Run And Return Rc  ./tests/generateCerts.sh
+		Log  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=false
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -53,7 +60,8 @@ Compile and Up Harbor With Source Code
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
     ${chrome_switches} =         Create List          enable-logging       v=1
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
+		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
     Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1280  1024
     sleep  10
@@ -70,9 +78,10 @@ Sign In Harbor
 
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-    ${chrome_switches} =         Create List          enable-logging       v=1
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs
-    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
+		${chrome_switches} =         Create List          enable-logging       v=1
+		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
+    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
+    Open Browser  url=https://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
     Set Window Size  1920  1080
     sleep  10
     ${title}=  Get Title
