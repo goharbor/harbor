@@ -25,6 +25,7 @@ Install Harbor to Test Server
 		Start Docker Daemon Locally
     Log To Console  \nconfig harbor cfg
     Run Keywords  Config Harbor cfg
+		Run Keywords  Prepare Cert
     Log To Console  \ncomplile and up harbor now
     Run Keywords  Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
@@ -42,6 +43,12 @@ Config Harbor cfg
     ${rc}=  Run And Return Rc  sed "s/^ui_url_protocol = .*/ui_url_protocol = ${http_proxy}/g" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
+
+Prepare Cert
+    # Will change the IP and Protocol in the harbor.cfg
+		${rc}=  Run And Return Rc  ./tests/generateCerts.sh
+		Log  ${rc}
+		Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
     [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
