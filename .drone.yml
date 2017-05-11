@@ -7,7 +7,7 @@ clone:
 build:
   build:
     prevent-concurrent-builds:
-      image: $${TEST_BUILD_IMAGE=vmware/harbor-e2e-engine:1.29}
+      image: vmware/harbor-e2e-engine:1.29
       pull: true
       environment:
         BIN: bin
@@ -42,11 +42,31 @@ build:
       DOMAIN: $$CI_DOMAIN
       GS_PROJECT_ID: $$GS_PROJECT_ID
       GS_CLIENT_EMAIL: $$GS_CLIENT_EMAIL
-      GS_PRIVATE_KEY: $$GS_PRIVATE_KEY      
+      GS_PRIVATE_KEY: $$GS_PRIVATE_KEY
     commands:
-      - tests/integration.sh
+      - ls
     when:
       success: true
+
+  bundle:
+    image: vmware/harbor-e2e-engine:1.29
+    pull: true
+    privileged: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+      BUILD_NUMBER: ${GIT_COMMIT}
+    commands:
+      - echo ${BUILD_NUMBER}
+      - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+      - ls -la
+      - du -ks harbor-offline-installer-$$BUILD_NUMBER.tar.gz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+    when:
+      repo: vmware/harbor
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
+      failure: true
 
 notify:
   slack:
@@ -60,3 +80,22 @@ notify:
       event: [ push, pull_request, tag ]
       branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
       failure: true
+
+publish:
+  bintray:
+    username: $$BINTRAY_USERNAME
+    api_key: $$BINTRAY_API_KEY
+    artifacts:
+      - file: harbor-offline-installer-$$BUILD_NUMBER.tar.gz
+        owner: vmware
+        type: executable
+        repository: harbor-repo
+        package: build
+        version: $$BUILD_NUMBER
+        target: harbor-offline-installer-$$BUILD_NUMBER.tar.gz
+        publish: true
+    when:
+      repo: vmware/vic
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
+      success: true
