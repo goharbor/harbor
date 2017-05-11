@@ -59,9 +59,10 @@ build:
       BUILD_NUMBER: ${GIT_COMMIT}
     commands:
       - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-      - ls -la
-      - echo ${DRONE_TAG}
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      - mkdir -p bundle
+      - cp harbor-offline-installer-*.tgz bundle
+      - ls -la bundle
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
@@ -81,21 +82,30 @@ notify:
       branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
       failure: true
 
-publish:
-  bintray:
-    username: $$BINTRAY_USERNAME
-    api_key: $$BINTRAY_API_KEY
-    artifacts:
-      - file: harbor-offline-installer-$$GIT_COMMIT.tar.gz
-        owner: vmware
-        type: executable
-        repository: harbor-repo
-        package: build
-        version: $$BUILD_NUMBER
-        target: harbor-offline-installer-$$GIT_COMMIT.tar.gz
-        publish: true
-    when:
-      repo: vmware/vic
-      event: [ push, pull_request, tag ]
-      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
-      success: true
+publish-gcs-builds:
+  image: maplain/drone-gcs:latest
+  pull: true
+  source: bundle
+  target: harbor-ci-logs
+  acl:
+    - allUsers:READER
+  cache_control: public,max-age=3600
+  when:
+    repo: vmware/vic
+    event: [ push ]
+    branch: [ master, releases/* ]
+    status: success
+
+publish-gcs-releases:
+  image: maplain/drone-gcs:latest
+  pull: true
+  source: bundle
+  target: harbor-releases
+  acl:
+    - allUsers:READER
+  cache_control: public,max-age=3600
+  when:
+    repo: vmware/vic
+    event: [ push, tag ]
+    branch: [ refs/tags/* ]
+    status: success
