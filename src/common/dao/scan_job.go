@@ -17,8 +17,12 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
+
+	"fmt"
+	"time"
 )
 
+// ScanJobTable is the table name of scan jobs.
 const ScanJobTable = "img_scan_job"
 
 // AddScanJob ...
@@ -50,6 +54,21 @@ func GetScanJobsByDigest(digest string, limit ...int) ([]*models.ScanJob, error)
 	var res []*models.ScanJob
 	_, err := scanJobQs(limit...).Filter("digest", digest).OrderBy("-id").All(&res)
 	return res, err
+}
+
+// UpdateScanJobStatus updates the status of a scan job.
+func UpdateScanJobStatus(id int64, status string) error {
+	o := GetOrmer()
+	sj := models.ScanJob{
+		ID:         id,
+		Status:     status,
+		UpdateTime: time.Now(),
+	}
+	n, err := o.Update(&sj, "Status", "UpdateTime")
+	if n == 0 {
+		return fmt.Errorf("Failed to update scan job with id: %d, error: %v", id, err)
+	}
+	return err
 }
 
 func scanJobQs(limit ...int) orm.QuerySeter {

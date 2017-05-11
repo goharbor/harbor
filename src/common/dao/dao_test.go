@@ -1709,3 +1709,19 @@ func TestGetScanJobs(t *testing.T) {
 	err = clearTable(ScanJobTable)
 	assert.Nil(err)
 }
+
+func TestUpdateScanJobStatus(t *testing.T) {
+	assert := assert.New(t)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	err = UpdateScanJobStatus(id, "newstatus")
+	assert.Nil(err)
+	j, err := GetScanJob(id)
+	assert.Nil(err)
+	assert.Equal("newstatus", j.Status)
+	err = UpdateScanJobStatus(id+9, "newstatus")
+	assert.NotNil(err)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
+
+}
