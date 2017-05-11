@@ -84,8 +84,8 @@ notify:
 
 publish:
   gcs:
-    auth_key: >
-      $SERVICE_ACCOUNT_KEY
+    image: maplain/drone-gcs:latest
+    pull: true
     source: bundle
     target: harbor-ci-logs
     acl:
