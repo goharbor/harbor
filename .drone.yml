@@ -93,7 +93,12 @@ publish:
     gzip:
       - js
       - css
-      - html      
+      - html
     cache_control: public,max-age=3600
     metadata:
       x-goog-meta-foo: bar
+    when:
+      repo: vmware/vic
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
+      success: true
