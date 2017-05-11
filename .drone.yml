@@ -91,9 +91,9 @@ publish-gcs-builds:
     - allUsers:READER
   cache_control: public,max-age=3600
   when:
-    repo: vmware/vic
-    event: [ push ]
-    branch: [ master, releases/* ]
+    repo: vmware/harbor
+    event: [ push, pull_request, tag ]
+    branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
     status: success
 
 publish-gcs-releases:
@@ -105,7 +105,7 @@ publish-gcs-releases:
     - allUsers:READER
   cache_control: public,max-age=3600
   when:
-    repo: vmware/vic
+    repo: vmware/harbor
     event: [ push, tag ]
     branch: [ refs/tags/* ]
     status: success
