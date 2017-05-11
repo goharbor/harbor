@@ -697,6 +697,30 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
+  /repositories/{repo_name}:
+    delete:
+      summary: Delete a repository.
+      description: |
+        This endpoint let user delete a repository with name.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository which will be deleted.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete successfully.
+        400:
+          description: Invalid repo_name.
+        401:
+          description: Unauthorized.
+        404:
+          description: Repository not found.
+        403:
+          description: Forbidden.
   /repositories/{repo_name}/tags/{tag}:
     delete:
       summary: Delete a tag in a repository.
@@ -748,29 +772,6 @@ paths:
               $ref: '#/definitions/DetailedTag'
         500:
           description: Unexpected internal errors.
-    delete:
-      summary: Delete all tags of a repository.
-      description: |
-        This endpoint let user delete all tags with repo name.
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: The name of repository which will be deleted.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Delete successfully.
-        400:
-          description: Invalid repo_name.
-        401:
-          description: Unauthorized.
-        404:
-          description: Repository not found.
-        403:
-          description: Forbidden.
   /repositories/{repo_name}/tags/{tag}/manifest:
     get:
       summary: Get manifests of a relevant repository.
