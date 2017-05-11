@@ -33,6 +33,18 @@ func (f *fakePM) IsPublic(projectIDOrName interface{}) bool {
 func (f *fakePM) GetRoles(username string, projectIDOrName interface{}) []int {
 	return f.roles[projectIDOrName.(string)]
 }
+func (f *fakePM) Get(projectIDOrName interface{}) *models.Project {
+	return nil
+}
+func (f *fakePM) Exist(projectIDOrName interface{}) bool {
+	return false
+}
+func (f *fakePM) GetPublic() []models.Project {
+	return []models.Project{}
+}
+func (f *fakePM) GetByMember(username string) []models.Project {
+	return []models.Project{}
+}
 
 func TestIsAuthenticated(t *testing.T) {
 	// unauthenticated

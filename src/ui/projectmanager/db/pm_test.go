@@ -70,16 +70,44 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestGet(t *testing.T) {
+	pm := &ProjectManager{}
+
+	// project name
+	project := pm.Get("library")
+	assert.NotNil(t, project)
+	assert.Equal(t, "library", project.Name)
+
+	// project ID
+	project = pm.Get(int64(1))
+	assert.NotNil(t, project)
+	assert.Equal(t, int64(1), project.ProjectID)
+
+	// non-exist project
+	project = pm.Get("non-exist-project")
+	assert.Nil(t, project)
+
+	// invalid type
+	project = pm.Get(true)
+	assert.Nil(t, project)
+}
+
+func TestExist(t *testing.T) {
+	pm := &ProjectManager{}
+
+	// exist project
+	assert.True(t, pm.Exist("library"))
+
+	// non-exist project
+	assert.False(t, pm.Exist("non-exist-project"))
+}
+
 func TestIsPublic(t *testing.T) {
 	pms := &ProjectManager{}
-	// project name
+	// public project
 	assert.True(t, pms.IsPublic("library"))
-	// project ID
-	assert.True(t, pms.IsPublic(int64(1)))
 	// non exist project
 	assert.False(t, pms.IsPublic("non_exist_project"))
-	// invalid type
-	assert.False(t, pms.IsPublic(1))
 }
 
 func TestGetRoles(t *testing.T) {
@@ -89,18 +117,28 @@ func TestGetRoles(t *testing.T) {
 	assert.Equal(t, []int{},
 		pm.GetRoles("non_exist_user", int64(1)))
 
-	// project ID
-	assert.Equal(t, []int{common.RoleProjectAdmin},
-		pm.GetRoles("admin", int64(1)))
-
-	// project name
+	// exist project
 	assert.Equal(t, []int{common.RoleProjectAdmin},
 		pm.GetRoles("admin", "library"))
 
-	// non exist project
+	// non-exist project
 	assert.Equal(t, []int{},
 		pm.GetRoles("admin", "non_exist_project"))
+}
 
-	// invalid type
-	assert.Equal(t, []int{}, pm.GetRoles("admin", 1))
+func TestGetPublic(t *testing.T) {
+	pm := &ProjectManager{}
+	projects := pm.GetPublic()
+
+	assert.NotEqual(t, 0, len(projects))
+
+	for _, project := range projects {
+		assert.Equal(t, 1, project.Public)
+	}
+}
+
+func TestGetByMember(t *testing.T) {
+	pm := &ProjectManager{}
+	projects := pm.GetByMember("admin")
+	assert.NotEqual(t, 0, len(projects))
 }

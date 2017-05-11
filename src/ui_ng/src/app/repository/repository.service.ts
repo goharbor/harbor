@@ -34,14 +34,14 @@ export class RepositoryService {
       params.set('page_size', pageSize + '');
     }
     return this.http
-               .get(`/api/repositories?project_id=${projectId}&q=${repoName}&detail=1`, {search: params})
+               .get(`/api/repositories?project_id=${projectId}&q=${repoName}`, {search: params})
                .map(response=>response)
                .catch(error=>Observable.throw(error));
   }
 
   listTags(repoName: string): Observable<Tag[]> {
     return this.http
-               .get(`/api/repositories/${repoName}/tags?detail=1`)
+               .get(`/api/repositories/${repoName}/tags`)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
@@ -77,7 +77,7 @@ export class RepositoryService {
 
   deleteRepository(repoName: string): Observable<any> {
     return this.http
-               .delete(`/api/repositories/${repoName}/tags`)
+               .delete(`/api/repositories/${repoName}`)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

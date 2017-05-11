@@ -23,23 +23,20 @@ import (
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
-	svc_utils "github.com/vmware/harbor/src/ui/service/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 type RepositoryAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 type repoResp struct {
@@ -54,7 +51,7 @@ type repoResp struct {
 	UpdateTime   time.Time `json:"update_time"`
 }
 
-type detailedTagResp struct {
+type tagResp struct {
 	Tag      string      `json:"tag"`
 	Manifest interface{} `json:"manifest"`
 }
@@ -68,50 +65,40 @@ type manifestResp struct {
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil || projectID <= 0 {
-		ra.CustomAbort(http.StatusBadRequest, "invalid project_id")
+		ra.HandleBadRequest(fmt.Sprintf("invalid project_id %s", ra.GetString("project_id")))
+		return
 	}
 
-	project, err := dao.GetProjectByID(projectID)
-	if err != nil {
-		log.Errorf("failed to get project %d: %v", projectID, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+	if !ra.ProjectMgr.Exist(projectID) {
+		ra.HandleNotFound(fmt.Sprintf("project %d not found", projectID))
+		return
 	}
 
-	if project == nil {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %d not found", projectID))
-	}
-
-	if project.Public == 0 {
-		var userID int
-
-		if svc_utils.VerifySecret(ra.Ctx.Request, config.JobserviceSecret()) {
-			userID = 1
-		} else {
-			userID = ra.ValidateUser()
+	if !ra.SecurityCtx.HasReadPerm(projectID) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
 		}
-
-		if !checkProjectPermission(userID, projectID) {
-			ra.CustomAbort(http.StatusForbidden, "")
-		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	keyword := ra.GetString("q")
 
 	total, err := dao.GetTotalOfRepositoriesByProject(projectID, keyword)
 	if err != nil {
-		log.Errorf("failed to get total of repositories of project %d: %v", projectID, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get total of repositories of project %d: %v",
+			projectID, err))
+		return
 	}
 
 	page, pageSize := ra.GetPaginationParams()
 
-	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
-
 	repositories, err := getRepositories(projectID,
-		keyword, pageSize, pageSize*(page-1), detail)
+		keyword, pageSize, pageSize*(page-1))
 	if err != nil {
-		log.Errorf("failed to get repository: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository: %v", err))
+		return
 	}
 
 	ra.SetPaginationHeader(total, page, pageSize)
@@ -120,19 +107,10 @@ func (ra *RepositoryAPI) Get() {
 }
 
 func getRepositories(projectID int64, keyword string,
-	limit, offset int64, detail bool) (interface{}, error) {
+	limit, offset int64) ([]*repoResp, error) {
 	repositories, err := dao.GetRepositoriesByProject(projectID, keyword, limit, offset)
 	if err != nil {
 		return nil, err
-	}
-
-	//keep compatibility with old API
-	if !detail {
-		result := []string{}
-		for _, repository := range repositories {
-			result = append(result, repository.Name)
-		}
-		return result, nil
 	}
 
 	return populateTagsCount(repositories)
@@ -168,19 +146,19 @@ func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		log.Errorf("failed to get project %s: %v", projectName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+	if !ra.ProjectMgr.Exist(projectName) {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
 	}
 
-	if project == nil {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
 	}
 
-	userID := ra.ValidateUser()
-	if !hasProjectAdminRole(userID, project.ProjectID) {
-		ra.CustomAbort(http.StatusForbidden, "")
+	if !ra.SecurityCtx.HasAllPerm(projectName) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -212,18 +190,11 @@ func (ra *RepositoryAPI) Delete() {
 		tags = append(tags, tag)
 	}
 
-	user, _, ok := ra.Ctx.Request.BasicAuth()
-	if !ok {
-		user, err = ra.getUsername()
-		if err != nil {
-			log.Errorf("failed to get user: %v", err)
-		}
-	}
-
 	if config.WithNotary() {
 		var digest string
 		signedTags := make(map[string]struct{})
-		targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(), user, repoName)
+		targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
+			ra.SecurityCtx.GetUsername(), repoName)
 		if err != nil {
 			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
 			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
@@ -243,7 +214,7 @@ func (ra *RepositoryAPI) Delete() {
 				ra.CustomAbort(http.StatusInternalServerError, err.Error())
 			}
 			log.Debugf("Tag: %s, digest: %s", t, digest)
-			if _, ok = signedTags[digest]; ok {
+			if _, ok := signedTags[digest]; ok {
 				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
 				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
 			}
@@ -265,13 +236,9 @@ func (ra *RepositoryAPI) Delete() {
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			project, err := dao.GetProjectByName(projectName)
-			if err != nil {
-				log.Errorf("failed to get project by name %s: %v", projectName, err)
-				return
-			}
+			project := ra.ProjectMgr.Get(projectName)
 			if err := dao.AddAccessLog(models.AccessLog{
-				Username:  user,
+				Username:  ra.SecurityCtx.GetUsername(),
 				ProjectID: project.ProjectID,
 				RepoName:  repoName,
 				RepoTag:   tag,
@@ -296,32 +263,23 @@ func (ra *RepositoryAPI) Delete() {
 	}
 }
 
-type tag struct {
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
-}
-
 // GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
-	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
 
 	projectName, _ := utils.ParseRepository(repoName)
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		log.Errorf("failed to get project %s: %v", projectName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+	if !ra.ProjectMgr.Exist(projectName) {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
 	}
 
-	if project == nil {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
-	}
-
-	if project.Public == 0 {
-		userID := ra.ValidateUser()
-		if !checkProjectPermission(userID, project.ProjectID) {
-			ra.CustomAbort(http.StatusForbidden, "")
+	if !ra.SecurityCtx.HasReadPerm(projectName) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
 		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	client, err := ra.initRepositoryClient(repoName)
@@ -340,13 +298,7 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 	}
 
-	if !detail {
-		ra.Data["json"] = tags
-		ra.ServeJSON()
-		return
-	}
-
-	result := []detailedTagResp{}
+	result := []tagResp{}
 
 	for _, tag := range tags {
 		manifest, err := getManifest(client, tag, "v1")
@@ -359,7 +311,7 @@ func (ra *RepositoryAPI) GetTags() {
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 
-		result = append(result, detailedTagResp{
+		result = append(result, tagResp{
 			Tag:      tag,
 			Manifest: manifest.Manifest,
 		})
@@ -367,7 +319,6 @@ func (ra *RepositoryAPI) GetTags() {
 
 	ra.Data["json"] = result
 	ra.ServeJSON()
-
 }
 
 func listTag(client *registry.Repository) ([]string, error) {
@@ -409,21 +360,19 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		log.Errorf("failed to get project %s: %v", projectName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+	if !ra.ProjectMgr.Exist(projectName) {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
 	}
 
-	if project == nil {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("project %s not found", projectName))
-	}
-
-	if project.Public == 0 {
-		userID := ra.ValidateUser()
-		if !checkProjectPermission(userID, project.ProjectID) {
-			ra.CustomAbort(http.StatusForbidden, "")
+	if !ra.SecurityCtx.HasReadPerm(projectName) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
 		}
+
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -494,55 +443,8 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	verify, err := config.VerifyRemoteCert()
-	if err != nil {
-		return nil, err
-	}
-
-	username, password, ok := ra.Ctx.Request.BasicAuth()
-	if ok {
-		return newRepositoryClient(endpoint, !verify, username, password,
-			repoName, "repository", repoName, "pull", "push", "*")
-	}
-
-	username, err = ra.getUsername()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewRepositoryClient(endpoint, !verify, username, repoName,
-		"repository", repoName, "pull", "push", "*")
-}
-
-func (ra *RepositoryAPI) getUsername() (string, error) {
-	// get username from session
-	sessionUsername := ra.GetSession("username")
-	if sessionUsername != nil {
-		username, ok := sessionUsername.(string)
-		if ok {
-			return username, nil
-		}
-	}
-
-	// if username does not exist in session, try to get userId from sessiion
-	// and then get username from DB according to the userId
-	sessionUserID := ra.GetSession("userId")
-	if sessionUserID != nil {
-		userID, ok := sessionUserID.(int)
-		if ok {
-			u := models.User{
-				UserID: userID,
-			}
-			user, err := dao.GetUser(u)
-			if err != nil {
-				return "", err
-			}
-
-			return user.Username, nil
-		}
-	}
-
-	return "", nil
+	return NewRepositoryClient(endpoint, true, ra.SecurityCtx.GetUsername(),
+		repoName, "repository", repoName, "pull", "push", "*")
 }
 
 //GetTopRepos returns the most populor repositories
@@ -552,31 +454,21 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusBadRequest, "invalid count")
 	}
 
-	userID, _, ok := ra.GetUserIDForRequest()
-	if !ok {
-		userID = dao.NonExistUserID
+	projectIDs := []int64{}
+	projects := ra.ProjectMgr.GetPublic()
+	if ra.SecurityCtx.IsAuthenticated() {
+		projects = append(projects, ra.ProjectMgr.GetByMember(
+			ra.SecurityCtx.GetUsername())...)
 	}
 
-	repos, err := dao.GetTopRepos(userID, count)
+	for _, project := range projects {
+		projectIDs = append(projectIDs, project.ProjectID)
+	}
+
+	repos, err := dao.GetTopRepos(projectIDs, count)
 	if err != nil {
 		log.Errorf("failed to get top repos: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
-	}
-
-	detail := ra.GetString("detail") == "1" || ra.GetString("detail") == "true"
-	if !detail {
-		result := []*models.TopRepo{}
-
-		for _, repo := range repos {
-			result = append(result, &models.TopRepo{
-				RepoName:    repo.Name,
-				AccessCount: repo.PullCount,
-			})
-		}
-
-		ra.Data["json"] = result
-		ra.ServeJSON()
-		return
 	}
 
 	result, err := populateTagsCount(repos)
@@ -591,39 +483,14 @@ func (ra *RepositoryAPI) GetTopRepos() {
 
 //GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
-	//use this func to init session.
-	ra.GetUserIDForRequest()
-	username, err := ra.getUsername()
-	if err != nil {
-		log.Warningf("Error when getting username: %v", err)
-	}
 	repoName := ra.GetString(":splat")
 
-	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(), username, repoName)
+	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
+		ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
-}
-
-func newRepositoryClient(endpoint string, insecure bool, username, password, repository, scopeType, scopeName string,
-	scopeActions ...string) (*registry.Repository, error) {
-
-	credential := auth.NewBasicAuthCredential(username, password)
-
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
-		config.InternalTokenServiceEndpoint(), scopeType, scopeName, scopeActions...)
-
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }
