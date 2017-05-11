@@ -32,6 +32,14 @@ Install Harbor to Test Server
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
 
+Package Harbor Offline
+		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
+		Log To Console  \nStart Docker Daemon
+		Start Docker Daemon Locally
+		${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
     [Arguments]  ${http_proxy}=https
@@ -53,8 +61,8 @@ Prepare Cert
 Compile and Up Harbor With Source Code
     [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:0.8.4  ${with_notary}=true
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
+    Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
     Sleep  30
 
 Sign In Harbor

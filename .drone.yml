@@ -1,23 +1,14 @@
 # Harbor drone integration.
 ---
-clone:
-  path: github.com/vmware/harbor
-  tags: true
+workspace:
+  base: /drone
+  path: src/github.com/vmware/harbor
 
-build:
-  build:
-    prevent-concurrent-builds:
-      image: $${TEST_BUILD_IMAGE=vmware/harbor-e2e-engine:1.29}
-      pull: true
-      environment:
-        BIN: bin
-        GOPATH: /drone
-        SHELL: /bin/bash
-        TEST_URL_ARRAY:  $$TEST_URL_ARRAY
-        DRONE_SERVER:  $$DRONE_SERVER
-        DRONE_TOKEN:  $$DRONE_TOKEN
-      commands:
-        - tests/wait_until_previous_builds_complete.sh
+pipeline:
+  clone:
+    image: plugins/git
+    tags: true
+    recursive: false
 
   integration-test-on-pr:
     image: vmware/harbor-e2e-engine:1.29
@@ -28,35 +19,83 @@ build:
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
-      GITHUB_AUTOMATION_API_KEY:  $$GITHUB_AUTOMATION_API_KEY
-      DRONE_SERVER:  $$DRONE_SERVER
-      DRONE_TOKEN:  $$DRONE_TOKEN
-      TEST_URL_ARRAY:  $$TEST_URL_ARRAY
-      TEST_USERNAME:  $$TEST_USERNAME
-      TEST_PASSWORD:  $$TEST_PASSWORD
-      TEST_DATASTORE: $$TEST_DATASTORE
-      TEST_TIMEOUT: $$TEST_TIMEOUT
-      HARBOR_ADMIN: $$HARBOR_ADMIN
-      HARBOR_PASSWORD: $$HARBOR_PASSWORD
-      REPORTING_SERVER_URL: $$REPORTING_SERVER_URL
-      DOMAIN: $$CI_DOMAIN
-      GS_PROJECT_ID: $$GS_PROJECT_ID
-      GS_CLIENT_EMAIL: $$GS_CLIENT_EMAIL
-      GS_PRIVATE_KEY: $$GS_PRIVATE_KEY      
+      GITHUB_AUTOMATION_API_KEY:  ${GITHUB_AUTOMATION_API_KEY}
+      DRONE_SERVER:  ${DRONE_SERVER}
+      DRONE_TOKEN:  ${DRONE_TOKEN}
+      TEST_URL_ARRAY:  ${TEST_URL_ARRAY}
+      TEST_USERNAME:  ${TEST_USERNAME}
+      TEST_PASSWORD:  ${TEST_PASSWORD}
+      TEST_DATASTORE: ${TEST_DATASTORE}
+      TEST_TIMEOUT: ${TEST_TIMEOUT}
+      HARBOR_ADMIN: ${HARBOR_ADMIN}
+      HARBOR_PASSWORD: ${HARBOR_PASSWORD}
+      REPORTING_SERVER_URL: ${REPORTING_SERVER_URL}
+      GS_PROJECT_ID: ${GS_PROJECT_ID}
+      GS_CLIENT_EMAIL: ${GS_CLIENT_EMAIL}
+      GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
+      DOMAIN: ${CI_DOMAIN}
     commands:
       - tests/integration.sh
     when:
       success: true
 
-notify:
-  slack:
-    webhook_url: $$SLACK_URL
-    channel: harbor-ci-results
+  bundle:
+    image: vmware/harbor-e2e-engine:1.29
+    pull: true
+    privileged: true
+    environment:
+      BIN: bin
+      GOPATH: /drone
+      SHELL: /bin/bash
+      BUILD_NUMBER: ${DRONE_BUILD_NUMBER}
+    commands:
+      - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+      - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      - mkdir -p bundle
+      - cp harbor-offline-installer-*.tgz bundle
+      - ls -la bundle
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ master, releases/* ]
+      status: success
+
+  notify-slack:
+    image: plugins/slack
+    webhook: ${SLACK_URL}
     username: drone
     template: >
-      build https://ci.vmware.run/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status
+      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status.
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
-      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
-      failure: true
+      branch: [ master, drone, releases/*, refs/tags/* ]
+      status: failure
+
+  publish-gcs-builds:
+    image: maplain/drone-gcs:latest
+    pull: true
+    source: bundle
+    target: harbor-builds
+    acl:
+      - allUsers:READER
+    cache_control: public,max-age=3600
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ master, releases/* ]
+      status: success
+
+  publish-gcs-releases:
+    image: maplain/drone-gcs:latest
+    pull: true
+    source: bundle
+    target: harbor-releases
+    acl:
+      - allUsers:READER
+    cache_control: public,max-age=3600
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ refs/tags/* ]
+      status: success
