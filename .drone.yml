@@ -63,6 +63,8 @@ build:
       - mkdir -p bundle
       - cp LICENSE bundle
       - ls -la bundle
+      - echo $$HARBOR_ADMIN
+      - echo $HARBOR_ADMIN
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
@@ -85,20 +87,14 @@ notify:
 publish:
   gcs:
     auth_key: >
-      $$SERVICE_ACCOUNT_KEY
+      $SERVICE_ACCOUNT_KEY
     source: bundle
     target: harbor-ci-logs
     acl:
       - allUsers:READER
-    gzip:
-      - js
-      - css
-      - html
     cache_control: public,max-age=3600
-    metadata:
-      x-goog-meta-foo: bar
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
       branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
-      success: true
+      failure: true
