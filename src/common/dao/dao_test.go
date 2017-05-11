@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -39,6 +40,13 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func clearTable(table string) error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	_, err := o.Raw(sql).Exec()
+	return err
 }
 
 func clearUp(username string) {
@@ -1648,4 +1656,56 @@ func TestDeleteRepository(t *testing.T) {
 	if repository != nil {
 		t.Errorf("repository is not nil after deletion, repository: %+v", repository)
 	}
+}
+
+var sj1 = models.ScanJob{
+	Status:     models.JobPending,
+	Repository: "library/ubuntu",
+	Tag:        "14.04",
+}
+
+var sj2 = models.ScanJob{
+	Status:     models.JobPending,
+	Repository: "library/ubuntu",
+	Tag:        "15.10",
+	Digest:     "sha256:1234567890",
+}
+
+func TestAddScanJob(t *testing.T) {
+	assert := assert.New(t)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	r1, err := GetScanJob(id)
+	assert.Nil(err)
+	assert.Equal(sj1.Tag, r1.Tag)
+	assert.Equal(sj1.Status, r1.Status)
+	assert.Equal(sj1.Repository, r1.Repository)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
+}
+
+func TestGetScanJobs(t *testing.T) {
+	assert := assert.New(t)
+	_, err := AddScanJob(sj1)
+	assert.Nil(err)
+	id2, err := AddScanJob(sj1)
+	assert.Nil(err)
+	_, err = AddScanJob(sj2)
+	assert.Nil(err)
+	r, err := GetScanJobsByImage("library/ubuntu", "14.04")
+	assert.Nil(err)
+	assert.Equal(2, len(r))
+	assert.Equal(id2, r[0].ID)
+	r, err = GetScanJobsByImage("library/ubuntu", "14.04", 1)
+	assert.Nil(err)
+	assert.Equal(1, len(r))
+	r, err = GetScanJobsByDigest("sha256:nono")
+	assert.Nil(err)
+	assert.Equal(0, len(r))
+	r, err = GetScanJobsByDigest(sj2.Digest)
+	assert.Equal(1, len(r))
+	assert.Equal(sj2.Tag, r[0].Tag)
+	assert.Nil(err)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
 }
