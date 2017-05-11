@@ -58,10 +58,10 @@ build:
       SHELL: /bin/bash
       BUILD_NUMBER: ${GIT_COMMIT}
     commands:
-      - echo ${BUILD_NUMBER}
+      - echo $$GIT_COMMIT
       - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
       - ls -la
-      - du -ks harbor-offline-installer-$$BUILD_NUMBER.tar.gz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      - du -ks harbor-offline-installer-$$GIT_COMMIT.tar.gz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
@@ -86,13 +86,13 @@ publish:
     username: $$BINTRAY_USERNAME
     api_key: $$BINTRAY_API_KEY
     artifacts:
-      - file: harbor-offline-installer-$$BUILD_NUMBER.tar.gz
+      - file: harbor-offline-installer-$$GIT_COMMIT.tar.gz
         owner: vmware
         type: executable
         repository: harbor-repo
         package: build
         version: $$BUILD_NUMBER
-        target: harbor-offline-installer-$$BUILD_NUMBER.tar.gz
+        target: harbor-offline-installer-$$GIT_COMMIT.tar.gz
         publish: true
     when:
       repo: vmware/vic
