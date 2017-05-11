@@ -98,7 +98,7 @@ publish:
     metadata:
       x-goog-meta-foo: bar
     when:
-      repo: vmware/vic
+      repo: vmware/harbor
       event: [ push, pull_request, tag ]
       branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
       success: true
