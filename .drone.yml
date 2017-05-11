@@ -85,7 +85,7 @@ notify:
 publish:
   gcs:
     auth_key: >
-      $SERVICE_ACCOUNT_KEY
+      $$SERVICE_ACCOUNT_KEY
     source: bundle
     target: harbor-ci-logs
     acl:
