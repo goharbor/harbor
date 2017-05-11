@@ -58,10 +58,10 @@ build:
       SHELL: /bin/bash
       BUILD_NUMBER: ${GIT_COMMIT}
     commands:
-      # - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-      # - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+      - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
-      - cp VERSION bundle
+      - cp harbor-offline-installer-*.tgz bundle
       - ls -la bundle
     when:
       repo: vmware/harbor
