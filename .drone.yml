@@ -58,12 +58,10 @@ build:
       SHELL: /bin/bash
       BUILD_NUMBER: ${GIT_COMMIT}
     commands:
-      - echo $$GIT_COMMIT
-      - echo $$DRONE_COMMIT_REF
-      - echo ${DRONE_COMMIT_REF}
       - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
       - ls -la
-      - du -ks harbor-offline-installer-*.tar.gz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      - echo ${DRONE_TAG}
+      - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]
