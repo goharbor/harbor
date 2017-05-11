@@ -15,6 +15,7 @@
 package filter
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -26,7 +27,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
+	beegoctx "github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
@@ -36,6 +37,8 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/projectmanager/db"
 )
 
 func TestMain(m *testing.M) {
@@ -209,9 +212,9 @@ func TestFillContext(t *testing.T) {
 	assert.NotNil(t, projectManager(ctx))
 }
 
-func newContext(req *http.Request) (*context.Context, error) {
+func newContext(req *http.Request) (*beegoctx.Context, error) {
 	var err error
-	ctx := context.NewContext()
+	ctx := beegoctx.NewContext()
 	ctx.Reset(httptest.NewRecorder(), req)
 	if req != nil {
 		ctx.Input.CruSession, err = beego.GlobalSessions.SessionStart(ctx.ResponseWriter, req)
@@ -235,10 +238,77 @@ func addSessionIDToCookie(req *http.Request, sessionID string) {
 	req.AddCookie(cookie)
 }
 
-func securityContext(ctx *context.Context) interface{} {
-	return ctx.Input.Data()[HarborSecurityContext]
+func securityContext(ctx *beegoctx.Context) interface{} {
+	c, err := GetSecurityContext(ctx.Request)
+	if err != nil {
+		return nil
+	}
+	return c
 }
 
-func projectManager(ctx *context.Context) interface{} {
-	return ctx.Input.Data()[HarborProjectManager]
+func projectManager(ctx *beegoctx.Context) interface{} {
+	if ctx.Request == nil {
+		return nil
+	}
+	return ctx.Request.Context().Value(HarborProjectManager)
+}
+
+func TestGetSecurityContext(t *testing.T) {
+	// nil request
+	ctx, err := GetSecurityContext(nil)
+	assert.NotNil(t, err)
+
+	// the request contains no security context
+	req, err := http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	ctx, err = GetSecurityContext(req)
+	assert.NotNil(t, err)
+
+	// the request contains a variable which is not the correct type
+	req, err = http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	req = req.WithContext(context.WithValue(req.Context(),
+		HarborSecurityContext, "test"))
+	ctx, err = GetSecurityContext(req)
+	assert.NotNil(t, err)
+
+	// the request contains a correct variable
+	req, err = http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	req = req.WithContext(context.WithValue(req.Context(),
+		HarborSecurityContext, rbac.NewSecurityContext(nil, nil)))
+	ctx, err = GetSecurityContext(req)
+	assert.Nil(t, err)
+	_, ok := ctx.(security.Context)
+	assert.True(t, ok)
+}
+
+func TestGetProjectManager(t *testing.T) {
+	// nil request
+	pm, err := GetProjectManager(nil)
+	assert.NotNil(t, err)
+
+	// the request contains no project manager
+	req, err := http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	pm, err = GetProjectManager(req)
+	assert.NotNil(t, err)
+
+	// the request contains a variable which is not the correct type
+	req, err = http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	req = req.WithContext(context.WithValue(req.Context(),
+		HarborProjectManager, "test"))
+	pm, err = GetProjectManager(req)
+	assert.NotNil(t, err)
+
+	// the request contains a correct variable
+	req, err = http.NewRequest("", "", nil)
+	assert.Nil(t, err)
+	req = req.WithContext(context.WithValue(req.Context(),
+		HarborProjectManager, &db.ProjectManager{}))
+	pm, err = GetProjectManager(req)
+	assert.Nil(t, err)
+	_, ok := pm.(projectmanager.ProjectManager)
+	assert.True(t, ok)
 }

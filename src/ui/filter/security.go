@@ -15,11 +15,15 @@
 package filter
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/security/rbac"
 	"github.com/vmware/harbor/src/common/security/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -28,15 +32,17 @@ import (
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
+type key string
+
 const (
 	// HarborSecurityContext is the name of security context passed to handlers
-	HarborSecurityContext = "harbor_security_context"
+	HarborSecurityContext key = "harbor_security_context"
 	// HarborProjectManager is the name of project manager passed to handlers
-	HarborProjectManager = "harbor_project_manager"
+	HarborProjectManager key = "harbor_project_manager"
 )
 
-// SecurityFilter authenticates the request and passes a security context with it
-// which can be used to do some authorization
+// SecurityFilter authenticates the request and passes a security context
+// and a project manager with it which can be used to do some authN & authZ
 func SecurityFilter(ctx *beegoctx.Context) {
 	if ctx == nil {
 		return
@@ -60,12 +66,15 @@ func fillContext(ctx *beegoctx.Context) {
 	// secret
 	scrt := ctx.GetCookie("secret")
 	if len(scrt) != 0 {
-		ctx.Input.SetData(HarborProjectManager,
+		ct := context.WithValue(ctx.Request.Context(),
+			HarborProjectManager,
 			getProjectManager(ctx))
 
 		log.Info("creating a secret security context...")
-		ctx.Input.SetData(HarborSecurityContext,
+		ct = context.WithValue(ct, HarborSecurityContext,
 			secret.NewSecurityContext(scrt, config.SecretStore))
+
+		ctx.Request = ctx.Request.WithContext(ct)
 
 		return
 	}
@@ -113,11 +122,12 @@ func fillContext(ctx *beegoctx.Context) {
 	}
 
 	pm := getProjectManager(ctx)
-	ctx.Input.SetData(HarborProjectManager, pm)
+	ct := context.WithValue(ctx.Request.Context(), HarborProjectManager, pm)
 
 	log.Info("creating a rbac security context...")
-	ctx.Input.SetData(HarborSecurityContext,
+	ct = context.WithValue(ct, HarborSecurityContext,
 		rbac.NewSecurityContext(user, pm))
+	ctx.Request = ctx.Request.WithContext(ct)
 
 	return
 }
@@ -132,4 +142,42 @@ func getProjectManager(ctx *beegoctx.Context) projectmanager.ProjectManager {
 	// TODO create project manager based on pms
 	log.Info("filling a project manager based on pms...")
 	return nil
+}
+
+// GetSecurityContext tries to get security context from request and returns it
+func GetSecurityContext(req *http.Request) (security.Context, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request is nil")
+	}
+
+	ctx := req.Context().Value(HarborSecurityContext)
+	if ctx == nil {
+		return nil, fmt.Errorf("the security context got from request is nil")
+	}
+
+	c, ok := ctx.(security.Context)
+	if !ok {
+		return nil, fmt.Errorf("the variable got from request is not security context type")
+	}
+
+	return c, nil
+}
+
+// GetProjectManager tries to get project manager from request and returns it
+func GetProjectManager(req *http.Request) (projectmanager.ProjectManager, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request is nil")
+	}
+
+	pm := req.Context().Value(HarborProjectManager)
+	if pm == nil {
+		return nil, fmt.Errorf("the project manager got from request is nil")
+	}
+
+	p, ok := pm.(projectmanager.ProjectManager)
+	if !ok {
+		return nil, fmt.Errorf("the variable got from request is not project manager type")
+	}
+
+	return p, nil
 }

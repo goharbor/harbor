@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 
@@ -74,7 +74,8 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 }
 
 //filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
-func filterAccess(access []*token.ResourceActions, u userInfo, filters map[string]accessFilter) error {
+func filterAccess(access []*token.ResourceActions, ctx security.Context,
+	filters map[string]accessFilter) error {
 	var err error
 	for _, a := range access {
 		f, ok := filters[a.Type]
@@ -83,8 +84,8 @@ func filterAccess(access []*token.ResourceActions, u userInfo, filters map[strin
 			log.Warningf("No filter found for access type: %s, skip filter, the access of resource '%s' will be set empty.", a.Type, a.Name)
 			continue
 		}
-		err = f.filter(u, a)
-		log.Debugf("user: %s, access: %v", u.name, a)
+		err = f.filter(ctx, a)
+		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
 			return err
 		}
@@ -92,31 +93,23 @@ func filterAccess(access []*token.ResourceActions, u userInfo, filters map[strin
 	return nil
 }
 
+// TODO merge RegistryTokenForUI NotaryTokenForUI genTokenForUI
+// to one function
+
 //RegistryTokenForUI calls genTokenForUI to get raw token for registry
 func RegistryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
-	return genTokenForUI(username, service, scopes, registryFilterMap)
+	return genTokenForUI(username, service, scopes)
 }
 
 //NotaryTokenForUI calls genTokenForUI to get raw token for notary
 func NotaryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
-	return genTokenForUI(username, service, scopes, notaryFilterMap)
+	return genTokenForUI(username, service, scopes)
 }
 
 // genTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func genTokenForUI(username string, service string, scopes []string, filters map[string]accessFilter) (string, int, *time.Time, error) {
-	isAdmin, err := dao.IsAdminRole(username)
-	if err != nil {
-		return "", 0, nil, err
-	}
-	u := userInfo{
-		name:    username,
-		allPerm: isAdmin,
-	}
+func genTokenForUI(username string, service string,
+	scopes []string) (string, int, *time.Time, error) {
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, u, filters)
-	if err != nil {
-		return "", 0, nil, err
-	}
 	return MakeRawToken(username, service, access)
 }
 
