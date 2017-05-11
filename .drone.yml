@@ -44,7 +44,7 @@ build:
       GS_CLIENT_EMAIL: $$GS_CLIENT_EMAIL
       GS_PRIVATE_KEY: $$GS_PRIVATE_KEY
     commands:
-      - ls
+      - tests/integration.sh
     when:
       success: true
 
