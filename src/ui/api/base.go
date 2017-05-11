@@ -27,11 +27,11 @@ import (
 // BaseController ...
 type BaseController struct {
 	api.BaseAPI
-	// SecurityCxt is the security context used to authN &authZ
-	SecurityCxt security.Context
-	// ProManager is the project manager which abstracts the operations
+	// SecurityCtx is the security context used to authN &authZ
+	SecurityCtx security.Context
+	// ProjectMgr is the project manager which abstracts the operations
 	// related to projects
-	ProManager projectmanager.ProjectManager
+	ProjectMgr projectmanager.ProjectManager
 }
 
 // Prepare inits security context and project manager from beego
@@ -39,14 +39,14 @@ type BaseController struct {
 func (b *BaseController) Prepare() {
 	ok := false
 	ctx := b.Ctx.Input.GetData(filter.HarborSecurityContext)
-	b.SecurityCxt, ok = ctx.(security.Context)
+	b.SecurityCtx, ok = ctx.(security.Context)
 	if !ok {
 		log.Error("failed to get security context")
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
 
 	pm := b.Ctx.Input.GetData(filter.HarborProjectManager)
-	b.ProManager, ok = pm.(projectmanager.ProjectManager)
+	b.ProjectMgr, ok = pm.(projectmanager.ProjectManager)
 	if !ok {
 		log.Error("failed to get project manager")
 		b.CustomAbort(http.StatusInternalServerError, "")

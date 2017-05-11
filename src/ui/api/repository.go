@@ -69,21 +69,18 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	if !ra.ProManager.Exist(projectID) {
+	if !ra.ProjectMgr.Exist(projectID) {
 		ra.HandleNotFound(fmt.Sprintf("project %d not found", projectID))
 		return
 	}
 
-	if !ra.ProManager.IsPublic(projectID) {
-		if !ra.SecurityCxt.IsAuthenticated() {
+	if !ra.SecurityCtx.HasReadPerm(projectID) {
+		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
 		}
-
-		if !ra.SecurityCxt.HasReadPerm(projectID) {
-			ra.HandleForbidden(ra.SecurityCxt.GetUsername())
-			return
-		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	keyword := ra.GetString("q")
@@ -149,18 +146,18 @@ func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProManager.Exist(projectName) {
+	if !ra.ProjectMgr.Exist(projectName) {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
 
-	if !ra.SecurityCxt.IsAuthenticated() {
+	if !ra.SecurityCtx.IsAuthenticated() {
 		ra.HandleUnauthorized()
 		return
 	}
 
-	if !ra.SecurityCxt.HasAllPerm(projectName) {
-		ra.HandleForbidden(ra.SecurityCxt.GetUsername())
+	if !ra.SecurityCtx.HasAllPerm(projectName) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
 
@@ -197,7 +194,7 @@ func (ra *RepositoryAPI) Delete() {
 		var digest string
 		signedTags := make(map[string]struct{})
 		targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
-			ra.SecurityCxt.GetUsername(), repoName)
+			ra.SecurityCtx.GetUsername(), repoName)
 		if err != nil {
 			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
 			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
@@ -239,9 +236,9 @@ func (ra *RepositoryAPI) Delete() {
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			project := ra.ProManager.Get(projectName)
+			project := ra.ProjectMgr.Get(projectName)
 			if err := dao.AddAccessLog(models.AccessLog{
-				Username:  ra.SecurityCxt.GetUsername(),
+				Username:  ra.SecurityCtx.GetUsername(),
 				ProjectID: project.ProjectID,
 				RepoName:  repoName,
 				RepoTag:   tag,
@@ -271,21 +268,18 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProManager.Exist(projectName) {
+	if !ra.ProjectMgr.Exist(projectName) {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
 
-	if !ra.ProManager.IsPublic(projectName) {
-		if !ra.SecurityCxt.IsAuthenticated() {
+	if !ra.SecurityCtx.HasReadPerm(projectName) {
+		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
 		}
-
-		if !ra.SecurityCxt.HasReadPerm(projectName) {
-			ra.HandleForbidden(ra.SecurityCxt.GetUsername())
-			return
-		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	client, err := ra.initRepositoryClient(repoName)
@@ -366,21 +360,19 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProManager.Exist(projectName) {
+	if !ra.ProjectMgr.Exist(projectName) {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
 
-	if !ra.ProManager.IsPublic(projectName) {
-		if !ra.SecurityCxt.IsAuthenticated() {
+	if !ra.SecurityCtx.HasReadPerm(projectName) {
+		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
 		}
 
-		if !ra.SecurityCxt.HasReadPerm(projectName) {
-			ra.HandleForbidden(ra.SecurityCxt.GetUsername())
-			return
-		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	rc, err := ra.initRepositoryClient(repoName)
@@ -451,7 +443,7 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return NewRepositoryClient(endpoint, true, ra.SecurityCxt.GetUsername(),
+	return NewRepositoryClient(endpoint, true, ra.SecurityCtx.GetUsername(),
 		repoName, "repository", repoName, "pull", "push", "*")
 }
 
@@ -463,10 +455,10 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	}
 
 	projectIDs := []int64{}
-	projects := ra.ProManager.GetPublic()
-	if ra.SecurityCxt.IsAuthenticated() {
-		projects = append(projects, ra.ProManager.GetByMember(
-			ra.SecurityCxt.GetUsername())...)
+	projects := ra.ProjectMgr.GetPublic()
+	if ra.SecurityCtx.IsAuthenticated() {
+		projects = append(projects, ra.ProjectMgr.GetByMember(
+			ra.SecurityCtx.GetUsername())...)
 	}
 
 	for _, project := range projects {
@@ -494,7 +486,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
-		ra.SecurityCxt.GetUsername(), repoName)
+		ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
