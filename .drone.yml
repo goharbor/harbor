@@ -58,10 +58,10 @@ build:
       SHELL: /bin/bash
       BUILD_NUMBER: ${GIT_COMMIT}
     commands:
-      - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-      - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+      # - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+      # - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
-      - cp harbor-offline-installer-*.tgz bundle
+      - cp LICENSE bundle
       - ls -la bundle
     when:
       repo: vmware/harbor
@@ -90,23 +90,10 @@ publish:
     target: harbor-ci-logs
     acl:
       - allUsers:READER
+    gzip:
+      - js
+      - css
+      - html      
     cache_control: public,max-age=3600
-    when:
-      repo: vmware/harbor
-      event: [ push, pull_request, tag ]
-      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
-      status: success
-
-publish-gcs-releases:
-  image: maplain/drone-gcs:latest
-  pull: true
-  source: bundle
-  target: harbor-releases
-  acl:
-    - allUsers:READER
-  cache_control: public,max-age=3600
-  when:
-    repo: vmware/harbor
-    event: [ push, tag ]
-    branch: [ refs/tags/* ]
-    status: success
+    metadata:
+      x-goog-meta-foo: bar
