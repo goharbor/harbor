@@ -2,7 +2,14 @@ import { NgModule, ModuleWithProviders, Provider, APP_INITIALIZER, Inject } from
 
 import { LOG_DIRECTIVES } from './log/index';
 import { FILTER_DIRECTIVES } from './filter/index';
+import { ENDPOINT_DIRECTIVES } from './endpoint/index';
+import { CREATE_EDIT_ENDPOINT_DIRECTIVES } from './create-edit-endpoint/index';
+
 import { SERVICE_CONFIG, IServiceConfig } from './service.config';
+
+import { CONFIRMATION_DIALOG_DIRECTIVES } from './confirmation-dialog/index';
+import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
+
 import {
   AccessLogService,
   AccessLogDefaultService,
@@ -110,12 +117,21 @@ export function initConfig(translateService: TranslateService, config: IServiceC
   ],
   declarations: [
     LOG_DIRECTIVES,
-    FILTER_DIRECTIVES
+    FILTER_DIRECTIVES,
+    ENDPOINT_DIRECTIVES,
+    CREATE_EDIT_ENDPOINT_DIRECTIVES,
+    CONFIRMATION_DIALOG_DIRECTIVES,
+    INLINE_ALERT_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
-    FILTER_DIRECTIVES
-  ]
+    FILTER_DIRECTIVES,
+    ENDPOINT_DIRECTIVES,
+    CREATE_EDIT_ENDPOINT_DIRECTIVES,
+    CONFIRMATION_DIALOG_DIRECTIVES,
+    INLINE_ALERT_DIRECTIVES
+  ],
+  providers: []
 })
 
 export class HarborLibraryModule {

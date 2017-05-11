@@ -1,7 +1,8 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { Endpoint } from './interface';
+import { Endpoint, ReplicationRule } from './interface';
 import { Injectable } from "@angular/core";
+import { Http } from '@angular/http';
 import 'rxjs/add/observable/of';
 
 /**
@@ -80,6 +81,15 @@ export abstract class EndpointService {
      * @memberOf EndpointService
      */
     abstract pingEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any;
+
+    /**
+     * Check endpoint whether in used with specific replication rule.
+     * 
+     * @abstract 
+     * @param {{number | string}} endpointId
+     * @returns {{Observable<any> | any}}
+     */
+    abstract getEndpointWithReplicationRules(endpointId: number | string): Observable<any> | Promise<any> | any;
 }
 
 /**
@@ -91,28 +101,71 @@ export abstract class EndpointService {
  */
 @Injectable()
 export class EndpointDefaultService extends EndpointService {
+    
+    constructor(private http: Http){
+      super();
+    }
+
     public getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[] {
-        return Observable.of([]);
+        return this.http
+               .get(`/api/targets?name=${endpointName}`)
+               .toPromise()
+               .then(response=>response.json())
+               .catch(error=>Promise.reject(error));
     }
 
     public getEndpoint(endpointId: number | string): Observable<Endpoint> | Promise<Endpoint> | Endpoint {
-        return Observable.of({});
+        return this.http
+               .get(`/api/targets/${endpointId}`)
+               .toPromise()
+               .then(response=>response.json() as Endpoint)
+               .catch(error=>Promise.reject(error));
     }
 
     public createEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
-        return Observable.of({});
+        return this.http
+               .post(`/api/targets`, JSON.stringify(endpoint))
+               .toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
     }
 
     public updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | Promise<any> | any {
-        return Observable.of({});
+        return this.http
+               .put(`/api/targets/${endpointId}`, JSON.stringify(endpoint))
+               .toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
     }
 
     public deleteEndpoint(endpointId: number | string): Observable<any> | Promise<any> | any {
-        return Observable.of({});
+        return this.http
+               .delete(`/api/targets/${endpointId}`)
+               .toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
     }
 
     public pingEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
-        return Observable.of({});
+        if(endpoint.id) {
+          return this.http
+                 .post(`/api/targets/${endpoint.id}/ping`, {})
+                 .toPromise()
+                 .then(response=>response.status)
+                 .catch(error=>Promise.reject(error));
+        }
+        return this.http
+               .post(`/api/targets/ping`, endpoint)
+               .toPromise()
+               .then(response=>response.status)
+               .catch(error=>Observable.throw(error));
+    }
+
+    public getEndpointWithReplicationRules(endpointId: number | string): Observable<any> | Promise<any> | any {
+        return this.http
+               .get(`/api/targets/${endpointId}/policies`)
+               .toPromise()
+               .then(response=>response.json() as ReplicationRule[])
+               .catch(error=>Promise.reject(error));
     }
 }
-
