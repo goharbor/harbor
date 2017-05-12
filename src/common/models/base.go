@@ -26,5 +26,6 @@ func init() {
 		new(Project),
 		new(Role),
 		new(AccessLog),
+		new(ScanJob),
 		new(RepoRecord))
 }

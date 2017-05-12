@@ -160,6 +160,17 @@ create table replication_job (
  update_time timestamp default CURRENT_TIMESTAMP
  );
 
+
+create table img_scan_job (
+ id INTEGER PRIMARY KEY,
+ status varchar(64) NOT NULL,
+ repository varchar(256) NOT NULL,
+ tag   varchar(128) NOT NULL,
+ digest varchar(64),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
 CREATE INDEX policy ON replication_job (policy_id);
 CREATE INDEX poid_uptime ON replication_job (policy_id, update_time);
  
