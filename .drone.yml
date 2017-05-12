@@ -65,8 +65,8 @@ build:
       - ls -la bundle
     when:
       repo: vmware/harbor
-      event: [ push, pull_request, tag ]
-      branch: [ master, drone, drone-test, releases/*, refs/tags/* ]
+      event: [ push, tag ]
+      branch: [ master, releases/*, refs/tags/* ]
       success: true
 
 notify:
@@ -84,8 +84,6 @@ notify:
 
 publish:
   gcs:
-    image: maplain/drone-gcs:latest
-    pull: true
     source: bundle
     target: harbor-ci-logs
     acl:
