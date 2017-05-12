@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing';
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
-
-import { TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from '../shared/shared.module';
 
@@ -27,9 +26,7 @@ describe('CreateEditEndpointComponent (inline template)', () => {
 
   let comp: CreateEditEndpointComponent;
   let fixture: ComponentFixture<CreateEditEndpointComponent>;
-  let de: DebugElement;
-  let el: HTMLElement;
-
+ 
   let config: IServiceConfig = {
     systemInfoEndpoint: '/api/endpoints/testing'
   };
@@ -40,7 +37,10 @@ describe('CreateEditEndpointComponent (inline template)', () => {
   
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ SharedModule ],
+      imports: [ 
+        SharedModule,
+        NoopAnimationsModule
+      ],
       declarations: [ 
           FilterComponent, 
           CreateEditEndpointComponent, 
@@ -48,8 +48,7 @@ describe('CreateEditEndpointComponent (inline template)', () => {
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: EndpointService, useClass: EndpointDefaultService },
-        { provide: TranslateService, useClass: TranslateService}
+        { provide: EndpointService, useClass: EndpointDefaultService }
       ]
     });
   }));
@@ -61,6 +60,9 @@ describe('CreateEditEndpointComponent (inline template)', () => {
     endpointService = fixture.debugElement.injector.get(EndpointService);
     spy = spyOn(endpointService, 'getEndpoint').and.returnValue(Promise.resolve(mockData));
     fixture.detectChanges();
+    
+    comp.openCreateEditTarget(true, 1);
+    fixture.detectChanges();
   });
 
   it('should be created', () => {
@@ -70,18 +72,14 @@ describe('CreateEditEndpointComponent (inline template)', () => {
 
   it('should get endpoint be called', async(()=>{
     fixture.detectChanges();
-    comp.openCreateEditTarget(true, 1);
-    comp.createEditDestinationOpened = false;
     fixture.whenStable().then(()=>{
       fixture.detectChanges(); 
       expect(spy.calls.any()).toBeTruthy();
     });
   }));
 
-  it('should get endpoint to open modal', async(()=>{
-    fixture.detectChanges();
-    comp.openCreateEditTarget(true, 1);
-    comp.createEditDestinationOpened = false;
+  it('should get endpoint and open modal', async(()=>{
+    fixture.detectChanges();    
     fixture.whenStable().then(()=>{
       fixture.detectChanges();  
       expect(comp.target.name).toEqual('target_01');
@@ -92,5 +90,4 @@ describe('CreateEditEndpointComponent (inline template)', () => {
     fixture.detectChanges();
     expect(config.systemInfoEndpoint).toEqual('/api/endpoints/testing');
   });
-
 });

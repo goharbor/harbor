@@ -50,8 +50,8 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
 
   actionType: ActionType;
 
-  target: Endpoint = Object.assign({}, this.initEndpoint);
-  initVal: Endpoint = Object.assign({}, this.initEndpoint);
+  target: Endpoint =  this.initEndpoint;
+  initVal: Endpoint = this.initEndpoint;
 
   targetForm: NgForm;
 
@@ -89,7 +89,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
 
   openCreateEditTarget(editable: boolean, targetId?: number) {
     
-    this.target = Object.assign({}, this.initEndpoint);
+    this.target = this.initEndpoint;
     this.editable = editable;
     this.createEditDestinationOpened = true;
     this.hasChanged = false;
@@ -113,7 +113,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
               this.initVal.username = this.target.username;
               this.initVal.password = FAKE_PASSWORD;
               this.target.password = this.initVal.password;
-              
             })
           .catch(error=>this.errorHandler.error(error));
     } else {
@@ -127,7 +126,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
     this.pingStatus = true;
     this.testOngoing = !this.testOngoing;
 
-    let payload: Endpoint = Object.assign({}, this.initEndpoint);;
+    let payload: Endpoint = this.initEndpoint;
     if(this.endpointHasChanged) {
       payload.endpoint = this.target.endpoint;
       payload.username = this.target.username;
@@ -148,7 +147,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
           this.pingStatus = false;
           this.translateService.get('DESTINATION.TEST_CONNECTION_FAILURE').subscribe(res=>this.pingTestMessage=res);
           this.testOngoing = !this.testOngoing;
-          
         });
   }
 
@@ -168,93 +166,81 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   onSubmit() {
     switch(this.actionType) {
     case ActionType.ADD_NEW:
-      toPromise<number>(this.endpointService
-          .createEndpoint(this.target))
-          .then(
-            response=>{
-              this.errorHandler.info('DESTINATION.CREATED_SUCCESS');
-              this.createEditDestinationOpened = false;
-              this.reload.emit(true);
-            })
-          .catch(
-            error=>{
-              let errorMessageKey = '';
-              switch(error.status) {
-              case 409:
-                errorMessageKey = 'DESTINATION.CONFLICT_NAME';
-                break;
-              case 400:
-                errorMessageKey = 'DESTINATION.INVALID_NAME';
-                break;
-              default:
-                errorMessageKey = 'UNKNOWN_ERROR';
-              }
-              
-              this.translateService
-                  .get(errorMessageKey)
-                  .subscribe(res=>{
-                    // if(this.messageHandlerService.isAppLevel(error)) {
-                    //   this.messageHandlerService.handleError(error);
-                    //   this.createEditDestinationOpened = false;
-                    // } else {
-                    //   this.inlineAlert.showInlineError(res);
-                    // }
-                    this.errorHandler.error(res);
-                  });
-            }
-          );
-        break;
+      this.addEndpoint();
+      break;
     case ActionType.EDIT:
-      if(!(this.targetNameHasChanged || this.endpointHasChanged)) {
-        this.createEditDestinationOpened = false;
-        return;
-      } 
-      let payload: Endpoint = Object.assign({}, this.initEndpoint);
-      if(this.targetNameHasChanged) {
-        payload.name = this.target.name;
-      }
-      if (this.endpointHasChanged) {
-        payload.endpoint = this.target.endpoint;
-        payload.username = this.target.username;
-        payload.password = this.target.password;
-        delete payload.name;
-      } 
-      toPromise<number>(this.endpointService
-          .updateEndpoint(this.target.id, payload))
-          .then(
-            response=>{ 
-              this.errorHandler.info('DESTINATION.UPDATED_SUCCESS');
-              this.createEditDestinationOpened = false;
-              this.reload.emit(true);
-            })
-          .catch(
-            error=>{
-              let errorMessageKey = '';
-              switch(error.status) {
-              case 409:this
-                errorMessageKey = 'DESTINATION.CONFLICT_NAME';
-                break;
-              case 400:
-                errorMessageKey = 'DESTINATION.INVALID_NAME';
-                break;
-              default:
-                errorMessageKey = 'UNKNOWN_ERROR';
-              }
-              this.translateService
-                  .get(errorMessageKey)
-                  .subscribe(res=>{
-                    // if(this.messageHandlerService.isAppLevel(error)) {
-                    //   this.messageHandlerService.handleError(error);
-                    //   this.createEditDestinationOpened = false;
-                    // } else {
-                    //   this.inlineAlert.showInlineError(res);
-                    // }
-                    this.errorHandler.error(res);
-                  });
-            }
-          );
-        break;
+      this.updateEndpoint();
+      break;
     }
+  }
+
+  addEndpoint() {
+    toPromise<number>(this.endpointService
+      .createEndpoint(this.target))
+      .then(
+        response=>{
+          this.translateService.get('DESTINATION.CREATED_SUCCESS')
+              .subscribe(res=>this.errorHandler.info(res));
+          this.createEditDestinationOpened = false;
+          this.reload.emit(true);
+        })
+      .catch(
+        error=>{
+          let errorMessageKey = this.handleErrorMessageKey(error.status);
+          this.translateService
+              .get(errorMessageKey)
+              .subscribe(res=>{
+                this.errorHandler.error(res);
+              });
+        }
+      );
+  }
+
+  updateEndpoint() {
+    if(!(this.targetNameHasChanged || this.endpointHasChanged)) {
+      this.createEditDestinationOpened = false;
+      return;
+    } 
+    let payload: Endpoint = this.initEndpoint;
+    if(this.targetNameHasChanged) {
+      payload.name = this.target.name;
+    }
+    if (this.endpointHasChanged) {
+      payload.endpoint = this.target.endpoint;
+      payload.username = this.target.username;
+      payload.password = this.target.password;
+      delete payload.name;
+    } 
+    toPromise<number>(this.endpointService
+      .updateEndpoint(this.target.id, payload))
+      .then(
+        response=>{ 
+          this.translateService.get('DESTINATION.UPDATED_SUCCESS')
+              .subscribe(res=>this.errorHandler.info(res)); 
+          this.createEditDestinationOpened = false;
+          this.reload.emit(true);
+        })
+      .catch(
+        error=>{
+          let errorMessageKey = this.handleErrorMessageKey(error.status);
+          this.translateService
+              .get(errorMessageKey)
+              .subscribe(res=>{
+                this.errorHandler.error(res);
+              });
+        }
+      );
+  }
+
+  handleErrorMessageKey(status: number): string {
+    switch(status) {
+      case 409:this
+        return 'DESTINATION.CONFLICT_NAME';
+      case 400:
+        return 'DESTINATION.INVALID_NAME';
+      default:
+        return 'UNKNOWN_ERROR';
+      }
   }
 
   onCancel() {

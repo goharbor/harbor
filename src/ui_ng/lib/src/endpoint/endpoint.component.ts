@@ -14,6 +14,9 @@
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Endpoint, ReplicationRule } from '../service/interface';
 import { EndpointService } from '../service/endpoint.service';
+
+import { TranslateService } from '@ngx-translate/core';
+
 import { ErrorHandler } from '../error-handler/index';
 
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -65,6 +68,7 @@ export class EndpointComponent implements OnInit {
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
+    private translateService: TranslateService,
     private ref: ChangeDetectorRef) {
     let hnd = setInterval(()=>ref.markForCheck(), 100);
     setTimeout(()=>clearInterval(hnd), 1000);
@@ -80,12 +84,14 @@ export class EndpointComponent implements OnInit {
         .deleteEndpoint(targetId))
         .then(
           response => {
-            this.errorHandler.error('DESTINATION.DELETED_SUCCESS');
+            this.translateService.get('DESTINATION.DELETED_SUCCESS')
+                .subscribe(res=>this.errorHandler.info(res));
             this.reload(true);
           }).catch(
           error => { 
             if(error && error.status === 412) {
-              this.errorHandler.error('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED');
+              this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')
+                  .subscribe(res=>this.errorHandler.error(res));
             } else {
               this.errorHandler.error(error);
             }
@@ -93,11 +99,8 @@ export class EndpointComponent implements OnInit {
     }
   }
 
-  cancelDeletion(message: ConfirmationAcknowledgement) {
-    console.log('Received message from cancelAction:' + JSON.stringify(message));
-  }
+  cancelDeletion(message: ConfirmationAcknowledgement) {}
  
-
   ngOnInit(): void {
     this.targetName = '';
     this.retrieve('');
@@ -142,19 +145,12 @@ export class EndpointComponent implements OnInit {
   editTarget(target: Endpoint) {
     if (target) {
       let editable = true;
-      
       toPromise<ReplicationRule[]>(this.endpointService
           .getEndpointWithReplicationRules(target.id))
           .then(
             rules=>{
               if(rules && rules.length > 0) {
-                for(let i = 0; i < rules.length; i++){
-                  let p: ReplicationRule = rules[i];
-                  if(p.enabled === 1) {
-                    editable = false;
-                    break;
-                  }
-                }
+                rules.forEach((rule)=>editable = (rule && rule.enabled !== 1));
               }
               this.createEditEndpointComponent.openCreateEditTarget(editable, +target.id);
               let hnd = setInterval(()=>this.ref.markForCheck(), 100);
