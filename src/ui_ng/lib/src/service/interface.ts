@@ -72,7 +72,13 @@ export interface Tag extends Base {
  * @interface Endpoint
  * @extends {Base}
  */
-export interface Endpoint extends Base { }
+export interface Endpoint extends Base {
+  endpoint: string;
+  name: string;
+  username: string;
+  password: string;
+  type: number;
+}
 
 /**
  * Interface for replication rule.
