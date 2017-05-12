@@ -136,6 +136,7 @@ func (b *BaseAPI) ValidateUser() int {
 
 // GetUserIDForRequest tries to get user ID from basic auth header and session.
 // It returns the user ID, whether need further verification(when the id is from session) and if the action is successful
+// TODO remove
 func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {

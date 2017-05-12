@@ -59,6 +59,11 @@ func (s *SecurityContext) IsSysAdmin() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+	// not exist
+	if !s.pm.Exist(projectIDOrName) {
+		return false
+	}
+
 	// public project
 	if s.pm.IsPublic(projectIDOrName) {
 		return true
@@ -93,6 +98,11 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
+	// project does not exist
+	if !s.pm.Exist(projectIDOrName) {
+		return false
+	}
+
 	// system admin
 	if s.IsSysAdmin() {
 		return true
@@ -115,6 +125,12 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
+
+	// project does not exist
+	if !s.pm.Exist(projectIDOrName) {
+		return false
+	}
+
 	// system admin
 	if s.IsSysAdmin() {
 		return true

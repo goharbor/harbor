@@ -34,21 +34,20 @@ type BaseController struct {
 	ProjectMgr projectmanager.ProjectManager
 }
 
-// Prepare inits security context and project manager from beego
+// Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	ok := false
-	ctx := b.Ctx.Input.GetData(filter.HarborSecurityContext)
-	b.SecurityCtx, ok = ctx.(security.Context)
-	if !ok {
+	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
+	if err != nil {
 		log.Error("failed to get security context")
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
+	b.SecurityCtx = ctx
 
-	pm := b.Ctx.Input.GetData(filter.HarborProjectManager)
-	b.ProjectMgr, ok = pm.(projectmanager.ProjectManager)
-	if !ok {
+	pm, err := filter.GetProjectManager(b.Ctx.Request)
+	if err != nil {
 		log.Error("failed to get project manager")
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
+	b.ProjectMgr = pm
 }

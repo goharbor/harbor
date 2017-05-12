@@ -356,7 +356,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 				return needsAdd, needsDel, err
 			}
 			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR)
+				"admin", repoInR, "repository", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -381,7 +381,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 				return needsAdd, needsDel, err
 			}
 			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR)
+				"admin", repoInR, "repository", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -428,6 +428,7 @@ func projectExists(repository string) (bool, error) {
 	return dao.ProjectExists(project)
 }
 
+// TODO need a registry client which accept a raw token as param
 func initRegistryClient() (r *registry.Registry, err error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {
@@ -500,6 +501,7 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 }
 
 // NewRegistryClient ...
+// TODO need a registry client which accept a raw token as param
 func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
@@ -517,6 +519,7 @@ func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scop
 }
 
 // NewRepositoryClient ...
+// TODO need a registry client which accept a raw token as param
 func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
 
