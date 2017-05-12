@@ -120,7 +120,7 @@ export class EndpointDefaultService extends EndpointService {
             queryParams = new RequestQueryParams();
         }
         if(endpointName) {
-            queryParams.set('endpointName', endpointName);
+            queryParams.set('name', endpointName);
         }
         let requestUrl: string = `${this._endpointUrl}`;
         return this.http
