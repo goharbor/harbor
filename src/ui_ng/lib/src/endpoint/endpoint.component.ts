@@ -143,16 +143,20 @@ export class EndpointComponent implements OnInit {
   }
 
   editTarget(target: Endpoint) {
-    if (target) {
+    if(target) {
       let editable = true;
+      if (!target.id) {
+         return;
+      } 
+      let id: number | string = target.id;
       toPromise<ReplicationRule[]>(this.endpointService
-          .getEndpointWithReplicationRules(target.id))
+          .getEndpointWithReplicationRules(id))
           .then(
             rules=>{
               if(rules && rules.length > 0) {
                 rules.forEach((rule)=>editable = (rule && rule.enabled !== 1));
               }
-              this.createEditEndpointComponent.openCreateEditTarget(editable, +target.id);
+              this.createEditEndpointComponent.openCreateEditTarget(editable, id);
               let hnd = setInterval(()=>this.ref.markForCheck(), 100);
               setTimeout(()=>clearInterval(hnd), 1000);
             })
