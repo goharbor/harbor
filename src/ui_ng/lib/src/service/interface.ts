@@ -48,7 +48,7 @@ export interface Repository extends Base {
     owner_id?: number;
     project_id?: number;
     description?: string;
-    start_count?: number;
+    star_count?: number;
     pull_count?: number;
 }
 
@@ -63,6 +63,22 @@ export interface Tag extends Base {
     tag: string;
     manifest: TagManifest;
     signed?: number; //May NOT exist
+}
+
+/**
+ * Inteface for the tag view
+ */
+export interface TagView {
+  tag: string;
+  pullCommand: string;
+  signed: number;
+  author: string;
+  created: Date;
+  dockerVersion: string;
+  architecture: string;
+  os: string;
+  id: string;
+  parent: string;
 }
 
 /**
@@ -130,4 +146,17 @@ export interface AccessLog {
     username: string;
     keywords?: string; //NOT used now
     guid?: string; //NOT used now
+}
+
+/**
+ * Session related info.
+ * 
+ * @export 
+ * @interface SessionInfo
+ */
+export interface SessionInfo {
+    withNotary?: boolean;
+    hasProjectAdminRole?: boolean;
+    hasSignedIn?: boolean;
+    registryUrl?: string;
 }
