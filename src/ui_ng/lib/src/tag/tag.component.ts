@@ -21,7 +21,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 
-import { Tag, TagView, SessionInfo } from '../service/interface';
+import { Tag, SessionInfo } from '../service/interface';
 
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
@@ -29,6 +29,22 @@ import { TAG_STYLE } from './tag.component.css';
 import { toPromise } from '../utils';
 
 import { TranslateService } from '@ngx-translate/core';
+
+/**
+ * Inteface for the tag view
+ */
+export interface TagView {
+  tag: string;
+  pullCommand: string;
+  signed: number;
+  author: string;
+  created: Date;
+  dockerVersion: string;
+  architecture: string;
+  os: string;
+  id: string;
+  parent: string;
+}
 
 @Component({
   selector: 'hbr-tag',
@@ -101,8 +117,6 @@ export class TagComponent implements OnInit {
         }
     }
   }
-
-  cancelDeletion(message: ConfirmationAcknowledgement) {}
 
   ngOnInit() {
     if(!this.projectId) {

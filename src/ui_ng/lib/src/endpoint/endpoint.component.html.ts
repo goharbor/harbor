@@ -1,5 +1,5 @@
 export const ENDPOINT_TEMPLATE: string = `
-    <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)" (cancelAction)="cancelDeletion($event)"></confirmation-dialog>
+    <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="row flex-items-xs-between">

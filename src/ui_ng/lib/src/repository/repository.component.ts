@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { RepositoryService } from '../service/repository.service';
 import { Repository, SessionInfo } from '../service/interface';
@@ -51,8 +51,6 @@ export class RepositoryComponent implements OnInit {
 
   hasProjectAdminRole: boolean;
 
-  subscription: Subscription;
-
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
 
@@ -77,9 +75,7 @@ export class RepositoryComponent implements OnInit {
         }).catch(error => this.errorHandler.error(error));
     }
   }
-
-  cancelDeletion(message: ConfirmationAcknowledgement) {}   
-
+  
   ngOnInit(): void {
     if(!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
@@ -94,12 +90,6 @@ export class RepositoryComponent implements OnInit {
 
     this.lastFilteredRepoName = '';
     this.retrieve();
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
   }
 
   retrieve(state?: State) {

@@ -1,5 +1,5 @@
 export const TAG_TEMPLATE = `
-<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)" (cancelAction)="cancelDeletion($event)"></confirmation-dialog>
+<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 <clr-modal [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">

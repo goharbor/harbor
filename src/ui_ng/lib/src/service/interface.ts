@@ -66,22 +66,6 @@ export interface Tag extends Base {
 }
 
 /**
- * Inteface for the tag view
- */
-export interface TagView {
-  tag: string;
-  pullCommand: string;
-  signed: number;
-  author: string;
-  created: Date;
-  dockerVersion: string;
-  architecture: string;
-  os: string;
-  id: string;
-  parent: string;
-}
-
-/**
  * Interface for registry endpoints.
  * 
  * @export

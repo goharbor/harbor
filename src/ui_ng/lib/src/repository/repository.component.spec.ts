@@ -102,6 +102,7 @@ describe('RepositoryComponent (inline template)', ()=> {
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
       expect(el.textContent).toEqual('library/nginx');
+      expect(el.textContent).not.toEqual('library/busybox');
     });
   }));
 
