@@ -1,0 +1,21 @@
+<a *ngIf="hasSignedIn" [routerLink]="['/harbor', 'projects']">&lt; {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
+
+<h1 class="sub-header-title">{{currentProject.name}} <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span></h1>
+<nav class="subnav sub-nav-bg-color">
+  <ul class="nav">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="repository" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
+    </li>
+    <li class="nav-item" *ngIf="isSystemAdmin || isMember">
+      <a class="nav-link" routerLink="member" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
+    </li>
+    <li class="nav-item" *ngIf="isSystemAdmin || isMember">
+      <a class="nav-link" routerLink="log" routerLinkActive="active">{{'PROJECT_DETAIL.LOGS' | translate}}</a>
+    </li>
+    <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
+      <a class="nav-link" routerLink="replication" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
+    </li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>

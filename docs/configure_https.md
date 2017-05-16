@@ -1,8 +1,8 @@
-#Configuring Harbor with HTTPS Access 
+# Configuring Harbor with HTTPS Access 
 
 Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests.  However, it is highly recommended that security be enabled for any production environment. Harbor has an Nginx instance as a reverse proxy for all services, you can use the prepare script to configure Nginx to enable https.
 
-##Getting a certificate
+## Getting a certificate
 
 Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that its DNS record points to the host where you are running Harbor. You first should get a certificate from a CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
 
@@ -40,7 +40,7 @@ If you're using **IP**, say **192.168.1.101** to connect your registry host, you
   openssl x509 -req -days 365 -in yourdomain.com.csr -CA ca.crt -CAkey ca.key -CAcreateserial -extfile extfile.cnf -out yourdomain.com
 .crt
 ```
-##Configuration and Installation
+## Configuration and Installation
 After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, 
 you can put them into directory such as ```/root/cert/```:
 
@@ -95,7 +95,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
   docker login reg.yourdomain.com:port
 ```
 
-##Troubleshooting
+## Troubleshooting
 1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:  
 
     ```

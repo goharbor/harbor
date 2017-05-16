@@ -1,0 +1,5 @@
+<form class="search">
+    <label for="search_input">
+      <input #globalSearchBox name="globalSearchBox" [(ngModel)]="searchTerm" id="search_input" type="text" (keyup)="search(globalSearchBox.value)" placeholder='{{placeholderText | translate}}'>
+    </label>
+</form>

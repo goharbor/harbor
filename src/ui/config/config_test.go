@@ -1,144 +1,155 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package config
 
 import (
 	"os"
 	"testing"
+
+	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-var (
-	auth = "ldap_auth"
-	ldap = LDAPSetting{
-		"ldap://test.ldap.com",
-		"ou=people",
-		"dc=whatever,dc=org",
-		"1234567",
-		"cn",
-		"uid",
-		"2",
-	}
-	tokenExp                   = "3"
-	tokenExpRes                = 3
-	adminPassword              = "password"
-	externalRegURL             = "127.0.0.1"
-	uiSecret                   = "ffadsdfsdf"
-	secretKey                  = "keykey"
-	selfRegistration           = "off"
-	projectCreationRestriction = "adminonly"
-	internalRegistryURL        = "http://registry:5000"
-	jobServiceURL              = "http://jobservice"
-)
-
-func TestMain(m *testing.M) {
-
-	os.Setenv("AUTH_MODE", auth)
-	os.Setenv("LDAP_URL", ldap.URL)
-	os.Setenv("LDAP_BASE_DN", ldap.BaseDn)
-	os.Setenv("LDAP_SEARCH_DN", ldap.SearchDn)
-	os.Setenv("LDAP_SEARCH_PWD", ldap.SearchPwd)
-	os.Setenv("LDAP_UID", ldap.UID)
-	os.Setenv("LDAP_SCOPE", ldap.Scope)
-	os.Setenv("LDAP_FILTER", ldap.Filter)
-	os.Setenv("TOKEN_EXPIRATION", tokenExp)
-	os.Setenv("HARBOR_ADMIN_PASSWORD", adminPassword)
-	os.Setenv("EXT_REG_URL", externalRegURL)
-	os.Setenv("UI_SECRET", uiSecret)
-	os.Setenv("SECRET_KEY", secretKey)
-	os.Setenv("SELF_REGISTRATION", selfRegistration)
-	os.Setenv("PROJECT_CREATION_RESTRICTION", projectCreationRestriction)
-	os.Setenv("REGISTRY_URL", internalRegistryURL)
-	os.Setenv("JOB_SERVICE_URL", jobServiceURL)
-
-	err := Reload()
+// test functions under package ui/config
+func TestConfig(t *testing.T) {
+	server, err := test.NewAdminserver(nil)
 	if err != nil {
-		panic(err)
+		t.Fatalf("failed to create a mock admin server: %v", err)
 	}
-	rc := m.Run()
+	defer server.Close()
 
-	os.Unsetenv("AUTH_MODE")
-	os.Unsetenv("LDAP_URL")
-	os.Unsetenv("LDAP_BASE_DN")
-	os.Unsetenv("LDAP_SEARCH_DN")
-	os.Unsetenv("LDAP_SEARCH_PWD")
-	os.Unsetenv("LDAP_UID")
-	os.Unsetenv("LDAP_SCOPE")
-	os.Unsetenv("LDAP_FILTER")
-	os.Unsetenv("TOKEN_EXPIRATION")
-	os.Unsetenv("HARBOR_ADMIN_PASSWORD")
-	os.Unsetenv("EXT_REG_URL")
-	os.Unsetenv("UI_SECRET")
-	os.Unsetenv("SECRET_KEY")
-	os.Unsetenv("SELF_REGISTRATION")
-	os.Unsetenv("CREATE_PROJECT_RESTRICTION")
-	os.Unsetenv("REGISTRY_URL")
-	os.Unsetenv("JOB_SERVICE_URL")
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	}
 
-	os.Exit(rc)
-}
+	secretKeyPath := "/tmp/secretkey"
+	_, err = test.GenerateKey(secretKeyPath)
+	if err != nil {
+		t.Errorf("failed to generate secret key: %v", err)
+		return
+	}
+	defer os.Remove(secretKeyPath)
 
-func TestAuth(t *testing.T) {
-	if AuthMode() != auth {
-		t.Errorf("Expected auth mode:%s, in fact: %s", auth, AuthMode())
+	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
+		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
-	if LDAP() != ldap {
-		t.Errorf("Expected ldap setting: %+v, in fact: %+v", ldap, LDAP())
-	}
-}
 
-func TestTokenExpiration(t *testing.T) {
-	if TokenExpiration() != tokenExpRes {
-		t.Errorf("Expected token expiration: %d, in fact: %d", tokenExpRes, TokenExpiration())
+	if err := Init(); err != nil {
+		t.Fatalf("failed to initialize configurations: %v", err)
 	}
-}
 
-func TestURLs(t *testing.T) {
-	if InternalRegistryURL() != internalRegistryURL {
-		t.Errorf("Expected internal Registry URL: %s, in fact: %s", internalRegistryURL, InternalRegistryURL())
+	if err := Load(); err != nil {
+		t.Fatalf("failed to load configurations: %v", err)
 	}
-	if InternalJobServiceURL() != jobServiceURL {
-		t.Errorf("Expected internal jobservice URL: %s, in fact: %s", jobServiceURL, InternalJobServiceURL())
-	}
-	if ExtRegistryURL() != externalRegURL {
-		t.Errorf("Expected External Registry URL: %s, in fact: %s", externalRegURL, ExtRegistryURL())
-	}
-}
 
-func TestSelfRegistration(t *testing.T) {
-	if SelfRegistration() {
-		t.Errorf("Expected Self Registration to be false")
+	if err := Upload(map[string]interface{}{}); err != nil {
+		t.Fatalf("failed to upload configurations: %v", err)
 	}
-}
 
-func TestSecrets(t *testing.T) {
-	if SecretKey() != secretKey {
-		t.Errorf("Expected Secrect Key :%s, in fact: %s", secretKey, SecretKey())
+	if _, err := GetSystemCfg(); err != nil {
+		t.Fatalf("failed to get system configurations: %v", err)
 	}
-	if UISecret() != uiSecret {
-		t.Errorf("Expected UI Secret: %s, in fact: %s", uiSecret, UISecret())
-	}
-}
 
-func TestProjectCreationRestrict(t *testing.T) {
-	if !OnlyAdminCreateProject() {
-		t.Errorf("Expected OnlyAdminCreateProject to be true")
+	mode, err := AuthMode()
+	if err != nil {
+		t.Fatalf("failed to get auth mode: %v", err)
 	}
-}
+	if mode != "db_auth" {
+		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
+	}
 
-func TestInitAdminPassword(t *testing.T) {
-	if InitialAdminPassword() != adminPassword {
-		t.Errorf("Expected adminPassword: %s, in fact: %s", adminPassword, InitialAdminPassword())
+	if _, err := LDAP(); err != nil {
+		t.Fatalf("failed to get ldap settings: %v", err)
+	}
+
+	if _, err := TokenExpiration(); err != nil {
+		t.Fatalf("failed to get token expiration: %v", err)
+	}
+
+	if _, err := ExtEndpoint(); err != nil {
+		t.Fatalf("failed to get domain name: %v", err)
+	}
+
+	if _, err := SecretKey(); err != nil {
+		t.Fatalf("failed to get secret key: %v", err)
+	}
+
+	if _, err := SelfRegistration(); err != nil {
+		t.Fatalf("failed to get self registration: %v", err)
+	}
+
+	if _, err := RegistryURL(); err != nil {
+		t.Fatalf("failed to get registry URL: %v", err)
+	}
+
+	if len(InternalJobServiceURL()) == 0 {
+		t.Error("the internal job service url is null")
+	}
+
+	if len(InternalTokenServiceEndpoint()) == 0 {
+		t.Error("the internal token service endpoint is null")
+	}
+
+	if _, err := InitialAdminPassword(); err != nil {
+		t.Fatalf("failed to get initial admin password: %v", err)
+	}
+
+	if _, err := OnlyAdminCreateProject(); err != nil {
+		t.Fatalf("failed to get onldy admin create project: %v", err)
+	}
+
+	if _, err := VerifyRemoteCert(); err != nil {
+		t.Fatalf("failed to get verify remote cert: %v", err)
+	}
+
+	if _, err := Email(); err != nil {
+		t.Fatalf("failed to get email settings: %v", err)
+	}
+
+	if _, err := Database(); err != nil {
+		t.Fatalf("failed to get database: %v", err)
+	}
+	if InternalNotaryEndpoint() != "http://notary-server:4443" {
+		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
+	}
+	if WithNotary() {
+		t.Errorf("Withnotary should be false")
+	}
+	if !WithAdmiral() {
+		t.Errorf("WithAdmiral should be true")
+	}
+	if AdmiralEndpoint() != "http://www.vmware.com" {
+		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
+	}
+
+	extURL, err := ExtURL()
+	if err != nil {
+		t.Errorf("Unexpected error getting external URL: %v", err)
+	}
+	if extURL != "host01.com" {
+		t.Errorf(`extURL should be "host01.com".`)
+	}
+
+	// reset configurations
+	if err = Reset(); err != nil {
+		t.Errorf("failed to reset configurations: %v", err)
+		return
+	}
+	mode, err = AuthMode()
+	if err != nil {
+		t.Fatalf("failed to get auth mode: %v", err)
+	}
+	if mode != "db_auth" {
+		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
 }

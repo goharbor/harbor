@@ -1,0 +1,24 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false" [clrModalStaticBackdrop]="false">
+    <h3 class="modal-title margin-left-override">vmware</h3>
+    <div class="modal-body margin-left-override">
+        <div>
+            <h2>Harbor</h2>
+        </div>
+        <div style="height: 12px;"></div>
+        <div>
+            <span class="p5 about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
+        </div>
+        <div style="height: 12px;"></div>
+        <div>
+            <p class="p5">{{'ABOUT.COPYRIGHT' | translate}} <a href="http://www.vmware.com/go/patents" target="_blank" class="about-text-link">http://www.vmware.com/go/patents</a> {{'ABOUT.COPYRIGHT_SUFIX' | translate}}</p>
+            <p class="p5">{{'ABOUT.TRADEMARK' | translate}}</p>
+            <p class="p5">
+                <a href="https://raw.githubusercontent.com/vmware/harbor/master/LICENSE" target="_blank">{{'ABOUT.OPEN_SOURCE_LICENSE' | translate}}</a>
+            </p>
+            <div style="height: 24px;"></div>
+        </div>
+    </div>
+    <div class="modal-footer margin-left-override">
+        <button type="button" class="btn btn-primary" (click)="close()">{{'BUTTON.CLOSE' | translate}}</button>
+    </div>
+</clr-modal>

@@ -4,8 +4,7 @@ import json
 import logging
 import requests
 
-logging.basicConfig(level=logging.INFO)
-
+logging.basicConfig(level=logging.WARNING)
 
 class HarborClient(object):
     def __init__(self, host, user, password, protocol="http"):
@@ -14,47 +13,25 @@ class HarborClient(object):
         self.password = password
         self.protocol = protocol
 
-        self.session_id = self.login()
-
     def __del__(self):
         self.logout()
 
     def login(self):
-        login_data = requests.post('%s://%s/login' %
-                                   (self.protocol, self.host),
+        login_data = requests.post('%s://%s/login' %(self.protocol, self.host),
                                    data={'principal': self.user,
-                                         'password': self.password})
+                                         'password': self.password}, verify=False)
         if login_data.status_code == 200:
             session_id = login_data.cookies.get('beegosessionID')
-
+            self.session_id = session_id
             logging.debug("Successfully login, session id: {}".format(
                 session_id))
-            return session_id
         else:
             logging.error("Fail to login, please try again")
-            return None
 
     def logout(self):
-        requests.get('%s://%s/logout' % (self.protocol, self.host),
-                     cookies={'beegosessionID': self.session_id})
+        requests.get('%s://%s/log_out' % (self.protocol, self.host),
+                     cookies={'beegosessionID': self.session_id}, verify=False)
         logging.debug("Successfully logout")
-
-    # Get project id
-    def get_project_id_from_name(self, project_name):
-        registry_data = requests.get(
-            '%s://%s/api/projects?project_name=%s' %
-            (self.protocol, self.host, project_name),
-            cookies={'beegosessionID': self.session_id})
-        if registry_data.status_code == 200 and registry_data.json():
-            project_id = registry_data.json()[0]['project_id']
-            logging.debug(
-                "Successfully get project id: {}, project name: {}".format(
-                    project_id, project_name))
-            return project_id
-        else:
-            logging.error("Fail to get project id from project name",
-                          project_name)
-            return None
 
     # GET /search
     def search(self, query_string):
@@ -62,7 +39,7 @@ class HarborClient(object):
         path = '%s://%s/api/search?q=%s' % (self.protocol, self.host,
                                             query_string)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug("Successfully get search result: {}".format(result))
@@ -71,12 +48,11 @@ class HarborClient(object):
         return result
 
     # GET /projects
-    def get_projects(self, project_name=None, is_public=None):
-        # TODO: support parameter
+    def get_projects(self):
         result = None
         path = '%s://%s/api/projects' % (self.protocol, self.host)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug("Successfully get projects result: {}".format(
@@ -91,7 +67,7 @@ class HarborClient(object):
         path = '%s://%s/api/projects?project_name=%s' % (
             self.protocol, self.host, project_name)
         response = requests.head(path,
-                                 cookies={'beegosessionID': self.session_id})
+                                 cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug(
@@ -105,16 +81,15 @@ class HarborClient(object):
         return result
 
     # POST /projects
-    def create_project(self, project_name, is_public=False):
+    def create_project(self, project_name, is_public=0):
         result = False
         path = '%s://%s/api/projects' % (self.protocol, self.host)
         request_body = json.dumps({'project_name': project_name,
                                    'public': is_public})
         response = requests.post(path,
                                  cookies={'beegosessionID': self.session_id},
-                                 data=request_body)
-        if response.status_code == 201 or response.status_code == 500:
-            # TODO: the response return 500 sometimes
+                                 data=request_body, verify=False)
+        if response.status_code == 201:
             result = True
             logging.debug(
                 "Successfully create project with project name: {}".format(
@@ -125,15 +100,68 @@ class HarborClient(object):
                     project_name, response.status_code))
         return result
 
+    # GET /projects/{project_id}/members
+    def get_project_members(self, project_id):
+        result = None
+        path = '%s://%s/api/projects/%s/members' % (self.protocol, self.host, project_id)
+        response = requests.get(path,
+                                cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = response.json()
+            logging.debug(
+                "Successfully create project with project id: {}".format(
+                    project_id))
+        else:
+            logging.error(
+                "Fail to create project with project id: {}, response code: {}".format(
+                    project_id, response.status_code))
+        return result
+
+    # POST /projects/{project_id}/members
+    def add_project_member(self, project_id, username, role_id):
+        result = False
+        path = '%s://%s/api/projects/%s/members' % (self.protocol, self.host, project_id)
+        request_str = '{"username": "%s","roles": [%s]}' % (username, role_id)
+        request_body = json.dumps(json.loads(request_str))
+        response = requests.post(path,
+                                 cookies={'beegosessionID': self.session_id},
+                                 data=request_body, verify=False)
+        if response.status_code == 200:
+            result = True
+            logging.debug(
+                "Successfully add project member with project id: {}".format(
+                    project_id))
+        else:
+            logging.error(
+                "Fail to add project member with project id: {}, response code: {}".format(
+                    project_id, response.status_code))
+        return result
+
+    # DELETE /projects/{project_id}/members/{user_id}
+    def delete_member_from_project(self, project_id, user_id):
+        result = False
+        path = '%s://%s/api/projects/%s/members/%s' % (self.protocol, self.host,
+                                                       project_id, user_id)
+        response = requests.delete(path,
+                                   cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = True
+            logging.debug("Successfully delete member with id: {}".format(
+                user_id))
+        else:
+            logging.error("Fail to delete member with id: {}, response code: {}"
+            .format(user_id, response.status_code))
+        return result
+
     # PUT /projects/{project_id}/publicity
     def set_project_publicity(self, project_id, is_public):
         result = False
-        path = '%s://%s/api/projects/%s/publicity?project_id=%s' % (
-            self.protocol, self.host, project_id, project_id)
+        path = '%s://%s/api/projects/%s/publicity' % (
+            self.protocol, self.host, project_id)
         request_body = json.dumps({'public': is_public})
         response = requests.put(path,
                                 cookies={'beegosessionID': self.session_id},
-                                data=request_body)
+                                data=request_body, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug(
@@ -150,26 +178,42 @@ class HarborClient(object):
         result = None
         path = '%s://%s/api/statistics' % (self.protocol, self.host)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug("Successfully get statistics: {}".format(result))
         else:
-            logging.error("Fail to get statistics result")
+            logging.error("Fail to get statistics result with status code: {}"
+            .format(response.status_code))
         return result
 
     # GET /users
-    def get_users(self, user_name=None):
+    def get_users(self):
         # TODO: support parameter
         result = None
         path = '%s://%s/api/users' % (self.protocol, self.host)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug("Successfully get users result: {}".format(result))
         else:
-            logging.error("Fail to get users result")
+            logging.error("Fail to get users result with status code: {}"
+            .format(response.status_code))
+        return result
+
+    # GET /users/current
+    def get_user_info(self):
+        result = None
+        path = '%s://%s/api/users/current' % (self.protocol, self.host)
+        response = requests.get(path,
+                                cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = response.json()
+            logging.debug("Successfully get users result: {}".format(result))
+        else:
+            logging.error("Fail to get users result with status code: {}"
+            .format(response.status_code))
         return result
 
     # POST /users
@@ -183,7 +227,7 @@ class HarborClient(object):
                                    'comment': comment})
         response = requests.post(path,
                                  cookies={'beegosessionID': self.session_id},
-                                 data=request_body)
+                                 data=request_body, verify=False)
         if response.status_code == 201:
             result = True
             logging.debug("Successfully create user with username: {}".format(
@@ -198,14 +242,14 @@ class HarborClient(object):
     def update_user_profile(self, user_id, email, realname, comment):
         # TODO: support not passing comment
         result = False
-        path = '%s://%s/api/users/%s?user_id=%s' % (self.protocol, self.host,
-                                                    user_id, user_id)
+        path = '%s://%s/api/users/%s' % (self.protocol, self.host,
+                                                    user_id)
         request_body = json.dumps({'email': email,
                                    'realname': realname,
                                    'comment': comment})
         response = requests.put(path,
                                 cookies={'beegosessionID': self.session_id},
-                                data=request_body)
+                                data=request_body, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug(
@@ -220,28 +264,29 @@ class HarborClient(object):
     # DELETE /users/{user_id}
     def delete_user(self, user_id):
         result = False
-        path = '%s://%s/api/users/%s?user_id=%s' % (self.protocol, self.host,
-                                                    user_id, user_id)
+        path = '%s://%s/api/users/%s' % (self.protocol, self.host,
+                                                    user_id)
         response = requests.delete(path,
-                                   cookies={'beegosessionID': self.session_id})
+                                   cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug("Successfully delete user with id: {}".format(
                 user_id))
         else:
-            logging.error("Fail to delete user with id: {}".format(user_id))
+            logging.error("Fail to delete user with id: {}, response code: {}"
+            .format(user_id, response.status_code))
         return result
 
     # PUT /users/{user_id}/password
     def change_password(self, user_id, old_password, new_password):
         result = False
-        path = '%s://%s/api/users/%s/password?user_id=%s' % (
-            self.protocol, self.host, user_id, user_id)
+        path = '%s://%s/api/users/%s/password' % (
+            self.protocol, self.host, user_id)
         request_body = json.dumps({'old_password': old_password,
                                    'new_password': new_password})
         response = requests.put(path,
                                 cookies={'beegosessionID': self.session_id},
-                                data=request_body)
+                                data=request_body, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug(
@@ -252,13 +297,15 @@ class HarborClient(object):
         return result
 
     # PUT /users/{user_id}/sysadmin
-    def promote_as_admin(self, user_id):
-        # TODO: always return 404, need more test
+    def promote_as_admin(self, user_id, has_admin_role):
         result = False
-        path = '%s://%s/api/users/%s/sysadmin?user_id=%s' % (
-            self.protocol, self.host, user_id, user_id)
+        path = '%s://%s/api/users/%s/sysadmin' % (
+            self.protocol, self.host, user_id)
+        request_body = json.dumps({'has_admin_role': has_admin_role,
+                                   'user_id': user_id})
         response = requests.put(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id},
+                                data=request_body, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug(
@@ -277,58 +324,73 @@ class HarborClient(object):
         path = '%s://%s/api/repositories?project_id=%s' % (
             self.protocol, self.host, project_id)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug(
                 "Successfully get repositories with id: {}, result: {}".format(
                     project_id, result))
         else:
-            logging.error("Fail to get repositories result with id: {}".format(
-                project_id))
+            logging.error("Fail to get repositories result with id: {}, response code: {}".format(
+                project_id, response.status_code))
         return result
 
-    # DELETE /repositories
-    def delete_repository(self, repo_name, tag=None):
-        # TODO: support to check tag
-        # TODO: return 200 but the repo is not deleted, need more test
+    # DELETE /repositories/{repo_name}/tags/{tag}
+    def delete_tag_of_repository(self, repo_name, tag):
         result = False
-        path = '%s://%s/api/repositories?repo_name=%s' % (self.protocol,
-                                                          self.host, repo_name)
+        path = '%s://%s/api/repositories/%s/tags/%s' % (self.protocol,self.host,
+                                                        repo_name, tag)
         response = requests.delete(path,
-                                   cookies={'beegosessionID': self.session_id})
+                                   cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = True
+            logging.debug("Successfully delete a tag of repository: {}".format(
+                repo_name))
+        else:
+            logging.error("Fail to delete repository  with name: {}, response code: {}".format(
+                repo_name, response.status_code))
+        return result
+
+    # DELETE /repositories/{repo_name}/tags
+    def delete_tags_of_repository(self, repo_name):
+        result = False
+        path = '%s://%s/api/repositories/%s/tags' % (self.protocol,
+                                                     self.host, repo_name)
+        response = requests.delete(path,
+                                   cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = True
             logging.debug("Successfully delete repository: {}".format(
                 repo_name))
         else:
-            logging.error("Fail to delete repository: {}".format(repo_name))
+            logging.error("Fail to delete repository  with name: {}, response code: {}".format(
+                repo_name, response.status_code))
         return result
 
-    # Get /repositories/tags
+    # Get /repositories/{repo_name}/tags
     def get_repository_tags(self, repo_name):
         result = None
-        path = '%s://%s/api/repositories/tags?repo_name=%s' % (
+        path = '%s://%s/api/repositories/%s/tags' % (
             self.protocol, self.host, repo_name)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug(
                 "Successfully get tag with repo name: {}, result: {}".format(
                     repo_name, result))
         else:
-            logging.error("Fail to get tags with repo name: {}".format(
-                repo_name))
+            logging.error("Fail to get tags with repo name: {}, response code: {}".format(
+                repo_name, response.status_code))
         return result
 
-    # GET /repositories/manifests
-    def get_repository_manifests(self, repo_name, tag):
+    # GET /repositories/{repo_name}/tags/{tag}/manifest
+    def get_repository_manifest(self, repo_name, tag):
         result = None
-        path = '%s://%s/api/repositories/manifests?repo_name=%s&tag=%s' % (
+        path = '%s://%s/api/repositories/%s/tags/%s/manifest' % (
             self.protocol, self.host, repo_name, tag)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug(
@@ -347,7 +409,7 @@ class HarborClient(object):
         if count:
             path += "?count=%s" % (count)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug(
@@ -362,11 +424,39 @@ class HarborClient(object):
         result = None
         path = '%s://%s/api/logs' % (self.protocol, self.host)
         response = requests.get(path,
-                                cookies={'beegosessionID': self.session_id})
+                                cookies={'beegosessionID': self.session_id}, verify=False)
         if response.status_code == 200:
             result = response.json()
             logging.debug("Successfully get logs")
         else:
             logging.error("Fail to get logs and response code: {}".format(
                 response.status_code))
+        return result
+
+    # Get /systeminfo
+    def get_systeminfo(self):
+        result = None
+        path = '%s://%s/api/systeminfo' % (self.protocol, self.host)
+        response = requests.get(path,
+                                cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = response.json()
+            logging.debug(
+                "Successfully get systeminfo, result: {}".format(result))
+        else:
+            logging.error("Fail to get systeminfo, response code: {}".format(response.status_code))
+        return result
+
+    # Get /configurations
+    def get_configurations(self):
+        result = None
+        path = '%s://%s/api/configurations' % (self.protocol, self.host)
+        response = requests.get(path,
+                                cookies={'beegosessionID': self.session_id}, verify=False)
+        if response.status_code == 200:
+            result = response.json()
+            logging.debug(
+                "Successfully get configurations, result: {}".format(result))
+        else:
+            logging.error("Fail to get configurations, response code: {}".format(response.status_code))
         return result

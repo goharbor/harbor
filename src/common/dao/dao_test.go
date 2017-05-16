@@ -1,26 +1,29 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	//"github.com/vmware/harbor/src/common/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -39,10 +42,17 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	return nil
 }
 
+func clearTable(table string) error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	_, err := o.Raw(sql).Exec()
+	return err
+}
+
 func clearUp(username string) {
 	var err error
 
-	o := orm.NewOrm()
+	o := GetOrmer()
 	o.Begin()
 
 	err = execUpdate(o, `delete 
@@ -71,11 +81,8 @@ func clearUp(username string) {
 
 	err = execUpdate(o, `delete 
 		from access_log 
-		where user_id = (
-			select user_id
-			from user
-			where username = ?
-		)`, username)
+		where username = ?
+		`, username)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
@@ -156,53 +163,63 @@ func TestMain(m *testing.M) {
 }
 
 func testForMySQL(m *testing.M) int {
-	db := os.Getenv("DATABASE")
-	defer os.Setenv("DATABASE", db)
-
-	os.Setenv("DATABASE", "mysql")
-
-	dbHost := os.Getenv("DB_HOST")
+	dbHost := os.Getenv("MYSQL_HOST")
 	if len(dbHost) == 0 {
-		log.Fatalf("environment variable DB_HOST is not set")
+		log.Fatalf("environment variable MYSQL_HOST is not set")
 	}
-	dbUser := os.Getenv("DB_USR")
+	dbUser := os.Getenv("MYSQL_USR")
 	if len(dbUser) == 0 {
-		log.Fatalf("environment variable DB_USR is not set")
+		log.Fatalf("environment variable MYSQL_USR is not set")
 	}
-	dbPort := os.Getenv("DB_PORT")
-	if len(dbPort) == 0 {
-		log.Fatalf("environment variable DB_PORT is not set")
+	dbPortStr := os.Getenv("MYSQL_PORT")
+	if len(dbPortStr) == 0 {
+		log.Fatalf("environment variable MYSQL_PORT is not set")
 	}
-	dbPassword := os.Getenv("DB_PWD")
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("invalid MYSQL_PORT: %v", err)
+	}
 
-	log.Infof("DB_HOST: %s, DB_USR: %s, DB_PORT: %s, DB_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	dbPassword := os.Getenv("MYSQL_PWD")
+	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	if len(dbDatabase) == 0 {
+		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+	}
 
-	os.Setenv("MYSQL_HOST", dbHost)
-	os.Setenv("MYSQL_PORT", dbPort)
-	os.Setenv("MYSQL_USR", dbUser)
-	os.Setenv("MYSQL_PWD", dbPassword)
+	database := &models.Database{
+		Type: "mysql",
+		MySQL: &models.MySQL{
+			Host:     dbHost,
+			Port:     dbPort,
+			Username: dbUser,
+			Password: dbPassword,
+			Database: dbDatabase,
+		},
+	}
 
-	return testForAll(m)
+	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+
+	return testForAll(m, database)
 }
 
 func testForSQLite(m *testing.M) int {
-	db := os.Getenv("DATABASE")
-	defer os.Setenv("DATABASE", db)
-
-	os.Setenv("DATABASE", "sqlite")
-
 	file := os.Getenv("SQLITE_FILE")
 	if len(file) == 0 {
-		os.Setenv("SQLITE_FILE", "/registry.db")
-		defer os.Setenv("SQLITE_FILE", "")
+		log.Fatalf("environment variable SQLITE_FILE is not set")
 	}
 
-	return testForAll(m)
+	database := &models.Database{
+		Type: "sqlite",
+		SQLite: &models.SQLite{
+			File: file,
+		},
+	}
+
+	return testForAll(m, database)
 }
 
-func testForAll(m *testing.M) int {
-	os.Setenv("AUTH_MODE", "db_auth")
-	initDatabaseForTest()
+func testForAll(m *testing.M, database *models.Database) int {
+	initDatabaseForTest(database)
 	clearUp(username)
 
 	return m.Run()
@@ -210,8 +227,8 @@ func testForAll(m *testing.M) int {
 
 var defaultRegistered = false
 
-func initDatabaseForTest() {
-	database, err := getDatabase()
+func initDatabaseForTest(db *models.Database) {
+	database, err := getDatabase(db)
 	if err != nil {
 		panic(err)
 	}
@@ -225,6 +242,12 @@ func initDatabaseForTest() {
 	}
 	if err := database.Register(alias); err != nil {
 		panic(err)
+	}
+
+	if alias != "default" {
+		if err = globalOrm.Using(alias); err != nil {
+			log.Fatalf("failed to create new orm: %v", err)
+		}
 	}
 }
 
@@ -385,6 +408,10 @@ func TestGetUser(t *testing.T) {
 	if currentUser.Email != "tester01@vmware.com" {
 		t.Errorf("the user's email does not match, expected: tester01@vmware.com, actual: %s", currentUser.Email)
 	}
+
+	queryUser = models.User{}
+	_, err = GetUser(queryUser)
+	assert.NotNil(t, err)
 }
 
 func TestListUsers(t *testing.T) {
@@ -537,8 +564,22 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestGetAccessLog(t *testing.T) {
+
+	accessLog := models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/",
+		RepoTag:   "N/A",
+		GUID:      "N/A",
+		Operation: "create",
+		OpTime:    time.Now(),
+	}
+	if err := AddAccessLog(accessLog); err != nil {
+		t.Errorf("failed to add access log: %v", err)
+	}
+
 	queryAccessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 	}
 	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
@@ -555,7 +596,7 @@ func TestGetAccessLog(t *testing.T) {
 
 func TestGetTotalOfAccessLogs(t *testing.T) {
 	queryAccessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 	}
 	total, err := GetTotalOfAccessLogs(queryAccessLog)
@@ -572,7 +613,7 @@ func TestAddAccessLog(t *testing.T) {
 	var err error
 	var accessLogList []models.AccessLog
 	accessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
+		Username:  currentUser.Username,
 		ProjectID: currentProject.ProjectID,
 		RepoName:  currentProject.Name + "/",
 		RepoTag:   repoTag,
@@ -599,67 +640,38 @@ func TestAddAccessLog(t *testing.T) {
 	}
 }
 
-func TestAccessLog(t *testing.T) {
-	var err error
-	var accessLogList []models.AccessLog
-	accessLog := models.AccessLog{
-		UserID:    currentUser.UserID,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/",
-		RepoTag:   repoTag2,
-		Operation: "create",
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/", repoTag2, "create")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
-	}
-	if len(accessLogList) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
-	}
-	if accessLogList[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
-	}
-	if accessLogList[0].RepoTag != repoTag2 {
-		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag2, accessLogList[0].RepoTag)
-	}
-}
-
-func TestGetAccessLogCreator(t *testing.T) {
-	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "push")
-	if err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-
-	user, err := GetAccessLogCreator(currentProject.Name + "/tomcat")
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLogCreator: %v", err)
-	}
-	if user != currentUser.Username {
-		t.Errorf("The access log creator does not match, expected: %s, actual: %s", currentUser.Username, user)
-	}
-}
-
 func TestCountPull(t *testing.T) {
 	var err error
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
-	err = AccessLog(currentUser.Username, currentProject.Name, currentProject.Name+"/tomcat", repoTag2, "pull")
-	if err != nil {
+
+	if err = AddAccessLog(models.AccessLog{
+		Username:  currentUser.Username,
+		ProjectID: currentProject.ProjectID,
+		RepoName:  currentProject.Name + "/tomcat",
+		RepoTag:   repoTag2,
+		Operation: "pull",
+		OpTime:    time.Now(),
+	}); err != nil {
 		t.Errorf("Error occurred in AccessLog: %v", err)
 	}
 
@@ -971,19 +983,12 @@ func TestChangeUserProfile(t *testing.T) {
 }
 
 func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(currentUser.UserID, 10, "2016-05-13 00:00:00", time.Now().String())
+	logs, err := GetRecentLogs(currentUser.Username, 10, "2016-05-13 00:00:00", time.Now().String())
 	if err != nil {
 		t.Errorf("error occured in getting recent logs, error: %v", err)
 	}
 	if len(logs) <= 0 {
 		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
-	}
-}
-
-func TestGetTopRepos(t *testing.T) {
-	_, err := GetTopRepos(10)
-	if err != nil {
-		t.Fatalf("error occured in getting top repos, error: %v", err)
 	}
 }
 
@@ -1580,8 +1585,7 @@ func TestGetOrmer(t *testing.T) {
 func TestAddRepository(t *testing.T) {
 	repoRecord := models.RepoRecord{
 		Name:        currentProject.Name + "/" + repositoryName,
-		OwnerName:   currentUser.Username,
-		ProjectName: currentProject.Name,
+		ProjectID:   currentProject.ProjectID,
 		Description: "testing repo",
 		PullCount:   0,
 		StarCount:   0,
@@ -1652,4 +1656,72 @@ func TestDeleteRepository(t *testing.T) {
 	if repository != nil {
 		t.Errorf("repository is not nil after deletion, repository: %+v", repository)
 	}
+}
+
+var sj1 = models.ScanJob{
+	Status:     models.JobPending,
+	Repository: "library/ubuntu",
+	Tag:        "14.04",
+}
+
+var sj2 = models.ScanJob{
+	Status:     models.JobPending,
+	Repository: "library/ubuntu",
+	Tag:        "15.10",
+	Digest:     "sha256:1234567890",
+}
+
+func TestAddScanJob(t *testing.T) {
+	assert := assert.New(t)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	r1, err := GetScanJob(id)
+	assert.Nil(err)
+	assert.Equal(sj1.Tag, r1.Tag)
+	assert.Equal(sj1.Status, r1.Status)
+	assert.Equal(sj1.Repository, r1.Repository)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
+}
+
+func TestGetScanJobs(t *testing.T) {
+	assert := assert.New(t)
+	_, err := AddScanJob(sj1)
+	assert.Nil(err)
+	id2, err := AddScanJob(sj1)
+	assert.Nil(err)
+	_, err = AddScanJob(sj2)
+	assert.Nil(err)
+	r, err := GetScanJobsByImage("library/ubuntu", "14.04")
+	assert.Nil(err)
+	assert.Equal(2, len(r))
+	assert.Equal(id2, r[0].ID)
+	r, err = GetScanJobsByImage("library/ubuntu", "14.04", 1)
+	assert.Nil(err)
+	assert.Equal(1, len(r))
+	r, err = GetScanJobsByDigest("sha256:nono")
+	assert.Nil(err)
+	assert.Equal(0, len(r))
+	r, err = GetScanJobsByDigest(sj2.Digest)
+	assert.Equal(1, len(r))
+	assert.Equal(sj2.Tag, r[0].Tag)
+	assert.Nil(err)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
+}
+
+func TestUpdateScanJobStatus(t *testing.T) {
+	assert := assert.New(t)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	err = UpdateScanJobStatus(id, "newstatus")
+	assert.Nil(err)
+	j, err := GetScanJob(id)
+	assert.Nil(err)
+	assert.Equal("newstatus", j.Status)
+	err = UpdateScanJobStatus(id+9, "newstatus")
+	assert.NotNil(err)
+	err = clearTable(ScanJobTable)
+	assert.Nil(err)
+
 }

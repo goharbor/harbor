@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package auth
 
@@ -25,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vmware/harbor/src/common/config"
+	//"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
@@ -133,19 +132,24 @@ func (t *tokenAuthorizer) updateCachedToken(token string, expiresIn int) {
 // Implements interface Authorizer
 type standardTokenAuthorizer struct {
 	tokenAuthorizer
-	client     *http.Client
-	credential Credential
+	client               *http.Client
+	credential           Credential
+	tokenServiceEndpoint string
 }
 
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
-func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType, scopeName string, scopeActions ...string) Authorizer {
+// If tokenServiceEndpoint is set, the token request will be sent to it instead of the server get from authorizer
+// The usage please refer to the function tokenURL
+func NewStandardTokenAuthorizer(credential Credential, insecure bool,
+	tokenServiceEndpoint string, scopeType, scopeName string, scopeActions ...string) Authorizer {
 	authorizer := &standardTokenAuthorizer{
 		client: &http.Client{
 			Transport: registry.GetHTTPTransport(insecure),
 			Timeout:   30 * time.Second,
 		},
-		credential: credential,
+		credential:           credential,
+		tokenServiceEndpoint: tokenServiceEndpoint,
 	}
 
 	if len(scopeType) != 0 || len(scopeName) != 0 {
@@ -162,7 +166,7 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool, scopeType,
 }
 
 func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	realm = tokenURL(realm)
+	realm = s.tokenURL(realm)
 
 	u, err := url.Parse(realm)
 	if err != nil {
@@ -229,16 +233,14 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 
 // when the registry client is used inside Harbor, the token request
 // can be posted to token service directly rather than going through nginx.
-// this solution can resolve two problems:
+// If realm is set as the internal url of token service, this can resolve
+// two problems:
 // 1. performance issue
 // 2. the realm field returned by registry is an IP which can not reachable
 // inside Harbor
-func tokenURL(realm string) string {
-	extEndpoint := config.ExtEndpoint()
-	tokenEndpoint := config.TokenEndpoint()
-	if len(extEndpoint) != 0 && len(tokenEndpoint) != 0 &&
-		strings.Contains(realm, extEndpoint) {
-		realm = strings.TrimRight(tokenEndpoint, "/") + "/service/token"
+func (s *standardTokenAuthorizer) tokenURL(realm string) string {
+	if len(s.tokenServiceEndpoint) != 0 {
+		return s.tokenServiceEndpoint
 	}
 	return realm
 }
@@ -249,9 +251,21 @@ type usernameTokenAuthorizer struct {
 	username string
 }
 
-// NewUsernameTokenAuthorizer returns a authorizer which will generate a token according to
+// NewRegistryUsernameTokenAuthorizer returns an authorizer to generate token for registry according to
 // the user's privileges
-func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, scopeActions ...string) Authorizer {
+func NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	return newUsernameTokenAuthorizer(false, username, scopeType, scopeName, scopeActions...)
+}
+
+// NewNotaryUsernameTokenAuthorizer returns an authorizer to generate token for notary according to
+// the user's privileges
+func NewNotaryUsernameTokenAuthorizer(username, scopeType, scopeName string, scopeActions ...string) Authorizer {
+	return newUsernameTokenAuthorizer(true, username, scopeType, scopeName, scopeActions...)
+}
+
+// newUsernameTokenAuthorizer returns a authorizer which will generate a token according to
+// the user's privileges
+func newUsernameTokenAuthorizer(notary bool, username, scopeType, scopeName string, scopeActions ...string) Authorizer {
 	authorizer := &usernameTokenAuthorizer{
 		username: username,
 	}
@@ -261,13 +275,25 @@ func NewUsernameTokenAuthorizer(username string, scopeType, scopeName string, sc
 		Name:    scopeName,
 		Actions: scopeActions,
 	}
-
-	authorizer.tg = authorizer.generateToken
-
+	if notary {
+		authorizer.tg = authorizer.genNotaryToken
+	} else {
+		authorizer.tg = authorizer.genRegistryToken
+	}
 	return authorizer
 }
 
 func (u *usernameTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
-	token, expiresIn, issuedAt, err = token_util.GenTokenForUI(u.username, service, scopes)
+	token, expiresIn, issuedAt, err = token_util.RegistryTokenForUI(u.username, service, scopes)
+	return
+}
+
+func (u *usernameTokenAuthorizer) genRegistryToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	token, expiresIn, issuedAt, err = token_util.RegistryTokenForUI(u.username, service, scopes)
+	return
+}
+
+func (u *usernameTokenAuthorizer) genNotaryToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+	token, expiresIn, issuedAt, err = token_util.NotaryTokenForUI(u.username, service, scopes)
 	return
 }

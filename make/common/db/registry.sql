@@ -99,7 +99,7 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
- user_id int NOT NULL,
+ username varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
@@ -107,16 +107,13 @@ create table access_log (
  operation varchar(20) NOT NULL,
  op_time timestamp,
  primary key (log_id),
- INDEX pid_optime (project_id, op_time),
- FOREIGN KEY (user_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
+ INDEX pid_optime (project_id, op_time)
 );
 
 create table repository (
  repository_id int NOT NULL AUTO_INCREMENT,
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
- owner_id int NOT NULL,
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,
@@ -172,6 +169,17 @@ create table replication_job (
  INDEX poid_uptime (policy_id, update_time)
  );
  
+create table img_scan_job (
+ id int NOT NULL AUTO_INCREMENT,
+ status varchar(64) NOT NULL,
+ repository varchar(256) NOT NULL,
+ tag   varchar(128) NOT NULL,
+ digest varchar(64),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id)
+ );
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,

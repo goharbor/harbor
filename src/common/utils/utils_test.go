@@ -1,22 +1,22 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package utils
 
 import (
 	"encoding/base64"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -65,10 +65,10 @@ func TestParseRepository(t *testing.T) {
 
 	repository = "library/test/ubuntu"
 	project, rest = ParseRepository(repository)
-	if project != "library/test" {
+	if project != "library" {
 		t.Errorf("unexpected project: %s != %s", project, "library/test")
 	}
-	if rest != "ubuntu" {
+	if rest != "test/ubuntu" {
 		t.Errorf("unexpected rest: %s != %s", rest, "ubuntu")
 	}
 
@@ -140,6 +140,10 @@ func TestGenerateRandomString(t *testing.T) {
 	if len(str) != 32 {
 		t.Errorf("unexpected length: %d != %d", len(str), 32)
 	}
+	str2 := GenerateRandomString()
+	if str2 == str {
+		t.Errorf("Two identical random strings in a row: %s", str)
+	}
 }
 
 func TestParseLink(t *testing.T) {
@@ -176,5 +180,14 @@ func TestParseLink(t *testing.T) {
 	next := `/api/users?page=3&page_size=100`
 	if links.Next() != next {
 		t.Errorf("unexpected prev: %s != %s", links.Next(), next)
+	}
+}
+
+func TestTestTCPConn(t *testing.T) {
+	server := httptest.NewServer(nil)
+	defer server.Close()
+	addr := strings.TrimLeft(server.URL, "http://")
+	if err := TestTCPConn(addr, 60, 2); err != nil {
+		t.Fatalf("failed to test tcp connection of %s: %v", addr, err)
 	}
 }

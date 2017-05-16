@@ -96,15 +96,13 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id INTEGER PRIMARY KEY,
- user_id int NOT NULL,
+ username varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
- op_time timestamp,
- FOREIGN KEY (user_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
+ op_time timestamp
 );
 
 CREATE INDEX pid_optime ON access_log (project_id, op_time);
@@ -113,14 +111,11 @@ create table repository (
  repository_id INTEGER PRIMARY KEY,
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
- owner_id int NOT NULL,
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,
- FOREIGN KEY (owner_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
  UNIQUE (name)
 );
 
@@ -161,6 +156,17 @@ create table replication_job (
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
  tags   varchar(16384),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
+
+create table img_scan_job (
+ id INTEGER PRIMARY KEY,
+ status varchar(64) NOT NULL,
+ repository varchar(256) NOT NULL,
+ tag   varchar(128) NOT NULL,
+ digest varchar(64),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );

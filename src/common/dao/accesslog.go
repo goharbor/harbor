@@ -1,23 +1,21 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dao
 
 import (
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -26,17 +24,7 @@ import (
 // AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
 	o := GetOrmer()
-	p, err := o.Raw(`insert into access_log
-		 (user_id, project_id, repo_name, repo_tag, guid, operation, op_time)
-		 values (?, ?, ?, ?, ?, ?, ?)`).Prepare()
-	if err != nil {
-		return err
-	}
-	defer p.Close()
-
-	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.RepoTag,
-		accessLog.GUID, accessLog.Operation, time.Now())
-
+	_, err := o.Insert(&accessLog)
 	return err
 }
 
@@ -49,14 +37,6 @@ func GetTotalOfAccessLogs(query models.AccessLog) (int64, error) {
 	sql := `select count(*) from access_log al 
 		where al.project_id = ?`
 	queryParam = append(queryParam, query.ProjectID)
-
-	if query.Username != "" {
-		sql = `select count(*) from access_log al 
-			left join user u 
-			on al.user_id = u.user_id 
-			where al.project_id = ? and u.username like ? `
-		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
-	}
 
 	sql += genFilterClauses(query, &queryParam)
 
@@ -72,18 +52,11 @@ func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.Access
 	o := GetOrmer()
 
 	queryParam := []interface{}{}
-	sql := `select al.log_id, u.username, al.repo_name, 
+	sql := `select al.log_id, al.username, al.repo_name, 
 			al.repo_tag, al.operation, al.op_time 
 		from access_log al 
-		left join user u 
-		on al.user_id = u.user_id
 		where al.project_id = ? `
 	queryParam = append(queryParam, query.ProjectID)
-
-	if query.Username != "" {
-		sql += ` and u.username like ? `
-		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
-	}
 
 	sql += genFilterClauses(query, &queryParam)
 
@@ -102,6 +75,11 @@ func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.Access
 
 func genFilterClauses(query models.AccessLog, queryParam *[]interface{}) string {
 	sql := ""
+
+	if query.Username != "" {
+		sql += ` and al.username like ? `
+		*queryParam = append(*queryParam, "%"+escape(query.Username)+"%")
+	}
 
 	if query.Operation != "" {
 		sql += ` and al.operation = ? `
@@ -142,42 +120,28 @@ func genFilterClauses(query models.AccessLog, queryParam *[]interface{}) string 
 	return sql
 }
 
-// AccessLog ...
-func AccessLog(username, projectName, repoName, repoTag, action string) error {
-	o := GetOrmer()
-	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +
-		"select (select user_id as user_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, ? "
-	_, err := o.Raw(sql, username, projectName, repoName, repoTag, action, time.Now()).Exec()
-
-	if err != nil {
-		log.Errorf("error in AccessLog: %v ", err)
-	}
-	return err
-}
-
 //GetRecentLogs returns recent logs according to parameters
-func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
+func GetRecentLogs(username string, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
 	logs := []models.AccessLog{}
 
-	isAdmin, err := IsAdminRole(userID)
+	isAdmin, err := IsAdminRole(username)
 	if err != nil {
 		return logs, err
 	}
 
 	queryParam := []interface{}{}
-	sql := `select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username 
-		from access_log 
-		join user 
-		on access_log.user_id=user.user_id `
+	sql := `select log_id, username, project_id, repo_name, repo_tag, GUID, operation, op_time  
+		from access_log `
 
 	hasWhere := false
 	if !isAdmin {
 		sql += ` where project_id in 
 			(select distinct project_id 
-				from project_member 
-				where user_id = ?) `
-		queryParam = append(queryParam, userID)
+				from project_member pm
+				join user u
+				on  pm.user_id = u.user_id
+				where u.username = ?) `
+		queryParam = append(queryParam, username)
 		hasWhere = true
 	}
 
@@ -214,24 +178,6 @@ func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.Ac
 		return logs, err
 	}
 	return logs, nil
-}
-
-// GetAccessLogCreator ...
-func GetAccessLogCreator(repoName string) (string, error) {
-	o := GetOrmer()
-	sql := "select * from user where user_id = (select user_id from access_log where operation = 'push' and repo_name = ? order by op_time desc limit 1)"
-
-	var u []models.User
-	n, err := o.Raw(sql, repoName).QueryRows(&u)
-
-	if err != nil {
-		return "", err
-	}
-	if n == 0 {
-		return "", nil
-	}
-
-	return u[0].Username, nil
 }
 
 // CountPull ...

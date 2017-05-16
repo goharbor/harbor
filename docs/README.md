@@ -6,9 +6,6 @@
 Read this first!**  
 Guide for Harbor online installer and offline installer.
 
-**[Installation and Configuration Guide for Virtual Appliance](installation_guide_ova.md)**   
-Guide for installing Harbor on vSphere, either standalone or as part of vSphere Integrated Containers (VIC).
-
 **[Harbor User Guide](user_guide.md)**  
 How to use Harbor to manage images, projects, replications and users.
 
@@ -25,6 +22,9 @@ Guide to deploy Harbor on Kubenetes. (maintained by community)
 
 [Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
 Developers read this first.
+
+[Build Harbor from Source](compile_guide.md)  
+How to build Harbor from source code.
 
 [Harbor API Specs by Swagger](configure_swagger.md)  
 Use Swagger to find out the specs of Harbor API.
@@ -54,10 +54,17 @@ How to add your local language to Harbor.
 
 [Working with Harbor Registry REST API via Swagger](http://www.think-foundry.com/working-with-harbor-registry-rest-api-via-swagger/)
 
+[How to use Harbor with Minio](https://blog.minio.io/how-to-use-vmware-harbor-with-minio-c07a5c4ae31b)
+
+[Harbor, an enterprise class registry server](https://vorcunus.blog/2017/03/11/harbor-an-enterprise-class-registry-server/)
+
+[Hybrid Container Management for vCloud Director with Harbor](https://blogs.vmware.com/vcat/2017/03/hybrid-container-management-vcloud-director-vmware-harbor.html)
+
+[Project Harbor Reached Milestone of 2000 Stars](http://www.think-foundry.com/project-harbor-reaches-milestone-2000-stars-github/)
+
 [Project Harbor in action](http://cormachogan.com/2016/08/05/project-harbor-action/)
 
 [Using vSphere docker volume driver to run Project Harbor on VSAN](http://cormachogan.com/2016/07/29/using-vsphere-docker-volume-driver-run-project-harbor-vsan/)
-
 
 [Overall Architecture of Harbor Registry](http://www.compare-review-information.com/overall-architecture-of-harbor-registry/)
 

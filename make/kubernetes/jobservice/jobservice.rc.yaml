@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: jobservice-rc
+  labels:
+    name: jobservice-rc
+spec:
+  replicas: 1
+  selector:
+    name: jobservice-apps
+  template:
+    metadata:
+      labels:
+        name: jobservice-apps
+    spec:
+      containers:
+      - name: jobservice-app
+        image: harbor/jobservice
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: MYSQL_HOST
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_HOST
+          - name: MYSQL_PORT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_PORT
+          - name: MYSQL_USR
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_USR
+          - name: MYSQL_PWD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_PWD
+          - name: UI_SECRET
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: UI_SECRET
+          - name: SECRET_KEY
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: SECRET_KEY
+          - name: CONFIG_PATH
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: CONFIG_PATH
+          - name: REGISTRY_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: REGISTRY_URL
+          - name: VERIFY_REMOTE_CERT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: VERIFY_REMOTE_CERT
+          - name: MAX_JOB_WORKERS
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MAX_JOB_WORKERS
+          - name: LOG_LEVEL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: LOG_LEVEL
+          - name: LOG_DIR
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: LOG_DIR
+          - name: GODEBUG
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: GODEBUG
+          - name: EXT_ENDPOINT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: EXT_ENDPOINT
+          - name: TOKEN_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: TOKEN_URL
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/jobservice
+        - name: logs
+          mountPath: /var/log/jobs
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-jobservice-config
+          items:
+          - key: config
+            path: app.conf
+      - name: logs
+        persistentVolumeClaim:
+          claimName: log-pvc 

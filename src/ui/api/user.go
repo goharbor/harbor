@@ -1,17 +1,16 @@
-/*
-   Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -46,10 +45,21 @@ type passwordReq struct {
 
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
+	mode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("failed to get auth mode: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-	ua.AuthMode = config.AuthMode()
+	ua.AuthMode = mode
 
-	ua.SelfRegistration = config.SelfRegistration()
+	self, err := config.SelfRegistration()
+	if err != nil {
+		log.Errorf("failed to get self registration: %v", err)
+		ua.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	ua.SelfRegistration = self
 
 	if ua.Ctx.Input.IsPost() {
 		sessionUserID := ua.GetSession("userId")
@@ -82,7 +92,6 @@ func (ua *UserAPI) Prepare() {
 		}
 	}
 
-	var err error
 	ua.IsAdmin, err = dao.IsAdminRole(ua.currentUserID)
 	if err != nil {
 		log.Errorf("Error occurred in IsAdminRole:%v", err)
@@ -234,7 +243,7 @@ func (ua *UserAPI) Delete() {
 		return
 	}
 
-	if config.AuthMode() == "ldap_auth" {
+	if ua.AuthMode == "ldap_auth" {
 		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
 	}
 

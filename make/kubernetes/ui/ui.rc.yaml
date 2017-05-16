@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: ui-rc
+  labels:
+    name: ui-rc
+spec:
+  replicas: 1
+  selector:
+    name: ui-apps
+  template:
+    metadata:
+      labels:
+        name: ui-apps
+    spec:
+      containers:
+      - name: ui-app
+        image: harbor/ui
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: MYSQL_HOST
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_HOST
+          - name: MYSQL_PORT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_PORT
+          - name: MYSQL_USR
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_USR
+          - name: MYSQL_PWD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_PWD
+          - name: REGISTRY_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: REGISTRY_URL
+          - name: CONFIG_PATH
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: CONFIG_PATH
+          - name: HARBOR_REG_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_REG_URL
+          - name: HARBOR_ADMIN_PASSWORD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_ADMIN_PASSWORD
+          - name: HARBOR_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_URL
+          - name: AUTH_MODE
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: AUTH_MODE
+          - name: LDAP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_URL 
+          - name: LDAP_SEARCH_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SEARCH_DN 
+          - name: LDAP_SEARCH_PWD
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SEARCH_PWD 
+          - name: LDAP_BASE_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_BASE_DN 
+          - name: LDAP_FILTER
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_FILTER 
+          - name: LDAP_UID
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_UID 
+          - name: LDAP_SCOPE
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SCOPE 
+          - name: LOG_LEVEL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: LOG_LEVEL
+          - name: UI_SECRET
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: UI_SECRET
+          - name: SECRET_KEY
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: SECRET_KEY
+          - name: GODEBUG
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: GODEBUG
+          - name: EXT_ENDPOINT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: EXT_ENDPOINT
+          - name: TOKEN_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: TOKEN_URL
+          - name: SELF_REGISTRATION
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: SELF_REGISTRATION
+          - name: USE_COMPRESSED_JS
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: USE_COMPRESSED_JS
+          - name: VERIFY_REMOTE_CERT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: VERIFY_REMOTE_CERT
+          - name: TOKEN_EXPIRATION
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: TOKEN_EXPIRATION
+          - name: EXT_REG_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: EXT_REG_URL
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/ui
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-ui-config
+          items:
+          - key: config
+            path: app.conf
+          - key: pkey
+            path: private_key.pem

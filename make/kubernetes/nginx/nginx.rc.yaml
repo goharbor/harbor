@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx-rc
+  labels:
+    name: nginx-rc
+spec:
+  replicas: 1
+  selector:
+    name: nginx-apps
+  template:
+    metadata:
+      labels:
+        name: nginx-apps
+    spec:
+      containers:
+      - name: nginx-app
+        image: harbor/nginx
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-nginx-config
+          items:
+          - key: config
+            path: nginx.conf
+          - key: pkey
+            path: https.key
+          - key: cert
+            path: https.crt
