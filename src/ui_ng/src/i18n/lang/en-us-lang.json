@@ -39,7 +39,7 @@
         "FULL_NAME": "Maximum length should be 20 characters.",
         "COMMENT": "Length of comment should be less than 20 characters.",
         "CURRENT_PWD": "Current password is required.",
-        "PASSWORD": "Password should be at least 8 characters with at least 1 uppercase, 1 lowercase and 1 number.",
+        "PASSWORD": "Password should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
         "CONFIRM_PWD": "Passwords do not match.",
         "SIGN_IN_USERNAME": "Username is required.",
         "SIGN_IN_PWD": "Password is required.",
@@ -76,7 +76,7 @@
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
         "SAVE_SUCCESS": "User password changed successfully.",
-        "PASS_TIPS": "At least 8 characters with 1 uppercase, 1 lowercase and 1 number"
+        "PASS_TIPS": "8-20 characters long with 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
