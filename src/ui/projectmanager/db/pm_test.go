@@ -142,3 +142,101 @@ func TestGetByMember(t *testing.T) {
 	projects := pm.GetByMember("admin")
 	assert.NotEqual(t, 0, len(projects))
 }
+
+func TestCreateAndDelete(t *testing.T) {
+	pm := &ProjectManager{}
+
+	// nil project
+	_, err := pm.Create(nil)
+	assert.NotNil(t, err)
+
+	// nil project name
+	_, err = pm.Create(&models.Project{
+		OwnerID: 1,
+	})
+	assert.NotNil(t, err)
+
+	// nil owner id and nil owner name
+	_, err = pm.Create(&models.Project{
+		Name:      "test",
+		OwnerName: "non_exist_user",
+	})
+	assert.NotNil(t, err)
+
+	// valid project, owner id
+	id, err := pm.Create(&models.Project{
+		Name:    "test",
+		OwnerID: 1,
+	})
+	assert.Nil(t, err)
+	assert.Nil(t, pm.Delete(id))
+
+	// valid project, owner name
+	id, err = pm.Create(&models.Project{
+		Name:      "test",
+		OwnerName: "admin",
+	})
+	assert.Nil(t, err)
+	assert.Nil(t, pm.Delete(id))
+}
+
+func TestUpdate(t *testing.T) {
+	pm := &ProjectManager{}
+
+	id, err := pm.Create(&models.Project{
+		Name:    "test",
+		OwnerID: 1,
+	})
+	assert.Nil(t, err)
+	defer pm.Delete(id)
+
+	project := pm.Get(id)
+	assert.Equal(t, 0, project.Public)
+
+	project.Public = 1
+	assert.Nil(t, pm.Update(id, project))
+
+	project = pm.Get(id)
+	assert.Equal(t, 1, project.Public)
+}
+
+func TestGetAll(t *testing.T) {
+	pm := &ProjectManager{}
+
+	id, err := pm.Create(&models.Project{
+		Name:    "get_all_test",
+		OwnerID: 1,
+		Public:  1,
+	})
+	assert.Nil(t, err)
+	defer pm.Delete(id)
+
+	// get by name
+	projects, total := pm.GetAll("", "get_all_test", "", "", 0, 0, 0)
+	assert.Equal(t, int64(1), total)
+	assert.Equal(t, id, projects[0].ProjectID)
+
+	// get by owner
+	projects, total = pm.GetAll("admin", "", "", "", 0, 0, 0)
+	assert.NotEqual(t, 0, total)
+	exist := false
+	for _, project := range projects {
+		if project.ProjectID == id {
+			exist = true
+			break
+		}
+	}
+	assert.True(t, exist)
+
+	// get by public
+	projects, total = pm.GetAll("", "", "true", "", 0, 0, 0)
+	assert.NotEqual(t, 0, total)
+	exist = false
+	for _, project := range projects {
+		if project.ProjectID == id {
+			exist = true
+			break
+		}
+	}
+	assert.True(t, exist)
+}

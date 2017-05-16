@@ -39,6 +39,17 @@ type BaseAPI struct {
 	beego.Controller
 }
 
+// GetStringFromPath gets the param from path and returns it as string
+func (b *BaseAPI) GetStringFromPath(key string) string {
+	return b.Ctx.Input.Param(key)
+}
+
+// GetInt64FromPath gets the param from path and returns it as int64
+func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
+	value := b.Ctx.Input.Param(key)
+	return strconv.ParseInt(value, 10, 64)
+}
+
 // HandleNotFound ...
 func (b *BaseAPI) HandleNotFound(text string) {
 	log.Info(text)

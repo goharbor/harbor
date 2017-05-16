@@ -19,6 +19,7 @@ import (
 )
 
 // Project holds the details of a project.
+// TODO remove useless attrs
 type Project struct {
 	ProjectID       int64     `orm:"pk;auto;column(project_id)" json:"project_id"`
 	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
@@ -39,7 +40,7 @@ type Project struct {
 
 // ProjectSorter holds an array of projects
 type ProjectSorter struct {
-	Projects []Project
+	Projects []*Project
 }
 
 // Len returns the length of array in ProjectSorter

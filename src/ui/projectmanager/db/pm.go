@@ -15,6 +15,9 @@
 package db
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -106,29 +109,107 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 }
 
 // GetPublic returns all public projects
-func (p *ProjectManager) GetPublic() []models.Project {
-	projects, err := dao.GetProjects("", 1)
-	if err != nil {
-		log.Errorf("failed to get all public projects: %v", err)
-		return []models.Project{}
-	}
-
-	return projects
+func (p *ProjectManager) GetPublic() []*models.Project {
+	return filter("", "", "true", "", 0, 0, 0)
 }
 
 // GetByMember returns all projects which the user is a member of
-func (p *ProjectManager) GetByMember(username string) []models.Project {
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
-	if err != nil {
-		log.Errorf("failed to get user %s: %v", username, err)
-		return []models.Project{}
+func (p *ProjectManager) GetByMember(username string) []*models.Project {
+	return filter("", "", "", username, 0, 0, 0)
+}
+
+// Create ...
+func (p *ProjectManager) Create(project *models.Project) (int64, error) {
+	if project == nil {
+		return 0, fmt.Errorf("project is nil")
 	}
-	projects, err := dao.GetUserRelevantProjects(user.UserID, "")
+
+	if len(project.Name) == 0 {
+		return 0, fmt.Errorf("project name is nil")
+	}
+
+	if project.OwnerID == 0 {
+		if len(project.OwnerName) == 0 {
+			return 0, fmt.Errorf("owner ID and owner name are both nil")
+		}
+
+		user, err := dao.GetUser(models.User{
+			Username: project.OwnerName,
+		})
+		if err != nil {
+			return 0, err
+		}
+		if user == nil {
+			return 0, fmt.Errorf("can not get owner whose name is %s", project.OwnerName)
+		}
+		project.OwnerID = user.UserID
+	}
+
+	t := time.Now()
+	pro := &models.Project{
+		Name:         project.Name,
+		Public:       project.Public,
+		OwnerID:      project.OwnerID,
+		CreationTime: t,
+		UpdateTime:   t,
+	}
+
+	return dao.AddProject(*pro)
+}
+
+// Delete ...
+func (p *ProjectManager) Delete(projectIDOrName interface{}) error {
+	id, ok := projectIDOrName.(int64)
+	if !ok {
+		project := p.Get(projectIDOrName)
+		if project == nil {
+			return fmt.Errorf(fmt.Sprintf("project %v not found", projectIDOrName))
+		}
+		id = project.ProjectID
+	}
+
+	return dao.DeleteProject(id)
+}
+
+// Update ...
+func (p *ProjectManager) Update(projectIDOrName interface{},
+	project *models.Project) error {
+	id, ok := projectIDOrName.(int64)
+	if !ok {
+		pro := p.Get(projectIDOrName)
+		if pro == nil {
+			return fmt.Errorf(fmt.Sprintf("project %v not found", projectIDOrName))
+		}
+		id = pro.ProjectID
+	}
+	return dao.ToggleProjectPublicity(id, project.Public)
+}
+
+// GetAll ...
+func (p *ProjectManager) GetAll(owner, name, public, member string,
+	role int, page, size int64) ([]*models.Project, int64) {
+	total, err := dao.GetTotalOfProjects(owner, name, public, member, role)
 	if err != nil {
-		log.Errorf("failed to get projects of %s: %v", username, err)
-		return []models.Project{}
+		log.Errorf("failed to get total of projects: %v", err)
+		return []*models.Project{}, 0
+	}
+
+	return filter(owner, name, public, member, role, page, size), total
+}
+
+func filter(owner, name, public, member string,
+	role int, page, size int64) []*models.Project {
+	projects := []*models.Project{}
+
+	list, err := dao.GetProjects(owner, name, public, member, role,
+		page, size)
+	if err != nil {
+		log.Errorf("failed to get projects: %v", err)
+		return projects
+	}
+
+	if len(list) != 0 {
+		projects = append(projects, list...)
 	}
 
 	return projects

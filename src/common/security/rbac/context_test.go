@@ -15,6 +15,7 @@
 package rbac
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,13 +81,34 @@ func (f *fakePM) Exist(projectIDOrName interface{}) bool {
 }
 
 // nil implement
-func (f *fakePM) GetPublic() []models.Project {
-	return []models.Project{}
+func (f *fakePM) GetPublic() []*models.Project {
+	return []*models.Project{}
 }
 
 // nil implement
-func (f *fakePM) GetByMember(username string) []models.Project {
-	return []models.Project{}
+func (f *fakePM) GetByMember(username string) []*models.Project {
+	return []*models.Project{}
+}
+
+// nil implement
+func (f *fakePM) Create(*models.Project) (int64, error) {
+	return 0, fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) Delete(projectIDOrName interface{}) error {
+	return fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) Update(projectIDOrName interface{}, project *models.Project) error {
+	return fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) GetAll(owner, name, public, member string, role int, page,
+	size int64) ([]*models.Project, int64) {
+	return []*models.Project{}, 0
 }
 
 func TestIsAuthenticated(t *testing.T) {

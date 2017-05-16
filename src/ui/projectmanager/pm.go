@@ -26,7 +26,20 @@ type ProjectManager interface {
 	Exist(projectIDOrName interface{}) bool
 	GetRoles(username string, projectIDOrName interface{}) []int
 	// get all public project
-	GetPublic() []models.Project
+	GetPublic() []*models.Project
 	// get projects which the user is a member of
-	GetByMember(username string) []models.Project
+	GetByMember(username string) []*models.Project
+	Create(*models.Project) (int64, error)
+	Delete(projectIDOrName interface{}) error
+	Update(projectIDOrName interface{}, project *models.Project) error
+	// GetAll returns a project list and the total count according to
+	// the query conditions:
+	// owner: username of owner
+	// name: name of project
+	// public: public or not, can be "true", "false" or ""
+	// member: username of the member
+	// role: the role of member specified by member parameter
+	// page, size: pagination parameters
+	GetAll(owner, name, public, member string, role int, page,
+		size int64) ([]*models.Project, int64)
 }

@@ -17,9 +17,10 @@ package api
 import (
 	"net/http"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 const (
@@ -52,7 +53,7 @@ func (s *StatisticAPI) Prepare() {
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
 
-	n, err := dao.GetTotalOfProjects("", 1)
+	n, err := dao.GetTotalOfProjects("", "", "true", "", 0)
 	if err != nil {
 		log.Errorf("failed to get total of public projects: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "")
@@ -73,7 +74,7 @@ func (s *StatisticAPI) Get() {
 	}
 
 	if isAdmin {
-		n, err := dao.GetTotalOfProjects("")
+		n, err := dao.GetTotalOfProjects("", "", "", "", 0)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
@@ -89,7 +90,14 @@ func (s *StatisticAPI) Get() {
 		statistic[MRC] = n
 		statistic[TRC] = n
 	} else {
-		n, err := dao.GetTotalOfUserRelevantProjects(s.userID, "")
+		user, err := dao.GetUser(models.User{
+			UserID: s.userID,
+		})
+		if err != nil {
+			log.Errorf("failed to get user %d: %v", s.userID, err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+		n, err := dao.GetTotalOfProjects("", "", "", user.Username, 0)
 		if err != nil {
 			log.Errorf("failed to get total of projects for user %d: %v", s.userID, err)
 			s.CustomAbort(http.StatusInternalServerError, "")
