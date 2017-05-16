@@ -126,6 +126,7 @@
         "PUBLIC_OR_PRIVATE": "Access Level",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
+        "ACCESS_LEVEL": "Access Level",
         "PUBLIC": "Public",
         "PRIVATE": "Private",
         "MAKE": "Make",

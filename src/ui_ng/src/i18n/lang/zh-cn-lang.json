@@ -126,6 +126,7 @@
         "PUBLIC_OR_PRIVATE": "访问级别",
         "REPO_COUNT": "镜像仓库数",
         "CREATION_TIME": "创建时间",
+        "ACCESS_LEVEL": "访问级别",
         "PUBLIC": "公开",
         "PRIVATE": "私有",
         "MAKE": "设为",

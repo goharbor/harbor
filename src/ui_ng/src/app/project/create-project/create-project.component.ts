@@ -26,10 +26,10 @@ import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'create-project',
   templateUrl: 'create-project.component.html',
-  styleUrls: [ 'create-project.css' ]
+  styleUrls: ['create-project.css']
 })
 export class CreateProjectComponent implements AfterViewChecked {
-  
+
   projectForm: NgForm;
 
   @ViewChild('projectForm')
@@ -39,7 +39,7 @@ export class CreateProjectComponent implements AfterViewChecked {
   initVal: Project = new Project();
 
   createProjectOpened: boolean;
-  
+
   hasChanged: boolean;
 
   staticBackdrop: boolean = true;
@@ -49,60 +49,64 @@ export class CreateProjectComponent implements AfterViewChecked {
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
 
-  constructor(private projectService: ProjectService,             
-              private translateService: TranslateService,
-              private messageHandlerService: MessageHandlerService) {}
+  constructor(private projectService: ProjectService,
+    private translateService: TranslateService,
+    private messageHandlerService: MessageHandlerService) { }
+
+  public get accessLevelDisplayText(): string {
+    return this.project.public ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE';
+  }
 
   onSubmit() {
     this.projectService
-        .createProject(this.project.name, this.project.public ? 1 : 0)
-        .subscribe(
-          status=>{
-            this.create.emit(true);
-            this.messageHandlerService.showSuccess('PROJECT.CREATED_SUCCESS');
+      .createProject(this.project.name, this.project.public ? 1 : 0)
+      .subscribe(
+      status => {
+        this.create.emit(true);
+        this.messageHandlerService.showSuccess('PROJECT.CREATED_SUCCESS');
+        this.createProjectOpened = false;
+      },
+      error => {
+        let errorMessage: string;
+        if (error instanceof Response) {
+          switch (error.status) {
+            case 409:
+              this.translateService.get('PROJECT.NAME_ALREADY_EXISTS').subscribe(res => errorMessage = res);
+              break;
+            case 400:
+              this.translateService.get('PROJECT.NAME_IS_ILLEGAL').subscribe(res => errorMessage = res);
+              break;
+            default:
+              this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res => errorMessage = res);
+          }
+          if (this.messageHandlerService.isAppLevel(error)) {
+            this.messageHandlerService.handleError(error);
             this.createProjectOpened = false;
-          },
-          error=>{
-            let errorMessage: string;
-            if (error instanceof Response) { 
-              switch(error.status) {
-              case 409:
-                this.translateService.get('PROJECT.NAME_ALREADY_EXISTS').subscribe(res=>errorMessage = res);
-                break;
-              case 400:
-                this.translateService.get('PROJECT.NAME_IS_ILLEGAL').subscribe(res=>errorMessage = res); 
-                break;
-              default:
-                this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res=>errorMessage = res);
-              }
-              if(this.messageHandlerService.isAppLevel(error)) {
-                this.messageHandlerService.handleError(error);
-                this.createProjectOpened = false;
-              } else {
-                this.inlineAlert.showInlineError(errorMessage);
-              }
-            }
-          }); 
+          } else {
+            this.inlineAlert.showInlineError(errorMessage);
+          }
+        }
+      });
   }
 
   onCancel() {
-    if(this.hasChanged) {
-      this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
+    if (this.hasChanged) {
+      this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
     } else {
       this.createProjectOpened = false;
       this.projectForm.reset();
     }
-   
+
   }
 
   ngAfterViewChecked(): void {
     this.projectForm = this.currentForm;
-    if(this.projectForm) {
-      this.projectForm.valueChanges.subscribe(data=>{
-        for(let i in data) {
-          let origin = this.initVal[i];          
+    if (this.projectForm) {
+      this.projectForm.valueChanges.subscribe(data => {
+        for (let i in data) {
+          let origin = this.initVal[i];
           let current = data[i];
-          if(current && current !== origin) {
+          if (current && current !== origin) {
             this.hasChanged = true;
             break;
           } else {
