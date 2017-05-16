@@ -45,6 +45,10 @@ export class CreateProjectComponent implements AfterViewChecked {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
+  isNameValid: boolean = true;
+  nameTooltipText: string = 'PROJECT.NAME_TOOLTIP';
+  checkOnGoing: boolean = false;
+
   @Output() create = new EventEmitter<boolean>();
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
@@ -128,6 +132,40 @@ export class CreateProjectComponent implements AfterViewChecked {
     this.createProjectOpened = false;
     this.inlineAlert.close();
     this.projectForm.reset();
+  }
+
+  public get isValid(): boolean {
+    return this.currentForm && this.currentForm.valid && this.isNameValid;
+  }
+
+  //Handle the form validation
+  handleValidation(flag: boolean): void {
+    if (flag) {
+      //validate
+      let cont = this.currentForm.controls["create_project_name"];
+      if (cont) {
+        this.isNameValid = cont.valid;
+        if (this.isNameValid && this.hasChanged) {
+          //Check exiting from backend
+          this.checkOnGoing = true;
+          this.projectService
+            .checkProjectExists(cont.value).toPromise()
+            .then(() => {
+              //Project existing
+              this.isNameValid = false;
+              this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
+              this.checkOnGoing = false;
+            })
+            .catch(error => {
+              this.checkOnGoing = false;
+            });
+        }
+      }
+    } else {
+      //reset
+      this.isNameValid = true;
+      this.nameTooltipText = 'PROJECT.NAME_TOOLTIP';
+    }
   }
 }
 

@@ -5,19 +5,22 @@
         <form #projectForm="ngForm">
             <section class="form-block">
                 <div class="form-group" style="padding-left: 135px;">
-                    <label for="create_project_name" class="col-md-3 form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
-                    <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="projectName.invalid && (projectName.dirty || projectName.touched)" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="create_project_name"  [(ngModel)]="project.name" name="name" size="38" required minlength="2" #projectName="ngModel" targetExists="PROJECT_NAME">
-            <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.required && (projectName.dirty || projectName.touched)">
-              {{'PROJECT.NAME_IS_REQUIRED' | translate}}
-            </span>
-            <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.minlength && (projectName.dirty || projectName.touched)">
-              {{'PROJECT.NAME_MINIMUM_LENGTH' | translate}}
-            </span>
-            <span class="tooltip-content" *ngIf="projectName.errors && projectName.errors.targetExists && (projectName.dirty || projectName.touched)">
-              {{'PROJECT.NAME_ALREADY_EXISTS' | translate}}
+                    <label for="create_project_name" class="col-md-3 form-group-label-override required">{{'PROJECT.NAME' | translate}}</label>
+                    <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isNameValid" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
+            <input type="text" id="create_project_name"  [(ngModel)]="project.name" 
+            name="create_project_name" size="36" 
+            required
+            pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+            minlength="2" 
+            #projectName="ngModel" 
+            (input)='handleValidation(false)' 
+            (blur)='handleValidation(true)'
+            >
+            <span class="tooltip-content">
+              {{ nameTooltipText | translate }}
             </span>
           </label>
+                    <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                 </div>
                 <div class="form-group" style="padding-left: 135px;">
                     <label class="col-md-4 form-group-label-override">{{'PROJECT.ACCESS_LEVEL' | translate}}</label>
@@ -36,6 +39,6 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="projectForm.form.invalid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
