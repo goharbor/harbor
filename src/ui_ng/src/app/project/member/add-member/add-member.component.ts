@@ -11,10 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, EventEmitter, Output, ViewChild, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  Input,
+  EventEmitter,
+  Output,
+  ViewChild,
+  AfterViewChecked,
+  OnInit,
+  OnDestroy
+} from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
- 
+
 import { MemberService } from '../member.service';
 
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
@@ -24,18 +33,21 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { Member } from '../member';
 
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
-  styleUrls: [ 'add-member.component.css' ]
+  styleUrls: ['add-member.component.css']
 })
-export class AddMemberComponent implements AfterViewChecked {
+export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   member: Member = new Member();
-  initVal: Member = new Member();
 
   addMemberOpened: boolean;
-  
+
   memberForm: NgForm;
 
   staticBackdrop: boolean = true;
@@ -52,49 +64,87 @@ export class AddMemberComponent implements AfterViewChecked {
   @Input() projectId: number;
   @Output() added = new EventEmitter<boolean>();
 
-  constructor(private memberService: MemberService, 
-              private messageHandlerService: MessageHandlerService, 
-              private translateService: TranslateService) {}
+  isMemberNameValid: boolean = true;
+  memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
+  nameChecker: Subject<string> = new Subject<string>();
+  checkOnGoing: boolean = false;
+
+  constructor(private memberService: MemberService,
+    private messageHandlerService: MessageHandlerService,
+    private translateService: TranslateService) { }
+
+  ngOnInit(): void {
+    this.nameChecker
+      .debounceTime(500)
+      .distinctUntilChanged()
+      .subscribe((name: string) => {
+        let cont = this.currentForm.controls['member_name'];
+        if (cont) {
+          this.isMemberNameValid = cont.valid;
+          if (cont.valid) {
+            this.checkOnGoing = true;
+            this.memberService
+              .listMembers(this.projectId, cont.value).toPromise()
+              .then((members: Member[]) => {
+                if (members.filter(m => { return m.username === cont.value }).length > 0) {
+                  this.isMemberNameValid = false;
+                  this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
+                }
+                this.checkOnGoing = false;
+              })
+              .catch(error => {
+                this.checkOnGoing = false;
+              });
+          } else {
+            this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.nameChecker.unsubscribe();
+  }
 
   onSubmit(): void {
-    if(!this.member.username || this.member.username.length === 0) { return; }
+    if (!this.member.username || this.member.username.length === 0) { return; }
     this.memberService
-        .addMember(this.projectId, this.member.username, +this.member.role_id)
-        .subscribe(
-          response=>{
-            this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
-            this.added.emit(true);
-            this.addMemberOpened = false;
-          },
-          error=>{
-            if (error instanceof Response) {             
-            let errorMessageKey: string;
-            switch(error.status){
-              case 404:
-                errorMessageKey = 'MEMBER.USERNAME_DOES_NOT_EXISTS';
-                break;
-              case 409:
-                errorMessageKey = 'MEMBER.USERNAME_ALREADY_EXISTS';
-                break;
-              default:
-                errorMessageKey = 'MEMBER.UNKNOWN_ERROR';              
-              }
-              if(this.messageHandlerService.isAppLevel(error)) {
-                this.messageHandlerService.handleError(error);
-                this.addMemberOpened = false;
-              } else {
-               this.translateService
-                  .get(errorMessageKey)
-                  .subscribe(errorMessage=>this.inlineAlert.showInlineError(errorMessage));
-              }
-            }
+      .addMember(this.projectId, this.member.username, +this.member.role_id)
+      .subscribe(
+      response => {
+        this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
+        this.added.emit(true);
+        this.addMemberOpened = false;
+      },
+      error => {
+        if (error instanceof Response) {
+          let errorMessageKey: string;
+          switch (error.status) {
+            case 404:
+              errorMessageKey = 'MEMBER.USERNAME_DOES_NOT_EXISTS';
+              break;
+            case 409:
+              errorMessageKey = 'MEMBER.USERNAME_ALREADY_EXISTS';
+              break;
+            default:
+              errorMessageKey = 'MEMBER.UNKNOWN_ERROR';
           }
-        );
+          if (this.messageHandlerService.isAppLevel(error)) {
+            this.messageHandlerService.handleError(error);
+            this.addMemberOpened = false;
+          } else {
+            this.translateService
+              .get(errorMessageKey)
+              .subscribe(errorMessage => this.inlineAlert.showInlineError(errorMessage));
+          }
+        }
+      }
+      );
   }
 
   onCancel() {
-    if(this.hasChanged) {
-      this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
+    if (this.hasChanged) {
+      this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
     } else {
       this.addMemberOpened = false;
       this.memberForm.reset();
@@ -102,19 +152,17 @@ export class AddMemberComponent implements AfterViewChecked {
   }
 
   ngAfterViewChecked(): void {
-    this.memberForm = this.currentForm;
-    if(this.memberForm) {
-      this.memberForm.valueChanges.subscribe(data=>{
-       for(let i in data) {
-          let origin = this.initVal[i];          
-          let current = data[i];
-          if(current && current !== origin) {
-            this.hasChanged = true;
-            break;
-          } else {
-            this.hasChanged = false;
-            this.inlineAlert.close();
-          }
+    if (this.memberForm !== this.currentForm) {
+      this.memberForm = this.currentForm;
+    }
+    if (this.memberForm) {
+      this.memberForm.valueChanges.subscribe(data => {
+        let memberName = data['member_name'];
+        if (memberName && memberName !== '') {
+          this.hasChanged = true;
+          this.inlineAlert.close();
+        } else {
+          this.hasChanged = false;
         }
       });
     }
@@ -132,6 +180,19 @@ export class AddMemberComponent implements AfterViewChecked {
     this.addMemberOpened = true;
     this.hasChanged = false;
     this.member.role_id = 1;
+    this.member.username = '';
+    this.isMemberNameValid = true;
+    this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
   }
 
+  handleValidation(): void {
+    let cont = this.currentForm.controls['member_name'];
+    if (cont) {
+      this.nameChecker.next(cont.value);
+    }
+  }
+
+  public get isValid(): boolean {
+    return this.currentForm && this.currentForm.valid && this.isMemberNameValid;
+  }
 }
