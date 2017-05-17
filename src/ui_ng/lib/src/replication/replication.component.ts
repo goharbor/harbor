@@ -99,17 +99,6 @@ export class ReplicationComponent implements OnInit {
    @ViewChild(CreateEditRuleComponent) 
    createEditPolicyComponent: CreateEditRuleComponent;
 
-   @ViewChild('fromTime') fromTimeInput: NgModel;
-   @ViewChild('toTime') toTimeInput: NgModel;
-
-   get fromTimeInvalid(): boolean {
-     return (this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched)) || false;
-   }
-
-   get toTimeInvalid(): boolean {
-     return (this.toTimeInput.errors && this.toTimeInput.errors.dateValidator && (this.toTimeInput.dirty || this.toTimeInput.touched)) || false;
-   }
-
    constructor(
      private errorHandler: ErrorHandler,
      private replicationService: ReplicationService,
@@ -122,11 +111,6 @@ export class ReplicationComponent implements OnInit {
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
      this.retrievePolicies();
-
-    //  let isCreate = this.route.snapshot.parent.queryParams['is_create'];
-    //  if (isCreate && <boolean>isCreate) {
-    //    this.openModal();
-    //  }
    }
 
    retrievePolicies(): void {
@@ -174,34 +158,30 @@ export class ReplicationComponent implements OnInit {
      params.set('page_size', this.search.pageSize + '');
 
      toPromise<any>(this.replicationService
-         .getJobs(this.search.ruleId, params))
-         .then(
-           response=>{
-             this.jobsTotalRecordCount = response.headers.get('x-total-count');
-             this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
-             this.changedJobs = response.json();
-             this.jobs = this.changedJobs;
-             for(let i = 0; i < this.jobs.length; i++) {
-               let j = this.jobs[i];
-               if(j.status == 'retrying' || j.status == 'error') {
-                 this.translateService.get('REPLICATION.FOUND_ERROR_IN_JOBS')
-                     .subscribe(res=>this.errorHandler.error(res));
-                 break;
-               }
-             }     
-           },
-           error=>this.errorHandler.error(error)
-         );
+       .getJobs(this.search.ruleId, params))
+       .then(
+         response=>{
+           this.jobsTotalRecordCount = response.headers.get('x-total-count');
+           this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
+           this.changedJobs = response.json();
+           this.jobs = this.changedJobs;
+           this.jobs.forEach(j=>{
+             if(j.status === 'retrying' || j.status === 'error') {
+               this.translateService.get('REPLICATION.FOUND_ERROR_IN_JOBS')
+                  .subscribe(res=>this.errorHandler.error(res));
+             }
+           })    
+         }).catch(error=>this.errorHandler.error(error));
    }
 
    selectOneRule(rule: ReplicationRule) {
-     if(rule) {
-      this.search.ruleId = rule.id || '';
-      this.search.repoName = '';
-      this.search.status = '';
-      this.currentJobSearchOption = 0;
-      this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
-      this.fetchReplicationJobs();
+     if (rule) {
+       this.search.ruleId = rule.id || '';
+       this.search.repoName = '';
+       this.search.status = '';
+       this.currentJobSearchOption = 0;
+       this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
+       this.fetchReplicationJobs();
      }
    }
    
@@ -258,30 +238,13 @@ export class ReplicationComponent implements OnInit {
      (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
    }
 
-   convertDate(strDate: string): string {
-     if(/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/.test(strDate)) {
-        let parts = strDate.split(/[-\/]/);
-        strDate = parts[2] /*Year*/ + '-' +parts[1] /*Month*/ + '-' + parts[0] /*Date*/;  
-      }
-      return strDate;
-   }
-
-   doJobSearchByStartTime(strDate: string) {
-     this.search.startTimestamp = '';
-     if(this.fromTimeInput.valid && strDate) {
-       strDate = this.convertDate(strDate);
-       this.search.startTimestamp = new Date(strDate).getTime() / 1000 + '';
-     }
+   doJobSearchByStartTime(fromTimestamp: string) {
+     this.search.startTimestamp = fromTimestamp;
      this.fetchReplicationJobs();
    }
 
-   doJobSearchByEndTime(strDate: string) {
-     this.search.endTimestamp = '';
-     if(this.toTimeInput.valid && strDate) {
-       strDate = this.convertDate(strDate);
-       let oneDayOffset = 3600 * 24;
-       this.search.endTimestamp = (new Date(strDate).getTime() / 1000 + oneDayOffset) + '';
-     }
+   doJobSearchByEndTime(toTimestamp: string) {
+     this.search.endTimestamp = toTimestamp;
      this.fetchReplicationJobs();
    }
 }

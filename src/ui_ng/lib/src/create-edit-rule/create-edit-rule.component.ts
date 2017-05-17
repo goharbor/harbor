@@ -179,11 +179,6 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
   openCreateEditRule(editable: boolean, ruleId?: number | string): void {
     this.createEditRuleOpened = true;
     this.createEditRule = this.initCreateEditRule;
-    
-    if(!this.createEditRule) {
-      return;
-    }
-
     this.editable = editable;
 
     this.isCreateEndpoint = false;
@@ -200,6 +195,7 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
       toPromise<ReplicationRule>(this.replicationService
           .getReplicationRule(ruleId))
           .then(rule=>{
+            if(rule) {
               this.createEditRule.ruleId = ruleId;
               this.createEditRule.name = rule.name;
               this.createEditRule.description = rule.description;
@@ -210,7 +206,7 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
               this.initVal.description = this.createEditRule.description;
               this.initVal.enable = this.createEditRule.enable;
             }
-          )
+          }).catch(err=>this.errorHandler.error(err));
     } else {
       this.actionType = ActionType.ADD_NEW;
       this.translateService.get('REPLICATION.ADD_POLICY').subscribe(res=>this.modalTitle=res);
@@ -243,7 +239,7 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
   getRuleByForm(): ReplicationRule {
     let rule: ReplicationRule = this.initReplicationRule;
     rule.project_id = this.projectId;
-    rule.id = this.createEditRule.endpointId;
+    rule.id = this.createEditRule.ruleId;
     rule.name = this.createEditRule.name;
     rule.description = this.createEditRule.description;
     rule.enabled = this.createEditRule.enable ? 1 : 0;

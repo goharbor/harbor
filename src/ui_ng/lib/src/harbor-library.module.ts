@@ -18,6 +18,7 @@ import { SERVICE_CONFIG, IServiceConfig } from './service.config';
 
 import { CONFIRMATION_DIALOG_DIRECTIVES } from './confirmation-dialog/index';
 import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
+import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 
 import {
   AccessLogService,
@@ -137,7 +138,8 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
     LIST_REPLICATION_JOB_DIRECTIVES,
-    CREATE_EDIT_RULE_DIRECTIVES
+    CREATE_EDIT_RULE_DIRECTIVES,
+    DATETIME_PICKER_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -152,7 +154,8 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
     LIST_REPLICATION_JOB_DIRECTIVES,
-    CREATE_EDIT_RULE_DIRECTIVES
+    CREATE_EDIT_RULE_DIRECTIVES,
+    DATETIME_PICKER_DIRECTIVES
   ],
   providers: []
 })

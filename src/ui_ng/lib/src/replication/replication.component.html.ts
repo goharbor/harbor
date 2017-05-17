@@ -39,21 +39,9 @@ export const REPLICATION_TEMPLATE: string = `
           <option *ngFor="let j of jobStatus" value="{{j.key}}" [selected]="currentJobStatus.key === j.key">{{j.description | translate}}</option>
           </select>
         </div>
-        <div class="flex-items-xs-middle">
-          <clr-icon shape="date"></clr-icon>
-          <label for="fromDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="fromTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
-            <input id="fromDateInput" type="date" #fromTime="ngModel" name="from" [(ngModel)]="search.startTime" dateValidator placeholder="dd/mm/yyyy" (change)="doJobSearchByStartTime(fromTime.value)">
-            <span *ngIf="fromTimeInvalid" class="tooltip-content">
-               {{'AUDIT_LOG.INVALID_DATE' | translate }}
-            </span>
-          </label>
-          <clr-icon shape="date"></clr-icon>
-          <label for="toDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="toTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
-            <input id="toDateInput" type="date" #toTime="ngModel" name="to" [(ngModel)]="search.endTime" dateValidator placeholder="dd/mm/yyyy" (change)="doJobSearchByEndTime(toTime.value)">
-            <span *ngIf="toTimeInvalid" class="tooltip-content">
-               {{'AUDIT_LOG.INVALID_DATE' | translate }}
-            </span>
-          </label>
+        <div class="flex-items-xs-middle">    
+          <hbr-datetime [dateInput]="search.startTime" (search)="doJobSearchByStartTime($event)"></hbr-datetime>
+          <hbr-datetime [dateInput]="search.endTime" [oneDayOffset]="true" (search)="doJobSearchByEndTime($event)"></hbr-datetime>
         </div>
       </div>
     </div>
