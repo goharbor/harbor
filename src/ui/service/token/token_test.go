@@ -22,13 +22,14 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/ui/config"
 	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
 	"testing"
+
+	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 func TestMain(m *testing.M) {
@@ -199,6 +200,31 @@ func TestEndpointParser(t *testing.T) {
 	}
 }
 
+type fakeSecurityContext struct {
+	isAdmin bool
+}
+
+func (f *fakeSecurityContext) IsAuthenticated() bool {
+	return true
+}
+
+func (f *fakeSecurityContext) GetUsername() string {
+	return "jack"
+}
+
+func (f *fakeSecurityContext) IsSysAdmin() bool {
+	return f.isAdmin
+}
+func (f *fakeSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+	return false
+}
+func (f *fakeSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
+	return false
+}
+func (f *fakeSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
+	return false
+}
+
 func TestFilterAccess(t *testing.T) {
 	//TODO put initial data in DB to verify repository filter.
 	var err error
@@ -206,8 +232,7 @@ func TestFilterAccess(t *testing.T) {
 	a1 := GetResourceActions(s)
 	a2 := GetResourceActions(s)
 	a3 := GetResourceActions(s)
-	u1 := userInfo{"jack", true}
-	u2 := userInfo{"jack", false}
+
 	ra1 := token.ResourceActions{
 		Type:    "registry",
 		Name:    "catalog",
@@ -218,13 +243,21 @@ func TestFilterAccess(t *testing.T) {
 		Name:    "catalog",
 		Actions: []string{},
 	}
-	err = filterAccess(a1, u1, registryFilterMap)
+	err = filterAccess(a1, &fakeSecurityContext{
+		isAdmin: true,
+	}, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
-	err = filterAccess(a2, u1, notaryFilterMap)
+
+	err = filterAccess(a2, &fakeSecurityContext{
+		isAdmin: true,
+	}, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
-	err = filterAccess(a3, u2, registryFilterMap)
+
+	err = filterAccess(a3, &fakeSecurityContext{
+		isAdmin: false,
+	}, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }

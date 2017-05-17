@@ -11,12 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { RepositoryService } from '../repository.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.const';
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
 
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
@@ -35,7 +35,8 @@ import { Project } from '../../project/project';
 @Component({
   selector: 'tag-repository',
   templateUrl: 'tag-repository.component.html',
-  styleUrls: ['./tag-repository.component.css']
+  styleUrls: ['./tag-repository.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagRepositoryComponent implements OnInit, OnDestroy {
 
@@ -58,7 +59,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   selectAll: boolean = false;
 
-  private subscription: Subscription;
+  subscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -66,8 +67,8 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
     private deletionDialogService: ConfirmationDialogService,
     private repositoryService: RepositoryService,
     private appConfigService: AppConfigService,
-    private session: SessionService){
-    
+    private session: SessionService,
+    private ref: ChangeDetectorRef){
     this.subscription = this.deletionDialogService.confirmationConfirm$.subscribe(
       message => {
         if (message &&
@@ -85,7 +86,6 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
                 response => {
                   this.retrieve();
                   this.messageHandlerService.showSuccess('REPOSITORY.DELETED_TAG_SUCCESS');
-                  console.log('Deleted repo:' + this.repoName + ' with tag:' + tagName);
                 },
                 error => this.messageHandlerService.handleError(error)
               );
@@ -117,22 +117,34 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
 
   retrieve() {
     this.tags = [];
+    this.repositoryService
+        .listTags(this.repoName)
+        .subscribe(
+          items => this.listTags(items),
+          error => this.messageHandlerService.handleError(error));
+   
     if(this.withNotary) {
       this.repositoryService
-          .listTagsWithVerifiedSignatures(this.repoName)
+          .listNotarySignatures(this.repoName)
           .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    } else {
-      this.repositoryService
-          .listTags(this.repoName)
-          .subscribe(
-            items => this.listTags(items),
-            error => this.messageHandlerService.handleError(error));
-    }
+            signatures => {
+              this.tags.forEach((t, n)=>{
+                let signed = false;
+                for(let i = 0; i < signatures.length; i++) {
+                  if (signatures[i].tag === t.tag) {
+                    signed = true;
+                    break;
+                  }
+                }
+                this.tags[n].signed = (signed) ? 1 : 0;
+                this.ref.markForCheck();
+              });
+            },
+            error => console.error('Cannot determine the signature of this tag.'));
+      }
   }
 
-  private listTags(tags: Tag[]): void {
+  listTags(tags: Tag[]): void {
     tags.forEach(t => {
       let tag = new TagView();
       tag.tag = t.tag;
@@ -148,29 +160,31 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       tag.parent = data['parent'];
       this.tags.push(tag);
     });
+    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   deleteTag(tag: TagView) {
     if (tag) {
-      let titleKey: string, summaryKey: string, content: string, confirmOnly: boolean;
+      let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
       if (tag.signed) {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
-        confirmOnly = true;
+        buttons = ConfirmationButtons.CLOSE;
         content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.tag;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+        buttons = ConfirmationButtons.DELETE_CANCEL;
         content = tag.tag;
-        confirmOnly = false;
       }
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
         content,
         tag,
-        ConfirmationTargets.TAG);
-        message.confirmOnly = confirmOnly;
+        ConfirmationTargets.TAG,
+        buttons);
       this.deletionDialogService.openComfirmDialog(message);
     }
   }
@@ -187,7 +201,7 @@ export class TagRepositoryComponent implements OnInit, OnDestroy {
       this.showTagManifestOpened = true;
     }
   }
-  selectAndCopy($event) {
+  selectAndCopy($event: any) {
     $event.target.select();
   }
 }

@@ -44,13 +44,13 @@ const TabLinkContentMap = {
     styleUrls: ['config.component.css']
 })
 export class ConfigurationComponent implements OnInit, OnDestroy {
-    private onGoing: boolean = false;
+    onGoing: boolean = false;
     allConfig: Configuration = new Configuration();
-    private currentTabId: string = "config-auth";//default tab
-    private originalCopy: Configuration;
-    private confirmSub: Subscription;
-    private testingMailOnGoing: boolean = false;
-    private testingLDAPOnGoing: boolean = false;
+    currentTabId: string = "config-auth";//default tab
+    originalCopy: Configuration;
+    confirmSub: Subscription;
+    testingMailOnGoing: boolean = false;
+    testingLDAPOnGoing: boolean = false;
 
     @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
     @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
@@ -64,15 +64,15 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private session: SessionService) { }
 
-    private isCurrentTabLink(tabId: string): boolean {
+    isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }
 
-    private isCurrentTabContent(contentId: string): boolean {
+    isCurrentTabContent(contentId: string): boolean {
         return TabLinkContentMap[this.currentTabId] === contentId;
     }
 
-    private hasUnsavedChangesOfCurrentTab(): any {
+    hasUnsavedChangesOfCurrentTab(): any {
         let allChanges = this.getChanges();
         if (this.isEmpty(allChanges)) {
             return null;
@@ -315,6 +315,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             delete ldapSettings['ldap_search_password'];
         }
 
+        //Fix: Confirm ldap scope is number
+        ldapSettings['ldap_scope'] = +ldapSettings['ldap_scope'];
+
         this.testingLDAPOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
             .then(respone => {
@@ -331,7 +334,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
-    private confirmUnsavedChanges(changes: any) {
+    confirmUnsavedChanges(changes: any) {
         let msg = new ConfirmationMessage(
             "CONFIG.CONFIRM_TITLE",
             "CONFIG.CONFIRM_SUMMARY",
@@ -343,7 +346,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.confirmService.openComfirmDialog(msg);
     }
 
-    private confirmUnsavedTabChanges(changes: any, tabId: string) {
+    confirmUnsavedTabChanges(changes: any, tabId: string) {
         let msg = new ConfirmationMessage(
             "CONFIG.CONFIRM_TITLE",
             "CONFIG.CONFIRM_SUMMARY",
@@ -358,7 +361,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.confirmService.openComfirmDialog(msg);
     }
 
-    private retrieveConfig(): void {
+    retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
             .then(configurations => {
@@ -387,7 +390,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * 
      * @memberOf ConfigurationComponent
      */
-    private getChanges(): any {
+    getChanges(): any {
         let changes = {};
         if (!this.allConfig || !this.originalCopy) {
             return changes;
@@ -401,6 +404,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     //Fix boolean issue
                     if (typeof field.value === "boolean") {
                         changes[prop] = changes[prop] ? "1" : "0";
+                    }
+
+                    //Trim string value
+                    if(typeof field.value === "string") {
+                        changes[prop] = (''+changes[prop]).trim();
                     }
                 }
             }
@@ -419,7 +427,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * 
      * @memberOf ConfigurationComponent
      */
-    private clone(src: Configuration): Configuration {
+    clone(src: Configuration): Configuration {
         let dest = new Configuration();
         if (!src) {
             return dest;//Empty
@@ -443,7 +451,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * 
      * @memberOf ConfigurationComponent
      */
-    private reset(changes: any): void {
+    reset(changes: any): void {
         if (!this.isEmpty(changes)) {
             for (let prop in changes) {
                 if (this.originalCopy[prop]) {
@@ -456,7 +464,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    private isEmpty(obj) {
+    isEmpty(obj: any) {
         for (let key in obj) {
             if (obj.hasOwnProperty(key))
                 return false;
@@ -464,7 +472,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return true;
     }
 
-    private disabled(prop: any): boolean {
+    disabled(prop: any): boolean {
         return !(prop && prop.editable);
     }
 }

@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/ui/config"
 
 	"github.com/opencontainers/go-digest"
 )
@@ -54,6 +55,18 @@ func init() {
 		return
 	}
 	trustPin = trustpinning.TrustPinConfig{}
+}
+
+// GetInternalTargets wraps GetTargets to read config values for getting full-qualified repo from internal notary instance.
+func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]Target, error) {
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		return nil, err
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repo)
+	return GetTargets(notaryEndpoint, username, fqRepo)
 }
 
 // GetTargets is a help function called by API to fetch signature information of a given repository.

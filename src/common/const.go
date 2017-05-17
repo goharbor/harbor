@@ -24,6 +24,14 @@ const (
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
 
+	RoleSystemAdmin  = 1
+	RoleProjectAdmin = 2
+	RoleDeveloper    = 3
+	RoleGuest        = 4
+
+	DeployModeStandAlone  = "standalone"
+	DeployModeIntegration = "integration"
+
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
 	DatabaseType               = "database_type"

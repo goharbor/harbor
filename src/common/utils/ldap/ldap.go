@@ -31,8 +31,6 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-var attributes = []string{"uid", "cn", "mail", "email"}
-
 // GetSystemLdapConf ...
 func GetSystemLdapConf() (models.LdapConf, error) {
 	var err error
@@ -153,7 +151,7 @@ func ConnectTest(ldapConfs models.LdapConf) error {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs)
 
 	if err != nil {
 		return err
@@ -177,7 +175,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 	var ldapConn *goldap.Conn
 	var err error
 
-	ldapConn, err = dialLDAP(ldapConfs, ldapConn)
+	ldapConn, err = dialLDAP(ldapConfs)
 
 	if err != nil {
 		return nil, err
@@ -205,8 +203,9 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 		var u models.LdapUser
 		for _, attr := range ldapEntry.Attributes {
 			val := attr.Values[0]
-			switch attr.Name {
-			case ldapConfs.LdapUID:
+			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
+			switch strings.ToLower(attr.Name) {
+			case strings.ToLower(ldapConfs.LdapUID):
 				u.Username = val
 			case "uid":
 				u.Realname = val
@@ -218,6 +217,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 				u.Email = val
 			}
 		}
+		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 	}
 
@@ -313,11 +313,25 @@ func ImportUser(user models.LdapUser) (int64, error) {
 	return UserID, nil
 }
 
-func dialLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.Conn, error) {
+// Bind establish a connection to ldap based on ldapConfs and bind the user with given parameters.
+func Bind(ldapConfs models.LdapConf, dn string, password string) error {
+	conn, err := dialLDAP(ldapConfs)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	if ldapConfs.LdapSearchDn != "" {
+		if err := bindLDAPSearchDN(ldapConfs, conn); err != nil {
+			return err
+		}
+	}
+	return conn.Bind(dn, password)
+}
+
+func dialLDAP(ldapConfs models.LdapConf) (*goldap.Conn, error) {
+
 	var err error
-
-	//log.Debug("ldapConfs.LdapURL:", ldapConfs.LdapURL)
-
+	var ldap *goldap.Conn
 	splitLdapURL := strings.Split(ldapConfs.LdapURL, "://")
 	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
 
@@ -358,6 +372,11 @@ func searchLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.SearchRes
 	ldapScope := ldapConfs.LdapScope
 	ldapFilter := ldapConfs.LdapFilter
 
+	attributes := []string{"uid", "cn", "mail", "email"}
+	lowerUID := strings.ToLower(ldapConfs.LdapUID)
+	if lowerUID != "uid" && lowerUID != "cn" && lowerUID != "mail" && lowerUID != "email" {
+		attributes = append(attributes, ldapConfs.LdapUID)
+	}
 	searchRequest := goldap.NewSearchRequest(
 		ldapBaseDn,
 		ldapScope,

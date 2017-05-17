@@ -42,6 +42,7 @@ func checkProjectPermission(userID int, projectID int64) bool {
 	return len(roles) > 0
 }
 
+// TODO remove
 func hasProjectAdminRole(userID int, projectID int64) bool {
 	roles, err := listRoles(userID, projectID)
 	if err != nil {
@@ -270,18 +271,21 @@ func SyncRegistry() error {
 		log.Debugf("Start adding repositories into DB... ")
 		for _, repoToAdd := range reposToAdd {
 			project, _ := utils.ParseRepository(repoToAdd)
-			user, err := dao.GetAccessLogCreator(repoToAdd)
-			if err != nil {
-				log.Errorf("Error happens when getting the repository owner from access log: %v", err)
-			}
-			if len(user) == 0 {
-				user = "anonymous"
-			}
 			pullCount, err := dao.CountPull(repoToAdd)
 			if err != nil {
 				log.Errorf("Error happens when counting pull count from access log: %v", err)
 			}
-			repoRecord := models.RepoRecord{Name: repoToAdd, OwnerName: user, ProjectName: project, PullCount: pullCount}
+			pro, err := dao.GetProjectByName(project)
+			if err != nil {
+				log.Errorf("failed to get project %s: %v", project, err)
+				continue
+			}
+			repoRecord := models.RepoRecord{
+				Name:      repoToAdd,
+				ProjectID: pro.ProjectID,
+				PullCount: pullCount,
+			}
+
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
 			} else {
@@ -352,7 +356,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 				return needsAdd, needsDel, err
 			}
 			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR)
+				"admin", repoInR, "repository", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -377,7 +381,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 				return needsAdd, needsDel, err
 			}
 			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR)
+				"admin", repoInR, "repository", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -424,6 +428,7 @@ func projectExists(repository string) (bool, error) {
 	return dao.ProjectExists(project)
 }
 
+// TODO need a registry client which accept a raw token as param
 func initRegistryClient() (r *registry.Registry, err error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {
@@ -496,6 +501,7 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 }
 
 // NewRegistryClient ...
+// TODO need a registry client which accept a raw token as param
 func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Registry, error) {
 	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
@@ -513,6 +519,7 @@ func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scop
 }
 
 // NewRepositoryClient ...
+// TODO need a registry client which accept a raw token as param
 func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
 	scopeActions ...string) (*registry.Repository, error) {
 

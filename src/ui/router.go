@@ -71,8 +71,9 @@ func initRouters() {
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
-	beego.Router("/api/repositories", &api.RepositoryAPI{})
-	beego.Router("/api/repositories/*/tags/?:tag", &api.RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
+	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
@@ -107,6 +108,8 @@ func initRouters() {
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
 
+	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
+
 }

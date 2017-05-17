@@ -36,6 +36,10 @@ const metaChars = "&|!=~*<>()"
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	p := m.Principal
+	if len(strings.TrimSpace(p)) == 0 {
+		log.Debugf("LDAP authentication failed for empty user id.")
+		return nil, nil
+	}
 	for _, c := range metaChars {
 		if strings.ContainsRune(p, c) {
 			return nil, fmt.Errorf("the principal contains meta char: %q", c)
@@ -59,7 +63,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	ldapUsers, err := ldapUtils.SearchUser(ldapConfs)
 
 	if err != nil {
-		return nil, fmt.Errorf("ldap search fail: %v", err)
+		log.Warningf("ldap search fail: %v", err)
+		return nil, nil
 	}
 
 	if len(ldapUsers) == 0 {
@@ -75,6 +80,13 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Email = ldapUsers[0].Email
 	u.Realname = ldapUsers[0].Realname
 
+	dn := ldapUsers[0].DN
+
+	log.Debugf("username: %s, dn: %s", u.Username, dn)
+	if err := ldapUtils.Bind(ldapConfs, dn, m.Password); err != nil {
+		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
+		return nil, nil
+	}
 	exist, err := dao.UserExists(u, "username")
 	if err != nil {
 		return nil, err
@@ -87,11 +99,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 		u.UserID = currentUser.UserID
 	} else {
-		//		u.Password = "12345678AbC"
-		//		u.Comment = "from LDAP."
-		//		if u.Email == "" {
-		//			u.Email = u.Username + "@placeholder.com"
-		//		}
 		userID, err := ldapUtils.ImportUser(ldapUsers[0])
 		if err != nil {
 			log.Errorf("Can't import user %s, error: %v", ldapUsers[0].Username, err)

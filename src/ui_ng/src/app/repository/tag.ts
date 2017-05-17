@@ -36,5 +36,5 @@ export class Tag {
       }
     ];
   };
-  signed: boolean;
+  signed: number;
 }

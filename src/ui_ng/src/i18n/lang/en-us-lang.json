@@ -123,7 +123,7 @@
         "PROJECTS": "Projects",
         "NAME": "Project Name",
         "ROLE": "Role",
-        "PUBLIC_OR_PRIVATE": "Public",
+        "PUBLIC_OR_PRIVATE": "Access Level",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
         "PUBLIC": "Public",
@@ -197,7 +197,8 @@
         "ADVANCED": "Advanced",
         "SIMPLE": "Simple",
         "ITEMS": "item(s)",
-        "FILTER_PLACEHOLDER": "Filter Logs"
+        "FILTER_PLACEHOLDER": "Filter Logs",
+        "INVALID_DATE": "Invalid date."
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Replication Rule",
@@ -265,7 +266,8 @@
         "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
         "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
-        "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check."
+        "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
+        "INVALID_DATE": "Invalid date."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -325,7 +327,8 @@
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
-        "COPY": "Copy"
+        "COPY": "Copy",
+        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag."
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -421,6 +424,8 @@
         "PRO_ITEM": "PROJECTS",
         "REPO_ITEM": "REPOSITORIES",
         "INDEX_MY": "MY",
+        "INDEX_MY_PROJECTS": "MY PROJECTS",
+        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PUBLIC",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "STORAGE",

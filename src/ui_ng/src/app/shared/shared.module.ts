@@ -13,7 +13,7 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService } from 'ngx-cookie';
 
 import { SessionService } from '../shared/session.service';
 import { MessageComponent } from '../global-message/message.component';
@@ -54,6 +54,7 @@ import { MessageHandlerService } from './message-handler/message-handler.service
 import { EmailValidatorDirective } from './email.directive';
 import { GaugeComponent } from './gauge/gauge.component';
 import { StatisticHandler } from './statictics/statistic-handler.service';
+import { DateValidatorDirective } from '../shared/date-validator.directive';
 
 @NgModule({
   imports: [
@@ -78,7 +79,8 @@ import { StatisticHandler } from './statictics/statistic-handler.service';
     ListProjectROComponent,
     ListRepositoryROComponent,
     EmailValidatorDirective,
-    GaugeComponent
+    GaugeComponent,
+    DateValidatorDirective
   ],
   exports: [
     CoreModule,
@@ -99,7 +101,8 @@ import { StatisticHandler } from './statictics/statistic-handler.service';
     ListProjectROComponent,
     ListRepositoryROComponent,
     EmailValidatorDirective,
-    GaugeComponent
+    GaugeComponent,
+    DateValidatorDirective
   ],
   providers: [
     SessionService,

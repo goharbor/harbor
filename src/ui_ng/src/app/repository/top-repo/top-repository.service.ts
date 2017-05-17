@@ -17,7 +17,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { Repository } from '../repository';
 
-export const topRepoEndpoint = "/api/repositories/top?detail=1";
+export const topRepoEndpoint = "/api/repositories/top";
 /**
  * Declare service to handle the top repositories
  * 
@@ -27,10 +27,10 @@ export const topRepoEndpoint = "/api/repositories/top?detail=1";
  */
 @Injectable()
 export class TopRepoService {
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
-    private options = new RequestOptions({
+    options = new RequestOptions({
         headers: this.headers
     });
 

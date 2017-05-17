@@ -44,18 +44,18 @@ export class SessionService {
 
     projectMembers: Member[];
 
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
 
-    private formHeaders = new Headers({
+    formHeaders = new Headers({
         "Content-Type": 'application/x-www-form-urlencoded'
     });
 
     constructor(private http: Http) { }
 
     //Handle the related exceptions
-    private handleError(error: any): Promise<any> {
+    handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
 
@@ -68,12 +68,11 @@ export class SessionService {
     //Submit signin form to backend (NOT restful service)
     signIn(signInCredential: SignInCredential): Promise<any> {
         //Build the form package
-        const body = new URLSearchParams();
-        body.set('principal', signInCredential.principal);
-        body.set('password', signInCredential.password);
+        let queryParam:string = 'principal=' + encodeURIComponent(signInCredential.principal) + 
+        '&password=' + encodeURIComponent(signInCredential.password);
 
         //Trigger Http
-        return this.http.post(signInUrl, body.toString(), { headers: this.formHeaders })
+        return this.http.post(signInUrl, queryParam, { headers: this.formHeaders })
             .toPromise()
             .then(() => null)
             .catch(error => this.handleError(error));

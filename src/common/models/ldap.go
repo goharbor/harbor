@@ -31,6 +31,7 @@ type LdapUser struct {
 	Username string `json:"ldap_username"`
 	Email    string `json:"ldap_email"`
 	Realname string `json:"ldap_realname"`
+	DN       string `json:"-"`
 }
 
 //LdapImportUser ...

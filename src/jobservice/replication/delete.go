@@ -90,7 +90,7 @@ func (d *Deleter) enter() (string, error) {
 
 	// delete repository
 	if len(d.tags) == 0 {
-		u := url + "?repo_name=" + d.repository
+		u := url + d.repository + "/tags"
 		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
 			if err == errNotFound {
 				d.logger.Warningf("repository %s does not exist on %s", d.repository, d.dstURL)
@@ -109,7 +109,7 @@ func (d *Deleter) enter() (string, error) {
 
 	// delele tags
 	for _, tag := range d.tags {
-		u := url + "?repo_name=" + d.repository + "&tag=" + tag
+		u := url + d.repository + "/tags/" + tag
 		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
 			if err == errNotFound {
 				d.logger.Warningf("repository %s does not exist on %s", d.repository, d.dstURL)

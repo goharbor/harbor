@@ -1,8 +1,8 @@
 # Makefile for Harbor project
-#
+#	
 # Targets:
 #
-# all:			prepare env, compile binarys, build images and install images
+# all:			prepare env, compile binarys, build images and install images 
 # prepare: 		prepare env
 # compile: 		compile adminserver, ui and jobservice code
 #
@@ -15,11 +15,11 @@
 # build: 		build Harbor docker images (defuault: build_photon)
 #			for example: make build -e BASEIMAGE=photon
 # build_photon:	build Harbor docker images from photon baseimage
-#
-# install:		include compile binarys, build images, prepare specific \
+# 
+# install:		include compile binarys, build images, prepare specific \ 
 #				version composefile and startup Harbor instance
 #
-# start:		startup Harbor instance
+# start:		startup Harbor instance	
 #
 # down:			shutdown Harbor instance
 #
@@ -28,10 +28,10 @@
 #			for example: make package_online -e DEVFLAG=false\
 #							REGISTRYSERVER=reg-bj.eng.vmware.com \
 #							REGISTRYPROJECTNAME=harborrelease
-#
+#						
 # package_offline:
 #				prepare offline install package
-#
+# 
 # pushimage:	push Harbor images to specific registry server
 #			for example: make pushimage -e DEVFLAG=false REGISTRYUSER=admin \
 #							REGISTRYPASSWORD=***** \
@@ -46,19 +46,19 @@
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
 # cleanbinary:	remove adminserver, ui and jobservice binary
-# cleanimage: 	remove Harbor images
-# cleandockercomposefile:
-#				remove specific version docker-compose
+# cleanimage: 	remove Harbor images 
+# cleandockercomposefile:	
+#				remove specific version docker-compose 
 # cleanversiontag:
 #				cleanpackageremove specific version tag
 # cleanpackage: remove online/offline install package
-#
+# 
 # other example:
 #	clean specific version binarys and images:
 #				make clean -e VERSIONTAG=[TAG]
 #				note**: If commit new code to github, the git commit TAG will \
 #				change. Better use this commond clean previous images and \
-#				files with specific TAG.
+#				files with specific TAG. 
 #   By default DEVFLAG=true, if you want to release new version of Harbor, \
 #		should setting the flag to false.
 #				make XXXX -e DEVFLAG=false
@@ -86,10 +86,12 @@ NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
 MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
+REBUILDCLARITYFLAG=false
+NEWCLARITYVERSION=
 
 #clarity parameters
-CLARITYIMAGE=danieljt/harbor-clarity-base[:tag]
-CLARITYSEEDPATH=/clarity-seed
+CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
+CLARITYSEEDPATH=/harbor_ui
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
@@ -123,7 +125,7 @@ GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
 GOLANGDOCKERFILENAME=Dockerfile.golang
 
-# binary
+# binary 
 ADMINSERVERSOURCECODE=$(SRCPATH)/adminserver
 ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
 ADMINSERVERBINARYNAME=harbor_adminserver
@@ -149,6 +151,7 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
+DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
 
 # docker image name
 DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
@@ -156,6 +159,7 @@ DOCKERIMAGENAME_UI=vmware/harbor-ui
 DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
+DOCKERIMAGENAME_CLATIRY=vmware/harbor-clarity-ui-builder
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -169,15 +173,15 @@ VERSIONFILENAME=VERSION
 GITCMD=$(shell which git)
 GITTAG=$(GITCMD) describe --tags
 GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
-ifeq ($(DEVFLAG), true)
+ifeq ($(DEVFLAG), true)        
 	VERSIONTAG=dev
-else
+else        
 	VERSIONTAG=$(GITTAGVERSION)
 endif
 
 SEDCMD=$(shell which sed)
 
-# package
+# package 
 TARCMD=$(shell which tar)
 ZIPCMD=$(shell which gzip)
 DOCKERIMGFILE=harbor
@@ -191,7 +195,7 @@ REGISTRYPASSWORD=default
 
 version:
 	@printf $(GITTAGVERSION) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
-
+	
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
@@ -204,17 +208,21 @@ compile_ui:
 	@echo "compiling binary for ui..."
 	@$(GOBUILD) -o $(UIBINARYPATH)/$(UIBINARYNAME) $(UISOURCECODE)
 	@echo "Done."
-
+	
 compile_jobservice:
 	@echo "compiling binary for jobservice..."
 	@$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
 	@echo "Done."
-
+	
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
-	$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); 
+	@if [ "$(HTTPPROXY)" != "" ] ; then \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+	else \
+		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+	fi
 	@echo "Done."
-
+	
 compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
 
 compile_golangimage: compile_clarity
@@ -229,21 +237,21 @@ compile_golangimage: compile_clarity
 	@echo $(GOBUILDPATH)
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
 	@echo "Done."
-
+	
 	@echo "compiling binary for jobservice (golang image)..."
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
-
+	
 compile:check_environment $(COMPILETAG)
 
-prepare:
+prepare: 
 	@echo "preparing..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) --with-notary; \
 	else \
 		$(MAKEPATH)/$(PREPARECMD) --conf $(CONFIGPATH)/$(CONFIGFILE) ; \
-	fi
-
+	fi	
+	
 build_common: version
 	@echo "buildging db container for photon..."
 	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
@@ -251,10 +259,10 @@ build_common: version
 
 build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
-
+	
 build: build_$(BASEIMAGE)
-
-modify_composefile:
+	
+modify_composefile: 
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
@@ -266,9 +274,9 @@ modify_sourcefiles:
 	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer-ca.crt
 	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
 	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
-
+	
 install: compile build modify_sourcefiles prepare modify_composefile start
-
+	
 package_online: modify_composefile
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
@@ -278,31 +286,37 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
+	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
+	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
 
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME); \
 	else \
 		$(TARCMD) -zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg ; \
 	fi
-
+						
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-
+		
 package_offline: compile build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
-
+	
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-
+	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
+	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
+			
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
 	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
@@ -311,8 +325,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
 		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
-	fi
-
+	fi	
+	
 	@echo "saving harbor docker image"
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(DOCKERSAVE) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
@@ -332,24 +346,48 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
 		photon:$(PHOTONVERSION) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz; \
 	fi
-
+	
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME) ; \
 	else \
 		$(TARCMD) -zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) ; \
 	fi
 
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
+	
+refresh_clarity_builder:
+	@if [ "$(REBUILDCLIATRYFLAG)" = "true" ] ; then \
+		echo "set http proxy.."; \
+		if [ "$(HTTPPROXY)" != "" ] ; then \
+			$(SEDCMD) -i 's/__proxy__/--proxy $(HTTPPROXY)/g' $(DOCKERFILE_CLARITY) ; \
+		else \
+			$(SEDCMD) -i 's/__proxy__/ /g' $(DOCKERFILE_CLARITY) ; \
+		fi ; \
+		echo "build new clarity image.."; \
+		$(DOCKERBUILD) -f $(DOCKERFILE_CLARITY) -t $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) . ; \
+		echo "push clarity image.."; \
+		$(DOCKERTAG) $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION); \
+		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) \
+			$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER); \
+		echo "remove local clarity image.."; \
+		$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(NEWCLARITYVERSION); \
+	fi
+
+run_clarity_ut:
+	@echo "run clarity ut ..."
+	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH)/lib -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
 
 pushimage:
 	@echo "pushing harbor images ..."
@@ -362,22 +400,22 @@ pushimage:
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
-
+	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
-
+	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-
+	
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_DB):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_DB):$(VERSIONTAG)
-
+		
 start:
 	@echo "loading harbor images..."
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
@@ -386,7 +424,7 @@ start:
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d ; \
 	fi
 	@echo "Start complete. You can visit harbor now."
-
+	
 down:
 	@echo "Please make sure to set -e NOTARYFLAG=true if you are using Notary in Harbor, otherwise the Notary containers cannot be stop automaticlly."
 	@while [ -z "$$CONTINUE" ]; do \
@@ -398,7 +436,7 @@ down:
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME) down -v ; \
 	else \
 		$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v ; \
-	fi
+	fi	
 	@echo "Done."
 
 cleanbinary:
@@ -423,20 +461,20 @@ cleandockercomposefile:
 
 cleanversiontag:
 	@echo "cleaning version TAG"
-	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)
-
+	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)	
+	
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
 	@if [ -f $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ] ; \
 	then rm $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ; fi
 	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ; fi
+	then rm $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ; fi	
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
 
-clean:
+clean: 
 	@echo "  make cleanall:		remove binary, Harbor images, specific version docker-compose"
 	@echo "		file, specific version tag, online and offline install package"
 	@echo "  make cleanbinary:		remove ui and jobservice binary"
@@ -446,3 +484,4 @@ clean:
 	@echo "  make cleanpackage:		remove online and offline install package"
 
 all: install
+
