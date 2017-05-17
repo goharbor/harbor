@@ -18,28 +18,43 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
+// QueryParam can be used to set query parameters when listing projects
+type QueryParam struct {
+	Name       string      // the name of project
+	Owner      string      // the username of project owner
+	Public     string      // the project is public or not, can be "ture","false" and ""
+	Member     *Member     // the member of project
+	Pagination *Pagination // pagination information
+}
+
+// Member fitler by member's username and role
+type Member struct {
+	Name string // the username of member
+	Role int    // the role of the member has to the project
+}
+
+// Pagination ...
+type Pagination struct {
+	Page int64
+	Size int64
+}
+
 // ProjectManager is the project mamager which abstracts the operations related
 // to projects
 type ProjectManager interface {
-	Get(projectIDOrName interface{}) *models.Project
-	IsPublic(projectIDOrName interface{}) bool
-	Exist(projectIDOrName interface{}) bool
-	GetRoles(username string, projectIDOrName interface{}) []int
+	Get(projectIDOrName interface{}) (*models.Project, error)
+	IsPublic(projectIDOrName interface{}) (bool, error)
+	Exist(projectIDOrName interface{}) (bool, error)
+	GetRoles(username string, projectIDOrName interface{}) ([]int, error)
 	// get all public project
-	GetPublic() []*models.Project
+	GetPublic() ([]*models.Project, error)
 	// get projects which the user is a member of
-	GetByMember(username string) []*models.Project
+	GetByMember(username string) ([]*models.Project, error)
 	Create(*models.Project) (int64, error)
 	Delete(projectIDOrName interface{}) error
 	Update(projectIDOrName interface{}, project *models.Project) error
-	// GetAll returns a project list and the total count according to
-	// the query conditions:
-	// owner: username of owner
-	// name: name of project
-	// public: public or not, can be "true", "false" or ""
-	// member: username of the member
-	// role: the role of member specified by member parameter
-	// page, size: pagination parameters
-	GetAll(owner, name, public, member string, role int, page,
-		size int64) ([]*models.Project, int64)
+	// GetAll returns a project list according to the query parameters
+	GetAll(query *QueryParam) ([]*models.Project, error)
+	// GetTotal returns the total count according to the query parameters
+	GetTotal(query *QueryParam) (int64, error)
 }

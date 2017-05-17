@@ -21,77 +21,74 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 // ProjectManager implements pm.PM interface based on database
 type ProjectManager struct{}
 
 // Get ...
-func (p *ProjectManager) Get(projectIDOrName interface{}) *models.Project {
+func (p *ProjectManager) Get(projectIDOrName interface{}) (
+	*models.Project, error) {
 	switch projectIDOrName.(type) {
 	case string:
-		name := projectIDOrName.(string)
-		project, err := dao.GetProjectByName(name)
-		if err != nil {
-			log.Errorf("failed to get project %s: %v", name, err)
-			return nil
-		}
-		return project
+		return dao.GetProjectByName(projectIDOrName.(string))
 	case int64:
-		id := projectIDOrName.(int64)
-		project, err := dao.GetProjectByID(id)
-		if err != nil {
-			log.Errorf("failed to get project %d: %v", id, err)
-			return nil
-		}
-		return project
+		return dao.GetProjectByID(projectIDOrName.(int64))
 	default:
-		log.Errorf("unsupported type of %v, must be string or int64", projectIDOrName)
-		return nil
+		return nil, fmt.Errorf("unsupported type of %v, must be string or int64", projectIDOrName)
 	}
 }
 
 // Exist ...
-func (p *ProjectManager) Exist(projectIDOrName interface{}) bool {
-	return p.Get(projectIDOrName) != nil
+func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
+	project, err := p.Get(projectIDOrName)
+	if err != nil {
+		return false, err
+	}
+	return project != nil, nil
 }
 
 // IsPublic returns whether the project is public or not
-func (p *ProjectManager) IsPublic(projectIDOrName interface{}) bool {
-	project := p.Get(projectIDOrName)
-	if project == nil {
-		return false
+func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
+	project, err := p.Get(projectIDOrName)
+	if err != nil {
+		return false, err
 	}
 
-	return project.Public == 1
+	if project == nil {
+		return false, nil
+	}
+
+	return project.Public == 1, nil
 }
 
 // GetRoles return a role list which contains the user's roles to the project
-func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) []int {
+func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
 	roles := []int{}
 
 	user, err := dao.GetUser(models.User{
 		Username: username,
 	})
 	if err != nil {
-		log.Errorf("failed to get user %s: %v", username, err)
-		return roles
+		return nil, fmt.Errorf("failed to get user %s: %v",
+			username, err)
 	}
 	if user == nil {
-		return roles
+		return roles, nil
 	}
 
-	project := p.Get(projectIDOrName)
+	project, err := p.Get(projectIDOrName)
+	if err != nil {
+		return nil, err
+	}
 	if project == nil {
-		return roles
+		return roles, nil
 	}
 
 	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID)
 	if err != nil {
-		log.Errorf("failed to get roles for user %d to project %d: %v",
-			user.UserID, project.ProjectID, err)
-		return roles
+		return nil, err
 	}
 
 	for _, role := range roleList {
@@ -105,17 +102,24 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 		}
 	}
 
-	return roles
+	return roles, nil
 }
 
 // GetPublic returns all public projects
-func (p *ProjectManager) GetPublic() []*models.Project {
-	return filter("", "", "true", "", 0, 0, 0)
+func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
+	return p.GetAll(&projectmanager.QueryParam{
+		Public: "true",
+	})
 }
 
 // GetByMember returns all projects which the user is a member of
-func (p *ProjectManager) GetByMember(username string) []*models.Project {
-	return filter("", "", "", username, 0, 0, 0)
+func (p *ProjectManager) GetByMember(username string) (
+	[]*models.Project, error) {
+	return p.GetAll(&projectmanager.QueryParam{
+		Member: &projectmanager.Member{
+			Name: username,
+		},
+	})
 }
 
 // Create ...
@@ -161,9 +165,9 @@ func (p *ProjectManager) Create(project *models.Project) (int64, error) {
 func (p *ProjectManager) Delete(projectIDOrName interface{}) error {
 	id, ok := projectIDOrName.(int64)
 	if !ok {
-		project := p.Get(projectIDOrName)
-		if project == nil {
-			return fmt.Errorf(fmt.Sprintf("project %v not found", projectIDOrName))
+		project, err := p.Get(projectIDOrName)
+		if err != nil {
+			return err
 		}
 		id = project.ProjectID
 	}
@@ -176,41 +180,66 @@ func (p *ProjectManager) Update(projectIDOrName interface{},
 	project *models.Project) error {
 	id, ok := projectIDOrName.(int64)
 	if !ok {
-		pro := p.Get(projectIDOrName)
-		if pro == nil {
-			return fmt.Errorf(fmt.Sprintf("project %v not found", projectIDOrName))
+		pro, err := p.Get(projectIDOrName)
+		if err != nil {
+			return err
 		}
 		id = pro.ProjectID
 	}
 	return dao.ToggleProjectPublicity(id, project.Public)
 }
 
-// GetAll ...
-func (p *ProjectManager) GetAll(owner, name, public, member string,
-	role int, page, size int64) ([]*models.Project, int64) {
-	total, err := dao.GetTotalOfProjects(owner, name, public, member, role)
-	if err != nil {
-		log.Errorf("failed to get total of projects: %v", err)
-		return []*models.Project{}, 0
+// GetAll returns a project list according to the query parameters
+func (p *ProjectManager) GetAll(query *projectmanager.QueryParam) (
+	[]*models.Project, error) {
+
+	var (
+		owner  string
+		name   string
+		public string
+		member string
+		role   int
+		page   int64
+		size   int64
+	)
+
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
+		if query.Pagination != nil {
+			page = query.Pagination.Page
+			size = query.Pagination.Size
+		}
 	}
 
-	return filter(owner, name, public, member, role, page, size), total
+	return dao.GetProjects(owner, name, public, member, role, page, size)
 }
 
-func filter(owner, name, public, member string,
-	role int, page, size int64) []*models.Project {
-	projects := []*models.Project{}
+// GetTotal returns the total count according to the query parameters
+func (p *ProjectManager) GetTotal(query *projectmanager.QueryParam) (
+	int64, error) {
+	var (
+		owner  string
+		name   string
+		public string
+		member string
+		role   int
+	)
 
-	list, err := dao.GetProjects(owner, name, public, member, role,
-		page, size)
-	if err != nil {
-		log.Errorf("failed to get projects: %v", err)
-		return projects
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
 	}
 
-	if len(list) != 0 {
-		projects = append(projects, list...)
-	}
-
-	return projects
+	return dao.GetTotalOfProjects(owner, name, public, member, role)
 }

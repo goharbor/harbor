@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 func TestMain(m *testing.M) {
@@ -74,62 +75,76 @@ func TestGet(t *testing.T) {
 	pm := &ProjectManager{}
 
 	// project name
-	project := pm.Get("library")
+	project, err := pm.Get("library")
+	assert.Nil(t, err)
 	assert.NotNil(t, project)
 	assert.Equal(t, "library", project.Name)
 
 	// project ID
-	project = pm.Get(int64(1))
+	project, err = pm.Get(int64(1))
+	assert.Nil(t, err)
 	assert.NotNil(t, project)
 	assert.Equal(t, int64(1), project.ProjectID)
 
 	// non-exist project
-	project = pm.Get("non-exist-project")
+	project, err = pm.Get("non-exist-project")
+	assert.Nil(t, err)
 	assert.Nil(t, project)
 
 	// invalid type
-	project = pm.Get(true)
-	assert.Nil(t, project)
+	project, err = pm.Get(true)
+	assert.NotNil(t, err)
 }
 
 func TestExist(t *testing.T) {
 	pm := &ProjectManager{}
 
 	// exist project
-	assert.True(t, pm.Exist("library"))
+	exist, err := pm.Exist("library")
+	assert.Nil(t, err)
+	assert.True(t, exist)
 
 	// non-exist project
-	assert.False(t, pm.Exist("non-exist-project"))
+	exist, err = pm.Exist("non-exist-project")
+	assert.Nil(t, err)
+	assert.False(t, exist)
 }
 
 func TestIsPublic(t *testing.T) {
 	pms := &ProjectManager{}
 	// public project
-	assert.True(t, pms.IsPublic("library"))
+	public, err := pms.IsPublic("library")
+	assert.Nil(t, err)
+	assert.True(t, public)
 	// non exist project
-	assert.False(t, pms.IsPublic("non_exist_project"))
+	public, err = pms.IsPublic("non_exist_project")
+	assert.Nil(t, err)
+	assert.False(t, public)
 }
 
 func TestGetRoles(t *testing.T) {
 	pm := &ProjectManager{}
 
 	// non exist user
-	assert.Equal(t, []int{},
-		pm.GetRoles("non_exist_user", int64(1)))
+	roles, err := pm.GetRoles("non_exist_user", int64(1))
+	assert.Nil(t, err)
+	assert.Equal(t, []int{}, roles)
 
 	// exist project
-	assert.Equal(t, []int{common.RoleProjectAdmin},
-		pm.GetRoles("admin", "library"))
+	roles, err = pm.GetRoles("admin", "library")
+	assert.Nil(t, err)
+	assert.Equal(t, []int{common.RoleProjectAdmin}, roles)
 
 	// non-exist project
-	assert.Equal(t, []int{},
-		pm.GetRoles("admin", "non_exist_project"))
+	roles, err = pm.GetRoles("admin", "non_exist_project")
+	assert.Nil(t, err)
+	assert.Equal(t, []int{}, roles)
 }
 
 func TestGetPublic(t *testing.T) {
 	pm := &ProjectManager{}
-	projects := pm.GetPublic()
-
+	projects, err := pm.GetPublic()
+	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(projects))
 
 	for _, project := range projects {
@@ -139,7 +154,8 @@ func TestGetPublic(t *testing.T) {
 
 func TestGetByMember(t *testing.T) {
 	pm := &ProjectManager{}
-	projects := pm.GetByMember("admin")
+	projects, err := pm.GetByMember("admin")
+	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(projects))
 }
 
@@ -190,14 +206,49 @@ func TestUpdate(t *testing.T) {
 	assert.Nil(t, err)
 	defer pm.Delete(id)
 
-	project := pm.Get(id)
+	project, err := pm.Get(id)
+	assert.Nil(t, err)
 	assert.Equal(t, 0, project.Public)
 
 	project.Public = 1
 	assert.Nil(t, pm.Update(id, project))
 
-	project = pm.Get(id)
+	project, err = pm.Get(id)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, project.Public)
+}
+
+func TestGetTotal(t *testing.T) {
+	pm := &ProjectManager{}
+
+	id, err := pm.Create(&models.Project{
+		Name:    "get_total_test",
+		OwnerID: 1,
+		Public:  1,
+	})
+	assert.Nil(t, err)
+	defer pm.Delete(id)
+
+	// get by name
+	total, err := pm.GetTotal(&projectmanager.QueryParam{
+		Name: "get_total_test",
+	})
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), total)
+
+	// get by owner
+	total, err = pm.GetTotal(&projectmanager.QueryParam{
+		Owner: "admin",
+	})
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, total)
+
+	// get by public
+	total, err = pm.GetTotal(&projectmanager.QueryParam{
+		Public: "true",
+	})
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, total)
 }
 
 func TestGetAll(t *testing.T) {
@@ -212,13 +263,17 @@ func TestGetAll(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	projects, total := pm.GetAll("", "get_all_test", "", "", 0, 0, 0)
-	assert.Equal(t, int64(1), total)
+	projects, err := pm.GetAll(&projectmanager.QueryParam{
+		Name: "get_all_test",
+	})
+	assert.Nil(t, err)
 	assert.Equal(t, id, projects[0].ProjectID)
 
 	// get by owner
-	projects, total = pm.GetAll("admin", "", "", "", 0, 0, 0)
-	assert.NotEqual(t, 0, total)
+	projects, err = pm.GetAll(&projectmanager.QueryParam{
+		Owner: "admin",
+	})
+	assert.Nil(t, err)
 	exist := false
 	for _, project := range projects {
 		if project.ProjectID == id {
@@ -229,8 +284,10 @@ func TestGetAll(t *testing.T) {
 	assert.True(t, exist)
 
 	// get by public
-	projects, total = pm.GetAll("", "", "true", "", 0, 0, 0)
-	assert.NotEqual(t, 0, total)
+	projects, err = pm.GetAll(&projectmanager.QueryParam{
+		Public: "true",
+	})
+	assert.Nil(t, err)
 	exist = false
 	for _, project := range projects {
 		if project.ProjectID == id {

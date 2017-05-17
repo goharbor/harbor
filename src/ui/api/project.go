@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 
 	"strconv"
 	"time"
@@ -32,6 +33,7 @@ import (
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
 	BaseController
+	project *models.Project
 }
 
 type projectReq struct {
@@ -43,6 +45,38 @@ const projectNameMaxLen int = 30
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
+
+// Prepare validates the URL and the user
+func (p *ProjectAPI) Prepare() {
+	p.BaseController.Prepare()
+	if len(p.GetStringFromPath(":id")) != 0 {
+		id, err := p.GetInt64FromPath(":id")
+		if err != nil || id <= 0 {
+			text := "invalid project ID: "
+			if err != nil {
+				text += err.Error()
+			} else {
+				text += fmt.Sprintf("%d", id)
+			}
+			p.HandleBadRequest(text)
+			return
+		}
+
+		project, err := p.ProjectMgr.Get(id)
+		if err != nil {
+			p.HandleInternalServerError(fmt.Sprintf("failed to get project %d: %v",
+				id, err))
+			return
+		}
+
+		if project == nil {
+			p.HandleNotFound(fmt.Sprintf("project %d not found", id))
+			return
+		}
+
+		p.project = project
+	}
+}
 
 // Post ...
 func (p *ProjectAPI) Post() {
@@ -70,7 +104,13 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	if p.ProjectMgr.Exist(pro.ProjectName) {
+	exist, err := p.ProjectMgr.Exist(pro.ProjectName)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			pro.ProjectName, err))
+		return
+	}
+	if exist {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
@@ -117,7 +157,13 @@ func (p *ProjectAPI) Head() {
 		return
 	}
 
-	project := p.ProjectMgr.Get(name)
+	project, err := p.ProjectMgr.Get(name)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get project %s: %v",
+			name, err))
+		return
+	}
+
 	if project == nil {
 		p.HandleNotFound(fmt.Sprintf("project %s not found", name))
 		return
@@ -126,99 +172,63 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	id, err := p.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		text := "invalid project ID: "
-		if err != nil {
-			text += err.Error()
-		} else {
-			text += fmt.Sprintf("%d", id)
-		}
-		p.HandleBadRequest(text)
-		return
-	}
-
-	project := p.ProjectMgr.Get(id)
-	if project == nil {
-		p.HandleNotFound(fmt.Sprintf("project %d not found", id))
-		return
-	}
-
-	if project.Public == 0 {
+	if p.project.Public == 0 {
 		if !p.SecurityCtx.IsAuthenticated() {
 			p.HandleUnauthorized()
 			return
 		}
 
-		if !p.SecurityCtx.HasReadPerm(id) {
+		if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
 			p.HandleForbidden(p.SecurityCtx.GetUsername())
 			return
 		}
 	}
 
-	p.Data["json"] = project
+	p.Data["json"] = p.project
 	p.ServeJSON()
 }
 
 // Delete ...
 func (p *ProjectAPI) Delete() {
-	id, err := p.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		text := "invalid project ID: "
-		if err != nil {
-			text += err.Error()
-		} else {
-			text += fmt.Sprintf("%d", id)
-		}
-		p.HandleBadRequest(text)
-		return
-	}
-
-	project := p.ProjectMgr.Get(id)
-	if project == nil {
-		p.HandleNotFound(fmt.Sprintf("project %d not found", id))
-		return
-	}
-
 	if !p.SecurityCtx.IsAuthenticated() {
 		p.HandleUnauthorized()
 		return
 	}
 
-	if !p.SecurityCtx.HasAllPerm(id) {
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
 		p.HandleForbidden(p.SecurityCtx.GetUsername())
 		return
 	}
 
-	contains, err := projectContainsRepo(project.Name)
+	contains, err := projectContainsRepo(p.project.Name)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any repository: %v", project.Name, err)
+		log.Errorf("failed to check whether project %s contains any repository: %v", p.project.Name, err)
 		p.CustomAbort(http.StatusInternalServerError, "")
 	}
 	if contains {
 		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
 	}
 
-	contains, err = projectContainsPolicy(id)
+	contains, err = projectContainsPolicy(p.project.ProjectID)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any policy: %v", project.Name, err)
+		log.Errorf("failed to check whether project %s contains any policy: %v", p.project.Name, err)
 		p.CustomAbort(http.StatusInternalServerError, "")
 	}
 	if contains {
 		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
 	}
 
-	if err = p.ProjectMgr.Delete(id); err != nil {
+	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
 		p.HandleInternalServerError(
-			fmt.Sprintf("failed to delete project %d: %v", id, err))
+			fmt.Sprintf("failed to delete project %d: %v", p.project.ProjectID, err))
 		return
 	}
 
 	go func() {
 		if err := dao.AddAccessLog(models.AccessLog{
 			Username:  p.SecurityCtx.GetUsername(),
-			ProjectID: id,
-			RepoName:  project.Name + "/",
+			ProjectID: p.project.ProjectID,
+			RepoName:  p.project.Name + "/",
 			RepoTag:   "N/A",
 			Operation: "delete",
 			OpTime:    time.Now(),
@@ -250,53 +260,61 @@ func projectContainsPolicy(id int64) (bool, error) {
 // TODO refacter pattern to:
 // /api/repositories?owner=xxx&name=xxx&public=true&member=xxx&role=1&page=1&size=3
 func (p *ProjectAPI) List() {
+	query := &projectmanager.QueryParam{}
 
-	// query conditions:
-	var (
-		owner  string // the username of project owner
-		name   string // the project name
-		public string // the project is public or not
-		member string // the username of the member
-		role   int    // role of the member specified by member parameter
-		page   int64  // pagination
-		size   int64  // pagination
-	)
-
-	name = p.GetString("project_name")
-	public = p.GetString("is_public")
+	query.Name = p.GetString("project_name")
+	public := p.GetString("is_public")
 	if len(public) != 0 {
 		if public != "0" && public != "1" {
 			p.HandleBadRequest("is_public should be 0 or 1")
 			return
 		}
 		if public == "1" {
-			public = "true"
+			query.Public = "true"
 		}
 	}
 
-	page, size = p.GetPaginationParams()
-
-	if public != "true" {
+	if query.Public != "true" {
 		//if the request is not for public projects, user must login or provide credential
 		if !p.SecurityCtx.IsAuthenticated() {
 			p.HandleUnauthorized()
 			return
 		}
 
-		public = ""
-		member = p.SecurityCtx.GetUsername()
-
-		if p.SecurityCtx.IsSysAdmin() {
-			member = ""
+		if !p.SecurityCtx.IsSysAdmin() {
+			query.Member = &projectmanager.Member{
+				Name: p.SecurityCtx.GetUsername(),
+			}
 		}
 	}
 
-	projects, total := p.ProjectMgr.GetAll(owner, name, public, member,
-		role, page, size)
+	total, err := p.ProjectMgr.GetTotal(query)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get total of projects: %v", err))
+		return
+	}
+
+	page, size := p.GetPaginationParams()
+	query.Pagination = &projectmanager.Pagination{
+		Page: page,
+		Size: size,
+	}
+
+	projects, err := p.ProjectMgr.GetAll(query)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v", err))
+		return
+	}
 
 	for _, project := range projects {
-		if public != "true" {
-			roles := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
+		if query.Public != "true" {
+			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
+			if err != nil {
+				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",
+					p.SecurityCtx.GetUsername(), project.ProjectID, err))
+				return
+			}
+
 			if len(roles) != 0 {
 				project.Role = roles[0]
 			}
@@ -323,30 +341,12 @@ func (p *ProjectAPI) List() {
 
 // ToggleProjectPublic ...
 func (p *ProjectAPI) ToggleProjectPublic() {
-	id, err := p.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		text := "invalid project ID: "
-		if err != nil {
-			text += err.Error()
-		} else {
-			text += fmt.Sprintf("%d", id)
-		}
-		p.HandleBadRequest(text)
-		return
-	}
-
-	project := p.ProjectMgr.Get(id)
-	if project == nil {
-		p.HandleNotFound(fmt.Sprintf("project %d not found", id))
-		return
-	}
-
 	if !p.SecurityCtx.IsAuthenticated() {
 		p.HandleUnauthorized()
 		return
 	}
 
-	if !p.SecurityCtx.HasAllPerm(id) {
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
 		p.HandleForbidden(p.SecurityCtx.GetUsername())
 		return
 	}
@@ -358,40 +358,24 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 		return
 	}
 
-	if err := p.ProjectMgr.Update(id, &models.Project{
-		Public: req.Public,
-	}); err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to update project %d: %v", id, err))
+	if err := p.ProjectMgr.Update(p.project.ProjectID,
+		&models.Project{
+			Public: req.Public,
+		}); err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to update project %d: %v",
+			p.project.ProjectID, err))
 		return
 	}
 }
 
 // FilterAccessLog handles GET to /api/projects/{}/logs
 func (p *ProjectAPI) FilterAccessLog() {
-	id, err := p.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		text := "invalid project ID: "
-		if err != nil {
-			text += err.Error()
-		} else {
-			text += fmt.Sprintf("%d", id)
-		}
-		p.HandleBadRequest(text)
-		return
-	}
-
-	project := p.ProjectMgr.Get(id)
-	if project == nil {
-		p.HandleNotFound(fmt.Sprintf("project %d not found", id))
-		return
-	}
-
 	if !p.SecurityCtx.IsAuthenticated() {
 		p.HandleUnauthorized()
 		return
 	}
 
-	if !p.SecurityCtx.HasReadPerm(id) {
+	if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
 		p.HandleForbidden(p.SecurityCtx.GetUsername())
 		return
 	}
@@ -399,7 +383,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 	var query models.AccessLog
 	p.DecodeJSONReq(&query)
 
-	query.ProjectID = id
+	query.ProjectID = p.project.ProjectID
 	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
 	query.EndTime = time.Unix(query.EndTimestamp, 0)
 

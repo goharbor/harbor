@@ -69,7 +69,14 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	if !ra.ProjectMgr.Exist(projectID) {
+	exist, err := ra.ProjectMgr.Exist(projectID)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %d: %v",
+			projectID, err))
+		return
+	}
+
+	if !exist {
 		ra.HandleNotFound(fmt.Sprintf("project %d not found", projectID))
 		return
 	}
@@ -146,7 +153,14 @@ func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProjectMgr.Exist(projectName) {
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			projectName, err))
+		return
+	}
+
+	if !exist {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
@@ -236,7 +250,18 @@ func (ra *RepositoryAPI) Delete() {
 		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			project := ra.ProjectMgr.Get(projectName)
+			project, err := ra.ProjectMgr.Get(projectName)
+			if err != nil {
+				log.Errorf("failed to get the project %s: %v",
+					projectName, err)
+				return
+			}
+
+			if project == nil {
+				log.Error("project %s not found", projectName)
+				return
+			}
+
 			if err := dao.AddAccessLog(models.AccessLog{
 				Username:  ra.SecurityCtx.GetUsername(),
 				ProjectID: project.ProjectID,
@@ -250,7 +275,7 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
-	exist, err := repositoryExist(repoName, rc)
+	exist, err = repositoryExist(repoName, rc)
 	if err != nil {
 		log.Errorf("failed to check the existence of repository %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
@@ -268,7 +293,14 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProjectMgr.Exist(projectName) {
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			projectName, err))
+		return
+	}
+
+	if !exist {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
@@ -360,7 +392,14 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	if !ra.ProjectMgr.Exist(projectName) {
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			projectName, err))
+		return
+	}
+
+	if !exist {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
@@ -455,10 +494,19 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	}
 
 	projectIDs := []int64{}
-	projects := ra.ProjectMgr.GetPublic()
+	projects, err := ra.ProjectMgr.GetPublic()
+	if err != nil {
+		log.Errorf("failed to get the public projects: %v", err)
+		return
+	}
 	if ra.SecurityCtx.IsAuthenticated() {
-		projects = append(projects, ra.ProjectMgr.GetByMember(
-			ra.SecurityCtx.GetUsername())...)
+		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
+		if err != nil {
+			log.Errorf("failed to get projects which the user %s is a member of: %v",
+				ra.SecurityCtx.GetUsername(), err)
+			return
+		}
+		projects = append(projects, list...)
 	}
 
 	for _, project := range projects {
