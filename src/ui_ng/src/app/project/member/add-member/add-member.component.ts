@@ -193,6 +193,9 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   public get isValid(): boolean {
-    return this.currentForm && this.currentForm.valid && this.isMemberNameValid;
+    return this.currentForm && 
+    this.currentForm.valid && 
+    this.isMemberNameValid &&
+    !this.checkOnGoing;
   }
 }

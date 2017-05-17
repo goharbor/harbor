@@ -11,7 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output, ViewChild, AfterViewChecked, HostBinding } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  ViewChild,
+  AfterViewChecked,
+  HostBinding,
+  OnInit,
+  OnDestroy
+} from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 
@@ -23,12 +32,16 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 import { TranslateService } from '@ngx-translate/core';
 
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+
 @Component({
   selector: 'create-project',
   templateUrl: 'create-project.component.html',
   styleUrls: ['create-project.css']
 })
-export class CreateProjectComponent implements AfterViewChecked {
+export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   projectForm: NgForm;
 
@@ -48,6 +61,7 @@ export class CreateProjectComponent implements AfterViewChecked {
   isNameValid: boolean = true;
   nameTooltipText: string = 'PROJECT.NAME_TOOLTIP';
   checkOnGoing: boolean = false;
+  proNameChecker: Subject<string> = new Subject<string>();
 
   @Output() create = new EventEmitter<boolean>();
   @ViewChild(InlineAlertComponent)
@@ -59,6 +73,39 @@ export class CreateProjectComponent implements AfterViewChecked {
 
   public get accessLevelDisplayText(): string {
     return this.project.public ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE';
+  }
+
+  ngOnInit(): void {
+    this.proNameChecker
+      .debounceTime(500)
+      .distinctUntilChanged()
+      .subscribe((name: string) => {
+        let cont = this.currentForm.controls["create_project_name"];
+        if (cont && this.hasChanged) {
+          this.isNameValid = cont.valid;
+          if (this.isNameValid) {
+            //Check exiting from backend
+            this.checkOnGoing = true;
+            this.projectService
+              .checkProjectExists(cont.value).toPromise()
+              .then(() => {
+                //Project existing
+                this.isNameValid = false;
+                this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
+                this.checkOnGoing = false;
+              })
+              .catch(error => {
+                this.checkOnGoing = false;
+              });
+          } else {
+            this.nameTooltipText = 'PROJECT.NAME_TOOLTIP';
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.proNameChecker.unsubscribe();
   }
 
   onSubmit() {
@@ -135,36 +182,17 @@ export class CreateProjectComponent implements AfterViewChecked {
   }
 
   public get isValid(): boolean {
-    return this.currentForm && this.currentForm.valid && this.isNameValid;
+    return this.currentForm && 
+    this.currentForm.valid && 
+    this.isNameValid &&
+    !this.checkOnGoing;
   }
 
   //Handle the form validation
-  handleValidation(flag: boolean): void {
-    if (flag) {
-      //validate
-      let cont = this.currentForm.controls["create_project_name"];
-      if (cont) {
-        this.isNameValid = cont.valid;
-        if (this.isNameValid && this.hasChanged) {
-          //Check exiting from backend
-          this.checkOnGoing = true;
-          this.projectService
-            .checkProjectExists(cont.value).toPromise()
-            .then(() => {
-              //Project existing
-              this.isNameValid = false;
-              this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
-              this.checkOnGoing = false;
-            })
-            .catch(error => {
-              this.checkOnGoing = false;
-            });
-        }
-      }
-    } else {
-      //reset
-      this.isNameValid = true;
-      this.nameTooltipText = 'PROJECT.NAME_TOOLTIP';
+  handleValidation(): void {
+    let cont = this.currentForm.controls["create_project_name"];
+    if (cont) {
+      this.proNameChecker.next(cont.value);
     }
   }
 }

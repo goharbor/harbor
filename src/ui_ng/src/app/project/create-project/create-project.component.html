@@ -13,9 +13,7 @@
             pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
             minlength="2" 
             #projectName="ngModel" 
-            (input)='handleValidation(false)' 
-            (blur)='handleValidation(true)'
-            >
+            (keyup)='handleValidation()'>
             <span class="tooltip-content">
               {{ nameTooltipText | translate }}
             </span>
