@@ -56,8 +56,8 @@ pipeline:
       - ls -la bundle
     when:
       repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ master, releases/* ]
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, releases/* ]
       status: success
 
   notify-slack:
@@ -82,8 +82,8 @@ pipeline:
     cache_control: public,max-age=3600
     when:
       repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ master, releases/* ]
+      event: [ push, pull_request, tag ]
+      branch: [ master, drone, releases/* ]
       status: success
 
   publish-gcs-releases:
