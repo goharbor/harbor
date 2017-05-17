@@ -96,13 +96,14 @@ describe('RepositoryComponent (inline template)', ()=> {
       fixture.detectChanges();
       comp.doSearchRepoNames('nginx');
       fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(By.css('datagrid-cell'));
+      let de: DebugElement[] = fixture.debugElement.queryAll(By.css('datagrid-cell'));
       fixture.detectChanges();
       expect(de).toBeTruthy();
-      let el: HTMLElement = de.nativeElement;
+      expect(de.length).toEqual(1);
+      let el: HTMLElement = de[0].nativeElement;
+      fixture.detectChanges();
       expect(el).toBeTruthy();
       expect(el.textContent).toEqual('library/nginx');
-      expect(el.textContent).not.toEqual('library/busybox');
     });
   }));
 
