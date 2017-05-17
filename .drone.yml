@@ -35,7 +35,8 @@ pipeline:
       GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
       DOMAIN: ${CI_DOMAIN}
     commands:
-      - tests/integration.sh
+      -ls -la
+      # - tests/integration.sh
     when:
       success: true
 
