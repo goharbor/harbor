@@ -1,0 +1,11 @@
+db:
+  image: busybox:latest
+  command: top
+web:
+  image: busybox:latest
+  command: top
+  links:
+    - db:db
+console:
+  image: busybox:latest
+  command: top
