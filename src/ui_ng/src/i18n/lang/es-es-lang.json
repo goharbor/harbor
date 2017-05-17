@@ -39,7 +39,7 @@
         "FULL_NAME": "La longitud máxima debería ser de 20 caracteres.",
         "COMMENT": "La longitud del comentario debería ser menor de 20 caracteres.",
         "CURRENT_PWD": "Es obligatorio introducir la contraseña actual.",
-        "PASSWORD": "La contraseña debería tener al menos 8 caracteres, con al menos 1 letra mayúscula, 1 letra minúscula y 1 número.",
+        "PASSWORD": "La contraseña debería tener de 8 a 20 caracteres, con al menos 1 letra mayúscula, 1 letra minúscula y 1 número.",
         "CONFIRM_PWD": "Las contraseñas no coinciden.",
         "SIGN_IN_USERNAME": "El nombre de usuario es obligatorio.",
         "SIGN_IN_PWD": "La contraseña es obligatoria.",
@@ -76,7 +76,7 @@
         "NEW_PWD": "Nueva contraseña",
         "CONFIRM_PWD": "Confirmar contraseña",
         "SAVE_SUCCESS": "Contraseña de usuario guardada satisfactoriamente.",
-        "PASS_TIPS": "Al menos 8 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
+        "PASS_TIPS": "8-20 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil de usuario",
@@ -136,6 +136,7 @@
         "PUBLIC_PROJECTS": "Proyectos Públicos",
         "PROJECT": "Proyecto",
         "NEW_PROJECT": "Nuevo proyecto",
+        "NAME_TOOLTIP": "Project name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "NAME_IS_REQUIRED": "El nombre del proyecto es obligatorio.",
         "NAME_MINIMUM_LENGTH": "El nombre del proyecto es demasiado corto, debe ser mayor de 2 caracteres.",
         "NAME_ALREADY_EXISTS": "Ya existe un proyecto con ese nombre.",
