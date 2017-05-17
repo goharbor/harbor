@@ -1,0 +1,1 @@
+export const REPLICATION_JOB_STYLE: string = ``;

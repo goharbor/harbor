@@ -84,7 +84,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract enableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any;
+    abstract enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> | Promise<any> | any;
 
     /**
      * Disable the specified replication rule.
@@ -113,7 +113,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[];
+    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] | Promise<any>;
 }
 
 /**
@@ -169,7 +169,7 @@ export class ReplicationDefaultService extends ReplicationService {
         }
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}`;
-        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url).toPromise()
             .then(response => response.json() as ReplicationRule)
             .catch(error => Promise.reject(error));
     }
@@ -206,13 +206,13 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public enableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+    public enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> | Promise<any> | any {
         if (!ruleId || ruleId <= 0) {
             return Promise.reject('Bad argument');
         }
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}/enablement`;
-        return this.http.put(url, { enabled: 1 }, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.put(url, { enabled: enablement }, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }
@@ -228,7 +228,7 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] {
+    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] | Promise<any> {
         if (!ruleId || ruleId <= 0) {
             return Promise.reject('Bad argument');
         }
@@ -239,7 +239,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
         queryParams.set('policy_id', '' + ruleId);
         return this.http.get(this._jobBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
-            .then(response => response.json() as ReplicationJob[])
+            .then(response => response)
             .catch(error => Promise.reject(error));
     }
 }
