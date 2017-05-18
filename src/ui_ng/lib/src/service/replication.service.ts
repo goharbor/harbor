@@ -113,7 +113,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] | Promise<any>;
+    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[];
 }
 
 /**
@@ -130,13 +130,13 @@ export class ReplicationDefaultService extends ReplicationService {
 
     constructor(
         private http: Http,
-        @Inject(SERVICE_CONFIG) private config: IServiceConfig
+        @Inject(SERVICE_CONFIG) config: IServiceConfig
     ) {
         super();
-        this._ruleBaseUrl = this.config.replicationRuleEndpoint ?
-            this.config.replicationRuleEndpoint : '/api/policies/replication';
-        this._jobBaseUrl = this.config.replicationJobEndpoint ?
-            this.config.replicationJobEndpoint : '/api/jobs/replication';
+        this._ruleBaseUrl = config.replicationRuleEndpoint ?
+            config.replicationRuleEndpoint : '/api/policies/replication';
+        this._jobBaseUrl = config.replicationJobEndpoint ?
+            config.replicationJobEndpoint : '/api/jobs/replication';
     }
 
     //Private methods
@@ -228,7 +228,7 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] | Promise<any> {
+    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] {
         if (!ruleId || ruleId <= 0) {
             return Promise.reject('Bad argument');
         }
@@ -239,7 +239,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
         queryParams.set('policy_id', '' + ruleId);
         return this.http.get(this._jobBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
-            .then(response => response)
+            .then(response => response.json() as ReplicationJob[])
             .catch(error => Promise.reject(error));
     }
 }

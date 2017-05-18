@@ -47,11 +47,11 @@ import { CookieService } from 'ngx-cookie';
  */
 export const DefaultServiceConfig: IServiceConfig = {
   systemInfoEndpoint: "/api/system",
-  repositoryBaseEndpoint: "",
+  repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "",
-  replicationRuleEndpoint: "",
-  replicationJobEndpoint: "",
+  targetBaseEndpoint: "/api/targets",
+  replicationRuleEndpoint: "/api/policies/replication",
+  replicationJobEndpoint: "/api/jobs/replication",
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,
   supportedLangs: DEFAULT_SUPPORTING_LANGS,
   enablei18Support: false

@@ -16,7 +16,6 @@ import { ReplicationJob } from '../service/interface';
 import { State } from 'clarity-angular';
 import { ErrorHandler } from '../error-handler/error-handler';
 
-import { REPLICATION_JOB_STYLE } from './list-replication-job.component.css';
 import { REPLICATION_JOB_TEMPLATE } from './list-replication-job.component.html';
 
 @Component({

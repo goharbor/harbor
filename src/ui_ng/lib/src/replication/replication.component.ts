@@ -12,28 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
-// import { ActivatedRoute } from '@angular/router';
 import { ResponseOptions } from '@angular/http';
 import { NgModel } from '@angular/forms';
 
-import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
+import { TranslateService } from '@ngx-translate/core';
 
+import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { ErrorHandler } from '../error-handler/error-handler';
 
 import { ReplicationService } from '../service/replication.service';
-
 import { RequestQueryParams } from '../service/RequestQueryParams';
-// import { SessionUser } from '../shared/session-user';
 import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
 
 import { State } from 'clarity-angular';
 
 import { toPromise } from '../utils';
 
-import { TranslateService } from '@ngx-translate/core';
-
-import { REPLICATION_STYLE } from './replication.component.css';
 import { REPLICATION_TEMPLATE } from './replication.component.html';
+import { REPLICATION_STYLE } from './replication.component.css';
 
 const ruleStatus: {[key: string]: any} = [
   { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS'},
@@ -69,7 +65,8 @@ export class SearchOption {
 
 @Component({
   selector: 'hbr-replication',
-  template: REPLICATION_TEMPLATE
+  template: REPLICATION_TEMPLATE,
+  styles: [ REPLICATION_STYLE ]
 })
 export class ReplicationComponent implements OnInit {
    
@@ -84,7 +81,6 @@ export class ReplicationComponent implements OnInit {
    currentJobStatus: {key: string, description: string};
 
    changedRules: ReplicationRule[];
-   changedJobs: ReplicationJob[];
    initSelectedId: number | string;
 
    rules: ReplicationRule[];
@@ -106,14 +102,16 @@ export class ReplicationComponent implements OnInit {
    }
 
    ngOnInit(): void {
-     this.projectId = 1;
+     if(!this.projectId) {
+       this.errorHandler.warning('Project ID is unset.');
+     }
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
-     this.retrievePolicies();
+     this.retrieveRules();
    }
 
-   retrievePolicies(): void {
+   retrieveRules(): void {
      toPromise<ReplicationRule[]>(this.replicationService
          .getReplicationRules(this.projectId, this.search.ruleName))
          .then(response=>{
@@ -126,9 +124,8 @@ export class ReplicationComponent implements OnInit {
                this.search.ruleId = this.changedRules[0].id || '';
                this.fetchReplicationJobs();
              }
-           },
-           error=>this.errorHandler.error(error)
-         );
+           }
+         ).catch(error=>this.errorHandler.error(error));
    } 
 
    openModal(): void {
@@ -146,7 +143,10 @@ export class ReplicationComponent implements OnInit {
    }
 
    fetchReplicationJobs(state?: State) { 
-     if(state && state.page && state.page.to) {
+     if(state && state.page) {
+       if(!state.page.to && state.page.to !== 0) {
+         return;
+       }
        this.search.page = state.page.to + 1;
      }
      let params: RequestQueryParams = new RequestQueryParams();
@@ -154,23 +154,12 @@ export class ReplicationComponent implements OnInit {
      params.set('repository', this.search.repoName);
      params.set('start_time', this.search.startTimestamp);
      params.set('end_time', this.search.endTimestamp);
-     params.set('page', this.search.page + '');
-     params.set('page_size', this.search.pageSize + '');
 
-     toPromise<any>(this.replicationService
+     toPromise<ReplicationJob[]>(this.replicationService
        .getJobs(this.search.ruleId, params))
        .then(
          response=>{
-           this.jobsTotalRecordCount = response.headers.get('x-total-count');
-           this.jobsTotalPage = Math.ceil(this.jobsTotalRecordCount / this.search.pageSize);
-           this.changedJobs = response.json();
-           this.jobs = this.changedJobs;
-           this.jobs.forEach(j=>{
-             if(j.status === 'retrying' || j.status === 'error') {
-               this.translateService.get('REPLICATION.FOUND_ERROR_IN_JOBS')
-                  .subscribe(res=>this.errorHandler.error(res));
-             }
-           })    
+           this.jobs = response;   
          }).catch(error=>this.errorHandler.error(error));
    }
 
@@ -187,7 +176,7 @@ export class ReplicationComponent implements OnInit {
    
    doSearchRules(ruleName: string) {
      this.search.ruleName = ruleName;
-     this.retrievePolicies();
+     this.retrieveRules();
    }
 
    doFilterRuleStatus($event: any) {
@@ -222,12 +211,12 @@ export class ReplicationComponent implements OnInit {
    reloadRules(isReady: boolean) {
      if(isReady) {
        this.search.ruleName = '';
-       this.retrievePolicies();
+       this.retrieveRules();
      }
    }
 
    refreshRules() {
-     this.retrievePolicies();
+     this.retrieveRules();
    }
 
    refreshJobs() {

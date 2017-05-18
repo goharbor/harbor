@@ -27,7 +27,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
         <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
         <clr-dg-cell>
           <ng-template [ngIf]="p.start_time === nullTime">-</ng-template>
-          <ng-template [ngIf]="p.start_time !== nullTime">{{p.start_time | date: 'short'}}</ng-template>
+          <ng-template [ngIf]="p.start_time !== nullTime">{{p.start_time}}</ng-template>
         </clr-dg-cell>
         <clr-dg-cell>
             {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}

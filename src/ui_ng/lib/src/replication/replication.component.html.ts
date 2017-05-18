@@ -46,6 +46,6 @@ export const REPLICATION_TEMPLATE: string = `
       </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <list-replication-job [jobs]="changedJobs" [totalPage]="jobsTotalPage" [totalRecordCount]="jobsTotalRecordCount" (paginate)="fetchReplicationJobs($event)"></list-replication-job>
+      <list-replication-job [jobs]="jobs" [totalPage]="jobsTotalPage" [totalRecordCount]="jobsTotalRecordCount" (paginate)="fetchReplicationJobs($event)"></list-replication-job>
     </div>
 </div>`;

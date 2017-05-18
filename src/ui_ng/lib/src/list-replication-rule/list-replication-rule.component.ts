@@ -27,7 +27,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { toPromise } from '../utils';
 
-import { LIST_REPLICATION_RULE_STYLE } from './list-replication-rule.component.css';
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
 
 @Component({

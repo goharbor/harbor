@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, EventEmitter, OnInit, ViewChild, AfterViewChecked } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, AfterViewChecked } from '@angular/core';
 
 import { NgForm } from '@angular/forms';
 
@@ -55,7 +55,7 @@ const FAKE_PASSWORD: string = 'ywJZnDTM';
   template: CREATE_EDIT_RULE_TEMPLATE,
   styles: [ CREATE_EDIT_RULE_STYLE ]
 })
-export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
+export class CreateEditRuleComponent implements AfterViewChecked {
 
   modalTitle: string;
   createEditRuleOpened: boolean;
@@ -174,15 +174,12 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
           });
   }
 
-  ngOnInit(): void {}
-
   openCreateEditRule(editable: boolean, ruleId?: number | string): void {
-    this.createEditRuleOpened = true;
+
     this.createEditRule = this.initCreateEditRule;
     this.editable = editable;
 
     this.isCreateEndpoint = false;
-    
     this.hasChanged = false;
 
     this.pingTestMessage = '';
@@ -205,12 +202,19 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
               this.initVal.name = this.createEditRule.name;
               this.initVal.description = this.createEditRule.description;
               this.initVal.enable = this.createEditRule.enable;
+
+              this.createEditRuleOpened = true;
             }
           }).catch(err=>this.errorHandler.error(err));
     } else {
+      if(!this.projectId) {
+        console.error('Project ID cannot be unset');
+        return;
+      }
       this.actionType = ActionType.ADD_NEW;
       this.translateService.get('REPLICATION.ADD_POLICY').subscribe(res=>this.modalTitle=res);
       this.prepareTargets(); 
+      this.createEditRuleOpened = true;
     }
   } 
 
@@ -272,7 +276,6 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
             } else {
               this.inlineAlert.showInlineError(error);
             }            
-            console.error('Failed to create policy:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           });
   }
 
@@ -291,7 +294,6 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
             } else {
               this.inlineAlert.showInlineError(error);
             }
-            console.error('Failed to create policy and target:' + error.status + ', error message:' + JSON.stringify(error['_body']));
           }
         );
   }
@@ -361,6 +363,10 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
     this.ruleForm = this.currentForm;
     if(this.ruleForm) {
       let comparison: {[key: string]: any} = {
+        name: this.initVal.name,
+        description: this.initVal.description,
+        enable: this.initVal.enable,
+        endpointId: this.initVal.endpointId,
         targetName: this.initVal.name,
         endpointUrl: this.initVal.endpointUrl,
         username: this.initVal.username,
@@ -370,8 +376,8 @@ export class CreateEditRuleComponent implements OnInit, AfterViewChecked {
       if(self) {
         self.ruleForm.valueChanges.subscribe((data: any)=>{
           for(let key in data) {
-            let origin = data[key];          
-            let current = comparison[key];
+            let current = data[key];          
+            let origin: string = comparison[key];
             if(((this.actionType === ActionType.EDIT && !this.readonly && !current ) || current) && current !== origin) {
               this.hasChanged = true;
               break;
