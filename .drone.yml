@@ -35,8 +35,7 @@ pipeline:
       GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
       DOMAIN: ${CI_DOMAIN}
     commands:
-      - ls -la
-      # - tests/integration.sh
+      - tests/integration.sh
     when:
       success: true
 
@@ -57,7 +56,7 @@ pipeline:
       - ls -la bundle
     when:
       repo: vmware/harbor
-      event: [ push, pull_request, tag ]
+      event: [ push, tag ]
       branch: [ master, drone, releases/* ]
       status: success
 
@@ -83,7 +82,7 @@ pipeline:
     cache_control: public,max-age=3600
     when:
       repo: vmware/harbor
-      event: [ push, pull_request, tag ]
+      event: [ push, tag ]
       branch: [ master, drone, releases/* ]
       status: success
 
