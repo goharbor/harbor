@@ -19,6 +19,7 @@ import (
 )
 
 // AccessLog holds information about logs which are used to record the actions that user take to the resourses.
+// TODO remove useless attrs
 type AccessLog struct {
 	LogID          int       `orm:"pk;auto;column(log_id)" json:"log_id"`
 	Username       string    `orm:"column(username)"  json:"username"`

@@ -24,10 +24,9 @@ const (
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
 
-	RoleSystemAdmin  = 1
-	RoleProjectAdmin = 2
-	RoleDeveloper    = 3
-	RoleGuest        = 4
+	RoleProjectAdmin = 1
+	RoleDeveloper    = 2
+	RoleGuest        = 3
 
 	DeployModeStandAlone  = "standalone"
 	DeployModeIntegration = "integration"

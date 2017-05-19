@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 
 	"fmt"
@@ -159,7 +160,7 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // which satisfies the following conditions:
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
-func SearchProjects(userID int) ([]models.Project, error) {
+func SearchProjects(userID int) ([]*models.Project, error) {
 	o := GetOrmer()
 
 	sql :=
@@ -171,7 +172,7 @@ func SearchProjects(userID int) ([]models.Project, error) {
 		where (pm.user_id = ? or p.public = 1) 
 		and p.deleted = 0 `
 
-	var projects []models.Project
+	var projects []*models.Project
 
 	if _, err := o.Raw(sql, userID).QueryRows(&projects); err != nil {
 		return nil, err
@@ -180,99 +181,144 @@ func SearchProjects(userID int) ([]models.Project, error) {
 	return projects, nil
 }
 
-//GetTotalOfUserRelevantProjects returns the total count of
-// user relevant projects
-func GetTotalOfUserRelevantProjects(userID int, projectName string) (int64, error) {
-	o := GetOrmer()
-	sql := `select count(*) from project p 
-			left join project_member pm 
-			on p.project_id = pm.project_id
-	 		where p.deleted = 0 and pm.user_id= ?`
+// GetTotalOfProjects returns the total count of projects
+// according to the query conditions
+func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
 
-	queryParam := []interface{}{}
-	queryParam = append(queryParam, userID)
-	if projectName != "" {
-		sql += " and p.name like ? "
-		queryParam = append(queryParam, "%"+escape(projectName)+"%")
+	var (
+		owner  string
+		name   string
+		public *bool
+		member string
+		role   int
+	)
+
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
 	}
 
-	var total int64
-	err := o.Raw(sql, queryParam).QueryRow(&total)
+	sql, params := queryConditions(owner, name, public, member, role)
 
+	sql = `select count(*) ` + sql
+
+	var total int64
+	err := GetOrmer().Raw(sql, params).QueryRow(&total)
 	return total, err
 }
 
-// GetUserRelevantProjects returns the user relevant projects
-// args[0]: public, args[1]: limit, args[2]: offset
-func GetUserRelevantProjects(userID int, projectName string, args ...int64) ([]models.Project, error) {
-	return getProjects(userID, projectName, args...)
-}
+// GetProjects returns a project list according to the query conditions
+func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
 
-// GetTotalOfProjects returns the total count of projects
-func GetTotalOfProjects(name string, public ...int) (int64, error) {
-	qs := GetOrmer().
-		QueryTable(new(models.Project)).
-		Filter("Deleted", 0)
+	var (
+		owner  string
+		name   string
+		public *bool
+		member string
+		role   int
+		page   int64
+		size   int64
+	)
 
-	if len(name) > 0 {
-		qs = qs.Filter("Name__icontains", name)
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
+		if query.Pagination != nil {
+			page = query.Pagination.Page
+			size = query.Pagination.Size
+		}
 	}
 
-	if len(public) > 0 {
-		qs = qs.Filter("Public", public[0])
+	sql, params := queryConditions(owner, name, public, member, role)
+
+	sql = `select distinct p.project_id, p.name, p.public, p.owner_id, 
+				p.creation_time, p.update_time ` + sql
+	if size > 0 {
+		sql += ` limit ?`
+		params = append(params, size)
+
+		if page > 0 {
+			sql += ` offset ?`
+			params = append(params, (page-1)*size)
+		}
 	}
 
-	return qs.Count()
-}
-
-// GetProjects returns project list
-// args[0]: public, args[1]: limit, args[2]: offset
-func GetProjects(name string, args ...int64) ([]models.Project, error) {
-	return getProjects(0, name, args...)
-}
-
-func getProjects(userID int, name string, args ...int64) ([]models.Project, error) {
-	projects := []models.Project{}
-
-	o := GetOrmer()
-	sql := ""
-	queryParam := []interface{}{}
-
-	if userID != 0 { //get user's projects
-		sql = `select distinct p.project_id, p.owner_id, p.name, 
-					p.creation_time, p.update_time, p.public, pm.role role 
-			from project p 
-			left join project_member pm 
-			on p.project_id = pm.project_id
-	 		where p.deleted = 0 and pm.user_id= ?`
-		queryParam = append(queryParam, userID)
-	} else { // get all projects
-		sql = `select * from project p where p.deleted = 0 `
-	}
-
-	if name != "" {
-		sql += ` and p.name like ? `
-		queryParam = append(queryParam, "%"+escape(name)+"%")
-	}
-
-	switch len(args) {
-	case 1:
-		sql += ` and p.public = ?`
-		queryParam = append(queryParam, args[0])
-		sql += ` order by p.name `
-	case 2:
-		sql += ` order by p.name `
-		sql = paginateForRawSQL(sql, args[0], args[1])
-	case 3:
-		sql += ` and p.public = ?`
-		queryParam = append(queryParam, args[0])
-		sql += ` order by p.name `
-		sql = paginateForRawSQL(sql, args[1], args[2])
-	}
-
-	_, err := o.Raw(sql, queryParam).QueryRows(&projects)
-
+	var projects []*models.Project
+	_, err := GetOrmer().Raw(sql, params).QueryRows(&projects)
 	return projects, err
+}
+
+func queryConditions(owner, name string, public *bool, member string,
+	role int) (string, []interface{}) {
+	params := []interface{}{}
+
+	sql := ` from project p`
+
+	if len(owner) != 0 {
+		sql += ` join user u1
+					on p.owner_id = u1.user_id`
+	}
+
+	if len(member) != 0 {
+		sql += ` join project_member pm
+					on p.project_id = pm.project_id
+					join user u2
+					on pm.user_id=u2.user_id`
+	}
+	sql += ` where p.deleted=0`
+
+	if len(owner) != 0 {
+		sql += ` and u1.username=?`
+		params = append(params, owner)
+	}
+
+	if len(name) != 0 {
+		sql += ` and p.name like ?`
+		params = append(params, "%"+escape(name)+"%")
+	}
+
+	if public != nil {
+		sql += ` and p.public = ?`
+		if *public {
+			params = append(params, 1)
+		} else {
+			params = append(params, 0)
+		}
+	}
+
+	if len(member) != 0 {
+		sql += ` and u2.username=?`
+		params = append(params, member)
+
+		if role > 0 {
+			sql += ` and pm.role = ?`
+			roleID := 0
+			switch role {
+			case common.RoleProjectAdmin:
+				roleID = 1
+			case common.RoleDeveloper:
+				roleID = 2
+			case common.RoleGuest:
+				roleID = 3
+
+			}
+			params = append(params, roleID)
+		}
+	}
+
+	sql += ` order by p.name`
+
+	return sql, params
 }
 
 // DeleteProject ...
