@@ -183,8 +183,26 @@ func SearchProjects(userID int) ([]*models.Project, error) {
 
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
-func GetTotalOfProjects(owner, name, public, member string,
-	role int) (int64, error) {
+func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
+
+	var (
+		owner  string
+		name   string
+		public *bool
+		member string
+		role   int
+	)
+
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
+	}
+
 	sql, params := queryConditions(owner, name, public, member, role)
 
 	sql = `select count(*) ` + sql
@@ -195,8 +213,32 @@ func GetTotalOfProjects(owner, name, public, member string,
 }
 
 // GetProjects returns a project list according to the query conditions
-func GetProjects(owner, name, public, member string,
-	role int, page, size int64) ([]*models.Project, error) {
+func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
+
+	var (
+		owner  string
+		name   string
+		public *bool
+		member string
+		role   int
+		page   int64
+		size   int64
+	)
+
+	if query != nil {
+		owner = query.Owner
+		name = query.Name
+		public = query.Public
+		if query.Member != nil {
+			member = query.Member.Name
+			role = query.Member.Role
+		}
+		if query.Pagination != nil {
+			page = query.Pagination.Page
+			size = query.Pagination.Size
+		}
+	}
+
 	sql, params := queryConditions(owner, name, public, member, role)
 
 	sql = `select distinct p.project_id, p.name, p.public, p.owner_id, 
@@ -216,7 +258,7 @@ func GetProjects(owner, name, public, member string,
 	return projects, err
 }
 
-func queryConditions(owner, name, public, member string,
+func queryConditions(owner, name string, public *bool, member string,
 	role int) (string, []interface{}) {
 	params := []interface{}{}
 
@@ -245,9 +287,9 @@ func queryConditions(owner, name, public, member string,
 		params = append(params, "%"+escape(name)+"%")
 	}
 
-	if len(public) != 0 {
+	if public != nil {
 		sql += ` and p.public = ?`
-		if public == "true" {
+		if *public {
 			params = append(params, 1)
 		} else {
 			params = append(params, 0)

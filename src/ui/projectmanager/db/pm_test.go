@@ -24,7 +24,6 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 func TestMain(m *testing.M) {
@@ -230,22 +229,23 @@ func TestGetTotal(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	total, err := pm.GetTotal(&projectmanager.QueryParam{
+	total, err := pm.GetTotal(&models.QueryParam{
 		Name: "get_total_test",
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), total)
 
 	// get by owner
-	total, err = pm.GetTotal(&projectmanager.QueryParam{
+	total, err = pm.GetTotal(&models.QueryParam{
 		Owner: "admin",
 	})
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, total)
 
 	// get by public
-	total, err = pm.GetTotal(&projectmanager.QueryParam{
-		Public: "true",
+	value := true
+	total, err = pm.GetTotal(&models.QueryParam{
+		Public: &value,
 	})
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, total)
@@ -263,14 +263,14 @@ func TestGetAll(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	projects, err := pm.GetAll(&projectmanager.QueryParam{
+	projects, err := pm.GetAll(&models.QueryParam{
 		Name: "get_all_test",
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, id, projects[0].ProjectID)
 
 	// get by owner
-	projects, err = pm.GetAll(&projectmanager.QueryParam{
+	projects, err = pm.GetAll(&models.QueryParam{
 		Owner: "admin",
 	})
 	assert.Nil(t, err)
@@ -284,8 +284,9 @@ func TestGetAll(t *testing.T) {
 	assert.True(t, exist)
 
 	// get by public
-	projects, err = pm.GetAll(&projectmanager.QueryParam{
-		Public: "true",
+	value := true
+	projects, err = pm.GetAll(&models.QueryParam{
+		Public: &value,
 	})
 	assert.Nil(t, err)
 	exist = false

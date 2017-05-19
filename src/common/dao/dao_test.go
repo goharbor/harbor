@@ -802,7 +802,7 @@ func TestProjectPermission(t *testing.T) {
 }
 
 func TestGetTotalOfProjects(t *testing.T) {
-	total, err := GetTotalOfProjects("", "", "", "", 0)
+	total, err := GetTotalOfProjects(nil)
 	if err != nil {
 		t.Fatalf("failed to get total of projects: %v", err)
 	}
@@ -813,7 +813,7 @@ func TestGetTotalOfProjects(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	projects, err := GetProjects("", "", "", "", 0, 0, 0)
+	projects, err := GetProjects(nil)
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -826,7 +826,10 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestGetPublicProjects(t *testing.T) {
-	projects, err := GetProjects("", "", "true", "", 0, 0, 0)
+	value := true
+	projects, err := GetProjects(&models.QueryParam{
+		Public: &value,
+	})
 	if err != nil {
 		t.Errorf("Error occurred in getProjects: %v", err)
 	}

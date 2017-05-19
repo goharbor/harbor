@@ -18,27 +18,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
-// QueryParam can be used to set query parameters when listing projects
-type QueryParam struct {
-	Name       string      // the name of project
-	Owner      string      // the username of project owner
-	Public     string      // the project is public or not, can be "ture","false" and ""
-	Member     *Member     // the member of project
-	Pagination *Pagination // pagination information
-}
-
-// Member fitler by member's username and role
-type Member struct {
-	Name string // the username of member
-	Role int    // the role of the member has to the project
-}
-
-// Pagination ...
-type Pagination struct {
-	Page int64
-	Size int64
-}
-
 // ProjectManager is the project mamager which abstracts the operations related
 // to projects
 type ProjectManager interface {
@@ -54,7 +33,7 @@ type ProjectManager interface {
 	Delete(projectIDOrName interface{}) error
 	Update(projectIDOrName interface{}, project *models.Project) error
 	// GetAll returns a project list according to the query parameters
-	GetAll(query *QueryParam) ([]*models.Project, error)
+	GetAll(query *models.QueryParam) ([]*models.Project, error)
 	// GetTotal returns the total count according to the query parameters
-	GetTotal(query *QueryParam) (int64, error)
+	GetTotal(query *models.QueryParam) (int64, error)
 }

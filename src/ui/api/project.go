@@ -24,7 +24,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager"
 
 	"strconv"
 	"time"
@@ -142,7 +141,6 @@ func (p *ProjectAPI) Post() {
 				OpTime:    time.Now(),
 			}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 	}()
 
@@ -260,7 +258,7 @@ func projectContainsPolicy(id int64) (bool, error) {
 // TODO refacter pattern to:
 // /api/repositories?owner=xxx&name=xxx&public=true&member=xxx&role=1&page=1&size=3
 func (p *ProjectAPI) List() {
-	query := &projectmanager.QueryParam{}
+	query := &models.QueryParam{}
 
 	query.Name = p.GetString("project_name")
 	public := p.GetString("is_public")
@@ -270,11 +268,12 @@ func (p *ProjectAPI) List() {
 			return
 		}
 		if public == "1" {
-			query.Public = "true"
+			t := true
+			query.Public = &t
 		}
 	}
 
-	if query.Public != "true" {
+	if query.Public == nil || *query.Public == false {
 		//if the request is not for public projects, user must login or provide credential
 		if !p.SecurityCtx.IsAuthenticated() {
 			p.HandleUnauthorized()
@@ -282,7 +281,7 @@ func (p *ProjectAPI) List() {
 		}
 
 		if !p.SecurityCtx.IsSysAdmin() {
-			query.Member = &projectmanager.Member{
+			query.Member = &models.Member{
 				Name: p.SecurityCtx.GetUsername(),
 			}
 		}
@@ -295,7 +294,7 @@ func (p *ProjectAPI) List() {
 	}
 
 	page, size := p.GetPaginationParams()
-	query.Pagination = &projectmanager.Pagination{
+	query.Pagination = &models.Pagination{
 		Page: page,
 		Size: size,
 	}
@@ -307,7 +306,7 @@ func (p *ProjectAPI) List() {
 	}
 
 	for _, project := range projects {
-		if query.Public != "true" {
+		if query.Public == nil || *query.Public == false {
 			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
 			if err != nil {
 				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",

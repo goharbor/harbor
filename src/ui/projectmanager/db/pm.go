@@ -21,7 +21,6 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 // ProjectManager implements pm.PM interface based on database
@@ -107,16 +106,17 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 
 // GetPublic returns all public projects
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
-	return p.GetAll(&projectmanager.QueryParam{
-		Public: "true",
+	t := true
+	return p.GetAll(&models.QueryParam{
+		Public: &t,
 	})
 }
 
 // GetByMember returns all projects which the user is a member of
 func (p *ProjectManager) GetByMember(username string) (
 	[]*models.Project, error) {
-	return p.GetAll(&projectmanager.QueryParam{
-		Member: &projectmanager.Member{
+	return p.GetAll(&models.QueryParam{
+		Member: &models.Member{
 			Name: username,
 		},
 	})
@@ -190,56 +190,13 @@ func (p *ProjectManager) Update(projectIDOrName interface{},
 }
 
 // GetAll returns a project list according to the query parameters
-func (p *ProjectManager) GetAll(query *projectmanager.QueryParam) (
+func (p *ProjectManager) GetAll(query *models.QueryParam) (
 	[]*models.Project, error) {
-
-	var (
-		owner  string
-		name   string
-		public string
-		member string
-		role   int
-		page   int64
-		size   int64
-	)
-
-	if query != nil {
-		owner = query.Owner
-		name = query.Name
-		public = query.Public
-		if query.Member != nil {
-			member = query.Member.Name
-			role = query.Member.Role
-		}
-		if query.Pagination != nil {
-			page = query.Pagination.Page
-			size = query.Pagination.Size
-		}
-	}
-
-	return dao.GetProjects(owner, name, public, member, role, page, size)
+	return dao.GetProjects(query)
 }
 
 // GetTotal returns the total count according to the query parameters
-func (p *ProjectManager) GetTotal(query *projectmanager.QueryParam) (
+func (p *ProjectManager) GetTotal(query *models.QueryParam) (
 	int64, error) {
-	var (
-		owner  string
-		name   string
-		public string
-		member string
-		role   int
-	)
-
-	if query != nil {
-		owner = query.Owner
-		name = query.Name
-		public = query.Public
-		if query.Member != nil {
-			member = query.Member.Name
-			role = query.Member.Role
-		}
-	}
-
-	return dao.GetTotalOfProjects(owner, name, public, member, role)
+	return dao.GetTotalOfProjects(query)
 }
