@@ -42,7 +42,7 @@ func main() {
 	}
 
 	initRouters()
-	job.InitWorkerPool()
+	job.InitWorkerPools()
 	go job.Dispatch()
 	resumeJobs()
 	beego.Run()
@@ -57,8 +57,9 @@ func resumeJobs() {
 	jobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying)
 	if err == nil {
 		for _, j := range jobs {
-			log.Debugf("Resuming job: %d", j.ID)
-			job.Schedule(j.ID)
+			rj := job.NewRepJob(j.ID)
+			log.Debugf("Resuming job: %v", rj)
+			job.Schedule(rj)
 		}
 	} else {
 		log.Warningf("Failed to jobs to resume, error: %v", err)
