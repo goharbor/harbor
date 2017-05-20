@@ -48,7 +48,7 @@ export interface Repository extends Base {
     owner_id?: number;
     project_id?: number;
     description?: string;
-    start_count?: number;
+    star_count?: number;
     pull_count?: number;
 }
 
@@ -72,7 +72,13 @@ export interface Tag extends Base {
  * @interface Endpoint
  * @extends {Base}
  */
-export interface Endpoint extends Base { }
+export interface Endpoint extends Base {
+  endpoint: string;
+  name: string;
+  username: string;
+  password: string;
+  type: number;
+}
 
 /**
  * Interface for replication rule.
@@ -124,4 +130,17 @@ export interface AccessLog {
     username: string;
     keywords?: string; //NOT used now
     guid?: string; //NOT used now
+}
+
+/**
+ * Session related info.
+ * 
+ * @export 
+ * @interface SessionInfo
+ */
+export interface SessionInfo {
+    withNotary?: boolean;
+    hasProjectAdminRole?: boolean;
+    hasSignedIn?: boolean;
+    registryUrl?: string;
 }

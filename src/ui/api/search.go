@@ -33,7 +33,7 @@ type SearchAPI struct {
 }
 
 type searchResult struct {
-	Project    []models.Project         `json:"project"`
+	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
 }
 
@@ -52,10 +52,10 @@ func (s *SearchAPI) Get() {
 		s.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	var projects []models.Project
+	var projects []*models.Project
 
 	if isSysAdmin {
-		projects, err = dao.GetProjects("")
+		projects, err = dao.GetProjects(nil)
 		if err != nil {
 			log.Errorf("failed to get all projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -70,7 +70,7 @@ func (s *SearchAPI) Get() {
 
 	projectSorter := &models.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
-	projectResult := []models.Project{}
+	projectResult := []*models.Project{}
 	for _, p := range projects {
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
 			continue
@@ -113,7 +113,7 @@ func (s *SearchAPI) Get() {
 	s.ServeJSON()
 }
 
-func filterRepositories(projects []models.Project, keyword string) (
+func filterRepositories(projects []*models.Project, keyword string) (
 	[]map[string]interface{}, error) {
 
 	repositories, err := dao.GetAllRepositories()

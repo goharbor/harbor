@@ -72,6 +72,10 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         if (this.searchSub) {
             this.searchSub.unsubscribe();
         }
+
+        if (this.closeSub) {
+            this.closeSub.unsubscribe();
+        }
     }
 
     //Handle the term inputting event

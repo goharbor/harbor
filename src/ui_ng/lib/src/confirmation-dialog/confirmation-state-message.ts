@@ -11,12 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 
-package models
+export class ConfirmationAcknowledgement {
+    constructor(state: ConfirmationState, data: any, source: ConfirmationTargets) {
+        this.state = state;
+        this.data = data;
+        this.source = source;
+    }
 
-// TopRepo holds information about repository that accessed most
-type TopRepo struct {
-	RepoName    string `json:"name"`
-	AccessCount int64  `json:"count"`
-	//	Creator     string `json:"creator"`
+    state: ConfirmationState = ConfirmationState.NA;
+    data: any = {};
+    source: ConfirmationTargets = ConfirmationTargets.EMPTY;
 }

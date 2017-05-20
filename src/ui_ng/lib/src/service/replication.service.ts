@@ -114,7 +114,6 @@ export abstract class ReplicationService {
      * @memberOf ReplicationService
      */
     abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[];
-
 }
 
 /**

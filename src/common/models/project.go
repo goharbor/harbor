@@ -19,6 +19,7 @@ import (
 )
 
 // Project holds the details of a project.
+// TODO remove useless attrs
 type Project struct {
 	ProjectID       int64     `orm:"pk;auto;column(project_id)" json:"project_id"`
 	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
@@ -39,7 +40,7 @@ type Project struct {
 
 // ProjectSorter holds an array of projects
 type ProjectSorter struct {
-	Projects []Project
+	Projects []*Project
 }
 
 // Len returns the length of array in ProjectSorter
@@ -55,4 +56,35 @@ func (ps *ProjectSorter) Less(i, j int) bool {
 // Swap swaps the position of i and j
 func (ps *ProjectSorter) Swap(i, j int) {
 	ps.Projects[i], ps.Projects[j] = ps.Projects[j], ps.Projects[i]
+}
+
+// QueryParam can be used to set query parameters when listing projects.
+// The query condition will be set in the query if its corresponding field
+// is not nil. Leave it empty if you don't want to apply this condition.
+//
+// e.g.
+// List all projects: query := nil
+// List all public projects: query := &QueryParam{Public: true}
+// List projects the owner of which is user1: query := &QueryParam{Owner:"user1"}
+// List all public projects the owner of which is user1: query := &QueryParam{Owner:"user1",Public:true}
+// List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
+// List projects which user1 is the project admin : query := &QueryParam{Memeber:&Member{Name:"user1",Role:1}}
+type QueryParam struct {
+	Name       string      // the name of project
+	Owner      string      // the username of project owner
+	Public     *bool       // the project is public or not, can be ture, false and nil
+	Member     *Member     // the member of project
+	Pagination *Pagination // pagination information
+}
+
+// Member fitler by member's username and role
+type Member struct {
+	Name string // the username of member
+	Role int    // the role of the member has to the project
+}
+
+// Pagination ...
+type Pagination struct {
+	Page int64
+	Size int64
 }

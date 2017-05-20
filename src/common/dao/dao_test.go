@@ -801,32 +801,8 @@ func TestProjectPermission(t *testing.T) {
 	}
 }
 
-func TestGetTotalOfUserRelevantProjects(t *testing.T) {
-	total, err := GetTotalOfUserRelevantProjects(currentUser.UserID, "")
-	if err != nil {
-		t.Fatalf("failed to get total of user relevant projects: %v", err)
-	}
-
-	if total != 1 {
-		t.Errorf("unexpected total: %d != 1", total)
-	}
-}
-
-func TestGetUserRelevantProjects(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
-	if err != nil {
-		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expected length of relevant projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[0].Name != projectName {
-		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
 func TestGetTotalOfProjects(t *testing.T) {
-	total, err := GetTotalOfProjects("")
+	total, err := GetTotalOfProjects(nil)
 	if err != nil {
 		t.Fatalf("failed to get total of projects: %v", err)
 	}
@@ -837,7 +813,7 @@ func TestGetTotalOfProjects(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	projects, err := GetProjects("")
+	projects, err := GetProjects(nil)
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -850,7 +826,10 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestGetPublicProjects(t *testing.T) {
-	projects, err := GetProjects("", 1)
+	value := true
+	projects, err := GetProjects(&models.QueryParam{
+		Public: &value,
+	})
 	if err != nil {
 		t.Errorf("Error occurred in getProjects: %v", err)
 	}

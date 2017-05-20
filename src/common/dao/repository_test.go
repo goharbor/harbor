@@ -17,7 +17,6 @@ package dao
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
@@ -170,47 +169,25 @@ func TestGetTopRepos(t *testing.T) {
 		require.NoError(GetOrmer().Rollback())
 	}()
 
-	admin, err := GetUser(models.User{Username: "admin"})
-	require.NoError(err)
-
-	user := models.User{
-		Username: "user",
-		Password: "user",
-		Email:    "user@test.com",
-	}
-	userID, err := Register(user)
-	require.NoError(err)
-	user.UserID = int(userID)
-
-	//
-	// public project with 1 repository
-	// non-public project with 2 repositories visible by admin
-	// non-public project with 1 repository visible by admin and user
-	// deleted public project with 1 repository
-	//
+	projectIDs := []int64{}
 
 	project1 := models.Project{
-		OwnerID:      admin.UserID,
-		Name:         "project1",
-		CreationTime: time.Now(),
-		OwnerName:    admin.Username,
-		Public:       0,
+		OwnerID: 1,
+		Name:    "project1",
+		Public:  0,
 	}
 	project1.ProjectID, err = AddProject(project1)
 	require.NoError(err)
+	projectIDs = append(projectIDs, project1.ProjectID)
 
 	project2 := models.Project{
-		OwnerID:      user.UserID,
-		Name:         "project2",
-		CreationTime: time.Now(),
-		OwnerName:    user.Username,
-		Public:       0,
+		OwnerID: 1,
+		Name:    "project2",
+		Public:  0,
 	}
 	project2.ProjectID, err = AddProject(project2)
 	require.NoError(err)
-
-	err = AddRepository(*repository)
-	require.NoError(err)
+	projectIDs = append(projectIDs, project2.ProjectID)
 
 	repository1 := &models.RepoRecord{
 		Name:      fmt.Sprintf("%v/repository1", project1.Name),
@@ -219,8 +196,6 @@ func TestGetTopRepos(t *testing.T) {
 	err = AddRepository(*repository1)
 	require.NoError(err)
 	require.NoError(IncreasePullCount(repository1.Name))
-	repository1, err = GetRepositoryByName(repository1.Name)
-	require.NoError(err)
 
 	repository2 := &models.RepoRecord{
 		Name:      fmt.Sprintf("%v/repository2", project1.Name),
@@ -230,8 +205,6 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 	require.NoError(IncreasePullCount(repository2.Name))
 	require.NoError(IncreasePullCount(repository2.Name))
-	repository2, err = GetRepositoryByName(repository2.Name)
-	require.NoError(err)
 
 	repository3 := &models.RepoRecord{
 		Name:      fmt.Sprintf("%v/repository3", project2.Name),
@@ -242,49 +215,11 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(IncreasePullCount(repository3.Name))
 	require.NoError(IncreasePullCount(repository3.Name))
 	require.NoError(IncreasePullCount(repository3.Name))
-	repository3, err = GetRepositoryByName(repository3.Name)
-	require.NoError(err)
 
-	deletedPublicProject := models.Project{
-		OwnerID:      admin.UserID,
-		Name:         "public-deleted",
-		CreationTime: time.Now(),
-		OwnerName:    admin.Username,
-		Public:       1,
-	}
-	deletedPublicProject.ProjectID, err = AddProject(deletedPublicProject)
-	require.NoError(err)
-	deletedPublicRepository1 := &models.RepoRecord{
-		Name:      fmt.Sprintf("%v/repository1", deletedPublicProject.Name),
-		ProjectID: deletedPublicProject.ProjectID,
-	}
-	err = AddRepository(*deletedPublicRepository1)
-	require.NoError(err)
-	err = DeleteProject(deletedPublicProject.ProjectID)
-	require.NoError(err)
-
-	var topRepos []*models.RepoRecord
-
-	// anonymous should retrieve public non-deleted repositories
-	topRepos, err = GetTopRepos(NonExistUserID, 100)
-	require.NoError(err)
-	require.Len(topRepos, 1)
-	require.Equal(topRepos[0].Name, repository.Name)
-
-	// admin should retrieve all repositories
-	topRepos, err = GetTopRepos(admin.UserID, 100)
-	require.NoError(err)
-	require.Len(topRepos, 4)
-
-	// user should retrieve visible repositories
-	topRepos, err = GetTopRepos(user.UserID, 100)
-	require.NoError(err)
-	require.Len(topRepos, 2)
-
-	// limit by count
-	topRepos, err = GetTopRepos(admin.UserID, 3)
+	topRepos, err := GetTopRepos(projectIDs, 100)
 	require.NoError(err)
 	require.Len(topRepos, 3)
+	require.Equal(topRepos[0].Name, repository3.Name)
 }
 
 func TestGetTotalOfRepositoriesByProject(t *testing.T) {

@@ -30,6 +30,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/filter"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
@@ -85,6 +86,8 @@ func init() {
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
+
+	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
@@ -473,8 +476,8 @@ func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID str
 
 //-------------------------Repositories Test---------------------------------------//
 //Return relevant repos of projectID
-func (a testapi) GetRepos(authInfo usrInfo, projectID,
-	keyword, detail string) (int, interface{}, error) {
+func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
+	int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/"
@@ -483,13 +486,11 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID,
 
 	type QueryParams struct {
 		ProjectID string `url:"project_id"`
-		Detail    string `url:"detail"`
 		Keyword   string `url:"q"`
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{
 		ProjectID: projectID,
-		Detail:    detail,
 		Keyword:   keyword,
 	})
 	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
@@ -498,15 +499,7 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID,
 	}
 
 	if code == http.StatusOK {
-		if detail == "1" || detail == "true" {
-			repositories := []repoResp{}
-			if err = json.Unmarshal(body, &repositories); err != nil {
-				return 0, nil, err
-			}
-			return code, repositories, nil
-		}
-
-		repositories := []string{}
+		repositories := []repoResp{}
 		if err = json.Unmarshal(body, &repositories); err != nil {
 			return 0, nil, err
 		}
@@ -517,21 +510,13 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID,
 }
 
 //Get tags of a relevant repository
-func (a testapi) GetReposTags(authInfo usrInfo, repoName,
-	detail string) (int, interface{}, error) {
+func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
 
 	_sling = _sling.Path(path)
 
-	type QueryParams struct {
-		Detail string `url:"detail"`
-	}
-
-	_sling = _sling.QueryStruct(&QueryParams{
-		Detail: detail,
-	})
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {
 		return 0, nil, err
@@ -541,15 +526,7 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName,
 		return httpStatusCode, body, nil
 	}
 
-	if detail == "true" || detail == "1" {
-		result := []detailedTagResp{}
-		if err := json.Unmarshal(body, &result); err != nil {
-			return 0, nil, err
-		}
-		return http.StatusOK, result, nil
-	}
-
-	result := []string{}
+	result := []tagResp{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return 0, nil, err
 	}
@@ -569,8 +546,7 @@ func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string
 }
 
 //Get public repositories which are accessed most
-func (a testapi) GetReposTop(authInfo usrInfo, count,
-	detail string) (int, interface{}, error) {
+func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	path := "/api/repositories/top"
@@ -578,13 +554,11 @@ func (a testapi) GetReposTop(authInfo usrInfo, count,
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		Count  string `url:"count"`
-		Detail string `url:"detail"`
+		Count string `url:"count"`
 	}
 
 	_sling = _sling.QueryStruct(&QueryParams{
-		Count:  count,
-		Detail: detail,
+		Count: count,
 	})
 	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {
@@ -595,15 +569,7 @@ func (a testapi) GetReposTop(authInfo usrInfo, count,
 		return code, body, err
 	}
 
-	if detail == "true" || detail == "1" {
-		result := []*repoResp{}
-		if err = json.Unmarshal(body, &result); err != nil {
-			return 0, nil, err
-		}
-		return http.StatusOK, result, nil
-	}
-
-	result := []*models.TopRepo{}
+	result := []*repoResp{}
 	if err = json.Unmarshal(body, &result); err != nil {
 		return 0, nil, err
 	}

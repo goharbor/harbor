@@ -36,6 +36,10 @@ const metaChars = "&|!=~*<>()"
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	p := m.Principal
+	if len(strings.TrimSpace(p)) == 0 {
+		log.Debugf("LDAP authentication failed for empty user id.")
+		return nil, nil
+	}
 	for _, c := range metaChars {
 		if strings.ContainsRune(p, c) {
 			return nil, fmt.Errorf("the principal contains meta char: %q", c)

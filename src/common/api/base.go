@@ -39,6 +39,47 @@ type BaseAPI struct {
 	beego.Controller
 }
 
+// GetStringFromPath gets the param from path and returns it as string
+func (b *BaseAPI) GetStringFromPath(key string) string {
+	return b.Ctx.Input.Param(key)
+}
+
+// GetInt64FromPath gets the param from path and returns it as int64
+func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
+	value := b.Ctx.Input.Param(key)
+	return strconv.ParseInt(value, 10, 64)
+}
+
+// HandleNotFound ...
+func (b *BaseAPI) HandleNotFound(text string) {
+	log.Info(text)
+	b.RenderError(http.StatusNotFound, text)
+}
+
+// HandleUnauthorized ...
+func (b *BaseAPI) HandleUnauthorized() {
+	log.Info("unauthorized")
+	b.RenderError(http.StatusUnauthorized, "")
+}
+
+// HandleForbidden ...
+func (b *BaseAPI) HandleForbidden(username string) {
+	log.Info("forbidden: %s", username)
+	b.RenderError(http.StatusForbidden, "")
+}
+
+// HandleBadRequest ...
+func (b *BaseAPI) HandleBadRequest(text string) {
+	log.Info(text)
+	b.RenderError(http.StatusBadRequest, text)
+}
+
+// HandleInternalServerError ...
+func (b *BaseAPI) HandleInternalServerError(text string) {
+	log.Error(text)
+	b.RenderError(http.StatusInternalServerError, "")
+}
+
 // Render returns nil as it won't render template
 func (b *BaseAPI) Render() error {
 	return nil
@@ -83,6 +124,7 @@ func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) {
 }
 
 // ValidateUser checks if the request triggered by a valid user
+// TODO remove
 func (b *BaseAPI) ValidateUser() int {
 	userID, needsCheck, ok := b.GetUserIDForRequest()
 	if !ok {
@@ -105,6 +147,7 @@ func (b *BaseAPI) ValidateUser() int {
 
 // GetUserIDForRequest tries to get user ID from basic auth header and session.
 // It returns the user ID, whether need further verification(when the id is from session) and if the action is successful
+// TODO remove
 func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 	username, password, ok := b.Ctx.Request.BasicAuth()
 	if ok {

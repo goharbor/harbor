@@ -16,12 +16,14 @@ package token
 
 import (
 	"fmt"
-	"github.com/docker/distribution/registry/auth/token"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
 	"net/http"
 	"strings"
+
+	"github.com/docker/distribution/registry/auth/token"
+	"github.com/vmware/harbor/src/common/security"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/filter"
 )
 
 var creatorMap map[string]Creator
@@ -54,19 +56,12 @@ func InitCreators() {
 			},
 		}
 		creatorMap[notary] = &generalCreator{
-			validators: []ReqValidator{
-				&basicAuthValidator{},
-			},
 			service:   notary,
 			filterMap: notaryFilterMap,
 		}
 	}
 
 	creatorMap[registry] = &generalCreator{
-		validators: []ReqValidator{
-			&secretValidator{config.JobserviceSecret()},
-			&basicAuthValidator{},
-		},
 		service:   registry,
 		filterMap: registryFilterMap,
 	}
@@ -127,18 +122,19 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(user userInfo, a *token.ResourceActions) error
+	filter(ctx security.Context, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(user userInfo, a *token.ResourceActions) error {
+func (reg registryFilter) filter(ctx security.Context,
+	a *token.ResourceActions) error {
 	//Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
 	}
-	if !user.allPerm {
+	if !ctx.IsSysAdmin() {
 		//Set the actions to empty is the user is not admin
 		a.Actions = []string{}
 	}
@@ -150,7 +146,7 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(user userInfo, a *token.ResourceActions) error {
+func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceActions) error {
 	//clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
@@ -158,37 +154,21 @@ func (rep repositoryFilter) filter(user userInfo, a *token.ResourceActions) erro
 	}
 	project := img.namespace
 	permission := ""
-	if user.allPerm {
-		exist, err := dao.ProjectExists(project)
-		if err != nil {
-			log.Errorf("Error occurred in CheckExistProject: %v", err)
-			//just leave empty permission
-			return nil
-		}
-		if exist {
-			permission = "RWM"
-		} else {
-			log.Infof("project %s does not exist, set empty permission for admin\n", project)
-		}
-	} else {
-		permission, err = dao.GetPermission(user.name, project)
-		if err != nil {
-			log.Errorf("Error occurred in GetPermission: %v", err)
-			//just leave empty permission
-			return nil
-		}
-		if dao.IsProjectPublic(project) {
-			permission += "R"
-		}
+	if ctx.HasAllPerm(project) {
+		permission = "RWM"
+	} else if ctx.HasWritePerm(project) {
+		permission = "RW"
+	} else if ctx.HasReadPerm(project) {
+		permission = "R"
 	}
+
 	a.Actions = permToActions(permission)
 	return nil
 }
 
 type generalCreator struct {
-	validators []ReqValidator
-	service    string
-	filterMap  map[string]accessFilter
+	service   string
+	filterMap map[string]accessFilter
 }
 
 type unauthorizedError struct{}
@@ -198,7 +178,6 @@ func (e *unauthorizedError) Error() string {
 }
 
 func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
-	var user *userInfo
 	var err error
 	var scopes []string
 	scopeParm := r.URL.Query()["scope"]
@@ -206,25 +185,22 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 		scopes = strings.Split(r.URL.Query()["scope"][0], " ")
 	}
 	log.Debugf("scopes: %v", scopes)
-	for _, v := range g.validators {
-		user, err = v.validate(r)
-		if err != nil {
-			return nil, err
-		}
-		if user != nil {
-			break
-		}
+
+	ctx, err := filter.GetSecurityContext(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to  get security context from request")
 	}
-	if user == nil {
+
+	// for docker login
+	if !ctx.IsAuthenticated() {
 		if len(scopes) == 0 {
 			return nil, &unauthorizedError{}
 		}
-		user = &userInfo{}
 	}
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, *user, g.filterMap)
+	err = filterAccess(access, ctx, g.filterMap)
 	if err != nil {
 		return nil, err
 	}
-	return makeToken(user.name, g.service, access)
+	return makeToken(ctx.GetUsername(), g.service, access)
 }

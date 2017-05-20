@@ -17,6 +17,7 @@ package rbac
 import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
@@ -59,8 +60,26 @@ func (s *SecurityContext) IsSysAdmin() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+	// not exist
+	exist, err := s.pm.Exist(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to check the existence of project %v: %v",
+			projectIDOrName, err)
+		return false
+	}
+
+	if !exist {
+		return false
+	}
+
 	// public project
-	if s.pm.IsPublic(projectIDOrName) {
+	public, err := s.pm.IsPublic(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to check the public of project %v: %v",
+			projectIDOrName, err)
+		return false
+	}
+	if public {
 		return true
 	}
 
@@ -74,7 +93,13 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to get roles of user %s to project %v: %v",
+			s.GetUsername(), projectIDOrName, err)
+		return false
+	}
+
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -93,12 +118,30 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
+	// project does not exist
+	exist, err := s.pm.Exist(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to check the existence of project %v: %v",
+			projectIDOrName, err)
+		return false
+	}
+
+	if !exist {
+		return false
+	}
+
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
 
-	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to get roles of user %s to project %v: %v",
+			s.GetUsername(), projectIDOrName, err)
+		return false
+	}
+
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -115,12 +158,31 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
+
+	// project does not exist
+	exist, err := s.pm.Exist(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to check the existence of project %v: %v",
+			projectIDOrName, err)
+		return false
+	}
+
+	if !exist {
+		return false
+	}
+
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
 
-	roles := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to get roles of user %s to project %v: %v",
+			s.GetUsername(), projectIDOrName, err)
+		return false
+	}
+
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin:
