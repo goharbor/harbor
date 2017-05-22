@@ -166,16 +166,17 @@ func (sm *SM) Init() {
 }
 
 // Reset resets the state machine and after prereq checking, it will start handling the job.
-func (sm *SM) Reset(j Job) (err error) {
+func (sm *SM) Reset(j Job) error {
 	//To ensure the Job visible to the thread to stop the SM
 	sm.lock.Lock()
 	sm.CurrentJob = j
 	sm.desiredState = ""
 	sm.lock.Unlock()
 
+	var err error
 	sm.Logger, err = NewLogger(j)
 	if err != nil {
-		return
+		return err
 	}
 	//init states handlers
 	sm.Handlers = make(map[string]StateHandler)
@@ -200,8 +201,10 @@ func (sm *SM) kickOff() error {
 	if repJob, ok := sm.CurrentJob.(*RepJob); ok {
 		if repJob.parm.Enabled == 0 {
 			log.Debugf("The policy of job:%v is disabled, will cancel the job", repJob)
-			err := repJob.UpdateStatus(models.JobCanceled)
-			log.Warningf("Failed to update status of job: %v to 'canceled', error: %v", repJob, err)
+			if err := repJob.UpdateStatus(models.JobCanceled); err != nil {
+				log.Warningf("Failed to update status of job: %v to 'canceled', error: %v", repJob, err)
+
+			}
 		}
 	}
 	sm.Start(models.JobRunning)

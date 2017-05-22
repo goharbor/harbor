@@ -89,7 +89,7 @@ func (rj *RepJob) LogPath() string {
 
 // UpdateStatus ...
 func (rj *RepJob) UpdateStatus(status string) error {
-	return dao.UpdateScanJobStatus(rj.id, status)
+	return dao.UpdateRepJobStatus(rj.id, status)
 }
 
 // String ...
