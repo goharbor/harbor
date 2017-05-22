@@ -258,7 +258,7 @@ func (ra *RepositoryAPI) Delete() {
 			}
 
 			if project == nil {
-				log.Error("project %s not found", projectName)
+				log.Errorf("project %s not found", projectName)
 				return
 			}
 
