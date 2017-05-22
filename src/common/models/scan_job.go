@@ -16,6 +16,7 @@ package models
 
 import "time"
 
+//ScanJobTable is the name of the table whose data is mapped by ScanJob struct.
 const ScanJobTable = "img_scan_job"
 
 //ScanJob is the model to represent a job for image scan in DB.
