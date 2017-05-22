@@ -49,6 +49,7 @@ func main() {
 }
 
 func resumeJobs() {
+	//TODO: may need to resume scan jobs also?
 	log.Debugf("Trying to resume halted jobs...")
 	err := dao.ResetRunningJobs()
 	if err != nil {
