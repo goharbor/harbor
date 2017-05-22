@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
