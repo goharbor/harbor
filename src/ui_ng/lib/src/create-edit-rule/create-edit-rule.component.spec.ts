@@ -8,7 +8,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ReplicationComponent } from '../replication/replication.component';
 
 import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
-import { ListReplicationJobComponent } from '../list-replication-job/list-replication-job.component';
+
 import { CreateEditRuleComponent } from './create-edit-rule.component';
 import { DatePickerComponent } from '../datetime-picker/datetime-picker.component';
 import { DateValidatorDirective } from '../datetime-picker/date-validator.directive';
@@ -88,7 +88,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
         "repository": "library/busybox",
         "policy_id": 2,
         "operation": "transfer",
-        "tags": null
+        "tags": null  
     }
   ];
 
@@ -171,7 +171,6 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
       declarations: [
         ReplicationComponent,
         ListReplicationRuleComponent,
-        ListReplicationJobComponent,
         CreateEditRuleComponent,
         ConfirmationDialogComponent,
         DatePickerComponent,
@@ -188,26 +187,28 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
   }));
 
   beforeEach(()=>{
-
     fixture = TestBed.createComponent(ReplicationComponent);
-    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
 
     comp = fixture.componentInstance;
     comp.projectId = 1;
     comp.search.ruleId = 1;
 
-    compCreate = fixtureCreate.componentInstance;
-    comp.projectId = 1;
-
     replicationService = fixture.debugElement.injector.get(ReplicationService);
-    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
-        
+   
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
     spyOneRule = spyOn(replicationService, 'getReplicationRule').and.returnValue(Promise.resolve(mockRule));
-
     spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJobs));
-    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
+    fixture.detectChanges();
+  });
 
+  beforeEach(()=>{
+    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
+    
+    compCreate = fixtureCreate.componentInstance;
+    compCreate.projectId = 1;
+
+    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
+    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
     fixture.detectChanges();
   });
 

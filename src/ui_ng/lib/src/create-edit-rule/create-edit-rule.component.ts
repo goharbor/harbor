@@ -208,7 +208,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
           }).catch(err=>this.errorHandler.error(err));
     } else {
       if(!this.projectId) {
-        console.error('Project ID cannot be unset');
+        this.errorHandler.error('Project ID cannot be unset');
         return;
       }
       this.actionType = ActionType.ADD_NEW;
@@ -378,12 +378,12 @@ export class CreateEditRuleComponent implements AfterViewChecked {
           for(let key in data) {
             let current = data[key];          
             let origin: string = comparison[key];
-            if(((this.actionType === ActionType.EDIT && !this.readonly && !current ) || current) && current !== origin) {
-              this.hasChanged = true;
+            if(((self.actionType === ActionType.EDIT && !self.readonly && !current ) || current) && current !== origin) {
+              self.hasChanged = true;
               break;
             } else {
-              this.hasChanged = false;
-              this.inlineAlert.close();
+              self.hasChanged = false;
+              self.inlineAlert.close();
             }
           }
         });

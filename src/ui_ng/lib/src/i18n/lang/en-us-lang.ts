@@ -253,6 +253,7 @@ export const EN_US_LANG: any = {
         "CREATION_TIME": "Start Time",
         "END_TIME": "End Time",
         "LOGS": "Logs",
+        "OF": "of",
         "ITEMS": "item(s)",
         "TOGGLE_ENABLE_TITLE": "Enable Rule",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project will be replicated to the destination registry. \nPlease confirm to continue.",

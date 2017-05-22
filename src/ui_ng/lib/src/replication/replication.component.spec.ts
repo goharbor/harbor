@@ -7,7 +7,6 @@ import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ReplicationComponent } from './replication.component';
 import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
-import { ListReplicationJobComponent } from '../list-replication-job/list-replication-job.component';
 import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { DatePickerComponent } from '../datetime-picker/datetime-picker.component';
 import { DateValidatorDirective } from '../datetime-picker/date-validator.directive';
@@ -71,6 +70,7 @@ describe('Replication Component (inline template)', ()=>{
         "repository": "library/nginx",
         "policy_id": 1,
         "operation": "transfer",
+        "update_time": new Date("2017-05-23 12:20:33"),
         "tags": null
     },
     {
@@ -79,6 +79,7 @@ describe('Replication Component (inline template)', ()=>{
         "repository": "library/mysql",
         "policy_id": 1,
         "operation": "transfer",
+        "update_time": new Date("2017-05-27 12:20:33"),        
         "tags": null
     },
     {
@@ -87,6 +88,7 @@ describe('Replication Component (inline template)', ()=>{
         "repository": "library/busybox",
         "policy_id": 2,
         "operation": "transfer",
+        "update_time": new Date("2017-04-23 12:20:33"),        
         "tags": null
     }
   ];
@@ -169,7 +171,6 @@ describe('Replication Component (inline template)', ()=>{
       declarations: [
         ReplicationComponent,
         ListReplicationRuleComponent,
-        ListReplicationJobComponent,
         CreateEditRuleComponent,
         ConfirmationDialogComponent,
         DatePickerComponent,
@@ -283,4 +284,17 @@ describe('Replication Component (inline template)', ()=>{
       expect(el.textContent.trim()).toEqual('library/mysql');
     });
   }));
+
+  it('Should filter replication jobs by date range', async(()=>{
+    fixture.detectChanges();
+    fixture.whenStable().then(()=>{
+      fixture.detectChanges();
+      comp.doJobSearchByStartTime('2017-05-01');
+      comp.doJobSearchByEndTime('2015-05-25');
+      let el: HTMLElement = deJobs.nativeElement; 
+      fixture.detectChanges();
+      expect(el).toBeTruthy();
+      expect(el.textContent.trim()).toEqual('library/nginx');
+    });
+  }))
 });

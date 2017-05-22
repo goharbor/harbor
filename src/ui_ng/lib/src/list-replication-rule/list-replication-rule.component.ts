@@ -27,6 +27,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { toPromise } from '../utils';
 
+import { State } from 'clarity-angular';
+
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
 
 @Component({

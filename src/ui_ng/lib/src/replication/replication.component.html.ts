@@ -46,6 +46,30 @@ export const REPLICATION_TEMPLATE: string = `
       </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <list-replication-job [jobs]="jobs" [totalPage]="jobsTotalPage" [totalRecordCount]="jobsTotalRecordCount" (paginate)="fetchReplicationJobs($event)"></list-replication-job>
+      <clr-datagrid>
+        <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+        <clr-dg-row *clrDgItems="let j of jobs" [clrDgItem]='j'>
+            <clr-dg-cell>{{j.repository}}</clr-dg-cell>
+            <clr-dg-cell>{{j.status}}</clr-dg-cell>
+            <clr-dg-cell>{{j.operation}}</clr-dg-cell>
+            <clr-dg-cell>{{j.creation_time}}</clr-dg-cell>
+            <clr-dg-cell>{{j.update_time}}</clr-dg-cell>
+            <clr-dg-cell>
+              <a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK">
+                <clr-icon shape="clipboard"></clr-icon>
+              </a>
+            </clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}
+            {{pagination.totalItems}} {{'REPLICATION.ITEMS' | translate}}
+            <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
     </div>
 </div>`;

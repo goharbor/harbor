@@ -10,7 +10,6 @@ import { TAG_DIRECTIVES } from './tag/index';
 import { REPLICATION_DIRECTIVES } from './replication/index';
 import { CREATE_EDIT_RULE_DIRECTIVES } from './create-edit-rule/index';
 import { LIST_REPLICATION_RULE_DIRECTIVES } from './list-replication-rule/index';
-import { LIST_REPLICATION_JOB_DIRECTIVES } from './list-replication-job/index';
 
 import { CREATE_EDIT_ENDPOINT_DIRECTIVES } from './create-edit-endpoint/index';
 
@@ -137,7 +136,6 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     INLINE_ALERT_DIRECTIVES,
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
-    LIST_REPLICATION_JOB_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES
   ],
@@ -153,7 +151,6 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     INLINE_ALERT_DIRECTIVES,
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
-    LIST_REPLICATION_JOB_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES
   ],

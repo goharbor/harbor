@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
-import { ResponseOptions } from '@angular/http';
+import { ResponseOptions, RequestOptions } from '@angular/http';
 import { NgModel } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -23,8 +23,6 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
 import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
-
-import { State } from 'clarity-angular';
 
 import { toPromise } from '../utils';
 
@@ -142,13 +140,8 @@ export class ReplicationComponent implements OnInit {
      }
    }
 
-   fetchReplicationJobs(state?: State) { 
-     if(state && state.page) {
-       if(!state.page.to && state.page.to !== 0) {
-         return;
-       }
-       this.search.page = state.page.to + 1;
-     }
+   fetchReplicationJobs() { 
+          
      let params: RequestQueryParams = new RequestQueryParams();
      params.set('status', this.search.status);
      params.set('repository', this.search.repoName);
