@@ -22,9 +22,6 @@ import (
 	"time"
 )
 
-// ScanJobTable is the table name of scan jobs.
-const ScanJobTable = "img_scan_job"
-
 // AddScanJob ...
 func AddScanJob(job models.ScanJob) (int64, error) {
 	o := GetOrmer()
@@ -77,5 +74,5 @@ func scanJobQs(limit ...int) orm.QuerySeter {
 	if len(limit) == 1 {
 		l = limit[0]
 	}
-	return o.QueryTable(ScanJobTable).Limit(l)
+	return o.QueryTable(models.ScanJobTable).Limit(l)
 }

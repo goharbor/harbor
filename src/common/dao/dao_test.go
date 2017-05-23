@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -40,13 +39,6 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func clearTable(table string) error {
-	o := GetOrmer()
-	sql := fmt.Sprintf("delete from %s where 1=1", table)
-	_, err := o.Raw(sql).Exec()
-	return err
 }
 
 func clearUp(username string) {
@@ -1659,7 +1651,7 @@ func TestAddScanJob(t *testing.T) {
 	assert.Equal(sj1.Tag, r1.Tag)
 	assert.Equal(sj1.Status, r1.Status)
 	assert.Equal(sj1.Repository, r1.Repository)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 }
 
@@ -1685,7 +1677,7 @@ func TestGetScanJobs(t *testing.T) {
 	assert.Equal(1, len(r))
 	assert.Equal(sj2.Tag, r[0].Tag)
 	assert.Nil(err)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 }
 
@@ -1700,7 +1692,7 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	assert.Equal("newstatus", j.Status)
 	err = UpdateScanJobStatus(id+9, "newstatus")
 	assert.NotNil(err)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 
 }

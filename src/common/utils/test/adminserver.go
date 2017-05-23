@@ -129,3 +129,8 @@ func NewCapacityHandle() (func(http.ResponseWriter, *http.Request), error) {
 	}
 	return Handler(resp), nil
 }
+
+// GetDefaultConfigMap returns the defailt config map for easier modification.
+func GetDefaultConfigMap() map[string]interface{} {
+	return adminServerDefaultConfig
+}

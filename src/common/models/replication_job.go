@@ -28,6 +28,12 @@ const (
 	RepOpDelete string = "delete"
 	//UISecretCookie is the cookie name to contain the UI secret
 	UISecretCookie string = "secret"
+	//RepTargetTable is the table name for replication targets
+	RepTargetTable = "replication_target"
+	//RepJobTable is the table name for replication jobs
+	RepJobTable = "replication_job"
+	//RepPolicyTable is table name for replication policies
+	RepPolicyTable = "replication_policy"
 )
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
@@ -132,15 +138,15 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 
 //TableName is required by by beego orm to map RepTarget to table replication_target
 func (r *RepTarget) TableName() string {
-	return "replication_target"
+	return RepTargetTable
 }
 
 //TableName is required by by beego orm to map RepJob to table replication_job
 func (r *RepJob) TableName() string {
-	return "replication_job"
+	return RepJobTable
 }
 
 //TableName is required by by beego orm to map RepPolicy to table replication_policy
 func (r *RepPolicy) TableName() string {
-	return "replication_policy"
+	return RepPolicyTable
 }

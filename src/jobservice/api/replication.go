@@ -28,7 +28,6 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/job"
-	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 // ReplicationJob handles /api/replicationJobs /api/replicationJobs/:id/log
@@ -126,8 +125,10 @@ func (rj *ReplicationJob) addJob(repo string, policyID int64, operation string, 
 	if err != nil {
 		return err
 	}
+	repJob := job.NewRepJob(id)
+
 	log.Debugf("Send job to scheduler, job id: %d", id)
-	job.Schedule(id)
+	job.Schedule(repJob)
 	return nil
 }
 
@@ -153,11 +154,13 @@ func (rj *ReplicationJob) HandleAction() {
 		rj.RenderError(http.StatusInternalServerError, "Faild to get jobs to stop")
 		return
 	}
-	var jobIDList []int64
+	var repJobs []job.Job
 	for _, j := range jobs {
-		jobIDList = append(jobIDList, j.ID)
+		//transform the data record to job struct that can be handled by state machine.
+		repJob := job.NewRepJob(j.ID)
+		repJobs = append(repJobs, repJob)
 	}
-	job.WorkerPool.StopJobs(jobIDList)
+	job.WorkerPools[job.ReplicationType].StopJobs(repJobs)
 }
 
 // GetLog gets logs of the job
@@ -169,13 +172,8 @@ func (rj *ReplicationJob) GetLog() {
 		rj.RenderError(http.StatusBadRequest, "Invalid job id")
 		return
 	}
-	logFile, err := utils.GetJobLogPath(jid)
-	if err != nil {
-		log.Errorf("failed to get log path of job %s: %v", idStr, err)
-		rj.RenderError(http.StatusInternalServerError,
-			http.StatusText(http.StatusInternalServerError))
-		return
-	}
+	repJob := job.NewRepJob(jid)
+	logFile := repJob.LogPath()
 	rj.Ctx.Output.Download(logFile)
 }
 
@@ -191,9 +189,7 @@ func getRepoList(projectID int64) ([]string, error) {
 		if err != nil {
 			return repositories, err
 		}
-
 		req.AddCookie(&http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()})
-
 		resp, err := client.Do(req)
 		if err != nil {
 			return repositories, err
@@ -219,7 +215,6 @@ func getRepoList(projectID int64) ([]string, error) {
 		if err = json.Unmarshal(body, &list); err != nil {
 			return repositories, err
 		}
-
 		repositories = append(repositories, list...)
 
 		links := u.ParseLink(resp.Header.Get(http.CanonicalHeaderKey("link")))

@@ -15,29 +15,35 @@
 package job
 
 import (
-	"github.com/vmware/harbor/src/common/dao"
+	"fmt"
+
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/config"
 )
 
+// workerPool is a set of workers each worker is associate to a statemachine for handling jobs.
+// it consists of a channel for free workers and a list to all workers
 type workerPool struct {
+	poolType   Type
 	workerChan chan *Worker
 	workerList []*Worker
 }
 
-// WorkerPool is a set of workers each worker is associate to a statemachine for handling jobs.
-// it consists of a channel for free workers and a list to all workers
-var WorkerPool *workerPool
+// WorkerPools is a map contains workerpools for different types of jobs.
+var WorkerPools map[Type]*workerPool
+
+//TODO: remove the hard code?
+const maxScanWorker = 3
 
 // StopJobs accepts a list of jobs and will try to stop them if any of them is being executed by the worker.
-func (wp *workerPool) StopJobs(jobs []int64) {
+func (wp *workerPool) StopJobs(jobs []Job) {
 	log.Debugf("Works working on jobs: %v will be stopped", jobs)
-	for _, id := range jobs {
+	for _, j := range jobs {
 		for _, w := range wp.workerList {
-			if w.SM.JobID == id {
-				log.Debugf("found a worker whose job ID is %d, will try to stop it", id)
-				w.SM.Stop(id)
+			if w.SM.CurrentJob.ID() == j.ID() {
+				log.Debugf("found a worker whose job ID is %d, type: %v, will try to stop it", j.ID(), j.Type())
+				w.SM.Stop(j)
 			}
 		}
 	}
@@ -46,24 +52,31 @@ func (wp *workerPool) StopJobs(jobs []int64) {
 // Worker consists of a channel for job from which worker gets the next job to handle, and a pointer to a statemachine,
 // the actual work to handle the job is done via state machine.
 type Worker struct {
-	ID      int
-	RepJobs chan int64
-	SM      *SM
-	quit    chan bool
+	ID    int
+	Type  Type
+	Jobs  chan Job
+	queue chan *Worker
+	SM    *SM
+	quit  chan bool
+}
+
+// String ...
+func (w *Worker) String() string {
+	return fmt.Sprintf("{ID: %d, Type: %v}", w.ID, w.Type)
 }
 
 // Start is a loop worker gets id from its channel and handle it.
 func (w *Worker) Start() {
 	go func() {
 		for {
-			WorkerPool.workerChan <- w
+			w.queue <- w
 			select {
-			case jobID := <-w.RepJobs:
-				log.Debugf("worker: %d, will handle job: %d", w.ID, jobID)
-				w.handleRepJob(jobID)
+			case job := <-w.Jobs:
+				log.Debugf("worker: %v, will handle job: %v", w, job)
+				w.handle(job)
 			case q := <-w.quit:
 				if q {
-					log.Debugf("worker: %d, will stop.", w.ID)
+					log.Debugf("worker: %v, will stop.", w)
 					return
 				}
 			}
@@ -78,54 +91,57 @@ func (w *Worker) Stop() {
 	}()
 }
 
-func (w *Worker) handleRepJob(id int64) {
-	err := w.SM.Reset(id)
+func (w *Worker) handle(job Job) {
+	err := w.SM.Reset(job)
 	if err != nil {
-		log.Errorf("Worker %d, failed to re-initialize statemachine for job: %d, error: %v", w.ID, id, err)
-		err2 := dao.UpdateRepJobStatus(id, models.JobError)
+		log.Errorf("Worker %v, failed to re-initialize statemachine for job: %v, error: %v", w, job, err)
+		err2 := job.UpdateStatus(models.JobError)
 		if err2 != nil {
-			log.Errorf("Failed to update job status to ERROR, job: %d, error:%v", id, err2)
+			log.Errorf("Failed to update job status to ERROR, job: %v, error:%v", job, err2)
 		}
-		return
-	}
-	if w.SM.Parms.Enabled == 0 {
-		log.Debugf("The policy of job:%d is disabled, will cancel the job", id)
-		_ = dao.UpdateRepJobStatus(id, models.JobCanceled)
-		w.SM.Logger.Info("The job has been canceled")
-	} else {
-		w.SM.Start(models.JobRunning)
 	}
 }
 
 // NewWorker returns a pointer to new instance of worker
-func NewWorker(id int) *Worker {
+func NewWorker(id int, wp *workerPool) *Worker {
 	w := &Worker{
-		ID:      id,
-		RepJobs: make(chan int64),
-		quit:    make(chan bool),
-		SM:      &SM{},
+		ID:    id,
+		Jobs:  make(chan Job),
+		quit:  make(chan bool),
+		queue: wp.workerChan,
+		SM:    &SM{},
 	}
 	w.SM.Init()
 	return w
 }
 
-// InitWorkerPool create workers according to configuration.
-func InitWorkerPool() error {
-	n, err := config.MaxJobWorkers()
+// InitWorkerPools create worker pools for different types of jobs.
+func InitWorkerPools() error {
+	if len(WorkerPools) > 0 {
+		return fmt.Errorf("The WorkerPool map has been initialised")
+	}
+	maxRepWorker, err := config.MaxJobWorkers()
 	if err != nil {
 		return err
 	}
-	WorkerPool = &workerPool{
+	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker)
+	WorkerPools[ScanType] = createWorkerPool(maxScanWorker)
+	return nil
+}
+
+//createWorkerPool create workers according to parm
+func createWorkerPool(n int) *workerPool {
+	wp := &workerPool{
 		workerChan: make(chan *Worker, n),
 		workerList: make([]*Worker, 0, n),
 	}
 	for i := 0; i < n; i++ {
-		worker := NewWorker(i)
-		WorkerPool.workerList = append(WorkerPool.workerList, worker)
+		worker := NewWorker(i, wp)
+		wp.workerList = append(wp.workerList, worker)
 		worker.Start()
-		log.Debugf("worker %d started", worker.ID)
+		log.Debugf("worker %v started", worker)
 	}
-	return nil
+	return wp
 }
 
 // Dispatch will listen to the jobQueue of job service and try to pick a free worker from the worker pool and assign the job to it.
@@ -133,10 +149,10 @@ func Dispatch() {
 	for {
 		select {
 		case job := <-jobQueue:
-			go func(jobID int64) {
-				log.Debugf("Trying to dispatch job: %d", jobID)
-				worker := <-WorkerPool.workerChan
-				worker.RepJobs <- jobID
+			go func(job Job) {
+				log.Debugf("Trying to dispatch job: %v", job)
+				worker := <-WorkerPools[job.Type()].workerChan
+				worker.Jobs <- job
 			}(job)
 		}
 	}
