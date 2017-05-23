@@ -22,6 +22,8 @@ dpkg -l > package.list
 
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 
+Xvfb -ac :99 -screen 0 1280x1024x16 & export DISPLAY=:99
+
 if [ $DRONE_BRANCH = "master" ] && [ $DRONE_REPO = "vmware/harbor" ]; then
     pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif grep -q "\[full ci\]" <(drone build info vmware/harbor $DRONE_BUILD_NUMBER); then

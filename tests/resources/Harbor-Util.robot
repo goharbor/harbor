@@ -15,6 +15,7 @@
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 Library  Selenium2Library
+Library  OperatingSystem
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -42,7 +43,7 @@ Package Harbor Offline
 
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
-    [Arguments]  ${http_proxy}=https
+    [Arguments]  ${http_proxy}=http
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${output}
     ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
@@ -59,19 +60,15 @@ Prepare Cert
 		Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=true
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=false
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
-    Log To Console  ${rc}
+		Log To Console  ${rc}
 		Should Be Equal As Integers  ${rc}  0
     Sleep  30
 
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
-    ${chrome_switches} =         Create List          enable-logging       v=1
-		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
-    Open Browser  url=http://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
-    Set Window Size  1280  1024
+		Go To    http://localhost
     sleep  10
     ${title}=  Get Title
     Log To Console  ${title}
@@ -86,15 +83,12 @@ Sign In Harbor
 
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-		${chrome_switches} =         Create List          enable-logging       v=1
-		${phantom_cli} =         Create List          --web-security=no       --ssl-protocol=any       --ignore-ssl-errors=yes
-    ${desired_capabilities} =    Create Dictionary    chrome.switches=${chrome_switches}     platform=LINUX     phantomjs.binary.path=/go/phantomjs     phantomjs.cli.args=${phantom_cli}
-    Open Browser  url=https://localhost  browser=PhantomJS  remote_url=http://127.0.0.1:4444/wd/hub  desired_capabilities=${desired_capabilities}
-    Set Window Size  1920  1080
+		Go To    http://localhost
     sleep  10
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
+		Capture Page Screenshot
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
     sleep  3
     Input Text  xpath=//*[@id="username"]  ${username}
@@ -109,7 +103,7 @@ Create An New User
     sleep  1
     Input Text  xpath=//*[@id="comment"]  ${comment}
     sleep  2
-    Click button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[3]/button[2]
+    Click button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
     sleep  5
     Input Text  login_username  ${username}
     Input Text  login_password  ${newPassword}
@@ -117,7 +111,7 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-		Close Browser
+		sleep  2
 
 Logout Harbor
 		Wait Until Element Is Visible  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
