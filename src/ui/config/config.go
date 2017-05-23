@@ -91,7 +91,7 @@ func initKeyProvider() {
 
 func initSecretStore() {
 	m := map[string]string{}
-	m[secret.JobserviceUser] = JobserviceSecret()
+	m[JobserviceSecret()] = secret.JobserviceUser
 	SecretStore = secret.NewStore(m)
 }
 
