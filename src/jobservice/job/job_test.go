@@ -80,7 +80,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestRepJob(t *testing.T) {
-	t.Logf("TestRepJob ......")
 	rj := NewRepJob(repJobID)
 	assert := assert.New(t)
 	err := rj.Init()
@@ -93,11 +92,22 @@ func TestRepJob(t *testing.T) {
 	assert.Nil(err)
 	j, err := dao.GetRepJob(repJobID)
 	assert.Equal(models.JobRetrying, j.Status)
-	assert.Equal(0, rj.parm.Enabled)
+	assert.Equal(1, rj.parm.Enabled)
 	assert.True(rj.parm.Insecure)
 	rj2 := NewRepJob(99999)
 	err = rj2.Init()
 	assert.NotNil(err)
+}
+
+func TestStatusUpdater(t *testing.T) {
+	assert := assert.New(t)
+	rj := NewRepJob(repJobID)
+	su := &StatusUpdater{rj, models.JobFinished}
+	su.Enter()
+	su.Exit()
+	j, err := dao.GetRepJob(repJobID)
+	assert.Nil(err)
+	assert.Equal(models.JobFinished, j.Status)
 }
 
 func prepareRepJobData() error {
@@ -121,7 +131,7 @@ func prepareRepJobData() error {
 	}
 	policy := models.RepPolicy{
 		ProjectID:   1,
-		Enabled:     0,
+		Enabled:     1,
 		TargetID:    targetID,
 		Description: "whatever",
 		Name:        "mypolicy",
@@ -143,6 +153,7 @@ func prepareRepJobData() error {
 	repJobID = id
 	return nil
 }
+
 func clearRepJobData() error {
 	if err := dao.ClearTable(models.RepJobTable); err != nil {
 		return err
