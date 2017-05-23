@@ -211,11 +211,15 @@ func getRepoList(projectID int64) ([]string, error) {
 			return repositories, err
 		}
 
-		var list []string
+		var list []*struct {
+			Name string `json:"name"`
+		}
 		if err = json.Unmarshal(body, &list); err != nil {
 			return repositories, err
 		}
-		repositories = append(repositories, list...)
+		for _, repo := range list {
+			repositories = append(repositories, repo.Name)
+		}
 
 		links := u.ParseLink(resp.Header.Get(http.CanonicalHeaderKey("link")))
 		next = links.Next()

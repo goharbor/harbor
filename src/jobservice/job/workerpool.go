@@ -124,6 +124,7 @@ func InitWorkerPools() error {
 	if err != nil {
 		return err
 	}
+	WorkerPools = make(map[Type]*workerPool)
 	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker)
 	WorkerPools[ScanType] = createWorkerPool(maxScanWorker)
 	return nil
