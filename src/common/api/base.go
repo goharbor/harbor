@@ -64,7 +64,7 @@ func (b *BaseAPI) HandleUnauthorized() {
 
 // HandleForbidden ...
 func (b *BaseAPI) HandleForbidden(username string) {
-	log.Info("forbidden: %s", username)
+	log.Infof("forbidden: %s", username)
 	b.RenderError(http.StatusForbidden, "")
 }
 
