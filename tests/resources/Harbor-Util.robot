@@ -24,6 +24,10 @@ ${HARBOR_VERSION}  v1.1.1
 Install Harbor to Test Server
 		Log To Console  \nStart Docker Daemon
 		Start Docker Daemon Locally
+		Sleep  5s
+		${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0
+    Log To Console  \n${output}
     Log To Console  \nconfig harbor cfg
     Run Keywords  Config Harbor cfg
 		Run Keywords  Prepare Cert
@@ -32,6 +36,18 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
+
+Up Harbor
+		[Arguments]  ${with_notary}=true
+		${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary}
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+
+Down Harbor
+		[Arguments]  ${with_notary}=true
+		${rc}  ${output}=  Run And Return Rc And Output  make down -e NOTARYFLAG=${with_notary}
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
 		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=true
@@ -61,8 +77,14 @@ Prepare Cert
 
 Compile and Up Harbor With Source Code
     [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=false
+		${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
+    Log  ${output}
+		Should Be Equal As Integers  ${rc}  0
+		${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
+    Log  ${output}
+		Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
-		Log To Console  ${rc}
+		Log  ${output}
 		Should Be Equal As Integers  ${rc}  0
     Sleep  30
 

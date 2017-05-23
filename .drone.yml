@@ -11,7 +11,7 @@ pipeline:
     recursive: false
 
   integration-test-on-pr:
-    image: vmware/harbor-e2e-engine:1.30
+    image: vmware/harbor-e2e-engine:1.34
     pull: true
     privileged: true
     environment:
@@ -40,7 +40,7 @@ pipeline:
       success: true
 
   bundle:
-    image: vmware/harbor-e2e-engine:1.30
+    image: vmware/harbor-e2e-engine:1.34
     pull: true
     privileged: true
     environment:
@@ -65,7 +65,7 @@ pipeline:
     webhook: ${SLACK_URL}
     username: drone
     template: >
-      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status.
+      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.zip
     when:
       repo: vmware/harbor
       event: [ push, pull_request, tag ]

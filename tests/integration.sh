@@ -61,7 +61,7 @@ if [ -f "$outfile" ]; then
   echo "Download test logs:"
   echo "https://console.cloud.google.com/m/cloudstorage/b/harbor-ci-logs/o/$outfile?authuser=1"
   echo "----------------------------------------------"
-  gsutil -D setacl public-read gs://harbor-ci-logs/$outfile
+  gsutil -D setacl public-read gs://harbor-ci-logs/$outfile >/dev/null
 else
   echo "No log output file to upload"
 fi
