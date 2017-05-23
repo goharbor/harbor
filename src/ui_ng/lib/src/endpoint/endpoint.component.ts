@@ -163,13 +163,12 @@ export class EndpointComponent implements OnInit {
   }
 
   deleteTarget(target: Endpoint) {
-    console.log('Endpoint:' + JSON.stringify(target));
     if (target) {
       let targetId = target.id;
       let deletionMessage = new ConfirmationMessage(
         'REPLICATION.DELETION_TITLE_TARGET',
         'REPLICATION.DELETION_SUMMARY_TARGET',
-        target.name,
+        target.name || '',
         target.id,
         ConfirmationTargets.TARGET,
         ConfirmationButtons.DELETE_CANCEL);

@@ -54,6 +54,9 @@ describe('RecentLogComponent', () => {
       ]
     });
 
+  }));
+
+  beforeEach(()=>{
     fixture = TestBed.createComponent(RecentLogComponent);
     component = fixture.componentInstance;
     serviceConfig = TestBed.get(SERVICE_CONFIG);
@@ -63,8 +66,7 @@ describe('RecentLogComponent', () => {
       .and.returnValue(Promise.resolve(mockData));
 
     fixture.detectChanges();
-
-  }));
+  });
 
   it('should be created', () => {
     expect(component).toBeTruthy();
@@ -122,7 +124,7 @@ describe('RecentLogComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
 
-      expect(component.recentLogs.length).toEqual(2);
+      expect(component.recentLogs.length).toEqual(1);
     });
   }));
 

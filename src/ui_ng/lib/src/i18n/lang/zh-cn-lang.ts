@@ -253,6 +253,7 @@ export const ZH_CN_LANG: any = {
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
         "LOGS": "日志",
+        "OF": "共计",
         "ITEMS": "条记录",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",

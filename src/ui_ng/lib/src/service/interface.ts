@@ -75,8 +75,8 @@ export interface Tag extends Base {
 export interface Endpoint extends Base {
   endpoint: string;
   name: string;
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
   type: number;
 }
 
@@ -87,9 +87,9 @@ export interface Endpoint extends Base {
  * @interface ReplicationRule
  */
 export interface ReplicationRule extends Base {
-    project_id: number;
+    project_id: number | string;
     project_name: string;
-    target_id: number;
+    target_id: number | string;
     target_name: string;
     enabled: number;
     description?: string;
