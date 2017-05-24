@@ -16,29 +16,23 @@ package api
 
 import (
 	"net/http"
-
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 // InternalAPI handles request of harbor admin...
 type InternalAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 // Prepare validates the URL and parms
 func (ia *InternalAPI) Prepare() {
-	var currentUserID int
-	currentUserID = ia.ValidateUser()
-	isAdmin, err := dao.IsAdminRole(currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole:%v", err)
-		ia.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	ia.BaseController.Prepare()
+	if !ia.SecurityCtx.IsAuthenticated() {
+		ia.HandleUnauthorized()
+		return
 	}
-	if !isAdmin {
-		log.Error("Guests doesn't have the permisson to request harbor internal API.")
-		ia.CustomAbort(http.StatusForbidden, "Guests doesn't have the permisson to request harbor internal API.")
+	if !ia.SecurityCtx.IsSysAdmin() {
+		ia.HandleForbidden(ia.SecurityCtx.GetUsername())
+		return
 	}
 }
 
