@@ -21,17 +21,13 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
 //SystemInfoAPI handle requests for getting system info /api/systeminfo
 type SystemInfoAPI struct {
-	api.BaseAPI
-	currentUserID int
-	isAdmin       bool
+	BaseController
 }
 
 const defaultRootCert = "/etc/ui/ca/ca.crt"
@@ -63,23 +59,20 @@ type GeneralInfo struct {
 
 // validate for validating user if an admin.
 func (sia *SystemInfoAPI) validate() {
-	sia.currentUserID = sia.ValidateUser()
+	if !sia.SecurityCtx.IsAuthenticated() {
+		sia.HandleUnauthorized()
+		sia.StopRun()
+	}
 
-	var err error
-	sia.isAdmin, err = dao.IsAdminRole(sia.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole:%v", err)
-		sia.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	if !sia.SecurityCtx.IsSysAdmin() {
+		sia.HandleForbidden(sia.SecurityCtx.GetUsername())
+		sia.StopRun()
 	}
 }
 
 // GetVolumeInfo gets specific volume storage info.
 func (sia *SystemInfoAPI) GetVolumeInfo() {
 	sia.validate()
-	if !sia.isAdmin {
-		sia.RenderError(http.StatusForbidden, "User does not have admin role.")
-		return
-	}
 
 	capacity, err := config.AdminserverClient.Capacity()
 	if err != nil {
@@ -100,20 +93,17 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 //GetCert gets default self-signed certificate.
 func (sia *SystemInfoAPI) GetCert() {
 	sia.validate()
-	if sia.isAdmin {
-		if _, err := os.Stat(defaultRootCert); err == nil {
-			sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
-			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
-			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
-		} else if os.IsNotExist(err) {
-			log.Error("No certificate found.")
-			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
-		} else {
-			log.Errorf("Unexpected error: %v", err)
-			sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+	if _, err := os.Stat(defaultRootCert); err == nil {
+		sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
+		sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
+		http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
+	} else if os.IsNotExist(err) {
+		log.Error("No certificate found.")
+		sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+	} else {
+		log.Errorf("Unexpected error: %v", err)
+		sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-	sia.CustomAbort(http.StatusForbidden, "")
 }
 
 // GetGeneralInfo returns the general system info, which is to be called by anonymous user
