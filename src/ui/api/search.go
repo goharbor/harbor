@@ -168,7 +168,7 @@ func getTags(repository string) ([]string, error) {
 		return nil, err
 	}
 
-	tags, err := listTag(client)
+	tags, err := getSimpleTags(client)
 	if err != nil {
 		return nil, err
 	}

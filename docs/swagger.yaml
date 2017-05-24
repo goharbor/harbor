@@ -2195,12 +2195,30 @@ definitions:
   DetailedTag:
     type: object
     properties:
-      tag:
+      digest:
         type: string
-        description: The tag of image.
-      manifest:
+        description: The digest of the tag.
+      name:
+        type: string
+        description: The name of the tag.
+      architecture:
+        type: string
+        description: The architecture of the image.
+      os:
+        type: string
+        description: The os of the image.
+      docker_version:
+        type: string
+        description: The version of docker which builds the image.
+      author:
+        type: string
+        description: The author of the image.
+      created:
+        type: string
+        description: The build time of the image.
+      signature:
         type: object
-        description: The detail of manifest.
+        description: The signature of image, defined by RepoSignature. If it is null, the image is unsigned.
   Repository:
     type: object
     properties:

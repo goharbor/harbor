@@ -92,7 +92,7 @@ func TestGetReposTags(t *testing.T) {
 		assert.Equal(int(200), code, "httpStatusCode should be 200")
 		if tg, ok := tags.([]tagResp); ok {
 			assert.Equal(1, len(tg), fmt.Sprintf("there should be only one tag, but now %v", tg))
-			assert.Equal(tg[0].Tag, "latest", "the tag should be latest")
+			assert.Equal(tg[0].Name, "latest", "the tag should be latest")
 		} else {
 			t.Error("unexpected response")
 		}

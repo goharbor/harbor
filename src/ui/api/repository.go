@@ -15,6 +15,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -51,9 +52,19 @@ type repoResp struct {
 	UpdateTime   time.Time `json:"update_time"`
 }
 
+type tag struct {
+	Digest        string    `json:"digest"`
+	Name          string    `json:"name"`
+	Architecture  string    `json:"architecture"`
+	OS            string    `json:"os"`
+	DockerVersion string    `json:"docker_version"`
+	Author        string    `json:"author"`
+	Created       time.Time `json:"created"`
+}
+
 type tagResp struct {
-	Tag      string      `json:"tag"`
-	Manifest interface{} `json:"manifest"`
+	tag
+	Signature *notary.Target `json:"signature"`
 }
 
 type manifestResp struct {
@@ -205,22 +216,13 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	if config.WithNotary() {
-		var digest string
-		signedTags := make(map[string]struct{})
-		targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
-			ra.SecurityCtx.GetUsername(), repoName)
+		signedTags, err := getSignatures(ra.SecurityCtx.GetUsername(), repoName)
 		if err != nil {
-			log.Errorf("Failed to get Notary targets for repository: %s, error: %v", repoName, err)
-			log.Warningf("Failed to check signature status of repository: %s for deletion, there maybe orphaned targets in Notary.", repoName)
+			ra.HandleInternalServerError(fmt.Sprintf(
+				"failed to get signatures for repository %s: %v", repoName, err))
+			return
 		}
-		for _, tgt := range targets {
-			digest, err = notary.DigestFromTarget(tgt)
-			if err != nil {
-				log.Errorf("Failed to get disgest from target, error: %v", err)
-				ra.CustomAbort(http.StatusInternalServerError, err.Error())
-			}
-			signedTags[digest] = struct{}{}
-		}
+
 		for _, t := range tags {
 			digest, _, err := rc.ManifestExist(t)
 			if err != nil {
@@ -319,41 +321,113 @@ func (ra *RepositoryAPI) GetTags() {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
-	tags, err := listTag(client)
+
+	// get tags
+	tags, err := getDetailedTags(client)
 	if err != nil {
 		regErr, ok := err.(*registry_error.Error)
 		if !ok {
-			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			ra.HandleInternalServerError(fmt.Sprintf(
+				"failed to list tags of repository %s: %v", repoName, err))
+			return
 		}
-
-		ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+		ra.RenderError(regErr.StatusCode, regErr.Detail)
+		return
 	}
 
-	result := []tagResp{}
-
-	for _, tag := range tags {
-		manifest, err := getManifest(client, tag, "v1")
+	// get signatures
+	signatures := map[string]*notary.Target{}
+	if config.WithNotary() {
+		signatures, err = getSignatures(repoName, ra.SecurityCtx.GetUsername())
 		if err != nil {
-			if regErr, ok := err.(*registry_error.Error); ok {
-				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
-			}
-
-			log.Errorf("failed to get manifest of %s:%s: %v", repoName, tag, err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			ra.HandleInternalServerError(fmt.Sprintf(
+				"failed to get signatures of repository %s: %v", repoName, err))
+			return
 		}
-
-		result = append(result, tagResp{
-			Tag:      tag,
-			Manifest: manifest.Manifest,
-		})
 	}
 
-	ra.Data["json"] = result
+	// assemble the response
+	tagResps := []*tagResp{}
+	for _, tag := range tags {
+		tagResp := &tagResp{
+			tag: *tag,
+		}
+
+		// compare both digest and tag
+		if signature, ok := signatures[tag.Digest]; ok {
+			if tag.Name == signature.Tag {
+				tagResp.Signature = signature
+			}
+		}
+
+		tagResps = append(tagResps, tagResp)
+	}
+
+	ra.Data["json"] = tagResps
 	ra.ServeJSON()
 }
 
-func listTag(client *registry.Repository) ([]string, error) {
+// get tags of the repository, read manifest for every tag
+// and assemble necessary attrs(os, architecture, etc.) into
+// one struct
+func getDetailedTags(client *registry.Repository) ([]*tag, error) {
+	ts, err := getSimpleTags(client)
+	if err != nil {
+		return nil, err
+	}
+
+	list := []*tag{}
+
+	for _, t := range ts {
+		// the ignored manifest can be used to calculate the image size
+		digest, _, config, err := getV2Manifest(client, t)
+		if err != nil {
+			return nil, err
+		}
+
+		tag := &tag{}
+		if err = json.Unmarshal(config, tag); err != nil {
+			return nil, err
+		}
+
+		tag.Name = t
+		tag.Digest = digest
+
+		list = append(list, tag)
+	}
+
+	return list, nil
+}
+
+// get v2 manifest of tag, returns digest, manifest,
+// manifest config and error. The manifest config contains
+// architecture, os, author, etc.
+func getV2Manifest(client *registry.Repository, tag string) (
+	string, *schema2.DeserializedManifest, []byte, error) {
+	digest, _, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	manifest := &schema2.DeserializedManifest{}
+	if err = manifest.UnmarshalJSON(payload); err != nil {
+		return "", nil, nil, err
+	}
+
+	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	config, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	return digest, manifest, config, nil
+}
+
+// return tag name list for the repository
+func getSimpleTags(client *registry.Repository) ([]string, error) {
 	tags := []string{}
 
 	ts, err := client.ListTag()
@@ -541,4 +615,23 @@ func (ra *RepositoryAPI) GetSignatures() {
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
+}
+
+func getSignatures(repository, username string) (map[string]*notary.Target, error) {
+	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
+		username, repository)
+	if err != nil {
+		return nil, err
+	}
+
+	signatures := map[string]*notary.Target{}
+	for _, tgt := range targets {
+		digest, err := notary.DigestFromTarget(tgt)
+		if err != nil {
+			return nil, err
+		}
+		signatures[digest] = &tgt
+	}
+
+	return signatures, nil
 }
