@@ -36,4 +36,8 @@ type ProjectManager interface {
 	GetAll(query *models.QueryParam) ([]*models.Project, error)
 	// GetTotal returns the total count according to the query parameters
 	GetTotal(query *models.QueryParam) (int64, error)
+	// GetHasReadPerm returns a project list which the user has read
+	// permission of. The list should contains all public projects and
+	// projects which the user is a member of if the username is not nil
+	GetHasReadPerm(username ...string) ([]*models.Project, error)
 }

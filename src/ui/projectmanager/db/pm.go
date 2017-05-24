@@ -200,3 +200,13 @@ func (p *ProjectManager) GetTotal(query *models.QueryParam) (
 	int64, error) {
 	return dao.GetTotalOfProjects(query)
 }
+
+// GetHasReadPerm returns projects which are public or the user is a member of
+func (p *ProjectManager) GetHasReadPerm(username ...string) (
+	[]*models.Project, error) {
+	if len(username) == 0 || len(username[0]) == 0 {
+		return p.GetPublic()
+	}
+
+	return dao.GetHasReadPermProjects(username[0])
+}
