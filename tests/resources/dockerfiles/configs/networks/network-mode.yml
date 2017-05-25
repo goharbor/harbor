@@ -1,0 +1,31 @@
+version: "2"
+
+services:
+  my_container:
+    image: busybox
+    command: top
+  
+  bridge:
+    image: busybox
+    command: top
+    network_mode: bridge
+
+  service:
+    image: busybox
+    command: top
+    network_mode: "service:bridge"
+
+  container:
+    image: busybox
+    command: top
+    network_mode: "container:my_container"
+
+  host:
+    image: busybox
+    command: top
+    network_mode: host
+
+  none:
+    image: busybox
+    command: top
+    network_mode: none
