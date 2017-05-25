@@ -41,7 +41,7 @@ rc="$?"
 timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".zip"
 
-zip -9 $outfile output.xml log.html package.list *container-logs.zip *.log
+zip -9 $outfile output.xml log.html *.png package.list *container-logs.zip *.log
 
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
@@ -61,7 +61,7 @@ if [ -f "$outfile" ]; then
   echo "Download test logs:"
   echo "https://console.cloud.google.com/m/cloudstorage/b/harbor-ci-logs/o/$outfile?authuser=1"
   echo "----------------------------------------------"
-  gsutil -D setacl public-read gs://harbor-ci-logs/$outfile >/dev/null
+  gsutil -D setacl public-read gs://harbor-ci-logs/$outfile &> /dev/null
 else
   echo "No log output file to upload"
 fi
