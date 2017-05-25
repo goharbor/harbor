@@ -38,6 +38,18 @@ fi
 
 rc="$?"
 
+upload_build=false
+
+if [ $rc -eq 0 ]; then
+    echo "Package Harbor build."
+    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    mkdir -p bundle
+    cp harbor-offline-installer-*.tgz bundle
+    ls -la bundle
+    harbor_build=$(basename bundle/*)
+    upload_build=true
+fi
+
 timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".zip"
 
@@ -59,11 +71,22 @@ if [ -f "$outfile" ]; then
   gsutil cp $outfile gs://harbor-ci-logs
   echo "----------------------------------------------"
   echo "Download test logs:"
-  echo "https://console.cloud.google.com/m/cloudstorage/b/harbor-ci-logs/o/$outfile?authuser=1"
+  echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
   echo "----------------------------------------------"
   gsutil -D setacl public-read gs://harbor-ci-logs/$outfile &> /dev/null
 else
   echo "No log output file to upload"
+fi
+
+if [ $upload_build == true ]; then
+  gsutil cp $harbor_build gs://harbor-builds
+  echo "----------------------------------------------"
+  echo "Download harbor builds:"
+  echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
+  echo "----------------------------------------------"
+  gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
+else
+  echo "No harbor build to upload"
 fi
 
 if [ -f "$keyfile" ]; then
