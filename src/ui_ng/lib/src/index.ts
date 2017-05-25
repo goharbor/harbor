@@ -9,3 +9,4 @@ export * from './endpoint/index';
 export * from './repository/index';
 export * from './tag/index';
 export * from './replication/index';
+export * from './vulnerability-scanning/index';

@@ -435,6 +435,34 @@ export const EN_US_LANG: any = {
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
     },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "SCAN NOW",
+            "QUEUED": "Queued",
+            "ERROR": "Error",
+            "SCANNING": "Scanning",
+            "UNKNOWN": "Unknown"
+        },
+        "GRID": {
+            "PLACEHOLDER": "We couldn't find any scanning results!",
+            "COLUMN_ID": "Vulnerability",
+            "COLUMN_SEVERITY": "Severity",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_FIXED": "Fixed in version",
+            "COLUMN_LAYER": "Introduced in layer",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "CHART": {
+            "SCANNING_TIME": "Scan completed",
+            "SEVERITY_HIGH": "High severity",
+            "SEVERITY_MEDIUM": "Medium severity",
+            "SEVERITY_LOW": "Low severity",
+            "SEVERITY_UNKNOWN": "Unknown",
+            "SEVERITY_NONE": "No Vulnerabilities"
+        },
+    },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",
     "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action.",

@@ -73,11 +73,11 @@ export interface Tag extends Base {
  * @extends {Base}
  */
 export interface Endpoint extends Base {
-  endpoint: string;
-  name: string;
-  username?: string;
-  password?: string;
-  type: number;
+    endpoint: string;
+    name: string;
+    username?: string;
+    password?: string;
+    type: number;
 }
 
 /**
@@ -143,4 +143,32 @@ export interface SessionInfo {
     hasProjectAdminRole?: boolean;
     hasSignedIn?: boolean;
     registryUrl?: string;
+}
+
+//Not finalized yet
+export enum VulnerabilitySeverity {
+    LOW, MEDIUM, HIGH, UNKNOWN, NONE
+}
+
+export interface ScanningBaseResult {
+    id: string;
+    severity: VulnerabilitySeverity;
+    package: string;
+    version: string;
+}
+
+export interface ScanningDetailResult extends ScanningBaseResult {
+    fixedVersion: string;
+    layer: string;
+    description: string;
+}
+
+export interface ScanningResultSummary {
+    totalComponents: number;
+    noneComponents: number;
+    completeTimestamp: Date;
+    high: ScanningBaseResult[];
+    medium: ScanningBaseResult[];
+    low: ScanningBaseResult[];
+    unknown: ScanningBaseResult[];
 }

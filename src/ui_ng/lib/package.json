@@ -39,7 +39,8 @@
         "mutationobserver-shim": "^0.3.2",
         "@ngx-translate/core": "^6.0.0",
         "@ngx-translate/http-loader": "0.0.3",
-        "ngx-cookie": "^1.0.0"
+        "ngx-cookie": "^1.0.0",
+        "intl": "^1.2.5"
     },
     "devDependencies": {
         "@angular/cli": "^1.0.0",
