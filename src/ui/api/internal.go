@@ -38,7 +38,7 @@ func (ia *InternalAPI) Prepare() {
 
 // SyncRegistry ...
 func (ia *InternalAPI) SyncRegistry() {
-	err := SyncRegistry()
+	err := SyncRegistry(ia.ProjectMgr)
 	if err != nil {
 		ia.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
