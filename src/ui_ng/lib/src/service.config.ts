@@ -84,5 +84,13 @@ export interface IServiceConfig {
      * @type {boolean}
      * @memberOf IServiceConfig
      */
-    enablei18Support?: boolean
+    enablei18Support?: boolean;
+
+    /**
+     * The base endpoint of the service used to handle vulnerability scanning.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    vulnerabilityScanningBaseEndpoint?: string;
 }

@@ -18,6 +18,7 @@ import { SERVICE_CONFIG, IServiceConfig } from './service.config';
 import { CONFIRMATION_DIALOG_DIRECTIVES } from './confirmation-dialog/index';
 import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
 import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
+import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 
 import {
   AccessLogService,
@@ -29,7 +30,9 @@ import {
   RepositoryService,
   RepositoryDefaultService,
   TagService,
-  TagDefaultService
+  TagDefaultService,
+  ScanningResultService,
+  ScanningResultDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -82,7 +85,10 @@ export interface HarborModuleConfig {
   repositoryService?: Provider,
 
   //Service implementation for tag
-  tagService?: Provider
+  tagService?: Provider,
+
+  //Service implementation for vulnerability scanning
+  scanningService?: Provider
 }
 
 /**
@@ -116,7 +122,7 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     }
 
     translateService.use(selectedLang);
-     console.log('initConfig => ', translateService.currentLang);
+    console.log('initConfig => ', translateService.currentLang);
   };
 }
 
@@ -137,7 +143,8 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
-    DATETIME_PICKER_DIRECTIVES
+    DATETIME_PICKER_DIRECTIVES,
+    VULNERABILITY_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -152,7 +159,8 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     REPLICATION_DIRECTIVES,
     LIST_REPLICATION_RULE_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
-    DATETIME_PICKER_DIRECTIVES
+    DATETIME_PICKER_DIRECTIVES,
+    VULNERABILITY_DIRECTIVES
   ],
   providers: []
 })
@@ -169,6 +177,7 @@ export class HarborLibraryModule {
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
+        config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         //Do initializing
         TranslateService,
         {
@@ -191,7 +200,8 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
-        config.tagService || { provide: TagService, useClass: TagDefaultService }
+        config.tagService || { provide: TagService, useClass: TagDefaultService },
+        config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
       ]
     };
   }

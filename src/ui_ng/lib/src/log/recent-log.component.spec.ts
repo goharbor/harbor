@@ -12,7 +12,7 @@ import { ErrorHandler } from '../error-handler/index';
 import { SharedModule } from '../shared/shared.module';
 import { FilterComponent } from '../filter/filter.component';
 
-describe('RecentLogComponent', () => {
+describe('RecentLogComponent (inline template)', () => {
   let component: RecentLogComponent;
   let fixture: ComponentFixture<RecentLogComponent>;
   let serviceConfig: IServiceConfig;

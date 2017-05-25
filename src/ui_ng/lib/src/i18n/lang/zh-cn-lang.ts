@@ -435,6 +435,34 @@ export const ZH_CN_LANG: any = {
         "IN_PROGRESS": "搜索中...",
         "BACK": "返回"
     },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "开始扫描",
+            "QUEUED": "已入队列",
+            "ERROR": "错误",
+            "SCANNING": "扫描中",
+            "UNKNOWN": "未知"
+        },
+        "GRID": {
+            "PLACEHOLDER": "没有扫描结果！",
+            "COLUMN_ID": "缺陷码",
+            "COLUMN_SEVERITY": "严重度",
+            "COLUMN_PACKAGE": "组件",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_FIXED": "修复版本",
+            "COLUMN_LAYER": "引入层",
+            "FOOT_ITEMS": "项目",
+            "FOOT_OF": "总共"
+        },
+        "CHART": {
+            "SCANNING_TIME": "扫描完成",
+            "SEVERITY_HIGH": "严重",
+            "SEVERITY_MEDIUM": "中等",
+            "SEVERITY_LOW": "低",
+            "SEVERITY_UNKNOWN": "未知",
+            "SEVERITY_NONE": "无缺陷"
+        },
+    },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限。",
