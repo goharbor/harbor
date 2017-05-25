@@ -99,7 +99,7 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
- username varchar (32) NOT NULL,
+ user_id varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
@@ -114,6 +114,7 @@ create table repository (
  repository_id int NOT NULL AUTO_INCREMENT,
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
+ owner_id varchar (32) NOT NULL,
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,
