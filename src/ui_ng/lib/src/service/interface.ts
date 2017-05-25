@@ -12,30 +12,6 @@ export interface Base {
 }
 
 /**
- * Interface for tag history
- * 
- * @export
- * @interface TagCompatibility
- */
-export interface TagCompatibility {
-    v1Compatibility: string;
-}
-
-/**
- * Interface for tag manifest
- * 
- * @export
- * @interface TagManifest
- */
-export interface TagManifest {
-    schemaVersion: number;
-    name: string;
-    tag: string;
-    architecture: string;
-    history: TagCompatibility[];
-}
-
-/**
  * Interface for Repository
  * 
  * @export
@@ -59,10 +35,16 @@ export interface Repository extends Base {
  * @interface Tag
  * @extends {Base}
  */
+
 export interface Tag extends Base {
-    tag: string;
-    manifest: TagManifest;
-    signed?: number; //May NOT exist
+    digest: string;
+    name: string;
+    architecture: string;
+    os: string;
+    docker_version: string;
+    author: string;
+    created: Date;
+    signature?: string;
 }
 
 /**

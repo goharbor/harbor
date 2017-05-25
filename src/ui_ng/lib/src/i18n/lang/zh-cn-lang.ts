@@ -290,6 +290,7 @@ export const ZH_CN_LANG: any = {
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
+        "OF": "共计",
         "ITEMS": "条记录",
         "CREATED_SUCCESS": "成功创建目标。",
         "UPDATED_SUCCESS": "成功更新目标。",
@@ -299,8 +300,7 @@ export const ZH_CN_LANG: any = {
         "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。"
     },
     "REPOSITORY": {
-        "COPY_ID": "复制ID",
-        "COPY_PARENT_ID": "复制父级ID",
+        "COPY_DIGEST_ID": "复制摘要ID",
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",
@@ -324,6 +324,7 @@ export const ZH_CN_LANG: any = {
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
+        "OF": "共计",
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",

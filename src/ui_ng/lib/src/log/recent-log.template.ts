@@ -24,18 +24,18 @@ export const LOG_TEMPLATE: string = `
         </div>
     </div>
     <div>
-        <clr-datagrid>
-            <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
+        <clr-datagrid [clrDgLoading]="loading">
+            <clr-dg-column [clrDgField]="'username'">{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'repo_name'">{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'repo_tag'">{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'operation'">{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="opTimeComparator">{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
-                <clr-dg-cell>{{l.op_time}}</clr-dg-cell>
+                <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>{{ (recentLogs ? recentLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
         </clr-datagrid>
