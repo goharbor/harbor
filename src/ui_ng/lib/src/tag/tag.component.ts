@@ -26,30 +26,17 @@ import { Tag, SessionInfo } from '../service/interface';
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
 
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
 
 import { TranslateService } from '@ngx-translate/core';
 
-/**
- * Inteface for the tag view
- */
-export interface TagView {
-  tag: string;
-  pullCommand: string;
-  signed: number;
-  author: string;
-  created: Date;
-  dockerVersion: string;
-  architecture: string;
-  os: string;
-  id: string;
-  parent: string;
-}
+import { State, Comparator } from 'clarity-angular';
 
 @Component({
   selector: 'hbr-tag',
   template: TAG_TEMPLATE,
-  styles: [ TAG_STYLE ]
+  styles: [ TAG_STYLE ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagComponent implements OnInit {
 
@@ -59,7 +46,7 @@ export class TagComponent implements OnInit {
 
   hasProjectAdminRole: boolean;
 
-  tags: TagView[];
+  tags: Tag[];
 
   registryUrl: string;
   withNotary: boolean;
@@ -71,23 +58,12 @@ export class TagComponent implements OnInit {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
+  createdComparator: Comparator<Tag> = new CustomComparator<Tag>('created', 'date');
+
+  loading: boolean = false;
+
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
-
-  get initTagView() {
-    return {
-      tag: '',
-      pullCommand: '',
-      signed: -1,
-      author: '',
-      created: new Date(),
-      dockerVersion: '',
-      architecture: '',
-      os: '',
-      id: '',
-      parent: ''
-    };
-  }
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -99,12 +75,12 @@ export class TagComponent implements OnInit {
     if (message &&
         message.source === ConfirmationTargets.TAG
         && message.state === ConfirmationState.CONFIRMED) {
-        let tag = message.data;
+        let tag: Tag = message.data;
         if (tag) {
-            if (tag.signed) {
+            if (tag.signature) {
                 return;
             } else {
-                let tagName = tag.tag;
+                let tagName = tag.name;
                 toPromise<number>(this.tagService
                 .deleteTag(this.repoName, tagName))
                 .then(
@@ -141,49 +117,34 @@ export class TagComponent implements OnInit {
 
   retrieve() {
     this.tags = [];
+    this.loading = true;
     toPromise<Tag[]>(this.tagService
         .getTags(this.repoName))
-        .then(items => this.listTags(items))
-        .catch(error => this.errorHandler.error(error));
-  }
-  
-  listTags(tags: Tag[]): void {
-    tags.forEach(t => {
-      let tag = this.initTagView;
-      tag.tag = t.tag;
-      let data = JSON.parse(t.manifest.history[0].v1Compatibility);
-      tag.architecture = data['architecture'];
-      tag.author = data['author'];
-      if(!t.signed && t.signed !== 0) {
-        tag.signed = -1;
-      } else {
-        tag.signed = t.signed;  
-      }
-      tag.created = data['created'];
-      tag.dockerVersion = data['docker_version'];
-      tag.pullCommand = 'docker pull ' + this.registryUrl + '/' + t.manifest.name + ':' + t.tag;
-      tag.os = data['os'];
-      tag.id = data['id'];
-      tag.parent = data['parent'];
-      this.tags.push(tag);
-    });
+        .then(items => { 
+          this.tags = items;
+          this.loading = false;
+        })
+        .catch(error => {
+          this.errorHandler.error(error);
+          this.loading = false;
+        });
     let hnd = setInterval(()=>this.ref.markForCheck(), 100);
     setTimeout(()=>clearInterval(hnd), 1000);
   }
 
-  deleteTag(tag: TagView) {
+  deleteTag(tag: Tag) {
     if (tag) {
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-      if (tag.signed) {
+      if (tag.signature) {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
         buttons = ConfirmationButtons.CLOSE;
-        content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.tag;
+        content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.name;
       } else {
         titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
         summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
         buttons = ConfirmationButtons.DELETE_CANCEL;
-        content = tag.tag;
+        content = tag.name;
       }
       let message = new ConfirmationMessage(
         titleKey,
@@ -196,14 +157,14 @@ export class TagComponent implements OnInit {
     }
   }
 
-  showTagID(type: string, tag: TagView) {
+  showTagID(type: string, tag: Tag) {
     if(tag) {
       if(type === 'tag') {
         this.manifestInfoTitle = 'REPOSITORY.COPY_ID';
-        this.tagID = tag.id;
+        this.tagID = tag.digest;
       } else if(type === 'parent') {
         this.manifestInfoTitle = 'REPOSITORY.COPY_PARENT_ID';
-        this.tagID = tag.parent;
+        this.tagID = tag.digest;
       }
       this.showTagManifestOpened = true;
     }

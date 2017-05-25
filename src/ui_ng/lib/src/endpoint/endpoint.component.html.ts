@@ -16,10 +16,10 @@ export const ENDPOINT_TEMPLATE: string = `
             </div>
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <clr-datagrid>
-                <clr-dg-column>{{'DESTINATION.NAME' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'DESTINATION.URL' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
+            <clr-datagrid [clrDgLoading]="loading">
+                <clr-dg-column [clrDgField]="'name'">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'endpoint'">{{'DESTINATION.URL' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
                 <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                     <clr-dg-action-overflow>
                         <button class="action-item" (click)="editTarget(t)">{{'DESTINATION.TITLE_EDIT' | translate}}</button>
@@ -29,7 +29,11 @@ export const ENDPOINT_TEMPLATE: string = `
                     <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
                     <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
-                <clr-dg-footer>{{ (targets ? targets.length : 0) }} {{'DESTINATION.ITEMS' | translate}}</clr-dg-footer>
+                <clr-dg-footer>
+                  {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}
+                  {{pagination.totalItems}} {{'DESTINATION.ITEMS' | translate}}
+                  <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+                </clr-dg-footer>
             </clr-datagrid>
         </div>
     </div>

@@ -24,7 +24,9 @@ import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
 import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
 
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
+
+import { Comparator } from 'clarity-angular';
 
 import { REPLICATION_TEMPLATE } from './replication.component.html';
 import { REPLICATION_STYLE } from './replication.component.css';
@@ -81,8 +83,10 @@ export class ReplicationComponent implements OnInit {
    changedRules: ReplicationRule[];
    initSelectedId: number | string;
 
-   rules: ReplicationRule[];
-   jobs: ReplicationJob[];
+   rules: ReplicationRule[];   
+   loading: boolean;
+
+   jobs: ReplicationJob[];  
 
    jobsTotalRecordCount: number;
    jobsTotalPage: number;
@@ -93,23 +97,28 @@ export class ReplicationComponent implements OnInit {
    @ViewChild(CreateEditRuleComponent) 
    createEditPolicyComponent: CreateEditRuleComponent;
 
+   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
+   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
+
    constructor(
      private errorHandler: ErrorHandler,
      private replicationService: ReplicationService,
      private translateService: TranslateService) {
    }
 
-   ngOnInit(): void {
+   ngOnInit() {
      if(!this.projectId) {
        this.errorHandler.warning('Project ID is unset.');
      }
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
+
      this.retrieveRules();
    }
 
    retrieveRules(): void {
+     this.loading = true;
      toPromise<ReplicationRule[]>(this.replicationService
          .getReplicationRules(this.projectId, this.search.ruleName))
          .then(response=>{
@@ -122,8 +131,12 @@ export class ReplicationComponent implements OnInit {
                this.search.ruleId = this.changedRules[0].id || '';
                this.fetchReplicationJobs();
              }
+             this.loading = false;
            }
-         ).catch(error=>this.errorHandler.error(error));
+         ).catch(error=>{
+           this.errorHandler.error(error);
+           this.loading = false;
+         });
    } 
 
    openModal(): void {
@@ -147,13 +160,15 @@ export class ReplicationComponent implements OnInit {
      params.set('repository', this.search.repoName);
      params.set('start_time', this.search.startTimestamp);
      params.set('end_time', this.search.endTimestamp);
-
+     
      toPromise<ReplicationJob[]>(this.replicationService
        .getJobs(this.search.ruleId, params))
        .then(
          response=>{
            this.jobs = response;   
-         }).catch(error=>this.errorHandler.error(error));
+         }).catch(error=>{
+           this.errorHandler.error(error);
+         });
    }
 
    selectOneRule(rule: ReplicationRule) {
