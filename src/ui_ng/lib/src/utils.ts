@@ -3,6 +3,7 @@ import 'rxjs/add/operator/toPromise';
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
+import { Comparator } from 'clarity-angular';
 
 /**
  * Convert the different async channels to the Promise<T> type.
@@ -84,5 +85,37 @@ export function click(el: DebugElement | HTMLElement, eventObj: any = ButtonClic
     el.click();
   } else {
     el.triggerEventHandler('click', eventObj);
+  }
+}
+
+/**
+ * Comparator for fields with specific type.
+ *  
+ */
+export class CustomComparator<T> implements Comparator<T> {
+
+  fieldName: string;
+  type: string;
+
+  constructor(fieldName: string, type: string) {
+    this.fieldName = fieldName;
+    this.type = type;
+  }
+  
+  compare(a: {[key: string]: any| any[]}, b: {[key: string]: any| any[]}) {
+    let comp = 0;
+    if(a && b && a[this.fieldName] && b[this.fieldName]) {
+      let fieldA = a[this.fieldName];
+      let fieldB = b[this.fieldName];
+      switch(this.type) {
+      case "number": 
+        comp = fieldB - fieldA;
+        break;
+      case "date":
+        comp = new Date(fieldB).getTime() - new Date(fieldA).getTime();
+        break;
+      }
+    }
+    return comp;
   }
 }

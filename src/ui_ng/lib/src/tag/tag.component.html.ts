@@ -4,7 +4,7 @@ export const TAG_TEMPLATE = `
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
     <div class="row col-md-12">
-        <textarea rows="3" (click)="selectAndCopy($event)">{{tagID}}</textarea>
+        <textarea rows="3" (click)="selectAndCopy($event)">{{digestId}}</textarea>
     </div>
   </div>
   <div class="modal-footer">
@@ -12,36 +12,39 @@ export const TAG_TEMPLATE = `
   </div>
 </clr-modal>
 <h2 class="sub-header-title">{{repoName}}</h2>
-<clr-datagrid>
-    <clr-dg-column>{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
+<clr-datagrid [clrDgLoading]="loading">
+    <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.OS' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'architecture'">{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'os'">{{'REPOSITORY.OS' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
       <clr-dg-action-overflow>
-        <button class="action-item" (click)="showTagID('tag', t)">{{'REPOSITORY.COPY_ID' | translate}}</button>
-        <button class="action-item" (click)="showTagID('parent', t)">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</button>
+        <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
         <button class="action-item" [hidden]="!hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
       </clr-dg-action-overflow>
-      <clr-dg-cell>{{t.tag}}</clr-dg-cell>
-      <clr-dg-cell>{{t.pullCommand}}</clr-dg-cell>
-      <clr-dg-cell *ngIf="withNotary"  [ngSwitch]="t.signed">
-        <clr-icon shape="check" *ngSwitchCase="1" style="color: #1D5100;"></clr-icon>
-        <clr-icon shape="close" *ngSwitchCase="0" style="color: #C92100;"></clr-icon>
+      <clr-dg-cell>{{t.name}}</clr-dg-cell>
+      <clr-dg-cell>docker pull {{registryUrl}}/{{repoName}}:{{t.name}}</clr-dg-cell>
+      <clr-dg-cell *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
+        <clr-icon shape="check" *ngSwitchCase="true" style="color: #1D5100;"></clr-icon>
+        <clr-icon shape="close" *ngSwitchCase="false" style="color: #C92100;"></clr-icon>
         <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
           <clr-icon shape="help" style="color: #565656;" size="16"></clr-icon>
           <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
         </a>
       </clr-dg-cell>
       <clr-dg-cell>{{t.author}}</clr-dg-cell>
-      <clr-dg-cell>{{t.created}}</clr-dg-cell>
-      <clr-dg-cell>{{t.dockerVersion}}</clr-dg-cell>
+      <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{t.docker_version}}</clr-dg-cell>
       <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
       <clr-dg-cell>{{t.os}}</clr-dg-cell>
     </clr-dg-row>
-    <clr-dg-footer>{{tags ? tags.length : 0}} {{'REPOSITORY.ITEMS' | translate}}</clr-dg-footer>
+    <clr-dg-footer>
+      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
+      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
+      <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>  
+    </clr-dg-footer>
 </clr-datagrid>`;

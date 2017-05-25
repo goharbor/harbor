@@ -87,7 +87,7 @@ export class RepositoryDefaultService extends RepositoryService {
             return Promise.reject('Bad argument');
         }
         let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
-        url = `${url}/${repositoryName}/tags`;
+        url = `${url}/${repositoryName}`;
 
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
