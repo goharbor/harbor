@@ -23,7 +23,7 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
-		Go To    http://10.112.122.5
+		Go To    http://localhost
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
@@ -38,7 +38,7 @@ Sign In Harbor
 
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-		Go To    http://10.112.122.5
+		Go To    http://localhost
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
