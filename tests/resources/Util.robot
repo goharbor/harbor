@@ -29,6 +29,7 @@ Resource  Github-Util.robot
 Resource  Harbor-Util.robot
 Resource  Harbor-Pages/HomePage.robot
 Resource  Harbor-Pages/Project.robot
+Resource  Harbor-Pages/UserProfile.robot
 Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot

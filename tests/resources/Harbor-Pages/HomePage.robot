@@ -23,7 +23,7 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
-		Go To    http://localhost
+		Go To    http://10.112.122.5
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
@@ -38,7 +38,7 @@ Sign In Harbor
 
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-		Go To    http://localhost
+		Go To    http://10.112.122.5
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
@@ -67,11 +67,3 @@ Create An New User
     sleep  5
     Wait Until Page Contains  ${username}
 		sleep  2
-
-Logout Harbor
-		Wait Until Element Is Visible  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-		Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/div/div/a[4]
-    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//*[@id="pop_repo"]/top-repo/div/div[1]/h3
