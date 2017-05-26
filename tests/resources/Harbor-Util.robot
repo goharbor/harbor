@@ -87,4 +87,4 @@ Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
 		Log  ${output}
 		Should Be Equal As Integers  ${rc}  0
-    Sleep  10
+    Sleep  20

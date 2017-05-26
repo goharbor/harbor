@@ -16,6 +16,15 @@ Test Case - Sign With Admin
     Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Close Browser
 
+Test Case - Update Password
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Change Password  Test1@34  Test12#4
+    Logout Harbor
+    Sign In Harbor  tester${d}  Test12#4
+    Close Browser
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
