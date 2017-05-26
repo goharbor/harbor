@@ -5,7 +5,7 @@ Suite Setup  Start Docker Daemon Locally
 Default Tags  regression
 
 *** Test Cases ***
-Test Case - Create An New User
+Test Case - Sign in and out
     Init Chrome Driver
     Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Logout Harbor

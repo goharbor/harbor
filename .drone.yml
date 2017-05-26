@@ -21,7 +21,7 @@ pipeline:
       LOG_TEMP_DIR: install-logs
       GITHUB_AUTOMATION_API_KEY:  ${GITHUB_AUTOMATION_API_KEY}
       DRONE_SERVER:  ${DRONE_SERVER}
-      DRONE_TOKEN:  ${DRONE_TOKEN}
+      DRONE_TOKEN:  ${DRONE_TOKEN_INTE}
       TEST_URL_ARRAY:  ${TEST_URL_ARRAY}
       TEST_USERNAME:  ${TEST_USERNAME}
       TEST_PASSWORD:  ${TEST_PASSWORD}
@@ -98,4 +98,17 @@ pipeline:
       repo: vmware/harbor
       event: [ push, tag ]
       branch: [ refs/tags/* ]
+      status: success
+
+  trigger:
+    image: plugins/downstream
+    server: https://ci.vcna.io
+    token: ${DOWNSTREAM_TOKEN}
+    fork: true
+    repositories:
+       - vmware/vic-product
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ master, drone ]
       status: success

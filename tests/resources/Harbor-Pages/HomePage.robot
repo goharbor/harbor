@@ -24,7 +24,7 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${user}  ${pw}
 		Go To    http://localhost
-    sleep  10
+    sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
@@ -39,7 +39,7 @@ Sign In Harbor
 Create An New User
     [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
 		Go To    http://localhost
-    sleep  10
+    sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
