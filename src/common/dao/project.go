@@ -183,7 +183,7 @@ func SearchProjects(userID int) ([]*models.Project, error) {
 
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
-func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
+func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 
 	var (
 		owner  string
@@ -203,7 +203,7 @@ func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
 		}
 	}
 
-	sql, params := queryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role)
 
 	sql = `select count(*) ` + sql
 
@@ -213,7 +213,7 @@ func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
 }
 
 // GetProjects returns a project list according to the query conditions
-func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
+func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 
 	var (
 		owner  string
@@ -239,7 +239,7 @@ func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
 		}
 	}
 
-	sql, params := queryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role)
 
 	sql = `select distinct p.project_id, p.name, p.public, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
@@ -258,7 +258,7 @@ func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
 	return projects, err
 }
 
-func queryConditions(owner, name string, public *bool, member string,
+func projectQueryConditions(owner, name string, public *bool, member string,
 	role int) (string, []interface{}) {
 	params := []interface{}{}
 

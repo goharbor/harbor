@@ -106,12 +106,12 @@ func (f *fakePM) Update(projectIDOrName interface{}, project *models.Project) er
 }
 
 // nil implement
-func (f *fakePM) GetAll(*models.QueryParam) ([]*models.Project, error) {
+func (f *fakePM) GetAll(*models.ProjectQueryParam) ([]*models.Project, error) {
 	return []*models.Project{}, nil
 }
 
 // nil implement
-func (f *fakePM) GetTotal(*models.QueryParam) (int64, error) {
+func (f *fakePM) GetTotal(*models.ProjectQueryParam) (int64, error) {
 	return 0, nil
 }
 

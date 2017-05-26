@@ -53,7 +53,7 @@ func (s *StatisticAPI) Prepare() {
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
 	t := true
-	n, err := dao.GetTotalOfProjects(&models.QueryParam{
+	n, err := dao.GetTotalOfProjects(&models.ProjectQueryParam{
 		Public: &t,
 	})
 	if err != nil {
@@ -99,7 +99,7 @@ func (s *StatisticAPI) Get() {
 			log.Errorf("failed to get user %d: %v", s.userID, err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		n, err := dao.GetTotalOfProjects(&models.QueryParam{
+		n, err := dao.GetTotalOfProjects(&models.ProjectQueryParam{
 			Member: &models.Member{
 				Name: user.Username,
 			},

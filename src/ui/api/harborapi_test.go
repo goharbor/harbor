@@ -226,20 +226,14 @@ func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	return httpStatusCode, successPayload, err
 }
 
-func (a testapi) LogGet(user usrInfo, startTime, endTime, lines string) (int, []apilib.AccessLog, error) {
+func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
 	path := "/api/logs/"
 	fmt.Printf("logs path: %s\n", path)
 	_sling = _sling.Path(path)
-	type QueryParams struct {
-		StartTime string `url:"start_time,omitempty"`
-		EndTime   string `url:"end_time,omitempty"`
-		Lines     string `url:"lines,omitempty"`
-	}
 
-	_sling = _sling.QueryStruct(&QueryParams{StartTime: startTime, EndTime: endTime, Lines: lines})
 	var successPayload []apilib.AccessLog
 	code, body, err := request(_sling, jsonAcceptHeader, user)
 	if 200 == code && nil == err {

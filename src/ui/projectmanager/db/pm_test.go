@@ -229,14 +229,14 @@ func TestGetTotal(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	total, err := pm.GetTotal(&models.QueryParam{
+	total, err := pm.GetTotal(&models.ProjectQueryParam{
 		Name: "get_total_test",
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), total)
 
 	// get by owner
-	total, err = pm.GetTotal(&models.QueryParam{
+	total, err = pm.GetTotal(&models.ProjectQueryParam{
 		Owner: "admin",
 	})
 	assert.Nil(t, err)
@@ -244,7 +244,7 @@ func TestGetTotal(t *testing.T) {
 
 	// get by public
 	value := true
-	total, err = pm.GetTotal(&models.QueryParam{
+	total, err = pm.GetTotal(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	assert.Nil(t, err)
@@ -263,14 +263,14 @@ func TestGetAll(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	projects, err := pm.GetAll(&models.QueryParam{
+	projects, err := pm.GetAll(&models.ProjectQueryParam{
 		Name: "get_all_test",
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, id, projects[0].ProjectID)
 
 	// get by owner
-	projects, err = pm.GetAll(&models.QueryParam{
+	projects, err = pm.GetAll(&models.ProjectQueryParam{
 		Owner: "admin",
 	})
 	assert.Nil(t, err)
@@ -285,7 +285,7 @@ func TestGetAll(t *testing.T) {
 
 	// get by public
 	value := true
-	projects, err = pm.GetAll(&models.QueryParam{
+	projects, err = pm.GetAll(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	assert.Nil(t, err)
