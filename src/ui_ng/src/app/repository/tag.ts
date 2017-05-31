@@ -11,30 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
- {
-    "tag": "latest",
-    "manifest": {
-      "schemaVersion": 1,
-      "name": "library/photon",
-      "tag": "latest",
-      "architecture": "amd64",
-      "history": []
-    },
-
-*/
 export class Tag {
-  tag: string;
-  manifest: {
-    schemaVersion: number;
-    name: string;
-    tag: string;
-    architecture: string;
-    history: [
-      {
-        v1Compatibility: string;
-      }
-    ];
-  };
-  signed: number;
+  digest: string;
+  name: string;
+  architecture: string;
+  os: string;
+  docker_version: string;
+  author: string;
+  created: Date;
+  signature?: {[key: string]: any | any[]}
 }

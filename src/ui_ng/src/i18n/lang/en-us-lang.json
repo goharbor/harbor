@@ -300,8 +300,7 @@
         "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use."
     },
     "REPOSITORY": {
-        "COPY_ID": "Copy ID",
-        "COPY_PARENT_ID": "Copy Parent ID",
+        "COPY_DIGEST_ID": "Copy Digest ID",
         "DELETE": "Delete",
         "NAME": "Name",
         "TAGS_COUNT": "Tags",
