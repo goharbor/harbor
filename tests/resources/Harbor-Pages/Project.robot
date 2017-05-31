@@ -34,6 +34,24 @@ Create An New Project
 		Wait Until Page Contains  Project Admin
 		Capture Page Screenshot
 
+Create An New Public Project
+		[Arguments]  ${projectname}
+		sleep  1
+		Click Button  css=.btn
+		sleep  1
+		Log To Console  Project Name: ${projectname}
+		Input Text  css=#create_project_name  ${projectname}
+		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/div[2]/div[1]/create-project/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div/label
+		Click Element  css=html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
+		sleep  2
+		Wait Until Page Contains  ${projectname}
+		Wait Until Page Contains  Project Admin
+		Capture Page Screenshot
+
 Switch To Log
 		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
+		sleep  1
+
+Back To projects
+		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
 		sleep  1
