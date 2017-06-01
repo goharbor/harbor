@@ -60,6 +60,7 @@ else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
 rc="$?"
+echo $rc
 
 timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".zip"
