@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/vmware/harbor/src/common/api"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -31,10 +31,8 @@ import (
 
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
-	api.BaseAPI
-	userID      int
-	projectID   int64
-	projectName string
+	BaseController
+	project *models.Project
 }
 
 type projectReq struct {
@@ -49,33 +47,41 @@ const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
-	idStr := p.Ctx.Input.Param(":id")
-	if len(idStr) > 0 {
-		var err error
-		p.projectID, err = strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
-			p.CustomAbort(http.StatusBadRequest, "invalid project id")
+	p.BaseController.Prepare()
+	if len(p.GetStringFromPath(":id")) != 0 {
+		id, err := p.GetInt64FromPath(":id")
+		if err != nil || id <= 0 {
+			text := "invalid project ID: "
+			if err != nil {
+				text += err.Error()
+			} else {
+				text += fmt.Sprintf("%d", id)
+			}
+			p.HandleBadRequest(text)
+			return
 		}
 
-		project, err := dao.GetProjectByID(p.projectID)
+		project, err := p.ProjectMgr.Get(id)
 		if err != nil {
-			log.Errorf("failed to get project %d: %v", p.projectID, err)
-			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			p.HandleInternalServerError(fmt.Sprintf("failed to get project %d: %v",
+				id, err))
+			return
 		}
+
 		if project == nil {
-			p.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", p.projectID))
+			p.HandleNotFound(fmt.Sprintf("project %d not found", id))
+			return
 		}
-		p.projectName = project.Name
+
+		p.project = project
 	}
 }
 
 // Post ...
 func (p *ProjectAPI) Post() {
-	p.userID = p.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(p.userID)
-	if err != nil {
-		log.Errorf("Failed to check admin role: %v", err)
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
 	}
 
 	onlyAdmin, err := config.OnlyAdminCreateProject()
@@ -83,31 +89,36 @@ func (p *ProjectAPI) Post() {
 		log.Errorf("failed to determine whether only admin can create projects: %v", err)
 		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-	if !isSysAdmin && onlyAdmin {
+	if onlyAdmin && !p.SecurityCtx.IsSysAdmin() {
 		log.Errorf("Only sys admin can create project")
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
 		return
 	}
-	var req projectReq
-	p.DecodeJSONReq(&req)
-	public := req.Public
-	err = validateProjectReq(req)
+	var pro projectReq
+	p.DecodeJSONReq(&pro)
+	err = validateProjectReq(pro)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
 		return
 	}
-	projectName := req.ProjectName
-	exist, err := dao.ProjectExists(projectName)
+
+	exist, err := p.ProjectMgr.Exist(pro.ProjectName)
 	if err != nil {
-		log.Errorf("Error happened checking project existence in db, error: %v, project name: %s", err, projectName)
+		p.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			pro.ProjectName, err))
+		return
 	}
 	if exist {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
-	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
-	projectID, err := dao.AddProject(project)
+
+	projectID, err := p.ProjectMgr.Create(&models.Project{
+		Name:      pro.ProjectName,
+		Public:    pro.Public,
+		OwnerName: p.SecurityCtx.GetUsername(),
+	})
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
 		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
@@ -120,26 +131,16 @@ func (p *ProjectAPI) Post() {
 	}
 
 	go func() {
-		user, err := dao.GetUser(models.User{
-			UserID: p.userID,
-		})
-		if err != nil {
-			log.Errorf("failed to get user by ID %d: %v", p.userID, err)
-			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		accessLog := models.AccessLog{
-			Username:  user.Username,
-			ProjectID: projectID,
-			RepoName:  project.Name + "/",
-			RepoTag:   "N/A",
-			GUID:      "N/A",
-			Operation: "create",
-			OpTime:    time.Now(),
-		}
-		if err = dao.AddAccessLog(accessLog); err != nil {
+		if err = dao.AddAccessLog(
+			models.AccessLog{
+				Username:  p.SecurityCtx.GetUsername(),
+				ProjectID: projectID,
+				RepoName:  pro.ProjectName + "/",
+				RepoTag:   "N/A",
+				Operation: "create",
+				OpTime:    time.Now(),
+			}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 	}()
 
@@ -148,95 +149,84 @@ func (p *ProjectAPI) Post() {
 
 // Head ...
 func (p *ProjectAPI) Head() {
-	projectName := p.GetString("project_name")
-	if len(projectName) == 0 {
-		p.CustomAbort(http.StatusBadRequest, "project_name is needed")
-	}
-
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		log.Errorf("error occurred in GetProjectByName: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	// only public project can be Headed by user without login
-	if project != nil && project.Public == 1 {
+	name := p.GetString("project_name")
+	if len(name) == 0 {
+		p.HandleBadRequest("project_name is needed")
 		return
 	}
 
-	_ = p.ValidateUser()
+	project, err := p.ProjectMgr.Get(name)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get project %s: %v",
+			name, err))
+		return
+	}
+
 	if project == nil {
-		p.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		p.HandleNotFound(fmt.Sprintf("project %s not found", name))
+		return
 	}
 }
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	project, err := dao.GetProjectByID(p.projectID)
-	if err != nil {
-		log.Errorf("failed to get project %d: %v", p.projectID, err)
-		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+	if p.project.Public == 0 {
+		if !p.SecurityCtx.IsAuthenticated() {
+			p.HandleUnauthorized()
+			return
+		}
 
-	if project.Public == 0 {
-		userID := p.ValidateUser()
-		if !checkProjectPermission(userID, p.projectID) {
-			p.CustomAbort(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
+			p.HandleForbidden(p.SecurityCtx.GetUsername())
+			return
 		}
 	}
 
-	p.Data["json"] = project
+	p.Data["json"] = p.project
 	p.ServeJSON()
 }
 
 // Delete ...
 func (p *ProjectAPI) Delete() {
-	if p.projectID == 0 {
-		p.CustomAbort(http.StatusBadRequest, "project ID is required")
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
 	}
 
-	userID := p.ValidateUser()
-
-	if !hasProjectAdminRole(userID, p.projectID) {
-		p.CustomAbort(http.StatusForbidden, "")
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
+		p.HandleForbidden(p.SecurityCtx.GetUsername())
+		return
 	}
 
-	contains, err := projectContainsRepo(p.projectName)
+	contains, err := projectContainsRepo(p.project.Name)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any repository: %v", p.projectName, err)
+		log.Errorf("failed to check whether project %s contains any repository: %v", p.project.Name, err)
 		p.CustomAbort(http.StatusInternalServerError, "")
 	}
 	if contains {
 		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
 	}
 
-	contains, err = projectContainsPolicy(p.projectID)
+	contains, err = projectContainsPolicy(p.project.ProjectID)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any policy: %v", p.projectName, err)
+		log.Errorf("failed to check whether project %s contains any policy: %v", p.project.Name, err)
 		p.CustomAbort(http.StatusInternalServerError, "")
 	}
 	if contains {
 		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
 	}
 
-	if err = dao.DeleteProject(p.projectID); err != nil {
-		log.Errorf("failed to delete project %d: %v", p.projectID, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
+		p.HandleInternalServerError(
+			fmt.Sprintf("failed to delete project %d: %v", p.project.ProjectID, err))
+		return
 	}
 
 	go func() {
-		user, err := dao.GetUser(models.User{
-			UserID: userID,
-		})
-		if err != nil {
-			log.Errorf("failed to get user by ID %d: %v", userID, err)
-			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
 		if err := dao.AddAccessLog(models.AccessLog{
-			Username:  user.Username,
-			ProjectID: p.projectID,
-			RepoName:  p.projectName + "/",
+			Username:  p.SecurityCtx.GetUsername(),
+			ProjectID: p.project.ProjectID,
+			RepoName:  p.project.Name + "/",
 			RepoTag:   "N/A",
 			Operation: "delete",
 			OpTime:    time.Now(),
@@ -265,139 +255,134 @@ func projectContainsPolicy(id int64) (bool, error) {
 }
 
 // List ...
+// TODO refacter pattern to:
+// /api/repositories?owner=xxx&name=xxx&public=true&member=xxx&role=1&page=1&size=3
 func (p *ProjectAPI) List() {
-	var total int64
-	var public int
-	var err error
+	query := &models.QueryParam{}
 
-	page, pageSize := p.GetPaginationParams()
-
-	var projectList []models.Project
-	projectName := p.GetString("project_name")
-
-	isPublic := p.GetString("is_public")
-	if len(isPublic) > 0 {
-		public, err = strconv.Atoi(isPublic)
-		if err != nil {
-			log.Errorf("Error parsing public property: %v, error: %v", isPublic, err)
-			p.CustomAbort(http.StatusBadRequest, "invalid project Id")
+	query.Name = p.GetString("project_name")
+	public := p.GetString("is_public")
+	if len(public) != 0 {
+		if public != "0" && public != "1" {
+			p.HandleBadRequest("is_public should be 0 or 1")
+			return
+		}
+		if public == "1" {
+			t := true
+			query.Public = &t
 		}
 	}
-	isAdmin := false
-	if public == 1 {
-		total, err = dao.GetTotalOfProjects(projectName, 1)
-		if err != nil {
-			log.Errorf("failed to get total of projects: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, "")
-		}
-		projectList, err = dao.GetProjects(projectName, 1, pageSize, pageSize*(page-1))
-		if err != nil {
-			log.Errorf("failed to get projects: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, "")
-		}
-	} else {
+
+	if query.Public == nil || *query.Public == false {
 		//if the request is not for public projects, user must login or provide credential
-		p.userID = p.ValidateUser()
-		isAdmin, err = dao.IsAdminRole(p.userID)
-		if err != nil {
-			log.Errorf("Error occured in check admin, error: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		if !p.SecurityCtx.IsAuthenticated() {
+			p.HandleUnauthorized()
+			return
 		}
-		if isAdmin {
-			total, err = dao.GetTotalOfProjects(projectName)
-			if err != nil {
-				log.Errorf("failed to get total of projects: %v", err)
-				p.CustomAbort(http.StatusInternalServerError, "")
-			}
-			projectList, err = dao.GetProjects(projectName, pageSize, pageSize*(page-1))
-			if err != nil {
-				log.Errorf("failed to get projects: %v", err)
-				p.CustomAbort(http.StatusInternalServerError, "")
-			}
-		} else {
-			total, err = dao.GetTotalOfUserRelevantProjects(p.userID, projectName)
-			if err != nil {
-				log.Errorf("failed to get total of projects: %v", err)
-				p.CustomAbort(http.StatusInternalServerError, "")
-			}
-			projectList, err = dao.GetUserRelevantProjects(p.userID, projectName, pageSize, pageSize*(page-1))
-			if err != nil {
-				log.Errorf("failed to get projects: %v", err)
-				p.CustomAbort(http.StatusInternalServerError, "")
+
+		if !p.SecurityCtx.IsSysAdmin() {
+			query.Member = &models.Member{
+				Name: p.SecurityCtx.GetUsername(),
 			}
 		}
 	}
 
-	for i := 0; i < len(projectList); i++ {
-		if public != 1 {
-			roles, err := dao.GetUserProjectRoles(p.userID, projectList[i].ProjectID)
+	total, err := p.ProjectMgr.GetTotal(query)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get total of projects: %v", err))
+		return
+	}
+
+	page, size := p.GetPaginationParams()
+	query.Pagination = &models.Pagination{
+		Page: page,
+		Size: size,
+	}
+
+	projects, err := p.ProjectMgr.GetAll(query)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v", err))
+		return
+	}
+
+	for _, project := range projects {
+		if query.Public == nil || *query.Public == false {
+			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
 			if err != nil {
-				log.Errorf("failed to get user's project role: %v", err)
-				p.CustomAbort(http.StatusInternalServerError, "")
-			}
-			if len(roles) != 0 {
-				projectList[i].Role = roles[0].RoleID
+				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",
+					p.SecurityCtx.GetUsername(), project.ProjectID, err))
+				return
 			}
 
-			if projectList[i].Role == models.PROJECTADMIN ||
-				isAdmin {
-				projectList[i].Togglable = true
+			if len(roles) != 0 {
+				project.Role = roles[0]
+			}
+
+			if project.Role == common.RoleProjectAdmin ||
+				p.SecurityCtx.IsSysAdmin() {
+				project.Togglable = true
 			}
 		}
 
-		repos, err := dao.GetRepositoryByProjectName(projectList[i].Name)
+		repos, err := dao.GetRepositoryByProjectName(project.Name)
 		if err != nil {
-			log.Errorf("failed to get repositories of project %s: %v", projectList[i].Name, err)
+			log.Errorf("failed to get repositories of project %s: %v", project.Name, err)
 			p.CustomAbort(http.StatusInternalServerError, "")
 		}
 
-		projectList[i].RepoCount = len(repos)
+		project.RepoCount = len(repos)
 	}
 
-	p.SetPaginationHeader(total, page, pageSize)
-	p.Data["json"] = projectList
+	p.SetPaginationHeader(total, page, size)
+	p.Data["json"] = projects
 	p.ServeJSON()
 }
 
 // ToggleProjectPublic ...
 func (p *ProjectAPI) ToggleProjectPublic() {
-	p.userID = p.ValidateUser()
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
+	}
+
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
+		p.HandleForbidden(p.SecurityCtx.GetUsername())
+		return
+	}
+
 	var req projectReq
-
-	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
-	if err != nil {
-		log.Errorf("Error parsing project id: %d, error: %v", projectID, err)
-		p.RenderError(http.StatusBadRequest, "invalid project id")
-		return
-	}
-
 	p.DecodeJSONReq(&req)
-	public := req.Public
-	if !isProjectAdmin(p.userID, projectID) {
-		log.Warningf("Current user, id: %d does not have project admin role for project, id: %d", p.userID, projectID)
-		p.RenderError(http.StatusForbidden, "")
+	if req.Public != 0 && req.Public != 1 {
+		p.HandleBadRequest("public should be 0 or 1")
 		return
 	}
-	err = dao.ToggleProjectPublicity(p.projectID, public)
-	if err != nil {
-		log.Errorf("Error while updating project, project id: %d, error: %v", projectID, err)
-		p.RenderError(http.StatusInternalServerError, "Failed to update project")
+
+	if err := p.ProjectMgr.Update(p.project.ProjectID,
+		&models.Project{
+			Public: req.Public,
+		}); err != nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to update project %d: %v",
+			p.project.ProjectID, err))
+		return
 	}
 }
 
 // FilterAccessLog handles GET to /api/projects/{}/logs
 func (p *ProjectAPI) FilterAccessLog() {
-	p.userID = p.ValidateUser()
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
+	}
+
+	if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
+		p.HandleForbidden(p.SecurityCtx.GetUsername())
+		return
+	}
 
 	var query models.AccessLog
 	p.DecodeJSONReq(&query)
 
-	if !checkProjectPermission(p.userID, p.projectID) {
-		log.Warningf("Current user, user id: %d does not have permission to read accesslog of project, id: %d", p.userID, p.projectID)
-		p.RenderError(http.StatusForbidden, "")
-		return
-	}
-	query.ProjectID = p.projectID
+	query.ProjectID = p.project.ProjectID
 	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
 	query.EndTime = time.Unix(query.EndTimestamp, 0)
 
@@ -422,34 +407,7 @@ func (p *ProjectAPI) FilterAccessLog() {
 	p.ServeJSON()
 }
 
-func isProjectAdmin(userID int, pid int64) bool {
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole, returning false, error: %v", err)
-		return false
-	}
-
-	if isSysAdmin {
-		return true
-	}
-
-	rolelist, err := dao.GetUserProjectRoles(userID, pid)
-	if err != nil {
-		log.Errorf("Error occurred in GetUserProjectRoles, returning false, error: %v", err)
-		return false
-	}
-
-	hasProjectAdminRole := false
-	for _, role := range rolelist {
-		if role.RoleID == models.PROJECTADMIN {
-			hasProjectAdminRole = true
-			break
-		}
-	}
-
-	return hasProjectAdminRole
-}
-
+// TODO move this to package models
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
 	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {

@@ -90,7 +90,7 @@ func (d *Deleter) enter() (string, error) {
 
 	// delete repository
 	if len(d.tags) == 0 {
-		u := url + d.repository + "/tags"
+		u := url + d.repository
 		if err := del(u, d.dstUsr, d.dstPwd, d.insecure); err != nil {
 			if err == errNotFound {
 				d.logger.Warningf("repository %s does not exist on %s", d.repository, d.dstURL)

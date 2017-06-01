@@ -12,25 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package job
 
 import (
 	"fmt"
-
 	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/jobservice/config"
 )
 
 // NewLogger create a logger for a speicified job
-func NewLogger(jobID int64) (*log.Logger, error) {
-	logFile, err := GetJobLogPath(jobID)
-	if err != nil {
-		return nil, err
-	}
+func NewLogger(j Job) (*log.Logger, error) {
+	logFile := j.LogPath()
 	d := filepath.Dir(logFile)
 	if _, err := os.Stat(d); os.IsNotExist(err) {
 		err := os.MkdirAll(d, 0660)
@@ -40,14 +35,14 @@ func NewLogger(jobID int64) (*log.Logger, error) {
 	}
 	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
-		log.Errorf("Failed to open log file %s, the log of job %d will be printed to standard output, the error: %v", logFile, jobID, err)
+		log.Errorf("Failed to open log file %s, the log of job %v will be printed to standard output, the error: %v", logFile, j, err)
 		f = os.Stdout
 	}
 	return log.New(f, log.NewTextFormatter(), log.InfoLevel), nil
 }
 
 // GetJobLogPath returns the absolute path in which the job log file is located.
-func GetJobLogPath(jobID int64) (string, error) {
+func GetJobLogPath(base string, jobID int64) string {
 	f := fmt.Sprintf("job_%d.log", jobID)
 	k := jobID / 1000
 	p := ""
@@ -64,6 +59,6 @@ func GetJobLogPath(jobID int64) (string, error) {
 
 		p = filepath.Join(d, p)
 	}
-	p = filepath.Join(config.LogDir(), p, f)
-	return p, nil
+	p = filepath.Join(base, p, f)
+	return p
 }

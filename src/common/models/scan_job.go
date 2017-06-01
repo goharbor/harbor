@@ -16,6 +16,9 @@ package models
 
 import "time"
 
+//ScanJobTable is the name of the table whose data is mapped by ScanJob struct.
+const ScanJobTable = "img_scan_job"
+
 //ScanJob is the model to represent a job for image scan in DB.
 type ScanJob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
@@ -29,5 +32,5 @@ type ScanJob struct {
 
 //TableName is required by by beego orm to map ScanJob to table img_scan_job
 func (s *ScanJob) TableName() string {
-	return "img_scan_job"
+	return ScanJobTable
 }

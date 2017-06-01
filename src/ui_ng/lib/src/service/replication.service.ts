@@ -84,7 +84,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract enableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any;
+    abstract enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> | Promise<any> | any;
 
     /**
      * Disable the specified replication rule.
@@ -130,13 +130,13 @@ export class ReplicationDefaultService extends ReplicationService {
 
     constructor(
         private http: Http,
-        @Inject(SERVICE_CONFIG) private config: IServiceConfig
+        @Inject(SERVICE_CONFIG) config: IServiceConfig
     ) {
         super();
-        this._ruleBaseUrl = this.config.replicationRuleEndpoint ?
-            this.config.replicationRuleEndpoint : '/api/policies/replication';
-        this._jobBaseUrl = this.config.replicationJobEndpoint ?
-            this.config.replicationJobEndpoint : '/api/jobs/replication';
+        this._ruleBaseUrl = config.replicationRuleEndpoint ?
+            config.replicationRuleEndpoint : '/api/policies/replication';
+        this._jobBaseUrl = config.replicationJobEndpoint ?
+            config.replicationJobEndpoint : '/api/jobs/replication';
     }
 
     //Private methods
@@ -169,7 +169,7 @@ export class ReplicationDefaultService extends ReplicationService {
         }
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}`;
-        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url).toPromise()
             .then(response => response.json() as ReplicationRule)
             .catch(error => Promise.reject(error));
     }
@@ -206,13 +206,13 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public enableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+    public enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> | Promise<any> | any {
         if (!ruleId || ruleId <= 0) {
             return Promise.reject('Bad argument');
         }
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}/enablement`;
-        return this.http.put(url, { enabled: 1 }, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.put(url, { enabled: enablement }, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }

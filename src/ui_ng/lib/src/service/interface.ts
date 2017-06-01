@@ -48,7 +48,7 @@ export interface Repository extends Base {
     owner_id?: number;
     project_id?: number;
     description?: string;
-    start_count?: number;
+    star_count?: number;
     pull_count?: number;
 }
 
@@ -73,11 +73,11 @@ export interface Tag extends Base {
  * @extends {Base}
  */
 export interface Endpoint extends Base {
-  endpoint: string;
-  name: string;
-  username: string;
-  password: string;
-  type: number;
+    endpoint: string;
+    name: string;
+    username?: string;
+    password?: string;
+    type: number;
 }
 
 /**
@@ -87,9 +87,9 @@ export interface Endpoint extends Base {
  * @interface ReplicationRule
  */
 export interface ReplicationRule extends Base {
-    project_id: number;
+    project_id: number | string;
     project_name: string;
-    target_id: number;
+    target_id: number | string;
     target_name: string;
     enabled: number;
     description?: string;
@@ -130,4 +130,45 @@ export interface AccessLog {
     username: string;
     keywords?: string; //NOT used now
     guid?: string; //NOT used now
+}
+
+/**
+ * Session related info.
+ * 
+ * @export 
+ * @interface SessionInfo
+ */
+export interface SessionInfo {
+    withNotary?: boolean;
+    hasProjectAdminRole?: boolean;
+    hasSignedIn?: boolean;
+    registryUrl?: string;
+}
+
+//Not finalized yet
+export enum VulnerabilitySeverity {
+    LOW, MEDIUM, HIGH, UNKNOWN, NONE
+}
+
+export interface ScanningBaseResult {
+    id: string;
+    severity: VulnerabilitySeverity;
+    package: string;
+    version: string;
+}
+
+export interface ScanningDetailResult extends ScanningBaseResult {
+    fixedVersion: string;
+    layer: string;
+    description: string;
+}
+
+export interface ScanningResultSummary {
+    totalComponents: number;
+    noneComponents: number;
+    completeTimestamp: Date;
+    high: ScanningBaseResult[];
+    medium: ScanningBaseResult[];
+    low: ScanningBaseResult[];
+    unknown: ScanningBaseResult[];
 }

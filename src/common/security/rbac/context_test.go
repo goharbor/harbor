@@ -15,6 +15,7 @@
 package rbac
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,42 +52,67 @@ type fakePM struct {
 	roles    map[string][]int
 }
 
-func (f *fakePM) IsPublic(projectIDOrName interface{}) bool {
+func (f *fakePM) IsPublic(projectIDOrName interface{}) (bool, error) {
 	for _, project := range f.projects {
 		if project.Name == projectIDOrName.(string) {
-			return project.Public == 1
+			return project.Public == 1, nil
 		}
 	}
-	return false
+	return false, nil
 }
-func (f *fakePM) GetRoles(username string, projectIDOrName interface{}) []int {
-	return f.roles[projectIDOrName.(string)]
+func (f *fakePM) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
+	return f.roles[projectIDOrName.(string)], nil
 }
-func (f *fakePM) Get(projectIDOrName interface{}) *models.Project {
+func (f *fakePM) Get(projectIDOrName interface{}) (*models.Project, error) {
 	for _, project := range f.projects {
 		if project.Name == projectIDOrName.(string) {
-			return project
+			return project, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
-func (f *fakePM) Exist(projectIDOrName interface{}) bool {
+func (f *fakePM) Exist(projectIDOrName interface{}) (bool, error) {
 	for _, project := range f.projects {
 		if project.Name == projectIDOrName.(string) {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
 }
 
 // nil implement
-func (f *fakePM) GetPublic() []models.Project {
-	return []models.Project{}
+func (f *fakePM) GetPublic() ([]*models.Project, error) {
+	return []*models.Project{}, nil
 }
 
 // nil implement
-func (f *fakePM) GetByMember(username string) []models.Project {
-	return []models.Project{}
+func (f *fakePM) GetByMember(username string) ([]*models.Project, error) {
+	return []*models.Project{}, nil
+}
+
+// nil implement
+func (f *fakePM) Create(*models.Project) (int64, error) {
+	return 0, fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) Delete(projectIDOrName interface{}) error {
+	return fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) Update(projectIDOrName interface{}, project *models.Project) error {
+	return fmt.Errorf("not support")
+}
+
+// nil implement
+func (f *fakePM) GetAll(*models.QueryParam) ([]*models.Project, error) {
+	return []*models.Project{}, nil
+}
+
+// nil implement
+func (f *fakePM) GetTotal(*models.QueryParam) (int64, error) {
+	return 0, nil
 }
 
 func TestIsAuthenticated(t *testing.T) {

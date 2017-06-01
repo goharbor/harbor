@@ -62,7 +62,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   currentForm: NgForm;
 
   hasChanged: boolean;
-
   endpointHasChanged: boolean;
   targetNameHasChanged: boolean;
 
@@ -263,7 +262,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   ngAfterViewChecked(): void {
     this.targetForm = this.currentForm;
     if(this.targetForm) {
-      let comparison: {[key: string]: string} = {
+      let comparison: {[key: string]: any} = {
         targetName: this.initVal.name,
         endpointUrl: this.initVal.endpoint,
         username: this.initVal.username,

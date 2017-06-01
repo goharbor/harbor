@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -27,13 +26,16 @@ import (
 
 //LogAPI handles request api/logs
 type LogAPI struct {
-	api.BaseAPI
-	userID int
+	BaseController
 }
 
 //Prepare validates the URL and the user
 func (l *LogAPI) Prepare() {
-	l.userID = l.ValidateUser()
+	l.BaseController.Prepare()
+	if !l.SecurityCtx.IsAuthenticated() {
+		l.HandleUnauthorized()
+		return
+	}
 }
 
 //Get returns the recent logs according to parameters
@@ -75,16 +77,8 @@ func (l *LogAPI) Get() {
 		linesNum = 10
 	}
 
-	user, err := dao.GetUser(models.User{
-		UserID: l.userID,
-	})
-	if err != nil {
-		log.Errorf("failed to get user by user ID %d: %v", l.userID, err)
-		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
 	var logList []models.AccessLog
-	logList, err = dao.GetRecentLogs(user.Username, linesNum, startTime, endTime)
+	logList, err = dao.GetRecentLogs(l.SecurityCtx.GetUsername(), linesNum, startTime, endTime)
 	if err != nil {
 		log.Errorf("Get recent logs error, err: %v", err)
 		l.CustomAbort(http.StatusInternalServerError, "Internal error")

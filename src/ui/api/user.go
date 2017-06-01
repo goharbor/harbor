@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -30,7 +29,7 @@ import (
 
 // UserAPI handles request to /api/users/{}
 type UserAPI struct {
-	api.BaseAPI
+	BaseController
 	currentUserID    int
 	userID           int
 	SelfRegistration bool
@@ -45,6 +44,7 @@ type passwordReq struct {
 
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
+	ua.BaseController.Prepare()
 	mode, err := config.AuthMode()
 	if err != nil {
 		log.Errorf("failed to get auth mode: %v", err)
@@ -61,15 +61,24 @@ func (ua *UserAPI) Prepare() {
 
 	ua.SelfRegistration = self
 
-	if ua.Ctx.Input.IsPost() {
-		sessionUserID := ua.GetSession("userId")
-		_, _, ok := ua.Ctx.Request.BasicAuth()
-		if sessionUserID == nil && !ok {
+	if !ua.SecurityCtx.IsAuthenticated() {
+		if ua.Ctx.Input.IsPost() {
 			return
 		}
+		ua.HandleUnauthorized()
+		return
 	}
 
-	ua.currentUserID = ua.ValidateUser()
+	user, err := dao.GetUser(models.User{
+		Username: ua.SecurityCtx.GetUsername(),
+	})
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get user %s: %v",
+			ua.SecurityCtx.GetUsername(), err))
+		return
+	}
+
+	ua.currentUserID = user.UserID
 	id := ua.Ctx.Input.Param(":id")
 	if id == "current" {
 		ua.userID = ua.currentUserID
@@ -92,12 +101,7 @@ func (ua *UserAPI) Prepare() {
 		}
 	}
 
-	ua.IsAdmin, err = dao.IsAdminRole(ua.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole:%v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
+	ua.IsAdmin = ua.SecurityCtx.IsSysAdmin()
 }
 
 // Get ...

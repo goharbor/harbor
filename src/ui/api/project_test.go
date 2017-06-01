@@ -15,11 +15,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 var addProject *apilib.ProjectReq
@@ -264,18 +265,8 @@ func TestProHead(t *testing.T) {
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
-	//----------------------------case 3 : Response Code=401:User need to log in first..----------------------------//
-	fmt.Println("case 3: respose code:401,User need to log in first..")
-	httpStatusCode, err = apiTest.ProjectsHead(*unknownUsr, "libra")
-	if err != nil {
-		t.Error("Error while search project by proName", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
-	}
 
 	fmt.Printf("\n")
-
 }
 
 func TestToggleProjectPublicity(t *testing.T) {
@@ -313,7 +304,7 @@ func TestToggleProjectPublicity(t *testing.T) {
 	}
 	//-------------------case4: Response Code=404 Not found the project------------------------------//
 	fmt.Println("case 4: respose code:404, Not found the project")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "0", 1)
+	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "1234", 1)
 	if err != nil {
 		t.Error("Error while search project by proId", err.Error())
 		t.Log(err)

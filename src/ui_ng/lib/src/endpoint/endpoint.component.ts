@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Endpoint, ReplicationRule } from '../service/interface';
 import { EndpointService } from '../service/endpoint.service';
 
@@ -99,8 +99,6 @@ export class EndpointComponent implements OnInit {
     }
   }
 
-  cancelDeletion(message: ConfirmationAcknowledgement) {}
- 
   ngOnInit(): void {
     this.targetName = '';
     this.retrieve('');
@@ -165,13 +163,12 @@ export class EndpointComponent implements OnInit {
   }
 
   deleteTarget(target: Endpoint) {
-    console.log('Endpoint:' + JSON.stringify(target));
     if (target) {
       let targetId = target.id;
       let deletionMessage = new ConfirmationMessage(
         'REPLICATION.DELETION_TITLE_TARGET',
         'REPLICATION.DELETION_SUMMARY_TARGET',
-        target.name,
+        target.name || '',
         target.id,
         ConfirmationTargets.TARGET,
         ConfirmationButtons.DELETE_CANCEL);

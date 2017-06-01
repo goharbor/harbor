@@ -18,31 +18,15 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	uti "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/replication"
-	"github.com/vmware/harbor/src/jobservice/utils"
 )
-
-// RepJobParm wraps the parm of a job
-type RepJobParm struct {
-	LocalRegURL    string
-	TargetURL      string
-	TargetUsername string
-	TargetPassword string
-	Repository     string
-	Tags           []string
-	Enabled        int
-	Operation      string
-	Insecure       bool
-}
 
 // SM is the state machine to handle job, it handles one job at a time.
 type SM struct {
-	JobID         int64
+	CurrentJob    Job
 	CurrentState  string
 	PreviousState string
 	//The states that don't have to exist in transition map, such as "Error", "Canceled"
@@ -51,19 +35,18 @@ type SM struct {
 	Handlers     map[string]StateHandler
 	desiredState string
 	Logger       *log.Logger
-	Parms        *RepJobParm
 	lock         *sync.Mutex
 }
 
 // EnterState transit the statemachine from the current state to the state in parameter.
 // It returns the next state the statemachine should tranit to.
 func (sm *SM) EnterState(s string) (string, error) {
-	log.Debugf("Job id: %d, transiting from State: %s, to State: %s", sm.JobID, sm.CurrentState, s)
+	log.Debugf("Job: %v, transiting from State: %s, to State: %s", sm.CurrentJob, sm.CurrentState, s)
 	targets, ok := sm.Transitions[sm.CurrentState]
 	_, exist := targets[s]
 	_, isForced := sm.ForcedStates[s]
 	if !exist && !isForced {
-		return "", fmt.Errorf("job id: %d, transition from %s to %s does not exist", sm.JobID, sm.CurrentState, s)
+		return "", fmt.Errorf("job: %v, transition from %s to %s does not exist", sm.CurrentJob, sm.CurrentState, s)
 	}
 	exitHandler, ok := sm.Handlers[sm.CurrentState]
 	if ok {
@@ -71,7 +54,7 @@ func (sm *SM) EnterState(s string) (string, error) {
 			return "", err
 		}
 	} else {
-		log.Debugf("Job id: %d, no handler found for state:%s, skip", sm.JobID, sm.CurrentState)
+		log.Debugf("Job: %d, no handler found for state:%s, skip", sm.CurrentJob, sm.CurrentState)
 	}
 	enterHandler, ok := sm.Handlers[s]
 	var next = models.JobContinue
@@ -81,11 +64,11 @@ func (sm *SM) EnterState(s string) (string, error) {
 			return "", err
 		}
 	} else {
-		log.Debugf("Job id: %d, no handler found for state:%s, skip", sm.JobID, s)
+		log.Debugf("Job: %v, no handler found for state:%s, skip", sm.CurrentJob, s)
 	}
 	sm.PreviousState = sm.CurrentState
 	sm.CurrentState = s
-	log.Debugf("Job id: %d, transition succeeded, current state: %s", sm.JobID, s)
+	log.Debugf("Job: %v, transition succeeded, current state: %s", sm.CurrentJob, s)
 	return next, nil
 }
 
@@ -94,10 +77,10 @@ func (sm *SM) EnterState(s string) (string, error) {
 // will enter error state if there's more than one possible path when next state is "_continue"
 func (sm *SM) Start(s string) {
 	n, err := sm.EnterState(s)
-	log.Debugf("Job id: %d, next state from handler: %s", sm.JobID, n)
+	log.Debugf("Job: %v, next state from handler: %s", sm.CurrentJob, n)
 	for len(n) > 0 && err == nil {
 		if d := sm.getDesiredState(); len(d) > 0 {
-			log.Debugf("Job id: %d. Desired state: %s, will ignore the next state from handler", sm.JobID, d)
+			log.Debugf("Job: %v, Desired state: %s, will ignore the next state from handler", sm.CurrentJob, d)
 			n = d
 			sm.setDesiredState("")
 			continue
@@ -106,19 +89,19 @@ func (sm *SM) Start(s string) {
 			for n = range sm.Transitions[sm.CurrentState] {
 				break
 			}
-			log.Debugf("Job id: %d, Continue to state: %s", sm.JobID, n)
+			log.Debugf("Job: %v, Continue to state: %s", sm.CurrentJob, n)
 			continue
 		}
 		if n == models.JobContinue && len(sm.Transitions[sm.CurrentState]) != 1 {
-			log.Errorf("Job id: %d, next state is continue but there are %d possible next states in transition table", sm.JobID, len(sm.Transitions[sm.CurrentState]))
+			log.Errorf("Job: %v, next state is continue but there are %d possible next states in transition table", sm.CurrentJob, len(sm.Transitions[sm.CurrentState]))
 			err = fmt.Errorf("Unable to continue")
 			break
 		}
 		n, err = sm.EnterState(n)
-		log.Debugf("Job id: %d, next state from handler: %s", sm.JobID, n)
+		log.Debugf("Job: %v, next state from handler: %s", sm.CurrentJob, n)
 	}
 	if err != nil {
-		log.Warningf("Job id: %d, the statemachin will enter error state due to error: %v", sm.JobID, err)
+		log.Warningf("Job: %v, the statemachin will enter error state due to error: %v", sm.CurrentJob, err)
 		sm.EnterState(models.JobError)
 	}
 }
@@ -144,16 +127,16 @@ func (sm *SM) RemoveTransition(from string, to string) {
 
 // Stop will set the desired state as "stopped" such that when next tranisition happen the state machine will stop handling the current job
 // and the worker can release itself to the workerpool.
-func (sm *SM) Stop(id int64) {
-	log.Debugf("Trying to stop the job: %d", id)
+func (sm *SM) Stop(job Job) {
+	log.Debugf("Trying to stop the job: %v", job)
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
 	//need to check if the sm switched to other job
-	if id == sm.JobID {
+	if job.ID() == sm.CurrentJob.ID() && job.Type() == sm.CurrentJob.Type() {
 		sm.desiredState = models.JobStopped
-		log.Debugf("Desired state of job %d is set to stopped", id)
+		log.Debugf("Desired state of job %v is set to stopped", job)
 	} else {
-		log.Debugf("State machine has switched to job %d, so the action to stop job %d will be ignored", sm.JobID, id)
+		log.Debugf("State machine has switched to job %v, so the action to stop job %v will be ignored", sm.CurrentJob, job)
 	}
 }
 
@@ -182,125 +165,103 @@ func (sm *SM) Init() {
 	}
 }
 
-// Reset resets the state machine so it will start handling another job.
-func (sm *SM) Reset(jid int64) (err error) {
-	//To ensure the new jobID is visible to the thread to stop the SM
+// Reset resets the state machine and after prereq checking, it will start handling the job.
+func (sm *SM) Reset(j Job) error {
+	//To ensure the Job visible to the thread to stop the SM
 	sm.lock.Lock()
-	sm.JobID = jid
+	sm.CurrentJob = j
 	sm.desiredState = ""
 	sm.lock.Unlock()
 
-	sm.Logger, err = utils.NewLogger(sm.JobID)
-	if err != nil {
-		return
-	}
-	//init parms
-	job, err := dao.GetRepJob(sm.JobID)
-	if err != nil {
-		return fmt.Errorf("Failed to get job, error: %v", err)
-	}
-	if job == nil {
-		return fmt.Errorf("The job doesn't exist in DB, job id: %d", sm.JobID)
-	}
-	policy, err := dao.GetRepPolicy(job.PolicyID)
-	if err != nil {
-		return fmt.Errorf("Failed to get policy, error: %v", err)
-	}
-	if policy == nil {
-		return fmt.Errorf("The policy doesn't exist in DB, policy id:%d", job.PolicyID)
-	}
-
-	regURL, err := config.LocalRegURL()
+	var err error
+	sm.Logger, err = NewLogger(j)
 	if err != nil {
 		return err
 	}
-	verify, err := config.VerifyRemoteCert()
-	if err != nil {
-		return err
-	}
-	sm.Parms = &RepJobParm{
-		LocalRegURL: regURL,
-		Repository:  job.Repository,
-		Tags:        job.TagList,
-		Enabled:     policy.Enabled,
-		Operation:   job.Operation,
-		Insecure:    !verify,
-	}
-	if policy.Enabled == 0 {
-		//worker will cancel this job
-		return nil
-	}
-	target, err := dao.GetRepTarget(policy.TargetID)
-	if err != nil {
-		return fmt.Errorf("Failed to get target, error: %v", err)
-	}
-	if target == nil {
-		return fmt.Errorf("The target doesn't exist in DB, target id: %d", policy.TargetID)
-	}
-	sm.Parms.TargetURL = target.URL
-	sm.Parms.TargetUsername = target.Username
-	pwd := target.Password
-
-	if len(pwd) != 0 {
-		key, err := config.SecretKey()
-		if err != nil {
-			return err
-		}
-		pwd, err = uti.ReversibleDecrypt(pwd, key)
-		if err != nil {
-			return fmt.Errorf("failed to decrypt password: %v", err)
-		}
-	}
-
-	sm.Parms.TargetPassword = pwd
-
 	//init states handlers
 	sm.Handlers = make(map[string]StateHandler)
 	sm.Transitions = make(map[string]map[string]struct{})
 	sm.CurrentState = models.JobPending
 
-	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{sm.JobID, models.JobRunning})
-	sm.AddTransition(models.JobRetrying, models.JobRunning, StatusUpdater{sm.JobID, models.JobRunning})
-	sm.Handlers[models.JobError] = StatusUpdater{sm.JobID, models.JobError}
-	sm.Handlers[models.JobStopped] = StatusUpdater{sm.JobID, models.JobStopped}
-	sm.Handlers[models.JobRetrying] = Retry{sm.JobID}
-
-	switch sm.Parms.Operation {
-	case models.RepOpTransfer:
-		addImgTransferTransition(sm)
-	case models.RepOpDelete:
-		addImgDeleteTransition(sm)
-	default:
-		err = fmt.Errorf("unsupported operation: %s", sm.Parms.Operation)
+	sm.AddTransition(models.JobPending, models.JobRunning, StatusUpdater{sm.CurrentJob, models.JobRunning})
+	sm.AddTransition(models.JobRetrying, models.JobRunning, StatusUpdater{sm.CurrentJob, models.JobRunning})
+	sm.Handlers[models.JobError] = StatusUpdater{sm.CurrentJob, models.JobError}
+	sm.Handlers[models.JobStopped] = StatusUpdater{sm.CurrentJob, models.JobStopped}
+	sm.Handlers[models.JobRetrying] = Retry{sm.CurrentJob}
+	if err := sm.CurrentJob.Init(); err != nil {
+		return err
 	}
+	if err := sm.initTransitions(); err != nil {
+		return err
+	}
+	return sm.kickOff()
+}
 
-	return err
+func (sm *SM) kickOff() error {
+	if repJob, ok := sm.CurrentJob.(*RepJob); ok {
+		if repJob.parm.Enabled == 0 {
+			log.Debugf("The policy of job:%v is disabled, will cancel the job", repJob)
+			if err := repJob.UpdateStatus(models.JobCanceled); err != nil {
+				log.Warningf("Failed to update status of job: %v to 'canceled', error: %v", repJob, err)
+
+			}
+		}
+	}
+	sm.Start(models.JobRunning)
+	return nil
+}
+
+func (sm *SM) initTransitions() error {
+	switch sm.CurrentJob.Type() {
+	case ReplicationType:
+		repJob, ok := sm.CurrentJob.(*RepJob)
+		if !ok {
+			//Shouldn't be here.
+			return fmt.Errorf("The job: %v is not a type of RepJob", sm.CurrentJob)
+		}
+		jobParm := repJob.parm
+		if jobParm.Operation == models.RepOpTransfer {
+			addImgTransferTransition(sm, jobParm)
+		} else if jobParm.Operation == models.RepOpDelete {
+			addImgDeleteTransition(sm, jobParm)
+		} else {
+			return fmt.Errorf("unsupported operation: %s", jobParm.Operation)
+		}
+	case ScanType:
+		log.Debugf("TODO for scan job, job: %v", sm.CurrentJob)
+		return nil
+	default:
+		return fmt.Errorf("Unsupported job type: %v", sm.CurrentJob.Type())
+	}
+	return nil
 }
 
 //for testing onlly
+/*
 func addTestTransition(sm *SM) error {
 	sm.AddTransition(models.JobRunning, "pull-img", ImgPuller{img: sm.Parms.Repository, logger: sm.Logger})
 	return nil
 }
+*/
 
-func addImgTransferTransition(sm *SM) {
-	base := replication.InitBaseHandler(sm.Parms.Repository, sm.Parms.LocalRegURL, config.JobserviceSecret(),
-		sm.Parms.TargetURL, sm.Parms.TargetUsername, sm.Parms.TargetPassword,
-		sm.Parms.Insecure, sm.Parms.Tags, sm.Logger)
+func addImgTransferTransition(sm *SM, parm *RepJobParm) {
+	base := replication.InitBaseHandler(parm.Repository, parm.LocalRegURL, config.JobserviceSecret(),
+		parm.TargetURL, parm.TargetUsername, parm.TargetPassword,
+		parm.Insecure, parm.Tags, sm.Logger)
 
 	sm.AddTransition(models.JobRunning, replication.StateInitialize, &replication.Initializer{BaseHandler: base})
 	sm.AddTransition(replication.StateInitialize, replication.StateCheck, &replication.Checker{BaseHandler: base})
 	sm.AddTransition(replication.StateCheck, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 	sm.AddTransition(replication.StatePullManifest, replication.StateTransferBlob, &replication.BlobTransfer{BaseHandler: base})
-	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
+	sm.AddTransition(replication.StatePullManifest, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
 	sm.AddTransition(replication.StateTransferBlob, replication.StatePushManifest, &replication.ManifestPusher{BaseHandler: base})
 	sm.AddTransition(replication.StatePushManifest, replication.StatePullManifest, &replication.ManifestPuller{BaseHandler: base})
 }
 
-func addImgDeleteTransition(sm *SM) {
-	deleter := replication.NewDeleter(sm.Parms.Repository, sm.Parms.Tags, sm.Parms.TargetURL,
-		sm.Parms.TargetUsername, sm.Parms.TargetPassword, sm.Parms.Insecure, sm.Logger)
+func addImgDeleteTransition(sm *SM, parm *RepJobParm) {
+	deleter := replication.NewDeleter(parm.Repository, parm.Tags, parm.TargetURL,
+		parm.TargetUsername, parm.TargetPassword, parm.Insecure, sm.Logger)
 
 	sm.AddTransition(models.JobRunning, replication.StateDelete, deleter)
-	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{sm.JobID, models.JobFinished})
+	sm.AddTransition(replication.StateDelete, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
 }

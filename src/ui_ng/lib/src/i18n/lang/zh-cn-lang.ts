@@ -253,6 +253,7 @@ export const ZH_CN_LANG: any = {
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
         "LOGS": "日志",
+        "OF": "共计",
         "ITEMS": "条记录",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
@@ -433,6 +434,34 @@ export const ZH_CN_LANG: any = {
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",
         "BACK": "返回"
+    },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "开始扫描",
+            "QUEUED": "已入队列",
+            "ERROR": "错误",
+            "SCANNING": "扫描中",
+            "UNKNOWN": "未知"
+        },
+        "GRID": {
+            "PLACEHOLDER": "没有扫描结果！",
+            "COLUMN_ID": "缺陷码",
+            "COLUMN_SEVERITY": "严重度",
+            "COLUMN_PACKAGE": "组件",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_FIXED": "修复版本",
+            "COLUMN_LAYER": "引入层",
+            "FOOT_ITEMS": "项目",
+            "FOOT_OF": "总共"
+        },
+        "CHART": {
+            "SCANNING_TIME": "扫描完成",
+            "SEVERITY_HIGH": "严重",
+            "SEVERITY_MEDIUM": "中等",
+            "SEVERITY_LOW": "低",
+            "SEVERITY_UNKNOWN": "未知",
+            "SEVERITY_NONE": "无缺陷"
+        },
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",
