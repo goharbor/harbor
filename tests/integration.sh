@@ -28,6 +28,7 @@ export DRONE_TOKEN=$DRONE_TOKEN
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
 upload_build=false
+nightly_run=false
 
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
@@ -56,6 +57,10 @@ elif (echo $buildinfo | grep -q "\[full ci\]"); then
 elif (echo $buildinfo | grep -q "\[BAT\]"); then
     pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
     upload_build=true
+elif (echo $buildinfo | grep -q "\[Nightly\]"); then
+    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    upload_build=true
+    nightly_run=true
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
@@ -92,6 +97,11 @@ if [ $upload_build == true ] && [ $rc -eq 0 ]; then
     gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
 else
   echo "No harbor build to upload"
+fi
+
+## --------------------------------------------- Sendout Email ---------------------------------------------
+if [ $nightly_run == true ]; then
+    echo "Sendout Nightly Run Email."
 fi
 
 ## --------------------------------------------- Tear Down ---------------------------------------------
