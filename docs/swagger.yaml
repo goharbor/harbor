@@ -1942,6 +1942,10 @@ definitions:
       name: 
         type: string
         description: The policy name.
+      enabled:
+        type: integer
+        format: int
+        description: 1-enable, 0-disable
   RepPolicyUpdate:
     type: object
     properties:
