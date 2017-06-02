@@ -203,6 +203,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
     let payload: Endpoint = this.initEndpoint;
     if(this.targetNameHasChanged) {
       payload.name = this.target.name;
+      delete payload.endpoint;
     }
     if (this.endpointHasChanged) {
       payload.endpoint = this.target.endpoint;

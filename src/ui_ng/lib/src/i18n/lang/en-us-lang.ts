@@ -290,6 +290,7 @@ export const EN_US_LANG: any = {
         "INVALID_NAME": "Invalid endpoint name.",
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time",
+        "OF": "of",
         "ITEMS": "item(s)",
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
@@ -299,8 +300,7 @@ export const EN_US_LANG: any = {
         "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use."
     },
     "REPOSITORY": {
-        "COPY_ID": "Copy ID",
-        "COPY_PARENT_ID": "Copy Parent ID",
+        "COPY_DIGEST_ID": "Copy Digest ID",
         "DELETE": "Delete",
         "NAME": "Name",
         "TAGS_COUNT": "Tags",
@@ -324,6 +324,7 @@ export const EN_US_LANG: any = {
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
+        "OF": "of",
         "ITEMS": "item(s)",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",

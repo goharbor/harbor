@@ -16,7 +16,6 @@ import { Http, URLSearchParams, Response } from '@angular/http';
 
 import { Repository } from './repository';
 import { Tag } from './tag';
-import { VerifiedSignature } from './verified-signature';
 
 import { Observable } from 'rxjs/Observable'
 import 'rxjs/add/observable/of';
@@ -43,35 +42,6 @@ export class RepositoryService {
     return this.http
                .get(`/api/repositories/${repoName}/tags`)
                .map(response=>response.json())
-               .catch(error=>Observable.throw(error));
-  }
-
-  listNotarySignatures(repoName: string): Observable<VerifiedSignature[]> {
-    return this.http
-               .get(`/api/repositories/${repoName}/signatures`)
-               .map(response=>response.json())
-               .catch(error=>Observable.throw(error));
-  }
-
-  listTagsWithVerifiedSignatures(repoName: string): Observable<Tag[]> {
-    return this.listTags(repoName)
-               .map(res=>res)
-               .flatMap(tags=>{
-                 return this.listNotarySignatures(repoName).map(signatures=>{
-                    tags.forEach(t=>{
-                      for(let i = 0; i < signatures.length; i++) {
-                        if(signatures[i].tag === t.tag) {
-                          t.signed = 1;
-                          break;
-                        }
-                      }
-                    });
-                    return tags;
-                  })
-                  .catch(error=>{
-                    return Observable.of(tags);
-                  })
-               })
                .catch(error=>Observable.throw(error));
   }
 

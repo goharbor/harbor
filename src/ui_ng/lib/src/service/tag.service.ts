@@ -100,27 +100,7 @@ export class TagDefaultService extends TagService {
         if (!repositoryName) {
             return Promise.reject("Bad argument");
         }
-
-        return this._getTags(repositoryName, queryParams)
-            .then(tags => {
-                return this._getSignatures(repositoryName)
-                    .then(signatures => {
-                        tags.forEach(tag => {
-                            let foundOne: VerifiedSignature | undefined = signatures.find(signature => signature.tag === tag.tag);
-                            if (foundOne) {
-                                tag.signed = 1;//Signed
-                            } else {
-                                tag.signed = 0;//Not signed
-                            }
-                        });
-                        return tags;
-                    })
-                    .catch(error => {
-                        tags.forEach(tag => tag.signed = -1);//No signature info
-                        return tags;
-                    })
-            })
-            .catch(error => Promise.reject(error))
+        return this._getTags(repositoryName, queryParams);
     }
 
     public deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<Tag> | any {

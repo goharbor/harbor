@@ -20,8 +20,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -29,25 +27,22 @@ import (
 
 // LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
 type LdapAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 const metaChars = "&|!=~*<>()"
 
 // Prepare ...
 func (l *LdapAPI) Prepare() {
-
-	userID := l.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("error occurred in IsAdminRole: %v", err)
-		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	l.BaseController.Prepare()
+	if !l.SecurityCtx.IsAuthenticated() {
+		l.HandleUnauthorized()
+		return
 	}
-
-	if !isSysAdmin {
-		l.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	if !l.SecurityCtx.IsSysAdmin() {
+		l.HandleForbidden(l.SecurityCtx.GetUsername())
+		return
 	}
-
 }
 
 // Ping ...
