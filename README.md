@@ -1,5 +1,7 @@
 # Harbor
 
+[![Join the chat at https://gitter.im/vmware/harbor](https://badges.gitter.im/vmware/harbor.svg)](https://gitter.im/vmware/harbor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/vmware/harbor.svg?branch=master)](https://travis-ci.org/vmware/harbor)
 [![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=master)](https://coveralls.io/github/vmware/harbor?branch=master)
 
