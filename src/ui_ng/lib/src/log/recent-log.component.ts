@@ -19,8 +19,10 @@ import {
 } from '../service/index';
 import { ErrorHandler } from '../error-handler/index';
 import { Observable } from 'rxjs/Observable';
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
 import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
+
+import { Comparator } from 'clarity-angular';
 
 @Component({
     selector: 'hbr-log',
@@ -34,6 +36,10 @@ export class RecentLogComponent implements OnInit {
     onGoing: boolean = false;
     lines: number = 10; //Support 10, 25 and 50
     currentTerm: string;
+
+    loading: boolean;
+
+    opTimeComparator: Comparator<AccessLog> = new CustomComparator<AccessLog>('op_time', 'date');
 
     constructor(
         private logService: AccessLogService,
@@ -81,14 +87,17 @@ export class RecentLogComponent implements OnInit {
         }
 
         this.onGoing = true;
+        this.loading = true;
         toPromise<AccessLog[]>(this.logService.getRecentLogs(this.lines))
             .then(response => {
                 this.onGoing = false;
+                this.loading = false;
                 this.logsCache = response; //Keep the data
                 this.recentLogs = this.logsCache.filter(log => log.username != "");//To display
             })
             .catch(error => {
                 this.onGoing = false;
+                this.loading = false;
                 this.errorHandler.error(error);
             });
     }

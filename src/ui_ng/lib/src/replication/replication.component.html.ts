@@ -20,7 +20,7 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <list-replication-rule [rules]="changedRules" [projectless]="false" [selectedId]="initSelectedId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)"></list-replication-rule>
+      <list-replication-rule [rules]="changedRules" [projectless]="false" [selectedId]="initSelectedId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading"></list-replication-rule>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between">
@@ -46,19 +46,19 @@ export const REPLICATION_TEMPLATE: string = `
       </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <clr-datagrid>
-        <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
+      <clr-datagrid [clrDgLoading]="loading">
+        <clr-dg-column [clrDgField]="'repository'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'operation'">{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
         <clr-dg-row *clrDgItems="let j of jobs" [clrDgItem]='j'>
             <clr-dg-cell>{{j.repository}}</clr-dg-cell>
             <clr-dg-cell>{{j.status}}</clr-dg-cell>
             <clr-dg-cell>{{j.operation}}</clr-dg-cell>
-            <clr-dg-cell>{{j.creation_time}}</clr-dg-cell>
-            <clr-dg-cell>{{j.update_time}}</clr-dg-cell>
+            <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>
               <a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK">
                 <clr-icon shape="clipboard"></clr-icon>
