@@ -102,6 +102,12 @@ fi
 ## --------------------------------------------- Sendout Email ---------------------------------------------
 if [ $nightly_run == true ]; then
     echo "Sendout Nightly Run Email."
+    if [ $rc -eq 0 ]; then
+        result=Pass
+    else
+        result=Fail
+    fi
+    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile
 fi
 
 ## --------------------------------------------- Tear Down ---------------------------------------------
