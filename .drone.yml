@@ -11,7 +11,7 @@ pipeline:
     recursive: false
 
   integration-test-on-pr:
-    image: vmware/harbor-e2e-engine:1.34
+    image: vmware/harbor-e2e-engine:1.35
     pull: true
     privileged: true
     environment:
@@ -40,7 +40,7 @@ pipeline:
       success: true
 
   bundle:
-    image: vmware/harbor-e2e-engine:1.34
+    image: vmware/harbor-e2e-engine:1.35
     pull: true
     privileged: true
     environment:
