@@ -55,8 +55,7 @@ class EmailUtil:
             smtp.sendmail(mail['From'], mail['To'], mail.as_string())
             smtp.close()
         except Exception, e:
-            logger.info(e)
-            logger.info('send email fail, will try three times.')
+            print e
             times += 1
             time.sleep(5)
             if times < 3:
