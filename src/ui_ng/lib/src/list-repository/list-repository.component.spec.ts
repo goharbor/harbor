@@ -2,11 +2,17 @@
 import { ComponentFixture, TestBed, async } from '@angular/core/testing'; 
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ListRepositoryComponent } from './list-repository.component';
 import { Repository } from '../service/interface';
+
+
+class RouterStub {
+  navigateByUrl(url: string) { return url; }
+}
 
 describe('ListRepositoryComponent (inline template)', ()=> {
   
@@ -43,7 +49,9 @@ describe('ListRepositoryComponent (inline template)', ()=> {
         ListRepositoryComponent,
         ConfirmationDialogComponent
       ],
-      providers: []
+      providers: [
+        { provide: Router, useClass: RouterStub }
+      ]
     });
   }));
 

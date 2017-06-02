@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { State } from 'clarity-angular';
+import { Comparator } from 'clarity-angular';
 
 import { REPOSITORY_STACKVIEW_TEMPLATE } from './repository-stackview.component.html';
 import { REPOSITORY_STACKVIEW_STYLES } from './repository-stackview.component.css';
@@ -8,7 +8,7 @@ import { REPOSITORY_STACKVIEW_STYLES } from './repository-stackview.component.cs
 import { Repository, SessionInfo } from '../service/interface';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { RepositoryService } from '../service/repository.service';
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
 
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 
@@ -30,15 +30,17 @@ export class RepositoryStackviewComponent implements OnInit {
 
   lastFilteredRepoName: string;
 
-  totalPage: number;
-  totalRecordCount: number;
-
   hasProjectAdminRole: boolean;
 
   repositories: Repository[];
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
+
+  pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
+  
+  tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
+
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -77,7 +79,7 @@ export class RepositoryStackviewComponent implements OnInit {
     this.retrieve();
   }
 
-  retrieve(state?: State) {
+  retrieve() {
     toPromise<Repository[]>(this.repositoryService
       .getRepositories(this.projectId, this.lastFilteredRepoName))
       .then(
@@ -105,5 +107,5 @@ export class RepositoryStackviewComponent implements OnInit {
 
   refresh() {
     this.retrieve();
-  }  
+  }
 }

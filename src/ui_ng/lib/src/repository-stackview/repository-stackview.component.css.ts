@@ -13,5 +13,14 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
 :host >>> .datagrid .datagrid-body .datagrid-row {
   overflow-x: hidden;
   overflow-y: hidden;
+  background-color: #ccc;
+}
+
+:host >>> .datagrid-body .datagrid-row .datagrid-row-master{
+  background-color: #FFFFFF;
+}
+
+:host >>> .datagrid .datagrid-placeholder-container {
+  display: none;
 }
 `;

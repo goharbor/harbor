@@ -43,6 +43,7 @@ export class RepositoryComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() sessionInfo: SessionInfo;
+  @Input() urlPrefix: string;
 
   lastFilteredRepoName: string;
 

@@ -12,8 +12,8 @@ export const TAG_TEMPLATE = `
   </div>
 </clr-modal>
 
-<h2 *ngIf="!isEmbeded" class="sub-header-title">{{repoName}}</h2>
-<clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbeded">
+<h2 *ngIf="!isEmbedded" class="sub-header-title">{{repoName}}</h2>
+<clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
     <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
@@ -43,9 +43,9 @@ export const TAG_TEMPLATE = `
       <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
       <clr-dg-cell>{{t.os}}</clr-dg-cell>
     </clr-dg-row>
-    <clr-dg-footer *ngIf="!isEmbeded">
+    <clr-dg-footer> 
       {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
-      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
-      <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>  
+      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
+      <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>`;

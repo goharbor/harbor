@@ -43,7 +43,7 @@ export class TagComponent implements OnInit {
   @Input() projectId: number;
   @Input() repoName: string;
   @Input() sessionInfo: SessionInfo;  
-  @Input() isEmbeded: boolean; 
+  @Input() isEmbedded: boolean; 
 
   @Output() refreshRepo = new EventEmitter<boolean>();
 
