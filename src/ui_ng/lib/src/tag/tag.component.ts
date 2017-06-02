@@ -57,7 +57,7 @@ export class TagComponent implements OnInit {
 
   showTagManifestOpened: boolean;
   manifestInfoTitle: string;
-  tagID: string;
+  digestId: string;
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
@@ -76,24 +76,23 @@ export class TagComponent implements OnInit {
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
-        message.source === ConfirmationTargets.TAG
-        && message.state === ConfirmationState.CONFIRMED) {
-        let tag: Tag = message.data;
-        if (tag) {
-            if (tag.signature) {
-                return;
-            } else {
-                let tagName = tag.name;
-                toPromise<number>(this.tagService
-                .deleteTag(this.repoName, tagName))
-                .then(
-                response => {
-                    this.retrieve();
-                    this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
-                        .subscribe(res=>this.errorHandler.info(res));
-                }).catch(error => this.errorHandler.error(error));
-            }
+      message.source === ConfirmationTargets.TAG
+      && message.state === ConfirmationState.CONFIRMED) {
+      let tag: Tag = message.data;
+      if (tag) {
+        if (tag.signature) {
+          return;
+        } else {
+          toPromise<number>(this.tagService
+          .deleteTag(this.repoName, tag.name))
+          .then(
+          response => {
+              this.retrieve();
+              this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
+                  .subscribe(res=>this.errorHandler.info(res));
+          }).catch(error => this.errorHandler.error(error));
         }
+      }
     }
   }
 
@@ -163,15 +162,10 @@ export class TagComponent implements OnInit {
     }
   }
 
-  showTagID(type: string, tag: Tag) {
+  showDigestId(tag: Tag) {
     if(tag) {
-      if(type === 'tag') {
-        this.manifestInfoTitle = 'REPOSITORY.COPY_ID';
-        this.tagID = tag.digest;
-      } else if(type === 'parent') {
-        this.manifestInfoTitle = 'REPOSITORY.COPY_PARENT_ID';
-        this.tagID = tag.digest;
-      }
+      this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
+      this.digestId = tag.digest;
       this.showTagManifestOpened = true;
     }
   }

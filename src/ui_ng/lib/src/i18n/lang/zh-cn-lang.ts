@@ -300,8 +300,7 @@ export const ZH_CN_LANG: any = {
         "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。"
     },
     "REPOSITORY": {
-        "COPY_ID": "复制ID",
-        "COPY_PARENT_ID": "复制父级ID",
+        "COPY_DIGEST_ID": "复制摘要ID",
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",

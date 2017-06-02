@@ -4,13 +4,14 @@ export const TAG_TEMPLATE = `
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
     <div class="row col-md-12">
-        <textarea rows="3" (click)="selectAndCopy($event)">{{tagID}}</textarea>
+        <textarea rows="3" (click)="selectAndCopy($event)">{{digestId}}</textarea>
     </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-primary" (click)="showTagManifestOpened = false">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
+
 <h2 *ngIf="!isEmbeded" class="sub-header-title">{{repoName}}</h2>
 <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbeded">
     <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
@@ -23,8 +24,7 @@ export const TAG_TEMPLATE = `
     <clr-dg-column [clrDgField]="'os'">{{'REPOSITORY.OS' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
       <clr-dg-action-overflow>
-        <button class="action-item" (click)="showTagID('tag', t)">{{'REPOSITORY.COPY_ID' | translate}}</button>
-        <button class="action-item" (click)="showTagID('parent', t)">{{'REPOSITORY.COPY_PARENT_ID' | translate}}</button>
+        <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
         <button class="action-item" [hidden]="!hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
       </clr-dg-action-overflow>
       <clr-dg-cell>{{t.name}}</clr-dg-cell>
