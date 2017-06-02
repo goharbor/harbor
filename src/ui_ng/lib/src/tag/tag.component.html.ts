@@ -43,9 +43,4 @@ export const TAG_TEMPLATE = `
       <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
       <clr-dg-cell>{{t.os}}</clr-dg-cell>
     </clr-dg-row>
-    <clr-dg-footer *ngIf="!isEmbeded">
-      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
-      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
-      <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>  
-    </clr-dg-footer>
 </clr-datagrid>`;
