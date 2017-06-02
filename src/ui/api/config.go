@@ -20,7 +20,6 @@ import (
 	"strconv"
 
 	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -91,20 +90,19 @@ var (
 
 // ConfigAPI ...
 type ConfigAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 // Prepare validates the user
 func (c *ConfigAPI) Prepare() {
-	userID := c.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("failed to check the role of user: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	c.BaseController.Prepare()
+	if !c.SecurityCtx.IsAuthenticated() {
+		c.HandleUnauthorized()
+		return
 	}
-
-	if !isSysAdmin {
-		c.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	if !c.SecurityCtx.IsSysAdmin() {
+		c.HandleForbidden(c.SecurityCtx.GetUsername())
+		return
 	}
 }
 
