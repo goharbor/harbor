@@ -9,21 +9,17 @@
 </head>
 <body>
 <my-app>Loading...</my-app>
-<script type="text/javascript" src="inline.bundle.js"></script><script type="text/javascript" src="scripts.bundle.js"></script><script type="text/javascript" src="styles.bundle.js"></script><script type="text/javascript" src="vendor.bundle.js"></script><script type="text/javascript" src="main.bundle.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<script>
-	$(function(){
-	  $.get(
-	    'https://api.github.com/repos/vmware/harbor/contributors',
-	     function(data){
-	        var contributors = $("#contributors").siblings("p:first");
-	      
-	        $.each(data, function(i, e){
-	          contributors.append('<a title="' + e["login"] + '" href="' + e["html_url"] + '"><img class="contributor" alt="'+ e["login"] + '" src="' + e["avatar_url"] + '"></a>');
-	        });
-	    },
-	    'json');
-	});
+<script type="text/javascript" src="inline.bundle.js"></script><script type="text/javascript" src="scripts.bundle.js"></script><script type="text/javascript" src="styles.bundle.js"></script><script type="text/javascript" src="vendor.bundle.js"></script><script type="text/javascript" src="main.bundle.js"></script>
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-62095720-1', 'auto');
+  ga('send', 'pageview');
+
 </script>
 </body>
 </html>

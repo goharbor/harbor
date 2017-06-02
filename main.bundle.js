@@ -1,6 +1,6 @@
-webpackJsonp([1,4],{
+webpackJsonp([1],{
 
-/***/ 141:
+/***/ "./src async recursive":
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -9,31 +9,81 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 141;
-
+webpackEmptyContext.id = "./src async recursive";
 
 /***/ }),
 
-/***/ 142:
+/***/ "./src/app/app.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<clr-main-container>\n    <header class=\"header header-6\">\n        <div class=\"branding\">\n            <a href=\"https://vmware.github.io/\" class=\"nav-link\">\n                <span class=\"clr-icon vmware-logo\"></span>\n                <span class=\"title\">Open Source Program Office</span>\n            </a>\n        </div>\n    </header>\n    <div class=\"content-container\">\n        <div id=\"content-area\" class=\"content-area\" hash-listener #scrollable>\n            <div class=\"hero\">\n                <div class=\"hero-image\"><img src=\"images/harbor.png\" alt=\"\"></div>\n                <h3>An Enterprise-class Container Registry Server based on Docker Distribution</h3>\n                <p><a href=\"https://github.com/vmware/harbor\" class=\"btn btn-primary\"><i class=\"icon icon-github\"></i> Fork Harbor&trade;</a></p>\n            </div>\n            <div id=\"overview\" class=\"section\">\n                <h2>What is Harbor&trade;</h2>\n\n                <p>Project Harbor&trade; is an enterprise-class registry server that stores and distributes Docker images. Harbor&trade; extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor&trade; offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor&trade; supports the setup of multiple registries and has images replicated between them. With Harbor&trade;, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor&trade; offers advanced security features, such as user management, access control and activity auditing.</p>\n\n                <br>\n\n                <ul>\n                    <li><strong>Role Based Access Control</strong> - Users and docker repositories are organized via \"projects\", a user can have different permission for images under a namespace.</li>\n                    <li><strong>Image replication</strong> - Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, hybrid and multi-cloud scenarios.</li>\n                    <li><strong>Graphical user portal</strong> - User can easily browse, search docker repositories, manage projects/namespaces.</li>\n                    <li><strong>AD/LDAP support</strong> - Harbor&trade; integrates with existing enterprise AD/LDAP for user authentication and management.</li>\n                    <li><strong>Auditing</strong> - All the operations to the repositories are tracked and can be used for auditing purpose.</li>\n                    <li><strong>Internationalization</strong> - Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.</li>\n                    <li><strong>RESTful API</strong> - RESTful APIs are provided for most administrative operations of Harbor&trade;. The integration with other management softwares becomes easy.</li>\n                    <li><strong>Easy deployment</strong> - Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.</li>\n                </ul>\n\n                <p>See the <a href=\"https://github.com/vmware/harbor/blob/master/README.md\">README</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingHarbor\" class=\"section\">\n                <h2>Getting Harbor&trade;</h2>\n\n                <p>Harbor&trade; can be installed on a Linux host. It can also be deployed as a virtual appliance on vSphere. Please download Harbor&trade; from the release page.</p>\n                <p>Refer to <a href=\"https://github.com/vmware/harbor/tree/master/docs\">Harbor’s documents</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingStarted\" class=\"section\">\n                <h2>Getting Started</h2>\n                <p>We've provided a guide to help get you started:</p>\n\n                <a href=\"https://github.com/vmware/admiral/wiki/Developer-Guide\" class=\"btn btn-outline\">README</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/installation_guide.md\" class=\"btn btn-outline\">Install Guide of Harbor&trade;</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/user_guide.md\" class=\"btn btn-outline\">User Guide of Harbor&trade;</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/installation_guide_ova.md\" title=\"Installation Guide of Harbor&trade; Virtual Appliance\" class=\"btn btn-outline\">Installation Guide of HVA</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/user_guide_ova.md\" title=\"User Guide of Harbor&trade; Virtual Appliance\" class=\"btn btn-outline\">User Guide of HVA</a>\n            </div>\n\n            <div id=\"contributors\" class=\"section\">\n                <h2>Contributors</h2>\n\n                <br>\n\n                <ul class=\"list-unstyled row\">\n                    <li *ngFor=\"let contributor of contributors\"><a [href]=\"contributor.html_url\"><img [src]=\"contributor.avatar_url\" alt=\"\" class=\"contributor\"></a></li>\n                </ul>\n            </div>\n\n            <div id=\"contributing\" class=\"section\">\n                <h2>Contributing</h2>\n\n                <p>We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our <a href=\"https://cla.vmware.com/faq\">FAQ</a>.</p>\n            </div>\n\n            <div id=\"license\" class=\"section\">\n                <h2>License</h2>\n\n                <p>Harbor&trade; is available under the <a href=\"https://github.com/vmware/harbor/blob/master/LICENSE\">Apache 2 license</a>.</p>\n            </div>\n        </div>\n        <nav class=\"sidenav\" [clr-nav-level]=\"2\">\n            <section class=\"sidenav-content\">\n                <section class=\"nav-group\" [scrollspy]=\"scrollable\">\n                    <label><a class=\"nav-link active\" routerLink=\".\" routerLinkActive=\"active\" fragment=\"overview\">Overview</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingHarbor\">Getting Harbor&trade;</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingStarted\">Getting Started</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributors\">Contributors</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributing\">Contributing</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"license\">License</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" href=\"https://vmware.github.io/harbor/cn/\">中文版</a></label>\n                </section>\n            </section>\n        </nav>\n    </div>\n</clr-main-container>\n"
+
+/***/ }),
+
+/***/ "./src/app/app.component.scss":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".clr-icon.vmware-logo {\n  background: url(/harbor/images/vmware.svg) no-repeat left 9px;\n  width: 108px; }\n\n.hero {\n  background-color: #ddd;\n  left: -24px;\n  padding-bottom: 2em;\n  padding-top: 2em;\n  overflow-x: hidden;\n  position: relative;\n  text-align: center;\n  top: -24px; }\n  .hero .btn-custom {\n    display: inline-block;\n    text-align: center;\n    margin: auto; }\n\n.content-area {\n  overflow-x: hidden; }\n\n.hero-image img {\n  max-width: 360px; }\n\n.icon {\n  display: inline-block;\n  height: 32px;\n  vertical-align: middle;\n  width: 32px; }\n  .icon.icon-github {\n    background: url(/harbor/images/github_icon.svg) no-repeat left -2px; }\n\n.nav-group label {\n  display: block;\n  margin-bottom: 1em; }\n\n.sidenav .nav-link {\n  padding: 3px 6px; }\n  .sidenav .nav-link:hover {\n    background: #eee; }\n  .sidenav .nav-link.active {\n    background: #d9e4ea;\n    color: #000; }\n\n.section {\n  padding: .5em 0; }\n\n.contributor {\n  border-radius: 50%;\n  border: 1px solid #ccc;\n  margin-bottom: 1.5em;\n  margin-right: 1em;\n  max-width: 64px;\n  text-decoration: none; }\n\n@media (min-width: 320px) {\n  .title {\n    display: none; }\n  .hero {\n    width: 100vw; }\n  #license {\n    padding-bottom: 20vh; } }\n\n@media (min-width: 768px) {\n  .title {\n    display: block; }\n  .hero {\n    width: 110%; }\n  #license {\n    padding-bottom: 77vh; } }\n\n.row:after {\n  clear: both;\n  content: \"\";\n  display: table; }\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "./src/app/app.component.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(162);
-var platform_browser_dynamic_1 = __webpack_require__(157);
-var core_1 = __webpack_require__(10);
-var environment_1 = __webpack_require__(161);
-var _1 = __webpack_require__(160);
-if (environment_1.environment.production) {
-    core_1.enableProdMode();
-}
-platform_browser_dynamic_1.platformBrowserDynamic().bootstrapModule(_1.AppModule);
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/main.js.map
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var contributors_service_1 = __webpack_require__("./src/services/contributors.service.ts");
+var AppComponent = (function () {
+    function AppComponent(contributorSvc) {
+        this.contributorSvc = contributorSvc;
+        this.contributors = [];
+    }
+    AppComponent.prototype.ngOnInit = function () {
+        var _this = this;
+        this.contributorSvc.getContributors().subscribe(function (results) {
+            _this.contributors = results;
+            // console.log("Contribs: ", results);
+        });
+    };
+    return AppComponent;
+}());
+AppComponent = __decorate([
+    core_1.Component({
+        selector: 'my-app',
+        template: __webpack_require__("./src/app/app.component.html"),
+        styles: [__webpack_require__("./src/app/app.component.scss")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof contributors_service_1.ContributorService !== "undefined" && contributors_service_1.ContributorService) === "function" && _a || Object])
+], AppComponent);
+exports.AppComponent = AppComponent;
+var _a;
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/app/app.component.js.map
 
 /***/ }),
 
-/***/ 158:
+/***/ "./src/app/app.module.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -45,14 +95,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var platform_browser_1 = __webpack_require__(33);
-var core_1 = __webpack_require__(10);
-var forms_1 = __webpack_require__(88);
-var http_1 = __webpack_require__(156);
-var clarity_angular_1 = __webpack_require__(90);
-var app_component_1 = __webpack_require__(89);
-var utils_module_1 = __webpack_require__(165);
-var app_routing_1 = __webpack_require__(159);
+var platform_browser_1 = __webpack_require__("./node_modules/@angular/platform-browser/@angular/platform-browser.es5.js");
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var forms_1 = __webpack_require__("./node_modules/@angular/forms/@angular/forms.es5.js");
+var http_1 = __webpack_require__("./node_modules/@angular/http/@angular/http.es5.js");
+var clarity_angular_1 = __webpack_require__("./node_modules/clarity-angular/index.js");
+var app_component_1 = __webpack_require__("./src/app/app.component.ts");
+var utils_module_1 = __webpack_require__("./src/utils/utils.module.ts");
+var app_routing_1 = __webpack_require__("./src/app/app.routing.ts");
+var contributors_service_1 = __webpack_require__("./src/services/contributors.service.ts");
 var AppModule = (function () {
     function AppModule() {
     }
@@ -71,31 +122,31 @@ AppModule = __decorate([
             utils_module_1.UtilsModule,
             app_routing_1.ROUTING
         ],
-        providers: [],
+        providers: [contributors_service_1.ContributorService],
         bootstrap: [app_component_1.AppComponent]
     })
 ], AppModule);
 exports.AppModule = AppModule;
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/app/app.module.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/app/app.module.js.map
 
 /***/ }),
 
-/***/ 159:
+/***/ "./src/app/app.routing.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var router_1 = __webpack_require__(47);
+var router_1 = __webpack_require__("./node_modules/@angular/router/@angular/router.es5.js");
 exports.ROUTES = [
     { path: '', redirectTo: 'home', pathMatch: 'full' }
 ];
 exports.ROUTING = router_1.RouterModule.forRoot(exports.ROUTES);
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/app/app.routing.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/app/app.routing.js.map
 
 /***/ }),
 
-/***/ 160:
+/***/ "./src/app/index.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -104,13 +155,13 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(89));
-__export(__webpack_require__(158));
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/app/index.js.map
+__export(__webpack_require__("./src/app/app.component.ts"));
+__export(__webpack_require__("./src/app/app.module.ts"));
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/app/index.js.map
 
 /***/ }),
 
-/***/ 161:
+/***/ "./src/environments/environment.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -123,11 +174,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.environment = {
     production: true
 };
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/environments/environment.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/environments/environment.js.map
 
 /***/ }),
 
-/***/ 162:
+/***/ "./src/main.ts":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__("./src/polyfills.ts");
+var platform_browser_dynamic_1 = __webpack_require__("./node_modules/@angular/platform-browser-dynamic/@angular/platform-browser-dynamic.es5.js");
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var environment_1 = __webpack_require__("./src/environments/environment.ts");
+var _1 = __webpack_require__("./src/app/index.ts");
+if (environment_1.environment.production) {
+    core_1.enableProdMode();
+}
+platform_browser_dynamic_1.platformBrowserDynamic().bootstrapModule(_1.AppModule);
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/main.js.map
+
+/***/ }),
+
+/***/ "./src/polyfills.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -135,27 +205,90 @@ exports.environment = {
 Object.defineProperty(exports, "__esModule", { value: true });
 // This file includes polyfills needed by Angular 2 and is loaded before
 // the app. You can add your own extra polyfills to this file.
-__webpack_require__(179);
-__webpack_require__(172);
-__webpack_require__(168);
-__webpack_require__(174);
-__webpack_require__(173);
-__webpack_require__(171);
-__webpack_require__(170);
-__webpack_require__(178);
-__webpack_require__(167);
-__webpack_require__(166);
-__webpack_require__(176);
-__webpack_require__(169);
-__webpack_require__(177);
-__webpack_require__(175);
-__webpack_require__(180);
-__webpack_require__(358);
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/polyfills.js.map
+__webpack_require__("./node_modules/core-js/es6/symbol.js");
+__webpack_require__("./node_modules/core-js/es6/object.js");
+__webpack_require__("./node_modules/core-js/es6/function.js");
+__webpack_require__("./node_modules/core-js/es6/parse-int.js");
+__webpack_require__("./node_modules/core-js/es6/parse-float.js");
+__webpack_require__("./node_modules/core-js/es6/number.js");
+__webpack_require__("./node_modules/core-js/es6/math.js");
+__webpack_require__("./node_modules/core-js/es6/string.js");
+__webpack_require__("./node_modules/core-js/es6/date.js");
+__webpack_require__("./node_modules/core-js/es6/array.js");
+__webpack_require__("./node_modules/core-js/es6/regexp.js");
+__webpack_require__("./node_modules/core-js/es6/map.js");
+__webpack_require__("./node_modules/core-js/es6/set.js");
+__webpack_require__("./node_modules/core-js/es6/reflect.js");
+__webpack_require__("./node_modules/core-js/es7/reflect.js");
+__webpack_require__("./node_modules/zone.js/dist/zone.js");
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/polyfills.js.map
 
 /***/ }),
 
-/***/ 163:
+/***/ "./src/services/contributors.service.ts":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var http_1 = __webpack_require__("./node_modules/@angular/http/@angular/http.es5.js");
+var Observable_1 = __webpack_require__("./node_modules/rxjs/Observable.js");
+__webpack_require__("./node_modules/rxjs/add/observable/forkJoin.js");
+__webpack_require__("./node_modules/rxjs/add/operator/map.js");
+var ContributorService = (function () {
+    function ContributorService(http) {
+        this.http = http;
+    }
+    ContributorService.prototype.getContributors = function () {
+        // do work to merge three http calls into one observable.
+        return Observable_1.Observable.forkJoin([
+            this.http.get('https://api.github.com/repos/vmware/harbor/contributors')
+                .map(function (res) { return res.json(); })
+        ])
+            .map(function (data) {
+            var contributors = [];
+            // console.logco("observable data", data); // make sure we are getting datas from github.
+            // concat all the data into one array
+            contributors = contributors.concat(data[0]);
+            // create a uniqueContributors array
+            var uniqueContributors = [];
+            // filteredContributors filters contributors array, add it to uniqueContributors if its not already there.
+            var filteredContributors = contributors.filter(function (el) {
+                if (uniqueContributors.indexOf(el.id) === -1) {
+                    uniqueContributors.push(el.id);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+            contributors = filteredContributors;
+            return contributors;
+        });
+    };
+    return ContributorService;
+}());
+ContributorService = __decorate([
+    core_1.Injectable(),
+    __metadata("design:paramtypes", [typeof (_a = typeof http_1.Http !== "undefined" && http_1.Http) === "function" && _a || Object])
+], ContributorService);
+exports.ContributorService = ContributorService;
+var _a;
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/services/contributors.service.js.map
+
+/***/ }),
+
+/***/ "./src/utils/hash-listener.directive.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -173,8 +306,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var core_1 = __webpack_require__(10);
-var router_1 = __webpack_require__(47);
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var router_1 = __webpack_require__("./node_modules/@angular/router/@angular/router.es5.js");
 var HashListener = (function () {
     function HashListener(route) {
         var _this = this;
@@ -214,11 +347,11 @@ HashListener = __decorate([
 ], HashListener);
 exports.HashListener = HashListener;
 var _a;
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/utils/hash-listener.directive.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/utils/hash-listener.directive.js.map
 
 /***/ }),
 
-/***/ 164:
+/***/ "./src/utils/scrollspy.directive.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -236,8 +369,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var core_1 = __webpack_require__(10);
-var router_1 = __webpack_require__(47);
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var router_1 = __webpack_require__("./node_modules/@angular/router/@angular/router.es5.js");
 var ScrollSpy = (function () {
     function ScrollSpy(renderer) {
         this.renderer = renderer;
@@ -309,11 +442,11 @@ ScrollSpy = __decorate([
 ], ScrollSpy);
 exports.ScrollSpy = ScrollSpy;
 var _a, _b, _c, _d;
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/utils/scrollspy.directive.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/utils/scrollspy.directive.js.map
 
 /***/ }),
 
-/***/ 165:
+/***/ "./src/utils/utils.module.ts":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -325,11 +458,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var core_1 = __webpack_require__(10);
-var hash_listener_directive_1 = __webpack_require__(163);
-var scrollspy_directive_1 = __webpack_require__(164);
-var clarity_angular_1 = __webpack_require__(90);
-var common_1 = __webpack_require__(40);
+var core_1 = __webpack_require__("./node_modules/@angular/core/@angular/core.es5.js");
+var hash_listener_directive_1 = __webpack_require__("./src/utils/hash-listener.directive.ts");
+var scrollspy_directive_1 = __webpack_require__("./src/utils/scrollspy.directive.ts");
+var clarity_angular_1 = __webpack_require__("./node_modules/clarity-angular/index.js");
+var common_1 = __webpack_require__("./node_modules/@angular/common/@angular/common.es5.js");
 var UtilsModule = (function () {
     function UtilsModule() {
     }
@@ -352,79 +485,17 @@ UtilsModule = __decorate([
     })
 ], UtilsModule);
 exports.UtilsModule = UtilsModule;
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/utils/utils.module.js.map
+//# sourceMappingURL=/Users/druk/ID&D Assets/Open Source Software/harbor/src/src/src/utils/utils.module.js.map
 
 /***/ }),
 
-/***/ 320:
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(38)(false);
-// imports
+module.exports = __webpack_require__("./src/main.ts");
 
-
-// module
-exports.push([module.i, ".clr-icon.clr-clarity-logo {\n  background-image: url(/harbor/images/vmw_oss.svg); }\n\n.hero {\n  background-color: #ddd;\n  left: -24px;\n  padding-bottom: 2em;\n  padding-top: 2em;\n  overflow-x: hidden;\n  position: relative;\n  text-align: center;\n  top: -24px; }\n  .hero .btn-custom {\n    display: inline-block;\n    text-align: center;\n    margin: auto; }\n\n@media (min-width: 320px) {\n  .content-area {\n    overflow-x: hidden; }\n  .hero {\n    width: 100vw; } }\n\n@media (min-width: 768px) {\n  .content-area {\n    overflow-x: hidden; }\n  .hero {\n    width: 110%; } }\n\n.hero-image img {\n  max-width: 360px; }\n\n.icon {\n  display: inline-block;\n  height: 32px;\n  vertical-align: middle;\n  width: 32px; }\n  .icon.icon-github {\n    background: url(/harbor/images/github_icon.svg) no-repeat left -2px; }\n\n.nav-group label {\n  display: block;\n  margin-bottom: 1em; }\n\n.sidenav .nav-link {\n  padding: 3px 6px; }\n  .sidenav .nav-link:hover {\n    background: #eee; }\n  .sidenav .nav-link.active {\n    background: #d9e4ea;\n    color: #000; }\n\n.section {\n  padding: .5em 0; }\n\n.contributor {\n  border-radius: 50%;\n  border: 1px solid #ccc;\n  margin-bottom: 1.5em;\n  margin-right: 1em;\n  max-width: 64px;\n  text-decoration: none; }\n\n@media (min-width: 320px) {\n  #license {\n    padding-bottom: 20vh; } }\n\n@media (min-width: 768px) {\n  #license {\n    padding-bottom: 77vh; } }\n\n.row:after {\n  clear: both;\n  content: \"\";\n  display: table; }\n", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
-/***/ 329:
-/***/ (function(module, exports) {
-
-module.exports = "<clr-main-container>\n    <header class=\"header header-6\">\n        <div class=\"branding\">\n            <a href=\"https://vmware.github.io/\" class=\"nav-link\">\n                <span class=\"clr-icon clr-clarity-logo\"></span>\n                <span class=\"title\">VMware&reg; Open Source Program Office</span>\n            </a>\n        </div>\n    </header>\n    <div class=\"content-container\">\n        <div id=\"content-area\" class=\"content-area\" hash-listener #scrollable>\n            <div class=\"hero\">\n                <div class=\"hero-image\"><img src=\"images/harbor.png\" alt=\"\"></div>\n                <h3>An Enterprise-class Container Registry Server based on Docker Distribution</h3>\n                <p><a href=\"https://github.com/vmware/harbor\" class=\"btn btn-primary\"><i class=\"icon icon-github\"></i> Fork Harbor&trade;</a></p>\n            </div>\n            <div id=\"overview\" class=\"section\">\n                <h2>What is Harbor&trade;</h2>\n\n                <p>Project Harbor&trade; is an enterprise-class registry server that stores and distributes Docker images. Harbor&trade; extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor&trade; offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor&trade; supports the setup of multiple registries and has images replicated between them. With Harbor&trade;, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor&trade; offers advanced security features, such as user management, access control and activity auditing.</p>\n\n                <br>\n\n                <ul>\n                    <li><strong>Role Based Access Control</strong> - Users and docker repositories are organized via \"projects\", a user can have different permission for images under a namespace.</li>\n                    <li><strong>Image replication</strong> - Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, hybrid and multi-cloud scenarios.</li>\n                    <li><strong>Graphical user portal</strong> - User can easily browse, search docker repositories, manage projects/namespaces.</li>\n                    <li><strong>AD/LDAP support</strong> - Harbor&trade; integrates with existing enterprise AD/LDAP for user authentication and management.</li>\n                    <li><strong>Auditing</strong> - All the operations to the repositories are tracked and can be used for auditing purpose.</li>\n                    <li><strong>Internationalization</strong> - Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.</li>\n                    <li><strong>RESTful API</strong> - RESTful APIs are provided for most administrative operations of Harbor&trade;. The integration with other management softwares becomes easy.</li>\n                    <li><strong>Easy deployment</strong> - Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.</li>\n                </ul>\n\n                <p>See the <a href=\"https://github.com/vmware/harbor/blob/master/README.md\">README</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingHarbor\" class=\"section\">\n                <h2>Getting Harbor&trade;</h2>\n\n                <p>Harbor&trade; can be installed on a Linux host. It can also be deployed as a virtual appliance on vSphere. Please download Harbor&trade; from the release page.</p>\n                <p>Refer to <a href=\"https://github.com/vmware/harbor/tree/master/docs\">Harbor’s documents</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingStarted\" class=\"section\">\n                <h2>Getting Started</h2>\n                <p>We've provided a guide to help get you started:</p>\n\n                <a href=\"https://github.com/vmware/admiral/wiki/Developer-Guide\" class=\"btn btn-outline\">README</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/installation_guide.md\" class=\"btn btn-outline\">Install Guide of Harbor&trade;</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/user_guide.md\" class=\"btn btn-outline\">User Guide of Harbor&trade;</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/installation_guide_ova.md\" title=\"Installation Guide of Harbor&trade; Virtual Appliance\" class=\"btn btn-outline\">Installation Guide of HVA</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/user_guide_ova.md\" title=\"User Guide of Harbor&trade; Virtual Appliance\" class=\"btn btn-outline\">User Guide of HVA</a>\n            </div>\n\n            <div id=\"contributors\" class=\"section\">\n                <h2>Contributors</h2>\n\n                <p>\n                    <a title=\"reasonerjt\" href=\"https://github.com/reasonerjt\"><img class=\"contributor\" alt=\"reasonerjt\" src=\"https://avatars3.githubusercontent.com/u/2390463?v=3\" ></a>\n                    <a title=\"wknet123\" href=\"https://github.com/wknet123\"><img class=\"contributor\" alt=\"wknet123\" src=\"https://avatars0.githubusercontent.com/u/5027302?v=3\" ></a>\n                    <a title=\"ywk253100\" href=\"https://github.com/ywk253100\"><img class=\"contributor\" alt=\"ywk253100\" src=\"https://avatars0.githubusercontent.com/u/5835782?v=3\" ></a>\n                    <a title=\"hainingzhang\" href=\"https://github.com/hainingzhang\"><img class=\"contributor\" alt=\"hainingzhang\" src=\"https://avatars1.githubusercontent.com/u/2161887?v=3\" ></a>\n                    <a title=\"steven-zou\" href=\"https://github.com/steven-zou\"><img class=\"contributor\" alt=\"steven-zou\" src=\"https://avatars3.githubusercontent.com/u/5753287?v=3\" ></a>\n                    <a title=\"wemeya\" href=\"https://github.com/wemeya\"><img class=\"contributor\" alt=\"wemeya\" src=\"https://avatars2.githubusercontent.com/u/12540577?v=3\" ></a>\n                    <a title=\"yhua123\" href=\"https://github.com/yhua123\"><img class=\"contributor\" alt=\"yhua123\" src=\"https://avatars1.githubusercontent.com/u/19166125?v=3\" ></a>\n                    <a title=\"wy65701436\" href=\"https://github.com/wy65701436\"><img class=\"contributor\" alt=\"wy65701436\" src=\"https://avatars0.githubusercontent.com/u/2841473?v=3\" ></a>\n                    <a title=\"invalid-email-address\" href=\"https://github.com/invalid-email-address\"><img class=\"contributor\" alt=\"invalid-email-address\" src=\"https://avatars3.githubusercontent.com/u/148100?v=3\" ></a>\n                    <a title=\"saga92\" href=\"https://github.com/saga92\"><img class=\"contributor\" alt=\"saga92\" src=\"https://avatars1.githubusercontent.com/u/5730235?v=3\" ></a>\n                    <a title=\"xiahaoshawn\" href=\"https://github.com/xiahaoshawn\"><img class=\"contributor\" alt=\"xiahaoshawn\" src=\"https://avatars0.githubusercontent.com/u/10750864?v=3\" ></a>\n                    <a title=\"Erkak\" href=\"https://github.com/Erkak\"><img class=\"contributor\" alt=\"Erkak\" src=\"https://avatars2.githubusercontent.com/u/15937486?v=3\" ></a>\n                    <a title=\"hmwenchen\" href=\"https://github.com/hmwenchen\"><img class=\"contributor\" alt=\"hmwenchen\" src=\"https://avatars3.githubusercontent.com/u/16629561?v=3\" ></a>\n                    <a title=\"perhapszzy\" href=\"https://github.com/perhapszzy\"><img class=\"contributor\" alt=\"perhapszzy\" src=\"https://avatars1.githubusercontent.com/u/7953637?v=3\" ></a>\n                    <a title=\"zgdxiaoxiao\" href=\"https://github.com/zgdxiaoxiao\"><img class=\"contributor\" alt=\"zgdxiaoxiao\" src=\"https://avatars3.githubusercontent.com/u/19501217?v=3\" ></a>\n                    <a title=\"victoriazhengwf\" href=\"https://github.com/victoriazhengwf\"><img class=\"contributor\" alt=\"victoriazhengwf\" src=\"https://avatars0.githubusercontent.com/u/17972009?v=3\" ></a>\n                    <a title=\"rikatz\" href=\"https://github.com/rikatz\"><img class=\"contributor\" alt=\"rikatz\" src=\"https://avatars3.githubusercontent.com/u/7182341?v=3\" ></a>\n                    <a title=\"senk\" href=\"https://github.com/senk\"><img class=\"contributor\" alt=\"senk\" src=\"https://avatars1.githubusercontent.com/u/710568?v=3\" ></a>\n                    <a title=\"AlexZeitler\" href=\"https://github.com/AlexZeitler\"><img class=\"contributor\" alt=\"AlexZeitler\" src=\"https://avatars2.githubusercontent.com/u/287480?v=3\" ></a>\n                    <a title=\"ScorpioCPH\" href=\"https://github.com/ScorpioCPH\"><img class=\"contributor\" alt=\"ScorpioCPH\" src=\"https://avatars1.githubusercontent.com/u/5319646?v=3\" ></a>\n                    <a title=\"redkafei\" href=\"https://github.com/redkafei\"><img class=\"contributor\" alt=\"redkafei\" src=\"https://avatars1.githubusercontent.com/u/8327386?v=3\" ></a>\n                    <a title=\"int32bit\" href=\"https://github.com/int32bit\"><img class=\"contributor\" alt=\"int32bit\" src=\"https://avatars2.githubusercontent.com/u/5260798?v=3\" ></a>\n                    <a title=\"tobegit3hub\" href=\"https://github.com/tobegit3hub\"><img class=\"contributor\" alt=\"tobegit3hub\" src=\"https://avatars3.githubusercontent.com/u/2715000?v=3\" ></a>\n                    <a title=\"amandaz\" href=\"https://github.com/amandaz\"><img class=\"contributor\" alt=\"amandaz\" src=\"https://avatars0.githubusercontent.com/u/2898608?v=3\" ></a>\n                    <a title=\"laz2\" href=\"https://github.com/laz2\"><img class=\"contributor\" alt=\"laz2\" src=\"https://avatars2.githubusercontent.com/u/800356?v=3\" ></a>\n                    <a title=\"nagarjung\" href=\"https://github.com/nagarjung\"><img class=\"contributor\" alt=\"nagarjung\" src=\"https://avatars1.githubusercontent.com/u/9403528?v=3\" ></a>\n                    <a title=\"alanwooo\" href=\"https://github.com/alanwooo\"><img class=\"contributor\" alt=\"alanwooo\" src=\"https://avatars2.githubusercontent.com/u/12868735?v=3\" ></a>\n                    <a title=\"liubin\" href=\"https://github.com/liubin\"><img class=\"contributor\" alt=\"liubin\" src=\"https://avatars2.githubusercontent.com/u/1212008?v=3\" ></a>\n                    <a title=\"feilengcui008\" href=\"https://github.com/feilengcui008\"><img class=\"contributor\" alt=\"feilengcui008\" src=\"https://avatars3.githubusercontent.com/u/4131736?v=3\" ></a>\n                    <a title=\"sigsbee\" href=\"https://github.com/sigsbee\"><img class=\"contributor\" alt=\"sigsbee\" src=\"https://avatars1.githubusercontent.com/u/23101283?v=3\" ></a>\n                    </p>\n            </div>\n\n            <div id=\"contributing\" class=\"section\">\n                <h2>Contributing</h2>\n\n                <p>We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our <a href=\"https://cla.vmware.com/faq\">FAQ</a>.</p>\n            </div>\n\n            <div id=\"license\" class=\"section\">\n                <h2>License</h2>\n\n                <p>Harbor&trade; is available under the <a href=\"https://github.com/vmware/harbor/blob/master/LICENSE\">Apache 2 license</a>.</p>\n            </div>\n        </div>\n        <nav class=\"sidenav\" [clr-nav-level]=\"2\">\n            <section class=\"sidenav-content\">\n                <section class=\"nav-group\" [scrollspy]=\"scrollable\">\n                    <label><a class=\"nav-link active\" routerLink=\".\" routerLinkActive=\"active\" fragment=\"overview\">Overview</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingHarbor\">Getting Harbor&trade;</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingStarted\">Getting Started</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributors\">Contributors</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributing\">Contributing</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"license\">License</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" href=\"https://vmware.github.io/harbor/cn/\">中文版</a></label>\n                </section>\n            </section>\n        </nav>\n    </div>\n</clr-main-container>\n"
-
-/***/ }),
-
-/***/ 360:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(142);
-
-
-/***/ }),
-
-/***/ 89:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var core_1 = __webpack_require__(10);
-var router_1 = __webpack_require__(47);
-var AppComponent = (function () {
-    function AppComponent(router) {
-        this.router = router;
-    }
-    return AppComponent;
-}());
-AppComponent = __decorate([
-    core_1.Component({
-        selector: 'my-app',
-        template: __webpack_require__(329),
-        styles: [__webpack_require__(320)]
-    }),
-    __metadata("design:paramtypes", [typeof (_a = typeof router_1.Router !== "undefined" && router_1.Router) === "function" && _a || Object])
-], AppComponent);
-exports.AppComponent = AppComponent;
-var _a;
-//# sourceMappingURL=/Users/druk/Sites/harbor/src/src/src/app/app.component.js.map
 
 /***/ })
 
-},[360]);
+},[1]);
 //# sourceMappingURL=main.bundle.js.map
