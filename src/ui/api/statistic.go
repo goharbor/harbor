@@ -102,7 +102,7 @@ func (s *StatisticAPI) Get() {
 		})
 		if err != nil {
 			s.HandleInternalServerError(fmt.Sprintf(
-				"failed to get projects: %v", err))
+				"failed to get projects of user %s: %v", s.username, err))
 			return
 		}
 		statistic[MPC] = (int64)(len(projects))
