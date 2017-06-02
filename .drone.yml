@@ -57,7 +57,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, drone, releases/* ]
+      branch: [ master, releases/* ]
       status: success
 
   notify-slack:
@@ -110,5 +110,5 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, drone ]
+      branch: [ master ]
       status: success
