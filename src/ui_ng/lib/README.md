@@ -7,7 +7,7 @@ Wrap the following Harbor UI components into a sharable library and published as
 * Access log list view
 * Vulnerability scanning result bar chart and list view (Embedded in tag management view)
 
-The Harbor UI library is built on **[Angular ](https://angular.io/)**4.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.9.x .
+The Harbor UI library is built on **[Angular ](https://angular.io/)** 4.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.9.x .
 
 The library is published to the public npm repository with name **[harbor-ui](https://www.npmjs.com/package/harbor-ui)**.
 
@@ -24,6 +24,7 @@ npm run test
 
 ## Usage
 **Add dependency to application**
+
 Execute install command to add dependency to package.json
 ```
 npm install harbor-ui --save
@@ -64,7 +65,7 @@ export const DefaultServiceConfig: IServiceConfig = {
   enablei18Support: false
 };
 ```
-If you want to override the related items, declare your 'IServiceConfig' interface and define the configuration value. E.g: Override 'repositoryBaseEndpoint'
+If you want to override the related items, declare your own 'IServiceConfig' interface and define the configuration value. E.g: Override 'repositoryBaseEndpoint'
 ```
 export const MyServiceConfig: IServiceConfig = {
     repositoryBaseEndpoint: "/api/wrap/repositories"
@@ -78,14 +79,14 @@ HarborLibraryModule.forRoot({
 
 ```
 It supports partially overriding. For the items not overridden, default values will be adopted. The items contained in **config** are:
-* repositoryBaseEndpoint: The base endpoint of the service used to handle the repositories of registry and/or tags of repository. Default value is "/api/repositories".
-* logBaseEndpoint: The base endpoint of the service used to handle the recent access logs. Default is "/api/logs".
-* targetBaseEndpoint: The base endpoint of the service used to handle the registry endpoints. Default is "/api/targets".
-* replicationRuleEndpoint: The base endpoint of the service used to handle the replication rules. Default is "/api/policies/replication".
-* replicationJobEndpoint: The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
-* langCookieKey: The cookie key used to store the current used language preference. Default is "harbor-lang".
-* supportedLangs: Declare what languages are supported. Default is ['en-us', 'zh-cn', 'es-es'].
-* enablei18Support: To determine whether to not enable the i18 multiple languages supporting. Default is false.
+* **repositoryBaseEndpoint:** The base endpoint of the service used to handle the repositories of registry and/or tags of repository. Default value is "/api/repositories".
+* **logBaseEndpoint:** The base endpoint of the service used to handle the recent access logs. Default is "/api/logs".
+* **targetBaseEndpoint:** The base endpoint of the service used to handle the registry endpoints. Default is "/api/targets".
+* **replicationRuleEndpoint:** The base endpoint of the service used to handle the replication rules. Default is "/api/policies/replication".
+* **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
+* **langCookieKey:** The cookie key used to store the current used language preference. Default is "harbor-lang".
+* **supportedLangs:** Declare what languages are supported. Default is ['en-us', 'zh-cn', 'es-es'].
+* **enablei18Support:** To determine whether to not enable the i18 multiple languages supporting. Default is false.
 
 **2. errorHandler**
 UI components in the library use this interface to pass the errors/warnings/infos/logs to the top component or page. The top component or page can display those information in their message panel or notification system.
@@ -126,7 +127,7 @@ Some components may need the user authorization and authentication information t
 **4. services**
 The library has its own service implementations to communicate with backend APIs and transfer data. If you want to use your own data handling logic, you can implement your own services based on the defined interfaces.
 
-* AccessLogService: Define service methods to handle the access log related things.
+* **AccessLogService:** Define service methods to handle the access log related things.
 ```
 @Injectable()
 export class MyAccessLogService extends AccessLogService {
@@ -169,7 +170,7 @@ HarborLibraryModule.forRoot({
 
 ```
 
-* EndpointService: Define the service methods to handle the endpoint related things.
+* **EndpointService:** Define the service methods to handle the endpoint related things.
 ```
 @Injectable()
 export class MyEndpointService extends EndpointService {
@@ -274,7 +275,7 @@ HarborLibraryModule.forRoot({
 
 ```
 
-* ReplicationService: Define the service methods to handle the replication (rule and job) related things.
+* **ReplicationService:** Define the service methods to handle the replication (rule and job) related things.
 ```
 @Injectable()
 export class MyReplicationService extends ReplicationService {
@@ -403,7 +404,7 @@ HarborLibraryModule.forRoot({
 
 ```
 
-* RepositoryService:  Define service methods for handling the repository related things.
+* **RepositoryService:**  Define service methods for handling the repository related things.
 ```
 @Injectable()
 export class MyRepositoryService extends RepositoryService {
@@ -489,7 +490,7 @@ HarborLibraryModule.forRoot({
 
 ```
 
-* ScanningResultService: Get the vulnerabilities scanning results for the specified tag.
+* **ScanningResultService:** Get the vulnerabilities scanning results for the specified tag.
 ```
 @Injectable()
 export class MyScanningResultService extends ScanningResultService {
