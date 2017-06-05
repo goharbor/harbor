@@ -111,6 +111,11 @@ func (f *fakePM) GetAll(*models.QueryParam) ([]*models.Project, error) {
 }
 
 // nil implement
+func (f *fakePM) GetHasReadPerm(username ...string) ([]*models.Project, error) {
+	return []*models.Project{}, nil
+}
+
+// nil implement
 func (f *fakePM) GetTotal(*models.QueryParam) (int64, error) {
 	return 0, nil
 }

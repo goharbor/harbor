@@ -156,11 +156,18 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
-// SearchProjects returns a project list,
+// GetHasReadPermProjects returns a project list,
 // which satisfies the following conditions:
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
-func SearchProjects(userID int) ([]*models.Project, error) {
+func GetHasReadPermProjects(username string) ([]*models.Project, error) {
+	user, err := GetUser(models.User{
+		Username: username,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	o := GetOrmer()
 
 	sql :=
@@ -174,7 +181,7 @@ func SearchProjects(userID int) ([]*models.Project, error) {
 
 	var projects []*models.Project
 
-	if _, err := o.Raw(sql, userID).QueryRows(&projects); err != nil {
+	if _, err := o.Raw(sql, user.UserID).QueryRows(&projects); err != nil {
 		return nil, err
 	}
 
