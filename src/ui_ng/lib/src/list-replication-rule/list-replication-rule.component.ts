@@ -25,9 +25,9 @@ import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../
 import { TranslateService } from '@ngx-translate/core';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
 
-import { State } from 'clarity-angular';
+import { State, Comparator } from 'clarity-angular';
 
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
 
@@ -44,6 +44,8 @@ export class ListReplicationRuleComponent {
   @Input() projectless: boolean;
   @Input() selectedId: number | string;
 
+  @Input() loading: boolean = false;
+
   @Output() reload = new EventEmitter<boolean>();
   @Output() selectOne = new EventEmitter<ReplicationRule>();
   @Output() editOne = new EventEmitter<ReplicationRule>();
@@ -55,11 +57,14 @@ export class ListReplicationRuleComponent {
   @ViewChild('deletionConfirmDialog')
   deletionConfirmDialog: ConfirmationDialogComponent;
   
+  startTimeComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>('start_time', 'date');
+  enabledComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>('enabled', 'number');
+
   constructor(
     private replicationService: ReplicationService,
     private translateService: TranslateService,
     private errorHandler: ErrorHandler,
-    private ref: ChangeDetectorRef) {
+    private ref: ChangeDetectorRef) {  
     setInterval(()=>ref.markForCheck(), 500);
   }
 

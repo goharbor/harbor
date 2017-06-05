@@ -298,3 +298,58 @@ func TestGetAll(t *testing.T) {
 	}
 	assert.True(t, exist)
 }
+
+func TestGetHasReadPerm(t *testing.T) {
+	pm := &ProjectManager{}
+
+	// do not pass username
+	projects, err := pm.GetHasReadPerm()
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(projects))
+	exist := false
+	for _, project := range projects {
+		if project.ProjectID == 1 {
+			exist = true
+			break
+		}
+	}
+	assert.True(t, exist)
+
+	// username is nil
+	projects, err = pm.GetHasReadPerm("")
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(projects))
+	exist = false
+	for _, project := range projects {
+		if project.ProjectID == 1 {
+			exist = true
+			break
+		}
+	}
+	assert.True(t, exist)
+
+	// valid username
+	id, err := pm.Create(&models.Project{
+		Name:    "get_has_read_perm_test",
+		OwnerID: 1,
+		Public:  0,
+	})
+	assert.Nil(t, err)
+	defer pm.Delete(id)
+
+	projects, err = pm.GetHasReadPerm("admin")
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(projects))
+	exist1 := false
+	exist2 := false
+	for _, project := range projects {
+		if project.ProjectID == 1 {
+			exist1 = true
+		}
+		if project.ProjectID == id {
+			exist2 = true
+		}
+	}
+	assert.True(t, exist1)
+	assert.True(t, exist2)
+}

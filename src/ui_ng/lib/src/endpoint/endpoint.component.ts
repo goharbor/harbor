@@ -32,7 +32,9 @@ import { CreateEditEndpointComponent } from '../create-edit-endpoint/create-edit
 import { ENDPOINT_STYLE } from './endpoint.component.css';
 import { ENDPOINT_TEMPLATE } from './endpoint.component.html';
 
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
+
+import { State, Comparator } from 'clarity-angular';
 
 @Component({
   selector: 'hbr-endpoint',
@@ -54,6 +56,10 @@ export class EndpointComponent implements OnInit {
 
   targetName: string;
   subscription: Subscription;
+
+  loading: boolean = false;
+
+  creationTimeComparator: Comparator<Endpoint> = new CustomComparator<Endpoint>('creation_time', 'date');
 
   get initEndpoint(): Endpoint {
     return {
@@ -101,7 +107,7 @@ export class EndpointComponent implements OnInit {
 
   ngOnInit(): void {
     this.targetName = '';
-    this.retrieve('');
+    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -110,29 +116,34 @@ export class EndpointComponent implements OnInit {
     }
   }
 
-  retrieve(targetName: string): void {
+  retrieve(): void {
+    this.loading = true;
     toPromise<Endpoint[]>(this.endpointService
-      .getEndpoints(targetName))
+      .getEndpoints(this.targetName))
       .then(
       targets => {
         this.targets = targets || [];
         let hnd = setInterval(()=>this.ref.markForCheck(), 100);
         setTimeout(()=>clearInterval(hnd), 1000);
-      }).catch(error => this.errorHandler.error(error));
+        this.loading = false;
+      }).catch(error => {
+        this.errorHandler.error(error); 
+        this.loading = false; 
+      });
   }
 
   doSearchTargets(targetName: string) {
     this.targetName = targetName;
-    this.retrieve(targetName);
+    this.retrieve();
   }
 
   refreshTargets() {
-    this.retrieve('');
+    this.retrieve();
   }
 
   reload($event: any) {
     this.targetName = '';
-    this.retrieve('');
+    this.retrieve();
   }
 
   openModal() {

@@ -103,7 +103,8 @@ func (ra *RepositoryAPI) Get() {
 
 	keyword := ra.GetString("q")
 
-	total, err := dao.GetTotalOfRepositoriesByProject(projectID, keyword)
+	total, err := dao.GetTotalOfRepositoriesByProject(
+		[]int64{projectID}, keyword)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get total of repositories of project %d: %v",
 			projectID, err))
