@@ -1,13 +1,13 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
 <confirmation-dialog #toggleConfirmDialog (confirmAction)="toggleConfirm($event)"></confirmation-dialog>
 <confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
-<clr-datagrid>
-    <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
-    <clr-dg-column *ngIf="projectless">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+<clr-datagrid [clrDgLoading]="loading">
+    <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'project_name'" *ngIf="projectless">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'target_name'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="enabledComparator">{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let p of rules" [clrDgItem]="p" (click)="selectRule(p)" [style.backgroundColor]="(!projectless && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editRule(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
@@ -27,7 +27,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
         <clr-dg-cell>{{p.target_name}}</clr-dg-cell>
         <clr-dg-cell>
           <ng-template [ngIf]="p.start_time === nullTime">-</ng-template>
-          <ng-template [ngIf]="p.start_time !== nullTime">{{p.start_time}}</ng-template>
+          <ng-template [ngIf]="p.start_time !== nullTime">{{p.start_time | date: 'short'}}</ng-template>
         </clr-dg-cell>
         <clr-dg-cell>
             {{ (p.enabled === 1 ? 'REPLICATION.ENABLED' : 'REPLICATION.DISABLED') | translate}}
