@@ -11,12 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 import { ResponseOptions, RequestOptions } from '@angular/http';
 import { NgModel } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
 
+import { ListReplicationRuleComponent} from '../list-replication-rule/list-replication-rule.component';
 import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { ErrorHandler } from '../error-handler/error-handler';
 
@@ -71,6 +72,9 @@ export class SearchOption {
 export class ReplicationComponent implements OnInit {
    
    @Input() projectId: number | string;
+   @Input() withReplicationJob: boolean;
+
+   @Output() redirect = new  EventEmitter<ReplicationRule>();
 
    search: SearchOption = new SearchOption();
 
@@ -94,6 +98,9 @@ export class ReplicationComponent implements OnInit {
    toggleJobSearchOption = optionalSearch;
    currentJobSearchOption: number;
 
+   @ViewChild(ListReplicationRuleComponent)
+   listReplicationRule: ListReplicationRuleComponent;
+
    @ViewChild(CreateEditRuleComponent) 
    createEditPolicyComponent: CreateEditRuleComponent;
 
@@ -113,31 +120,7 @@ export class ReplicationComponent implements OnInit {
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
-
-     this.retrieveRules();
    }
-
-   retrieveRules(): void {
-     this.loading = true;
-     toPromise<ReplicationRule[]>(this.replicationService
-         .getReplicationRules(this.projectId, this.search.ruleName))
-         .then(response=>{
-             this.changedRules = response || [];
-             if(this.changedRules && this.changedRules.length > 0) {
-               this.initSelectedId = this.changedRules[0].id || '';
-             }
-             this.rules = this.changedRules;
-             if(this.changedRules && this.changedRules.length > 0) {
-               this.search.ruleId = this.changedRules[0].id || '';
-               this.fetchReplicationJobs();
-             }
-             this.loading = false;
-           }
-         ).catch(error=>{
-           this.errorHandler.error(error);
-           this.loading = false;
-         });
-   } 
 
    openModal(): void {
      this.createEditPolicyComponent.openCreateEditRule(true);
@@ -177,37 +160,39 @@ export class ReplicationComponent implements OnInit {
        this.search.repoName = '';
        this.search.status = '';
        this.currentJobSearchOption = 0;
-       this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
+       this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' }; 
        this.fetchReplicationJobs();
      }
+   }
+
+   customRedirect(rule: ReplicationRule) {
+     this.redirect.emit(rule);
    }
    
    doSearchRules(ruleName: string) {
      this.search.ruleName = ruleName;
-     this.retrieveRules();
+     this.listReplicationRule.retrieveRules(ruleName);
    }
 
    doFilterRuleStatus($event: any) {
      if ($event && $event.target && $event.target["value"]) {
        let status = $event.target["value"];
        this.currentRuleStatus = this.ruleStatus.find((r: any)=>r.key === status);
-       if(this.currentRuleStatus.key === 'all') {
-         this.changedRules = this.rules;
-       } else {
-         this.changedRules = this.rules.filter(policy=>policy.enabled === +this.currentRuleStatus.key);
-       }
+       this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
      }
    }
 
    doFilterJobStatus($event: any) {
      if ($event && $event.target && $event.target["value"]) {
        let status = $event.target["value"];
+      
        this.currentJobStatus = this.jobStatus.find((r: any)=>r.key === status);
        if(this.currentJobStatus.key === 'all') {
          status = '';
        }
        this.search.status = status;
        this.doSearchJobs(this.search.repoName);
+       
      }
    }
 
@@ -219,12 +204,12 @@ export class ReplicationComponent implements OnInit {
    reloadRules(isReady: boolean) {
      if(isReady) {
        this.search.ruleName = '';
-       this.retrieveRules();
+       this.listReplicationRule.retrieveRules(this.search.ruleName);
      }
    }
 
    refreshRules() {
-     this.retrieveRules();
+     this.listReplicationRule.retrieveRules();
    }
 
    refreshJobs() {

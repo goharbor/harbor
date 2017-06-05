@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { ReplicationService } from '../service/replication.service';
 import { ReplicationRule } from '../service/interface';
@@ -32,17 +32,17 @@ import { State, Comparator } from 'clarity-angular';
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
 
 @Component({
-  selector: 'list-replication-rule',
+  selector: 'hbr-list-replication-rule',
   template: LIST_REPLICATION_RULE_TEMPLATE,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListReplicationRuleComponent {
+export class ListReplicationRuleComponent implements OnInit {
 
   nullTime: string = '0001-01-01T00:00:00Z';
-
-  @Input() rules: ReplicationRule[];
-  @Input() projectless: boolean;
+  
+  @Input() projectId: number;
   @Input() selectedId: number | string;
+  @Input() withReplicationJob: boolean;
 
   @Input() loading: boolean = false;
 
@@ -50,6 +50,13 @@ export class ListReplicationRuleComponent {
   @Output() selectOne = new EventEmitter<ReplicationRule>();
   @Output() editOne = new EventEmitter<ReplicationRule>();
   @Output() toggleOne = new EventEmitter<ReplicationRule>();
+  @Output() redirect = new EventEmitter<ReplicationRule>();
+
+  projectScope: boolean;
+
+  rules: ReplicationRule[];
+  changedRules: ReplicationRule[];
+  ruleName: string;
 
   @ViewChild('toggleConfirmDialog')
   toggleConfirmDialog: ConfirmationDialogComponent;
@@ -66,6 +73,38 @@ export class ListReplicationRuleComponent {
     private errorHandler: ErrorHandler,
     private ref: ChangeDetectorRef) {  
     setInterval(()=>ref.markForCheck(), 500);
+  }
+
+  ngOnInit(): void {
+    this.projectScope = (!this.projectId);
+    this.retrieveRules();
+  }
+
+  retrieveRules(ruleName: string = ''): void {
+    this.loading = true;
+    toPromise<ReplicationRule[]>(this.replicationService
+        .getReplicationRules(this.projectId, ruleName))
+        .then(rules=>{
+            this.rules = rules || [];
+            if(this.rules && this.rules.length > 0) {
+              this.selectedId = this.rules[0].id || '';
+              this.selectOne.emit(this.rules[0]);
+            }
+            this.changedRules =  this.rules;
+            this.loading = false;
+          }
+        ).catch(error=>{
+          this.errorHandler.error(error);
+          this.loading = false;
+        });
+  } 
+
+  filterRuleStatus(status: string) {
+    if(status === 'all') {
+      this.changedRules = this.rules;
+    } else {
+      this.changedRules = this.rules.filter(policy=>policy.enabled === +status);
+    }
   }
 
   toggleConfirm(message: ConfirmationAcknowledgement) {
@@ -110,6 +149,10 @@ export class ListReplicationRuleComponent {
   selectRule(rule: ReplicationRule): void {
     this.selectedId = rule.id || '';
     this.selectOne.emit(rule);
+  }
+
+  redirectTo(rule: ReplicationRule): void {
+    this.redirect.emit(rule);
   }
 
   editRule(rule: ReplicationRule) {

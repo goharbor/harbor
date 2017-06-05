@@ -9,5 +9,6 @@ export * from './endpoint/index';
 export * from './repository/index';
 export * from './repository-stackview/index';
 export * from './tag/index';
+export * from './list-replication-rule/index';
 export * from './replication/index';
 export * from './vulnerability-scanning/index';
