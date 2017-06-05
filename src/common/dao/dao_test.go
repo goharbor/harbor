@@ -570,11 +570,11 @@ func TestGetAccessLog(t *testing.T) {
 		t.Errorf("failed to add access log: %v", err)
 	}
 
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
+	accessLogs, err := GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -587,11 +587,11 @@ func TestGetAccessLog(t *testing.T) {
 }
 
 func TestGetTotalOfAccessLogs(t *testing.T) {
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	total, err := GetTotalOfAccessLogs(queryAccessLog)
+	total, err := GetTotalOfAccessLogs(query)
 	if err != nil {
 		t.Fatalf("failed to get total of access log: %v", err)
 	}
@@ -617,7 +617,15 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
+
+	query := &models.LogQueryParam{
+		Username:   accessLog.Username,
+		ProjectIDs: []int64{accessLog.ProjectID},
+		Repository: accessLog.RepoName,
+		Tag:        accessLog.RepoTag,
+		Operations: []string{accessLog.Operation},
+	}
+	accessLogList, err = GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -819,7 +827,7 @@ func TestGetProjects(t *testing.T) {
 
 func TestGetPublicProjects(t *testing.T) {
 	value := true
-	projects, err := GetProjects(&models.QueryParam{
+	projects, err := GetProjects(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	if err != nil {
@@ -950,16 +958,6 @@ func TestChangeUserProfile(t *testing.T) {
 		if loginedUser.Comment != "Unit Test" {
 			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 		}
-	}
-}
-
-func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(currentUser.Username, 10, "2016-05-13 00:00:00", time.Now().String())
-	if err != nil {
-		t.Errorf("error occured in getting recent logs, error: %v", err)
-	}
-	if len(logs) <= 0 {
-		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
 	}
 }
 

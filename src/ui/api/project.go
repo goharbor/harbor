@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
@@ -258,7 +259,7 @@ func projectContainsPolicy(id int64) (bool, error) {
 // TODO refacter pattern to:
 // /api/repositories?owner=xxx&name=xxx&public=true&member=xxx&role=1&page=1&size=3
 func (p *ProjectAPI) List() {
-	query := &models.QueryParam{}
+	query := &models.ProjectQueryParam{}
 
 	query.Name = p.GetString("project_name")
 	public := p.GetString("is_public")
@@ -382,28 +383,49 @@ func (p *ProjectAPI) FilterAccessLog() {
 	var query models.AccessLog
 	p.DecodeJSONReq(&query)
 
-	query.ProjectID = p.project.ProjectID
-	query.BeginTime = time.Unix(query.BeginTimestamp, 0)
-	query.EndTime = time.Unix(query.EndTimestamp, 0)
-
-	page, pageSize := p.GetPaginationParams()
-
-	total, err := dao.GetTotalOfAccessLogs(query)
-	if err != nil {
-		log.Errorf("failed to get total of access log: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+	queryParm := &models.LogQueryParam{
+		ProjectIDs: []int64{p.project.ProjectID},
+		Username:   query.Username,
+		Repository: query.RepoName,
+		Tag:        query.RepoTag,
 	}
 
-	logs, err := dao.GetAccessLogs(query, pageSize, pageSize*(page-1))
+	if len(query.Keywords) > 0 {
+		queryParm.Operations = strings.Split(query.Keywords, "/")
+	}
+
+	if query.BeginTimestamp > 0 {
+		beginTime := time.Unix(query.BeginTimestamp, 0)
+		queryParm.BeginTime = &beginTime
+	}
+
+	if query.EndTimestamp > 0 {
+		endTime := time.Unix(query.EndTimestamp, 0)
+		queryParm.EndTime = &endTime
+	}
+
+	page, pageSize := p.GetPaginationParams()
+	queryParm.Pagination = &models.Pagination{
+		Page: page,
+		Size: pageSize,
+	}
+
+	total, err := dao.GetTotalOfAccessLogs(queryParm)
 	if err != nil {
-		log.Errorf("failed to get access log: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to get total of access log: %v", err))
+		return
+	}
+
+	logs, err := dao.GetAccessLogs(queryParm)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to get access log: %v", err))
+		return
 	}
 
 	p.SetPaginationHeader(total, page, pageSize)
-
 	p.Data["json"] = logs
-
 	p.ServeJSON()
 }
 

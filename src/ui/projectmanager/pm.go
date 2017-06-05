@@ -33,9 +33,9 @@ type ProjectManager interface {
 	Delete(projectIDOrName interface{}) error
 	Update(projectIDOrName interface{}, project *models.Project) error
 	// GetAll returns a project list according to the query parameters
-	GetAll(query *models.QueryParam) ([]*models.Project, error)
+	GetAll(query *models.ProjectQueryParam) ([]*models.Project, error)
 	// GetTotal returns the total count according to the query parameters
-	GetTotal(query *models.QueryParam) (int64, error)
+	GetTotal(query *models.ProjectQueryParam) (int64, error)
 	// GetHasReadPerm returns a project list which the user has read
 	// permission of. The list should contains all public projects and
 	// projects which the user is a member of if the username is not nil

@@ -15,18 +15,17 @@
 package api
 
 import (
-	"net/http"
-	"strconv"
-	"time"
+	"fmt"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 //LogAPI handles request api/logs
 type LogAPI struct {
 	BaseController
+	username   string
+	isSysAdmin bool
 }
 
 //Prepare validates the URL and the user
@@ -36,53 +35,58 @@ func (l *LogAPI) Prepare() {
 		l.HandleUnauthorized()
 		return
 	}
+	l.username = l.SecurityCtx.GetUsername()
+	l.isSysAdmin = l.SecurityCtx.IsSysAdmin()
 }
 
 //Get returns the recent logs according to parameters
 func (l *LogAPI) Get() {
-	var err error
-	startTime := l.GetString("start_time")
-	if len(startTime) != 0 {
-		i, err := strconv.ParseInt(startTime, 10, 64)
-		if err != nil {
-			log.Errorf("Parse startTime to int error, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "startTime is not a valid integer")
-		}
-		startTime = time.Unix(i, 0).String()
+	page, size := l.GetPaginationParams()
+	query := &models.LogQueryParam{
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
 	}
 
-	endTime := l.GetString("end_time")
-	if len(endTime) != 0 {
-		j, err := strconv.ParseInt(endTime, 10, 64)
+	if !l.isSysAdmin {
+		projects, err := l.ProjectMgr.GetByMember(l.username)
 		if err != nil {
-			log.Errorf("Parse endTime to int error, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "endTime is not a valid integer")
+			l.HandleInternalServerError(fmt.Sprintf(
+				"failed to get projects of user %s: %v", l.username, err))
+			return
 		}
-		endTime = time.Unix(j, 0).String()
+
+		if len(projects) == 0 {
+			l.SetPaginationHeader(0, page, size)
+			l.Data["json"] = nil
+			l.ServeJSON()
+			return
+		}
+
+		ids := []int64{}
+		for _, project := range projects {
+			ids = append(ids, project.ProjectID)
+		}
+		query.ProjectIDs = ids
 	}
 
-	var linesNum int
-	lines := l.GetString("lines")
-	if len(lines) != 0 {
-		linesNum, err = strconv.Atoi(lines)
-		if err != nil {
-			log.Errorf("Get parameters error--lines, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "bad request of lines")
-		}
-		if linesNum <= 0 {
-			log.Warning("lines must be a positive integer")
-			l.CustomAbort(http.StatusBadRequest, "lines is 0 or negative")
-		}
-	} else if len(startTime) == 0 && len(endTime) == 0 {
-		linesNum = 10
-	}
-
-	var logList []models.AccessLog
-	logList, err = dao.GetRecentLogs(l.SecurityCtx.GetUsername(), linesNum, startTime, endTime)
+	total, err := dao.GetTotalOfAccessLogs(query)
 	if err != nil {
-		log.Errorf("Get recent logs error, err: %v", err)
-		l.CustomAbort(http.StatusInternalServerError, "Internal error")
+		l.HandleInternalServerError(fmt.Sprintf(
+			"failed to get total of access logs: %v", err))
+		return
 	}
-	l.Data["json"] = logList
+
+	logs, err := dao.GetAccessLogs(query)
+	if err != nil {
+		l.HandleInternalServerError(fmt.Sprintf(
+			"failed to get access logs: %v", err))
+		return
+	}
+
+	l.SetPaginationHeader(total, page, size)
+
+	l.Data["json"] = logs
 	l.ServeJSON()
 }

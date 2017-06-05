@@ -57,7 +57,6 @@ func (s *StatisticAPI) Prepare() {
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
-
 	projects, err := s.ProjectMgr.GetPublic()
 	if err != nil {
 		s.HandleInternalServerError(fmt.Sprintf(
@@ -95,7 +94,7 @@ func (s *StatisticAPI) Get() {
 		statistic[MRC] = n
 		statistic[TRC] = n
 	} else {
-		projects, err := s.ProjectMgr.GetAll(&models.QueryParam{
+		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
 			Member: &models.Member{
 				Name: s.username,
 			},
