@@ -203,7 +203,7 @@ func (sm *SM) kickOff() error {
 			log.Debugf("The policy of job:%v is disabled, will cancel the job", repJob)
 			if err := repJob.UpdateStatus(models.JobCanceled); err != nil {
 				log.Warningf("Failed to update status of job: %v to 'canceled', error: %v", repJob, err)
-
+				return err
 			}
 		}
 	}
