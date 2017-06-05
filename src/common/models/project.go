@@ -58,7 +58,7 @@ func (ps *ProjectSorter) Swap(i, j int) {
 	ps.Projects[i], ps.Projects[j] = ps.Projects[j], ps.Projects[i]
 }
 
-// QueryParam can be used to set query parameters when listing projects.
+// ProjectQueryParam can be used to set query parameters when listing projects.
 // The query condition will be set in the query if its corresponding field
 // is not nil. Leave it empty if you don't want to apply this condition.
 //
@@ -69,7 +69,7 @@ func (ps *ProjectSorter) Swap(i, j int) {
 // List all public projects the owner of which is user1: query := &QueryParam{Owner:"user1",Public:true}
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
 // List projects which user1 is the project admin : query := &QueryParam{Memeber:&Member{Name:"user1",Role:1}}
-type QueryParam struct {
+type ProjectQueryParam struct {
 	Name       string      // the name of project
 	Owner      string      // the username of project owner
 	Public     *bool       // the project is public or not, can be ture, false and nil

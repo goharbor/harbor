@@ -21,10 +21,12 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
         <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
         <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>        
-        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" class="sub-grid-custom" [repoName]="r.name" [sessionInfo]="sessionInfo" [projectId]="projectId" [isEmbeded]="true" (refreshRepo)="refresh($event)"></hbr-tag>
+        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" class="sub-grid-custom" [repoName]="r.name" [sessionInfo]="sessionInfo" [projectId]="projectId" [isEmbedded]="true" (refreshRepo)="refresh($event)"></hbr-tag>
       </clr-dg-row>
       <clr-dg-footer> 
-        {{ repositories ? repositories.length : 0 }} {{'REPOSITORY.ITEMS' | translate}}
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
+        {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
+        <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>
   </div>

@@ -67,7 +67,7 @@ export class AccessLogDefaultService extends AccessLogService {
             url = '/api/logs';
         }
 
-        return this.http.get(url+`?lines=${lines}`, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url+`?page_size=${lines}`, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response.json() as AccessLog[])
             .catch(error => Promise.reject(error));
     }

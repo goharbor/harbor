@@ -23,24 +23,24 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
 type RepPolicyAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 // Prepare validates whether the user has system admin role
 func (pa *RepPolicyAPI) Prepare() {
-	uid := pa.ValidateUser()
-	var err error
-	isAdmin, err := dao.IsAdminRole(uid)
-	if err != nil {
-		log.Errorf("Failed to Check if the user is admin, error: %v, uid: %d", err, uid)
+	pa.BaseController.Prepare()
+	if !pa.SecurityCtx.IsAuthenticated() {
+		pa.HandleUnauthorized()
+		return
 	}
-	if !isAdmin {
-		pa.CustomAbort(http.StatusForbidden, "")
+
+	if !pa.SecurityCtx.IsSysAdmin() {
+		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
+		return
 	}
 }
 
@@ -82,6 +82,19 @@ func (pa *RepPolicyAPI) List() {
 		log.Errorf("failed to filter policies %s project ID %d: %v", name, projectID, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+
+	for _, policy := range policies {
+		project, err := pa.ProjectMgr.Get(policy.ProjectID)
+		if err != nil {
+			pa.HandleInternalServerError(fmt.Sprintf(
+				"failed to get project %d: %v", policy.ProjectID, err))
+			return
+		}
+		if project != nil {
+			policy.ProjectName = project.Name
+		}
+	}
+
 	pa.Data["json"] = policies
 	pa.ServeJSON()
 }
@@ -103,7 +116,7 @@ func (pa *RepPolicyAPI) Post() {
 		}
 	*/
 
-	project, err := dao.GetProjectByID(policy.ProjectID)
+	project, err := pa.ProjectMgr.Get(policy.ProjectID)
 	if err != nil {
 		log.Errorf("failed to get project %d: %v", policy.ProjectID, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

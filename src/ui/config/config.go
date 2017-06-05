@@ -40,9 +40,8 @@ var (
 	SecretStore *secret.Store
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
-	// DBProjectManager is the project manager based on database,
-	// it is initialized only the deploy mode is standalone
-	DBProjectManager projectmanager.ProjectManager
+	// GlobalProjectMgr is initialized based on the deploy mode
+	GlobalProjectMgr projectmanager.ProjectManager
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
 )
@@ -73,8 +72,8 @@ func Init() error {
 	// init secret store
 	initSecretStore()
 
-	// init project manager based on database
-	initDBProjectManager()
+	// init project manager based on deploy mode
+	initProjectManager()
 
 	return nil
 }
@@ -95,12 +94,13 @@ func initSecretStore() {
 	SecretStore = secret.NewStore(m)
 }
 
-func initDBProjectManager() {
+func initProjectManager() {
 	if len(DeployMode()) == 0 ||
 		DeployMode() == common.DeployModeStandAlone {
 		log.Info("initializing the project manager based on database...")
-		DBProjectManager = &db.ProjectManager{}
+		GlobalProjectMgr = &db.ProjectManager{}
 	}
+	// TODO create project manager based on pms
 }
 
 // Load configurations

@@ -125,50 +125,10 @@ func GetTotalOfRepositories(name string) (int64, error) {
 	return qs.Count()
 }
 
-// GetTotalOfPublicRepositories ...
-func GetTotalOfPublicRepositories(name string) (int64, error) {
-	params := []interface{}{}
-	sql := `select count(*) from repository r 
-		join project p 
-		on r.project_id = p.project_id and p.public = 1 `
-	if len(name) != 0 {
-		sql += ` where r.name like ?`
-		params = append(params, "%"+escape(name)+"%")
-	}
-
-	var total int64
-	err := GetOrmer().Raw(sql, params).QueryRow(&total)
-	return total, err
-}
-
-// GetTotalOfUserRelevantRepositories ...
-func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) {
-	params := []interface{}{}
-	sql := `select count(*) 
-		from repository r 
-		join (
-			select p.project_id, p.public 
-				from project p
-				join project_member pm
-				on p.project_id = pm.project_id
-				where pm.user_id = ?
-		) as pp 
-		on r.project_id = pp.project_id `
-	params = append(params, userID)
-	if len(name) != 0 {
-		sql += ` where r.name like ?`
-		params = append(params, "%"+escape(name)+"%")
-	}
-
-	var total int64
-	err := GetOrmer().Raw(sql, params).QueryRow(&total)
-	return total, err
-}
-
 // GetTotalOfRepositoriesByProject ...
-func GetTotalOfRepositoriesByProject(projectID int64, name string) (int64, error) {
+func GetTotalOfRepositoriesByProject(projectIDs []int64, name string) (int64, error) {
 	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
-		Filter("ProjectID", projectID)
+		Filter("project_id__in", projectIDs)
 
 	if len(name) != 0 {
 		qs = qs.Filter("Name__contains", name)

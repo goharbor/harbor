@@ -19,8 +19,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/email"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -32,20 +30,20 @@ const (
 
 // EmailAPI ...
 type EmailAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 // Prepare ...
 func (e *EmailAPI) Prepare() {
-	userID := e.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("failed to check the role of user: %v", err)
-		e.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	e.BaseController.Prepare()
+	if !e.SecurityCtx.IsAuthenticated() {
+		e.HandleUnauthorized()
+		return
 	}
 
-	if !isSysAdmin {
-		e.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	if !e.SecurityCtx.IsSysAdmin() {
+		e.HandleForbidden(e.SecurityCtx.GetUsername())
+		return
 	}
 }
 

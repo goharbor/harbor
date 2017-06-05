@@ -49,7 +49,7 @@ export class AuditLogService {
   }
 
   getRecentLogs(lines: number): Observable<AuditLog[]> {
-    return this.http.get(logEndpoint + "?lines=" + lines, this.httpOptions)
+    return this.http.get(logEndpoint + "?page_size=" + lines, this.httpOptions)
       .map(response => response.json() as AuditLog[])
       .catch(error => Observable.throw(error));
   }
