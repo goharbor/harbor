@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { State, Comparator } from 'clarity-angular';
 
@@ -13,6 +14,7 @@ import { CustomComparator } from '../utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListRepositoryComponent {
+  @Input() urlPrefix: string;
   @Input() projectId: number;
   @Input() repositories: Repository[];
 
@@ -28,6 +30,7 @@ export class ListRepositoryComponent {
   tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
 
   constructor(
+    private router: Router,
     private ref: ChangeDetectorRef) { 
     let hnd = setInterval(()=>ref.markForCheck(), 100);
     setTimeout(()=>clearInterval(hnd), 1000);
@@ -44,4 +47,9 @@ export class ListRepositoryComponent {
       this.paginate.emit(state);
     }
   }  
+
+  public gotoLink(projectId: number, repoName: string): void {
+    let linkUrl = [this.urlPrefix, 'tags', projectId, repoName];
+    this.router.navigate(linkUrl);
+  }
 }

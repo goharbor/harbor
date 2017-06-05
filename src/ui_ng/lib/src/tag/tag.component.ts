@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { TagService } from '../service/tag.service';
 import { ErrorHandler } from '../error-handler/error-handler';
@@ -43,6 +43,9 @@ export class TagComponent implements OnInit {
   @Input() projectId: number;
   @Input() repoName: string;
   @Input() sessionInfo: SessionInfo;  
+  @Input() isEmbedded: boolean; 
+
+  @Output() refreshRepo = new EventEmitter<boolean>();
 
   hasProjectAdminRole: boolean;
 
@@ -73,23 +76,23 @@ export class TagComponent implements OnInit {
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
-        message.source === ConfirmationTargets.TAG
-        && message.state === ConfirmationState.CONFIRMED) {
-        let tag: Tag = message.data;
-        if (tag) {
-            if (tag.signature) {
-                return;
-            } else {
-                toPromise<number>(this.tagService
-                .deleteTag(this.repoName, tag.name))
-                .then(
-                response => {
-                    this.retrieve();
-                    this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
-                        .subscribe(res=>this.errorHandler.info(res));
-                }).catch(error => this.errorHandler.error(error));
-            }
+      message.source === ConfirmationTargets.TAG
+      && message.state === ConfirmationState.CONFIRMED) {
+      let tag: Tag = message.data;
+      if (tag) {
+        if (tag.signature) {
+          return;
+        } else {
+          toPromise<number>(this.tagService
+          .deleteTag(this.repoName, tag.name))
+          .then(
+          response => {
+              this.retrieve();
+              this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
+                  .subscribe(res=>this.errorHandler.info(res));
+          }).catch(error => this.errorHandler.error(error));
         }
+      }
     }
   }
 
@@ -122,6 +125,9 @@ export class TagComponent implements OnInit {
         .then(items => { 
           this.tags = items;
           this.loading = false;
+          if(this.tags && this.tags.length === 0) {
+            this.refreshRepo.emit(true);
+          }
         })
         .catch(error => {
           this.errorHandler.error(error);

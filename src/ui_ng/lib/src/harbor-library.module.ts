@@ -4,6 +4,8 @@ import { LOG_DIRECTIVES } from './log/index';
 import { FILTER_DIRECTIVES } from './filter/index';
 import { ENDPOINT_DIRECTIVES } from './endpoint/index';
 import { REPOSITORY_DIRECTIVES } from './repository/index';
+import { REPOSITORY_STACKVIEW_DIRECTIVES } from './repository-stackview/index';
+
 import { LIST_REPOSITORY_DIRECTIVES } from './list-repository/index';
 import { TAG_DIRECTIVES } from './tag/index';
 
@@ -135,6 +137,7 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     FILTER_DIRECTIVES,
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
+    REPOSITORY_STACKVIEW_DIRECTIVES,
     LIST_REPOSITORY_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
@@ -151,6 +154,7 @@ export function initConfig(translateService: TranslateService, config: IServiceC
     FILTER_DIRECTIVES,
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
+    REPOSITORY_STACKVIEW_DIRECTIVES,
     LIST_REPOSITORY_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
