@@ -59,7 +59,7 @@ class EmailUtil:
             times += 1
             time.sleep(5)
             if times < 3:
-                Utility.send_email(from_addr, to_addr, subject, body, times)
+                EmailUtil.send_email(from_addr, to_addr, subject, body, times)
 
     @staticmethod
     def send_html_template(from_addr, to_addr, subject, html_obj):
