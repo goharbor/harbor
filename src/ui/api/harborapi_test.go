@@ -128,7 +128,7 @@ func init() {
 	_ = updateInitPassword(1, "Harbor12345")
 
 	//syncRegistry
-	if err := SyncRegistry(); err != nil {
+	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
 	}
 
