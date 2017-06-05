@@ -46,7 +46,40 @@ import { HarborLibraryModule } from 'harbor-ui';
 export class AppModule {
 }
 ```
-If no parameters are passed to **'forRoot'**, the module will be initialized with default configurations. If re-configuration required, please refer the **Configurations** parts.
+If no parameters are passed to **'forRoot'**, the module will be initialized with default configurations. If re-configuration required, please refer the **'Configurations'** parts.
+
+**Enable components via tags**
+
+* **Registry log view**
+```
+//No @Input properties
+
+<hbr-log></hbr-log>
+```
+
+* **Replication Management View**
+```
+<hbr-replication [projectId]="..."></hbr-replication>
+```
+
+* **Endpoint Management View**
+```
+<hbr-endpoint></hbr-endpoint>
+```
+
+* **Repository and Tag Management View**
+```
+/*
+export interface SessionInfo {
+    withNotary?: boolean;
+    hasProjectAdminRole?: boolean;
+    hasSignedIn?: boolean;
+    registryUrl?: string;
+}
+*/
+
+<hbr-repository [projectId]="..." [sessionInfo]="..."></hbr-repository>
+```
 
 ## Configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
@@ -86,7 +119,7 @@ It supports partially overriding. For the items not overridden, default values w
 * **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
 * **langCookieKey:** The cookie key used to store the current used language preference. Default is "harbor-lang".
 * **supportedLangs:** Declare what languages are supported. Default is ['en-us', 'zh-cn', 'es-es'].
-* **enablei18Support:** To determine whether to not enable the i18 multiple languages supporting. Default is false.
+* **enablei18Support:** To determine whether or not to enable the i18 multiple languages supporting. Default is false.
 
 **2. errorHandler**
 UI components in the library use this interface to pass the errors/warnings/infos/logs to the top component or page. The top component or page can display those information in their message panel or notification system.
