@@ -56,7 +56,7 @@ class EmailUtil:
             server.ehlo()
             server.starttls()
             server.login("wy65701436@gmail.com", "wy609cute")
-            server.sendmail(FROM, TO, message)
+            server.sendmail(mail['From'], mail['To'], mail.as_string())
             server.close()
 
         except Exception, e:
