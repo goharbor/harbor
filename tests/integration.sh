@@ -53,15 +53,15 @@ if (echo $buildinfo | grep -q "\[specific ci="); then
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
     pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
 elif (echo $buildinfo | grep -q "\[full ci\]"); then
+    upload_build=true
     pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
-    upload_build=true
 elif (echo $buildinfo | grep -q "\[BAT\]"); then
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
     upload_build=true
-elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     upload_build=true
     nightly_run=true
+    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
@@ -108,7 +108,8 @@ if [ $nightly_run == true ]; then
     else
         result=Fail
     fi
-    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile --mailpwd $MAIL_PWD
+    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile --mailpwd $
+    echo "Sendout Nightly Run Email success."
 fi
 
 ## --------------------------------------------- Tear Down ---------------------------------------------
