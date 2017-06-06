@@ -57,7 +57,7 @@ class EmailUtil:
             server = smtplib.SMTP("smtp.office365.com")
             server.ehlo()
             server.starttls()
-            server.login(mail['From'], mail_pwd)
+            server.login(mail['From'], '$'+mail_pwd)
             server.sendmail(mail['From'], mail['To'], mail.as_string())
             server.close()
         except Exception, e:

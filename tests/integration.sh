@@ -108,7 +108,7 @@ if [ $nightly_run == true ]; then
     else
         result=Fail
     fi
-    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile --mailpwd $
+    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile --mailpwd $MAIL_PWD
     echo "Sendout Nightly Run Email success."
 fi
 
