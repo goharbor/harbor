@@ -34,6 +34,7 @@ pipeline:
       GS_CLIENT_EMAIL: ${GS_CLIENT_EMAIL}
       GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
       DOMAIN: ${CI_DOMAIN}
+      MAIL_PWD: ${MAIL_PWD}
     commands:
       - tests/integration.sh
     when:
