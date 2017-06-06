@@ -60,7 +60,6 @@ class EmailUtil:
             server.login(mail['From'], mail_pwd)
             server.sendmail(mail['From'], mail['To'], mail.as_string())
             server.close()
-
         except Exception, e:
             print e
             times += 1
