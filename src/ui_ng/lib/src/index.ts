@@ -10,3 +10,4 @@ export * from './repository/index';
 export * from './tag/index';
 export * from './replication/index';
 export * from './vulnerability-scanning/index';
+export * from './i18n/index';
