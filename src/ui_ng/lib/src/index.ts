@@ -12,3 +12,4 @@ export * from './tag/index';
 export * from './list-replication-rule/index';
 export * from './replication/index';
 export * from './vulnerability-scanning/index';
+export * from './i18n/index';

@@ -46,7 +46,48 @@ import { HarborLibraryModule } from 'harbor-ui';
 export class AppModule {
 }
 ```
-If no parameters are passed to **'forRoot'**, the module will be initialized with default configurations. If re-configuration required, please refer the **Configurations** parts.
+If no parameters are passed to **'forRoot'**, the module will be initialized with default configurations. If re-configuration required, please refer the **'Configurations'** parts.
+
+**Enable components via tags**
+
+* **Registry log view**
+
+```
+//No @Input properties
+
+<hbr-log></hbr-log>
+```
+
+* **Replication Management View**
+
+Support two different display scope mode: under specific project or whole system. 
+
+If **projectId** is set to the id of specified project, then only show the replication rules bound with the project. Otherwise, show all the rules of the whole system.
+
+**withReplicationJob** is used to determine whether or not show the replication jobs which are relevant with the selected replication rule.
+
+```
+<hbr-replication [projectId]="..." [withReplicationJob]='...'></hbr-replication>
+```
+
+* **Endpoint Management View**
+```
+//No @Input properties
+
+<hbr-endpoint></hbr-endpoint>
+```
+
+* **Repository and Tag Management View[updating]**
+
+**projectId** is used to specify which projects the repositories are from.
+
+**hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
+
+**hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
+
+```
+<hbr-repository-stackview [projectId]="..." [hasSignedIn]="..." [hasProjectAdminRole]="..."></hbr-repository-stackview>
+```
 
 ## Configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
@@ -55,14 +96,20 @@ All the related configurations are defined in the **HarborModuleConfig** interfa
 The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'OpaqueToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
 ```
 export const DefaultServiceConfig: IServiceConfig = {
+  systemInfoEndpoint: "/api/system",
   repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
   targetBaseEndpoint: "/api/targets",
   replicationRuleEndpoint: "/api/policies/replication",
   replicationJobEndpoint: "/api/jobs/replication",
-  langCookieKey: DEFAULT_LANG_COOKIE_KEY,
-  supportedLangs: DEFAULT_SUPPORTING_LANGS,
-  enablei18Support: false
+  enablei18Support: false,
+  defaultLang: DEFAULT_LANG, //'en-us'
+  langCookieKey: DEFAULT_LANG_COOKIE_KEY, //'harbor-lang'
+  supportedLangs: DEFAULT_SUPPORTING_LANGS,//['en-us','zh-cn','es-es']
+  langMessageLoader: "local",
+  langMessagePathForHttpLoader: "i18n/langs/",
+  langMessageFileSuffixForHttpLoader: "-lang.json",
+  localI18nMessageVariableMap: {}
 };
 ```
 If you want to override the related items, declare your own 'IServiceConfig' interface and define the configuration value. E.g: Override 'repositoryBaseEndpoint'
@@ -80,13 +127,51 @@ HarborLibraryModule.forRoot({
 ```
 It supports partially overriding. For the items not overridden, default values will be adopted. The items contained in **config** are:
 * **repositoryBaseEndpoint:** The base endpoint of the service used to handle the repositories of registry and/or tags of repository. Default value is "/api/repositories".
+
 * **logBaseEndpoint:** The base endpoint of the service used to handle the recent access logs. Default is "/api/logs".
+
 * **targetBaseEndpoint:** The base endpoint of the service used to handle the registry endpoints. Default is "/api/targets".
+
 * **replicationRuleEndpoint:** The base endpoint of the service used to handle the replication rules. Default is "/api/policies/replication".
+
 * **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
+
 * **langCookieKey:** The cookie key used to store the current used language preference. Default is "harbor-lang".
+
 * **supportedLangs:** Declare what languages are supported. Default is ['en-us', 'zh-cn', 'es-es'].
-* **enablei18Support:** To determine whether to not enable the i18 multiple languages supporting. Default is false.
+
+* **enablei18Support:** To determine whether or not to enable the i18 multiple languages supporting. Default is false.
+
+* **langMessageLoader:** To determine which loader will be used to load the required lang messages. Support two loaders: One is **'http'**, use async http to load json files with the specified url/path. Another is **'local'**, use local json variable to store the lang message.
+
+* **langMessagePathForHttpLoader:** Define the basic url/path prefix for the loader to find the json files if the 'langMessageLoader' is set to **'http'**. E.g: 'src/i18n/langs'.
+
+* **langMessageFileSuffixForHttpLoader:** Define the suffix of the json file names without lang name if 'langMessageLoader' is set to **'http'**. For example, '-lang.json' is suffix of message file 'en-us-lang.json'.
+
+* **localI18nMessageVariableMap:** If configuration property 'langMessageLoader' is set to **'local'** to load the i18n messages, this property must be defined to tell local JSON loader where to get the related messages. E.g: If declare the following messages storage variables,
+```
+        export const EN_US_LANG: any = {
+            "APP_TITLE": {
+                "VMW_HARBOR": "VMware Harbor",
+                "HARBOR": "Harbor"
+            }
+        }
+        
+        export const ZH_CN_LANG: any = {
+            "APP_TITLE": {
+                "VMW_HARBOR": "VMware Harbor中文版",
+                "HARBOR": "Harbor"
+            }
+        }
+```
+
+then this property should be set to:
+```
+        {
+            "en-us": EN_US_LANG,
+            "zh-cn": ZH_CN_LANG
+        };
+```
 
 **2. errorHandler**
 UI components in the library use this interface to pass the errors/warnings/infos/logs to the top component or page. The top component or page can display those information in their message panel or notification system.
