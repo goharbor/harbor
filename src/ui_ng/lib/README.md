@@ -59,6 +59,7 @@ If no parameters are passed to **'forRoot'**, the module will be initialized wit
 ```
 
 * **Replication Management View**
+
 Support two different display scope mode: under specific project or whole system. 
 
 If **projectId** is set to the id of specified project, then only show the replication rules bound with the project. Otherwise, show all the rules of the whole system.
@@ -77,6 +78,7 @@ If **projectId** is set to the id of specified project, then only show the repli
 ```
 
 * **Repository and Tag Management View[updating]**
+
 **projectId** is used to specify which projects the repositories are from.
 
 **hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
