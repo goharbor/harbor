@@ -45,12 +45,12 @@ Up Harbor
 
 Down Harbor
 		[Arguments]  ${with_notary}=true
-		${rc}  ${output}=  Run And Return Rc And Output  make down -e NOTARYFLAG=${with_notary}
+		${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary}
 		Log To Console  ${rc}
 		Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=false
+		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.2  ${with_notary}=false
 		Log To Console  \nStart Docker Daemon
 		Start Docker Daemon Locally
 		${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
@@ -58,15 +58,33 @@ Package Harbor Offline
 		Log  ${output}
 		Should Be Equal As Integers  ${rc}  0
 
+Switch To LDAP
+		Down Harbor  with_notary=false
+		${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+		Config Harbor cfg  auth=ldap_auth
+		Prepare  with_notary=false
+		Up Harbor  with_notary=false
+
+Prepare
+		[Arguments]  ${with_notary}=true
+		${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary}
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
-    [Arguments]  ${http_proxy}=http
+    [Arguments]  ${http_proxy}=http  ${auth}=db_auth
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${output}
     ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  sed "s/^ui_url_protocol = .*/ui_url_protocol = ${http_proxy}/g" -i ./make/harbor.cfg
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+		${rc}=  Run And Return Rc  sed "s/^auth_mode = .*/auth_mode = ${auth}/g" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
 
@@ -77,7 +95,7 @@ Prepare Cert
 		Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.1  ${with_notary}=false
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:1.1.2  ${with_notary}=false
 		${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
     Log  ${output}
 		Should Be Equal As Integers  ${rc}  0

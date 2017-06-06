@@ -82,3 +82,21 @@ Test Case - Push Image
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/list-project/clr-datagrid/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a
     Sleep  2
     Wait Until Page Contains  test${d}/hello-world
+
+Test Case - Ldap Sign in and
+    Switch To LDAP
+    Init Chrome Driver
+    ${rc}=  Run And Return Rc  docker pull vmware/harbor-ldap-test:1.1.1
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc   docker run --name ldap-container -p 389:389 --detach vmware/harbor-ldap-test:1.1.1
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0
+    Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch To Configure
+    Init LDAP
+    Logout Harbor
+    Sign In Harbor  user001  user001
+    Close Browser
