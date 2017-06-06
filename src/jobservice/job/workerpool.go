@@ -103,9 +103,10 @@ func (w *Worker) handle(job Job) {
 }
 
 // NewWorker returns a pointer to new instance of worker
-func NewWorker(id int, wp *workerPool) *Worker {
+func NewWorker(id int, t Type, wp *workerPool) *Worker {
 	w := &Worker{
 		ID:    id,
+		Type:  t,
 		Jobs:  make(chan Job),
 		quit:  make(chan bool),
 		queue: wp.workerChan,
@@ -125,19 +126,19 @@ func InitWorkerPools() error {
 		return err
 	}
 	WorkerPools = make(map[Type]*workerPool)
-	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker)
-	WorkerPools[ScanType] = createWorkerPool(maxScanWorker)
+	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker, ReplicationType)
+	WorkerPools[ScanType] = createWorkerPool(maxScanWorker, ScanType)
 	return nil
 }
 
 //createWorkerPool create workers according to parm
-func createWorkerPool(n int) *workerPool {
+func createWorkerPool(n int, t Type) *workerPool {
 	wp := &workerPool{
 		workerChan: make(chan *Worker, n),
 		workerList: make([]*Worker, 0, n),
 	}
 	for i := 0; i < n; i++ {
-		worker := NewWorker(i, wp)
+		worker := NewWorker(i, t, wp)
 		wp.workerList = append(wp.workerList, worker)
 		worker.Start()
 		log.Debugf("worker %v started", worker)

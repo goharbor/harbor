@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -34,28 +33,28 @@ import (
 
 // TargetAPI handles request to /api/targets/ping /api/targets/{}
 type TargetAPI struct {
-	api.BaseAPI
+	BaseController
 	secretKey string
 }
 
 // Prepare validates the user
 func (t *TargetAPI) Prepare() {
+	t.BaseController.Prepare()
+	if !t.SecurityCtx.IsAuthenticated() {
+		t.HandleUnauthorized()
+		return
+	}
+
+	if !t.SecurityCtx.IsSysAdmin() {
+		t.HandleForbidden(t.SecurityCtx.GetUsername())
+		return
+	}
+
 	var err error
 	t.secretKey, err = config.SecretKey()
 	if err != nil {
 		log.Errorf("failed to get secret key: %v", err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	userID := t.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("error occurred in IsAdminRole: %v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if !isSysAdmin {
-		t.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 }
 

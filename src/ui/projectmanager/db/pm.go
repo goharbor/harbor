@@ -107,7 +107,7 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 // GetPublic returns all public projects
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 	t := true
-	return p.GetAll(&models.QueryParam{
+	return p.GetAll(&models.ProjectQueryParam{
 		Public: &t,
 	})
 }
@@ -115,7 +115,7 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 // GetByMember returns all projects which the user is a member of
 func (p *ProjectManager) GetByMember(username string) (
 	[]*models.Project, error) {
-	return p.GetAll(&models.QueryParam{
+	return p.GetAll(&models.ProjectQueryParam{
 		Member: &models.Member{
 			Name: username,
 		},
@@ -190,13 +190,23 @@ func (p *ProjectManager) Update(projectIDOrName interface{},
 }
 
 // GetAll returns a project list according to the query parameters
-func (p *ProjectManager) GetAll(query *models.QueryParam) (
+func (p *ProjectManager) GetAll(query *models.ProjectQueryParam) (
 	[]*models.Project, error) {
 	return dao.GetProjects(query)
 }
 
 // GetTotal returns the total count according to the query parameters
-func (p *ProjectManager) GetTotal(query *models.QueryParam) (
+func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam) (
 	int64, error) {
 	return dao.GetTotalOfProjects(query)
+}
+
+// GetHasReadPerm returns projects which are public or the user is a member of
+func (p *ProjectManager) GetHasReadPerm(username ...string) (
+	[]*models.Project, error) {
+	if len(username) == 0 || len(username[0]) == 0 {
+		return p.GetPublic()
+	}
+
+	return dao.GetHasReadPermProjects(username[0])
 }

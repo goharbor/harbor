@@ -136,7 +136,7 @@ func getProjectManager(ctx *beegoctx.Context) projectmanager.ProjectManager {
 	if len(config.DeployMode()) == 0 ||
 		config.DeployMode() == common.DeployModeStandAlone {
 		log.Info("filling a project manager based on database...")
-		return config.DBProjectManager
+		return config.GlobalProjectMgr
 	}
 
 	// TODO create project manager based on pms

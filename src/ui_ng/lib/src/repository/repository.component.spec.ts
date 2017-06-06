@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, async } from '@angular/core/testing'; 
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -12,6 +13,10 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { Repository } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
+
+class RouterStub {
+  navigateByUrl(url: string) { return url; }
+}
 
 describe('RepositoryComponent (inline template)', ()=> {
   
@@ -59,7 +64,8 @@ describe('RepositoryComponent (inline template)', ()=> {
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue : config },
-        { provide: RepositoryService, useClass: RepositoryDefaultService }
+        { provide: RepositoryService, useClass: RepositoryDefaultService },
+        { provide: Router, useClass: RouterStub }
       ]
     });
   }));

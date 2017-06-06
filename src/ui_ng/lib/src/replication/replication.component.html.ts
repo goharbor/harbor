@@ -3,7 +3,7 @@ export const REPLICATION_TEMPLATE: string = `
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <div class="row flex-items-xs-between">
       <div class="flex-xs-middle option-left">
-        <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
+        <button *ngIf="withReplicationJob" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
         <create-edit-rule [projectId]="projectId" (reload)="reloadRules($event)"></create-edit-rule>
       </div>
       <div class="flex-xs-middle option-right">
@@ -20,9 +20,9 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <list-replication-rule [rules]="changedRules" [projectless]="false" [selectedId]="initSelectedId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading"></list-replication-rule>
+      <hbr-list-replication-rule #listReplicationRule [projectId]="projectId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between">
         <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
         <div class="flex-items-xs-bottom option-right-down">
@@ -45,7 +45,7 @@ export const REPLICATION_TEMPLATE: string = `
         </div>
       </div>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <clr-datagrid [clrDgLoading]="loading">
         <clr-dg-column [clrDgField]="'repository'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>

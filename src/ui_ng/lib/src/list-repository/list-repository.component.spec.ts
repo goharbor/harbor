@@ -2,6 +2,7 @@
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -10,8 +11,11 @@ import { Repository } from '../service/interface';
 
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
-describe('ListRepositoryComponent (inline template)', () => {
+class RouterStub {
+  navigateByUrl(url: string) { return url; }
+}
 
+describe('ListRepositoryComponent (inline template)', () => {
   let comp: ListRepositoryComponent;
   let fixture: ComponentFixture<ListRepositoryComponent>;
 
@@ -45,7 +49,10 @@ describe('ListRepositoryComponent (inline template)', () => {
         ListRepositoryComponent,
         ConfirmationDialogComponent
       ],
-      providers: [{ provide: SERVICE_CONFIG, useValue: {} }]
+      providers: [
+        { provide: Router, useClass: RouterStub },
+        { provide: SERVICE_CONFIG, useValue: {} }
+      ]
     });
   }));
 

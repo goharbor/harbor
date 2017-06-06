@@ -88,78 +88,6 @@ func TestGetTotalOfRepositories(t *testing.T) {
 	}
 }
 
-func TestGetTotalOfPublicRepositories(t *testing.T) {
-	total, err := GetTotalOfPublicRepositories("")
-	if err != nil {
-		t.Fatalf("failed to get total of public repositoreis: %v", err)
-	}
-
-	if err := addRepository(repository); err != nil {
-		t.Fatalf("failed to add repository %s: %v", name, err)
-	}
-	defer func() {
-		if err := deleteRepository(name); err != nil {
-			t.Fatalf("failed to delete repository %s: %v", name, err)
-		}
-	}()
-
-	n, err := GetTotalOfPublicRepositories("")
-	if err != nil {
-		t.Fatalf("failed to get total of public repositoreis: %v", err)
-	}
-
-	if n != total+1 {
-		t.Errorf("unexpected total: %d != %d", n, total+1)
-	}
-}
-
-func TestGetTotalOfUserRelevantRepositories(t *testing.T) {
-	total, err := GetTotalOfUserRelevantRepositories(1, "")
-	if err != nil {
-		t.Fatalf("failed to get total of repositoreis for user %d: %v", 1, err)
-	}
-
-	if err := addRepository(repository); err != nil {
-		t.Fatalf("failed to add repository %s: %v", name, err)
-	}
-	defer func() {
-		if err := deleteRepository(name); err != nil {
-			t.Fatalf("failed to delete repository %s: %v", name, err)
-		}
-	}()
-
-	users, err := GetUserByProject(1, models.User{})
-	if err != nil {
-		t.Fatalf("failed to list members of project %d: %v", 1, err)
-	}
-	exist := false
-	for _, user := range users {
-		if user.UserID == 1 {
-			exist = true
-			break
-		}
-	}
-	if !exist {
-		if err = AddProjectMember(1, 1, models.DEVELOPER); err != nil {
-			t.Fatalf("failed to add user %d to be member of project %d: %v", 1, 1, err)
-		}
-		defer func() {
-			if err = DeleteProjectMember(1, 1); err != nil {
-				t.Fatalf("failed to delete user %d from member of project %d: %v", 1, 1, err)
-			}
-		}()
-	}
-
-	n, err := GetTotalOfUserRelevantRepositories(1, "")
-	if err != nil {
-		t.Fatalf("failed to get total of public repositoreis for user %d: %v", 1, err)
-	}
-
-	if n != total+1 {
-		t.Errorf("unexpected total: %d != %d", n, total+1)
-	}
-}
-
 func TestGetTopRepos(t *testing.T) {
 	var err error
 	require := require.New(t)
@@ -226,7 +154,7 @@ func TestGetTotalOfRepositoriesByProject(t *testing.T) {
 	var projectID int64 = 1
 	repoName := "library/total_count"
 
-	total, err := GetTotalOfRepositoriesByProject(projectID, repoName)
+	total, err := GetTotalOfRepositoriesByProject([]int64{projectID}, repoName)
 	if err != nil {
 		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
 		return
@@ -246,7 +174,7 @@ func TestGetTotalOfRepositoriesByProject(t *testing.T) {
 		}
 	}()
 
-	n, err := GetTotalOfRepositoriesByProject(projectID, repoName)
+	n, err := GetTotalOfRepositoriesByProject([]int64{projectID}, repoName)
 	if err != nil {
 		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
 		return

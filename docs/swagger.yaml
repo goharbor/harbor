@@ -861,24 +861,18 @@ paths:
       description: |
         This endpoint let user see the recent operation logs of the projects which he is member of 
       parameters:
-        - name: lines
+        - name: page
           in: query
           type: integer
           format: int32
           required: false
-          description: The number of logs to be shown, default is 10 if lines, start_time, end_time are not provided.
-        - name: start_time
+          description: The page nubmer, default is 1.
+        - name: page_size
           in: query
           type: integer
-          format: int64
+          format: int32
           required: false
-          description: The start time of logs to be shown in unix timestap
-        - name: end_time
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: The end time of logs to be shown in unix timestap
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -889,7 +883,7 @@ paths:
             items:
               $ref: '#/definitions/AccessLog'
         400:
-          description: Bad request because of invalid parameter of lines or start_time or end_time.
+          description: Bad request because of invalid parameters.
         401:
           description: User need to login first.
         500:

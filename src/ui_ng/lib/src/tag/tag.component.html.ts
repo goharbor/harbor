@@ -1,6 +1,6 @@
 export const TAG_TEMPLATE = `
-<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
-<clr-modal [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+<confirmation-dialog class="hidden-tag" #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<clr-modal class="hidden-tag" [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
     <div class="row col-md-12">
@@ -11,8 +11,9 @@ export const TAG_TEMPLATE = `
     <button type="button" class="btn btn-primary" (click)="showTagManifestOpened = false">{{'BUTTON.OK' | translate}}</button>
   </div>
 </clr-modal>
-<h2 class="sub-header-title">{{repoName}}</h2>
-<clr-datagrid [clrDgLoading]="loading">
+
+<h2 *ngIf="!isEmbedded" class="sub-header-title">{{repoName}}</h2>
+<clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
     <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
@@ -42,9 +43,9 @@ export const TAG_TEMPLATE = `
       <clr-dg-cell>{{t.architecture}}</clr-dg-cell>
       <clr-dg-cell>{{t.os}}</clr-dg-cell>
     </clr-dg-row>
-    <clr-dg-footer>
+    <clr-dg-footer> 
       {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
-      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
-      <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>  
+      {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
+      <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>`;
