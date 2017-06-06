@@ -52,10 +52,10 @@ class EmailUtil:
             mail['Subject'] = subject
             mail['To'] = to_addr
 
-            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server = smtplib.SMTP("smtp.office365.com")
             server.ehlo()
             server.starttls()
-            server.login("wy65701436@gmail.com", "wy609cute")
+            server.login("wangyan@vmware.com", "$guAn609")
             server.sendmail(mail['From'], mail['To'], mail.as_string())
             server.close()
 
