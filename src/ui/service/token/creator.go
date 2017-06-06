@@ -16,12 +16,14 @@ package token
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-	"net/http"
-	"strings"
 )
 
 var creatorMap map[string]Creator
@@ -200,11 +202,7 @@ func (e *unauthorizedError) Error() string {
 func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 	var user *userInfo
 	var err error
-	var scopes []string
-	scopeParm := r.URL.Query()["scope"]
-	if len(scopeParm) > 0 {
-		scopes = strings.Split(r.URL.Query()["scope"][0], " ")
-	}
+	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
 	for _, v := range g.validators {
 		user, err = v.validate(r)
@@ -227,4 +225,13 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 		return nil, err
 	}
 	return makeToken(user.name, g.service, access)
+}
+
+func parseScopes(u *url.URL) []string {
+	var sector string
+	var result []string
+	for _, sector = range u.Query()["scope"] {
+		result = append(result, strings.Split(sector, " ")...)
+	}
+	return result
 }

@@ -25,6 +25,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path"
 	"runtime"
@@ -227,4 +228,12 @@ func TestFilterAccess(t *testing.T) {
 	err = filterAccess(a3, u2, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
+}
+
+func TestParseScopes(t *testing.T) {
+	assert := assert.New(t)
+	u1 := "/service/token?account=admin&scope=repository%3Alibrary%2Fregistry%3Apush%2Cpull&scope=repository%3Ahello-world%2Fregistry%3Apull&service=harbor-registry"
+	r1, _ := url.Parse(u1)
+	l1 := parseScopes(r1)
+	assert.Equal([]string{"repository:library/registry:push,pull", "repository:hello-world/registry:pull"}, l1)
 }
