@@ -51,9 +51,14 @@ class EmailUtil:
             mail['From'] = from_addr
             mail['Subject'] = subject
             mail['To'] = to_addr
-            smtp = smtplib.SMTP('mailhost.vmware.com')
-            smtp.sendmail(mail['From'], mail['To'], mail.as_string())
-            smtp.close()
+
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.ehlo()
+            server.starttls()
+            server.login("wy65701436@gmail.com", "wy609cute")
+            server.sendmail(FROM, TO, message)
+            server.close()
+
         except Exception, e:
             print e
             times += 1

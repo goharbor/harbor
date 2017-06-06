@@ -42,6 +42,8 @@ echo "[GSUtil]" >> $botofile
 echo "content_language = en" >> $botofile
 echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 
+python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result pass --log 111
+
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
   echo "Only run tests again Harbor Repo."
