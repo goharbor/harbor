@@ -1,24 +1,15 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
-
-import { RepositoryService } from '../service/repository.service';
-import { Repository, SessionInfo } from '../service/interface';
-
+import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Comparator } from 'clarity-angular';
 
+import { REPOSITORY_STACKVIEW_TEMPLATE } from './repository-stackview.component.html';
+import { REPOSITORY_STACKVIEW_STYLES } from './repository-stackview.component.css';
+
+import { Repository, SessionInfo } from '../service/interface';
 import { ErrorHandler } from '../error-handler/error-handler';
+import { RepositoryService } from '../service/repository.service';
+import { toPromise, CustomComparator } from '../utils';
+
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -26,41 +17,37 @@ import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { Subscription } from 'rxjs/Subscription';
 
-import { State } from 'clarity-angular';
-
-import { toPromise } from '../utils';
-
-import { REPOSITORY_TEMPLATE } from './repository.component.html';
-import { REPOSITORY_STYLE } from './repository.component.css';
-
 @Component({
-  selector: 'hbr-repository',
-  template: REPOSITORY_TEMPLATE,
-  styles: [REPOSITORY_STYLE]
+  selector: 'hbr-repository-stackview',
+  template: REPOSITORY_STACKVIEW_TEMPLATE,
+  styles: [ REPOSITORY_STACKVIEW_STYLES ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RepositoryComponent implements OnInit {
-  changedRepositories: Repository[];
+export class RepositoryStackviewComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() sessionInfo: SessionInfo;
-  @Input() urlPrefix: string;
 
   lastFilteredRepoName: string;
 
-  totalPage: number;
-  totalRecordCount: number;
-
   hasProjectAdminRole: boolean;
+
+  repositories: Repository[];
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
 
+  pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
+  
+  tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
+
+
   constructor(
     private errorHandler: ErrorHandler,
+    private translateService: TranslateService,
     private repositoryService: RepositoryService,
-    private translateService: TranslateService
-  ) {}
-
+    private ref: ChangeDetectorRef){}
+  
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
       message.source === ConfirmationTargets.REPOSITORY &&
@@ -76,7 +63,7 @@ export class RepositoryComponent implements OnInit {
         }).catch(error => this.errorHandler.error(error));
     }
   }
-  
+
   ngOnInit(): void {
     if(!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
@@ -88,19 +75,18 @@ export class RepositoryComponent implements OnInit {
     }
     
     this.hasProjectAdminRole = this.sessionInfo.hasProjectAdminRole || false;
-
     this.lastFilteredRepoName = '';
     this.retrieve();
   }
 
-  retrieve(state?: State) {
+  retrieve() {
     toPromise<Repository[]>(this.repositoryService
       .getRepositories(this.projectId, this.lastFilteredRepoName))
       .then(
-        response => {
-          this.changedRepositories = response;
-      },
-      error => this.errorHandler.error(error));
+        repos => this.repositories = repos,
+        error => this.errorHandler.error(error));
+    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+    setTimeout(()=>clearInterval(hnd), 1000);
   }
 
   doSearchRepoNames(repoName: string) {

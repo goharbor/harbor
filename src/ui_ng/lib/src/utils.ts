@@ -104,7 +104,7 @@ export class CustomComparator<T> implements Comparator<T> {
   
   compare(a: {[key: string]: any| any[]}, b: {[key: string]: any| any[]}) {
     let comp = 0;
-    if(a && b && a[this.fieldName] && b[this.fieldName]) {
+    if(a && b) {
       let fieldA = a[this.fieldName];
       let fieldB = b[this.fieldName];
       switch(this.type) {

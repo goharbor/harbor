@@ -30,8 +30,19 @@ type AccessLog struct {
 	Operation      string    `orm:"column(operation)" json:"operation"`
 	OpTime         time.Time `orm:"column(op_time)" json:"op_time"`
 	Keywords       string    `orm:"-" json:"keywords"`
-	BeginTime      time.Time `orm:"-"`
 	BeginTimestamp int64     `orm:"-" json:"begin_timestamp"`
-	EndTime        time.Time `orm:"-"`
 	EndTimestamp   int64     `orm:"-" json:"end_timestamp"`
+}
+
+// LogQueryParam is used to set query conditions when listing
+// access logs.
+type LogQueryParam struct {
+	ProjectIDs []int64     // the IDs of projects to which the operation is done
+	Username   string      // the operator's username of the log
+	Repository string      // repository name
+	Tag        string      // tag name
+	Operations []string    // operations
+	BeginTime  *time.Time  // the time after which the operation is done
+	EndTime    *time.Time  // the time before which the operation is doen
+	Pagination *Pagination // pagination information
 }

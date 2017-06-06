@@ -31,6 +31,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 //sysadmin has all privileges to all projects
@@ -212,7 +213,7 @@ func addAuthentication(req *http.Request) {
 }
 
 // SyncRegistry syncs the repositories of registry with database.
-func SyncRegistry() error {
+func SyncRegistry(pm projectmanager.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
@@ -236,7 +237,7 @@ func SyncRegistry() error {
 
 	var reposToAdd []string
 	var reposToDel []string
-	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB)
+	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB, pm)
 	if err != nil {
 		return err
 	}
@@ -249,7 +250,7 @@ func SyncRegistry() error {
 			if err != nil {
 				log.Errorf("Error happens when counting pull count from access log: %v", err)
 			}
-			pro, err := dao.GetProjectByName(project)
+			pro, err := pm.Get(project)
 			if err != nil {
 				log.Errorf("failed to get project %s: %v", project, err)
 				continue
@@ -299,7 +300,8 @@ func catalog() ([]string, error) {
 	return repositories, nil
 }
 
-func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string, error) {
+func diffRepos(reposInRegistry []string, reposInDB []string,
+	pm projectmanager.ProjectManager) ([]string, []string, error) {
 	var needsAdd []string
 	var needsDel []string
 
@@ -314,7 +316,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 		d := strings.Compare(repoInR, repoInD)
 		if d < 0 {
 			i++
-			exist, err := projectExists(repoInR)
+			exist, err := projectExists(pm, repoInR)
 			if err != nil {
 				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
 				continue
@@ -377,7 +379,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	for i < len(reposInRegistry) {
 		repoInR = reposInRegistry[i]
 		i++
-		exist, err := projectExists(repoInR)
+		exist, err := projectExists(pm, repoInR)
 		if err != nil {
 			log.Errorf("failed to check whether project of %s exists: %v", repoInR, err)
 			continue
@@ -397,9 +399,9 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	return needsAdd, needsDel, nil
 }
 
-func projectExists(repository string) (bool, error) {
+func projectExists(pm projectmanager.ProjectManager, repository string) (bool, error) {
 	project, _ := utils.ParseRepository(repository)
-	return dao.ProjectExists(project)
+	return pm.Exist(project)
 }
 
 // TODO need a registry client which accept a raw token as param
