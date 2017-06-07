@@ -352,7 +352,7 @@ func commonValidate(user models.User) error {
 		return fmt.Errorf("Email can't be empty")
 	}
 
-	if isIllegalLength(user.Realname, 0, 20) {
+	if isIllegalLength(user.Realname, 1, 20) {
 		return fmt.Errorf("realname with illegal length")
 	}
 
