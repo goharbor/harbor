@@ -320,19 +320,19 @@ func TestProjectLogsFilter(t *testing.T) {
 
 	apiTest := newHarborAPI()
 
-	endTimestamp := time.Now().Unix()
-	startTimestamp := endTimestamp - 3600
-	accessLog := &apilib.AccessLogFilter{
+	query := &apilib.LogQuery{
 		Username:       "admin",
-		Keywords:       "",
-		BeginTimestamp: startTimestamp,
-		EndTimestamp:   endTimestamp,
+		Repository:     "",
+		Tag:            "",
+		Operation:      []string{""},
+		BeginTimestamp: 0,
+		EndTimestamp:   time.Now().Unix(),
 	}
 
 	//-------------------case1: Response Code=200------------------------------//
 	fmt.Println("case 1: respose code:200")
 	projectID := "1"
-	httpStatusCode, _, err := apiTest.ProjectLogsFilter(*admin, projectID, *accessLog)
+	httpStatusCode, _, err := apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
@@ -342,7 +342,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	//-------------------case2: Response Code=401:User need to log in first.------------------------------//
 	fmt.Println("case 2: respose code:401:User need to log in first.")
 	projectID = "1"
-	httpStatusCode, _, err = apiTest.ProjectLogsFilter(*unknownUsr, projectID, *accessLog)
+	httpStatusCode, _, err = apiTest.ProjectLogs(*unknownUsr, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
@@ -352,7 +352,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	//-------------------case3: Response Code=404:Project does not exist.-------------------------//
 	fmt.Println("case 3: respose code:404:Illegal format of provided ID value.")
 	projectID = "11111"
-	httpStatusCode, _, err = apiTest.ProjectLogsFilter(*admin, projectID, *accessLog)
+	httpStatusCode, _, err = apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
