@@ -38,7 +38,7 @@ import { AppConfigService } from '../app-config.service';
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
-  private onGoing: boolean = false;
+  private onGoing: boolean = true;
   private adminMenuText: string = "";
   private adminColumn: string = "";
   private deletionSubscription: Subscription;
