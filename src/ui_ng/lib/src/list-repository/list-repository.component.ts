@@ -2,8 +2,8 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetect
 import { Router } from '@angular/router';
 
 import { State, Comparator } from 'clarity-angular';
-
 import { Repository } from '../service/interface';
+
 import { LIST_REPOSITORY_TEMPLATE } from './list-repository.component.html';
 
 import { CustomComparator } from '../utils';
@@ -14,6 +14,7 @@ import { CustomComparator } from '../utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListRepositoryComponent {
+  
   @Input() urlPrefix: string;
   @Input() projectId: number;
   @Input() repositories: Repository[];

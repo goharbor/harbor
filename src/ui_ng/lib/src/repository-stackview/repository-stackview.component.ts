@@ -5,9 +5,10 @@ import { Comparator } from 'clarity-angular';
 import { REPOSITORY_STACKVIEW_TEMPLATE } from './repository-stackview.component.html';
 import { REPOSITORY_STACKVIEW_STYLES } from './repository-stackview.component.css';
 
-import { Repository, SessionInfo } from '../service/interface';
+import { Repository } from '../service/interface';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { RepositoryService } from '../service/repository.service';
+
 import { toPromise, CustomComparator } from '../utils';
 
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
@@ -26,12 +27,11 @@ import { Subscription } from 'rxjs/Subscription';
 export class RepositoryStackviewComponent implements OnInit {
 
   @Input() projectId: number;
-  @Input() sessionInfo: SessionInfo;
+
+  @Input() hasSignedIn: boolean;
+  @Input() hasProjectAdminRole: boolean;
 
   lastFilteredRepoName: string;
-
-  hasProjectAdminRole: boolean;
-
   repositories: Repository[];
 
   @ViewChild('confirmationDialog')
@@ -40,7 +40,6 @@ export class RepositoryStackviewComponent implements OnInit {
   pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
   
   tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
-
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -68,13 +67,7 @@ export class RepositoryStackviewComponent implements OnInit {
     if(!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
-    }
-    if(!this.sessionInfo) {
-      this.errorHandler.error('Session info cannot be unset.');
-      return;
-    }
-    
-    this.hasProjectAdminRole = this.sessionInfo.hasProjectAdminRole || false;
+    }      
     this.lastFilteredRepoName = '';
     this.retrieve();
   }
