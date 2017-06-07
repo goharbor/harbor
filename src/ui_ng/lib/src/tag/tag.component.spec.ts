@@ -8,16 +8,32 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TagComponent } from './tag.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Tag } from '../service/interface';
+import { SystemInfo, Tag } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService } from '../service/tag.service';
+import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 
 describe('TagComponent (inline template)', ()=> {
   
   let comp: TagComponent;
   let fixture: ComponentFixture<TagComponent>;
   let tagService: TagService;
+  let systemInfoService: SystemInfoService;
   let spy: jasmine.Spy;
+  let spySystemInfo: jasmine.Spy;
+
+
+  let mockSystemInfo: SystemInfo = {
+    "with_notary": true,
+    "with_admiral": false,
+    "admiral_endpoint": "NA",
+    "auth_mode": "db_auth",
+    "registry_url": "10.112.122.56",
+    "project_creation_restriction": "everyone",
+    "self_registration": true,
+    "has_ca_root": false,
+    "harbor_version": "v1.1.1-rc1-160-g565110d"
+  };
 
   let mockTags: Tag[] = [
     {
@@ -48,7 +64,8 @@ describe('TagComponent (inline template)', ()=> {
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: TagService, useClass: TagDefaultService }
+        { provide: TagService, useClass: TagDefaultService },
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService }
       ]
     });
   }));
@@ -59,15 +76,13 @@ describe('TagComponent (inline template)', ()=> {
 
     comp.projectId = 1;
     comp.repoName = 'library/nginx';
-    comp.sessionInfo = {
-      hasProjectAdminRole: true,
-      hasSignedIn: true,
-      withNotary: true
-    };
-    
-    tagService = fixture.debugElement.injector.get(TagService);
+    comp.hasProjectAdminRole = true;
+    comp.hasSignedIn = true;
 
+    tagService = fixture.debugElement.injector.get(TagService);
+    systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     spy = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTags));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
     fixture.detectChanges();
   });
 

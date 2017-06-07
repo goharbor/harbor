@@ -13,6 +13,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { Repository } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
+import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 
 class RouterStub {
   navigateByUrl(url: string) { return url; }
@@ -65,6 +66,7 @@ describe('RepositoryComponent (inline template)', ()=> {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue : config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: Router, useClass: RouterStub }
       ]
     });
@@ -74,9 +76,7 @@ describe('RepositoryComponent (inline template)', ()=> {
     fixture = TestBed.createComponent(RepositoryComponent);
     comp = fixture.componentInstance;
     comp.projectId = 1;
-    comp.sessionInfo = {
-      hasProjectAdminRole: true
-    };
+    comp.hasProjectAdminRole = true;
     repositoryService = fixture.debugElement.injector.get(RepositoryService);
 
     spy = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockData));
