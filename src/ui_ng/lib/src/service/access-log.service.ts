@@ -1,11 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { AccessLog } from './interface';
+import { AccessLog, AccessLogItem } from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http, URLSearchParams } from '@angular/http';
-import { HTTP_JSON_OPTIONS } from '../utils';
+import { HTTP_JSON_OPTIONS, buildHttpRequestOptions } from '../utils';
 
 /**
  * Define service methods to handle the access log related things.
@@ -34,12 +34,12 @@ export abstract class AccessLogService {
      * Get the recent logs.
      * 
      * @abstract
-     * @param {number} lines : Specify how many lines should be returned.
-     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
+     * @param {RequestQueryParams} [queryParams]
+     * @returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
      * 
      * @memberOf AccessLogService
      */
-    abstract getRecentLogs(lines: number): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[];
+    abstract getRecentLogs(queryParams?: RequestQueryParams): Observable<AccessLog> | Promise<AccessLog> | AccessLog;
 }
 
 /**
@@ -61,14 +61,34 @@ export class AccessLogDefaultService extends AccessLogService {
         return Observable.of([]);
     }
 
-    public getRecentLogs(lines: number): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[] {
+    public getRecentLogs(queryParams?: RequestQueryParams): Observable<AccessLog> | Promise<AccessLog> | AccessLog {
         let url: string = this.config.logBaseEndpoint ? this.config.logBaseEndpoint : "";
         if (url === '') {
             url = '/api/logs';
         }
 
-        return this.http.get(url+`?page_size=${lines}`, HTTP_JSON_OPTIONS).toPromise()
-            .then(response => response.json() as AccessLog[])
+        return this.http.get(url, queryParams ? buildHttpRequestOptions(queryParams) : HTTP_JSON_OPTIONS).toPromise()
+            .then(response => {
+                let result: AccessLog = {
+                    metadata: {
+                        xTotalCount: 0
+                    },
+                    data: []
+                };
+                let xHeader: string | null = "0";
+                if (response && response.headers) {
+                    xHeader = response.headers.get("X-Total-Count");
+                }
+
+                if (result && result.metadata) {
+                    result.metadata.xTotalCount = parseInt(xHeader ? xHeader : "0", 0);
+                    if (result.metadata.xTotalCount > 0) {
+                        result.data = response.json() as AccessLogItem[];
+                    }
+                }
+
+                return result;
+            })
             .catch(error => Promise.reject(error));
     }
 }

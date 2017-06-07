@@ -96,12 +96,34 @@ export interface ReplicationJob extends Base {
 }
 
 /**
+ * Interface for storing metadata of response.
+ * 
+ * @export
+ * @interface Metadata
+ */
+export interface Metadata {
+    xTotalCount: number;
+}
+
+/**
  * Interface for access log.
  * 
  * @export
  * @interface AccessLog
  */
 export interface AccessLog {
+    metadata?: Metadata;
+    data: AccessLogItem[];
+}
+
+/**
+ * The access log data.
+ * 
+ * @export
+ * @interface AccessLogItem
+ */
+export interface AccessLogItem {
+    [key: string]: any
     log_id: number;
     project_id: number;
     repo_name: string;
