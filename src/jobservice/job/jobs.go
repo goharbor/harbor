@@ -20,6 +20,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice/config"
 
 	"fmt"
+	"path/filepath"
 )
 
 // Type is for job Type
@@ -165,4 +166,64 @@ func (rj *RepJob) Init() error {
 // Given API only gets the id, it will call this func to get a instance that can be manuevered by state machine.
 func NewRepJob(id int64) *RepJob {
 	return &RepJob{id: id}
+}
+
+//ScanJob implements the Job interface, representing a job for scanning image.
+type ScanJob struct {
+	id   int64
+	parm *ScanJobParm
+}
+
+//ScanJobParm wraps the parms of a image scan job.
+type ScanJobParm struct {
+	repository string
+	tag        string
+	digest     string
+}
+
+//ID returns the id of the scan
+func (sj *ScanJob) ID() int64 {
+	return sj.id
+}
+
+//Type always return ScanType
+func (sj *ScanJob) Type() Type {
+	return ScanType
+}
+
+//LogPath returns the absolute path of the log file for the job, log files for scan job will be put in a sub folder of base log path.
+func (sj *ScanJob) LogPath() string {
+	return GetJobLogPath(filepath.Join(config.LogDir(), "scan_job"), sj.id)
+}
+
+//String ...
+func (sj *ScanJob) String() string {
+	return fmt.Sprintf("{JobID: %d, JobType: %v}", sj.ID(), sj.Type())
+}
+
+//UpdateStatus ...
+func (sj *ScanJob) UpdateStatus(status string) error {
+	return dao.UpdateScanJobStatus(sj.id, status)
+}
+
+//Init query the DB and populate the information of the image to scan in the parm of this job.
+func (sj *ScanJob) Init() error {
+	job, err := dao.GetScanJob(sj.id)
+	if err != nil {
+		return fmt.Errorf("Failed to get job, error: %v", err)
+	}
+	if job == nil {
+		return fmt.Errorf("The job doesn't exist in DB, job id: %d", sj.id)
+	}
+	sj.parm = &ScanJobParm{
+		repository: job.Repository,
+		tag:        job.Tag,
+		digest:     job.Digest,
+	}
+	return nil
+}
+
+//NewScanJob creates a instance of ScanJob by id.
+func NewScanJob(id int64) *ScanJob {
+	return &ScanJob{id: id}
 }

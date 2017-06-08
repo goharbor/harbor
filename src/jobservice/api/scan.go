@@ -30,7 +30,7 @@ type ImageScanJob struct {
 	jobBaseAPI
 }
 
-type ImageScanReq struct {
+type imageScanReq struct {
 	Repo string `json:"repository"`
 	Tag  string `json:"tag"`
 }
@@ -43,12 +43,12 @@ func (isj *ImageScanJob) Prepare() {
 
 // Post creates a scanner job and hand it to statemachine.
 func (isj *ImageScanJob) Post() {
-	var data ImageScanReq
+	var data imageScanReq
 	isj.DecodeJSONReq(&data)
 	log.Debugf("data: %+v", data)
 	regURL, err := config.LocalRegURL()
 	if err != nil {
-		log.Errorf("Failed to read regURL, error: %v")
+		log.Errorf("Failed to read regURL, error: %v", err)
 		isj.RenderError(http.StatusInternalServerError, "Failed to read registry URL from config")
 		return
 	}
