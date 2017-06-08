@@ -37,6 +37,37 @@ Install Harbor to Test Server
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
 
+Install Harbor With Notary to Test Server
+		Log To Console  \nStart Docker Daemon
+		Start Docker Daemon Locally
+		Sleep  5s
+		${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0
+    Log To Console  \n${output}
+    Log To Console  \nconfig harbor cfg
+    Config Harbor cfg  http_proxy=https
+		${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${ip}
+		${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
+    Log  ${rc}
+		${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
+		Should Be Equal As Integers  ${rc}  0
+		${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
+		Should Be Equal As Integers  ${rc}  0
+		${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
+		Should Be Equal As Integers  ${rc}  0
+		${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
+		Log To Console  ${output}
+		Should Be Equal As Integers  ${rc}  0
+		${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
+		Log To Console  ${output}
+		Should Be Equal As Integers  ${rc}  0
+    Log To Console  \ncomplile and up harbor now
+    Compile and Up Harbor With Source Code  with_notary=true
+    ${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0
+    Log To Console  \n${output}
+
 Up Harbor
 		[Arguments]  ${with_notary}=true
 		${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary}
@@ -66,6 +97,37 @@ Switch To LDAP
 		Config Harbor cfg  auth=ldap_auth
 		Prepare  with_notary=false
 		Up Harbor  with_notary=false
+
+Switch To HTTPS
+		Down Harbor  with_notary=false
+		${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
+		Log To Console  ${rc}
+		${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
+		Log To Console  ${rc}
+		Should Be Equal As Integers  ${rc}  0
+		Config Harbor cfg  http_proxy=https
+		${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${ip}
+		${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
+    Log  ${rc}
+		${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
+		Should Be Equal As Integers  ${rc}  0
+		${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
+		Should Be Equal As Integers  ${rc}  0
+		${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
+		Should Be Equal As Integers  ${rc}  0
+		${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
+		Log To Console  ${output}
+		Should Be Equal As Integers  ${rc}  0
+		${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
+		Log To Console  ${output}
+		Should Be Equal As Integers  ${rc}  0
+		Prepare  with_notary=true
+		Up Harbor  with_notary=true
+		${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0
+    Log To Console  \n${output}
+		Sleep  20s
 
 Prepare
 		[Arguments]  ${with_notary}=true

@@ -48,23 +48,36 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
   echo "Only run tests again Harbor Repo."
   exit 1
 fi
-if (echo $buildinfo | grep -q "\[specific ci="); then
-    buildtype=$(echo $buildinfo | grep "\[specific ci=")
-    testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
-    pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
-elif (echo $buildinfo | grep -q "\[full ci\]"); then
-    upload_build=true
-    pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
-elif (echo $buildinfo | grep -q "\[BAT\]"); then
-    upload_build=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-elif (echo $buildinfo | grep -q "\[Nightly\]"); then
-    upload_build=true
-    nightly_run=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-else
-    echo "Please specify the tests, otherwise no case will be triggered."
+
+if [ "$#" -eq 0 -o "${1#-}" != "$1" ]; then
+  # default running mode...
+  if (echo $buildinfo | grep -q "\[specific ci="); then
+      buildtype=$(echo $buildinfo | grep "\[specific ci=")
+      testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
+      pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
+  elif (echo $buildinfo | grep -q "\[full ci\]"); then
+      upload_build=true
+      pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
+  elif (echo $buildinfo | grep -q "\[BAT\]"); then
+      upload_build=true
+      pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+  elif (echo $buildinfo | grep -q "\[Nightly\]"); then
+      upload_build=true
+      nightly_run=true
+      pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+  elif (echo $buildinfo | grep -q "\[Notary\]"); then
+      upload_build=true
+      pybot --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
+  else
+      echo "Please specify the tests, otherwise no case will be triggered."
+  fi
 fi
+
+if [ "$1" = 'notary' ]; then
+  upload_build=true
+	pybot --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
+fi
+
 rc="$?"
 echo $rc
 

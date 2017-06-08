@@ -90,7 +90,7 @@ Test Case - Push Image
     Sleep  2
     Wait Until Page Contains  test${d}/hello-world
 
-Test Case - Ldap Sign in and
+Test Case - Ldap Sign in and out
     Switch To LDAP
     Init Chrome Driver
     ${rc}=  Run And Return Rc  docker pull vmware/harbor-ldap-test:1.1.1
@@ -107,3 +107,18 @@ Test Case - Ldap Sign in and
     Logout Harbor
     Sign In Harbor  user001  user001
     Close Browser
+
+Test Case - Admin Push Signed Image
+    Switch To HTTPS
+
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${ip}
+
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Should Contain  ${output}  sha256
