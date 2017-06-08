@@ -998,7 +998,7 @@ paths:
           type: integer
           format: int64
           required: true
-          description: Relevant repository ID
+          description: Relevant job ID
       tags:
         - Products
       responses:
@@ -1936,6 +1936,10 @@ definitions:
       name: 
         type: string
         description: The policy name.
+      enabled:
+        type: integer
+        format: int
+        description: 1-enable, 0-disable
   RepPolicyUpdate:
     type: object
     properties:
