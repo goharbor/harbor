@@ -33,6 +33,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 const (
@@ -136,8 +137,8 @@ func (i *Initializer) Enter() (string, error) {
 func (i *Initializer) enter() (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
 	srcCred := auth.NewCookieCredential(c)
-	srcClient, err := newRepositoryClient(i.srcURL, i.insecure, srcCred,
-		config.InternalTokenServiceEndpoint(), i.repository, "repository", i.repository, "pull", "push", "*")
+	srcClient, err := utils.NewRepositoryClient(i.srcURL, i.insecure, srcCred,
+		config.InternalTokenServiceEndpoint(), i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return "", err
@@ -145,8 +146,8 @@ func (i *Initializer) enter() (string, error) {
 	i.srcClient = srcClient
 
 	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
-	dstClient, err := newRepositoryClient(i.dstURL, i.insecure, dstCred,
-		"", i.repository, "repository", i.repository, "pull", "push", "*")
+	dstClient, err := utils.NewRepositoryClient(i.dstURL, i.insecure, dstCred,
+		"", i.repository, "pull", "push", "*")
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return "", err
@@ -449,36 +450,4 @@ func (m *ManifestPusher) enter() (string, error) {
 	m.blobs = nil
 
 	return StatePullManifest, nil
-}
-
-func newRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
-	tokenServiceEndpoint, repository, scopeType, scopeName string,
-	scopeActions ...string) (*registry.Repository, error) {
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
-		tokenServiceEndpoint, scopeType, scopeName, scopeActions...)
-
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
-	uam := &userAgentModifier{
-		userAgent: "harbor-registry-client",
-	}
-
-	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store, uam)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}
-
-type userAgentModifier struct {
-	userAgent string
-}
-
-// Modify adds user-agent header to the request
-func (u *userAgentModifier) Modify(req *http.Request) error {
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
-	return nil
 }

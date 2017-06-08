@@ -1637,7 +1637,7 @@ var sj2 = models.ScanJob{
 	Status:     models.JobPending,
 	Repository: "library/ubuntu",
 	Tag:        "15.10",
-	Digest:     "sha256:1234567890",
+	Digest:     "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f",
 }
 
 func TestAddScanJob(t *testing.T) {
@@ -1692,5 +1692,4 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	assert.NotNil(err)
 	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
-
 }
