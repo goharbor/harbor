@@ -19,7 +19,7 @@ class Parameters(object):
         self.result = ''
         self.log = ''
         self.mailpwd = ''
-        self.report_receiver = 'wangyan@vmware.com'
+        self.report_receiver = 'wangyan@vmware.com;jiangd@vmware.com'
         self.from_address = 'wangyan@vmware.com'
 
         self.init_from_input()
