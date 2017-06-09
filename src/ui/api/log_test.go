@@ -82,7 +82,6 @@ func TestLogGet(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		addProjectID = projects[0].ProjectId
 	}
-	t.Logf("%%%%%%%%%%%%% %v", projects)
 
 	//delete the project
 	projectID := strconv.Itoa(int(addProjectID))

@@ -59,11 +59,11 @@ type Project struct {
 }
 
 type ProjectQuery struct {
-	Name     string `json:"name"`
-	Owner    string `json:"owner"`
-	Public   bool   `json:"public"`
-	Member   string `json:"member"`
-	Role     int    `json:"role"`
-	Page     int64  `json:"page"`
-	PageSize int64  `json:"page_size"`
+	Name     string `url:"name,omitempty"`
+	Owner    string `url:"owner,omitempty"`
+	Public   bool   `url:"public,omitempty"`
+	Member   string `url:"member,omitempty"`
+	Role     int    `url:"role,omitempty"`
+	Page     int64  `url:"page,omitempty"`
+	PageSize int64  `url:"page_size,omitempty"`
 }

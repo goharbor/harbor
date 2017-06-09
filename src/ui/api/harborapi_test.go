@@ -342,12 +342,13 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 	if len(authInfo) > 0 {
 		httpStatusCode, body, err = request(_sling, jsonAcceptHeader, authInfo[0])
 	} else {
-		log.Println("enter no auth $$$$$$$$$$$$$$$$$$$")
 		httpStatusCode, body, err = request(_sling, jsonAcceptHeader)
 	}
 
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
+	} else {
+		log.Println(string(body))
 	}
 
 	return httpStatusCode, successPayload, err
