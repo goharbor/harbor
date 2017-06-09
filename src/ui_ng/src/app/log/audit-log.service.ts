@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
+import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
 
 import { AuditLog } from './audit-log';
 
@@ -35,15 +35,14 @@ export class AuditLogService {
   constructor(private http: Http) {}
 
   listAuditLogs(queryParam: AuditLog): Observable<any> {
+    let params: URLSearchParams = new URLSearchParams(queryParam.keywords);
+    params.set('begin_timestamp', <string>queryParam.begin_timestamp);    
+    params.set('end_timestamp', <string>queryParam.end_timestamp);
+    params.set('username', queryParam.username);
+    params.set('page', <string>queryParam.page);
+    params.set('page_size', <string>queryParam.page_size);
     return this.http
-      .post(`/api/projects/${queryParam.project_id}/logs/filter?page=${queryParam.page}&page_size=${queryParam.page_size}`, {
-        begin_timestamp: queryParam.begin_timestamp,
-        end_timestamp: queryParam.end_timestamp,
-        keywords: queryParam.keywords,
-        operation: queryParam.operation,
-        project_id: queryParam.project_id,
-        username: queryParam.username
-      })
+      .get(`/api/projects/${queryParam.project_id}/logs`, {params: params})
       .map(response => response)
       .catch(error => Observable.throw(error));
   }
