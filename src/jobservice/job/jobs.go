@@ -176,9 +176,9 @@ type ScanJob struct {
 
 //ScanJobParm wraps the parms of a image scan job.
 type ScanJobParm struct {
-	repository string
-	tag        string
-	digest     string
+	Repository string
+	Tag        string
+	Digest     string
 }
 
 //ID returns the id of the scan
@@ -216,9 +216,9 @@ func (sj *ScanJob) Init() error {
 		return fmt.Errorf("The job doesn't exist in DB, job id: %d", sj.id)
 	}
 	sj.parm = &ScanJobParm{
-		repository: job.Repository,
-		tag:        job.Tag,
-		digest:     job.Digest,
+		Repository: job.Repository,
+		Tag:        job.Tag,
+		Digest:     job.Digest,
 	}
 	return nil
 }
