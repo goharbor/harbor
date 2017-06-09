@@ -36,11 +36,21 @@ export class AuditLogService {
 
   listAuditLogs(queryParam: AuditLog): Observable<any> {
     let params: URLSearchParams = new URLSearchParams(queryParam.keywords);
-    params.set('begin_timestamp', <string>queryParam.begin_timestamp);    
-    params.set('end_timestamp', <string>queryParam.end_timestamp);
-    params.set('username', queryParam.username);
-    params.set('page', <string>queryParam.page);
-    params.set('page_size', <string>queryParam.page_size);
+    if(queryParam.begin_timestamp) {
+      params.set('begin_timestamp', <string>queryParam.begin_timestamp);    
+    }
+    if(queryParam.end_timestamp) {
+      params.set('end_timestamp', <string>queryParam.end_timestamp);
+    }
+    if(queryParam.username) {
+      params.set('username', queryParam.username);
+    }
+    if(queryParam.page) {
+      params.set('page', <string>queryParam.page);
+    }
+    if(queryParam.page_size) {
+      params.set('page_size', <string>queryParam.page_size);
+    }
     return this.http
       .get(`/api/projects/${queryParam.project_id}/logs`, {params: params})
       .map(response => response)
