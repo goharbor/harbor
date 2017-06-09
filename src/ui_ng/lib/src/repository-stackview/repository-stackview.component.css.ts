@@ -1,7 +1,6 @@
 export const REPOSITORY_STACKVIEW_STYLES: string = `
 .option-right {
   padding-right: 16px;
-  margin-top: 32px;
   margin-bottom: 12px;
 }
 
