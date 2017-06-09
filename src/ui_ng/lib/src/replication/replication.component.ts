@@ -114,9 +114,6 @@ export class ReplicationComponent implements OnInit {
    }
 
    ngOnInit() {
-     if(!this.projectId) {
-       this.errorHandler.warning('Project ID is unset.');
-     }
      this.currentRuleStatus = this.ruleStatus[0];
      this.currentJobStatus  = this.jobStatus[0];
      this.currentJobSearchOption = 0;
