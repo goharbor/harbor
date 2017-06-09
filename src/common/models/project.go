@@ -88,3 +88,11 @@ type Pagination struct {
 	Page int64
 	Size int64
 }
+
+// BaseProjectCollection contains the query conditions which can be used
+// to get a project collection. The collection can be used as the base to
+// do other filter
+type BaseProjectCollection struct {
+	Public bool
+	Member string
+}

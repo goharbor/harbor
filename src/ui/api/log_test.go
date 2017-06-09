@@ -23,28 +23,24 @@ import (
 )
 
 func TestLogGet(t *testing.T) {
-
 	fmt.Println("Testing Log API")
-	assert := assert.New(t)
 	apiTest := newHarborAPI()
+	assert := assert.New(t)
 
-	//prepare for test
 	CommonAddUser()
-	var project apilib.ProjectReq
-	project.ProjectName = "my_project"
-	project.Public = 1
-	statusCode, result, err := apiTest.LogGet(*testUser)
-	if err != nil {
-		t.Error("Error while get log information", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), statusCode, "Log get should return 200")
 
-	}
+	statusCode, result, err := apiTest.LogGet(*testUser)
+	assert.Nil(err)
+	assert.Equal(200, statusCode)
+
 	logNum := len(result)
-	fmt.Println("result", result)
-	//add the project first.
+
 	fmt.Println("add the project first.")
+	project := apilib.ProjectReq{
+		ProjectName: "project_for_test_log",
+		Public:      1,
+	}
+
 	reply, err := apiTest.ProjectsPost(*testUser, project)
 	if err != nil {
 		t.Error("Error while creat project", err.Error())
@@ -63,7 +59,7 @@ func TestLogGet(t *testing.T) {
 		if num != 1 {
 			assert.Equal(1, num, "add my_project log number should be 1")
 		} else {
-			assert.Equal("my_project/", result[index].RepoName, "RepoName should be equal")
+			assert.Equal("project_for_test_log/", result[index].RepoName)
 			assert.Equal("N/A", result[index].RepoTag, "RepoTag should be equal")
 			assert.Equal("create", result[index].Operation, "Operation should be equal")
 		}
@@ -73,7 +69,12 @@ func TestLogGet(t *testing.T) {
 	//get the project
 	var projects []apilib.Project
 	var addProjectID int32
-	httpStatusCode, projects, err := apiTest.ProjectsGet(project.ProjectName, 1)
+	httpStatusCode, projects, err := apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   project.ProjectName,
+			Owner:  testUser.Name,
+			Public: true,
+		})
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
@@ -81,6 +82,7 @@ func TestLogGet(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		addProjectID = projects[0].ProjectId
 	}
+	t.Logf("%%%%%%%%%%%%% %v", projects)
 
 	//delete the project
 	projectID := strconv.Itoa(int(addProjectID))
@@ -99,7 +101,7 @@ func TestLogGet(t *testing.T) {
 func getLog(result []apilib.AccessLog) (int, int) {
 	var num, index int
 	for i := 0; i < len(result); i++ {
-		if result[i].RepoName == "my_project/" {
+		if result[i].RepoName == "project_for_test_log/" {
 			num++
 			index = i
 		}

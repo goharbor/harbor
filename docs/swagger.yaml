@@ -43,21 +43,36 @@ paths:
           description: Unexpected internal errors.
   /projects:
     get:
-      summary: Return projects created by Harbor
+      summary: List projects
       description: |
         This endpoint returns all projects created by Harbor, and can be filtered by project name.
       parameters:
-        - name: project_name 
+        - name: name 
           in: query
-          description: Project name for filtering results.
+          description: The name of project.
           required: false
           type: string
-        - name: is_public
+        - name: public
           in: query
-          description: Public sign for filtering projects.
+          description: The project is public or private.
+          required: false
+          type: boolean
+          format: int32
+        - name: owner 
+          in: query
+          description: The name of project owner.
+          required: false
+          type: string
+        - name: member 
+          in: query
+          description: The name of project member.
+          required: false
+          type: string
+        - name: role 
+          in: query
+          description: The role of member, only take effect when member is provided.
           required: false
           type: integer
-          format: int32
         - name: page
           in: query
           type: integer

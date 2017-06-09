@@ -90,8 +90,7 @@ func TestAddProject(t *testing.T) {
 
 }
 
-//Get project by proName
-func TestProGetByName(t *testing.T) {
+func TestListProjects(t *testing.T) {
 	fmt.Println("\nTest for Project GET API by project name")
 	assert := assert.New(t)
 
@@ -100,29 +99,39 @@ func TestProGetByName(t *testing.T) {
 
 	//----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
-	httpStatusCode, result, err := apiTest.ProjectsGet(addProject.ProjectName, 1)
-	if err != nil {
-		t.Error("Error while search project by proName and isPublic", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
-		assert.Equal(int32(1), result[0].Public, "Public is wrong")
-		//find add projectID
-		addPID = int(result[0].ProjectId)
-	}
-	//----------------------------case 2 : Response Code=401:is_public=0----------------------------//
-	fmt.Println("case 2: respose code:401,isPublic = 0")
-	httpStatusCode, result, err = apiTest.ProjectsGet("library", 0)
-	if err != nil {
-		t.Error("Error while search project by proName and isPublic", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 200")
-	}
+	httpStatusCode, result, err := apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   addProject.ProjectName,
+			Owner:  admin.Name,
+			Public: true,
+		})
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
+	assert.Equal(int32(1), result[0].Public, "Public is wrong")
+
+	//find add projectID
+	addPID = int(result[0].ProjectId)
+
+	//----------------------------case 2 : Response Code=401----------------------------//
+	fmt.Println("case 2: respose code:401")
+	httpStatusCode, result, err = apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Member: admin.Name,
+		})
+	t.Logf("$$$$$$$$$$$$$$$$$$$%v", result)
+	assert.Nil(err)
+	assert.Equal(int(401), httpStatusCode)
 
 	//-------------------case 3 :  check admin project role------------------------//
-	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *admin)
+	httpStatusCode, result, err = apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   addProject.ProjectName,
+			Owner:  admin.Name,
+			Public: true,
+			Member: admin.Name,
+			Role:   1,
+		}, *admin)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
@@ -144,7 +153,12 @@ func TestProGetByName(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
-	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *testUser)
+	httpStatusCode, result, err = apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   addProject.ProjectName,
+			Member: TestUserName,
+			Role:   2,
+		}, *testUser)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
