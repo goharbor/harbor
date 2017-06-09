@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/replication"
+	"github.com/vmware/harbor/src/jobservice/scan"
 )
 
 // SM is the state machine to handle job, it handles one job at a time.
@@ -231,7 +232,12 @@ func (sm *SM) initTransitions() error {
 			return fmt.Errorf("unsupported operation: %s", jobParm.Operation)
 		}
 	case ScanType:
-		log.Debugf("TODO for scan job, job: %v", sm.CurrentJob)
+		scanJob, ok := sm.CurrentJob.(*ScanJob)
+		if !ok {
+			//Shouldn't be here.
+			return fmt.Errorf("The job: %v is not a type of ScanJob", sm.CurrentJob)
+		}
+		addImgScanTransition(sm, scanJob.parm)
 		return nil
 	default:
 		return fmt.Errorf("Unsupported job type: %v", sm.CurrentJob.Type())
@@ -246,6 +252,20 @@ func addTestTransition(sm *SM) error {
 	return nil
 }
 */
+
+func addImgScanTransition(sm *SM, parm *ScanJobParm) {
+	ctx := &scan.JobContext{
+		Repository: parm.Repository,
+		Tag:        parm.Tag,
+		Digest:     parm.Digest,
+		Logger:     sm.Logger,
+	}
+
+	sm.AddTransition(models.JobRunning, scan.StateInitialize, &scan.Initializer{Context: ctx})
+	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, &scan.LayerScanHandler{Context: ctx})
+	sm.AddTransition(scan.StateScanLayer, scan.StateSummarize, &scan.SummarizeHandler{Context: ctx})
+	sm.AddTransition(scan.StateSummarize, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
+}
 
 func addImgTransferTransition(sm *SM, parm *RepJobParm) {
 	base := replication.InitBaseHandler(parm.Repository, parm.LocalRegURL, config.JobserviceSecret(),

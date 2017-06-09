@@ -18,11 +18,11 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 
@@ -391,8 +391,8 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 	}
 }
 
-// FilterAccessLog handles GET to /api/projects/{}/logs
-func (p *ProjectAPI) FilterAccessLog() {
+// Logs ...
+func (p *ProjectAPI) Logs() {
 	if !p.SecurityCtx.IsAuthenticated() {
 		p.HandleUnauthorized()
 		return
@@ -403,51 +403,54 @@ func (p *ProjectAPI) FilterAccessLog() {
 		return
 	}
 
-	var query models.AccessLog
-	p.DecodeJSONReq(&query)
-
-	queryParm := &models.LogQueryParam{
+	page, size := p.GetPaginationParams()
+	query := &models.LogQueryParam{
 		ProjectIDs: []int64{p.project.ProjectID},
-		Username:   query.Username,
-		Repository: query.RepoName,
-		Tag:        query.RepoTag,
+		Username:   p.GetString("username"),
+		Repository: p.GetString("repository"),
+		Tag:        p.GetString("tag"),
+		Operations: p.GetStrings("operation"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
 	}
 
-	if len(query.Keywords) > 0 {
-		queryParm.Operations = strings.Split(query.Keywords, "/")
+	timestamp := p.GetString("begin_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
+		if err != nil {
+			p.HandleBadRequest(fmt.Sprintf("invalid begin_timestamp: %s", timestamp))
+			return
+		}
+		query.BeginTime = t
 	}
 
-	if query.BeginTimestamp > 0 {
-		beginTime := time.Unix(query.BeginTimestamp, 0)
-		queryParm.BeginTime = &beginTime
+	timestamp = p.GetString("end_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
+		if err != nil {
+			p.HandleBadRequest(fmt.Sprintf("invalid end_timestamp: %s", timestamp))
+			return
+		}
+		query.EndTime = t
 	}
 
-	if query.EndTimestamp > 0 {
-		endTime := time.Unix(query.EndTimestamp, 0)
-		queryParm.EndTime = &endTime
-	}
-
-	page, pageSize := p.GetPaginationParams()
-	queryParm.Pagination = &models.Pagination{
-		Page: page,
-		Size: pageSize,
-	}
-
-	total, err := dao.GetTotalOfAccessLogs(queryParm)
+	total, err := dao.GetTotalOfAccessLogs(query)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf(
 			"failed to get total of access log: %v", err))
 		return
 	}
 
-	logs, err := dao.GetAccessLogs(queryParm)
+	logs, err := dao.GetAccessLogs(query)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf(
 			"failed to get access log: %v", err))
 		return
 	}
 
-	p.SetPaginationHeader(total, page, pageSize)
+	p.SetPaginationHeader(total, page, size)
 	p.Data["json"] = logs
 	p.ServeJSON()
 }

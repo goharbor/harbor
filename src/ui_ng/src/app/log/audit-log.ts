@@ -30,18 +30,18 @@
   }
 */
 export class AuditLog {
-  log_id: number;
-  project_id: number;
+  log_id: number | string;
+  project_id: number | string;
   username: string;
   repo_name: string;
   repo_tag: string;
   operation: string;
   op_time: Date;
-  begin_timestamp: number = 0;
-  end_timestamp: number = 0;
+  begin_timestamp: number | string;
+  end_timestamp: number | string;
   keywords: string;
-  page: number;
-  page_size: number;
+  page: number | string;
+  page_size: number | string;
   fromTime: string;
   toTime: string;
 }

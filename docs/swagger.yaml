@@ -232,8 +232,8 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/logs/filter:
-    post:
+  /projects/{project_id}/logs:
+    get:
       summary: Get access logs accompany with a relevant project.
       description: |
         This endpoint let user search access logs filtered by operations and date time ranges.
@@ -244,11 +244,36 @@ paths:
           format: int64
           required: true
           description: Relevant project ID
-        - name: access_log
-          in: body
-          schema:
-            $ref: '#/definitions/AccessLogFilter'
-          description: Search results of access logs.
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username of the operator.
+        - name: repository
+          in: query
+          type: string
+          required: false
+          description: The name of repository
+        - name: tag
+          in: query
+          type: string
+          required: false
+          description: The name of tag
+        - name: operation
+          in: query
+          type: string
+          required: false
+          description: The operation
+        - name: begin_timestamp
+          in: query
+          type: string
+          required: false
+          description: The begin timestamp
+        - name: end_timestamp
+          in: query
+          type: string
+          required: false
+          description: The end timestamp
         - name: page
           in: query
           type: integer
@@ -876,6 +901,36 @@ paths:
       description: |
         This endpoint let user see the recent operation logs of the projects which he is member of 
       parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username of the operator.
+        - name: repository
+          in: query
+          type: string
+          required: false
+          description: The name of repository
+        - name: tag
+          in: query
+          type: string
+          required: false
+          description: The name of tag
+        - name: operation
+          in: query
+          type: string
+          required: false
+          description: The operation
+        - name: begin_timestamp
+          in: query
+          type: string
+          required: false
+          description: The begin timestamp
+        - name: end_timestamp
+          in: query
+          type: string
+          required: false
+          description: The end timestamp
         - name: page
           in: query
           type: integer

@@ -96,7 +96,7 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
-	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
@@ -373,27 +373,12 @@ func (a testapi) ToggleProjectPublicity(prjUsr usrInfo, projectID string, ispubl
 }
 
 //Get access logs accompany with a relevant project.
-func (a testapi) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLogFilter) (int, []byte, error) {
-	//func (a testapi) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLog) (int, apilib.AccessLog, error) {
-	_sling := sling.New().Post(a.basePath)
+func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("/api/projects/" + projectID + "/logs").
+		QueryStruct(query)
 
-	path := "/api/projects/" + projectID + "/logs/filter"
-
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(accessLog)
-
-	//var successPayload []apilib.AccessLog
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
-	/*
-		if err == nil && httpStatusCode == 200 {
-			err = json.Unmarshal(body, &successPayload)
-		}
-	*/
-	return httpStatusCode, body, err
-	//	return httpStatusCode, successPayload, err
+	return request(_sling, jsonAcceptHeader, prjUsr)
 }
 
 //-------------------------Member Test---------------------------------------//

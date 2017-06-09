@@ -3,7 +3,7 @@ export const REPLICATION_TEMPLATE: string = `
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <div class="row flex-items-xs-between">
       <div class="flex-xs-middle option-left">
-        <button *ngIf="withReplicationJob" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
+        <button *ngIf="projectId" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
         <create-edit-rule [projectId]="projectId" (reload)="reloadRules($event)"></create-edit-rule>
       </div>
       <div class="flex-xs-middle option-right">

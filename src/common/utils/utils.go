@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,4 +114,14 @@ func TestTCPConn(addr string, timeout, interval int) error {
 		cancel <- 1
 		return fmt.Errorf("failed to connect to tcp:%s after %d seconds", addr, timeout)
 	}
+}
+
+// ParseTimeStamp parse timestamp to time
+func ParseTimeStamp(timestamp string) (*time.Time, error) {
+	i, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	t := time.Unix(i, 0)
+	return &t, nil
 }

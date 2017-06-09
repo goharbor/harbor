@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/job"
 	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
@@ -83,5 +84,8 @@ func (isj *ImageScanJob) Post() {
 		isj.RenderError(http.StatusInternalServerError, "Failed to insert scan job data.")
 		return
 	}
-	log.Debugf("job id: %d", jid)
+	log.Debugf("Scan job id: %d", jid)
+	sj := job.NewScanJob(jid)
+	log.Debugf("Sent job to scheduler, job: %v", sj)
+	job.Schedule(sj)
 }

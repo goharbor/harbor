@@ -124,7 +124,7 @@ func TestScanJob(t *testing.T) {
 	assert.Nil(err)
 	j, err := dao.GetScanJob(scanJobID)
 	assert.Equal(models.JobRetrying, j.Status)
-	assert.Equal("sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f", sj.parm.digest)
+	assert.Equal("sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f", sj.parm.Digest)
 	sj2 := NewScanJob(99999)
 	err = sj2.Init()
 	assert.NotNil(err)
