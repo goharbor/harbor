@@ -21,6 +21,7 @@ import { CONFIRMATION_DIALOG_DIRECTIVES } from './confirmation-dialog/index';
 import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
 import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
+import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 
 import {
   SystemInfoService,
@@ -142,7 +143,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LIST_REPLICATION_RULE_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES,
-    VULNERABILITY_DIRECTIVES
+    VULNERABILITY_DIRECTIVES,
+    PUSH_IMAGE_BUTTON_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -160,6 +162,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
+    PUSH_IMAGE_BUTTON_DIRECTIVES,
     TranslateModule
   ],
   providers: []
