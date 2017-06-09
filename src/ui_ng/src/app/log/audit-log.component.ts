@@ -151,7 +151,7 @@ export class AuditLogComponent implements OnInit {
     for(var i in this.filterOptions) {
       let filterOption = this.filterOptions[i];
       if(filterOption.checked) {
-        operationFilter.push(this.filterOptions[i].key);
+        operationFilter.push('operation=' + this.filterOptions[i].key);
       }else{
         selectAll = false;
       }
@@ -159,7 +159,7 @@ export class AuditLogComponent implements OnInit {
     if(selectAll) {
       operationFilter = [];
     }
-    this.queryParam.keywords = operationFilter.join('/');
+    this.queryParam.keywords = operationFilter.join('&');
     this.retrieve();    
   }
 
