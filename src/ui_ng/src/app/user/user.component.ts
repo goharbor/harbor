@@ -14,7 +14,6 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
 import { Subscription } from 'rxjs/Subscription';
-import { State } from 'Clarity-Angular';
 
 import { UserService } from './user.service';
 import { User } from './user';
@@ -249,7 +248,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   //Data loading
-  load(state: State): void {
+  load(state: any): void {
     if (state && state.page) {
       if(this.originalUsers){
         this.originalUsers.then(users => {
