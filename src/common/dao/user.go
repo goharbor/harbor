@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/astaxie/beego/orm"
+
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 
@@ -92,24 +94,36 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 	return &user, nil
 }
 
+// GetTotalOfUsers ...
+func GetTotalOfUsers(query *models.UserQuery) (int64, error) {
+	return userQueryConditions(query).Count()
+}
+
 // ListUsers lists all users according to different conditions.
-func ListUsers(query models.User) ([]models.User, error) {
-	o := GetOrmer()
-	u := []models.User{}
-	sql := `select  user_id, username, email, realname, comment, reset_uuid, salt,
-		sysadmin_flag, creation_time, update_time
-		from user u
-		where u.deleted = 0 and u.user_id != 1 `
+func ListUsers(query *models.UserQuery) ([]models.User, error) {
+	users := []models.User{}
+	_, err := userQueryConditions(query).
+		OrderBy("username").
+		All(&users)
+	return users, err
+}
 
-	queryParam := make([]interface{}, 1)
-	if query.Username != "" {
-		sql += ` and username like ? `
-		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
+func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
+	qs := GetOrmer().QueryTable(&models.User{}).Filter("deleted", 0)
+
+	if query == nil {
+		return qs
 	}
-	sql += ` order by user_id desc `
 
-	_, err := o.Raw(sql, queryParam).QueryRows(&u)
-	return u, err
+	if len(query.Username) > 0 {
+		qs = qs.Filter("username__contains", query.Username)
+	}
+
+	if len(query.Email) > 0 {
+		qs = qs.Filter("email__contains", query.Email)
+	}
+
+	return qs
 }
 
 // ToggleUserAdminRole gives a user admin role.

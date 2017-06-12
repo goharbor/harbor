@@ -127,6 +127,10 @@ func GetTotalOfRepositories(name string) (int64, error) {
 
 // GetTotalOfRepositoriesByProject ...
 func GetTotalOfRepositoriesByProject(projectIDs []int64, name string) (int64, error) {
+	if len(projectIDs) == 0 {
+		return 0, nil
+	}
+
 	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
 		Filter("project_id__in", projectIDs)
 
