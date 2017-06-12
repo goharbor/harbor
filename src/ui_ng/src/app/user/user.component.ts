@@ -27,6 +27,16 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 import { SessionService } from '../shared/session.service';
 import { AppConfigService } from '../app-config.service';
 
+/**
+ * NOTES:
+ *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
+ * 
+ * @export
+ * @class UserComponent
+ * @implements {OnInit}
+ * @implements {OnDestroy}
+ */
+
 @Component({
   selector: 'harbor-user',
   templateUrl: 'user.component.html',
@@ -44,6 +54,8 @@ export class UserComponent implements OnInit, OnDestroy {
   private deletionSubscription: Subscription;
 
   currentTerm: string;
+  totalCount: number = 0;
+  currentPage: number = 1;
 
   @ViewChild(NewUserModalComponent)
   newUserDialog: NewUserModalComponent;
@@ -63,8 +75,8 @@ export class UserComponent implements OnInit, OnDestroy {
         this.delUser(confirmed.data);
       }
     });
-    let hnd = setInterval(()=>ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
+    let hnd = setInterval(() => ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   isMySelf(uid: number): boolean {
@@ -78,8 +90,8 @@ export class UserComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  isMatchFilterTerm(terms: string, testedItem: string): boolean {
-    return testedItem.indexOf(terms) != -1;
+  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
+    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) != -1;
   }
 
   public get canCreateUser(): boolean {
@@ -114,7 +126,6 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.refreshUser();
   }
 
   ngOnDestroy(): void {
@@ -128,15 +139,15 @@ export class UserComponent implements OnInit, OnDestroy {
     this.currentTerm = terms;
     this.originalUsers.then(users => {
       if (terms.trim() === "") {
-        this.users = users;
+        this.refreshUser((this.currentPage - 1) * 15, this.currentPage * 15);
       } else {
         this.users = users.filter(user => {
           return this.isMatchFilterTerm(terms, user.username);
         })
       }
     });
-    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   //Disable the admin role for the specified user
@@ -164,8 +175,8 @@ export class UserComponent implements OnInit, OnDestroy {
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
-        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-        setTimeout(()=>clearInterval(hnd), 1000);
+        let hnd = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 1000);
       })
       .catch(error => {
         this.msgHandler.handleError(error);
@@ -203,8 +214,8 @@ export class UserComponent implements OnInit, OnDestroy {
         this.originalUsers.then(users => {
           this.users = users.filter(u => u.user_id != user.user_id);
           this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
-          let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-          setTimeout(()=>clearInterval(hnd), 1000);
+          let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          setTimeout(() => clearInterval(hnd), 1000);
         });
       })
       .catch(error => {
@@ -213,7 +224,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   //Refresh the user list
-  refreshUser(): void {
+  refreshUser(from: number, to: number): void {
     //Start to get
     this.currentTerm = '';
     this.onGoing = true;
@@ -221,15 +232,18 @@ export class UserComponent implements OnInit, OnDestroy {
     this.originalUsers = this.userService.getUsers()
       .then(users => {
         this.onGoing = false;
-        this.users = users;
+
+        this.totalCount = users.length;
+        this.users = users.slice(from, to);//First page
+
         return users;
       })
       .catch(error => {
         this.onGoing = false;
         this.msgHandler.handleError(error);
       });
-      let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-      setTimeout(()=>clearInterval(hnd), 1000);
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   //Add new user
@@ -243,7 +257,28 @@ export class UserComponent implements OnInit, OnDestroy {
   //Add user to the user list
   addUserToList(user: User): void {
     //Currently we can only add it by reloading all
-    this.refreshUser();
+    this.refresh();
+  }
+
+  //Data loading
+  load(state: any): void {
+    if (state && state.page) {
+      if (this.originalUsers) {
+        this.originalUsers.then(users => {
+          this.users = users.slice(state.page.from, state.page.to + 1);
+        });
+      } else {
+        this.refreshUser(state.page.from, state.page.to + 1);
+      }
+    } else {
+      //Refresh
+      this.refresh();
+    }
+  }
+
+  refresh(): void {
+    this.currentPage = 1;//Refresh pagination
+    this.refreshUser(0, 15);
   }
 
 }

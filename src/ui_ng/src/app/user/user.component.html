@@ -6,18 +6,18 @@
         <button [class.hide-create]="!canCreateUser" type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()"><clr-icon shape="add"></clr-icon>  {{'USER.ADD_ACTION' | translate}}</button>
       </span>
             <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></grid-filter>
-            <span class="refresh-btn" (click)="refreshUser()">
+            <span class="refresh-btn" (click)="refresh()">
         <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
             </span>
         </div>
         <div>
-            <clr-datagrid [clrDgLoading]="inProgress">
+            <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress">
                 <clr-dg-column>{{'USER.COLUMN_NAME' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
-                <clr-dg-row *clrDgItems="let user of users" [clrDgItem]="user">
+                <clr-dg-row *ngFor="let user of users" [clrDgItem]="user">
                     <clr-dg-action-overflow [hidden]="isMySelf(user.user_id)">
                         <button class="action-item" (click)="changeAdminRole(user)">{{adminActions(user)}}</button>
                         <button class="action-item" (click)="deleteUser(user)">{{'USER.DEL_ACTION' | translate}}</button>
@@ -28,7 +28,7 @@
                     <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} users
-                    <clr-dg-pagination #pagination [clrDgPageSize]="15" [clrDgTotalItems]="users.length"> {{'USER.ITEMS' | translate}}
+                    <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount"> {{'USER.ITEMS' | translate}}
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
