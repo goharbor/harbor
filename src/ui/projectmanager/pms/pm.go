@@ -28,8 +28,8 @@ import (
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
+	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
-	er "github.com/vmware/harbor/src/common/utils/registry/error"
 )
 
 var transport = &http.Transport{}
@@ -78,24 +78,16 @@ func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, erro
 }
 
 func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
-	var key, value interface{}
+	m := map[string]string{}
 	if id, ok := projectIDOrName.(int64); ok {
-		key = "customProperties.__harborId"
-		value = id
+		m["customProperties.__harborId"] = strconv.FormatInt(id, 10)
 	} else if name, ok := projectIDOrName.(string); ok {
-		key = "name"
-		value = name
+		m["name"] = name
 	} else {
 		return nil, fmt.Errorf("unsupported type: %v", projectIDOrName)
 	}
 
-	path := fmt.Sprintf("/projects?$filter=%s eq '%v'", key, value)
-	data, err := p.send(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	projects, err := parse(data)
+	projects, err := p.filter(m)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +101,26 @@ func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
 	}
 
 	return projects[0], nil
+}
+
+func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
+	query := ""
+	for k, v := range m {
+		if len(query) == 0 {
+			query += "?"
+		} else {
+			query += "&"
+		}
+		query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
+	}
+
+	path := "/projects" + query
+	data, err := p.send(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return parse(data)
 }
 
 // parse the response of GET /projects?xxx to project list
@@ -213,6 +225,7 @@ func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
 }
 
 // GetRoles ...
+// TODO empty this method after implementing security context with auth context
 func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
 	if len(username) == 0 || projectIDOrName == nil {
 		return nil, nil
@@ -276,13 +289,11 @@ func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (str
 
 // GetPublic ...
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
-	path := "/projects?$filter=isPublic eq 'true'"
-	data, err := p.send(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
+	m := map[string]string{
+		"isPublic": "true",
 	}
 
-	projects, err := parse(data)
+	projects, err := p.filter(m)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +380,8 @@ func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam) (int64, error
 	return 0, errors.New("get total of projects is unsupported")
 }
 
-// GetHasReadPerm ...
+// GetHasReadPerm returns all projects that user has read perm to
+// TODO maybe can be removed as search isn't implemented in integration mode
 func (p *ProjectManager) GetHasReadPerm(username ...string) ([]*models.Project, error) {
 	// TODO add implement
 	return nil, nil
@@ -383,12 +395,12 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 
 	req.Header.Add("x-xenon-auth-token", p.token)
 
-	req.URL.RawQuery = req.URL.Query().Encode()
 	url := req.URL.String()
 
+	req.URL.RawQuery = req.URL.Query().Encode()
 	resp, err := p.client.Do(req)
 	if err != nil {
-		log.Debugf("\"%s %s\" %d", req.Method, url, 0)
+		log.Debugf("\"%s %s\" failed", req.Method, url)
 		return nil, err
 	}
 	defer resp.Body.Close()

@@ -27,7 +27,7 @@ import (
 	//"github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	token_util "github.com/vmware/harbor/src/ui/service/token"
 )
 
