@@ -220,6 +220,10 @@ func (sj *ScanJob) Init() error {
 		Tag:        job.Tag,
 		Digest:     job.Digest,
 	}
+	err = dao.SetScanJobForImg(job.Digest, sj.id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

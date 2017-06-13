@@ -12,21 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package clair
 
 import (
-	"github.com/astaxie/beego/orm"
+	"github.com/vmware/harbor/src/common/models"
+	"strings"
 )
 
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview))
+// ParseClairSev parse the severity of clair to Harbor's Severity type if the string is not recognized the value will be set to unknown.
+func ParseClairSev(clairSev string) models.Severity {
+	sev := strings.ToLower(clairSev)
+	switch sev {
+	case "negligible":
+		return models.SevNone
+	case "low":
+		return models.SevLow
+	case "medium":
+		return models.SevMedium
+	case "high":
+		return models.SevHigh
+	default:
+		return models.SevUnknown
+	}
 }

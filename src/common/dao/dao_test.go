@@ -134,6 +134,12 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
+	orm.Debug = true
+	f, err := os.Create("/root/jtdbtest.out")
+	if err != nil {
+		panic(err)
+	}
+	orm.DebugLog = orm.NewLog(f)
 	databases := []string{"mysql", "sqlite"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
@@ -1692,4 +1698,41 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	assert.NotNil(err)
 	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
+}
+
+func TestImgScanOverview(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	digest := "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f"
+	res, err := GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Nil(res)
+	err = SetScanJobForImg(digest, 33)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(33), res.JobID)
+	err = SetScanJobForImg(digest, 22)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(22), res.JobID)
+	pk := "22-sha256:sdfsdfarfwefwr23r43t34ggregergerger"
+	comp := &models.ComponentsOverview{
+		Total: 2,
+		Summary: []*models.ComponentsOverviewEntry{
+			&models.ComponentsOverviewEntry{
+				Sev:   int(models.SevMedium),
+				Count: 2,
+			},
+		},
+	}
+	err = UpdateImgScanOverview(digest, pk, models.SevMedium, comp)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(pk, res.DetailsKey)
+	assert.Equal(int(models.SevMedium), res.Sev)
+	assert.Equal(2, res.CompOverview.Summary[0].Count)
 }
