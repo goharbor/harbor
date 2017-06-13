@@ -7,6 +7,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
     <clr-dg-column [clrDgField]="'target_name'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="enabledComparator">{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+    <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" (click)="selectRule(p)" [style.backgroundColor]="(!projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editRule(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>

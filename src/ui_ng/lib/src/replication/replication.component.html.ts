@@ -53,6 +53,7 @@ export const REPLICATION_TEMPLATE: string = `
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+        <clr-dg-placeholder>{{'REPLICATION.JOB_PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let j of jobs" [clrDgItem]='j'>
             <clr-dg-cell>{{j.repository}}</clr-dg-cell>
             <clr-dg-cell>{{j.status}}</clr-dg-cell>

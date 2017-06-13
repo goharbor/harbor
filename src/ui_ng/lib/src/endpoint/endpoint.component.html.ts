@@ -20,6 +20,7 @@ export const ENDPOINT_TEMPLATE: string = `
                 <clr-dg-column [clrDgField]="'name'">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'endpoint'">{{'DESTINATION.URL' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
+                <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                     <clr-dg-action-overflow>
                         <button class="action-item" (click)="editTarget(t)">{{'DESTINATION.TITLE_EDIT' | translate}}</button>
