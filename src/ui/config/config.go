@@ -95,8 +95,7 @@ func initSecretStore() {
 }
 
 func initProjectManager() {
-	if len(DeployMode()) == 0 ||
-		DeployMode() == common.DeployModeStandAlone {
+	if !WithAdmiral() {
 		log.Info("initializing the project manager based on database...")
 		GlobalProjectMgr = &db.ProjectManager{}
 	}
@@ -331,10 +330,4 @@ func AdmiralEndpoint() string {
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
-}
-
-// DeployMode returns the deploy mode
-// TODO read from adminserver
-func DeployMode() string {
-	return common.DeployModeStandAlone
 }

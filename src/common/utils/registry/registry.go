@@ -24,7 +24,7 @@ import (
 	// "time"
 
 	"github.com/vmware/harbor/src/common/utils"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 )
 
 // Registry holds information of a registry entity

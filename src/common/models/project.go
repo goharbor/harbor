@@ -31,11 +31,14 @@ type Project struct {
 	OwnerName string `orm:"-" json:"owner_name"`
 	Public    int    `orm:"column(public)" json:"public"`
 	//This field does not have correspondent column in DB, this is just for UI to disable button
-	Togglable bool `orm:"-"`
-
-	UpdateTime time.Time `orm:"update_time" json:"update_time"`
-	Role       int       `orm:"-" json:"current_user_role_id"`
-	RepoCount  int       `orm:"-" json:"repo_count"`
+	Togglable                                  bool      `orm:"-"`
+	UpdateTime                                 time.Time `orm:"update_time" json:"update_time"`
+	Role                                       int       `orm:"-" json:"current_user_role_id"`
+	RepoCount                                  int       `orm:"-" json:"repo_count"`
+	EnableContentTrust                         bool      `orm:"-" json:"enable_content_trust"`
+	PreventVulnerableImagesFromRunning         bool      `orm:"-" json:"prevent_vulnerable_images_from_running"`
+	PreventVulnerableImagesFromRunningSeverity string    `orm:"-" json:"prevent_vulnerable_images_from_running_severity"`
+	AutomaticallyScanImagesOnPush              bool      `orm:"-" json:"automatically_scan_images_on_push"`
 }
 
 // ProjectSorter holds an array of projects

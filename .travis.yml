@@ -91,6 +91,7 @@ script:
   - ./tests/pushimage.sh
   - cd tests
   - sudo ./ldapprepare.sh 
+  - sudo ./admiral.sh 
   - cd .. 
   - go test -i ./src/ui ./src/adminserver ./src/jobservice
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
