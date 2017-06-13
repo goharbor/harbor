@@ -27,7 +27,7 @@ export const TAG_TEMPLATE = `
         <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
         <button class="action-item" [hidden]="!hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
       </clr-dg-action-overflow>
-      <clr-dg-cell>{{t.name}}</clr-dg-cell>
+      <clr-dg-cell><a href="javascript:void(0)" (click)="onTagClick(t)">{{t.name}}</a></clr-dg-cell>
       <clr-dg-cell>docker pull {{registryUrl}}/{{repoName}}:{{t.name}}</clr-dg-cell>
       <clr-dg-cell *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
         <clr-icon shape="check" *ngSwitchCase="true" style="color: #1D5100;"></clr-icon>
