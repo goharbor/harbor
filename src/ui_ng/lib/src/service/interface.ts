@@ -45,6 +45,7 @@ export interface Tag extends Base {
     author: string;
     created: Date;
     signature?: string;
+    vulnerability?: VulnerabilitySummary;
 }
 
 /**
@@ -157,28 +158,28 @@ export interface SystemInfo {
 
 //Not finalized yet
 export enum VulnerabilitySeverity {
-    LOW, MEDIUM, HIGH, UNKNOWN, NONE
+    NONE, UNKNOWN, LOW, MEDIUM, HIGH
 }
 
-export interface ScanningBaseResult {
+export interface VulnerabilityBase {
     id: string;
     severity: VulnerabilitySeverity;
     package: string;
     version: string;
 }
 
-export interface ScanningDetailResult extends ScanningBaseResult {
+export interface VulnerabilityItem extends VulnerabilityBase {
     fixedVersion: string;
     layer: string;
     description: string;
 }
 
-export interface ScanningResultSummary {
-    totalComponents: number;
-    noneComponents: number;
-    completeTimestamp: Date;
-    high: ScanningBaseResult[];
-    medium: ScanningBaseResult[];
-    low: ScanningBaseResult[];
-    unknown: ScanningBaseResult[];
+export interface VulnerabilitySummary {
+    total_package: number;
+    package_with_none: number;
+    package_with_high?: number;
+    package_with_medium?: number;
+    package_With_low?: number;
+    package_with_unknown?: number;
+    complete_timestamp: Date;
 }

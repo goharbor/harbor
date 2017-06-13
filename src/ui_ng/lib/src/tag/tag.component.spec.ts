@@ -86,7 +86,7 @@ describe('TagComponent (inline template)', ()=> {
     fixture.detectChanges();
   });
 
-  it('Should load data', async(()=>{
+  it('should load data', async(()=>{
     expect(spy.calls.any).toBeTruthy();
   }));
 
