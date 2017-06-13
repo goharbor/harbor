@@ -434,6 +434,55 @@
         "IN_PROGRESS": "Buscar...",
         "BACK": "Volver"
     },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "SCAN NOW",
+            "QUEUED": "Queued",
+            "ERROR": "Error",
+            "SCANNING": "Scanning",
+            "UNKNOWN": "Unknown"
+        },
+        "GRID": {
+            "PLACEHOLDER": "We couldn't find any scanning results!",
+            "COLUMN_ID": "Vulnerability",
+            "COLUMN_SEVERITY": "Severity",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_FIXED": "Fixed in version",
+            "COLUMN_LAYER": "Introduced in layer",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "CHART": {
+            "SCANNING_TIME": "Scan completed",
+            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} vulnerabilities across {{totalPackages}} packages."
+        },
+        "SEVERITY": {
+            "HIGH": "High level",
+            "MEDIUM": "Medium level",
+            "LOW": "Low level",
+            "UNKNOWN": "Unknown",
+            "NONE": "None"
+        },
+        "SINGULAR": "Vulnerability",
+        "PLURAL": "Vulnerabilities"
+    },
+    "PUSH_IMAGE": {
+        "TITLE": "Push Image",
+        "TOOLTIP": "Command references for pushing an image to this project.",
+        "TAG_COMMAND": "Tag an image for this project:",
+        "PUSH_COMMAND": "Push an image to this project:",
+        "COPY_ERROR": "Copy failed, please try to manually copy the command references."
+    },
+    "TAG": {
+        "CREATION_TIME_PREFIX": "Create on",
+        "CREATOR_PREFIX": "by",
+        "IMAGE_DETAILS": "Image Details",
+        "ARCHITECTURE": "Architecture",
+        "OS": "OS",
+        "SCAN_COMPLETION_TIME": "Scan Completed",
+        "IMAGE_VULNERABILITIES": "Image Vulnerabilities"
+    },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",
     "FORBIDDEN_ERROR": "No tienes permisos para llevar a cabo esa acción.",
