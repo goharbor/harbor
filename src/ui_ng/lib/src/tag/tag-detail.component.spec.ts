@@ -8,6 +8,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { Tag, VulnerabilitySummary } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
+import { FilterComponent } from '../filter/index';
 
 describe('TagDetailComponent (inline template)', () => {
 
@@ -47,7 +48,8 @@ describe('TagDetailComponent (inline template)', () => {
       ],
       declarations: [
         TagDetailComponent,
-        ResultGridComponent
+        ResultGridComponent,
+        FilterComponent
       ],
       providers: [
         ErrorHandler,

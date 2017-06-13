@@ -4,11 +4,11 @@
 
 export const LOG_TEMPLATE: string = `
 <div>
-    <h2 class="h2-log-override">{{'SIDE_NAV.LOGS' | translate}}</h2>
+    <h2 class="h2-log-override" *ngIf="withTitle">{{'SIDE_NAV.LOGS' | translate}}</h2>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
-            <hbr-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
+            <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="!inProgress"></span>
@@ -47,6 +47,7 @@ export const LOG_STYLES: string = `
 
 .action-head-pos {
     padding-right: 18px;
+    height: 24px;
 }
 
 .refresh-btn {
@@ -54,7 +55,7 @@ export const LOG_STYLES: string = `
 }
 
 .refresh-btn:hover {
-    color: #00bfff;
+    color: #007CBB;
 }
 
 .custom-lines-button {

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
     AccessLogService,
@@ -23,6 +23,7 @@ import { ErrorHandler } from '../error-handler/index';
 import { Observable } from 'rxjs/Observable';
 import { toPromise, CustomComparator } from '../utils';
 import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
+import { DEFAULT_PAGE_SIZE } from '../utils';
 
 import { Comparator, State } from 'clarity-angular';
 
@@ -37,11 +38,12 @@ export class RecentLogComponent implements OnInit {
     logsCache: AccessLog;
     loading: boolean = true;
     currentTerm: string;
+    @Input() withTitle: boolean = false;
 
-    pageSize: number = 15;
+    pageSize: number = DEFAULT_PAGE_SIZE;
     currentPage: number = 0;
 
-    opTimeComparator: Comparator<AccessLog> = new CustomComparator<AccessLog>('op_time', 'date');
+    opTimeComparator: Comparator<AccessLogItem> = new CustomComparator<AccessLogItem>('op_time', 'date');
 
     constructor(
         private logService: AccessLogService,

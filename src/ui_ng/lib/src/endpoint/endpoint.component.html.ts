@@ -1,17 +1,17 @@
 export const ENDPOINT_TEMPLATE: string = `
-    <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<div>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="row flex-items-xs-between">
+            <div class="row flex-items-xs-between" style="height: 24px;">
                 <div class="flex-items-xs-middle option-left">
                     <button class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'DESTINATION.ENDPOINT' | translate}}</button>
                     <create-edit-endpoint (reload)="reload($event)"></create-edit-endpoint>
                 </div>
                 <div class="flex-items-xs-middle option-right">
-                    <hbr-filter filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
-                    <a href="javascript:void(0)" (click)="refreshTargets()">
+                    <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
+                    <span class="refresh-btn" (click)="refreshTargets()">
                         <clr-icon shape="refresh"></clr-icon>
-                    </a>
+                    </span>
                 </div>
             </div>
         </div>
@@ -37,4 +37,6 @@ export const ENDPOINT_TEMPLATE: string = `
             </clr-datagrid>
         </div>
     </div>
+    <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+</div>
 `;

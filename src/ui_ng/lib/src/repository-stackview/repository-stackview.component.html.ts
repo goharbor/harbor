@@ -1,11 +1,11 @@
 export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
-<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<div>
 <div class="row">
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="height: 24px;">  
     <div class="row flex-items-xs-right option-right">
       <div class="flex-xs-middle">
-        <hbr-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></hbr-filter>  
-        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+        <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></hbr-filter>  
+        <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span>
       </div>
     </div>
   </div>
@@ -30,5 +30,7 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
       </clr-dg-footer>
     </clr-datagrid>
   </div>
+</div>
+<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 </div>
 `;
