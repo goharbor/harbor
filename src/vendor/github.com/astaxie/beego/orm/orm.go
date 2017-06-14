@@ -137,10 +137,11 @@ func (o *orm) ReadOrCreate(md interface{}, col1 string, cols ...string) (bool, i
 	if err == ErrNoRows {
 		// Create
 		id, err := o.Insert(md)
+		fmt.Printf("id when create: %d", id)
 		return (err == nil), id, err
 	}
 
-	return false, ind.FieldByIndex(mi.fields.pk.fieldIndex).Int(), err
+	return false, 0, err
 }
 
 // insert model data to database

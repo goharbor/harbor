@@ -29,7 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )
@@ -388,6 +388,29 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 		if !exist {
 			continue
 		}
+
+		endpoint, err := config.RegistryURL()
+		if err != nil {
+			log.Errorf("failed to get registry URL: %v", err)
+			continue
+		}
+		client, err := NewRepositoryClient(endpoint, true,
+			"admin", repoInR, "repository", repoInR, "pull")
+		if err != nil {
+			log.Errorf("failed to create repository client: %v", err)
+			continue
+		}
+
+		exist, err = repositoryExist(repoInR, client)
+		if err != nil {
+			log.Errorf("failed to check the existence of repository %s: %v", repoInR, err)
+			continue
+		}
+
+		if !exist {
+			continue
+		}
+
 		needsAdd = append(needsAdd, repoInR)
 	}
 

@@ -5,8 +5,10 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http, URLSearchParams } from '@angular/http';
 import { HTTP_JSON_OPTIONS } from '../utils';
 
-import { ScanningDetailResult } from './interface';
-import { VulnerabilitySeverity, ScanningBaseResult, ScanningResultSummary } from './interface';
+import {
+    VulnerabilityItem,
+    VulnerabilitySummary
+} from './interface';
 
 /**
  * Get the vulnerabilities scanning results for the specified tag.
@@ -21,22 +23,22 @@ export abstract class ScanningResultService {
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary)}
+     * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
      * 
      * @memberOf ScanningResultService
      */
-    abstract getScanningResultSummary(tagId: string): Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary;
+    abstract getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary;
 
     /**
      * Get the detailed vulnerabilities scanning results.
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[])}
+     * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
      * 
      * @memberOf ScanningResultService
      */
-    abstract getScanningResults(tagId: string): Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[];
+    abstract getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[];
 }
 
 @Injectable()
@@ -47,7 +49,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
         super();
     }
 
-    getScanningResultSummary(tagId: string): Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary {
+    getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary {
         if (!tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }
@@ -55,7 +57,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
         return Observable.of({});
     }
 
-    getScanningResults(tagId: string): Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[] {
+    getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[] {
         if (!tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }

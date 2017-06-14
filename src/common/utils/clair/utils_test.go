@@ -11,22 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-package models
+package clair
 
 import (
-	"github.com/astaxie/beego/orm"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/models"
 )
 
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview))
+func TestParseServerity(t *testing.T) {
+	assert := assert.New(t)
+	in := map[string]models.Severity{
+		"negligible": models.SevNone,
+		"whatever":   models.SevUnknown,
+		"LOW":        models.SevLow,
+		"Medium":     models.SevMedium,
+		"high":       models.SevHigh,
+	}
+	for k, v := range in {
+		assert.Equal(v, ParseClairSev(k))
+	}
 }

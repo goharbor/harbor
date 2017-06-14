@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/security/rbac"
@@ -30,6 +29,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 )
 
 type key string
@@ -133,15 +133,14 @@ func fillContext(ctx *beegoctx.Context) {
 }
 
 func getProjectManager(ctx *beegoctx.Context) projectmanager.ProjectManager {
-	if len(config.DeployMode()) == 0 ||
-		config.DeployMode() == common.DeployModeStandAlone {
+	if !config.WithAdmiral() {
 		log.Info("filling a project manager based on database...")
 		return config.GlobalProjectMgr
 	}
 
-	// TODO create project manager based on pms
-	log.Info("filling a project manager based on pms...")
-	return nil
+	log.Info("filling a project manager based on PMS...")
+	// TODO pass the token to the function
+	return pms.NewProjectManager(config.AdmiralEndpoint(), "")
 }
 
 // GetSecurityContext tries to get security context from request and returns it

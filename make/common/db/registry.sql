@@ -180,6 +180,20 @@ create table img_scan_job (
  PRIMARY KEY (id)
  );
 
+create table img_scan_overview (
+ image_digest varchar(128) NOT NULL,
+ scan_job_id int NOT NULL,
+ /* 0 indicates none, the higher the number, the more severe the status */
+ severity int NOT NULL default 0,
+ /* the json string to store components severity status, currently use a json to be more flexible and avoid creating additional tables. */
+ components_overview varchar(2048),
+ /* primary key for querying details, in clair it should be the name of the "top layer" */
+ details_key varchar(128),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY(image_digest)
+ );
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,

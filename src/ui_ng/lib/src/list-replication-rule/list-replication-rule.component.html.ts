@@ -1,6 +1,5 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
-<confirmation-dialog #toggleConfirmDialog (confirmAction)="toggleConfirm($event)"></confirmation-dialog>
-<confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
+<div>
 <clr-datagrid [clrDgLoading]="loading">
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'project_name'" *ngIf="projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
@@ -8,6 +7,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
     <clr-dg-column [clrDgField]="'target_name'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.LAST_START_TIME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="enabledComparator">{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
+    <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" (click)="selectRule(p)" [style.backgroundColor]="(!projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="editRule(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
@@ -37,4 +37,8 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
       {{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} {{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
       <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
-</clr-datagrid>`;
+</clr-datagrid>
+<confirmation-dialog #toggleConfirmDialog (confirmAction)="toggleConfirm($event)"></confirmation-dialog>
+<confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
+</div>
+`;
