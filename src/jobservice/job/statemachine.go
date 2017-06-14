@@ -258,11 +258,14 @@ func addImgScanTransition(sm *SM, parm *ScanJobParm) {
 		Repository: parm.Repository,
 		Tag:        parm.Tag,
 		Digest:     parm.Digest,
+		JobID:      sm.CurrentJob.ID(),
 		Logger:     sm.Logger,
 	}
 
+	layerScanHandler := &scan.LayerScanHandler{Context: ctx}
 	sm.AddTransition(models.JobRunning, scan.StateInitialize, &scan.Initializer{Context: ctx})
-	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, &scan.LayerScanHandler{Context: ctx})
+	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, layerScanHandler)
+	sm.AddTransition(scan.StateScanLayer, scan.StateScanLayer, layerScanHandler)
 	sm.AddTransition(scan.StateScanLayer, scan.StateSummarize, &scan.SummarizeHandler{Context: ctx})
 	sm.AddTransition(scan.StateSummarize, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
 }
