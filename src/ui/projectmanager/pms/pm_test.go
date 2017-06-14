@@ -183,7 +183,11 @@ func TestGet(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	// get by invalid input type
 	_, err = pm.Get([]string{})
@@ -230,7 +234,11 @@ func TestIsPublic(t *testing.T) {
 		Public: 1,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	public, err = pm.IsPublic(id)
 	assert.Nil(t, err)
@@ -247,7 +255,11 @@ func TestIsPublic(t *testing.T) {
 		Public: 0,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	public, err = pm.IsPublic(id)
 	assert.Nil(t, err)
@@ -277,7 +289,11 @@ func TestExist(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	exist, err = pm.Exist(id)
 	assert.Nil(t, err)
@@ -306,7 +322,11 @@ func TestGetRoles(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	roles, err = pm.GetRoles("user01", id)
 	assert.Nil(t, err)
@@ -328,7 +348,11 @@ func TestGetPublic(t *testing.T) {
 		Public: 1,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	projects, err = pm.GetPublic()
 	assert.Nil(t, nil)
@@ -362,7 +386,11 @@ func TestCreate(t *testing.T) {
 		AutomaticallyScanImagesOnPush:              true,
 	})
 	require.Nil(t, err)
-	defer pm.Delete(id)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
 
 	project, err := pm.Get(id)
 	assert.Nil(t, err)
