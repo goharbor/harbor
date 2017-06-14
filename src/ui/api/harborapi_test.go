@@ -330,17 +330,10 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 }
 
 //Search projects by projectName and isPublic
-func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usrInfo) (int, []apilib.Project, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	//create api path
-	path := "api/projects"
-	_sling = _sling.Path(path)
-	type QueryParams struct {
-		ProjectName string `url:"project_name,omitempty"`
-		IsPubilc    int32  `url:"is_public,omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{ProjectName: projectName, IsPubilc: isPublic})
+func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (int, []apilib.Project, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("api/projects").
+		QueryStruct(query)
 
 	var successPayload []apilib.Project
 
@@ -355,6 +348,8 @@ func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usr
 
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
+	} else {
+		log.Println(string(body))
 	}
 
 	return httpStatusCode, successPayload, err

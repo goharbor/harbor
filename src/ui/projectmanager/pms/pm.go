@@ -371,12 +371,12 @@ func (p *ProjectManager) Update(projectIDOrName interface{}, project *models.Pro
 }
 
 // GetAll ...
-func (p *ProjectManager) GetAll(query *models.ProjectQueryParam) ([]*models.Project, error) {
+func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error) {
 	return nil, errors.New("get all projects is unsupported")
 }
 
 // GetTotal ...
-func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam) (int64, error) {
+func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
 	return 0, errors.New("get total of projects is unsupported")
 }
 

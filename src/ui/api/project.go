@@ -256,58 +256,56 @@ func projectContainsPolicy(id int64) (bool, error) {
 }
 
 // List ...
-// TODO refacter pattern to:
-// /api/repositories?owner=xxx&name=xxx&public=true&member=xxx&role=1&page=1&size=3
 func (p *ProjectAPI) List() {
-	query := &models.ProjectQueryParam{}
-
-	query.Name = p.GetString("project_name")
-	public := p.GetString("is_public")
-	if len(public) != 0 {
-		if public != "0" && public != "1" {
-			p.HandleBadRequest("is_public should be 0 or 1")
-			return
-		}
-		if public == "1" {
-			t := true
-			query.Public = &t
-		}
+	// query strings
+	page, size := p.GetPaginationParams()
+	query := &models.ProjectQueryParam{
+		Name:  p.GetString("name"),
+		Owner: p.GetString("owner"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
 	}
 
-	if query.Public == nil || *query.Public == false {
-		//if the request is not for public projects, user must login or provide credential
-		if !p.SecurityCtx.IsAuthenticated() {
-			p.HandleUnauthorized()
+	public := p.GetString("public")
+	if len(public) > 0 {
+		pub, err := strconv.ParseBool(public)
+		if err != nil {
+			p.HandleBadRequest(fmt.Sprintf("invalid public: %s", public))
 			return
 		}
+		query.Public = &pub
+	}
 
+	// base project collection from which filter is done
+	base := &models.BaseProjectCollection{}
+	if !p.SecurityCtx.IsAuthenticated() {
+		// not login, only get public projects
+		base.Public = true
+	} else {
 		if !p.SecurityCtx.IsSysAdmin() {
-			query.Member = &models.Member{
-				Name: p.SecurityCtx.GetUsername(),
-			}
+			// login, but not system admin, get public projects and
+			// projects that the user is member of
+			base.Member = p.SecurityCtx.GetUsername()
+			base.Public = true
 		}
 	}
 
-	total, err := p.ProjectMgr.GetTotal(query)
+	total, err := p.ProjectMgr.GetTotal(query, base)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf("failed to get total of projects: %v", err))
 		return
 	}
 
-	page, size := p.GetPaginationParams()
-	query.Pagination = &models.Pagination{
-		Page: page,
-		Size: size,
-	}
-
-	projects, err := p.ProjectMgr.GetAll(query)
+	projects, err := p.ProjectMgr.GetAll(query, base)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v", err))
 		return
 	}
 
 	for _, project := range projects {
-		if query.Public == nil || *query.Public == false {
+		if p.SecurityCtx.IsAuthenticated() {
 			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
 			if err != nil {
 				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",

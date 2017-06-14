@@ -23,12 +23,12 @@
 package apilib
 
 type LogQuery struct {
-	Username       string   `json:"username"`
-	Repository     string   `json:"repository"`
-	Tag            string   `json:"tag"`
-	Operation      []string `json:"operation"`
-	BeginTimestamp int64    `json:"begin_timestamp"`
-	EndTimestamp   int64    `json:"end_timestamp"`
-	Page           int64    `json:"page"`
-	PageSize       int64    `json:"page_size"`
+	Username       string   `url:"username,omitempty"`
+	Repository     string   `url:"repository,omitempty"`
+	Tag            string   `url:"tag,omitempty"`
+	Operation      []string `url:"operation,omitempty"`
+	BeginTimestamp int64    `url:"begin_timestamp,omitempty"`
+	EndTimestamp   int64    `url:"end_timestamp,omitempty"`
+	Page           int64    `url:"page,omitempty"`
+	PageSize       int64    `url:"page_size,omitempty"`
 }
