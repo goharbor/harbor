@@ -113,24 +113,12 @@ func TestListProjects(t *testing.T) {
 	//find add projectID
 	addPID = int(result[0].ProjectId)
 
-	//----------------------------case 2 : Response Code=401----------------------------//
-	fmt.Println("case 2: respose code:401")
-	httpStatusCode, result, err = apiTest.ProjectsGet(
-		&apilib.ProjectQuery{
-			Member: admin.Name,
-		})
-	t.Logf("$$$$$$$$$$$$$$$$$$$%v", result)
-	assert.Nil(err)
-	assert.Equal(int(401), httpStatusCode)
-
 	//-------------------case 3 :  check admin project role------------------------//
 	httpStatusCode, result, err = apiTest.ProjectsGet(
 		&apilib.ProjectQuery{
 			Name:   addProject.ProjectName,
 			Owner:  admin.Name,
 			Public: true,
-			Member: admin.Name,
-			Role:   1,
 		}, *admin)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
@@ -155,9 +143,7 @@ func TestListProjects(t *testing.T) {
 	}
 	httpStatusCode, result, err = apiTest.ProjectsGet(
 		&apilib.ProjectQuery{
-			Name:   addProject.ProjectName,
-			Member: TestUserName,
-			Role:   2,
+			Name: addProject.ProjectName,
 		}, *testUser)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())

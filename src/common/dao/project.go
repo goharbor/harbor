@@ -273,7 +273,6 @@ func projectQueryConditions(owner, name string, public *bool, member string,
 	// 1. all projects
 	// 2. public projects
 	// 3. public projects and projects which the user is a member of
-	// 4. projects which the user is a member of
 	collection := `project `
 	if len(base) != 0 && base[0] != nil {
 		if len(base[0].Member) > 0 {

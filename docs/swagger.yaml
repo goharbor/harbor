@@ -63,16 +63,6 @@ paths:
           description: The name of project owner.
           required: false
           type: string
-        - name: member 
-          in: query
-          description: The name of project member.
-          required: false
-          type: string
-        - name: role 
-          in: query
-          description: The role of member, only take effect when member is provided.
-          required: false
-          type: integer
         - name: page
           in: query
           type: integer

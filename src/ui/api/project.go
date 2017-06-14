@@ -278,42 +278,17 @@ func (p *ProjectAPI) List() {
 		query.Public = &pub
 	}
 
-	member := p.GetString("member")
-	if len(member) > 0 {
-		query.Member = &models.Member{
-			Name: member,
-		}
-
-		role := p.GetString("role")
-		if len(role) > 0 {
-			r, err := strconv.Atoi(role)
-			if err != nil {
-				if err != nil {
-					p.HandleBadRequest(fmt.Sprintf("invalid role: %s", role))
-					return
-				}
-			}
-			query.Member.Role = r
-		}
-	}
-
 	// base project collection from which filter is done
 	base := &models.BaseProjectCollection{}
 	if !p.SecurityCtx.IsAuthenticated() {
-		if query.Member != nil && len(query.Member.Name) > 0 {
-			// must login if query member
-			p.HandleUnauthorized()
-			return
-		}
+		// not login, only get public projects
 		base.Public = true
 	} else {
 		if !p.SecurityCtx.IsSysAdmin() {
+			// login, but not system admin, get public projects and
+			// projects that the user is member of
 			base.Member = p.SecurityCtx.GetUsername()
-			if query.Member != nil && len(query.Member.Name) > 0 {
-				base.Public = false
-			} else {
-				base.Public = true
-			}
+			base.Public = true
 		}
 	}
 
