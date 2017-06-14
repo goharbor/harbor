@@ -23,11 +23,11 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Assign User Admin
     [Arguments]  ${user}
-    Input Text  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/div[1]/grid-filter/span/input  ${user}
+    Input Text  xpath=//harbor-shell/clr-main-container//harbor-user//grid-filter//input  ${user}
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/h2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/div[2]/clr-datagrid/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/clr-dg-action-overflow/clr-icon
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/div[2]/clr-datagrid/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/clr-dg-action-overflow/div/button[1]
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/h2
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//harbor-user//clr-datagrid//clr-dg-action-overflow
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//harbor-user//clr-datagrid//clr-dg-row//clr-dg-action-overflow//button[1]
     Sleep  1
 
 Switch to User Tag
