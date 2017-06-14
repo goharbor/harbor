@@ -134,12 +134,6 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
-	orm.Debug = true
-	f, err := os.Create("/root/jtdbtest.out")
-	if err != nil {
-		panic(err)
-	}
-	orm.DebugLog = orm.NewLog(f)
 	databases := []string{"mysql", "sqlite"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
