@@ -14,7 +14,7 @@ services:
         aliases:
           - postgres
     container_name: clair-db
-    image: postgres:latest
+    image: postgres:9.6.3
     restart: always
     depends_on:
       - log
