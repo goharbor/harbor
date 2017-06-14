@@ -491,6 +491,23 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
+        - name: email
+          in: query
+          type: string
+          required: false
+          description: Email for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       tags:
         - Products
       responses:

@@ -407,14 +407,14 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	users, err := ListUsers(models.User{})
+	users, err := ListUsers(nil)
 	if err != nil {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
-	if len(users) != 1 {
+	if len(users) != 2 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
-	users2, err := ListUsers(models.User{Username: username})
+	users2, err := ListUsers(&models.UserQuery{Username: username})
 	if len(users2) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}

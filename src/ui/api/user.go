@@ -106,26 +106,7 @@ func (ua *UserAPI) Prepare() {
 
 // Get ...
 func (ua *UserAPI) Get() {
-	if ua.userID == 0 { //list users
-		if !ua.IsAdmin {
-			log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
-			ua.RenderError(http.StatusForbidden, "User does not have admin role")
-			return
-		}
-		username := ua.GetString("username")
-		userQuery := models.User{}
-		if len(username) > 0 {
-			userQuery.Username = username
-		}
-		userList, err := dao.ListUsers(userQuery)
-		if err != nil {
-			log.Errorf("Failed to get data from database, error: %v", err)
-			ua.RenderError(http.StatusInternalServerError, "Failed to query from database")
-			return
-		}
-		ua.Data["json"] = userList
-
-	} else if ua.userID == ua.currentUserID || ua.IsAdmin {
+	if ua.userID == ua.currentUserID || ua.IsAdmin {
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
@@ -133,11 +114,47 @@ func (ua *UserAPI) Get() {
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		ua.Data["json"] = u
-	} else {
-		log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
+		ua.ServeJSON()
+		return
+	}
+
+	log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
+	ua.RenderError(http.StatusForbidden, "User does not have admin role")
+	return
+}
+
+// List ...
+func (ua *UserAPI) List() {
+	if !ua.IsAdmin {
+		log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
+
+	page, size := ua.GetPaginationParams()
+	query := &models.UserQuery{
+		Username: ua.GetString("username"),
+		Email:    ua.GetString("email"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
+	}
+
+	total, err := dao.GetTotalOfUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))
+		return
+	}
+
+	users, err := dao.ListUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get users: %v", err))
+		return
+	}
+
+	ua.SetPaginationHeader(total, page, size)
+	ua.Data["json"] = users
 	ua.ServeJSON()
 }
 
