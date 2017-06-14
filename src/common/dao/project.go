@@ -275,7 +275,11 @@ func projectQueryConditions(owner, name string, public *bool, member string,
 	// 3. public projects and projects which the user is a member of
 	collection := `project `
 	if len(base) != 0 && base[0] != nil {
-		if len(base[0].Member) > 0 {
+		if len(base[0].Member) == 0 && base[0].Public {
+			collection = `(select * from project pr
+					where pr.public=1) `
+		}
+		if len(base[0].Member) > 0 && base[0].Public {
 			collection = `(select pr.project_id, pr.owner_id, pr.name, pr.
 						creation_time, pr.update_time, pr.deleted, pr.public 
 					from project pr
@@ -283,15 +287,8 @@ func projectQueryConditions(owner, name string, public *bool, member string,
 						on pr.project_id = prm.project_id
 					join user ur
 						on prm.user_id=ur.user_id
-					where ur.username=? `
-			if base[0].Public {
-				collection += ` or pr.public=1 `
-			}
-			collection += `) `
+					where ur.username=?  or pr.public=1 )`
 			params = append(params, base[0].Member)
-		} else if base[0].Public {
-			collection = `(select * from project pr
-					where pr.public=1) `
 		}
 	}
 
