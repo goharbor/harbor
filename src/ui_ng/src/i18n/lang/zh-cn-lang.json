@@ -132,7 +132,8 @@
         "MAKE": "设为",
         "NEW_POLICY": "新建规则",
         "DELETE": "删除",
-        "MY_PROJECTS": "所有项目",
+        "ALL_PROJECTS": "所有项目",
+        "PRIVATE_PROJECTS": "私有项目",
         "PUBLIC_PROJECTS": "公开项目",
         "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
@@ -269,7 +270,9 @@
         "POLICY_ALREADY_EXISTS": "规则已存在。",
         "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务或规则未停用。",
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
-        "INVALID_DATE": "无效日期。"
+        "INVALID_DATE": "无效日期。",
+        "PLACEHOLDER": "未发现任何复制规则!",
+        "JOB_PLACEHOLDER": "未发现任何复制任务!"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -297,7 +300,8 @@
         "DELETED_SUCCESS": "成功删除目标。",
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。"
+        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
+        "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要ID",
@@ -329,7 +333,8 @@
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
-        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。"
+        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
+        "PLACEHOLDER": "未发现任何镜像库!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -424,7 +429,7 @@
         "TITLE": "统计",
         "PRO_ITEM": "项目",
         "REPO_ITEM": "镜像仓库",
-        "INDEX_MY": "私有",
+        "INDEX_PRIVATE": "私有",
         "INDEX_MY_PROJECTS": "我的项目",
         "INDEX_MY_REPOSITORIES": "我的镜像仓库",
         "INDEX_PUB": "公开",
@@ -467,7 +472,8 @@
             "NONE": "无"
         },
         "SINGULAR": "缺陷",
-        "PLURAL": "缺陷"
+        "PLURAL": "缺陷",
+        "PLACEHOLDER": "过滤缺陷"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",
@@ -483,7 +489,8 @@
         "ARCHITECTURE": "架构",
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
-        "IMAGE_VULNERABILITIES": "镜像缺陷"
+        "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "PLACEHOLDER": "未发现任何标签!"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

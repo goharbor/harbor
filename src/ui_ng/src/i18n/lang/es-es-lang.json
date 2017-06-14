@@ -132,8 +132,9 @@
         "MAKE": "Hacer",
         "NEW_POLICY": "Nueva regla de replicación",
         "DELETE": "Eliminar",
-        "MY_PROJECTS": "Todos los proyectos",
-        "PUBLIC_PROJECTS": "Proyectos Públicos",
+        "ALL_PROJECTS": "All Projects",
+        "PRIVATE_PROJECTS": "Private Projects",
+        "PUBLIC_PROJECTS": "Public Projects",
         "PROJECT": "Proyecto",
         "NEW_PROJECT": "Nuevo proyecto",
         "NAME_TOOLTIP": "Project name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
@@ -269,7 +270,9 @@
         "POLICY_ALREADY_EXISTS": "La regla de replicación ya existe.",
         "FAILED_TO_DELETE_POLICY_ENABLED": "No se puede eliminar la regla: tiene trabajo(s) sin finalizar o está activa.",
         "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos.",
-        "INVALID_DATE": "Fecha invalida."
+        "INVALID_DATE": "Fecha invalida.",
+        "PLACEHOLDER": "We couldn't find any replication rules!",
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -297,7 +300,8 @@
         "DELETED_SUCCESS": "Endpoint eliminado satisfactoriamente.",
         "DELETED_FAILED": "Ha fallado la eliminación del endpoint.",
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Fallo al eliminar el endpoint en uso."
+        "FAILED_TO_DELETE_TARGET_IN_USED": "Fallo al eliminar el endpoint en uso.",
+        "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
         "COPY_ID": "Copiar ID",
@@ -329,7 +333,9 @@
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
-        "COPY": "Copiar"
+        "COPY": "Copiar",
+        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
+        "PLACEHOLDER": "We couldn't find any repositories!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
@@ -424,7 +430,7 @@
         "TITLE": "ESTADÍSTICAS",
         "PRO_ITEM": "PROYECTOS",
         "REPO_ITEM": "REPOSITORIOS",
-        "INDEX_MY": "MI",
+        "INDEX_PRIVATE": "PRIVADO",
         "INDEX_PUB": "PÚBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ALMACENAMIENTO",
@@ -465,7 +471,8 @@
             "NONE": "None"
         },
         "SINGULAR": "Vulnerability",
-        "PLURAL": "Vulnerabilities"
+        "PLURAL": "Vulnerabilities",
+        "PLACEHOLDER": "Filter Vulnerabilities"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",
@@ -481,7 +488,8 @@
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",
-        "IMAGE_VULNERABILITIES": "Image Vulnerabilities"
+        "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "PLACEHOLDER": "We couldn't find any tags!"
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",
