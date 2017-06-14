@@ -1,11 +1,11 @@
 export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
-<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<div>
 <div class="row">
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="height: 24px;">  
     <div class="row flex-items-xs-right option-right">
       <div class="flex-xs-middle">
-        <hbr-filter filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></hbr-filter>  
-        <a href="javascript:void(0)" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></a>
+        <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></hbr-filter>  
+        <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span>
       </div>
     </div>
   </div>
@@ -21,7 +21,7 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
         <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
         <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>        
-        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" class="sub-grid-custom" [repoName]="r.name" [registryUrl]="registryUrl" [withNotary]="withNotary" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isEmbedded]="true" (refreshRepo)="refresh($event)"></hbr-tag>
+        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" class="sub-grid-custom" [repoName]="r.name" [registryUrl]="registryUrl" [withNotary]="withNotary" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isEmbedded]="true" (refreshRepo)="refresh($event)"></hbr-tag>
       </clr-dg-row>
       <clr-dg-footer> 
         {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
@@ -30,5 +30,7 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
       </clr-dg-footer>
     </clr-datagrid>
   </div>
+</div>
+<confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 </div>
 `;

@@ -1,4 +1,13 @@
-import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  EventEmitter
+} from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Comparator } from 'clarity-angular';
 
@@ -21,6 +30,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { Subscription } from 'rxjs/Subscription';
+import { Tag } from '../service/interface';
 
 @Component({
   selector: 'hbr-repository-stackview',
@@ -34,6 +44,7 @@ export class RepositoryStackviewComponent implements OnInit {
 
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
+  @Output() tagClickEvent = new EventEmitter<Tag>();
 
   lastFilteredRepoName: string;
   repositories: Repository[];
@@ -119,5 +130,9 @@ export class RepositoryStackviewComponent implements OnInit {
 
   refresh() {
     this.retrieve();
+  }
+
+  watchTagClickEvt(tag: Tag): void {
+    this.tagClickEvent.emit(tag);
   }
 }

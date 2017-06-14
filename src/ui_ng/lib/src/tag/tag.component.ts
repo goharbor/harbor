@@ -51,6 +51,7 @@ export class TagComponent implements OnInit {
   @Input() withNotary: boolean;
 
   @Output() refreshRepo = new EventEmitter<boolean>();
+  @Output() tagClickEvent = new EventEmitter<Tag>();
 
   tags: Tag[];
 
@@ -105,7 +106,7 @@ export class TagComponent implements OnInit {
       this.errorHandler.error('Repo name cannot be unset.');
       return;
     }
-    
+
     this.retrieve();
   }
 
@@ -161,7 +162,14 @@ export class TagComponent implements OnInit {
       this.showTagManifestOpened = true;
     }
   }
+
   selectAndCopy($event: any) {
     $event.target.select();
+  }
+
+  onTagClick(tag: Tag): void {
+    if (tag) {
+      this.tagClickEvent.emit(tag);
+    }
   }
 }
