@@ -6,7 +6,7 @@ set +e
 git fetch upstream
 git reset --hard upstream/drone
 git config credential.helper store
-git push origin drone-nightly
+git push origin drone-nightly --force
 
 cd tests/nightly
 tokenfile=nightly-tokenfile
