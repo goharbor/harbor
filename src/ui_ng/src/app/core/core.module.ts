@@ -19,22 +19,40 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from 'clarity-angular';
 import { CookieModule } from 'ngx-cookie';
 
+import {
+    IServiceConfig,
+    SERVICE_CONFIG,
+    HarborLibraryModule
+} from 'harbor-ui';
+
+const uiLibConfig: IServiceConfig = {
+    enablei18Support: true,
+    langCookieKey: "harbor-lang",
+    langMessageLoader: "http",
+    langMessagePathForHttpLoader: "src/i18n/lang/",
+    langMessageFileSuffixForHttpLoader: "-lang.json",
+};
+
 @NgModule({
-  imports: [
-      BrowserModule,
-      FormsModule,
-      HttpModule,
-      ClarityModule.forRoot(),
-      CookieModule.forRoot(),
-      BrowserAnimationsModule
-  ],
-  exports: [
-      BrowserModule,
-      FormsModule,
-      HttpModule,
-      ClarityModule,
-      BrowserAnimationsModule
-  ]
+    imports: [
+        BrowserModule,
+        FormsModule,
+        HttpModule,
+        ClarityModule.forRoot(),
+        CookieModule.forRoot(),
+        BrowserAnimationsModule,
+        HarborLibraryModule.forRoot({
+            config: { provide: SERVICE_CONFIG, useValue: uiLibConfig }
+        })
+    ],
+    exports: [
+        BrowserModule,
+        FormsModule,
+        HttpModule,
+        ClarityModule,
+        BrowserAnimationsModule,
+        HarborLibraryModule
+    ]
 })
 export class CoreModule {
 }

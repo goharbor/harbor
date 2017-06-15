@@ -1,6 +1,6 @@
 export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `<clr-modal [(clrModalOpen)]="createEditDestinationOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{modalTitle}}</h3>
-  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+  <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body">
     <div class="alert alert-warning" *ngIf="!editable">
       <div class="alert-item">

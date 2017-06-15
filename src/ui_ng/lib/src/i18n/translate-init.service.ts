@@ -13,8 +13,9 @@ export class TranslateServiceInitializer {
 
     public init(config: i18nConfig = {}): void {
         let selectedLang: string = config.defaultLang ? config.defaultLang : DEFAULT_LANG;
+        let supportedLangs: string[] = config.supportedLangs ? config.supportedLangs : DEFAULT_SUPPORTING_LANGS;
 
-        this.translateService.addLangs(config.supportedLangs ? config.supportedLangs : DEFAULT_SUPPORTING_LANGS);
+        this.translateService.addLangs(supportedLangs);
         this.translateService.setDefaultLang(selectedLang);
 
         if (config.enablei18Support) {
@@ -25,9 +26,11 @@ export class TranslateServiceInitializer {
                 langSetting = this.translateService.getBrowserCultureLang().toLowerCase();
             }
 
-            if (config.supportedLangs && config.supportedLangs.length > 0) {
-                if (config.supportedLangs.find(lang => lang === langSetting)) {
-                    selectedLang = langSetting;
+            if (langSetting && langSetting.trim() !== "") {
+                if (supportedLangs && supportedLangs.length > 0) {
+                    if (supportedLangs.find(lang => lang === langSetting)) {
+                        selectedLang = langSetting;
+                    }
                 }
             }
         }

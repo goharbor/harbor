@@ -17,7 +17,7 @@ export const PUSH_IMAGE_HTML: string = `
                     </span>
                 </section>
                 <section>
-                  <inline-alert #copyAlert></inline-alert>
+                  <hbr-inline-alert #copyAlert></hbr-inline-alert>
                 </section>
                 <section>
                     <article class="commands-section">
