@@ -56,7 +56,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   @ViewChild(ListProjectComponent)
   listProject: ListProjectComponent;
 
-  currentFilteredType: number = -1;//all projects
+  currentFilteredType: number = 0;//all projects
   projectName: string = "";
 
   subscription: Subscription;
@@ -146,10 +146,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   doSearchProjects(projectName: string): void {
     this.projectName = projectName;
     if (projectName === "") {
-      if (this.currentFilteredType === -1) {
+      if (this.currentFilteredType === 0) {
         this.getProjects();
       } else {
-        this.getProjects(projectName, this.currentFilteredType);
+        this.getProjects(projectName, this.currentFilteredType - 1);
       }
     } else {
       this.getProjects(projectName);
@@ -160,10 +160,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
     if ($event && $event.target && $event.target["value"]) {
       this.projectName = "";
       this.currentFilteredType = +$event.target["value"];
-      if (this.currentFilteredType === -1) {
+      if (this.currentFilteredType === 0) {
         this.getProjects();
       } else {
-        this.getProjects("", this.currentFilteredType);
+        this.getProjects("", this.currentFilteredType - 1);
       }
     }
   }
@@ -177,7 +177,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         response => {
           this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
           this.statisticHandler.refresh();
-          this.getProjects("", this.currentFilteredType);
+          this.getProjects("", this.currentFilteredType - 1);
         },
         error => this.messageHandlerService.handleError(error)
         );
@@ -197,7 +197,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.currentFilteredType = -1;
+    this.currentFilteredType = 0;
     this.retrieve();
     this.statisticHandler.refresh();
   }
