@@ -98,7 +98,7 @@ Switch To LDAP
 		Prepare  with_notary=false
 		Up Harbor  with_notary=false
 
-Switch To HTTPS
+Switch To Notary
 		Down Harbor  with_notary=false
 		${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
 		Log To Console  ${rc}

@@ -1,3 +1,0 @@
-common-config:
-  environment:
-    - FOO=1

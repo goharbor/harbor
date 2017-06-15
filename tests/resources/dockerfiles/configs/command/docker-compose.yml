@@ -1,3 +1,0 @@
-simple:
-  image: busybox:latest
-  command: ls
