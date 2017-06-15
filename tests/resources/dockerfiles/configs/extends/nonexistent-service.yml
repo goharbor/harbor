@@ -1,4 +1,0 @@
-web:
-  image: busybox
-  extends:
-    service: foo

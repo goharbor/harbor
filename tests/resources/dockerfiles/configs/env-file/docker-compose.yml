@@ -1,4 +1,0 @@
-web:
-  image: busybox
-  command: /bin/true
-  env_file: ./test.env

@@ -1,6 +1,0 @@
-webintermediate:
-  extends:
-    file: common.yml
-    service: web
-  environment:
-    - "FOO=2"
