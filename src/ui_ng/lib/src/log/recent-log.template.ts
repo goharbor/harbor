@@ -8,36 +8,33 @@ export const LOG_TEMPLATE: string = `
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
-            <div class="select log-select">
-                <select id="log_display_num" (change)="handleOnchange($event)">
-                    <option value="10">{{'RECENT_LOG.SUB_TITLE' | translate}} 10 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
-                    <option value="25">{{'RECENT_LOG.SUB_TITLE' | translate}} 25 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
-                    <option value="50">{{'RECENT_LOG.SUB_TITLE' | translate}} 50 {{'RECENT_LOG.SUB_TITLE_SUFIX' | translate}}</option>
-            </select>
-            </div>
-            <div class="item-divider"></div>
             <hbr-filter filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
-            <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+            <span class="spinner spinner-inline" [hidden]="!inProgress"></span>
             </span>
         </div>
     </div>
     <div>
-        <clr-datagrid [clrDgLoading]="loading">
+        <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
             <clr-dg-column [clrDgField]="'username'">{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'repo_name'">{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'repo_tag'">{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'operation'">{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="opTimeComparator">{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
-            <clr-dg-row *clrDgItems="let l of recentLogs">
+            <clr-dg-placeholder>We couldn't find any logs!</clr-dg-placeholder>
+            <clr-dg-row *ngFor="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
-            <clr-dg-footer>{{ (recentLogs ? recentLogs.length : 0) }} {{'AUDIT_LOG.ITEMS' | translate}}</clr-dg-footer>
+            <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+    of {{pagination.totalItems}} {{'AUDIT_LOG.ITEMS' | translate}}
+            <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+            </clr-dg-footer>
         </clr-datagrid>
     </div>
 </div>

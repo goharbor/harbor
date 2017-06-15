@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
 import { DebugElement } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { AccessLog, RequestQueryParams } from '../service/index';
+import { AccessLog, AccessLogItem, RequestQueryParams } from '../service/index';
 
 import { RecentLogComponent } from './recent-log.component';
 import { AccessLogService, AccessLogDefaultService } from '../service/access-log.service';
@@ -18,7 +18,7 @@ describe('RecentLogComponent (inline template)', () => {
   let serviceConfig: IServiceConfig;
   let logService: AccessLogService;
   let spy: jasmine.Spy;
-  let mockData: AccessLog[] = [{
+  let mockItems: AccessLogItem[] = [{
     log_id: 23,
     user_id: 45,
     project_id: 11,
@@ -37,6 +37,12 @@ describe('RecentLogComponent (inline template)', () => {
     op_time: "2017-03-09T02:29:59Z",
     username: "admin"
   }];
+  let mockData: AccessLog = {
+    metadata: {
+      xTotalCount: 2
+    },
+    data: mockItems
+  };
   let testConfig: IServiceConfig = {
     logBaseEndpoint: "/api/logs/testing"
   };
@@ -56,7 +62,7 @@ describe('RecentLogComponent (inline template)', () => {
 
   }));
 
-  beforeEach(()=>{
+  beforeEach(() => {
     fixture = TestBed.createComponent(RecentLogComponent);
     component = fixture.componentInstance;
     serviceConfig = TestBed.get(SERVICE_CONFIG);
@@ -102,7 +108,7 @@ describe('RecentLogComponent (inline template)', () => {
       component.doFilter('push');
       fixture.detectChanges();
       expect(component.recentLogs.length).toEqual(1);
-      let log: AccessLog = component.recentLogs[0];
+      let log: AccessLogItem = component.recentLogs[0];
       expect(log).toBeTruthy();
       expect(log.username).toEqual('admin');
     });

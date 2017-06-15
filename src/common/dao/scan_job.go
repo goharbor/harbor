@@ -25,6 +25,9 @@ import (
 // AddScanJob ...
 func AddScanJob(job models.ScanJob) (int64, error) {
 	o := GetOrmer()
+	if len(job.Status) == 0 {
+		job.Status = models.JobPending
+	}
 	return o.Insert(&job)
 }
 

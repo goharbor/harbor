@@ -60,6 +60,7 @@ func (ec envPolicyChecker) contentTrustEnabled(name string) bool {
 	return os.Getenv("PROJECT_CONTENT_TRUST") == "1"
 }
 func (ec envPolicyChecker) vulnerableEnabled(name string) bool {
+	// TODO: May need get more information in vulnerable policies.
 	return os.Getenv("PROJECT_VULNERABBLE") == "1"
 }
 
@@ -161,8 +162,8 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		log.Debugf("Passing the response to outter responseWriter")
 		copyResp(rec, rw)
 	} else {
-		log.Debugf("digest miamatch, failing the response.")
-		http.Error(rw, "Failure in content trust handler", http.StatusPreconditionFailed)
+		log.Debugf("digest mismatch, failing the response.")
+		http.Error(rw, "The image is not signed in Notary.", http.StatusPreconditionFailed)
 	}
 }
 

@@ -6,7 +6,7 @@
         "stripInternal": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "strictNullChecks": true,
+        "strictNullChecks": false,
         "noImplicitAny": true,
         "module": "es2015",
         "moduleResolution": "node",

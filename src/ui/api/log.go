@@ -19,6 +19,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 )
 
 //LogAPI handles request api/logs
@@ -43,10 +44,34 @@ func (l *LogAPI) Prepare() {
 func (l *LogAPI) Get() {
 	page, size := l.GetPaginationParams()
 	query := &models.LogQueryParam{
+		Username:   l.GetString("username"),
+		Repository: l.GetString("repository"),
+		Tag:        l.GetString("tag"),
+		Operations: l.GetStrings("operation"),
 		Pagination: &models.Pagination{
 			Page: page,
 			Size: size,
 		},
+	}
+
+	timestamp := l.GetString("begin_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
+		if err != nil {
+			l.HandleBadRequest(fmt.Sprintf("invalid begin_timestamp: %s", timestamp))
+			return
+		}
+		query.BeginTime = t
+	}
+
+	timestamp = l.GetString("end_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
+		if err != nil {
+			l.HandleBadRequest(fmt.Sprintf("invalid end_timestamp: %s", timestamp))
+			return
+		}
+		query.EndTime = t
 	}
 
 	if !l.isSysAdmin {

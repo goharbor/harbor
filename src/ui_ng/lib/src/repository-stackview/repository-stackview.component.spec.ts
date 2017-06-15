@@ -9,10 +9,11 @@ import { TagComponent } from '../tag/tag.component';
 import { FilterComponent } from '../filter/filter.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Repository, Tag } from '../service/interface';
+import { Repository, Tag, SystemInfo } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
+import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 
 import { click } from '../utils';
 
@@ -26,7 +27,23 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
   let compTag: TagComponent;
   let fixtureTag: ComponentFixture<TagComponent>;
   let tagService: TagService;
+  let systemInfoService: SystemInfoService;
+
   let spyTags: jasmine.Spy;
+  let spySystemInfo: jasmine.Spy;
+
+  let mockSystemInfo: SystemInfo = {
+    "with_notary": true,
+    "with_admiral": false,
+    "admiral_endpoint": "NA",
+    "auth_mode": "db_auth",
+    "registry_url": "10.112.122.56",
+    "project_creation_restriction": "everyone",
+    "self_registration": true,
+    "has_ca_root": false,
+    "harbor_version": "v1.1.1-rc1-160-g565110d"
+  };
+
 
   let mockRepoData: Repository[] = [
     {
@@ -81,7 +98,8 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue : config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
-        { provide: TagService, useClass: TagDefaultService }
+        { provide: TagService, useClass: TagDefaultService },
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService }
       ]
     });
   }));
@@ -90,9 +108,8 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
     fixtureRepo = TestBed.createComponent(RepositoryStackviewComponent);
     compRepo = fixtureRepo.componentInstance;
     compRepo.projectId = 1;
-    compRepo.sessionInfo = {
-      hasProjectAdminRole: true
-    };
+    compRepo.hasProjectAdminRole = true;
+
     repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepoData));
@@ -104,9 +121,12 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
     compTag = fixtureTag.componentInstance;
     compTag.projectId = compRepo.projectId;
     compTag.repoName = 'library/busybox';
-    compTag.sessionInfo = compRepo.sessionInfo;
+    compTag.hasProjectAdminRole = true;
+    compTag.hasSignedIn = true;
     tagService = fixtureTag.debugElement.injector.get(TagService);
+    systemInfoService = fixtureTag.debugElement.injector.get(SystemInfoService);
     spyTags = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTagData));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
     fixtureTag.detectChanges();
   });
 

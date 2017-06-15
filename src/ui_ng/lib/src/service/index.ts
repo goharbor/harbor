@@ -1,4 +1,5 @@
 export * from './interface';
+export * from './system-info.service';
 export * from './access-log.service';
 export * from './endpoint.service';
 export * from './replication.service';

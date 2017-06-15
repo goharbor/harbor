@@ -67,13 +67,19 @@ func logQueryConditions(query *models.LogQueryParam) orm.QuerySeter {
 		qs = qs.Filter("username__contains", query.Username)
 	}
 	if len(query.Repository) != 0 {
-		qs = qs.Filter("repo_name", query.Repository)
+		qs = qs.Filter("repo_name__contains", query.Repository)
 	}
 	if len(query.Tag) != 0 {
-		qs = qs.Filter("repo_tag", query.Tag)
+		qs = qs.Filter("repo_tag__contains", query.Tag)
 	}
-	if len(query.Operations) > 0 {
-		qs = qs.Filter("operation__in", query.Operations)
+	operations := []string{}
+	for _, operation := range query.Operations {
+		if len(operation) > 0 {
+			operations = append(operations, operation)
+		}
+	}
+	if len(operations) > 0 {
+		qs = qs.Filter("operation__in", operations)
 	}
 	if query.BeginTime != nil {
 		qs = qs.Filter("op_time__gte", query.BeginTime)

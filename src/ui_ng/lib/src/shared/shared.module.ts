@@ -9,6 +9,7 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslatorJsonLoader } from '../i18n/local-json.loader';
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
 import { CookieService, CookieModule } from 'ngx-cookie';
+import { ClipboardModule } from 'ngx-clipboard';
 
 /*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
@@ -40,6 +41,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
         CommonModule,
         HttpModule,
         FormsModule,
+        ClipboardModule,
         CookieModule.forRoot(),
         ClarityModule.forRoot(),
         TranslateModule.forRoot({
@@ -59,6 +61,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
         HttpModule,
         FormsModule,
         CookieModule,
+        ClipboardModule,
         ClarityModule,
         TranslateModule
     ],

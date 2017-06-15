@@ -174,7 +174,7 @@ create table img_scan_job (
  status varchar(64) NOT NULL,
  repository varchar(256) NOT NULL,
  tag   varchar(128) NOT NULL,
- digest varchar(64),
+ digest varchar(128),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
