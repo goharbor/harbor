@@ -27,10 +27,10 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -64,7 +64,8 @@ type tag struct {
 
 type tagResp struct {
 	tag
-	Signature *notary.Target `json:"signature"`
+	Signature    *notary.Target          `json:"signature"`
+	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
 }
 
 type manifestResp struct {
@@ -353,6 +354,8 @@ func (ra *RepositoryAPI) GetTags() {
 		tagResp := &tagResp{
 			tag: *tag,
 		}
+		//TODO: only when deployed with Clair...
+		tagResp.ScanOverview = getScanOverview(tag.Digest, tag.Name)
 
 		// compare both digest and tag
 		if signature, ok := signatures[tag.Digest]; ok {
@@ -635,4 +638,31 @@ func getSignatures(repository, username string) (map[string]*notary.Target, erro
 	}
 
 	return signatures, nil
+}
+
+//will return nil when it failed to get data.  The parm "tag" is for logging only.
+func getScanOverview(digest string, tag string) *models.ImgScanOverview {
+	data, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
+	}
+	if data == nil {
+		return nil
+	}
+	job, err := dao.GetScanJob(data.JobID)
+	if err != nil {
+		log.Errorf("Failed to get scan job for id:%d, error: %v", data.JobID, err)
+		return nil
+	} else if job == nil { //job does not exist
+		log.Errorf("The scan job with id: %d does not exist, returning nil", data.JobID)
+		return nil
+	}
+	data.Status = job.Status
+	if data.Status != models.JobFinished {
+		log.Debugf("Unsetting vulnerable related historical values, job status: %s", data.Status)
+		data.Sev = 0
+		data.CompOverview = nil
+		data.DetailsKey = ""
+	}
+	return data
 }

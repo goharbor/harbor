@@ -58,10 +58,10 @@ type ImgScanOverview struct {
 	JobID           int64               `orm:"column(scan_job_id)" json:"job_id"`
 	Sev             int                 `orm:"column(severity)" json:"severity"`
 	CompOverviewStr string              `orm:"column(components_overview)" json:"-"`
-	CompOverview    *ComponentsOverview `orm:"-" json:"components"`
+	CompOverview    *ComponentsOverview `orm:"-" json:"components,omitempty"`
 	DetailsKey      string              `orm:"column(details_key)" json:"details_key"`
-	CreationTime    time.Time           `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime      time.Time           `orm:"column(update_time);auto_now" json:"update_time"`
+	CreationTime    time.Time           `orm:"column(creation_time);auto_now_add" json:"creation_time,omitempty"`
+	UpdateTime      time.Time           `orm:"column(update_time);auto_now" json:"update_time,omitempty"`
 }
 
 //TableName ...
