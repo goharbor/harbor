@@ -653,6 +653,9 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 	if err != nil {
 		log.Errorf("Failed to get scan job for id:%d, error: %v", data.JobID, err)
 		return nil
+	} else if job == nil { //job does not exist
+		log.Errorf("The scan job with id: %d does not exist, returning nil", data.JobID)
+		return nil
 	}
 	data.Status = job.Status
 	if data.Status != models.JobFinished {
