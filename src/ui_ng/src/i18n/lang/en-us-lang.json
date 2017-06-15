@@ -132,7 +132,8 @@
         "MAKE": "Make",
         "NEW_POLICY": "New Replication Rule",
         "DELETE": "Delete",
-        "MY_PROJECTS": "All Projects",
+        "ALL_PROJECTS": "All Projects",
+        "PRIVATE_PROJECTS": "Private Projects",
         "PUBLIC_PROJECTS": "Public Projects",
         "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
@@ -269,7 +270,9 @@
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
         "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
-        "INVALID_DATE": "Invalid date."
+        "INVALID_DATE": "Invalid date.",
+        "PLACEHOLDER": "We couldn't find any replication rules!",
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -297,7 +300,8 @@
         "DELETED_SUCCESS": "Deleted endpoint successfully.",
         "DELETED_FAILED": "Deleted endpoint failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use."
+        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use.",
+        "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest ID",
@@ -329,7 +333,8 @@
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
         "COPY": "Copy",
-        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag."
+        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
+        "PLACEHOLDER": "We couldn't find any repositories!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -424,7 +429,7 @@
         "TITLE": "STATISTICS",
         "PRO_ITEM": "PROJECTS",
         "REPO_ITEM": "REPOSITORIES",
-        "INDEX_MY": "MY",
+        "INDEX_PRIVATE": "PRIVATE",
         "INDEX_MY_PROJECTS": "MY PROJECTS",
         "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PUBLIC",
@@ -467,7 +472,8 @@
             "NONE": "None"
         },
         "SINGULAR": "Vulnerability",
-        "PLURAL": "Vulnerabilities"
+        "PLURAL": "Vulnerabilities",
+        "PLACEHOLDER": "Filter Vulnerabilities"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",
@@ -483,7 +489,8 @@
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",
-        "IMAGE_VULNERABILITIES": "Image Vulnerabilities"
+        "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "PLACEHOLDER": "We couldn't find any tags!"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",

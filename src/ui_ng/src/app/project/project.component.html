@@ -13,9 +13,10 @@
             </div>
             <div class="option-right">
                 <div class="select" style="float: left;">
-                  <select (change)="doFilterProjects($event)">
-                    <option value="0">{{projectTypes[0] | translate}}</option>
-                    <option value="1">{{projectTypes[1] | translate}}</option>
+                    <select (change)="doFilterProjects($event)">
+                    <option value="-1" [selected]="currentFilteredType === -1">{{projectTypes[0] | translate}}</option>
+                    <option value="0">{{projectTypes[1] | translate}}</option>
+                    <option value="1">{{projectTypes[2] | translate}}</option>
                   </select>
                 </div>
                 <grid-filter filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchProjects($event)" [currentValue]="projectName"></grid-filter>

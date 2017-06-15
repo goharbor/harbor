@@ -56,12 +56,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   @ViewChild(ListProjectComponent)
   listProject: ListProjectComponent;
 
-  currentFilteredType: number = 0;
+  currentFilteredType: number = -1;//all projects
+  projectName: string = "";
 
   subscription: Subscription;
-
-  projectName: string;
-  isPublic: number;
 
   constructor(
     private projectService: ProjectService,
@@ -83,23 +81,20 @@ export class ProjectComponent implements OnInit, OnDestroy {
             this.retrieve();
             this.statisticHandler.refresh();
           },
-          error =>{
-            if(error && error.status === 412) {
+          error => {
+            if (error && error.status === 412) {
               this.messageHandlerService.showError('PROJECT.FAILED_TO_DELETE_PROJECT', '');
             } else {
               this.messageHandlerService.handleError(error);
             }
           }
-        );
+          );
       }
     });
-    
+
   }
 
   ngOnInit(): void {
-    this.projectName = '';
-    this.isPublic = 0;
-    
   }
 
   ngOnDestroy(): void {
@@ -110,26 +105,31 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   get projectCreationRestriction(): boolean {
     let account = this.sessionService.getCurrentUser();
-    if(account) {
-      switch(this.appConfigService.getConfig().project_creation_restriction) {
-      case 'adminonly':
-        return (account.has_admin_role === 1);
-      case 'everyone':
-        return true;
-      } 
+    if (account) {
+      switch (this.appConfigService.getConfig().project_creation_restriction) {
+        case 'adminonly':
+          return (account.has_admin_role === 1);
+        case 'everyone':
+          return true;
+      }
     }
     return false;
   }
 
   retrieve(state?: State): void {
+    this.projectName = "";
+    this.getProjects();
+  }
+
+  getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
     this.projectService
-      .listProjects(this.projectName, this.isPublic)
+      .listProjects(name, isPublic, page, pageSize)
       .subscribe(
       response => {
         this.changedProjects = response.json();
       },
       error => this.messageHandlerService.handleError(error)
-    );
+      );
   }
 
   openModal(): void {
@@ -138,7 +138,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   createProject(created: boolean) {
     if (created) {
-      this.projectName = '';
       this.retrieve();
       this.statisticHandler.refresh();
     }
@@ -146,14 +145,26 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   doSearchProjects(projectName: string): void {
     this.projectName = projectName;
-    this.retrieve();
+    if (projectName === "") {
+      if (this.currentFilteredType === -1) {
+        this.getProjects();
+      } else {
+        this.getProjects(projectName, this.currentFilteredType);
+      }
+    } else {
+      this.getProjects(projectName);
+    }
   }
 
   doFilterProjects($event: any): void {
     if ($event && $event.target && $event.target["value"]) {
-      this.currentFilteredType = $event.target["value"];
-      this.isPublic = this.currentFilteredType;
-      this.retrieve();
+      this.projectName = "";
+      this.currentFilteredType = +$event.target["value"];
+      if (this.currentFilteredType === -1) {
+        this.getProjects();
+      } else {
+        this.getProjects("", this.currentFilteredType);
+      }
     }
   }
 
@@ -166,6 +177,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         response => {
           this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
           this.statisticHandler.refresh();
+          this.getProjects("", this.currentFilteredType);
         },
         error => this.messageHandlerService.handleError(error)
         );
@@ -185,6 +197,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
+    this.currentFilteredType = -1;
     this.retrieve();
     this.statisticHandler.refresh();
   }
