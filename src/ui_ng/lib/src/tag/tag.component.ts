@@ -14,6 +14,8 @@
 import { Component, OnInit, ViewChild, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { TagService } from '../service/tag.service';
+import { SystemInfoService } from '../service/system-info.service';
+
 import { ErrorHandler } from '../error-handler/error-handler';
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../shared/shared.const';
 
@@ -21,7 +23,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 
-import { Tag, SessionInfo } from '../service/interface';
+import { SystemInfo, Tag } from '../service/interface';
 
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
@@ -42,18 +44,17 @@ export class TagComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() repoName: string;
-  @Input() sessionInfo: SessionInfo;  
   @Input() isEmbedded: boolean; 
 
-  @Output() refreshRepo = new EventEmitter<boolean>();
+  @Input() hasSignedIn: boolean;
+  @Input() hasProjectAdminRole: boolean;
 
-  hasProjectAdminRole: boolean;
+  @Output() refreshRepo = new EventEmitter<boolean>();
 
   tags: Tag[];
 
   registryUrl: string;
   withNotary: boolean;
-  hasSignedIn: boolean;
 
   showTagManifestOpened: boolean;
   manifestInfoTitle: string;
@@ -70,6 +71,7 @@ export class TagComponent implements OnInit {
 
   constructor(
     private errorHandler: ErrorHandler,
+    private systemInfoService: SystemInfoService,
     private tagService: TagService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef){}
@@ -105,16 +107,15 @@ export class TagComponent implements OnInit {
       this.errorHandler.error('Repo name cannot be unset.');
       return;
     }
-    if(!this.sessionInfo) {
-      this.errorHandler.error('Session info cannot be unset.');
-      return;
-    }
-    this.hasSignedIn = this.sessionInfo.hasSignedIn || false;
-    this.hasProjectAdminRole = this.sessionInfo.hasProjectAdminRole || false;
-    this.registryUrl = this.sessionInfo.registryUrl || '';
-    this.withNotary = this.sessionInfo.withNotary || false;
-
-    this.retrieve(); 
+    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+      .then(systemInfo=>{
+        if(systemInfo) {
+          this.registryUrl = systemInfo.registry_url || '';
+          this.withNotary = systemInfo.with_notary || false;
+        }
+      },
+      error=> this.errorHandler.error(error));  
+    this.retrieve();
   }
 
   retrieve() {

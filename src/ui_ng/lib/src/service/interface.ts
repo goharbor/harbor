@@ -96,12 +96,34 @@ export interface ReplicationJob extends Base {
 }
 
 /**
+ * Interface for storing metadata of response.
+ * 
+ * @export
+ * @interface Metadata
+ */
+export interface Metadata {
+    xTotalCount: number;
+}
+
+/**
  * Interface for access log.
  * 
  * @export
  * @interface AccessLog
  */
 export interface AccessLog {
+    metadata?: Metadata;
+    data: AccessLogItem[];
+}
+
+/**
+ * The access log data.
+ * 
+ * @export
+ * @interface AccessLogItem
+ */
+export interface AccessLogItem {
+    [key: string]: any
     log_id: number;
     project_id: number;
     repo_name: string;
@@ -115,16 +137,22 @@ export interface AccessLog {
 }
 
 /**
- * Session related info.
+ * Global system info.
  * 
  * @export 
- * @interface SessionInfo
+ * @interface SystemInfo
+ * 
  */
-export interface SessionInfo {
-    withNotary?: boolean;
-    hasProjectAdminRole?: boolean;
-    hasSignedIn?: boolean;
-    registryUrl?: string;
+export interface SystemInfo {
+    with_notary?: boolean;
+    with_admiral?: boolean;
+    admiral_endpoint?: string;
+    auth_mode?: string;
+    registry_url?: string;
+    project_creation_restriction?: string;
+    self_registration?: boolean;
+    has_ca_root?: boolean;
+    harbor_version?: string;
 }
 
 //Not finalized yet

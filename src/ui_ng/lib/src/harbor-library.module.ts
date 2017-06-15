@@ -21,8 +21,11 @@ import { CONFIRMATION_DIALOG_DIRECTIVES } from './confirmation-dialog/index';
 import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
 import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
+import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 
 import {
+  SystemInfoService,
+  SystemInfoDefaultService,
   AccessLogService,
   AccessLogDefaultService,
   EndpointService,
@@ -51,7 +54,7 @@ import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from 
  * this default configuration.
  */
 export const DefaultServiceConfig: IServiceConfig = {
-  systemInfoEndpoint: "/api/system",
+  systemInfoEndpoint: "/api/systeminfo",
   repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
   targetBaseEndpoint: "/api/targets",
@@ -79,6 +82,9 @@ export interface HarborModuleConfig {
 
   //Handling error messages
   errorHandler?: Provider,
+
+  //Service implementation for system info
+  systemInfoService?: Provider,
 
   //Service implementation for log
   logService?: Provider,
@@ -137,7 +143,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LIST_REPLICATION_RULE_DIRECTIVES,
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES,
-    VULNERABILITY_DIRECTIVES
+    VULNERABILITY_DIRECTIVES,
+    PUSH_IMAGE_BUTTON_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -155,6 +162,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
+    PUSH_IMAGE_BUTTON_DIRECTIVES,
     TranslateModule
   ],
   providers: []
@@ -167,6 +175,7 @@ export class HarborLibraryModule {
       providers: [
         config.config || { provide: SERVICE_CONFIG, useValue: DefaultServiceConfig },
         config.errorHandler || { provide: ErrorHandler, useClass: DefaultErrorHandler },
+        config.systemInfoService || { provide: SystemInfoService,useClass: SystemInfoDefaultService },
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
@@ -191,6 +200,7 @@ export class HarborLibraryModule {
       providers: [
         config.config || { provide: SERVICE_CONFIG, useValue: DefaultServiceConfig },
         config.errorHandler || { provide: ErrorHandler, useClass: DefaultErrorHandler },
+        config.systemInfoService || { provide: SystemInfoService,useClass: SystemInfoDefaultService },
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },

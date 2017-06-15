@@ -19,19 +19,15 @@ import (
 )
 
 // AccessLog holds information about logs which are used to record the actions that user take to the resourses.
-// TODO remove useless attrs
 type AccessLog struct {
-	LogID          int       `orm:"pk;auto;column(log_id)" json:"log_id"`
-	Username       string    `orm:"column(username)"  json:"username"`
-	ProjectID      int64     `orm:"column(project_id)"  json:"project_id"`
-	RepoName       string    `orm:"column(repo_name)" json:"repo_name"`
-	RepoTag        string    `orm:"column(repo_tag)" json:"repo_tag"`
-	GUID           string    `orm:"column(GUID)"  json:"guid"`
-	Operation      string    `orm:"column(operation)" json:"operation"`
-	OpTime         time.Time `orm:"column(op_time)" json:"op_time"`
-	Keywords       string    `orm:"-" json:"keywords"`
-	BeginTimestamp int64     `orm:"-" json:"begin_timestamp"`
-	EndTimestamp   int64     `orm:"-" json:"end_timestamp"`
+	LogID     int       `orm:"pk;auto;column(log_id)" json:"log_id"`
+	Username  string    `orm:"column(username)"  json:"username"`
+	ProjectID int64     `orm:"column(project_id)"  json:"project_id"`
+	RepoName  string    `orm:"column(repo_name)" json:"repo_name"`
+	RepoTag   string    `orm:"column(repo_tag)" json:"repo_tag"`
+	GUID      string    `orm:"column(GUID)"  json:"guid"`
+	Operation string    `orm:"column(operation)" json:"operation"`
+	OpTime    time.Time `orm:"column(op_time)" json:"op_time"`
 }
 
 // LogQueryParam is used to set query conditions when listing
