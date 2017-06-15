@@ -610,7 +610,6 @@ func (ra *RepositoryAPI) GetTopRepos() {
 //GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
-
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
@@ -619,6 +618,38 @@ func (ra *RepositoryAPI) GetSignatures() {
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
+}
+
+//ScanImage handles
+func (ra *RepositoryAPI) ScanImage() {
+	repoName := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	projectName, _ := utils.ParseRepository(repoName)
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+			projectName, err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
+	}
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+	if !ra.SecurityCtx.HasAllPerm(projectName) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	err = TriggerImageScan(repoName, tag)
+	//TODO better check existence
+	if err != nil {
+		log.Errorf("Error while calling job service to trigger image scan: %v", err)
+		ra.HandleInternalServerError("Failed to scan image, please check log for details")
+		return
+	}
 }
 
 func getSignatures(repository, username string) (map[string]*notary.Target, error) {
