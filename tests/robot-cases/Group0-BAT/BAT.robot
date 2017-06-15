@@ -54,6 +54,13 @@ Test Case - Edit Project Creation
 	#check if can create project
 	Capture Page Screenshot
     Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
+    Logout Harbor
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//select[@id="proCreation"]
+    Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
+    Click Element  xpath=//config//div/button[1]
+    Sleep  2
     Close browser
 
 Test Case - Assign Sys Admin
