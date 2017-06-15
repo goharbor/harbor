@@ -178,7 +178,7 @@ func TestParse(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	pm := NewProjectManager(endpoint, token)
-	name := "project_for_pm_based_on_pms"
+	name := "project_for_test_get"
 	id, err := pm.Create(&models.Project{
 		Name: name,
 	})
@@ -284,7 +284,7 @@ func TestExist(t *testing.T) {
 	assert.False(t, exist)
 
 	// exist project
-	name := "project_for_pm_based_on_pms"
+	name := "project_for_test_exist"
 	id, err := pm.Create(&models.Project{
 		Name: name,
 	})
@@ -317,7 +317,7 @@ func TestGetRoles(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// exist project
-	name := "project_for_pm_based_on_pms"
+	name := "project_for_test_get_roles"
 	id, err := pm.Create(&models.Project{
 		Name: name,
 	})
@@ -342,7 +342,7 @@ func TestGetPublic(t *testing.T) {
 	assert.Nil(t, nil)
 	size := len(projects)
 
-	name := "project_for_pm_based_on_pms"
+	name := "project_for_test_get_public"
 	id, err := pm.Create(&models.Project{
 		Name:   name,
 		Public: 1,
@@ -376,7 +376,7 @@ func TestGetByMember(t *testing.T) {
 func TestCreate(t *testing.T) {
 	pm := NewProjectManager(endpoint, token)
 
-	name := "project_for_pm_based_on_pms"
+	name := "project_for_test_create"
 	id, err := pm.Create(&models.Project{
 		Name:                                       name,
 		Public:                                     1,
