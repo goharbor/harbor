@@ -76,6 +76,19 @@ Test Case - Create An New Project
     Create An New Project  test${d}
     Close Browser
 
+Test Case - User View Projects
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New Project  test${d}1
+    Create An New Project  test${d}2
+    Create An New Project  test${d}3
+    Switch To Log
+    Wait Until Page Contains  test${d}1
+    Wait Until Page Contains  test${d}2
+    Wait Until Page Contains  test${d}3
+    Close Browser
+
 Test Case - Push Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -133,7 +146,7 @@ Test Case - Ldap Sign in and out
     Close Browser
 
 Test Case - Admin Push Signed Image
-    Switch To HTTPS
+    Switch To Notary
 
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
     Log To Console  ${output}
