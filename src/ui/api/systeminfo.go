@@ -47,6 +47,7 @@ type Storage struct {
 //GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
 	WithNotary              bool   `json:"with_notary"`
+	WithClair               bool   `json:"with_clair"`
 	WithAdmiral             bool   `json:"with_admiral"`
 	AdmiralEndpoint         string `json:"admiral_endpoint"`
 	AuthMode                string `json:"auth_mode"`
@@ -125,6 +126,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
 		WithNotary:              config.WithNotary(),
+		WithClair:               config.WithClair(),
 		AuthMode:                cfg[common.AUTHMode].(string),
 		ProjectCreationRestrict: cfg[common.ProjectCreationRestriction].(string),
 		SelfRegistration:        cfg[common.SelfRegistration].(bool),

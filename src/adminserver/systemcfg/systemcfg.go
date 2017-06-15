@@ -116,6 +116,10 @@ var (
 			env:   "WITH_NOTARY",
 			parse: parseStringToBool,
 		},
+		common.WithClair: &parser{
+			env:   "WITH_CLAIR",
+			parse: parseStringToBool,
+		},
 	}
 
 	// configurations need read from environment variables
@@ -134,6 +138,10 @@ var (
 		common.AdmiralEndpoint: "ADMIRAL_URL",
 		common.WithNotary: &parser{
 			env:   "WITH_NOTARY",
+			parse: parseStringToBool,
+		},
+		common.WithClair: &parser{
+			env:   "WITH_CLAIR",
 			parse: parseStringToBool,
 		},
 	}
