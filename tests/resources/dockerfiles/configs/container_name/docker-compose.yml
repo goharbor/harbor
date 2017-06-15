@@ -1,0 +1,4 @@
+simple:
+  image: busybox:latest
+  container_name: my-web-container
+  command: ls

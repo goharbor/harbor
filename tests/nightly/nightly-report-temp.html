@@ -1,0 +1,33 @@
+<html>
+<body>
+<p>
+
+<p>
+    Hello Team,
+</p>
+
+<p>Harbor Nightly -- Please see below details.<br><br>
+<table border="1">
+    <tr>
+        <td><b>Repo</b></td>
+        <td><b>Branch</b></td>
+        <td><b>Commit</b></td>
+        <td><b>Result</b></td>
+	      <td><b>Log</b></td>
+    </tr>
+    <tr>
+        <td>{{repo}}</td>
+        <td>{{branch}}</td>
+        <td>{{commit}}</td>
+        {% if result == 'Pass'%}
+          <td style="color:green"><b>Pass</b></td>
+        {% else %}
+          <td style="color:red"><b>Fail</b></td>
+        {% endif %}
+        <td><b><a href="https://storage.googleapis.com/harbor-ci-logs/{{log}}">{{log}}</a></b></td>
+    </tr>
+</table>
+<br><br>
+<p>Thanks</p>
+</body>
+</html>
