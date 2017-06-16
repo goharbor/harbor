@@ -129,7 +129,7 @@ Test Case - Push Image
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a[contains(.,"test")]
     Sleep  2
     Wait Until Page Contains  test${d}/hello-world
-    Sleep 1
+    Sleep  1
     Close Browser
 
 Test Case - Ldap Sign in and out
