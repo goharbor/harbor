@@ -101,7 +101,7 @@ Test Case - Push Image
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
-    Close Browser
+    Logout Harbor
 
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log To Console  ${ip}
@@ -119,11 +119,6 @@ Test Case - Push Image
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
 
-    Init Chrome Driver
-    Go To    http://localhost
-    Sleep  2
-    ${title}=  Get Title
-    Should Be Equal  ${title}  Harbor
     Sign In Harbor  tester${d}  Test1@34
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
