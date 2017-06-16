@@ -313,6 +313,16 @@ func WithNotary() bool {
 	return cfg[common.WithNotary].(bool)
 }
 
+// WithClair returns a bool value to indicate if Harbor's deployed with Clair
+func WithClair() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithClair == false")
+		return false
+	}
+	return cfg[common.WithClair].(bool)
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()

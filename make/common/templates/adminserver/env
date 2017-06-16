@@ -36,4 +36,5 @@ CFG_EXPIRATION=5
 GODEBUG=netdns=cgo
 ADMIRAL_URL=$admiral_url
 WITH_NOTARY=$with_notary
+WITH_CLAIR=$with_clair
 RESET=false
