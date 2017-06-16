@@ -623,7 +623,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 //ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
 func (ra *RepositoryAPI) ScanImage() {
 	if !config.WithClair() {
-		logger.Warningf("Harbor is not deployed with Clair, scan is disabled.")
+		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
 		ra.RenderError(http.StatusServiceUnavailable, "")
 		return
 	}
