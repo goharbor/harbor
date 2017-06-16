@@ -139,7 +139,7 @@ func parse(b []byte) ([]*project, error) {
 
 	projects := []*project{}
 	for link, project := range documents.Projects {
-		project.ID = strings.TrimLeft(link, "/projects/")
+		project.ID = strings.TrimPrefix(link, "/projects/")
 		projects = append(projects, project)
 	}
 
