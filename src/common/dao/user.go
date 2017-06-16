@@ -109,7 +109,9 @@ func ListUsers(query *models.UserQuery) ([]models.User, error) {
 }
 
 func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
-	qs := GetOrmer().QueryTable(&models.User{}).Filter("deleted", 0)
+	qs := GetOrmer().QueryTable(&models.User{}).
+		Filter("deleted", 0).
+		Filter("user_id__gt", 1)
 
 	if query == nil {
 		return qs
