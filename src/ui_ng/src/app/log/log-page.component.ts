@@ -11,21 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { NgModule } from '@angular/core';
-import { AuditLogComponent } from './audit-log.component';
-import { SharedModule } from '../shared/shared.module';
-import { AuditLogService } from './audit-log.service';
-import { LogPageComponent } from './log-page.component';
+import { Component } from '@angular/core';
 
-@NgModule({
-  imports: [SharedModule],
-  declarations: [
-    AuditLogComponent,
-    LogPageComponent
-  ],
-  providers: [AuditLogService],
-  exports: [
-    AuditLogComponent,
-    LogPageComponent]
+@Component({
+    selector: 'log-page',
+    templateUrl: './log-page.component.html'
 })
-export class LogModule { }
+
+export class LogPageComponent {
+}

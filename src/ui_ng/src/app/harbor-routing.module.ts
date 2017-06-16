@@ -36,7 +36,7 @@ import { ProjectRoutingResolver } from './project/project-routing-resolver.servi
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
 import { ResetPasswordComponent } from './account/password/reset-password.component';
-import { RecentLogComponent } from './log/recent-log.component';
+import { LogPageComponent } from './log/log-page.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
 import { StartPageComponent } from './base/start-page/start.component';
@@ -68,7 +68,7 @@ const harborRoutes: Routes = [
       },
       {
         path: 'logs',
-        component: RecentLogComponent
+        component: LogPageComponent
       },
       {
         path: 'users',
