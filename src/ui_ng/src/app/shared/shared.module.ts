@@ -31,9 +31,6 @@ import { SystemAdminGuard } from './route/system-admin-activate.service';
 import { NewUserFormComponent } from './new-user-form/new-user-form.component';
 import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
-import { ListPolicyComponent } from './list-policy/list-policy.component';
-import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
-
 import { PortValidatorDirective } from './port.directive';
 
 import { PageNotFoundComponent } from './not-found/not-found.component';
@@ -56,11 +53,30 @@ import { GaugeComponent } from './gauge/gauge.component';
 import { StatisticHandler } from './statictics/statistic-handler.service';
 import { DateValidatorDirective } from '../shared/date-validator.directive';
 
+import {
+  IServiceConfig,
+  SERVICE_CONFIG,
+  ErrorHandler,
+  HarborLibraryModule
+} from 'harbor-ui';
+
+const uiLibConfig: IServiceConfig = {
+  enablei18Support: true,
+  langCookieKey: "harbor-lang",
+  langMessageLoader: "http",
+  langMessagePathForHttpLoader: "src/i18n/lang/",
+  langMessageFileSuffixForHttpLoader: "-lang.json",
+};
+
 @NgModule({
   imports: [
     CoreModule,
     TranslateModule,
-    RouterModule
+    RouterModule,
+    HarborLibraryModule.forRoot({
+      config: { provide: SERVICE_CONFIG, useValue: uiLibConfig },
+      errorHandler: { provide: ErrorHandler, useClass: MessageHandlerService }
+    })
   ],
   declarations: [
     MessageComponent,
@@ -69,8 +85,6 @@ import { DateValidatorDirective } from '../shared/date-validator.directive';
     ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
-    ListPolicyComponent,
-    CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
     AboutDialogComponent,
@@ -84,6 +98,7 @@ import { DateValidatorDirective } from '../shared/date-validator.directive';
   ],
   exports: [
     CoreModule,
+    HarborLibraryModule,
     MessageComponent,
     MaxLengthExtValidatorDirective,
     FilterComponent,
@@ -91,8 +106,6 @@ import { DateValidatorDirective } from '../shared/date-validator.directive';
     ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
-    ListPolicyComponent,
-    CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
     AboutDialogComponent,

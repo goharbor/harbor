@@ -11,26 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
-  {
-    "id": 1,
-    "status": "running",
-    "repository": "library/mysql",
-    "policy_id": 1,
-    "operation": "transfer",
-    "tags": null,
-    "creation_time": "2017-02-24T06:44:04Z",
-    "update_time": "2017-02-24T06:44:04Z"
-  }
+import { Component } from '@angular/core';
 
-*/
-export class Job {
-  id: number;
-  status: string;
-  repository: string;
-  policy_id: number;
-  operation: string;
-  tags: string;
-  creation_time: Date;
-  update_time: Date;
+@Component({
+  selector: 'destination-page',
+  templateUrl: 'destination-page.component.html'
+})
+export class DestinationPageComponent {
 }

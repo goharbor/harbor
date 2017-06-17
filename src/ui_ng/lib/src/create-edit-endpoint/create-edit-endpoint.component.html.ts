@@ -40,7 +40,6 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `<clr-modal [(clrModalOpen)
         <div class="form-group">
           <label for="spin" class="col-md-4"></label>
           <span class="col-md-8 spinner spinner-inline" [hidden]="!testOngoing"></span>
-          <span [style.color]="!pingStatus ? 'red': ''" class="form-group-label-override">{{ pingTestMessage }}</span>
         </div>
       </section>
     </form>

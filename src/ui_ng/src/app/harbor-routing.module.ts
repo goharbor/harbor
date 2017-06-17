@@ -21,14 +21,14 @@ import { ProjectComponent } from './project/project.component';
 import { UserComponent } from './user/user.component';
 import { ReplicationManagementComponent } from './replication/replication-management/replication-management.component';
 
-import { TotalReplicationComponent } from './replication/total-replication/total-replication.component';
-import { DestinationComponent } from './replication/destination/destination.component';
+import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
+import { DestinationPageComponent } from './replication/destination/destination-page.component';
 
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
 import { RepositoryComponent } from './repository/repository.component';
 import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
-import { ReplicationComponent } from './replication/replication.component';
+import { ReplicationPageComponent } from './replication/replication-page.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
 
@@ -83,11 +83,11 @@ const harborRoutes: Routes = [
         children: [
           {
             path: 'rules',
-            component: TotalReplicationComponent
+            component: TotalReplicationPageComponent
           },
           {
             path: 'endpoints',
-            component: DestinationComponent
+            component: DestinationPageComponent
           }
         ]
       },
@@ -113,7 +113,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'replication',
-            component: ReplicationComponent,
+            component: ReplicationPageComponent,
             canActivate: [SystemAdminGuard]
           },
           {
