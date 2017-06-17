@@ -16,9 +16,7 @@ import {
   Output,
   EventEmitter,
   ViewChild,
-  AfterViewChecked,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef
+  AfterViewChecked
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
@@ -43,8 +41,7 @@ const FAKE_PASSWORD = 'rjGcfuRu';
 @Component({
   selector: 'create-edit-endpoint',
   template: CREATE_EDIT_ENDPOINT_TEMPLATE,
-  styles: [CREATE_EDIT_ENDPOINT_STYLE],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styles: [CREATE_EDIT_ENDPOINT_STYLE]
 })
 export class CreateEditEndpointComponent implements AfterViewChecked {
 
@@ -89,8 +86,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
-    private translateService: TranslateService,
-    private ref: ChangeDetectorRef) { }
+    private translateService: TranslateService) { }
 
   openCreateEditTarget(editable: boolean, targetId?: number | string) {
 
