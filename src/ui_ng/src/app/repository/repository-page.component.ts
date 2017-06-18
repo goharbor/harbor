@@ -13,46 +13,38 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppConfigService } from '../../app-config.service';
-import { SessionService } from '../../shared/session.service';
+
+import { Project } from '../project/project';
+import { SessionService } from '../shared/session.service';
+
 import { TagClickEvent } from 'harbor-ui';
-import { Project } from '../../project/project';
 
 @Component({
-  selector: 'tag-repository',
-  templateUrl: 'tag-repository.component.html',
-  styleUrls: ['./tag-repository.component.css']
+  selector: 'repository',
+  templateUrl: 'repository-page.component.html'
 })
-export class TagRepositoryComponent implements OnInit {
-
+export class RepositoryPageComponent implements OnInit {
   projectId: number;
-  repoName: string;
-  hasProjectAdminRole: boolean = false;
-  registryUrl: string;
-  withNotary: boolean;
+  hasProjectAdminRole: boolean;
   hasSignedIn: boolean;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private appConfigService: AppConfigService,
-    private session: SessionService) {
+    private session: SessionService,
+    private router: Router
+  ) {
   }
 
-  ngOnInit() {
-    this.hasSignedIn = (this.session.getCurrentUser() !== null);
-    let resolverData = this.route.snapshot.data;
+  ngOnInit(): void {
+    this.projectId = this.route.snapshot.parent.params['id'];
+    let resolverData = this.route.snapshot.parent.data;
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
-    this.projectId = this.route.snapshot.params['id'];
-    this.repoName = this.route.snapshot.params['repo'];
-
-    this.registryUrl = this.appConfigService.getConfig().registry_url;
-    this.withNotary = this.appConfigService.getConfig().with_notary;
+    this.hasSignedIn = this.session.getCurrentUser() !== null;
   }
 
-  watchTagClickEvt(tagEvt: TagClickEvent): void {
+  watchTagClickEvent(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);
   }

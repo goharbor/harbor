@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { Repository } from '../repository';
+import { Repository } from 'harbor-ui';
 
 export const topRepoEndpoint = "/api/repositories/top";
 /**

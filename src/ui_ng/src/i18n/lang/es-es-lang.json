@@ -331,6 +331,7 @@
         "OS": "SO",
         "SHOW_DETAILS": "Mostrar Detalles",
         "REPOSITORIES": "Repositorios",
+        "OF": "of",
         "ITEMS": "elemento(s)",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",

@@ -330,6 +330,7 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
+        "OF": "共计",
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",

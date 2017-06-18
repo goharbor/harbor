@@ -26,7 +26,7 @@ import { DestinationPageComponent } from './replication/destination/destination-
 
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
-import { RepositoryComponent } from './repository/repository.component';
+import { RepositoryPageComponent } from './repository/repository-page.component';
 import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
 import { ReplicationPageComponent } from './replication/replication-page.component';
 import { MemberComponent } from './project/member/member.component';
@@ -47,6 +47,8 @@ import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 
 import { MemberGuard } from './shared/route/member-guard-activate.service';
+
+import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -108,20 +110,24 @@ const harborRoutes: Routes = [
         },
         children: [
           {
-            path: 'repository',
-            component: RepositoryComponent
+            path: 'repositories',
+            component: RepositoryPageComponent
           },
           {
-            path: 'replication',
+            path: 'repositories/:repo/tags/:tag',
+            component: TagDetailPageComponent
+          },
+          {
+            path: 'replications',
             component: ReplicationPageComponent,
             canActivate: [SystemAdminGuard]
           },
           {
-            path: 'member',
+            path: 'members',
             component: MemberComponent
           },
           {
-            path: 'log',
+            path: 'logs',
             component: AuditLogComponent
           }
         ]

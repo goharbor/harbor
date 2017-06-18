@@ -183,3 +183,9 @@ export interface VulnerabilitySummary {
     package_with_unknown?: number;
     complete_timestamp: Date;
 }
+
+export interface TagClickEvent {
+    project_id: string | number;
+    repository_name: string;
+    tag_name: string;
+}

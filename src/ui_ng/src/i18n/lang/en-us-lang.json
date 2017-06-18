@@ -330,6 +330,7 @@
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
+        "OF": "of",
         "ITEMS": "item(s)",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",

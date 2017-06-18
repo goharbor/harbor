@@ -22,7 +22,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 
-import { Tag } from '../service/interface';
+import { Tag, TagClickEvent } from '../service/interface';
 
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
@@ -51,7 +51,7 @@ export class TagComponent implements OnInit {
   @Input() withNotary: boolean;
 
   @Output() refreshRepo = new EventEmitter<boolean>();
-  @Output() tagClickEvent = new EventEmitter<Tag>();
+  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
 
   tags: Tag[];
 
@@ -169,7 +169,12 @@ export class TagComponent implements OnInit {
 
   onTagClick(tag: Tag): void {
     if (tag) {
-      this.tagClickEvent.emit(tag);
+      let evt: TagClickEvent = {
+        project_id: this.projectId,
+        repository_name: this.repoName,
+        tag_name: tag.name
+      };
+      this.tagClickEvent.emit(evt);
     }
   }
 }
