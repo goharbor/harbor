@@ -1,0 +1,7 @@
+[172.31.0.30]
+mgmd mgmd1
+ndbd ndbd1
+mysqld mysqld1
+
+[172.31.2.129]
+ndbd ndbd2
