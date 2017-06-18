@@ -74,7 +74,7 @@ func initRouters() {
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete")
-	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
