@@ -39,7 +39,7 @@ Test Case - Edit Project Creation
 	# create normal user and login
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
 	#check project creation
     Page Should Contain Element  xpath=//project//div[@class="option-left"]/button
 	#logout and login admin
@@ -149,7 +149,7 @@ Test Case - Ldap Sign in and out
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
-    Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch To Configure
     Init LDAP
     Logout Harbor
