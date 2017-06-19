@@ -22,8 +22,8 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Sign In Harbor
-    [Arguments]  ${user}  ${pw}
-		Go To    http://localhost
+    [Arguments]  ${url}  ${user}  ${pw}
+	Go To    ${url}
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
@@ -33,17 +33,17 @@ Sign In Harbor
     sleep  2
     Click button  css=.btn
     sleep  5
-		Log To Console  ${user}
+	Log To Console  ${user}
     Wait Until Page Contains  ${user}
 
 Create An New User
-    [Arguments]  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-		Go To    http://localhost
+    [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
+	Go To    ${url}
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-		Capture Page Screenshot
+	Capture Page Screenshot
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
     sleep  3
     Input Text  xpath=//*[@id="username"]  ${username}
@@ -66,4 +66,4 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-		sleep  2
+	sleep  2

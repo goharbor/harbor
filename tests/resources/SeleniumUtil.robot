@@ -26,13 +26,15 @@ Start Selenium Standalone Server Locally
     [Return]  ${handle}
 
 Init Chrome Driver
-		${chrome options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
-		Call Method    ${chrome options}		add_argument    --headless
-		Call Method    ${chrome options}    add_argument    --disable-gpu
+    Run  pkill chromedriver
+	Run  pkill chrome
+	${chrome options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
+	Call Method    ${chrome options}		add_argument    --headless
+	Call Method    ${chrome options}    add_argument    --disable-gpu
     Call Method    ${chrome options}    add_argument    --start-maximized
     Call Method    ${chrome options}    add_argument    --ignore-certificate-errors
-		Call Method  	 ${chrome options}    add_argument    --disable-web-security
-		Call Method    ${chrome options}    add_argument    --allow-running-insecure-content
-		${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
-		Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}
+	Call Method  	 ${chrome options}    add_argument    --disable-web-security
+	Call Method    ${chrome options}    add_argument    --allow-running-insecure-content
+	${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
+	Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}
     Sleep  5

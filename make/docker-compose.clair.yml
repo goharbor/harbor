@@ -8,6 +8,9 @@ services:
   jobservice:
     networks:
       - harbor-clair
+  registry:
+    networks:
+      - harbor-clair
   postgres:
     networks:
       harbor-clair:

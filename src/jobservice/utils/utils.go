@@ -15,9 +15,16 @@
 package utils
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"net/http"
+	"github.com/vmware/harbor/src/jobservice/config"
 )
 
 //NewRepositoryClient create a repository client with scope type "reopsitory" and scope as the repository it would access.
@@ -50,4 +57,45 @@ type userAgentModifier struct {
 func (u *userAgentModifier) Modify(req *http.Request) error {
 	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
 	return nil
+}
+
+// BuildBlobURL ...
+func BuildBlobURL(endpoint, repository, digest string) string {
+	return fmt.Sprintf("%s/v2/%s/blobs/%s", endpoint, repository, digest)
+}
+
+//GetTokenForRepo is a temp solution for job handler to get a token for clair.
+func GetTokenForRepo(repository string) (string, error) {
+	u, err := url.Parse(config.InternalTokenServiceEndpoint())
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	q.Add("service", "harbor-registry")
+	q.Add("scope", fmt.Sprintf("repository:%s:pull", repository))
+	u.RawQuery = q.Encode()
+	r, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return "", err
+	}
+	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
+	r.AddCookie(c)
+	client := &http.Client{}
+	resp, err := client.Do(r)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Unexpected response from token service, code: %d, %s", resp.StatusCode, string(b))
+	}
+	tk := models.Token{}
+	if err := json.Unmarshal(b, &tk); err != nil {
+		return "", err
+	}
+	return tk.Token, nil
 }

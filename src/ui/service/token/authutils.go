@@ -23,12 +23,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/distribution/registry/auth/token"
+	"github.com/docker/libtrust"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-
-	"github.com/docker/distribution/registry/auth/token"
-	"github.com/docker/libtrust"
 )
 
 const (
@@ -132,18 +132,16 @@ func MakeRawToken(username, service string, access []*token.ResourceActions) (to
 	return rs, expiresIn, issuedAt, nil
 }
 
-type tokenJSON struct {
-	Token     string `json:"token"`
-	ExpiresIn int    `json:"expires_in"`
-	IssuedAt  string `json:"issued_at"`
-}
-
-func makeToken(username, service string, access []*token.ResourceActions) (*tokenJSON, error) {
+func makeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
 	raw, expires, issued, err := MakeRawToken(username, service, access)
 	if err != nil {
 		return nil, err
 	}
-	return &tokenJSON{raw, expires, issued.Format(time.RFC3339)}, nil
+	return &models.Token{
+		Token:     raw,
+		ExpiresIn: expires,
+		IssuedAt:  issued.Format(time.RFC3339),
+	}, nil
 }
 
 func permToActions(p string) []string {

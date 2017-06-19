@@ -28,12 +28,20 @@ import { State } from 'clarity-angular';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListProjectComponent {
+  _filterType: string = ProjectTypes[0];
 
   @Input() projects: Project[];
-  @Input() filteredType: string;
+  @Input()
+  get filteredType(): string {
+    return this._filterType;
+  }
+  set filteredType(value: string) {
+    if (value && value.trim() !== "") {
+      this._filterType = value;
+    }
+  }
 
   @Output() paginate = new EventEmitter<State>();
-
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
@@ -44,12 +52,12 @@ export class ListProjectComponent {
     private router: Router,
     private searchTrigger: SearchTriggerService,
     private ref: ChangeDetectorRef) {
-    let hnd = setInterval(()=>ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
-  }  
+    let hnd = setInterval(() => ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
+  }
 
   get showRoleInfo(): boolean {
-    return this.filteredType === ProjectTypes[0];
+    return this.filteredType !== ProjectTypes[2];
   }
 
   public get isSystemAdmin(): boolean {
@@ -69,7 +77,7 @@ export class ListProjectComponent {
   }
 
   newReplicationRule(p: Project) {
-    if(p) {
+    if (p) {
       this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replication?is_create=true`);
     }
   }

@@ -43,21 +43,26 @@ paths:
           description: Unexpected internal errors.
   /projects:
     get:
-      summary: Return projects created by Harbor
+      summary: List projects
       description: |
         This endpoint returns all projects created by Harbor, and can be filtered by project name.
       parameters:
-        - name: project_name 
+        - name: name 
           in: query
-          description: Project name for filtering results.
+          description: The name of project.
           required: false
           type: string
-        - name: is_public
+        - name: public
           in: query
-          description: Public sign for filtering projects.
+          description: The project is public or private.
           required: false
-          type: integer
+          type: boolean
           format: int32
+        - name: owner 
+          in: query
+          description: The name of project owner.
+          required: false
+          type: string
         - name: page
           in: query
           type: integer
@@ -491,6 +496,23 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
+        - name: email
+          in: query
+          type: string
+          required: false
+          description: Email for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       tags:
         - Products
       responses:
@@ -2128,6 +2150,9 @@ definitions:
       with_notary:
         type: boolean
         description: If the Harbor instance is deployed with nested notary.
+      with_clair:
+        type: boolean
+        description: If the Harbor instance is deployed with nested clair.
       with_admiral:
         type: boolean
         description: If the Harbor instance is deployed with Admiral.

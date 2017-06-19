@@ -77,6 +77,13 @@ func (sm *SM) EnterState(s string) (string, error) {
 // It will search the transit map if the next state is "_continue", and
 // will enter error state if there's more than one possible path when next state is "_continue"
 func (sm *SM) Start(s string) {
+	defer func() {
+		if r := recover(); r != nil {
+			sm.Logger.Errorf("Panic: %v, entering error state", r)
+			log.Warningf("Panic when handling job: %v, panic: %v, entering error state", sm.CurrentJob, r)
+			sm.EnterState(models.JobError)
+		}
+	}()
 	n, err := sm.EnterState(s)
 	log.Debugf("Job: %v, next state from handler: %s", sm.CurrentJob, n)
 	for len(n) > 0 && err == nil {
@@ -258,11 +265,14 @@ func addImgScanTransition(sm *SM, parm *ScanJobParm) {
 		Repository: parm.Repository,
 		Tag:        parm.Tag,
 		Digest:     parm.Digest,
+		JobID:      sm.CurrentJob.ID(),
 		Logger:     sm.Logger,
 	}
 
+	layerScanHandler := &scan.LayerScanHandler{Context: ctx}
 	sm.AddTransition(models.JobRunning, scan.StateInitialize, &scan.Initializer{Context: ctx})
-	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, &scan.LayerScanHandler{Context: ctx})
+	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, layerScanHandler)
+	sm.AddTransition(scan.StateScanLayer, scan.StateScanLayer, layerScanHandler)
 	sm.AddTransition(scan.StateScanLayer, scan.StateSummarize, &scan.SummarizeHandler{Context: ctx})
 	sm.AddTransition(scan.StateSummarize, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
 }

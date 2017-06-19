@@ -95,8 +95,7 @@ func initSecretStore() {
 }
 
 func initProjectManager() {
-	if len(DeployMode()) == 0 ||
-		DeployMode() == common.DeployModeStandAlone {
+	if !WithAdmiral() {
 		log.Info("initializing the project manager based on database...")
 		GlobalProjectMgr = &db.ProjectManager{}
 	}
@@ -314,6 +313,16 @@ func WithNotary() bool {
 	return cfg[common.WithNotary].(bool)
 }
 
+// WithClair returns a bool value to indicate if Harbor's deployed with Clair
+func WithClair() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithClair == false")
+		return false
+	}
+	return cfg[common.WithClair].(bool)
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
@@ -331,10 +340,4 @@ func AdmiralEndpoint() string {
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
-}
-
-// DeployMode returns the deploy mode
-// TODO read from adminserver
-func DeployMode() string {
-	return common.DeployModeStandAlone
 }

@@ -190,7 +190,7 @@ func GetHasReadPermProjects(username string) ([]*models.Project, error) {
 
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
-func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
+func GetTotalOfProjects(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
 
 	var (
 		owner  string
@@ -210,7 +210,7 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 		}
 	}
 
-	sql, params := projectQueryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role, base...)
 
 	sql = `select count(*) ` + sql
 
@@ -220,7 +220,7 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 }
 
 // GetProjects returns a project list according to the query conditions
-func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
+func GetProjects(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error) {
 
 	var (
 		owner  string
@@ -246,7 +246,7 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 		}
 	}
 
-	sql, params := projectQueryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role, base...)
 
 	sql = `select distinct p.project_id, p.name, p.public, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
@@ -266,10 +266,33 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 }
 
 func projectQueryConditions(owner, name string, public *bool, member string,
-	role int) (string, []interface{}) {
+	role int, base ...*models.BaseProjectCollection) (string, []interface{}) {
 	params := []interface{}{}
 
-	sql := ` from project p`
+	// the base project collections:
+	// 1. all projects
+	// 2. public projects
+	// 3. public projects and projects which the user is a member of
+	collection := `project `
+	if len(base) != 0 && base[0] != nil {
+		if len(base[0].Member) == 0 && base[0].Public {
+			collection = `(select * from project pr
+					where pr.public=1) `
+		}
+		if len(base[0].Member) > 0 && base[0].Public {
+			collection = `(select pr.project_id, pr.owner_id, pr.name, pr.
+						creation_time, pr.update_time, pr.deleted, pr.public 
+					from project pr
+					join project_member prm
+						on pr.project_id = prm.project_id
+					join user ur
+						on prm.user_id=ur.user_id
+					where ur.username=?  or pr.public=1 )`
+			params = append(params, base[0].Member)
+		}
+	}
+
+	sql := ` from ` + collection + ` as p`
 
 	if len(owner) != 0 {
 		sql += ` join user u1

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing'; 
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
@@ -17,18 +17,15 @@ import { SystemInfoService, SystemInfoDefaultService } from '../service/system-i
 
 import { click } from '../utils';
 
-describe('RepositoryComponentStackview (inline template)', ()=> {
-  
+describe('RepositoryComponentStackview (inline template)', () => {
+
   let compRepo: RepositoryStackviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryStackviewComponent>;
   let repositoryService: RepositoryService;
-  let spyRepos: jasmine.Spy;
-
-  let compTag: TagComponent;
-  let fixtureTag: ComponentFixture<TagComponent>;
   let tagService: TagService;
   let systemInfoService: SystemInfoService;
 
+  let spyRepos: jasmine.Spy;
   let spyTags: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
 
@@ -44,27 +41,26 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
     "harbor_version": "v1.1.1-rc1-160-g565110d"
   };
 
-
   let mockRepoData: Repository[] = [
     {
-        "id": 1,
-        "name": "library/busybox",
-        "project_id": 1,
-        "description": "",
-        "pull_count": 0,
-        "star_count": 0,
-        "tags_count": 1
+      "id": 1,
+      "name": "library/busybox",
+      "project_id": 1,
+      "description": "",
+      "pull_count": 0,
+      "star_count": 0,
+      "tags_count": 1
     },
     {
-        "id": 2,
-        "name": "library/nginx",
-        "project_id": 1,
-        "description": "",
-        "pull_count": 0,
-        "star_count": 0,
-        "tags_count": 1
+      "id": 2,
+      "name": "library/nginx",
+      "project_id": 1,
+      "description": "",
+      "pull_count": 0,
+      "star_count": 0,
+      "tags_count": 1
     }
-  ];  
+  ];
 
   let mockTagData: Tag[] = [
     {
@@ -80,10 +76,12 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
   ];
 
   let config: IServiceConfig = {
-      repositoryBaseEndpoint: '/api/repository/testing'
+    repositoryBaseEndpoint: '/api/repository/testing',
+    systemInfoEndpoint: '/api/systeminfo/testing',
+    targetBaseEndpoint: '/api/tag/testing'
   };
 
-  beforeEach(async(()=>{
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
@@ -96,7 +94,7 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
       ],
       providers: [
         ErrorHandler,
-        { provide: SERVICE_CONFIG, useValue : config },
+        { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: TagService, useClass: TagDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService }
@@ -104,68 +102,73 @@ describe('RepositoryComponentStackview (inline template)', ()=> {
     });
   }));
 
-  beforeEach(()=>{
+  beforeEach(() => {
     fixtureRepo = TestBed.createComponent(RepositoryStackviewComponent);
     compRepo = fixtureRepo.componentInstance;
     compRepo.projectId = 1;
     compRepo.hasProjectAdminRole = true;
 
     repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
+    systemInfoService = fixtureRepo.debugElement.injector.get(SystemInfoService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepoData));
-    fixtureRepo.detectChanges();
-   });
-
-   beforeEach(()=>{
-    fixtureTag = TestBed.createComponent(TagComponent);
-    compTag = fixtureTag.componentInstance;
-    compTag.projectId = compRepo.projectId;
-    compTag.repoName = 'library/busybox';
-    compTag.hasProjectAdminRole = true;
-    compTag.hasSignedIn = true;
-    tagService = fixtureTag.debugElement.injector.get(TagService);
-    systemInfoService = fixtureTag.debugElement.injector.get(SystemInfoService);
-    spyTags = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTagData));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
-    fixtureTag.detectChanges();
+    fixtureRepo.detectChanges();
   });
 
-  it('should load and render data', async(()=>{
+  it('should create', () => {
+    expect(compRepo).toBeTruthy();
+  });
+
+  it('should load and render data', async(() => {
     fixtureRepo.detectChanges();
-    fixtureRepo.whenStable().then(()=>{
+
+    fixtureRepo.whenStable().then(() => {
       fixtureRepo.detectChanges();
+
       let deRepo: DebugElement = fixtureRepo.debugElement.query(By.css('datagrid-cell'));
-      fixtureRepo.detectChanges();
       expect(deRepo).toBeTruthy();
       let elRepo: HTMLElement = deRepo.nativeElement;
-      fixtureRepo.detectChanges();
       expect(elRepo).toBeTruthy();
-      fixtureRepo.detectChanges();
       expect(elRepo.textContent).toEqual('library/busybox');
-      click(deRepo);  
-      fixtureTag.detectChanges();
-      let deTag: DebugElement = fixtureTag.debugElement.query(By.css('datagrid-cell'));
-      expect(deTag).toBeTruthy();
-      let elTag: HTMLElement = deTag.nativeElement;
-      expect(elTag).toBeTruthy();
-      expect(elTag.textContent).toEqual('1.12.5');
     });
   }));
 
-  it('should filter data by keyword', async(()=>{
+  it('should filter data by keyword', async(() => {
     fixtureRepo.detectChanges();
-    fixtureRepo.whenStable().then(()=>{
+
+    fixtureRepo.whenStable().then(() => {
       fixtureRepo.detectChanges();
+
       compRepo.doSearchRepoNames('nginx');
       fixtureRepo.detectChanges();
       let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('datagrid-cell'));
-      fixtureRepo.detectChanges();
       expect(de).toBeTruthy();
       expect(de.length).toEqual(1);
       let el: HTMLElement = de[0].nativeElement;
-      fixtureRepo.detectChanges();
       expect(el).toBeTruthy();
       expect(el.textContent).toEqual('library/nginx');
+    });
+  }));
+
+  it('should display embedded tag view when click >', async(() => {
+    fixtureRepo.detectChanges();
+
+    fixtureRepo.whenStable().then(() => {
+      fixtureRepo.detectChanges();
+
+      let el: HTMLElement = fixtureRepo.nativeElement.querySelector('.datagrid-expandable-caret');
+      expect(el).toBeTruthy();
+      let button: HTMLButtonElement = el.querySelector('button');
+      expect(button).toBeTruthy();
+      click(button);
+
+      fixtureRepo.detectChanges();
+      let el2: HTMLElement = fixtureRepo.nativeElement.querySelector('.datagrid-row-detail');
+      expect(el2).toBeTruthy();
+      let el3: Element = el2.querySelector(".datagrid-cell");
+      expect(el3).toBeTruthy();
+      expect(el3.textContent).toEqual('1.11.5');
     });
   }));
 

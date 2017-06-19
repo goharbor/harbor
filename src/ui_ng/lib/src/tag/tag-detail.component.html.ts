@@ -1,0 +1,77 @@
+export const TAG_DETAIL_HTML: string = `
+<div>
+    <section class="overview-section">
+        <div class="title-wrapper">
+            <div class="title-block arrow-block">
+                <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
+            </div>
+            <div class="title-block">
+                <div class="tag-name">
+                    {{tagDetails.name}}:v{{tagDetails.docker_version}}
+                </div>
+                <div class="tag-timestamp">
+                    {{'TAG.CREATION_TIME_PREFIX' | translate }} {{tagDetails.created | date }} {{'TAG.CREATOR_PREFIX' | translate }} {{tagDetails.author}}
+                </div>
+            </div>
+        </div>
+        <div class="summary-block">
+            <div class="image-summary">
+                <div class="detail-title">
+                    {{'TAG.IMAGE_DETAILS' | translate }}
+                </div>
+                <div class="flex-block">
+                    <div class="image-detail-label">
+                        <div>{{'TAG.ARCHITECTURE' | translate }}</div>
+                        <div>{{'TAG.OS' | translate }}</div>
+                        <div>{{'TAG.SCAN_COMPLETION_TIME' | translate }}</div>
+                    </div>
+                    <div class="image-detail-value">
+                        <div>{{tagDetails.architecture}}</div>
+                        <div>{{tagDetails.os}}</div>
+                        <div>{{scanCompletedDatetime | date}}</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="detail-title">
+                    {{'TAG.IMAGE_VULNERABILITIES' | translate }}
+                </div>
+                <div class="flex-block vulnerabilities-info">
+                    <div>
+                        <div>
+                            <clr-icon shape="error" size="24" class="is-error"></clr-icon>
+                        </div>
+                        <div class="second-row">
+                            <clr-icon shape="exclamation-triangle" size="24" class="is-warning"></clr-icon>
+                        </div>
+                    </div>
+                    <div class="second-column">
+                        <div>{{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
+                        <div class="second-row">{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                    </div>
+                    <div class="third-column">
+                        <div>
+                            <clr-icon shape="play" size="20" class="is-warning rotate-90"></clr-icon>
+                        </div>
+                        <div class="second-row">
+                            <clr-icon shape="help" size="20"></clr-icon>
+                        </div>
+                    </div>
+                    <div class="fourth-column">
+                        <div>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
+                        <div class="second-row">{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="detail-section">
+        <div class="vulnerability-block">
+            <hbr-vulnerabilities-grid tagId="tagId"></hbr-vulnerabilities-grid>
+        </div>
+        <div>
+            <ng-content></ng-content>
+        </div>
+    </section>
+</div>
+`;

@@ -28,9 +28,6 @@ const (
 	RoleDeveloper    = 2
 	RoleGuest        = 3
 
-	DeployModeStandAlone  = "standalone"
-	DeployModeIntegration = "integration"
-
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
 	DatabaseType               = "database_type"
@@ -67,4 +64,5 @@ const (
 	AdminInitialPassword       = "admin_initial_password"
 	AdmiralEndpoint            = "admiral_url"
 	WithNotary                 = "with_notary"
+	WithClair                  = "with_clair"
 )

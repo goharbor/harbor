@@ -25,9 +25,10 @@ import (
 	"time"
 
 	//"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	token_util "github.com/vmware/harbor/src/ui/service/token"
 )
 
@@ -205,11 +206,7 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 		return
 	}
 
-	tk := struct {
-		Token     string `json:"token"`
-		ExpiresIn int    `json:"expires_in"`
-		IssuedAt  string `json:"issued_at"`
-	}{}
+	tk := models.Token{}
 	if err = json.Unmarshal(b, &tk); err != nil {
 		return
 	}
