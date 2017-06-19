@@ -134,7 +134,7 @@ Test Case - Push Image
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/list-project/clr-datagrid/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a
     Sleep  2
     Wait Until Page Contains  test${d}/hello-world
 
