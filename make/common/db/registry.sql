@@ -47,7 +47,7 @@ create table user (
 # 11 bytes is reserved for marking the deleted users.
  email varchar(255),
  password varchar(40) NOT NULL,
- realname varchar (20) NOT NULL,
+ realname varchar (255) NOT NULL,
  comment varchar (30),
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  reset_uuid varchar(40) DEFAULT NULL,
