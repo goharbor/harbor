@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { TAG_DETAIL_STYLES } from './tag-detail.component.css';
 import { TAG_DETAIL_HTML } from './tag-detail.component.html';
 
-import { TagService, Tag } from '../service/index';
+import { TagService, Tag, VulnerabilitySeverity } from '../service/index';
 import { toPromise } from '../utils';
 import { ErrorHandler } from '../error-handler/index';
 
@@ -15,6 +15,11 @@ import { ErrorHandler } from '../error-handler/index';
     providers: []
 })
 export class TagDetailComponent implements OnInit {
+    _highCount: number = 0;
+    _mediumCount: number = 0;
+    _lowCount: number = 0;
+    _unknownCount: number = 0;
+
     @Input() tagId: string;
     @Input() repositoryId: string;
     tagDetails: Tag = {
@@ -36,7 +41,32 @@ export class TagDetailComponent implements OnInit {
     ngOnInit(): void {
         if (this.repositoryId && this.tagId) {
             toPromise<Tag>(this.tagService.getTag(this.repositoryId, this.tagId))
-                .then(response => this.tagDetails = response)
+                .then(response => {
+                    this.tagDetails = response;
+                    if (this.tagDetails &&
+                        this.tagDetails.scan_overview &&
+                        this.tagDetails.scan_overview.components &&
+                        this.tagDetails.scan_overview.components.summary) {
+                        this.tagDetails.scan_overview.components.summary.forEach(item => {
+                            switch (item.severity) {
+                                case VulnerabilitySeverity.UNKNOWN:
+                                    this._unknownCount += item.count;
+                                    break;
+                                case VulnerabilitySeverity.LOW:
+                                    this._lowCount += item.count;
+                                    break;
+                                case VulnerabilitySeverity.MEDIUM:
+                                    this._mediumCount += item.count;
+                                    break;
+                                case VulnerabilitySeverity.HIGH:
+                                    this._highCount += item.count;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
+                })
                 .catch(error => this.errorHandler.error(error))
         }
     }
@@ -45,29 +75,29 @@ export class TagDetailComponent implements OnInit {
         this.backEvt.emit(this.tagId);
     }
 
+    public get author(): string {
+        return this.tagDetails && this.tagDetails.author? this.tagDetails.author: 'TAG.ANONYMITY';
+    }
+
     public get highCount(): number {
-        return this.tagDetails && this.tagDetails.vulnerability ?
-            this.tagDetails.vulnerability.package_with_high : 0;
+        return this._highCount;
     }
 
     public get mediumCount(): number {
-        return this.tagDetails && this.tagDetails.vulnerability ?
-            this.tagDetails.vulnerability.package_with_medium : 0;
+        return this._mediumCount;
     }
 
     public get lowCount(): number {
-        return this.tagDetails && this.tagDetails.vulnerability ?
-            this.tagDetails.vulnerability.package_With_low : 0;
+        return this._lowCount;
     }
 
     public get unknownCount(): number {
-        return this.tagDetails && this.tagDetails.vulnerability ?
-            this.tagDetails.vulnerability.package_with_unknown : 0;
+        return this._unknownCount;
     }
 
     public get scanCompletedDatetime(): Date {
-        return this.tagDetails && this.tagDetails.vulnerability ?
-            this.tagDetails.vulnerability.complete_timestamp : new Date();
+        return this.tagDetails && this.tagDetails.scan_overview ?
+            this.tagDetails.scan_overview.update_time : new Date();
     }
 
     public get suffixForHigh(): string {

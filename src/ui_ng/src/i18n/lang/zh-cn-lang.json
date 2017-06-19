@@ -459,7 +459,7 @@
             "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
-            "COLUMN_LAYER": "引入层",
+            "COLUMN_DESCRIPTION": "简介",
             "FOOT_ITEMS": "项目",
             "FOOT_OF": "总共"
         },
@@ -488,7 +488,9 @@
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
         "CREATOR_PREFIX": "创建者：",
+        "ANONYMITY": "匿名用户",
         "IMAGE_DETAILS": "镜像详情",
+        "DOCKER_VERSION": "Docker版本",
         "ARCHITECTURE": "架构",
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",

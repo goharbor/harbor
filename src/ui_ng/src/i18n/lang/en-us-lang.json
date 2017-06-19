@@ -459,7 +459,7 @@
             "COLUMN_PACKAGE": "Package",
             "COLUMN_VERSION": "Current version",
             "COLUMN_FIXED": "Fixed in version",
-            "COLUMN_LAYER": "Introduced in layer",
+            "COLUMN_DESCRIPTION": "Description",
             "FOOT_ITEMS": "Items",
             "FOOT_OF": "of"
         },
@@ -488,7 +488,9 @@
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
         "CREATOR_PREFIX": "by",
+        "ANONYMITY": "anonymity",
         "IMAGE_DETAILS": "Image Details",
+        "DOCKER_VERSION": "Docker Version",
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",

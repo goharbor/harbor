@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing'; 
+import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { Router } from '@angular/router';
@@ -10,10 +10,14 @@ import { TagComponent } from './tag.component';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { Tag } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { TagService, TagDefaultService } from '../service/tag.service';
+import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
+import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
+import { FILTER_DIRECTIVES } from '../filter/index'
 
-describe('TagComponent (inline template)', ()=> {
-  
+import { Observable, Subscription } from 'rxjs/Rx';
+
+describe('TagComponent (inline template)', () => {
+
   let comp: TagComponent;
   let fixture: ComponentFixture<TagComponent>;
   let tagService: TagService;
@@ -32,27 +36,30 @@ describe('TagComponent (inline template)', ()=> {
   ];
 
   let config: IServiceConfig = {
-      repositoryBaseEndpoint: '/api/repositories/testing'
+    repositoryBaseEndpoint: '/api/repositories/testing'
   };
 
-  beforeEach(async(()=>{
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
       ],
       declarations: [
         TagComponent,
-        ConfirmationDialogComponent
+        ConfirmationDialogComponent,
+        VULNERABILITY_DIRECTIVES,
+        FILTER_DIRECTIVES
       ],
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: TagService, useClass: TagDefaultService }
+        { provide: TagService, useClass: TagDefaultService },
+        { provide: ScanningResultService, useClass: ScanningResultDefaultService }
       ]
     });
   }));
 
-  beforeEach(()=>{
+  beforeEach(() => {
     fixture = TestBed.createComponent(TagComponent);
     comp = fixture.componentInstance;
 
@@ -68,15 +75,15 @@ describe('TagComponent (inline template)', ()=> {
     fixture.detectChanges();
   });
 
-  it('should load data', async(()=>{
+  it('should load data', async(() => {
     expect(spy.calls.any).toBeTruthy();
   }));
 
-  it('should load and render data', async(()=>{
+  it('should load and render data', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(del=>del.classes['datagrid-cell']);
+      let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
       fixture.detectChanges();
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;

@@ -5,25 +5,40 @@ import { ResultGridComponent } from '../vulnerability-scanning/result-grid.compo
 import { TagDetailComponent } from './tag-detail.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Tag, VulnerabilitySummary } from '../service/interface';
+import { Tag, VulnerabilitySummary, VulnerabilityItem, VulnerabilitySeverity } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
 import { FilterComponent } from '../filter/index';
+import { VULNERABILITY_SCAN_STATUS } from '../utils';
 
 describe('TagDetailComponent (inline template)', () => {
 
   let comp: TagDetailComponent;
   let fixture: ComponentFixture<TagDetailComponent>;
   let tagService: TagService;
+  let scanningService: ScanningResultService;
   let spy: jasmine.Spy;
+  let vulSpy: jasmine.Spy;
   let mockVulnerability: VulnerabilitySummary = {
-    total_package: 124,
-    package_with_none: 92,
-    package_with_high: 10,
-    package_with_medium: 6,
-    package_With_low: 13,
-    package_with_unknown: 3,
-    complete_timestamp: new Date()
+    scan_status: VULNERABILITY_SCAN_STATUS.finished,
+    severity: 5,
+    update_time: new Date(),
+    components: {
+      total: 124,
+      summary: [{
+        severity: 1,
+        count: 90
+      }, {
+        severity: 3,
+        count: 10
+      }, {
+        severity: 4,
+        count: 10
+      }, {
+        severity: 5,
+        count: 13
+      }]
+    }
   };
   let mockTag: Tag = {
     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -34,7 +49,7 @@ describe('TagDetailComponent (inline template)', () => {
     "author": "steven",
     "created": new Date("2016-11-08T22:41:15.912313785Z"),
     "signature": null,
-    vulnerability: mockVulnerability
+    scan_overview: mockVulnerability
   };
 
   let config: IServiceConfig = {
@@ -70,6 +85,22 @@ describe('TagDetailComponent (inline template)', () => {
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, 'getTag').and.returnValues(Promise.resolve(mockTag));
 
+    let mockData: VulnerabilityItem[] = [];
+    for (let i = 0; i < 30; i++) {
+      let res: VulnerabilityItem = {
+        id: "CVE-2016-" + (8859 + i),
+        severity: i % 2 === 0 ? VulnerabilitySeverity.HIGH : VulnerabilitySeverity.MEDIUM,
+        package: "package_" + i,
+        layer: "layer_" + i,
+        version: '4.' + i + ".0",
+        fixedVersion: '4.' + i + '.11',
+        description: "Mock data"
+      };
+      mockData.push(res);
+    }
+    scanningService = fixture.debugElement.injector.get(ScanningResultService);
+    vulSpy = spyOn(scanningService, 'getVulnerabilityScanningResults').and.returnValue(Promise.resolve(mockData));
+
     fixture.detectChanges();
   });
 
@@ -85,7 +116,7 @@ describe('TagDetailComponent (inline template)', () => {
 
       let el: HTMLElement = fixture.nativeElement.querySelector('.tag-name');
       expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('nginx:v1.12.3');
+      expect(el.textContent.trim()).toEqual('nginx');
     });
   }));
 
@@ -113,7 +144,7 @@ describe('TagDetailComponent (inline template)', () => {
       expect(el).toBeTruthy();
       let el2: HTMLElement = el.querySelector('div');
       expect(el2).toBeTruthy();
-      expect(el2.textContent.trim()).toEqual("10 VULNERABILITY.SEVERITY.HIGH VULNERABILITY.PLURAL");
+      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.SEVERITY.HIGH VULNERABILITY.PLURAL");
     });
   }));
 

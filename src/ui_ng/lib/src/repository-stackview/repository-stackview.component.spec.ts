@@ -14,6 +14,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
 import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
+import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 
 import { click } from '../utils';
 
@@ -90,7 +91,8 @@ describe('RepositoryComponentStackview (inline template)', () => {
         RepositoryStackviewComponent,
         TagComponent,
         ConfirmationDialogComponent,
-        FilterComponent
+        FilterComponent,
+        VULNERABILITY_DIRECTIVES
       ],
       providers: [
         ErrorHandler,

@@ -76,7 +76,7 @@ If **projectId** is set to the id of specified project, then only show the repli
 <hbr-endpoint></hbr-endpoint>
 ```
 
-* **Repository and Tag Management View[updating]**
+* **Repository and Tag Management View**
 
 **projectId** is used to specify which projects the repositories are from.
 
@@ -98,6 +98,19 @@ watchTagClickEvent(tag: Tag): void {
 
 ```
 
+* **Tag detail view**
+
+This view is linked by the repository stack view only when the Clair is enabled in Harbor.
+
+**tagId** is an @Input property and used to specify the tag of which details are displayed.
+
+**repositoryId** is an @Input property and used to specified the repository to which the tag is belonged.
+
+**backEvt** is an @Output event emitter and used to distribute the click event of the back arrow in the detail page. 
+
+```
+<hbr-tag-detail (backEvt)="goBack($event)" [tagId]="..." [repositoryId]="..."></hbr-tag-detail>
+```
 ## Configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
 
@@ -111,6 +124,7 @@ export const DefaultServiceConfig: IServiceConfig = {
   targetBaseEndpoint: "/api/targets",
   replicationRuleEndpoint: "/api/policies/replication",
   replicationJobEndpoint: "/api/jobs/replication",
+  vulnerabilityScanningBaseEndpoint: "/api/repositories",
   enablei18Support: false,
   defaultLang: DEFAULT_LANG, //'en-us'
   langCookieKey: DEFAULT_LANG_COOKIE_KEY, //'harbor-lang'
@@ -146,6 +160,8 @@ It supports partially overriding. For the items not overridden, default values w
 * **replicationRuleEndpoint:** The base endpoint of the service used to handle the replication rules. Default is "/api/policies/replication".
 
 * **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
+
+* **vulnerabilityScanningBaseEndpoint:** The base endpoint of the service used to handle the vulnerability scanning results.Default value is "/api/repositories".
 
 * **langCookieKey:** The cookie key used to store the current used language preference. Default is "harbor-lang".
 
@@ -215,11 +231,14 @@ HarborLibraryModule.forRoot({
 ...
 
 ```
-**3. user session(Ongoing/Discussing)**
-Some components may need the user authorization and authentication information to display different views. There might be two alternatives to select:
+**3. user session**
+Some components may need the user authorization and authentication information to display different views. The following way of handing user session is supported by the library.
 * Use @Input properties or interface to let top component or page to pass the required user session information in.
-* Component retrieves the required information from some API provided by top component or page when necessary. 
 
+```
+//In the above repository stack view, the user session informations are passed via @input properties.
+[hasSignedIn]="..." [hasProjectAdminRole]="..."
+```
 **4. services**
 The library has its own service implementations to communicate with backend APIs and transfer data. If you want to use your own data handling logic, you can implement your own services based on the defined interfaces.
 
@@ -606,9 +625,9 @@ export class MyScanningResultService extends ScanningResultService {
      * 
      * @memberOf ScanningResultService
      */
-     getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary{
-         ...
-     }
+    getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary{
+        ...
+    }
 
     /**
      * Get the detailed vulnerabilities scanning results.
@@ -619,9 +638,24 @@ export class MyScanningResultService extends ScanningResultService {
      * 
      * @memberOf ScanningResultService
      */
-     getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[]{
-         ...
-     }
+    getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[]{
+        ...
+    }
+
+
+    /**
+     * Start a new vulnerability scanning
+     * 
+     * @abstract
+     * @param {string} repoName
+     * @param {string} tagId
+     * @returns {(Observable<any> | Promise<any> | any)}
+     * 
+     * @memberOf ScanningResultService
+     */
+    startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any {
+        ...
+    }
 }
 
 ...

@@ -72,6 +72,10 @@ export class RepositoryStackviewComponent implements OnInit {
     return this.systemInfo ? this.systemInfo.with_notary : false;
   }
 
+  public get withClair(): boolean {
+    return this.systemInfo ? this.systemInfo.with_clair : false;
+  }
+
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
       message.source === ConfirmationTargets.REPOSITORY &&
