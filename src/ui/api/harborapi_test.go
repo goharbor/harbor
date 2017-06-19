@@ -103,7 +103,7 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
-	beego.Router("/api/repositories/*/tags/?:tag", &RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
@@ -482,6 +482,25 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	}
 
 	return code, nil, nil
+}
+
+func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *tagResp, error) {
+	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
+	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if code != http.StatusOK {
+		log.Printf("failed to get tag of %s:%s: %d %s \n", repository, tag, code, string(data))
+		return code, nil, nil
+	}
+
+	result := tagResp{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return 0, nil, err
+	}
+	return http.StatusOK, &result, nil
 }
 
 //Get tags of a relevant repository

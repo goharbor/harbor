@@ -5,6 +5,8 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 
 	"context"
 	"fmt"
@@ -64,8 +66,34 @@ func (ec envPolicyChecker) vulnerableEnabled(name string) bool {
 	return os.Getenv("PROJECT_VULNERABBLE") == "1"
 }
 
-//TODO: integrate with PMS to get project policies
+type pmsPolicyChecker struct {
+	pm projectmanager.ProjectManager
+}
+
+func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
+	project, err := pc.pm.Get(name)
+	if err != nil {
+		log.Errorf("Unexpected error when getting the project, error: %v", err)
+		return true
+	}
+	return project.EnableContentTrust
+}
+func (pc pmsPolicyChecker) vulnerableEnabled(name string) bool {
+	return true
+}
+
+// newPMSPolicyChecker returns an instance of an pmsPolicyChecker
+func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
+	return &pmsPolicyChecker{
+		pm: pm,
+	}
+}
+
+// TODO: Get project manager with PM factory.
 func getPolicyChecker() policyChecker {
+	if config.WithAdmiral() {
+		return newPMSPolicyChecker(pms.NewProjectManager(config.AdmiralEndpoint(), ""))
+	}
 	return EnvChecker
 }
 

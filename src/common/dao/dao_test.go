@@ -411,7 +411,7 @@ func TestListUsers(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
-	if len(users) != 2 {
+	if len(users) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
 	users2, err := ListUsers(&models.UserQuery{Username: username})

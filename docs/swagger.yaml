@@ -2150,6 +2150,9 @@ definitions:
       with_notary:
         type: boolean
         description: If the Harbor instance is deployed with nested notary.
+      with_clair:
+        type: boolean
+        description: If the Harbor instance is deployed with nested clair.
       with_admiral:
         type: boolean
         description: If the Harbor instance is deployed with Admiral.

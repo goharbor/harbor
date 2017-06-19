@@ -31,20 +31,15 @@ type ImageScanJob struct {
 	jobBaseAPI
 }
 
-type imageScanReq struct {
-	Repo string `json:"repository"`
-	Tag  string `json:"tag"`
-}
-
 // Prepare ...
 func (isj *ImageScanJob) Prepare() {
-	//TODO:add authenticate to check secret when integrate with UI API.
-	//isj.authenticate()
+	//TODO Uncomment to enable security check.
+	//	isj.authenticate()
 }
 
 // Post creates a scanner job and hand it to statemachine.
 func (isj *ImageScanJob) Post() {
-	var data imageScanReq
+	var data models.ImageScanReq
 	isj.DecodeJSONReq(&data)
 	log.Debugf("data: %+v", data)
 	regURL, err := config.LocalRegURL()

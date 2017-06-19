@@ -2,10 +2,13 @@ package proxy
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
 	utilstest "github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 
 	"net/http"
 	"net/http/httptest"
@@ -16,6 +19,9 @@ import (
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
 var adminServer *httptest.Server
+
+var admiralEndpoint = "http://127.0.0.1:8282"
+var token = ""
 
 func TestMain(m *testing.M) {
 	notaryServer = notarytest.NewNotaryServer(endpoint)
@@ -93,6 +99,31 @@ func TestEnvPolicyChecker(t *testing.T) {
 	vulFlag := getPolicyChecker().vulnerableEnabled("whatever")
 	assert.True(contentTrustFlag)
 	assert.False(vulFlag)
+}
+
+func TestPMSPolicyChecker(t *testing.T) {
+	pm := pms.NewProjectManager(admiralEndpoint, token)
+	name := "project_for_test_get_true"
+	id, err := pm.Create(&models.Project{
+		Name:               name,
+		EnableContentTrust: true,
+	})
+	require.Nil(t, err)
+	defer func(id int64) {
+		if err := pm.Delete(id); err != nil {
+			require.Nil(t, err)
+		}
+	}(id)
+	project, err := pm.Get(id)
+	assert.Nil(t, err)
+	assert.Equal(t, id, project.ProjectID)
+	server, err2 := utilstest.NewAdminserver(nil)
+	if err2 != nil {
+		t.Fatalf("failed to create a mock admin server: %v", err2)
+	}
+	defer server.Close()
+	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_true")
+	assert.True(t, contentTrustFlag)
 }
 
 func TestMatchNotaryDigest(t *testing.T) {
