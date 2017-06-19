@@ -153,7 +153,7 @@ Test Case - Ldap Sign in and out
     Switch To Configure
     Init LDAP
     Logout Harbor
-    Sign In Harbor  user001  user001
+    Sign In Harbor  ${HARBOR_URL}  user001  user001
     Close Browser
 
 Test Case - Admin Push Signed Image
