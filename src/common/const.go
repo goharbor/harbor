@@ -64,4 +64,5 @@ const (
 	AdminInitialPassword       = "admin_initial_password"
 	AdmiralEndpoint            = "admiral_url"
 	WithNotary                 = "with_notary"
+	WithClair                  = "with_clair"
 )

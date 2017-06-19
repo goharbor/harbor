@@ -272,6 +272,11 @@ func (ua *UserAPI) Delete() {
 		ua.CustomAbort(http.StatusForbidden, "can not delete yourself")
 	}
 
+	if ua.userID == 1 {
+		ua.HandleForbidden(ua.SecurityCtx.GetUsername())
+		return
+	}
+
 	var err error
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {

@@ -125,6 +125,9 @@ func TestConfig(t *testing.T) {
 	if WithNotary() {
 		t.Errorf("Withnotary should be false")
 	}
+	if WithClair() {
+		t.Errorf("WithClair should be false")
+	}
 	if !WithAdmiral() {
 		t.Errorf("WithAdmiral should be true")
 	}

@@ -225,7 +225,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         token_expiration=token_expiration,
         admiral_url=admiral_url,
         with_notary=args.notary_mode,
-        scanner=args.clair_mode and "clair" or "none"
+        with_clair=args.clair_mode
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 

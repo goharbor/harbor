@@ -80,3 +80,9 @@ type ComponentsOverviewEntry struct {
 	Sev   int `json:"severity"`
 	Count int `json:"count"`
 }
+
+// ImageScanReq represents the request body to send to job service for image scan
+type ImageScanReq struct {
+	Repo string `json:"repository"`
+	Tag  string `json:"tag"`
+}
