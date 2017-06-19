@@ -46,8 +46,14 @@ export class ProjectService {
       params.set('page', page + '');
       params.set('page_size', pageSize + '');
     }
+    if(name && name.trim() !== ""){
+      params.set('name', name);
+    }
+    if(isPublic !== undefined){
+      params.set('public', ''+isPublic);
+    }
     return this.http
-               .get(`/api/projects?project_name=${name}&is_public=${isPublic}`, {search: params})
+               .get(`/api/projects`, {search: params})
                .map(response=>response)
                .catch(error=>Observable.throw(error));
   }

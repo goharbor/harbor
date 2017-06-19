@@ -57,3 +57,13 @@ type Project struct {
 	// The number of the repositories under this project.
 	RepoCount int32 `json:"repo_count,omitempty"`
 }
+
+type ProjectQuery struct {
+	Name     string `url:"name,omitempty"`
+	Owner    string `url:"owner,omitempty"`
+	Public   bool   `url:"public,omitempty"`
+	Member   string `url:"member,omitempty"`
+	Role     int    `url:"role,omitempty"`
+	Page     int64  `url:"page,omitempty"`
+	PageSize int64  `url:"page_size,omitempty"`
+}

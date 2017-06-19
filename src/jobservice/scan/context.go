@@ -15,6 +15,8 @@
 package scan
 
 import (
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -29,16 +31,15 @@ const (
 
 //JobContext is for sharing data across handlers in a execution of a scan job.
 type JobContext struct {
+	JobID      int64
 	Repository string
 	Tag        string
 	Digest     string
-	//the digests of layers
-	layers []string
-	//each layer name has to be unique, so it should be ${img-digest}-${layer-digest}
-	layerNames []string
-	//the index of current layer
+	//The array of data object to set as request body for layer scan.
+	layers  []models.ClairLayer
 	current int
 	//token for accessing the registry
-	token  string
-	Logger *log.Logger
+	token       string
+	clairClient *clair.Client
+	Logger      *log.Logger
 }

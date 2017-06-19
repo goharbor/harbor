@@ -52,7 +52,19 @@ export abstract class TagService {
      * 
      * @memberOf TagService
      */
-    abstract deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<Tag> | any;
+    abstract deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<any> | any;
+
+    /**
+     * Get the specified tag.
+     * 
+     * @abstract
+     * @param {string} repositoryName
+     * @param {string} tag
+     * @returns {(Observable<Tag> | Promise<Tag> | Tag)}
+     * 
+     * @memberOf TagService
+     */
+    abstract getTag(repositoryName: string, tag: string, queryParams?: RequestQueryParams): Observable<Tag> | Promise<Tag> | Tag;
 }
 
 /**
@@ -111,6 +123,17 @@ export class TagDefaultService extends TagService {
         let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
+            .catch(error => Promise.reject(error));
+    }
+
+    public getTag(repositoryName: string, tag: string, queryParams?: RequestQueryParams): Observable<Tag> | Promise<Tag> | Tag {
+        if (!repositoryName || !tag) {
+            return Promise.reject("Bad argument");
+        }
+
+        let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
+        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response.json() as Tag)
             .catch(error => Promise.reject(error));
     }
 }

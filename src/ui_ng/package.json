@@ -8,7 +8,8 @@
     "lint": "tslint \"src/**/*.ts\"",
     "test": "ng test --single-run",
     "pree2e": "webdriver-manager update",
-    "e2e": "protractor"
+    "e2e": "protractor",
+    "build": "ngc -p tsconfig-aot.json"
   },
   "private": true,
   "dependencies": {

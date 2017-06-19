@@ -14,7 +14,6 @@
 import { Component, OnInit, ViewChild, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { TagService } from '../service/tag.service';
-import { SystemInfoService } from '../service/system-info.service';
 
 import { ErrorHandler } from '../error-handler/error-handler';
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../shared/shared.const';
@@ -23,7 +22,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 
-import { SystemInfo, Tag } from '../service/interface';
+import { Tag } from '../service/interface';
 
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
@@ -37,24 +36,25 @@ import { State, Comparator } from 'clarity-angular';
 @Component({
   selector: 'hbr-tag',
   template: TAG_TEMPLATE,
-  styles: [ TAG_STYLE ],
+  styles: [TAG_STYLE],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() repoName: string;
-  @Input() isEmbedded: boolean; 
+  @Input() isEmbedded: boolean;
 
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
+  @Input() registryUrl: string;
+  @Input() withNotary: boolean;
 
   @Output() refreshRepo = new EventEmitter<boolean>();
+  @Output() tagClickEvent = new EventEmitter<Tag>();
 
   tags: Tag[];
 
-  registryUrl: string;
-  withNotary: boolean;
 
   showTagManifestOpened: boolean;
   manifestInfoTitle: string;
@@ -71,10 +71,9 @@ export class TagComponent implements OnInit {
 
   constructor(
     private errorHandler: ErrorHandler,
-    private systemInfoService: SystemInfoService,
     private tagService: TagService,
     private translateService: TranslateService,
-    private ref: ChangeDetectorRef){}
+    private ref: ChangeDetectorRef) { }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
@@ -86,35 +85,28 @@ export class TagComponent implements OnInit {
           return;
         } else {
           toPromise<number>(this.tagService
-          .deleteTag(this.repoName, tag.name))
-          .then(
-          response => {
+            .deleteTag(this.repoName, tag.name))
+            .then(
+            response => {
               this.retrieve();
               this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
-                  .subscribe(res=>this.errorHandler.info(res));
-          }).catch(error => this.errorHandler.error(error));
+                .subscribe(res => this.errorHandler.info(res));
+            }).catch(error => this.errorHandler.error(error));
         }
       }
     }
   }
 
   ngOnInit() {
-    if(!this.projectId) {
+    if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
     }
-    if(!this.repoName) {
+    if (!this.repoName) {
       this.errorHandler.error('Repo name cannot be unset.');
       return;
     }
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo=>{
-        if(systemInfo) {
-          this.registryUrl = systemInfo.registry_url || '';
-          this.withNotary = systemInfo.with_notary || false;
-        }
-      },
-      error=> this.errorHandler.error(error));  
+
     this.retrieve();
   }
 
@@ -122,20 +114,20 @@ export class TagComponent implements OnInit {
     this.tags = [];
     this.loading = true;
     toPromise<Tag[]>(this.tagService
-        .getTags(this.repoName))
-        .then(items => { 
-          this.tags = items;
-          this.loading = false;
-          if(this.tags && this.tags.length === 0) {
-            this.refreshRepo.emit(true);
-          }
-        })
-        .catch(error => {
-          this.errorHandler.error(error);
-          this.loading = false;
-        });
-    let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
+      .getTags(this.repoName))
+      .then(items => {
+        this.tags = items;
+        this.loading = false;
+        if (this.tags && this.tags.length === 0) {
+          this.refreshRepo.emit(true);
+        }
+      })
+      .catch(error => {
+        this.errorHandler.error(error);
+        this.loading = false;
+      });
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   deleteTag(tag: Tag) {
@@ -164,13 +156,20 @@ export class TagComponent implements OnInit {
   }
 
   showDigestId(tag: Tag) {
-    if(tag) {
+    if (tag) {
       this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
       this.digestId = tag.digest;
       this.showTagManifestOpened = true;
     }
   }
+
   selectAndCopy($event: any) {
     $event.target.select();
+  }
+
+  onTagClick(tag: Tag): void {
+    if (tag) {
+      this.tagClickEvent.emit(tag);
+    }
   }
 }

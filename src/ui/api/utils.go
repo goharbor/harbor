@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -26,10 +27,10 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )
@@ -92,32 +93,9 @@ func TriggerReplication(policyID int64, repository string,
 	if err != nil {
 		return err
 	}
-
 	url := buildReplicationURL()
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-	addAuthentication(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
+	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
 }
 
 // GetPoliciesByRepository returns policies according the repository
@@ -388,6 +366,29 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 		if !exist {
 			continue
 		}
+
+		endpoint, err := config.RegistryURL()
+		if err != nil {
+			log.Errorf("failed to get registry URL: %v", err)
+			continue
+		}
+		client, err := NewRepositoryClient(endpoint, true,
+			"admin", repoInR, "repository", repoInR, "pull")
+		if err != nil {
+			log.Errorf("failed to create repository client: %v", err)
+			continue
+		}
+
+		exist, err = repositoryExist(repoInR, client)
+		if err != nil {
+			log.Errorf("failed to check the existence of repository %s: %v", repoInR, err)
+			continue
+		}
+
+		if !exist {
+			continue
+		}
+
 		needsAdd = append(needsAdd, repoInR)
 	}
 
@@ -426,6 +427,11 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 	return registryClient, nil
+}
+
+func buildScanJobURL() string {
+	url := config.InternalJobServiceURL()
+	return fmt.Sprintf("%s/api/jobs/scan", url)
 }
 
 func buildReplicationURL() string {
@@ -511,4 +517,43 @@ func NewRepositoryClient(endpoint string, insecure bool, username, repository, s
 		return nil, err
 	}
 	return client, nil
+}
+
+// TriggerImageScan triggers an image scan job on jobservice.
+func TriggerImageScan(repository string, tag string) error {
+	data := &models.ImageScanReq{
+		Repo: repository,
+		Tag:  tag,
+	}
+	b, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+	url := buildScanJobURL()
+	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
+}
+
+// Do not use this when you want to handle the response
+// TODO: add a response handler to replace expectSC *when needed*
+func requestAsUI(method, url string, body io.Reader, expectSC int) error {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+	addAuthentication(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != expectSC {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+	}
+	return nil
 }

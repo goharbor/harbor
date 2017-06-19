@@ -190,15 +190,15 @@ func (p *ProjectManager) Update(projectIDOrName interface{},
 }
 
 // GetAll returns a project list according to the query parameters
-func (p *ProjectManager) GetAll(query *models.ProjectQueryParam) (
+func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
 	[]*models.Project, error) {
-	return dao.GetProjects(query)
+	return dao.GetProjects(query, base...)
 }
 
 // GetTotal returns the total count according to the query parameters
-func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam) (
+func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
 	int64, error) {
-	return dao.GetTotalOfProjects(query)
+	return dao.GetTotalOfProjects(query, base...)
 }
 
 // GetHasReadPerm returns projects which are public or the user is a member of

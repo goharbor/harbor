@@ -59,6 +59,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.AdminInitialPassword:       "password",
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,
+	common.WithClair:                  false,
 }
 
 // NewAdminserver returns a mock admin server

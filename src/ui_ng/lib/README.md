@@ -52,10 +52,9 @@ If no parameters are passed to **'forRoot'**, the module will be initialized wit
 
 * **Registry log view**
 
+Use **withTitle** to set whether self-contained a header with title or not. Default is **false**, that means no header is existing.
 ```
-//No @Input properties
-
-<hbr-log></hbr-log>
+<hbr-log [withTitle]="..."></hbr-log>
 ```
 
 * **Replication Management View**
@@ -85,8 +84,18 @@ If **projectId** is set to the id of specified project, then only show the repli
 
 **hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
 
+**tagClickEvent** is an @output event emitter for you to catch the tag click events.
+
 ```
-<hbr-repository-stackview [projectId]="..." [hasSignedIn]="..." [hasProjectAdminRole]="..."></hbr-repository-stackview>
+<hbr-repository-stackview [projectId]="..." [hasSignedIn]="..." [hasProjectAdminRole]="..." (tagClickEvent)="watchTagClickEvent($event)"></hbr-repository-stackview>
+
+...
+
+watchTagClickEvent(tag: Tag): void {
+    //Process tag
+    ...
+}
+
 ```
 
 ## Configurations
@@ -96,7 +105,7 @@ All the related configurations are defined in the **HarborModuleConfig** interfa
 The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'OpaqueToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
 ```
 export const DefaultServiceConfig: IServiceConfig = {
-  systemInfoEndpoint: "/api/system",
+  systemInfoEndpoint: "/api/systeminfo",
   repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
   targetBaseEndpoint: "/api/targets",
@@ -126,6 +135,8 @@ HarborLibraryModule.forRoot({
 
 ```
 It supports partially overriding. For the items not overridden, default values will be adopted. The items contained in **config** are:
+* **systemInfoEndpoint:** The base endpoint of the service used to get the related system configurations. Default value is "/api/systeminfo".
+
 * **repositoryBaseEndpoint:** The base endpoint of the service used to handle the repositories of registry and/or tags of repository. Default value is "/api/repositories".
 
 * **logBaseEndpoint:** The base endpoint of the service used to handle the recent access logs. Default is "/api/logs".
@@ -578,37 +589,70 @@ HarborLibraryModule.forRoot({
 * **ScanningResultService:** Get the vulnerabilities scanning results for the specified tag.
 ```
 @Injectable()
+/**
+ * Get the vulnerabilities scanning results for the specified tag.
+ * 
+ * @export
+ * @abstract
+ * @class ScanningResultService
+ */
 export class MyScanningResultService extends ScanningResultService {
     /**
      * Get the summary of vulnerability scanning result.
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary)}
+     * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
      * 
      * @memberOf ScanningResultService
      */
-    getScanningResultSummary(tagId: string): Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary {
-        ...
-    }
+     getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary{
+         ...
+     }
 
     /**
      * Get the detailed vulnerabilities scanning results.
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[])}
+     * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
      * 
      * @memberOf ScanningResultService
      */
-    getScanningResults(tagId: string): Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[] {
-        ...
-    }
+     getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[]{
+         ...
+     }
 }
 
 ...
 HarborLibraryModule.forRoot({
     scanningService: { provide: ScanningResultService, useClass: MyScanningResultService }
+})
+...
+
+```
+
+* **SystemInfoService:** Get related system configurations.
+```
+/**
+ * Get System information about current backend server.
+ * @abstract
+ * @class
+ */
+export class MySystemInfoService extends SystemInfoService {
+  /**
+   *  Get global system information.
+   *  @abstract
+   *  @returns 
+   */
+   getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo {
+       ...
+   }
+}
+
+...
+HarborLibraryModule.forRoot({
+    systemInfoService: { provide: SystemInfoService, useClass: MySystemInfoService }
 })
 ...
 

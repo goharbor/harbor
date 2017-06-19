@@ -217,5 +217,11 @@ func prepareScanJobData() error {
 }
 
 func clearScanJobData() error {
-	return dao.ClearTable(models.ScanJobTable)
+	if err := dao.ClearTable(models.ScanJobTable); err != nil {
+		return err
+	}
+	if err := dao.ClearTable(models.ScanOverviewTable); err != nil {
+		return err
+	}
+	return nil
 }

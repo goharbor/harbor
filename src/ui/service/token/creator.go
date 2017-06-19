@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/registry/auth/token"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -70,7 +71,7 @@ func InitCreators() {
 
 // Creator creates a token ready to be served based on the http request.
 type Creator interface {
-	Create(r *http.Request) (*tokenJSON, error)
+	Create(r *http.Request) (*models.Token, error)
 }
 
 type imageParser interface {
@@ -178,7 +179,7 @@ func (e *unauthorizedError) Error() string {
 	return "Unauthorized"
 }
 
-func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
+func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	var err error
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)

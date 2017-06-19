@@ -92,7 +92,8 @@ func init() {
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
 	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get")
-	beego.Router("/api/users/?:id", &UserAPI{})
+	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
+	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
@@ -102,7 +103,7 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
-	beego.Router("/api/repositories/*/tags/?:tag", &RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
@@ -329,17 +330,10 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 }
 
 //Search projects by projectName and isPublic
-func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usrInfo) (int, []apilib.Project, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	//create api path
-	path := "api/projects"
-	_sling = _sling.Path(path)
-	type QueryParams struct {
-		ProjectName string `url:"project_name,omitempty"`
-		IsPubilc    int32  `url:"is_public,omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{ProjectName: projectName, IsPubilc: isPublic})
+func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (int, []apilib.Project, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("api/projects").
+		QueryStruct(query)
 
 	var successPayload []apilib.Project
 
@@ -354,6 +348,8 @@ func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usr
 
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
+	} else {
+		log.Println(string(body))
 	}
 
 	return httpStatusCode, successPayload, err
@@ -486,6 +482,25 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	}
 
 	return code, nil, nil
+}
+
+func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *tagResp, error) {
+	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
+	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if code != http.StatusOK {
+		log.Printf("failed to get tag of %s:%s: %d %s \n", repository, tag, code, string(data))
+		return code, nil, nil
+	}
+
+	result := tagResp{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return 0, nil, err
+	}
+	return http.StatusOK, &result, nil
 }
 
 //Get tags of a relevant repository

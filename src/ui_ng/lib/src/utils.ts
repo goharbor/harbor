@@ -119,3 +119,8 @@ export class CustomComparator<T> implements Comparator<T> {
     return comp;
   }
 }
+
+/**
+ * The default page size
+ */
+export const DEFAULT_PAGE_SIZE: number = 15;
