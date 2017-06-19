@@ -6,41 +6,42 @@ default tags regression
 *** Test Cases ***
 Test Case - Edit authentication
     Init Chrome Driver
-    ${d} = get current date result_format=%m%s
-    Sign In Harbor user=admin pw=Harbor12345
-    click element xpath=//clr-main-container//nav//ul/li[3]
-    click element xpath=//select[@id="authMode"]
-    click element xpath=//select[@id="authMode"]//option[@value="ldap_auth"]
-    sleep 1
-    input text xpath=//input[@id="ldapUrl"]
-    input text xpath=//input[@id="ldapSearchDN"]
-    input text xpath=//input[@id="ldapSearchPwd"]
-    input text xpath=//input[@id="ldapUid"]
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//select[@id="authMode"]
+    Click Element  xpath=//select[@id="authMode"]//option[@value="ldap_auth"]
+    Sleep  1
+    Input Text  xpath=//input[@id="ldapUrl"]
+    Input Text  xpath=//input[@id="ldapSearchDN"]
+    Input Text  xpath=//input[@id="ldapSearchPwd"]
+    Input Text  xpath=//input[@id="ldapUid"]
     #scope keep subtree
     #click save
-    click button xpath=//config//div/button[1]
+    Click Button  xpath=//config//div/button[1]
     Logout Harbor
     #check can change back to db
-    Sign In Harbor user=admin pw=Harbor12345
-    click element xpath=//clr-main-container//nav//ul/li[3]
-    should not exist xpath=//select[@disabled='']
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Page Should Not Contain Element  xpath=//select[@disabled='']
     Logout Harbor
     #signin ldap user
-    Sign In Harbor user=user001 pw=user001
+    Sign In Harbor  user001  user001
     Logout Harbor
     #sign in as admin
-    Sign In Harbor user=admin pw=Harbor12345
-    click element
-    should exist xpath=//select[@disabled='']
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Page Should Contain Element  xpath=//select[@disabled='']
 
     #clean database and restart harbor
     Down Harbor
-    ${rc} ${output}= run and return rc and output rm -rf /data
+    ${rc} ${output}= Run And Return Rc And Output  rm -rf /data
     Prepare
     Up Harbor
 
-    Create An New User username=test${d} email=test${d}@vmware.com  realname=test{d} newPassword=Test1@34 comment=harbor
-    Sign In Harbor user=admin pw=Harbor12345
-    click element xpath=//clr-main-containter//nav//ul/li[3]
-    should exist xpath=//select[@disabled='']
-    close browser
+    Create An New User  username=test${d}  email=test${d}@vmware.com  realname=test{d}  newPassword=Test1@34  comment=harbor
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//clr-main-containter//nav//ul/li[3]
+    Page Should Contain Element  xpath=//select[@disabled='']
+    Sleep  1
+    Close  Browser

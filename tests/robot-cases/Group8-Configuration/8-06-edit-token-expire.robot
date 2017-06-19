@@ -1,22 +1,25 @@
-*** settings ***
-resource ../../resources/Util.robot
-suite setup Start Docker Daemon Locally
-default tags regression
+*** Settings ***
+Resource ../../resources/Util.robot
+Suite Setup Start Docker Daemon Locally
+Default Tags regression
 
-*** Test cases ***
+*** Test Cases ***
 Test Case - Edit Token Expire
     Init Chrome Driver
-    Sign In Harbor user=admin pw=Harbor12345
-    sleep 1
-    click element xpath=//clr-main-container//nav//ul/li[3]
-    click button xpath=//config//ul/li[4]
+    Sign In Harbor  admin  Harbor12345
+    Sleep  1
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Button  xpath=//config//ul/li[4]
     #by default 30,change to other number
-    input text xpath=//input[@id="tokenExpiration"] 20
-    click button xpath=//config//div/button[1]
+    Input Text  xpath=//input[@id="tokenExpiration"]  20
+    Click Button  xpath=//config//div/button[1]
     Logout Harbor
-    Sign In Harbor user=admin pw=Harbor12345
-    sleep 1
-    click element xpath=//clr-main-container//nav//ul/li[3]
-    click button xpath=//config//ul/li[4]
-    Textfield value should be  xpath=//input[@id="tokenExpiration"] 20
-    close browser
+    Sign In Harbor  admin  Harbor12345
+    Sleep  1
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Button  xpath=//config//ul/li[4]
+    Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  20
+    #restore setting
+    Input Text  xpath=//input[@id="tokenExpiration"]  30
+    Click Button  xpath=//config//div/button[1]
+    Close Browser

@@ -6,25 +6,37 @@ default tags regression
 *** Test Cases ***
 Test Case - Edit Email Settings
     Init Chrome Driver
-    Sign In Harbor user=admin pw=Harbor12345
-    click element xpath=//config//ul/li[3]
-    input text xpath=//input[@id="mailServer"] smtp.vmware.com
-    input text xpath=//input[@id="emailPort"] 25
-    input text xpath=//input[@id="emailUsername"] example@vmware.com 
-    input text xpath=//input[@id="emailPassword"] example
-    input text xpath=//input[@id="emailFrom"] example<example@vmware.com>
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//config//ul/li[3]
+    Input Text  xpath=//input[@id="mailServer"]  smtp.vmware.com
+    Input Text  xpath=//input[@id="emailPort"]  25
+    Input Text  xpath=//input[@id="emailUsername"]  example@vmware.com 
+    Input Text  xpath=//input[@id="emailPassword"]  example
+    Input Text  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
     #checkbox status by default it is checked
-    unselect checkbox xpath=//input[@id="clr-checkbox-emailSSL"]
-    click button xpath=//config//div/button[1]
+    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Click Button  xpath=//config//div/button[1]
 
     Logout Harbor
-    Sign In Harbor user=admin pw=Harbor12345
-    click element xpath=//config//ul/li[3]
+    Sign In Harbor  admin  Harbor12345
+    Click Element  xpath=//config//ul/li[3]
     #check value
-    textfield value should be xpath=//input[@id="mailServer"] smtp.vmware.com
-    textfield value should be xpath=//input[@id="emailPort"] 25
-    textfield value should be xpath=//input[@id="emailUsername"] example@vmware.com
-    textfield value should be xpath=//input[@id="emailPassword"] example
-    textfield value should be xpath=//input[@id="emailFrom"] example<example@vmware.com>
-    checkbox should not be selected xpath=//input[@id="clr-checkbox-emailSSL"]
-    close browser
+    Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
+    Textfield Value Should Be  xpath=//input[@id="emailPort"]  25
+    Textfield Value Should Be  xpath=//input[@id="emailUsername"]  example@vmware.com
+    #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
+    Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
+    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
+    
+    #restore setting
+    Input Text  xpath=//input[@id="mailServer"]  smtp.example.com
+    Input Text  xpath=//input[@id="emailPort"]  25
+    Input Text  xpath=//input[@id="emailUsername"]  example@example.com 
+    Input Text  xpath=//input[@id="emailPassword"]  example
+    Input Text  xpath=//input[@id="emailFrom"]  example<example@example.com>
+    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Click Button  xpath=//config//div/button[1]
+    Close Browser
