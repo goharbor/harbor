@@ -4,32 +4,35 @@ Resource  ../../resources/Util.robot
 Suite Setup  Install Harbor to Test Server
 Default Tags  BAT
 
+*** Variables ***
+${HARBOR_URL}  http://localhost
+
 *** Test Cases ***
 Test Case - Create An New User
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
 Test Case - Sign With Admin
     Init Chrome Driver
-    Sign In Harbor  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Close Browser
 
 Test Case - Update User Comment
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Update User Comment  Test12#4
     Logout Harbor
 
 Test Case - Update Password
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Change Password  Test1@34  Test12#4
     Logout Harbor
-    Sign In Harbor  tester${d}  Test12#4
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test12#4
     Close Browser
 	
 Test Case - Edit Project Creation
@@ -41,7 +44,7 @@ Test Case - Edit Project Creation
     Page Should Contain Element  xpath=//project//div[@class="option-left"]/button
 	#logout and login admin
     Logout Harbor
-    Sign In Harbor  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
 	#set limit to admin only
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//select[@id="proCreation"]
@@ -50,12 +53,12 @@ Test Case - Edit Project Creation
 	Capture Page Screenshot
 	#logout and login normal user
     Logout Harbor
-	Sign In Harbor  tester${d}  Test1@34
+	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
 	#check if can create project
 	Capture Page Screenshot
     Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
     Logout Harbor
-    Sign In Harbor  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
@@ -66,31 +69,32 @@ Test Case - Edit Project Creation
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Logout Harbor
-    Sign In Harbor  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Switch to User Tag
     Assign User Admin  tester${d}
     Logout Harbor
-    Sign In Harbor  tester${d}  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Administration Tag Should Display
     Close Browser
 
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
     Close Browser
 
 Test Case - User View Projects
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}1
     Create An New Project  test${d}2
     Create An New Project  test${d}3
     Switch To Log
+	Capture Page Screenshot
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
@@ -99,7 +103,7 @@ Test Case - User View Projects
 Test Case - Push Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
     Close Browser
 
@@ -120,11 +124,11 @@ Test Case - Push Image
     Should Be Equal As Integers  ${rc}  0
 
     Init Chrome Driver
-    Go To    http://localhost
+    Go To    ${HARBOR_URL}
     Sleep  2
     ${title}=  Get Title
     Should Be Equal  ${title}  Harbor
-    Sign In Harbor  tester${d}  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
     Sleep  2
