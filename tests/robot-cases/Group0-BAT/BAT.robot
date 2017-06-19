@@ -103,9 +103,9 @@ Test Case - User View Projects
 Test Case - Push Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
-    Close Browser
+    Logout Harbor
 
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log To Console  ${ip}
@@ -123,20 +123,17 @@ Test Case - Push Image
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
 
-    Init Chrome Driver
-    Go To    ${HARBOR_URL}
-    Sleep  2
-    ${title}=  Get Title
-    Should Be Equal  ${title}  Harbor
-    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
+    Sign In Harbor  tester${d}  Test1@34
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/list-project/clr-datagrid/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a[contains(.,"test")]
     Sleep  2
     Wait Until Page Contains  test${d}/hello-world
+    Sleep  1
+    Close Browser
 
 Test Case - Ldap Sign in and out
     Switch To LDAP
