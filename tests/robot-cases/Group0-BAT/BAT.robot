@@ -140,14 +140,14 @@ Test Case - Edit Email Settings
     #password can not get value
     #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
     Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
-    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
     
     #restore setting
-    Input Text  xpath=//input[@id="mailServer"]  smtp.example.com
+    Input Text  xpath=//input[@id="mailServer"]  smtp.mydomain.com
     Input Text  xpath=//input[@id="emailPort"]  25
-    Input Text  xpath=//input[@id="emailUsername"]  example@example.com 
-    Input Text  xpath=//input[@id="emailPassword"]  example
-    Input Text  xpath=//input[@id="emailFrom"]  example<example@example.com>
+    Input Text  xpath=//input[@id="emailUsername"]  sample_admin@mydomain.com 
+    #Input Text  xpath=//input[@id="emailPassword"]  example
+    Input Text  xpath=//input[@id="emailFrom"]  admin<sample_admin@mydomain.com>
     Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
     Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
     Click Button  xpath=//config//div/button[1]
@@ -166,7 +166,7 @@ Test Case - Edit Token Expire
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Sleep  1
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Button  xpath=//config//ul/li[4]
+    Click Element  xpath=//config//ul/li[4]
     Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  20
     #restore setting
     Input Text  xpath=//input[@id="tokenExpiration"]  30
