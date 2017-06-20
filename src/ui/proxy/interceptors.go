@@ -2,6 +2,9 @@ package proxy
 
 import (
 	//	"github.com/vmware/harbor/src/ui/api"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/ui/config"
@@ -51,8 +54,8 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 type policyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	contentTrustEnabled(name string) bool
-	// vulnerableEnabled  returns whether a project has enabled content trust.
-	vulnerableEnabled(name string) bool
+	// vulnerableEnabled  returns whether a project has enabled vulnerable, and the project's severity.
+	vulnerableEnabled(name string) (bool, string)
 }
 
 //For testing
@@ -61,9 +64,9 @@ type envPolicyChecker struct{}
 func (ec envPolicyChecker) contentTrustEnabled(name string) bool {
 	return os.Getenv("PROJECT_CONTENT_TRUST") == "1"
 }
-func (ec envPolicyChecker) vulnerableEnabled(name string) bool {
+func (ec envPolicyChecker) vulnerableEnabled(name string) (bool, string) {
 	// TODO: May need get more information in vulnerable policies.
-	return os.Getenv("PROJECT_VULNERABBLE") == "1"
+	return os.Getenv("PROJECT_VULNERABBLE") == "1", os.Getenv("PROJECT_SEVERITY")
 }
 
 type pmsPolicyChecker struct {
@@ -78,8 +81,13 @@ func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
 	}
 	return project.EnableContentTrust
 }
-func (pc pmsPolicyChecker) vulnerableEnabled(name string) bool {
-	return true
+func (pc pmsPolicyChecker) vulnerableEnabled(name string) (bool, string) {
+	project, err := pc.pm.Get(name)
+	if err != nil {
+		log.Errorf("Unexpected error when getting the project, error: %v", err)
+		return true, "negligible"
+	}
+	return project.PreventVulnerableImagesFromRunning, project.PreventVulnerableImagesFromRunningSeverity
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -193,6 +201,59 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		log.Debugf("digest mismatch, failing the response.")
 		http.Error(rw, "The image is not signed in Notary.", http.StatusPreconditionFailed)
 	}
+}
+
+type vulnerableHandler struct {
+	next http.Handler
+}
+
+func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	imgRaw := req.Context().Value(imageInfoCtxKey)
+	if imgRaw == nil || !config.WithClair() {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+	img, _ := req.Context().Value(imageInfoCtxKey).(imageInfo)
+	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerableEnabled(img.projectName)
+	if !projectVulnerableEnabled {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+	rec := httptest.NewRecorder()
+	vh.next.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusOK {
+		copyResp(rec, rw)
+		return
+	}
+	log.Debugf("showing digest")
+	digest := rec.Header().Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+	log.Debugf("digest: %s", digest)
+
+	imgScanOverview, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		log.Errorf("failed to get ImgScanOverview %s: %v", digest, err)
+		return
+	}
+	var temp models.Severity
+	temp = clair.ParseClairSev(projectVulnerableSeverity)
+	d := compareSeverity(imgScanOverview.Sev, int(temp))
+	if d < 0 {
+		log.Debugf("Passing the response to outter responseWriter")
+		copyResp(rec, rw)
+	} else {
+		log.Debugf("the image severity is lower then project setting, failing the response.")
+		http.Error(rw, "The image scan result doesn't pass the project setting.", http.StatusPreconditionFailed)
+	}
+}
+
+func compareSeverity(imgScanOverviewSev int, projectSev int) int {
+	if imgScanOverviewSev == projectSev {
+		return 0
+	}
+	if imgScanOverviewSev < projectSev {
+		return -1
+	}
+	return +1
 }
 
 func matchNotaryDigest(img imageInfo, digest string) (bool, error) {
