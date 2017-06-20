@@ -95,18 +95,27 @@ func TestEnvPolicyChecker(t *testing.T) {
 	if err := os.Setenv("PROJECT_CONTENT_TRUST", "1"); err != nil {
 		t.Fatalf("Failed to set env variable: %v", err)
 	}
+	if err2 := os.Setenv("PROJECT_VULNERABBLE", "1"); err2 != nil {
+		t.Fatalf("Failed to set env variable: %v", err2)
+	}
+	if err3 := os.Setenv("PROJECT_SEVERITY", "medium"); err3 != nil {
+		t.Fatalf("Failed to set env variable: %v", err3)
+	}
 	contentTrustFlag := getPolicyChecker().contentTrustEnabled("whatever")
-	vulFlag := getPolicyChecker().vulnerableEnabled("whatever")
+	vulFlag, sev := getPolicyChecker().vulnerableEnabled("whatever")
 	assert.True(contentTrustFlag)
-	assert.False(vulFlag)
+	assert.True(vulFlag)
+	assert.Equal(sev, "medium")
 }
 
 func TestPMSPolicyChecker(t *testing.T) {
 	pm := pms.NewProjectManager(admiralEndpoint, token)
 	name := "project_for_test_get_true"
 	id, err := pm.Create(&models.Project{
-		Name:               name,
-		EnableContentTrust: true,
+		Name:                                       name,
+		EnableContentTrust:                         true,
+		PreventVulnerableImagesFromRunning:         true,
+		PreventVulnerableImagesFromRunningSeverity: "negligible",
 	})
 	require.Nil(t, err)
 	defer func(id int64) {
@@ -124,6 +133,19 @@ func TestPMSPolicyChecker(t *testing.T) {
 	defer server.Close()
 	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_true")
 	assert.True(t, contentTrustFlag)
+	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerableEnabled("project_for_test_get_true")
+	assert.True(t, projectVulnerableEnabled)
+	assert.Equal(t, projectVulnerableSeverity, "negligible")
+}
+
+func TestompareSeverity(t *testing.T) {
+	assert := assert.New(t)
+	res1 := compareSeverity(1, 2)
+	assert.Equal(res1, -1)
+	res2 := compareSeverity(3, 2)
+	assert.Equal(res2, 1)
+	res3 := compareSeverity(3, 3)
+	assert.Equal(res3, 0)
 }
 
 func TestMatchNotaryDigest(t *testing.T) {
