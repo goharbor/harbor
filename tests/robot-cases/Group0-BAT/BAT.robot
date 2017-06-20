@@ -78,7 +78,7 @@ Test Case - Edit Self-Registration
     Click Element  xpath=//div/button[1]
 #logout and check
     Logout Harbor
-    Page Should Not Conatain Element  xpath=//a[@class="signup"]
+    Page Should Not Contain Element  xpath=//a[@class="signup"]
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
@@ -92,6 +92,7 @@ Test Case - Edit Self-Registration
  Test Case - Edit Verify Remote Cert
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//config//ul/li[2]
     #by defalut verify is on
     #Unselect Checkbox  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
@@ -101,6 +102,7 @@ Test Case - Edit Self-Registration
     #assume checkbox uncheck
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//config//ul/li[2]
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-verifyRemoteCert"] 
     Sleep  1
@@ -114,6 +116,7 @@ Test Case - Edit Self-Registration
 Test Case - Edit Email Settings
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//config//ul/li[3]
     Input Text  xpath=//input[@id="mailServer"]  smtp.vmware.com
     Input Text  xpath=//input[@id="emailPort"]  25
@@ -128,6 +131,7 @@ Test Case - Edit Email Settings
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//config//ul/li[3]
     #check value
     Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
@@ -154,7 +158,7 @@ Test Case - Edit Token Expire
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Sleep  1
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Button  xpath=//config//ul/li[4]
+    Click Element  xpath=//config//ul/li[4]
     #by default 30,change to other number
     Input Text  xpath=//input[@id="tokenExpiration"]  20
     Click Button  xpath=//config//div/button[1]
