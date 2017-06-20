@@ -2,6 +2,7 @@
 COMPOSE_CLUSTERTPL="./make/docker-compose-cluster.tpl"
 THISNODEIP=$1
 DB_BACKENDIP=$2
+INITFLAG=$3
 sed -n -e /version:\ \'2\'/,/tag:\ \"registry\"/p $COMPOSE_CLUSTERTPL
 DBCLUSTERCONF="./make/db_cluster.cnf"
 EXTRA_HOSTS=()
@@ -71,6 +72,9 @@ if [[ $NODE_IP = $DB_BACKENDIP ]] ; then
 		echo -e "  mysql:\n    image: vmware/harbor-db:__version__\n    container_name: harbor-db\n    restart: always"
 		echo -e "    volumes:\n      - /data/databases:/var/lib/mysql:z"
 		echo -e "    env_file:\n      - ./common/config/db/env"
+		fi [ $INITFLAG ] ; then
+			echo -e "    environment:\n      - INITFLAG=true"
+		fi
 		echo -e "    extra_hosts:"
 		for HOST in ${EXTRA_HOSTS[@]}; do
 			if [[ $HOST =~ mysqld ]] ; then

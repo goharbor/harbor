@@ -93,6 +93,7 @@ NEWCLARITYVERSION=
 CLUSTERFLAG=false
 THISNODEIP=
 DBBACKENDIP=192.168.0.1
+INITFLAG=false
 
 #clair parameters
 CLAIRVERSION=v2.0.0
@@ -321,7 +322,7 @@ build: build_$(BASEIMAGE)
 modify_composefile:
 	@echo "preparing docker-compose file..."
 	@if [ "$(CLUSTERFLAG)" = "true" ] ; then \
-		$(MAKEPATH)/create_cluster.sh $(THISNODEIP) $(DBBACKENDIP) >  $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME);\
+		$(MAKEPATH)/create_cluster.sh $(THISNODEIP) $(DBBACKENDIP) $(INITFLAG) >  $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME);\
 		$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME); \
 	else \
 		cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME); \
@@ -448,6 +449,9 @@ down:
 	@echo "stoping harbor instance..."
 	@$(DOCKERCOMPOSECMD) $(DOCKERCOMPOSE_LIST) down -v
 	@echo "Done."
+
+distribute-table:
+	@$(DOCKERFILEPATH_DB_CLUSTER)/distribute_table.sh
 
 cleanbinary:
 	@echo "cleaning binary..."

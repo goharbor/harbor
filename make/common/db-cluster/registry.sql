@@ -161,7 +161,7 @@ create table replication_job (
  policy_id int NOT NULL,
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
- tags   varchar(16384),
+ tags   varchar(1000),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id),

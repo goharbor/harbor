@@ -56,29 +56,27 @@ elif [ $ACTION == "ndbd" ]; then
 
 elif [ $ACTION == "mysqld" ]; then
 	if [ ! -d '/var/lib/mysql/mysql' ]; then
-		mysqld --user=mysql --initialize-insecure --datadir=/var/lib/mysql
 		TEMP_FILE='/mysql-first-time.sql'
+		mysqld --user=mysql --initialize-insecure --datadir=/var/lib/mysql
 		cat > "$TEMP_FILE" <<-EOSQL
 			DELETE FROM mysql.user ;
 			CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' ;
 			GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION ;
 			DROP DATABASE IF EXISTS test ;
 		EOSQL
-
 		if [ "$MYSQL_DATABASE" ]; then
                 	echo "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE ;" >> "$TEMP_FILE"
         	fi
         	if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
                 	echo "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;" >> "$TEMP_FILE"
-
                 	if [ "$MYSQL_DATABASE" ]; then
-                        	echo "GRANT ALL ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' ;" >> "$TEMP_FILE"
+                       		echo "GRANT ALL ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' ;" >> "$TEMP_FILE"
                 	fi
         	fi
         	echo 'FLUSH PRIVILEGES ;' >> "$TEMP_FILE"
-        	cat /r.sql >> "$TEMP_FILE"
-		cat $TEMP_FILE
-
+		if [ $INITFLAG ] ; then
+        		cat /r.sql >> "$TEMP_FILE"
+		fi
 		chown -R mysql:mysql /var/lib/mysql
 		mysqld --user=$MYSQL_USER --init-file="$TEMP_FILE"
 	else
