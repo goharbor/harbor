@@ -76,6 +76,9 @@ elif [ $ACTION == "mysqld" ]; then
         	echo 'FLUSH PRIVILEGES ;' >> "$TEMP_FILE"
 		if [ $INITFLAG = true ] ; then
         		cat /r.sql >> "$TEMP_FILE"
+		else
+			echo "drop database if exists registry;" >> "$TEMP_FILE"
+			echo "create database registry charset = utf8;" >> "$TEMP_FILE"
 		fi
 		chown -R mysql:mysql /var/lib/mysql
 		mysqld --user=$MYSQL_USER --init-file="$TEMP_FILE"

@@ -4,4 +4,6 @@ ndbd ndbd1
 mysqld mysqld1
 
 [172.31.2.129]
+mgmd mgmd2
 ndbd ndbd2
+mysqld mysqld2
