@@ -769,6 +769,30 @@ paths:
         403:
           description: Forbidden.
   /repositories/{repo_name}/tags/{tag}:
+    get:
+      summary: Get the tag of the repository.
+      description: |
+        This endpoint aims to retrieve the tag of the repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Relevant repository name.
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag of the repository.
+      tags:
+       - Products
+      responses:
+        200:
+          description: Get tag successfully.
+          schema:
+            $ref: '#/definitions/DetailedTag'
+        500:
+          description: Unexpected internal errors.
     delete:
       summary: Delete a tag in a repository.
       description: |
@@ -801,7 +825,7 @@ paths:
     get:
       summary: Get tags of a relevant repository.
       description: |
-        This endpoint aims to retrieve tags from a relevant repository.
+        This endpoint aims to retrieve tags from a relevant repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
       parameters:
         - name: repo_name
           in: path
