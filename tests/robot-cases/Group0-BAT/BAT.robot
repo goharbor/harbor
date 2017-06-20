@@ -66,6 +66,113 @@ Test Case - Edit Project Creation
     Sleep  2
     Close browser
 
+Test Case - Edit Self-Registration
+#login as admin
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+#disable self reg
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+    Click Element  xpath=//div/button[1]
+#logout and check
+    Logout Harbor
+    Page Should Not Contain Element  xpath=//a[@class="signup"]
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
+    Sleep  1
+    #restore setting
+    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+    Click Element  xpath=//div/button[1]
+    Close Browser
+
+ Test Case - Edit Verify Remote Cert
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[2]
+    #by defalut verify is on
+    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
+    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
+    Click Element  xpath=//div/button[1]
+    #assume checkbox uncheck
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[2]
+    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-verifyRemoteCert"] 
+    Sleep  1
+    #restore setting
+    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
+    Click Element  xpath=//div/button[1]
+    Sleep  1
+    Close Browser   
+
+Test Case - Edit Email Settings
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[3]
+    Input Text  xpath=//input[@id="mailServer"]  smtp.vmware.com
+    Input Text  xpath=//input[@id="emailPort"]  25
+    Input Text  xpath=//input[@id="emailUsername"]  example@vmware.com 
+    Input Text  xpath=//input[@id="emailPassword"]  example
+    Input Text  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
+    #checkbox status by default it is checked
+    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Click Button  xpath=//config//div/button[1]
+
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[3]
+    #check value
+    Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
+    Textfield Value Should Be  xpath=//input[@id="emailPort"]  25
+    Textfield Value Should Be  xpath=//input[@id="emailUsername"]  example@vmware.com
+    #password can not get value
+    #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
+    Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
+    Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
+    
+    #restore setting
+    Input Text  xpath=//input[@id="mailServer"]  smtp.mydomain.com
+    Input Text  xpath=//input[@id="emailPort"]  25
+    Input Text  xpath=//input[@id="emailUsername"]  sample_admin@mydomain.com 
+    #Input Text  xpath=//input[@id="emailPassword"]  example
+    Input Text  xpath=//input[@id="emailFrom"]  admin<sample_admin@mydomain.com>
+    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Click Button  xpath=//config//div/button[1]
+    Close Browser
+
+Test Case - Edit Token Expire
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sleep  1
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[4]
+    #by default 30,change to other number
+    Input Text  xpath=//input[@id="tokenExpiration"]  20
+    Click Button  xpath=//config//div/button[1]
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sleep  1
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[4]
+    Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  20
+    #restore setting
+    Input Text  xpath=//input[@id="tokenExpiration"]  30
+    Click Button  xpath=//config//div/button[1]
+    Close Browser   
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s

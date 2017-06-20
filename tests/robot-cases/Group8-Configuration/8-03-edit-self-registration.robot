@@ -13,6 +13,7 @@ Test Case - Edit Self-Registration
     #Unselect Checkbox  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+    Click Element  xpath=//div/button[1]
 #logout and check
     Logout Harbor
     Page Should Not Conatain Element  xpath=//a[@class="signup"]
@@ -23,4 +24,5 @@ Test Case - Edit Self-Registration
     #restore setting
     Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+    Click Element  xpath=//div/button[1]
     Close Browser
