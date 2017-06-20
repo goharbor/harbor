@@ -1,9 +1,12 @@
 package proxy
 
 import (
-	//	"github.com/vmware/harbor/src/ui/api"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
+	//	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 	"github.com/vmware/harbor/src/ui/projectmanager/pms"
@@ -25,6 +28,9 @@ const (
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "admin"
 )
+
+// Record the docker deamon raw response.
+var rec *httptest.ResponseRecorder
 
 // NotaryEndpoint , exported for testing.
 var NotaryEndpoint = config.InternalNotaryEndpoint()
@@ -51,8 +57,8 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 type policyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	contentTrustEnabled(name string) bool
-	// vulnerableEnabled  returns whether a project has enabled content trust.
-	vulnerableEnabled(name string) bool
+	// vulnerablePolicy  returns whether a project has enabled vulnerable, and the project's severity.
+	vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 //For testing
@@ -61,9 +67,8 @@ type envPolicyChecker struct{}
 func (ec envPolicyChecker) contentTrustEnabled(name string) bool {
 	return os.Getenv("PROJECT_CONTENT_TRUST") == "1"
 }
-func (ec envPolicyChecker) vulnerableEnabled(name string) bool {
-	// TODO: May need get more information in vulnerable policies.
-	return os.Getenv("PROJECT_VULNERABBLE") == "1"
+func (ec envPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity) {
+	return os.Getenv("PROJECT_VULNERABLE") == "1", clair.ParseClairSev(os.Getenv("PROJECT_SEVERITY"))
 }
 
 type pmsPolicyChecker struct {
@@ -78,8 +83,13 @@ func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
 	}
 	return project.EnableContentTrust
 }
-func (pc pmsPolicyChecker) vulnerableEnabled(name string) bool {
-	return true
+func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity) {
+	project, err := pc.pm.Get(name)
+	if err != nil {
+		log.Errorf("Unexpected error when getting the project, error: %v", err)
+		return true, models.SevUnknown
+	}
+	return project.PreventVulnerableImagesFromRunning, clair.ParseClairSev(project.PreventVulnerableImagesFromRunningSeverity)
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -101,7 +111,7 @@ type imageInfo struct {
 	repository  string
 	tag         string
 	projectName string
-	//	digest      string
+	digest      string
 }
 
 type urlHandler struct {
@@ -120,32 +130,18 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, fmt.Sprintf("Bad repository name: %s", repository), http.StatusBadRequest)
 			return
 		}
-		/*
-			//Need to get digest of the image.
-			endpoint, err := config.RegistryURL()
-			if err != nil {
-				log.Errorf("Error getting Registry URL: %v", err)
-				http.Error(rw, fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalError)
-				return
-			}
-			rc, err := api.NewRepositoryClient(endpoint, false, username, repository, "repository", repository, "pull")
-			if err != nil {
-				log.Errorf("Error creating repository Client: %v", err)
-				http.Error(rw, fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalError)
-				return
-			}
-			digest, exist, err := rc.ManifestExist(tag)
-			if err != nil {
-				log.Errorf("Failed to get digest for tag: %s, error: %v", tag, err)
-				http.Error(rw, fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalError)
-				return
-			}
-		*/
-
+		rec = httptest.NewRecorder()
+		uh.next.ServeHTTP(rec, req)
+		if rec.Result().StatusCode != http.StatusOK {
+			copyResp(rec, rw)
+			return
+		}
+		digest := rec.Header().Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 		img := imageInfo{
 			repository:  repository,
 			tag:         tag,
 			projectName: components[0],
+			digest:      digest,
 		}
 		log.Debugf("image info of the request: %#v", img)
 
@@ -171,31 +167,70 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rw, req)
 		return
 	}
-	//May need to update status code, let's use recorder
-	rec := httptest.NewRecorder()
-	cth.next.ServeHTTP(rec, req)
-	if rec.Result().StatusCode != http.StatusOK {
-		copyResp(rec, rw)
-		return
-	}
-	log.Debugf("showing digest")
-	digest := rec.Header().Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
-	log.Debugf("digest: %s", digest)
-	match, err := matchNotaryDigest(img, digest)
+	match, err := matchNotaryDigest(img)
 	if err != nil {
 		http.Error(rw, "Failed in communication with Notary please check the log", http.StatusInternalServerError)
 		return
 	}
-	if match {
-		log.Debugf("Passing the response to outter responseWriter")
-		copyResp(rec, rw)
-	} else {
+	if !match {
 		log.Debugf("digest mismatch, failing the response.")
 		http.Error(rw, "The image is not signed in Notary.", http.StatusPreconditionFailed)
+		return
 	}
+	cth.next.ServeHTTP(rw, req)
 }
 
-func matchNotaryDigest(img imageInfo, digest string) (bool, error) {
+type vulnerableHandler struct {
+	next http.Handler
+}
+
+func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	imgRaw := req.Context().Value(imageInfoCtxKey)
+	if imgRaw == nil || !config.WithClair() {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+	img, _ := req.Context().Value(imageInfoCtxKey).(imageInfo)
+	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy(img.projectName)
+	if !projectVulnerableEnabled {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+	overview, err := dao.GetImgScanOverview(img.digest)
+	if err != nil {
+		log.Errorf("failed to get ImgScanOverview with repo: %s, tag: %s, digest: %s. Error: %v", img.repository, img.tag, img.digest, err)
+		http.Error(rw, "Failed to get ImgScanOverview.", http.StatusPreconditionFailed)
+		return
+	}
+	if overview == nil {
+		log.Debugf("cannot get the image scan overview info, failing the response.")
+		http.Error(rw, "Cannot get the image scan overview info.", http.StatusPreconditionFailed)
+		return
+	}
+	imageSev := overview.Sev
+	if imageSev > int(projectVulnerableSeverity) {
+		log.Debugf("the image severity is higher then project setting, failing the response.")
+		http.Error(rw, "The image scan result doesn't pass the project setting.", http.StatusPreconditionFailed)
+		return
+	}
+	vh.next.ServeHTTP(rw, req)
+}
+
+type funnelHandler struct {
+	next http.Handler
+}
+
+func (fu funnelHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	imgRaw := req.Context().Value(imageInfoCtxKey)
+	if imgRaw != nil {
+		log.Debugf("Return the original response as no the interceptor takes action.")
+		copyResp(rec, rw)
+		return
+	}
+	fu.next.ServeHTTP(rw, req)
+}
+
+func matchNotaryDigest(img imageInfo) (bool, error) {
 	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err
@@ -207,7 +242,7 @@ func matchNotaryDigest(img imageInfo, digest string) (bool, error) {
 			if err != nil {
 				return false, err
 			}
-			return digest == d, nil
+			return img.digest == d, nil
 		}
 	}
 	log.Debugf("image: %#v, not found in notary", img)
