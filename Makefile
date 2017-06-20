@@ -451,7 +451,7 @@ down:
 	@echo "Done."
 
 distribute-table:
-	@$(DOCKERFILEPATH_DB_CLUSTER)/distribute_table.sh
+	$(DOCKERFILEPATH_DB_CLUSTER)/distribute_table.sh
 
 cleanbinary:
 	@echo "cleaning binary..."

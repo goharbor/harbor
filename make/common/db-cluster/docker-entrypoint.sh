@@ -74,7 +74,7 @@ elif [ $ACTION == "mysqld" ]; then
                 	fi
         	fi
         	echo 'FLUSH PRIVILEGES ;' >> "$TEMP_FILE"
-		if [ $INITFLAG ] ; then
+		if [ $INITFLAG = true ] ; then
         		cat /r.sql >> "$TEMP_FILE"
 		fi
 		chown -R mysql:mysql /var/lib/mysql

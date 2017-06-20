@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MYSQL_PWD=`cat ./make/common/config/db/env |grep MYSQL_ROOT_PASSWORD | sed -e "s/MYSQL_ROOT_PASSWORD=//"`
-MYSQL_IP=`docker network inspect root_db-backend | grep Gateway | sed  's/[^6][^0-9]*\([0-9.]*\)[^0-9]*.*/\1/'`
+MYSQL_IP=`docker network inspect make_db-backend | grep Gateway | sed  's/[^6][^0-9]*\([0-9.]*\)[^0-9]*.*/\1/'`
 SQLFILE="./make/common/db-cluster/registry.sql"
 
 IFS=$'\n'

@@ -72,7 +72,7 @@ if [[ $NODE_IP = $DB_BACKENDIP ]] ; then
 		echo -e "  mysql:\n    image: vmware/harbor-db:__version__\n    container_name: harbor-db\n    restart: always"
 		echo -e "    volumes:\n      - /data/databases:/var/lib/mysql:z"
 		echo -e "    env_file:\n      - ./common/config/db/env"
-		if [ $INITFLAG ] ; then
+		if [ $INITFLAG = true ] ; then
 			echo -e "    environment:\n      - INITFLAG=true"
 		fi
 		echo -e "    extra_hosts:"
