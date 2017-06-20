@@ -99,28 +99,9 @@ func TriggerReplication(policyID int64, repository string,
 	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
 }
 
-// GetPoliciesByRepository returns policies according the repository
-func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
-	repository = strings.TrimSpace(repository)
-	repository = strings.TrimRight(repository, "/")
-	projectName, _ := utils.ParseRepository(repository)
-
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		return nil, err
-	}
-
-	policies, err := dao.GetRepPolicyByProject(project.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return policies, nil
-}
-
 // TriggerReplicationByRepository triggers the replication according to the repository
-func TriggerReplicationByRepository(repository string, tags []string, operation string) {
-	policies, err := GetPoliciesByRepository(repository)
+func TriggerReplicationByRepository(projectID int64, repository string, tags []string, operation string) {
+	policies, err := dao.GetRepPolicyByProject(projectID)
 	if err != nil {
 		log.Errorf("failed to get policies for repository %s: %v", repository, err)
 		return
