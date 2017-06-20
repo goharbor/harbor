@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/vmware/harbor/src/common/models"
@@ -74,11 +73,6 @@ func SecurityFilter(ctx *beegoctx.Context) {
 
 	req := ctx.Request
 	if req == nil {
-		return
-	}
-
-	if !strings.HasPrefix(req.URL.RequestURI(), "/api/") &&
-		!strings.HasPrefix(req.URL.RequestURI(), "/service/token") {
 		return
 	}
 

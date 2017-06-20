@@ -88,22 +88,8 @@ func TestSecurityFilter(t *testing.T) {
 	assert.Nil(t, securityContext(ctx))
 	assert.Nil(t, projectManager(ctx))
 
-	// the pattern of request does not need security check
-	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/static/index.html", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", req)
-	}
-
-	ctx, err = newContext(req)
-	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
-	}
-	SecurityFilter(ctx)
-	assert.Nil(t, securityContext(ctx))
-	assert.Nil(t, projectManager(ctx))
-
 	// the pattern of request needs security check
-	req, err = http.NewRequest(http.MethodGet,
+	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", req)
