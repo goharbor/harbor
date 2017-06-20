@@ -29,6 +29,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	comutils "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -98,7 +99,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		logger:         logger,
 	}
 
-	base.project = getProjectName(base.repository)
+	base.project, _ = comutils.ParseRepository(base.repository)
 
 	return base
 }
@@ -106,12 +107,6 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 // Exit ...
 func (b *BaseHandler) Exit() error {
 	return nil
-}
-
-func getProjectName(repository string) string {
-	repository = strings.TrimSpace(repository)
-	repository = strings.TrimRight(repository, "/")
-	return repository[:strings.LastIndex(repository, "/")]
 }
 
 // Initializer creates clients for source and destination registry,
