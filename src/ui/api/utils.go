@@ -27,6 +27,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
@@ -556,4 +557,35 @@ func requestAsUI(method, url string, body io.Reader, expectSC int) error {
 		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	return nil
+}
+
+// transformVulnerabilities transforms the returned value of Clair API to a list of VulnerabilityItem
+func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*models.VulnerabilityItem {
+	res := []*models.VulnerabilityItem{}
+	l := layerWithVuln.Layer
+	if l == nil {
+		return res
+	}
+	features := l.Features
+	if features == nil {
+		return res
+	}
+	for _, f := range features {
+		vulnerabilities := f.Vulnerabilities
+		if vulnerabilities == nil {
+			continue
+		}
+		for _, v := range vulnerabilities {
+			vItem := &models.VulnerabilityItem{
+				ID:          v.Name,
+				Pkg:         f.Name,
+				Version:     f.Version,
+				Severity:    clair.ParseClairSev(v.Severity),
+				Fixed:       v.FixedBy,
+				Description: v.Description,
+			}
+			res = append(res, vItem)
+		}
+	}
+	return res
 }

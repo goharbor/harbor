@@ -27,6 +27,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
@@ -295,20 +296,17 @@ func (ra *RepositoryAPI) Delete() {
 // GetTag returns the tag of a repository
 func (ra *RepositoryAPI) GetTag() {
 	repository := ra.GetString(":splat")
-
-	project, _ := utils.ParseRepository(repository)
-	exist, err := ra.ProjectMgr.Exist(project)
+	tag := ra.GetString(":tag")
+	exist, _, err := ra.checkExistence(repository, tag)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			project, err))
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
 		return
 	}
-
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", project))
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
 		return
 	}
-
+	project, _ := utils.ParseRepository(repository)
 	if !ra.SecurityCtx.HasReadPerm(project) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
@@ -325,7 +323,6 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	tag := ra.GetString(":tag")
 	_, exist, err = client.ManifestExist(tag)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of %s:%s: %v", repository, tag, err))
@@ -749,6 +746,49 @@ func (ra *RepositoryAPI) ScanImage() {
 	}
 }
 
+// VulnerabilityDetails fetch vulnerability info from clair, transform to Harbor's format and return to client.
+func (ra *RepositoryAPI) VulnerabilityDetails() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, it's not impossible to get vulnerability details.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
+		return
+	}
+	repository := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	exist, digest, err := ra.checkExistence(repository, tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		return
+	}
+	project, _ := utils.ParseRepository(repository)
+	if !ra.SecurityCtx.HasReadPerm(project) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	overview, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+		return
+	}
+	clairClient := clair.NewClient(config.ClairEndpoint(), nil)
+	log.Debugf("The key for getting details: %s", overview.DetailsKey)
+	details, err := clairClient.GetResult(overview.DetailsKey)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+		return
+	}
+	ra.Data["json"] = transformVulnerabilities(details)
+	ra.ServeJSON()
+}
+
 func getSignatures(repository, username string) (map[string]*notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
@@ -766,6 +806,31 @@ func getSignatures(repository, username string) (map[string]*notary.Target, erro
 	}
 
 	return signatures, nil
+}
+
+func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, error) {
+	project, _ := utils.ParseRepository(repository)
+	exist, err := ra.ProjectMgr.Exist(project)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to check the existence of project %s: %v", project, err)
+	}
+	if !exist {
+		log.Errorf("project %s not found", project)
+		return false, "", nil
+	}
+	client, err := ra.initRepositoryClient(repository)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to initialize the client for %s: %v", repository, err)
+	}
+	digest, exist, err := client.ManifestExist(tag)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to check the existence of %s:%s: %v", repository, tag, err)
+	}
+	if !exist {
+		log.Errorf("%s not found", tag)
+		return false, "", nil
+	}
+	return true, digest, nil
 }
 
 //will return nil when it failed to get data.  The parm "tag" is for logging only.
