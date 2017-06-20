@@ -87,6 +87,7 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 
 }
 */
+
 // GetProjectByID ...
 func GetProjectByID(id int64) (*models.Project, error) {
 	o := GetOrmer()
@@ -150,6 +151,7 @@ func GetPermission(username, projectName string) (string, error) {
 	return r[0].RoleCode, nil
 }
 */
+
 // ToggleProjectPublicity toggles the publicity of the project.
 func ToggleProjectPublicity(projectID int64, publicity int) error {
 	o := GetOrmer()
