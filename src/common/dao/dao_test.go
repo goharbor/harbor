@@ -684,6 +684,7 @@ func TestCountPull(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectExists(t *testing.T) {
 	var exists bool
 	var err error
@@ -702,7 +703,7 @@ func TestProjectExists(t *testing.T) {
 		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
 	}
 }
-
+*/
 func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID
 	p, err := GetProjectByID(id)
@@ -768,13 +769,14 @@ func TestToggleProjectPublicity(t *testing.T) {
 
 }
 
+/*
 func TestIsProjectPublic(t *testing.T) {
 
 	if isPublic := IsProjectPublic(projectName); isPublic {
 		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectID)
 	}
 }
-
+*/
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
@@ -791,6 +793,7 @@ func TestGetUserProjectRoles(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectPermission(t *testing.T) {
 	roleCode, err := GetPermission(currentUser.Username, currentProject.Name)
 	if err != nil {
@@ -800,7 +803,7 @@ func TestProjectPermission(t *testing.T) {
 		t.Errorf("The expected role code is MDRWS,but actual: %s", roleCode)
 	}
 }
-
+*/
 func TestGetTotalOfProjects(t *testing.T) {
 	total, err := GetTotalOfProjects(nil)
 	if err != nil {

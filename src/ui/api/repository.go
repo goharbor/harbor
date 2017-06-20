@@ -166,14 +166,14 @@ func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	project, err := ra.ProjectMgr.Get(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get the project %s: %v",
 			projectName, err))
 		return
 	}
 
-	if !exist {
+	if project == nil {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
@@ -251,21 +251,10 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
-		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
+
+		go TriggerReplicationByRepository(project.ProjectID, repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			project, err := ra.ProjectMgr.Get(projectName)
-			if err != nil {
-				log.Errorf("failed to get the project %s: %v",
-					projectName, err)
-				return
-			}
-
-			if project == nil {
-				log.Errorf("project %s not found", projectName)
-				return
-			}
-
 			if err := dao.AddAccessLog(models.AccessLog{
 				Username:  ra.SecurityCtx.GetUsername(),
 				ProjectID: project.ProjectID,
@@ -279,7 +268,7 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
-	exist, err = repositoryExist(repoName, rc)
+	exist, err := repositoryExist(repoName, rc)
 	if err != nil {
 		log.Errorf("failed to check the existence of repository %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
