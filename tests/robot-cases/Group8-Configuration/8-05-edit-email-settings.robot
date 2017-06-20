@@ -26,6 +26,7 @@ Test Case - Edit Email Settings
     Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
     Textfield Value Should Be  xpath=//input[@id="emailPort"]  25
     Textfield Value Should Be  xpath=//input[@id="emailUsername"]  example@vmware.com
+    #password can not get value
     #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
     Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
