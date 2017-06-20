@@ -98,6 +98,7 @@ func main() {
 		log.Error(err)
 	}
 
+	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	initRouters()

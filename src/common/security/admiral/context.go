@@ -12,32 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package admiral
 
 import (
 	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/security/authcontext"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )
 
-// SecurityContext implements security.Context interface based on database
+// SecurityContext implements security.Context interface based on
+// auth context and project manager
 type SecurityContext struct {
-	user *models.User
-	pm   projectmanager.ProjectManager
+	ctx *authcontext.AuthContext
+	pm  projectmanager.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pm projectmanager.ProjectManager) *SecurityContext {
+func NewSecurityContext(ctx *authcontext.AuthContext, pm projectmanager.ProjectManager) *SecurityContext {
 	return &SecurityContext{
-		user: user,
-		pm:   pm,
+		ctx: ctx,
+		pm:  pm,
 	}
 }
 
 // IsAuthenticated returns true if the user has been authenticated
 func (s *SecurityContext) IsAuthenticated() bool {
-	return s.user != nil
+	if s.ctx == nil {
+		return false
+	}
+	return len(s.ctx.GetUsername()) > 0
 }
 
 // GetUsername returns the username of the authenticated user
@@ -46,7 +50,7 @@ func (s *SecurityContext) GetUsername() string {
 	if !s.IsAuthenticated() {
 		return ""
 	}
-	return s.user.Username
+	return s.ctx.GetUsername()
 }
 
 // IsSysAdmin returns whether the authenticated user is system admin
@@ -55,23 +59,11 @@ func (s *SecurityContext) IsSysAdmin() bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
-	return s.user.HasAdminRole == 1
+	return s.ctx.IsSysAdmin()
 }
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	// not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// public project
 	public, err := s.pm.IsPublic(projectIDOrName)
 	if err != nil {
@@ -91,6 +83,10 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	// system admin
 	if s.IsSysAdmin() {
 		return true
+	}
+
+	if name, ok := projectIDOrName.(string); ok {
+		return s.ctx.HasReadPerm(name)
 	}
 
 	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
@@ -118,21 +114,13 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
-	// project does not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
+	}
+
+	if name, ok := projectIDOrName.(string); ok {
+		return s.ctx.HasWritePerm(name)
 	}
 
 	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
@@ -159,21 +147,13 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
-	// project does not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
+	}
+
+	if name, ok := projectIDOrName.(string); ok {
+		return s.ctx.HasAllPerm(name)
 	}
 
 	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)

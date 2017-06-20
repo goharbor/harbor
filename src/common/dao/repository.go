@@ -107,6 +107,10 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 // in projectIDs
 func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
+	if len(projectIDs) == 0 {
+		return repositories, nil
+	}
+
 	_, err := GetOrmer().QueryTable(&models.RepoRecord{}).
 		Filter("project_id__in", projectIDs).
 		OrderBy("-pull_count").
