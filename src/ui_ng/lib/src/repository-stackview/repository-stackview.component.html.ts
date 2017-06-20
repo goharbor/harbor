@@ -1,9 +1,10 @@
 export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
 <div>
 <div class="row">
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="height: 24px;">  
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="height: 32px;">  
     <div class="row flex-items-xs-right option-right">
       <div class="flex-xs-middle">
+        <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
         <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)"></hbr-filter>  
         <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span>
       </div>

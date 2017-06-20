@@ -464,12 +464,13 @@
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} vulnerabilities across {{totalPackages}} packages."
+            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} packages with vulnerabilities across all {{totalPackages}} packages."
         },
         "SEVERITY": {
             "HIGH": "High level",
             "MEDIUM": "Medium level",
             "LOW": "Low level",
+            "NEGLIGIBLE": "Negligible",
             "UNKNOWN": "Unknown",
             "NONE": "None"
         },

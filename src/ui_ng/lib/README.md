@@ -80,6 +80,8 @@ If **projectId** is set to the id of specified project, then only show the repli
 
 **projectId** is used to specify which projects the repositories are from.
 
+**projectName** is used to generate the related commands for pushing images.
+
 **hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
 
 **hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
@@ -87,7 +89,7 @@ If **projectId** is set to the id of specified project, then only show the repli
 **tagClickEvent** is an @output event emitter for you to catch the tag click events.
 
 ```
-<hbr-repository-stackview [projectId]="..." [hasSignedIn]="..." [hasProjectAdminRole]="..." (tagClickEvent)="watchTagClickEvent($event)"></hbr-repository-stackview>
+<hbr-repository-stackview [projectId]="..." [projectName]="" [hasSignedIn]="..." [hasProjectAdminRole]="..." (tagClickEvent)="watchTagClickEvent($event)"></hbr-repository-stackview>
 
 ...
 

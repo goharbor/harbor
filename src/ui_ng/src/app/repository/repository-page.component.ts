@@ -27,6 +27,7 @@ export class RepositoryPageComponent implements OnInit {
   projectId: number;
   hasProjectAdminRole: boolean;
   hasSignedIn: boolean;
+  projectName: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -39,7 +40,9 @@ export class RepositoryPageComponent implements OnInit {
     this.projectId = this.route.snapshot.parent.params['id'];
     let resolverData = this.route.snapshot.parent.data;
     if (resolverData) {
-      this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+      let pro: Project = <Project>resolverData['projectResolver'];
+      this.hasProjectAdminRole = pro.has_project_admin_role;
+      this.projectName = pro.name;
     }
     this.hasSignedIn = this.session.getCurrentUser() !== null;
   }

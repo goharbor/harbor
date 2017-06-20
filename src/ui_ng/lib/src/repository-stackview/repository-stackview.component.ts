@@ -41,6 +41,7 @@ import { Tag, TagClickEvent } from '../service/interface';
 export class RepositoryStackviewComponent implements OnInit {
 
   @Input() projectId: number;
+  @Input() projectName: string = "unknown";
 
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
