@@ -185,7 +185,7 @@ Test Case - User View Logs
     #push pull delete images
     ${rc}=  Run And Return Rc  docker pull hello-world
     log  ${rc}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u test${d} -p Test1@34 ${ip}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u tester${d} -p Test1@34 ${ip}
     log to console  ${output}
     ${rc}=  Run And Return Rc  docker tag hello-world ${ip}/test${d}/hello-world
     Log  ${rc}
