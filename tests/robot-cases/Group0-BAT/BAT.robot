@@ -178,7 +178,7 @@ Test Case - User View Logs
     ${d}=   Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Create An New Project  test${d} 
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
     Log to console  ${ip}
