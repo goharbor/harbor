@@ -875,6 +875,70 @@ paths:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
+  /repositories/{repo_name}/tags/{tag}/scan:
+    post:
+      summary: Scan the image.
+      description: |
+        Trigger jobservice to call Clair API to scan the image identified by the repo_name and tag.  Only project admins have permission to scan images under the project.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successfully created the job to scan image.
+        401:
+          description: User needs to login or call the API with correct credentials.
+        403:
+          description: User doesn't have permission to perform the action.
+        404:
+          description: The image does not exist in Harbor.
+        503:
+          description: Harbor is not deployed with Clair.
+
+  /repositories/{repo_name}/tags/{tag}/vulnerability/detail:
+    get:
+      summary: Get vulnerability details of the image.
+      description: |
+        Call Clair API to get the vulnerability based on the previous successful scan.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successfully retrieved the vulnerabilities.
+          schema:
+            type: array
+            items:
+              $ref: '#definitions/VulnerabilityItem'
+        401:
+          description: User needs to login or call the API with correct credentials.
+        403:
+          description: User doesn't have permission to perform the action.
+        404:
+          description: The image does not exist in Harbor.
+        503:
+          description: Harbor is not deployed with Clair.
+
   /repositories/{repo_name}/signatures:
     get:
       summary: Get signature information of a repository
@@ -1734,7 +1798,7 @@ definitions:
         description: The count how many times the repository is pulled
       tags_count:
         type: integer
-        description: The count of tags in the repository		
+        description: The count of tags in the repository    
   ProjectReq:
     type: object
     properties:
@@ -2197,7 +2261,7 @@ definitions:
         description: Indicate whether there is a ca root cert file ready for download in the file system.
       harbor_version:
         type: string
-        description: The build version of Harbor.		
+        description: The build version of Harbor.    
   SystemInfo:
     type: object
     properties:
@@ -2321,6 +2385,46 @@ definitions:
       signature:
         type: object
         description: The signature of image, defined by RepoSignature. If it is null, the image is unsigned.
+      scan_overview:
+        type: object
+        description: The overview of the scan result.  This is an optional property.
+        properties:
+          digest:
+            type: string
+            description: The digest of the image.
+          scan_status:
+            type: string
+            description: The status of the scan job, it can be "pendnig", "running", "finished", "error".
+          job_id:
+            type: integer
+            description: The ID of the job on jobservice to scan the image.
+          severity:
+            type: integer
+            description: 0-Not scanned, 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+          details_key:
+            type: string
+            description: The top layer name of this image in Clair, this is for calling Clair API to get the vulnerability list of this image.
+          components:
+            type: object
+            description: The components overview of the image.
+            properties:
+              total:
+                type: integer
+                description: Total number of the components in this image.
+              summary:
+                description: List of number of components of different severities.
+                type: array
+                items:
+                  $ref: '#/definitions/ComponentOverviewEntry'
+  ComponentOverviewEntry:
+    type: object
+    properties:
+      severity:
+        type: integer
+        description: 1-None/Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+      count:
+        type: integer
+        description: number of the components with certain severity.
   Repository:
     type: object
     properties:
@@ -2351,3 +2455,24 @@ definitions:
       update_time:
         type: string
         description: The update time of repository.
+  VulnerabilityItem:
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of the vulnerability, normally it is the CVE ID
+      severity: 
+        type: integer
+        description: 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+      package:
+        type: string
+        description: The packge that introduces the vulnerability.
+      version:
+        type: string
+        description: The version of the package.
+      description:
+        type: string
+        description: The description of the vulnerability.
+      fixedVersion:
+        type: string
+        description: The version which the vulnerability is fixed, this is an optional property.
