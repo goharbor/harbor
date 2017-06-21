@@ -173,6 +173,110 @@ Test Case - Edit Token Expire
     Click Button  xpath=//config//div/button[1]
     Close Browser   
 
+Test Case - User View Logs
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Create An New Project  test${d} 
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
+    Log to console  ${ip}
+    #push pull delete images
+    ${rc}=  Run And Return Rc  docker pull hello-world
+    log  ${rc}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u test${d} -p Test1@34 ${HIP}
+    log to console  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker tag hello-world ${HIP}/test${d}/hello-world
+    log to console  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${HIP}/test${d}/hello-world
+    log to console  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${HIP}/test${d}/hello-world
+    log to console  ${output}
+    Sleep  1
+    delete image
+    Click Element  xpath=//project//h2
+    Click Element  xpath=//project//clr-dg-cell/a[contains(.,"test")]
+    Sleep  1
+    Click Element  xpath=//project-detail//clr-dg-cell/a[contains(.,"test")]
+    Sleep  1
+    Click Element  xpath=//clr-dg-action-overflow
+    Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
+    Sleep  1
+    Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
+    Sleep  1
+    Click Element  xpath=//harbor-shell//nav//section/a[1]
+    Click Element  xpath=//list-project//a[contains(.,"test")]
+    Sleep  1
+    Click Element  xpath=//project-detail//ul/li[3]
+    Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
+    Log to console  advanced button exist
+    Click Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
+    Sleep  1
+    Click Element  xpath=//project-detail//audit-log//clr-dropdown/button
+    Sleep  1
+    #Click Element  xpath=//project-detail//audit-log//clr-dropdwon//a
+    #pull log
+    #Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Pull")]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
+    #push log
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Push")]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"push")]
+    #create log
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Create")]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"create")]
+    #delete log
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Delete")]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
+    #others
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
+    #2nd
+    #pull
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Pull")]
+    Sleep  1
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
+    #push
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Push")]
+    Sleep  1
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"push")]
+    #create
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Create")]
+    Sleep  1
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"create")]
+    #delete
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Delete")]
+    Sleep  1
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
+    #others
+    Click Element  xpath=//audit-log//clr-dropdown/button
+    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
+    Input Text  xpath = //audit-log//grid-filter//input  harbor
+    Sleep  1
+    ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    Should be equal as integers  ${c}  0
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
