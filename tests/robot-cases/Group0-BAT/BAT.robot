@@ -196,7 +196,6 @@ Test Case - User View Logs
     log  ${rc}
     Sleep  1
    #delete image to add a delete log
-    Log to console  click project name
     Click Element  xpath=//project//clr-dg-cell/a[contains(.,"test")]
     Sleep  1
     Click Element  xpath=//project-detail//clr-dg-cell/a[contains(.,"test")]
@@ -204,6 +203,7 @@ Test Case - User View Logs
     Click Element  xpath=//clr-dg-action-overflow
     Log to console  click delete
     Sleep  1
+    Capture Page Screenshot  Deletebutton.png
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
     Log to console  confirm delete
