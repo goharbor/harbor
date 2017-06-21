@@ -180,6 +180,7 @@ Test Case - User View Logs
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Create An New Project  test${d} 
+    Close Browser
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
     Log to console  ${ip}
     #push pull delete images
@@ -194,7 +195,14 @@ Test Case - User View Logs
     ${rc}=  Run And Return Rc  docker pull ${ip}/test${d}/hello-world
     log  ${rc}
     Sleep  1
-    #delete image to add a delete log
+    Init Chrome Driver
+    Go To    ${HARBOR_URL}
+    Sleep  1
+    ${title}=  Get Title
+    Should Be Equal  ${title}  Harbor
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
+    Sleep  1
+   #delete image to add a delete log
     Click Element  xpath=//project//h2
     Click Element  xpath=//project//clr-dg-cell/a[contains(.,"test")]
     Sleep  1
