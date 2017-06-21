@@ -185,13 +185,13 @@ Test Case - User View Logs
     #push pull delete images
     ${rc}=  Run And Return Rc  docker pull hello-world
     log  ${rc}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u test${d} -p Test1@34 ${HIP}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u test${d} -p Test1@34 ${ip}
     log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker tag hello-world ${HIP}/test${d}/hello-world
+    ${rc}  ${output}=  Run And Return Rc And Output  docker tag hello-world ${ip}/test${d}/hello-world
     log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${HIP}/test${d}/hello-world
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/test${d}/hello-world
     log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${HIP}/test${d}/hello-world
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/test${d}/hello-world
     log to console  ${output}
     Sleep  1
     delete image
