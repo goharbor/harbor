@@ -202,10 +202,13 @@ Test Case - User View Logs
     Click Element  xpath=//project-detail//clr-dg-cell/a[contains(.,"test")]
     Sleep  1
     Click Element  xpath=//clr-dg-action-overflow
+    Log to console  click delete
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
+    Log to console  confirm delete
     Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
     Sleep  1
+    Log to console  back to project list page
     Click Element  xpath=//harbor-shell//nav//section/a[1]
     Click Element  xpath=//list-project//a[contains(.,"test")]
     Sleep  1
