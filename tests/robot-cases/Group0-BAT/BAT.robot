@@ -187,12 +187,12 @@ Test Case - User View Logs
     log  ${rc}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u test${d} -p Test1@34 ${ip}
     log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker tag hello-world ${ip}/test${d}/hello-world
-    log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/test${d}/hello-world
-    log to console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/test${d}/hello-world
-    log to console  ${output}
+    ${rc}=  Run And Return Rc  docker tag hello-world ${ip}/test${d}/hello-world
+    Log  ${rc}
+    ${rc}=  Run And Return Rc  docker push ${ip}/test${d}/hello-world
+    log  ${rc}
+    ${rc}=  Run And Return Rc  docker pull ${ip}/test${d}/hello-world
+    log  ${rc}
     Sleep  1
     #delete image to add a delete log
     Click Element  xpath=//project//h2
