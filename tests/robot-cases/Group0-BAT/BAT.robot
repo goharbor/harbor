@@ -194,7 +194,7 @@ Test Case - User View Logs
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/test${d}/hello-world
     log to console  ${output}
     Sleep  1
-    delete image
+    #delete image to add a delete log
     Click Element  xpath=//project//h2
     Click Element  xpath=//project//clr-dg-cell/a[contains(.,"test")]
     Sleep  1
