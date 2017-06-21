@@ -41,7 +41,9 @@ export class RecentLogComponent implements OnInit {
     @Input() withTitle: boolean = false;
 
     pageSize: number = DEFAULT_PAGE_SIZE;
-    currentPage: number = 0;
+    currentPage: number = 1;//Double bound to pagination component
+    currentPagePvt: number = 0; //Used to confirm whether page is changed
+    currentState: State;
 
     opTimeComparator: Comparator<AccessLogItem> = new CustomComparator<AccessLogItem>('op_time', 'date');
 
@@ -61,28 +63,45 @@ export class RecentLogComponent implements OnInit {
     }
 
     public doFilter(terms: string): void {
-        if (terms.trim() === "") {
-            //Clear search results
-            this.recentLogs = this.logsCache.data.filter(log => log.username != "");
-            return;
+        this.currentTerm = terms.trim();
+        //Trigger data loading and start from first page
+        this.loading = true;
+        this.currentPage = 1;
+        if (this.currentPagePvt === 1) {
+            //Force reloading
+            let st: State = this.currentState;
+            if (!st) {
+                st = {
+                    page: {}
+                };
+            }
+            st.page.from = 0;
+            st.page.to = this.pageSize - 1;
+            st.page.size = this.pageSize;
+
+            this.currentPagePvt = 0;//Reset pvt
+
+            this.load(st);
         }
-        this.currentTerm = terms;
-        this.recentLogs = this.logsCache.data.filter(log => this.isMatched(terms, log));
     }
 
     public refresh(): void {
-        this.currentTerm = "";
-        this.currentPage = 0;
-        this.load({});
+        this.doFilter("");
     }
 
     load(state: State) {
+        //Keep it for future filter
+        this.currentState = state;
+
         let pageNumber: number = this._calculatePage(state);
-        if (pageNumber !== this.currentPage) {
+        if (pageNumber !== this.currentPagePvt) {
             //load data
             let params: RequestQueryParams = new RequestQueryParams();
             params.set("page", '' + pageNumber);
             params.set("page_size", '' + this.pageSize);
+            if (this.currentTerm && this.currentTerm !== "") {
+                params.set('repository', this.currentTerm);
+            }
 
             this.loading = true;
             toPromise<AccessLog>(this.logService.getRecentLogs(params))
@@ -96,7 +115,7 @@ export class RecentLogComponent implements OnInit {
                     //Do customized sorting
                     this._doSorting(state);
 
-                    this.currentPage = pageNumber;
+                    this.currentPagePvt = pageNumber;
 
                     this.loading = false;
                 })
@@ -105,6 +124,8 @@ export class RecentLogComponent implements OnInit {
                     this.errorHandler.error(error);
                 });
         } else {
+            //Column sorting and filtering
+
             this.recentLogs = this.logsCache.data.filter(log => log.username != "");//Reset data
 
             //Do customized filter

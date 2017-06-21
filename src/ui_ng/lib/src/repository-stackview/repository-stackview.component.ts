@@ -30,7 +30,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { Subscription } from 'rxjs/Subscription';
-import { Tag } from '../service/interface';
+import { Tag, TagClickEvent } from '../service/interface';
 
 @Component({
   selector: 'hbr-repository-stackview',
@@ -41,10 +41,11 @@ import { Tag } from '../service/interface';
 export class RepositoryStackviewComponent implements OnInit {
 
   @Input() projectId: number;
+  @Input() projectName: string = "unknown";
 
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
-  @Output() tagClickEvent = new EventEmitter<Tag>();
+  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
 
   lastFilteredRepoName: string;
   repositories: Repository[];
@@ -70,6 +71,10 @@ export class RepositoryStackviewComponent implements OnInit {
 
   public get withNotary(): boolean {
     return this.systemInfo ? this.systemInfo.with_notary : false;
+  }
+
+  public get withClair(): boolean {
+    return this.systemInfo ? this.systemInfo.with_clair : false;
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
@@ -132,7 +137,7 @@ export class RepositoryStackviewComponent implements OnInit {
     this.retrieve();
   }
 
-  watchTagClickEvt(tag: Tag): void {
-    this.tagClickEvent.emit(tag);
+  watchTagClickEvt(tagClickEvt: TagClickEvent): void {
+    this.tagClickEvent.emit(tagClickEvt);
   }
 }

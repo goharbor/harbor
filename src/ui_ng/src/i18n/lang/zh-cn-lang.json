@@ -256,6 +256,7 @@
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
         "LOGS": "日志",
+        "OF": "共计",
         "ITEMS": "条记录",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
@@ -294,6 +295,7 @@
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
+        "OF": "共计",
         "ITEMS": "条记录",
         "CREATED_SUCCESS": "成功创建目标。",
         "UPDATED_SUCCESS": "成功更新目标。",
@@ -328,6 +330,7 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
+        "OF": "共计",
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
@@ -456,18 +459,19 @@
             "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
-            "COLUMN_LAYER": "引入层",
+            "COLUMN_DESCRIPTION": "简介",
             "FOOT_ITEMS": "项目",
             "FOOT_OF": "总共"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}缺陷。"
+            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
         },
         "SEVERITY": {
             "HIGH": "严重",
             "MEDIUM": "中等",
             "LOW": "一般",
+            "NEGLIGIBLE": "可忽略",
             "UNKNOWN": "未知",
             "NONE": "无"
         },
@@ -485,7 +489,9 @@
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
         "CREATOR_PREFIX": "创建者：",
+        "ANONYMITY": "匿名用户",
         "IMAGE_DETAILS": "镜像详情",
+        "DOCKER_VERSION": "Docker版本",
         "ARCHITECTURE": "架构",
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",

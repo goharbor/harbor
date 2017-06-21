@@ -11,13 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export class Tag {
-  digest: string;
-  name: string;
-  architecture: string;
-  os: string;
-  docker_version: string;
-  author: string;
-  created: Date;
-  signature?: {[key: string]: any | any[]}
+import { Component } from '@angular/core';
+
+@Component({
+    selector: 'log-page',
+    templateUrl: './log-page.component.html'
+})
+
+export class LogPageComponent {
 }

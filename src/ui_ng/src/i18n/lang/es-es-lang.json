@@ -256,6 +256,7 @@
         "CREATION_TIME": "Fecha de Inicio",
         "END_TIME": "Fecha de Finalización",
         "LOGS": "Logs",
+        "OF": "of",
         "ITEMS": "elemento(s)",
         "TOGGLE_ENABLE_TITLE": "Activar Regla",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "Después de la activación de esta regla, todos los repositorios de este proyecto serán replicados al registro de destino.\nPor favor, confirme para continuar.",
@@ -294,6 +295,7 @@
         "INVALID_NAME": "El nombre del endpoint no es válido.",
         "FAILED_TO_GET_TARGET": "Fallo al obtener el endpoint.",
         "CREATION_TIME": "Fecha de creación",
+        "OF": "of",
         "ITEMS": "elemento(s)",
         "CREATED_SUCCESS": "Endpoint creado satisfactoriamente.",
         "UPDATED_SUCCESS": "Endpoint actualizado satisfactoriamente.",
@@ -329,6 +331,7 @@
         "OS": "SO",
         "SHOW_DETAILS": "Mostrar Detalles",
         "REPOSITORIES": "Repositorios",
+        "OF": "of",
         "ITEMS": "elemento(s)",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
@@ -455,18 +458,19 @@
             "COLUMN_PACKAGE": "Package",
             "COLUMN_VERSION": "Current version",
             "COLUMN_FIXED": "Fixed in version",
-            "COLUMN_LAYER": "Introduced in layer",
+            "COLUMN_DESCRIPTION": "Description",
             "FOOT_ITEMS": "Items",
             "FOOT_OF": "of"
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} vulnerabilities across {{totalPackages}} packages."
+            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} packages with vulnerabilities across all {{totalPackages}} packages."
         },
         "SEVERITY": {
             "HIGH": "High level",
             "MEDIUM": "Medium level",
             "LOW": "Low level",
+            "NEGLIGIBLE": "Negligible",
             "UNKNOWN": "Unknown",
             "NONE": "None"
         },
@@ -484,7 +488,9 @@
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
         "CREATOR_PREFIX": "by",
+        "ANONYMITY": "anonymity",
         "IMAGE_DETAILS": "Image Details",
+        "DOCKER_VERSION": "Docker Version",
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",

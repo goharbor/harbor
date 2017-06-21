@@ -11,7 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnDestroy
+} from '@angular/core';
 
 import { TagService } from '../service/tag.service';
 
@@ -22,16 +32,22 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 
-import { Tag } from '../service/interface';
+import { Tag, TagClickEvent } from '../service/interface';
 
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
 
-import { toPromise, CustomComparator } from '../utils';
+import { toPromise, CustomComparator, VULNERABILITY_SCAN_STATUS } from '../utils';
 
 import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
+
+import { ScanningResultService } from '../service/index';
+
+import { Observable, Subscription } from 'rxjs/Rx';
+
+const STATE_CHECK_INTERVAL: number = 2000;//2s
 
 @Component({
   selector: 'hbr-tag',
@@ -39,7 +55,7 @@ import { State, Comparator } from 'clarity-angular';
   styles: [TAG_STYLE],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TagComponent implements OnInit {
+export class TagComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number;
   @Input() repoName: string;
@@ -49,9 +65,10 @@ export class TagComponent implements OnInit {
   @Input() hasProjectAdminRole: boolean;
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
+  @Input() withClair: boolean;
 
   @Output() refreshRepo = new EventEmitter<boolean>();
-  @Output() tagClickEvent = new EventEmitter<Tag>();
+  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
 
   tags: Tag[];
 
@@ -66,6 +83,10 @@ export class TagComponent implements OnInit {
 
   loading: boolean = false;
 
+  stateCheckTimer: Subscription;
+  tagsInScanning: { [key: string]: any } = {};
+  scanningTagCount: number = 0;
+
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
 
@@ -73,6 +94,7 @@ export class TagComponent implements OnInit {
     private errorHandler: ErrorHandler,
     private tagService: TagService,
     private translateService: TranslateService,
+    private scanningService: ScanningResultService,
     private ref: ChangeDetectorRef) { }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
@@ -108,11 +130,24 @@ export class TagComponent implements OnInit {
     }
 
     this.retrieve();
+
+    this.stateCheckTimer = Observable.timer(STATE_CHECK_INTERVAL, STATE_CHECK_INTERVAL).subscribe(() => {
+      if (this.scanningTagCount > 0) {
+        this.updateScanningStates();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.stateCheckTimer) {
+      this.stateCheckTimer.unsubscribe();
+    }
   }
 
   retrieve() {
     this.tags = [];
     this.loading = true;
+
     toPromise<Tag[]>(this.tagService
       .getTags(this.repoName))
       .then(items => {
@@ -169,7 +204,55 @@ export class TagComponent implements OnInit {
 
   onTagClick(tag: Tag): void {
     if (tag) {
-      this.tagClickEvent.emit(tag);
+      let evt: TagClickEvent = {
+        project_id: this.projectId,
+        repository_name: this.repoName,
+        tag_name: tag.name
+      };
+      this.tagClickEvent.emit(evt);
     }
+  }
+
+  scanTag(tagId: string): void {
+    //Double check
+    if (this.tagsInScanning[tagId]) {
+      return;
+    }
+    toPromise<any>(this.scanningService.startVulnerabilityScanning(this.repoName, tagId))
+      .then(() => {
+        //Add to scanning map
+        this.tagsInScanning[tagId] = tagId;
+        //Counting
+        this.scanningTagCount += 1;
+      })
+      .catch(error => this.errorHandler.error(error));
+  }
+
+  updateScanningStates(): void {
+    toPromise<Tag[]>(this.tagService
+      .getTags(this.repoName))
+      .then(items => {
+        console.debug("updateScanningStates called!");
+        //Reset the scanning states
+        this.tagsInScanning = {};
+        this.scanningTagCount = 0;
+
+        items.forEach(item => {
+          if (item.scan_overview) {
+            if (item.scan_overview.scan_status === VULNERABILITY_SCAN_STATUS.pending ||
+              item.scan_overview.scan_status === VULNERABILITY_SCAN_STATUS.running) {
+              this.tagsInScanning[item.name] = item.name;
+              this.scanningTagCount += 1;
+            }
+          }
+        });
+
+        this.tags = items;
+      })
+      .catch(error => {
+        this.errorHandler.error(error);
+      });
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 }

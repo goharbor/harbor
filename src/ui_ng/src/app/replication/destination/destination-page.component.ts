@@ -11,14 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export class CreateEditPolicy {
-  policyId: number;
-  name: string;
-  description: string;
-  enable: boolean;
-  targetId: number;
-  targetName: string;
-  endpointUrl: string;
-  username: string;
-  password: string;
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'destination-page',
+  templateUrl: 'destination-page.component.html'
+})
+export class DestinationPageComponent {
 }

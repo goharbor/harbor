@@ -44,3 +44,4 @@ src/ui_ng/aot/**/*.json
 **/*ngfactory.ts
 **/aot
 **/dist
+**/.bin
