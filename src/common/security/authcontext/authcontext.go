@@ -15,6 +15,7 @@
 package authcontext
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -93,29 +94,18 @@ func (a *AuthContext) HasAllPerm(project string) bool {
 
 // GetByToken ...
 func GetByToken(token string) (*AuthContext, error) {
-	endpoint := config.AdmiralEndpoint()
-	path := strings.TrimRight(endpoint, "/") + "/sso/auth-context"
-	req, err := http.NewRequest(http.MethodGet, path, nil)
+	req, err := http.NewRequest(http.MethodGet, buildCtxURL(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add(AuthTokenHeader, token)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	code, _, data, err := send(req)
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
+	if code != http.StatusOK {
 		return nil, fmt.Errorf("failed to get auth context by token: %d %s",
-			resp.StatusCode, string(data))
+			code, string(data))
 	}
 
 	ctx := &AuthContext{
@@ -126,4 +116,60 @@ func GetByToken(token string) (*AuthContext, error) {
 	}
 
 	return ctx, nil
+}
+
+// Login ...
+func Login(username, password string) (string, *AuthContext, error) {
+	data, err := json.Marshal(&struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}{
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return "", nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, buildLoginURL(), bytes.NewBuffer(data))
+	if err != nil {
+		return "", nil, err
+	}
+
+	code, header, data, err := send(req)
+	if code != http.StatusOK {
+		return "", nil, fmt.Errorf("failed to login with user %s: %d %s", username,
+			code, string(data))
+	}
+
+	ctx := &AuthContext{
+		Projects: make(map[string][]string),
+	}
+	if err = json.Unmarshal(data, ctx); err != nil {
+		return "", nil, err
+	}
+
+	return header.Get(AuthTokenHeader), ctx, nil
+}
+
+func send(req *http.Request) (int, http.Header, []byte, error) {
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	return resp.StatusCode, resp.Header, data, nil
+}
+
+func buildCtxURL() string {
+	return strings.TrimRight(config.AdmiralEndpoint(), "/") + "/sso/auth-context"
+}
+
+func buildLoginURL() string {
+	return strings.TrimRight(config.AdmiralEndpoint(), "/") + "/sso/login"
 }
