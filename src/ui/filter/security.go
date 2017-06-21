@@ -50,7 +50,7 @@ func Init() {
 	// integration with admiral
 	if config.WithAdmiral() {
 		reqCtxModifiers = []ReqCtxModifier{
-			&secretReqCtxModifier{},
+			&secretReqCtxModifier{config.SecretStore},
 			&tokenReqCtxModifier{},
 			&unauthorizedReqCtxModifier{}}
 		return
@@ -58,7 +58,7 @@ func Init() {
 
 	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
-		&secretReqCtxModifier{},
+		&secretReqCtxModifier{config.SecretStore},
 		&basicAuthReqCtxModifier{},
 		&sessionReqCtxModifier{},
 		&unauthorizedReqCtxModifier{}}
