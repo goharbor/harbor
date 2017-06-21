@@ -203,6 +203,7 @@ Test Case - User View Logs
     Sleep  1
     Click Element  xpath=//clr-dg-action-overflow
     Log to console  click delete
+    Sleep  1
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
     Log to console  confirm delete
