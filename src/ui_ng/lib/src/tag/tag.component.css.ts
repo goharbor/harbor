@@ -37,4 +37,9 @@ export const TAG_STYLE = `
   white-space: nowrap;
   text-overflow:ellipsis;
 }
+
+.copy-failed {
+  color: red;
+  margin-right: 6px;
+}
 `;

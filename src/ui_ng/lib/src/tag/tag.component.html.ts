@@ -4,11 +4,12 @@ export const TAG_TEMPLATE = `
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
     <div class="row col-md-12">
-        <textarea rows="3" (click)="selectAndCopy($event)">{{digestId}}</textarea>
+        <textarea rows="2" #digestTarget>{{digestId}}</textarea>
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="showTagManifestOpened = false">{{'BUTTON.OK' | translate}}</button>
+    <span class="copy-failed" [hidden]="!copyFailed">{{'TAG.COPY_ERROR' | translate}}</span>
+    <button type="button" class="btn btn-primary" [ngxClipboard]="digestTarget" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)">{{'BUTTON.COPY' | translate}}</button>
   </div>
 </clr-modal>
 
@@ -54,6 +55,6 @@ export const TAG_TEMPLATE = `
     <clr-dg-footer> 
       {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
       {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
-      <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
+      <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>`;

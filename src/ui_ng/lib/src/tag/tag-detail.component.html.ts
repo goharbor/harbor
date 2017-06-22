@@ -48,8 +48,8 @@ export const TAG_DETAIL_HTML: string = `
                         </div>
                     </div>
                     <div class="second-column">
-                        <div>{{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
-                        <div class="second-row">{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                        <div>{{highCount}} {{getPackageText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
+                        <div class="second-row">{{mediumCount}} {{getPackageText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
                     </div>
                     <div class="third-column">
                         <div>
@@ -60,8 +60,8 @@ export const TAG_DETAIL_HTML: string = `
                         </div>
                     </div>
                     <div class="fourth-column">
-                        <div>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
-                        <div class="second-row">{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
+                        <div>{{lowCount}} {{getPackageText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
+                        <div class="second-row">{{unknownCount}} {{getPackageText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
                     </div>
                 </div>
             </div>
