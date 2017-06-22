@@ -183,8 +183,8 @@ func (c *Checker) Enter() (string, error) {
 func (c *Checker) enter() (string, error) {
 	project, err := getProject(c.project)
 	if err != nil {
-		c.logger.Infof("failed to get project %s from %s: %v", c.project, c.srcURL, err)
-		return "", nil
+		c.logger.Errorf("failed to get project %s from %s: %v", c.project, c.srcURL, err)
+		return "", err
 	}
 
 	err = c.createProject(project)
@@ -232,7 +232,7 @@ func getProject(name string) (*models.Project, error) {
 	}
 
 	list := []*models.Project{}
-	if err = json.Unmarshal(data, list); err != nil {
+	if err = json.Unmarshal(data, &list); err != nil {
 		return nil, err
 	}
 
