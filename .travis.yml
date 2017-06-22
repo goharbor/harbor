@@ -74,6 +74,7 @@ before_script:
   - sudo chmod 777 /tmp/registry.db
 
 script:
+  - sudo cp ./src/ui_ng/package.json ./src/ui_ng/src
   - sudo mkdir -p /etc/ui/ca/
   - sudo mv ./tests/ca.crt /etc/ui/ca/
   - sudo mkdir -p /harbor
