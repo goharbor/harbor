@@ -18,7 +18,8 @@ if [ ! -z "$npm_proxy" -a "$npm_proxy" != " " ]; then
 	npm config set proxy $npm_proxy
 fi
 
-cp ./src/package.json .
+mv ./src/package.json ./
+cat ./package.json
 npm install
 
 ./node_modules/.bin/ngc -p tsconfig-aot.json
