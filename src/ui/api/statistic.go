@@ -95,7 +95,7 @@ func (s *StatisticAPI) Get() {
 		statistic[TRC] = n
 	} else {
 		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
-			Member: &models.Member{
+			Member: &models.MemberQuery{
 				Name: s.username,
 			},
 		})

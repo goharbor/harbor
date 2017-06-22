@@ -116,7 +116,7 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 func (p *ProjectManager) GetByMember(username string) (
 	[]*models.Project, error) {
 	return p.GetAll(&models.ProjectQueryParam{
-		Member: &models.Member{
+		Member: &models.MemberQuery{
 			Name: username,
 		},
 	})
