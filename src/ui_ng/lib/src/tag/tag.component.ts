@@ -20,6 +20,7 @@ import {
   EventEmitter,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  ElementRef,
   OnDestroy
 } from '@angular/core';
 
@@ -87,8 +88,12 @@ export class TagComponent implements OnInit, OnDestroy {
   tagsInScanning: { [key: string]: any } = {};
   scanningTagCount: number = 0;
 
+  copyFailed: boolean = false;
+
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
+
+  @ViewChild('digestTarget') textInput: ElementRef;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -195,13 +200,10 @@ export class TagComponent implements OnInit, OnDestroy {
       this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
       this.digestId = tag.digest;
       this.showTagManifestOpened = true;
+      this.copyFailed = false;
     }
   }
-
-  selectAndCopy($event: any) {
-    $event.target.select();
-  }
-
+  
   onTagClick(tag: Tag): void {
     if (tag) {
       let evt: TagClickEvent = {
@@ -254,5 +256,20 @@ export class TagComponent implements OnInit, OnDestroy {
       });
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 1000);
+  }
+
+  onSuccess($event: any): void {
+    this.copyFailed = false;
+    //Directly close dialog
+    this.showTagManifestOpened = false;
+  }
+
+  onError($event: any): void {
+    //Show error
+    this.copyFailed = true;
+    //Select all text
+    if(this.textInput){
+      this.textInput.nativeElement.select();
+    }
   }
 }

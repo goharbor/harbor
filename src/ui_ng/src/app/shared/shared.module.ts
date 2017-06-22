@@ -63,8 +63,8 @@ const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
   langCookieKey: "harbor-lang",
   langMessageLoader: "http",
-  langMessagePathForHttpLoader: "src/i18n/lang/",
-  langMessageFileSuffixForHttpLoader: "-lang.json",
+  langMessagePathForHttpLoader: "i18n/lang/",
+  langMessageFileSuffixForHttpLoader: "-lang.json"
 };
 
 @NgModule({

@@ -31,7 +31,8 @@
         "MORE_INFO": "更多信息...",
         "YES": "是",
         "NO": "否",
-        "NEGATIVE": "否"
+        "NEGATIVE": "否",
+        "COPY": "拷贝"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -456,7 +457,7 @@
             "PLACEHOLDER": "没有扫描结果！",
             "COLUMN_ID": "缺陷码",
             "COLUMN_SEVERITY": "严重度",
-            "COLUMN_PACKAGE": "组件",
+            "COLUMN_PACKAGE": "组",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
@@ -477,7 +478,9 @@
         },
         "SINGULAR": "缺陷",
         "PLURAL": "缺陷",
-        "PLACEHOLDER": "过滤缺陷"
+        "PLACEHOLDER": "过滤缺陷",
+        "PACKAGE": "个组件有",
+        "PACKAGES": "个组件有"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",
@@ -496,7 +499,8 @@
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
         "IMAGE_VULNERABILITIES": "镜像缺陷",
-        "PLACEHOLDER": "未发现任何标签!"
+        "PLACEHOLDER": "未发现任何标签!",
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

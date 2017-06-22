@@ -144,7 +144,7 @@ describe('TagDetailComponent (inline template)', () => {
       expect(el).toBeTruthy();
       let el2: HTMLElement = el.querySelector('div');
       expect(el2).toBeTruthy();
-      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.SEVERITY.HIGH VULNERABILITY.PLURAL");
+      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.PACKAGES VULNERABILITY.SEVERITY.HIGH VULNERABILITY.PLURAL");
     });
   }));
 

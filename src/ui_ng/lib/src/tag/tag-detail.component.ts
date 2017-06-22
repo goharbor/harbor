@@ -75,8 +75,12 @@ export class TagDetailComponent implements OnInit {
         this.backEvt.emit(this.tagId);
     }
 
+    getPackageText(count: number): string {
+        return count > 1 ? "VULNERABILITY.PACKAGES" : "VULNERABILITY.PACKAGE";
+    }
+
     public get author(): string {
-        return this.tagDetails && this.tagDetails.author? this.tagDetails.author: 'TAG.ANONYMITY';
+        return this.tagDetails && this.tagDetails.author ? this.tagDetails.author : 'TAG.ANONYMITY';
     }
 
     public get highCount(): number {
