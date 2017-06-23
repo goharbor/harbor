@@ -86,3 +86,13 @@ type ImageScanReq struct {
 	Repo string `json:"repository"`
 	Tag  string `json:"tag"`
 }
+
+// VulnerabilityItem is an item in the vulnerability result returned by vulnerability details API.
+type VulnerabilityItem struct {
+	ID          string   `json:"id"`
+	Severity    Severity `json:"severity"`
+	Pkg         string   `json:"package"`
+	Version     string   `json:"version"`
+	Description string   `json:"description"`
+	Fixed       string   `json:"fixedVersion,omitempty"`
+}

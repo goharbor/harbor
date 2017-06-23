@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 	"github.com/vmware/harbor/src/ui/projectmanager/db"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 )
 
 const (
@@ -96,10 +97,16 @@ func initSecretStore() {
 
 func initProjectManager() {
 	if !WithAdmiral() {
+		// standalone
 		log.Info("initializing the project manager based on database...")
 		GlobalProjectMgr = &db.ProjectManager{}
+		return
 	}
-	// TODO create project manager based on pms
+
+	// integration with admiral
+	// TODO create project manager based on pms using service account
+	log.Info("initializing the project manager based on PMS...")
+	GlobalProjectMgr = pms.NewProjectManager(AdmiralEndpoint(), "")
 }
 
 // Load configurations
@@ -321,6 +328,11 @@ func WithClair() bool {
 		return false
 	}
 	return cfg[common.WithClair].(bool)
+}
+
+// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
+func ClairEndpoint() string {
+	return "http://clair:6060"
 }
 
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.

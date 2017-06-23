@@ -87,6 +87,7 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
+	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	beego.Router("/api/search/", &SearchAPI{})

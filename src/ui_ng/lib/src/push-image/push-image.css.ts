@@ -39,4 +39,8 @@ export const PUSH_IMAGE_STYLE: string = `
     min-width: 360px;
     max-width: 720px;
 }
+
+.btn-font {
+    font-size: 14px !important;
+}
 `;
