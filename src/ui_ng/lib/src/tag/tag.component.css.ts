@@ -13,6 +13,7 @@ export const TAG_STYLE = `
 
 :host >>> .datagrid {
   margin: 0;
+  border-bottom: none;
 }
 
 :host >>> .datagrid-placeholder {
