@@ -11,11 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-export class MyMissingTranslationHandler implements MissingTranslationHandler {
-    handle(params: MissingTranslationHandlerParams) {
-        const missingText = "{Miss Harbor Text}";
-        return params.key || missingText;
-    }
+@Component({
+  selector: 'replicaton',
+  templateUrl: 'replication-page.component.html'
+})
+export class ReplicationPageComponent implements OnInit {
+  projectIdentify: string | number;
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    this.projectIdentify = +this.route.snapshot.parent.params['id'];
+  }
 }

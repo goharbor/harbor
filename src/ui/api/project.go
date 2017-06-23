@@ -36,11 +36,6 @@ type ProjectAPI struct {
 	project *models.Project
 }
 
-type projectReq struct {
-	ProjectName string `json:"project_name"`
-	Public      int    `json:"public"`
-}
-
 const projectNameMaxLen int = 30
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
@@ -95,7 +90,7 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
 		return
 	}
-	var pro projectReq
+	var pro *models.ProjectRequest
 	p.DecodeJSONReq(&pro)
 	err = validateProjectReq(pro)
 	if err != nil {
@@ -104,10 +99,10 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	exist, err := p.ProjectMgr.Exist(pro.ProjectName)
+	exist, err := p.ProjectMgr.Exist(pro.Name)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			pro.ProjectName, err))
+			pro.Name, err))
 		return
 	}
 	if exist {
@@ -116,9 +111,13 @@ func (p *ProjectAPI) Post() {
 	}
 
 	projectID, err := p.ProjectMgr.Create(&models.Project{
-		Name:      pro.ProjectName,
-		Public:    pro.Public,
-		OwnerName: p.SecurityCtx.GetUsername(),
+		Name:                                       pro.Name,
+		Public:                                     pro.Public,
+		OwnerName:                                  p.SecurityCtx.GetUsername(),
+		EnableContentTrust:                         pro.EnableContentTrust,
+		PreventVulnerableImagesFromRunning:         pro.PreventVulnerableImagesFromRunning,
+		PreventVulnerableImagesFromRunningSeverity: pro.PreventVulnerableImagesFromRunningSeverity,
+		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
@@ -136,7 +135,7 @@ func (p *ProjectAPI) Post() {
 			models.AccessLog{
 				Username:  p.SecurityCtx.GetUsername(),
 				ProjectID: projectID,
-				RepoName:  pro.ProjectName + "/",
+				RepoName:  pro.Name + "/",
 				RepoTag:   "N/A",
 				Operation: "create",
 				OpTime:    time.Now(),
@@ -349,7 +348,7 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 		return
 	}
 
-	var req projectReq
+	var req *models.ProjectRequest
 	p.DecodeJSONReq(&req)
 	if req.Public != 0 && req.Public != 1 {
 		p.HandleBadRequest("public should be 0 or 1")
@@ -431,9 +430,9 @@ func (p *ProjectAPI) Logs() {
 }
 
 // TODO move this to package models
-func validateProjectReq(req projectReq) error {
-	pn := req.ProjectName
-	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
+func validateProjectReq(req *models.ProjectRequest) error {
+	pn := req.Name
+	if isIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
 		return fmt.Errorf("Project name is illegal in length. (greater than 2 or less than 30)")
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)

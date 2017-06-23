@@ -3,7 +3,8 @@ import 'rxjs/add/observable/of';
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http, URLSearchParams } from '@angular/http';
-import { HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { RequestQueryParams } from './RequestQueryParams';
 
 import {
     VulnerabilityItem,
@@ -27,7 +28,7 @@ export abstract class ScanningResultService {
      * 
      * @memberOf ScanningResultService
      */
-    abstract getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary;
+    abstract getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary;
 
     /**
      * Get the detailed vulnerabilities scanning results.
@@ -38,30 +39,60 @@ export abstract class ScanningResultService {
      * 
      * @memberOf ScanningResultService
      */
-    abstract getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[];
+    abstract getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[];
+
+
+    /**
+     * Start a new vulnerability scanning
+     * 
+     * @abstract
+     * @param {string} repoName
+     * @param {string} tagId
+     * @returns {(Observable<any> | Promise<any> | any)}
+     * 
+     * @memberOf ScanningResultService
+     */
+    abstract startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any;
 }
 
 @Injectable()
 export class ScanningResultDefaultService extends ScanningResultService {
+    _baseUrl: string = '/api/repositories';
+
     constructor(
         private http: Http,
         @Inject(SERVICE_CONFIG) private config: IServiceConfig) {
         super();
+        if (this.config && this.config.vulnerabilityScanningBaseEndpoint) {
+            this._baseUrl = this.config.vulnerabilityScanningBaseEndpoint;
+        }
     }
 
-    getVulnerabilityScanningSummary(tagId: string): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary {
-        if (!tagId || tagId.trim() === '') {
+    getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }
 
         return Observable.of({});
     }
 
-    getVulnerabilityScanningResults(tagId: string): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[] {
-        if (!tagId || tagId.trim() === '') {
+    getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[] {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }
 
-        return Observable.of([]);
+        return this.http.get(`${this._baseUrl}/${repoName}/tags/${tagId}/vulnerability/details`, buildHttpRequestOptions(queryParams)).toPromise()
+            .then(response => response.json() as VulnerabilityItem[])
+            .catch(error => Promise.reject(error));
+    }
+
+    startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
+            return Promise.reject('Bad argument');
+        }
+
+        return this.http.post(`${this._baseUrl}/${repoName}/tags/${tagId}/scan`, null).toPromise()
+            .then(() => { return true })
+            .catch(error => Promise.reject(error));
     }
 }

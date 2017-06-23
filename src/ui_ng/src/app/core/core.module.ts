@@ -20,21 +20,21 @@ import { ClarityModule } from 'clarity-angular';
 import { CookieModule } from 'ngx-cookie';
 
 @NgModule({
-  imports: [
-      BrowserModule,
-      FormsModule,
-      HttpModule,
-      ClarityModule.forRoot(),
-      CookieModule.forRoot(),
-      BrowserAnimationsModule
-  ],
-  exports: [
-      BrowserModule,
-      FormsModule,
-      HttpModule,
-      ClarityModule,
-      BrowserAnimationsModule
-  ]
+    imports: [
+        BrowserModule,
+        FormsModule,
+        HttpModule,
+        ClarityModule.forRoot(),
+        CookieModule.forRoot(),
+        BrowserAnimationsModule
+    ],
+    exports: [
+        BrowserModule,
+        FormsModule,
+        HttpModule,
+        ClarityModule,
+        BrowserAnimationsModule
+    ]
 })
 export class CoreModule {
 }

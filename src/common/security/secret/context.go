@@ -16,6 +16,7 @@ package secret
 
 import (
 	"github.com/vmware/harbor/src/common/secret"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // SecurityContext implements security.Context interface based on secret store
@@ -35,9 +36,15 @@ func NewSecurityContext(secret string, store *secret.Store) *SecurityContext {
 // IsAuthenticated returns true if the secret is valid
 func (s *SecurityContext) IsAuthenticated() bool {
 	if s.store == nil {
+		log.Debug("secret store is nil")
 		return false
 	}
-	return s.store.IsValid(s.secret)
+	valid := s.store.IsValid(s.secret)
+	if !valid {
+		log.Debugf("invalid secret: %s", s.secret)
+	}
+
+	return valid
 }
 
 // GetUsername returns the corresponding username of the secret

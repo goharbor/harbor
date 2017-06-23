@@ -762,19 +762,23 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
+	res := []*models.VulnerabilityItem{}
 	overview, err := dao.GetImgScanOverview(digest)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
 		return
 	}
-	clairClient := clair.NewClient(config.ClairEndpoint(), nil)
-	log.Debugf("The key for getting details: %s", overview.DetailsKey)
-	details, err := clairClient.GetResult(overview.DetailsKey)
-	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
-		return
+	if overview != nil {
+		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
+		log.Debugf("The key for getting details: %s", overview.DetailsKey)
+		details, err := clairClient.GetResult(overview.DetailsKey)
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+			return
+		}
+		res = transformVulnerabilities(details)
 	}
-	ra.Data["json"] = transformVulnerabilities(details)
+	ra.Data["json"] = res
 	ra.ServeJSON()
 }
 
