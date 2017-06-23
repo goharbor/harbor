@@ -45,7 +45,7 @@ export interface Tag extends Base {
     author: string;
     created: Date;
     signature?: string;
-    vulnerability?: VulnerabilitySummary;
+    scan_overview?: VulnerabilitySummary;
 }
 
 /**
@@ -145,6 +145,7 @@ export interface AccessLogItem {
  * 
  */
 export interface SystemInfo {
+    with_clair?: boolean;
     with_notary?: boolean;
     with_admiral?: boolean;
     admiral_endpoint?: string;
@@ -156,9 +157,8 @@ export interface SystemInfo {
     harbor_version?: string;
 }
 
-//Not finalized yet
 export enum VulnerabilitySeverity {
-    NONE, UNKNOWN, LOW, MEDIUM, HIGH
+    _SEVERITY, NONE, UNKNOWN, LOW, MEDIUM, HIGH
 }
 
 export interface VulnerabilityBase {
@@ -170,16 +170,31 @@ export interface VulnerabilityBase {
 
 export interface VulnerabilityItem extends VulnerabilityBase {
     fixedVersion: string;
-    layer: string;
+    layer?: string;
     description: string;
 }
 
 export interface VulnerabilitySummary {
-    total_package: number;
-    package_with_none: number;
-    package_with_high?: number;
-    package_with_medium?: number;
-    package_With_low?: number;
-    package_with_unknown?: number;
-    complete_timestamp: Date;
+    image_digest?: string;
+    scan_status: string;
+    job_id?: number;
+    severity: VulnerabilitySeverity;
+    components: VulnerabilityComponents;
+    update_time: Date; //Use as complete timestamp
+}
+
+export interface VulnerabilityComponents {
+    total: number;
+    summary: VulnerabilitySeverityMetrics[];
+}
+
+export interface VulnerabilitySeverityMetrics {
+    severity: VulnerabilitySeverity;
+    count: number;
+}
+
+export interface TagClickEvent {
+    project_id: string | number;
+    repository_name: string;
+    tag_name: string;
 }

@@ -60,6 +60,7 @@ export const DefaultServiceConfig: IServiceConfig = {
   targetBaseEndpoint: "/api/targets",
   replicationRuleEndpoint: "/api/policies/replication",
   replicationJobEndpoint: "/api/jobs/replication",
+  vulnerabilityScanningBaseEndpoint: "/api/repositories",
   enablei18Support: false,
   defaultLang: DEFAULT_LANG,
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,

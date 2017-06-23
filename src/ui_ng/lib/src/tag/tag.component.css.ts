@@ -30,4 +30,16 @@ export const TAG_STYLE = `
 :host >>> .datagrid .datagrid-body .datagrid-row-master {
   background-color: #eee;
 }
+
+.truncated {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow:ellipsis;
+}
+
+.copy-failed {
+  color: red;
+  margin-right: 6px;
+}
 `;
