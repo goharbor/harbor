@@ -60,6 +60,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   projectName: string = "";
 
   subscription: Subscription;
+  loading: boolean = true;
 
   constructor(
     private projectService: ProjectService,
@@ -122,13 +123,19 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
+    this.loading = true;
+
     this.projectService
       .listProjects(name, isPublic, page, pageSize)
       .subscribe(
       response => {
         this.changedProjects = response.json();
+        this.loading = false;
       },
-      error => this.messageHandlerService.handleError(error)
+      error => {
+        this.loading = false;
+        this.messageHandlerService.handleError(error);
+      }
       );
   }
 

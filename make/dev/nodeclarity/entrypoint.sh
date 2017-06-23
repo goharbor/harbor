@@ -18,6 +18,7 @@ if [ ! -z "$npm_proxy" -a "$npm_proxy" != " " ]; then
 	npm config set proxy $npm_proxy
 fi
 
+rm -rf ./node_modules
 mv /harbor_resources/node_modules ./
 
 cat ./package.json

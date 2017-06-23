@@ -30,6 +30,7 @@ import { State } from 'clarity-angular';
 export class ListProjectComponent {
   _filterType: string = ProjectTypes[0];
 
+  @Input() loading: boolean = true;
   @Input() projects: Project[];
   @Input()
   get filteredType(): string {

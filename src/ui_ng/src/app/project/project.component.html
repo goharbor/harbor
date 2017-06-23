@@ -25,6 +25,6 @@
                 </span>
             </div>
         </div>
-        <list-project [projects]="changedProjects" [filteredType]="projectTypes[currentFilteredType]" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)"></list-project>
+        <list-project [projects]="changedProjects" [filteredType]="projectTypes[currentFilteredType]" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)" [loading]="loading"></list-project>
     </div>
 </div>

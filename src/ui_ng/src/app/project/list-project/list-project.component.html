@@ -1,4 +1,4 @@
-<clr-datagrid (clrDgRefresh)="refresh($event)">
+<clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="loading">
     <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="showRoleInfo">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
