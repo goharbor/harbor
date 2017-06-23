@@ -117,6 +117,10 @@ func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
 		query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
 	}
 
+	if len(query) == 0 {
+		query = "?expand=true"
+	}
+
 	path := "/projects" + query
 	data, err := p.send(http.MethodGet, path, nil)
 	if err != nil {
@@ -129,7 +133,6 @@ func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
 // parse the response of GET /projects?xxx to project list
 func parse(b []byte) ([]*project, error) {
 	documents := &struct {
-		//TotalCount    int64               `json:"totalCount"`
 		//DocumentCount int64               `json:"documentCount"`
 		Projects map[string]*project `json:"documents"`
 	}{}
@@ -292,25 +295,10 @@ func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (str
 
 // GetPublic ...
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
-	m := map[string]string{
-		"isPublic": "true",
-	}
-
-	projects, err := p.filter(m)
-	if err != nil {
-		return nil, err
-	}
-
-	list := []*models.Project{}
-	for _, p := range projects {
-		project, err := convert(p)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, project)
-	}
-
-	return list, nil
+	t := true
+	return p.GetAll(&models.ProjectQueryParam{
+		Public: &t,
+	})
 }
 
 // GetByMember ...
@@ -375,12 +363,37 @@ func (p *ProjectManager) Update(projectIDOrName interface{}, project *models.Pro
 
 // GetAll ...
 func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error) {
-	return nil, errors.New("get all projects is unsupported")
+	m := map[string]string{}
+	if query != nil {
+		if len(query.Name) > 0 {
+			m["name"] = query.Name
+		}
+		if query.Public != nil {
+			m["isPublic"] = strconv.FormatBool(*query.Public)
+		}
+	}
+
+	projects, err := p.filter(m)
+	if err != nil {
+		return nil, err
+	}
+
+	list := []*models.Project{}
+	for _, p := range projects {
+		project, err := convert(p)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, project)
+	}
+
+	return list, nil
 }
 
 // GetTotal ...
 func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
-	return 0, errors.New("get total of projects is unsupported")
+	projects, err := p.GetAll(query)
+	return int64(len(projects)), err
 }
 
 // GetHasReadPerm returns all projects that user has read perm to

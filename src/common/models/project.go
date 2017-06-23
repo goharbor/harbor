@@ -99,3 +99,13 @@ type BaseProjectCollection struct {
 	Public bool
 	Member string
 }
+
+// ProjectRequest holds informations that need for creating project API
+type ProjectRequest struct {
+	Name                                       string `json:"project_name"`
+	Public                                     int    `json:"public"`
+	EnableContentTrust                         bool   `json:"enable_content_trust"`
+	PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
+	PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
+	AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
+}

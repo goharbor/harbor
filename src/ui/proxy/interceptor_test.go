@@ -111,7 +111,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 	require.Nil(t, err)
 	defer func(id int64) {
 		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
+			t.Logf("failed to delete project %d: %v", id, err)
 		}
 	}(id)
 	project, err := pm.Get(id)
