@@ -12,10 +12,12 @@
 #							golang:1.7.3
 # compile_adminserver, compile_ui, compile_jobservice: compile specific binary
 #
-# build: 		build Harbor docker images (defuault: build_photon)
+# build: 		build Harbor docker images (default: build_photon)
 #			for example: make build -e BASEIMAGE=photon
 # build_photon:	build Harbor docker images from photon baseimage
 #
+# build_postgresql: build postgresql images basaed on photon os
+#       make build -e BASEIMAGE=postgresql
 # install:		include compile binarys, build images, prepare specific \
 #				version composefile and startup Harbor instance
 #
@@ -165,6 +167,10 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
 
+DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH_COMMON)/postgresql
+DOCKERFILENAME_POSTGRESQL=Dockerfile
+
+
 # docker image name
 DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
 DOCKERIMAGENAME_UI=vmware/harbor-ui
@@ -172,7 +178,7 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 DOCKERIMAGENAME_CLATIRY=vmware/harbor-clarity-ui-builder
-
+DOCKERIMAGENAME_POSTGRESQL=vmware/harbor-postgresql
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
 DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
@@ -236,7 +242,7 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) postgres:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) vmware/harbor-postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -304,7 +310,10 @@ build_common: version
 
 build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
-
+build_postgresql:
+	@echo "buildging postgresql container for photon..."
+	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(VERSIONTAG) .
+	@echo "Done."
 build: build_$(BASEIMAGE)
 
 modify_composefile:
@@ -359,7 +368,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
 		$(DOCKERPULL) quay.io/coreos/clair:$(CLAIRVERSION); \
-		$(DOCKERPULL) postgres:$(CLAIRDBVERSION); \
+		$(DOCKERPULL) vmware/harbor-postgresql:$(CLAIRDBVERSION); \
 	fi
 
 	@echo "saving harbor docker image"
