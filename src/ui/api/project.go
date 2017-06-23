@@ -37,8 +37,12 @@ type ProjectAPI struct {
 }
 
 type projectReq struct {
-	ProjectName string `json:"project_name"`
-	Public      int    `json:"public"`
+	ProjectName                                string `json:"project_name"`
+	Public                                     int    `json:"public"`
+	EnableContentTrust                         bool   `json:"enable_content_trust"`
+	PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
+	PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
+	AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
 }
 
 const projectNameMaxLen int = 30
@@ -116,9 +120,13 @@ func (p *ProjectAPI) Post() {
 	}
 
 	projectID, err := p.ProjectMgr.Create(&models.Project{
-		Name:      pro.ProjectName,
-		Public:    pro.Public,
-		OwnerName: p.SecurityCtx.GetUsername(),
+		Name:                                       pro.ProjectName,
+		Public:                                     pro.Public,
+		OwnerName:                                  p.SecurityCtx.GetUsername(),
+		EnableContentTrust:                         pro.EnableContentTrust,
+		PreventVulnerableImagesFromRunning:         pro.PreventVulnerableImagesFromRunning,
+		PreventVulnerableImagesFromRunningSeverity: pro.PreventVulnerableImagesFromRunningSeverity,
+		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
