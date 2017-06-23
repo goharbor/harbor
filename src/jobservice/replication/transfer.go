@@ -251,14 +251,7 @@ func getProject(name string) (*models.Project, error) {
 }
 
 func (c *Checker) createProject(project *models.Project) error {
-	pro := struct {
-		Name                                       string `json:"project_name"`
-		Public                                     int    `json:"public"`
-		EnableContentTrust                         bool   `json:"enable_content_trust"`
-		PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
-		PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
-		AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
-	}{
+	pro := &models.ProjectRequest{
 		Name:                                       project.Name,
 		Public:                                     project.Public,
 		EnableContentTrust:                         project.EnableContentTrust,
