@@ -16,18 +16,20 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
 CLUSTERCONF="/etc/mysql-cluster.cnf"
-#MYCONF="/etc/my.cnf"
+MYCONF="/etc/my.cnf"
 echo "" > $CLUSTERCONF
-#echo "" > $MYCONF
+echo -e "[mysqld]\nndbcluster\nndb-connectstring=\n\n[mysql_cluster]\nndb-connectstring=" > $MYCONF
 IFS=$'\n'
 COUNT=1
 NDBCOUNT=0
+NDBMANAGER=""
 for line in `cat /etc/hosts |grep db`
 do
 IFS=$' '
 ary=(`echo $line | tr -s '	' ' '`)
 if [ `echo ${ary[1]} | grep 'mgmd'` ] ; then
 	echo -e "[ndb_mgmd]\nNodeId=$COUNT\nhostname=${ary[1]}\ndatadir=/var/lib/mysql\n" >> $CLUSTERCONF
+	NDBMANAGER=$NDBMANAGER${ary[1]}","
 elif [ `echo ${ary[1]} | grep 'ndbd'` ] ; then
 	echo -e "[ndbd]\nNodeId=$COUNT\nhostname=${ary[1]}\ndatadir=/var/lib/mysql\nServerPort=50501\n"  >> $CLUSTERCONF
 	NDBCOUNT=$(( NDBCOUNT + 1 ))
@@ -37,6 +39,7 @@ fi
 COUNT=$(( COUNT + 1 ))
 done
 
+sed -i "s/ndb-connectstring=/ndb-connectstring=$NDBMANAGER/g" $MYCONF
 sed -i "1s/^/[ndbd default]\nNoOfReplicas=$NDBCOUNT\nDataMemory=80M\nIndexMemory=18M\n/" $CLUSTERCONF
 
 set -e
