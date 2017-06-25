@@ -99,6 +99,12 @@ CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
 CLARITYSEEDPATH=/harbor_ui
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
+#claster parameters
+CLUSTERFLAG=false
+NODEIP=
+DBBACKENDIP=192.168.0.1
+INITFLAG=false
+
 # docker parameters
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
@@ -180,6 +186,7 @@ DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
+DOCKERCOMPOSECLUSTERTPLFILENAME=docker-compose-cluster.tpl
 
 # version prepare
 VERSIONFILEPATH=$(CURDIR)
