@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 	"github.com/vmware/harbor/src/ui/projectmanager/db"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 )
 
 const (
@@ -40,9 +41,8 @@ var (
 	SecretStore *secret.Store
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
-	// DBProjectManager is the project manager based on database,
-	// it is initialized only the deploy mode is standalone
-	DBProjectManager projectmanager.ProjectManager
+	// GlobalProjectMgr is initialized based on the deploy mode
+	GlobalProjectMgr projectmanager.ProjectManager
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
 )
@@ -73,8 +73,8 @@ func Init() error {
 	// init secret store
 	initSecretStore()
 
-	// init project manager based on database
-	initDBProjectManager()
+	// init project manager based on deploy mode
+	initProjectManager()
 
 	return nil
 }
@@ -91,16 +91,22 @@ func initKeyProvider() {
 
 func initSecretStore() {
 	m := map[string]string{}
-	m[secret.JobserviceUser] = JobserviceSecret()
+	m[JobserviceSecret()] = secret.JobserviceUser
 	SecretStore = secret.NewStore(m)
 }
 
-func initDBProjectManager() {
-	if len(DeployMode()) == 0 ||
-		DeployMode() == common.DeployModeStandAlone {
+func initProjectManager() {
+	if !WithAdmiral() {
+		// standalone
 		log.Info("initializing the project manager based on database...")
-		DBProjectManager = &db.ProjectManager{}
+		GlobalProjectMgr = &db.ProjectManager{}
+		return
 	}
+
+	// integration with admiral
+	// TODO create project manager based on pms using service account
+	log.Info("initializing the project manager based on PMS...")
+	GlobalProjectMgr = pms.NewProjectManager(AdmiralEndpoint(), "")
 }
 
 // Load configurations
@@ -314,6 +320,21 @@ func WithNotary() bool {
 	return cfg[common.WithNotary].(bool)
 }
 
+// WithClair returns a bool value to indicate if Harbor's deployed with Clair
+func WithClair() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithClair == false")
+		return false
+	}
+	return cfg[common.WithClair].(bool)
+}
+
+// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
+func ClairEndpoint() string {
+	return "http://clair:6060"
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
@@ -331,10 +352,4 @@ func AdmiralEndpoint() string {
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
-}
-
-// DeployMode returns the deploy mode
-// TODO read from adminserver
-func DeployMode() string {
-	return common.DeployModeStandAlone
 }

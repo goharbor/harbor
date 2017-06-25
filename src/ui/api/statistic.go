@@ -15,11 +15,12 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
 )
 
 const (
@@ -39,41 +40,45 @@ const (
 
 // StatisticAPI handles request to /api/statistics/
 type StatisticAPI struct {
-	api.BaseAPI
-	userID int
+	BaseController
+	username string
 }
 
 //Prepare validates the URL and the user
 func (s *StatisticAPI) Prepare() {
-	s.userID = s.ValidateUser()
+	s.BaseController.Prepare()
+	if !s.SecurityCtx.IsAuthenticated() {
+		s.HandleUnauthorized()
+		return
+	}
+	s.username = s.SecurityCtx.GetUsername()
 }
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
-
-	n, err := dao.GetTotalOfProjects("", 1)
+	projects, err := s.ProjectMgr.GetPublic()
 	if err != nil {
-		log.Errorf("failed to get total of public projects: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "")
+		s.HandleInternalServerError(fmt.Sprintf(
+			"failed to get public projects: %v", err))
+		return
 	}
-	statistic[PPC] = n
 
-	n, err = dao.GetTotalOfPublicRepositories("")
+	statistic[PPC] = (int64)(len(projects))
+
+	ids := []int64{}
+	for _, p := range projects {
+		ids = append(ids, p.ProjectID)
+	}
+	n, err := dao.GetTotalOfRepositoriesByProject(ids, "")
 	if err != nil {
 		log.Errorf("failed to get total of public repositories: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "")
 	}
 	statistic[PRC] = n
 
-	isAdmin, err := dao.IsAdminRole(s.userID)
-	if err != nil {
-		log.Errorf("Error occured in check admin, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
-	if isAdmin {
-		n, err := dao.GetTotalOfProjects("")
+	if s.SecurityCtx.IsSysAdmin() {
+		n, err := dao.GetTotalOfProjects(nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
@@ -89,17 +94,29 @@ func (s *StatisticAPI) Get() {
 		statistic[MRC] = n
 		statistic[TRC] = n
 	} else {
-		n, err := dao.GetTotalOfUserRelevantProjects(s.userID, "")
+		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
+			Member: &models.Member{
+				Name: s.username,
+			},
+		})
 		if err != nil {
-			log.Errorf("failed to get total of projects for user %d: %v", s.userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.HandleInternalServerError(fmt.Sprintf(
+				"failed to get projects of user %s: %v", s.username, err))
+			return
 		}
-		statistic[MPC] = n
+		statistic[MPC] = (int64)(len(projects))
 
-		n, err = dao.GetTotalOfUserRelevantRepositories(s.userID, "")
+		ids := []int64{}
+		for _, p := range projects {
+			ids = append(ids, p.ProjectID)
+		}
+
+		n, err = dao.GetTotalOfRepositoriesByProject(ids, "")
 		if err != nil {
-			log.Errorf("failed to get total of repositories for user %d: %v", s.userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.HandleInternalServerError(fmt.Sprintf(
+				"failed to get total of repositories for user %s: %v",
+				s.username, err))
+			return
 		}
 		statistic[MRC] = n
 	}

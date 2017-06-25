@@ -21,14 +21,14 @@ import { ProjectComponent } from './project/project.component';
 import { UserComponent } from './user/user.component';
 import { ReplicationManagementComponent } from './replication/replication-management/replication-management.component';
 
-import { TotalReplicationComponent } from './replication/total-replication/total-replication.component';
-import { DestinationComponent } from './replication/destination/destination.component';
+import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
+import { DestinationPageComponent } from './replication/destination/destination-page.component';
 
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 
-import { RepositoryComponent } from './repository/repository.component';
+import { RepositoryPageComponent } from './repository/repository-page.component';
 import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
-import { ReplicationComponent } from './replication/replication.component';
+import { ReplicationPageComponent } from './replication/replication-page.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
 
@@ -36,7 +36,7 @@ import { ProjectRoutingResolver } from './project/project-routing-resolver.servi
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
 import { ResetPasswordComponent } from './account/password/reset-password.component';
-import { RecentLogComponent } from './log/recent-log.component';
+import { LogPageComponent } from './log/log-page.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'
 import { StartPageComponent } from './base/start-page/start.component';
@@ -47,6 +47,8 @@ import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 
 import { MemberGuard } from './shared/route/member-guard-activate.service';
+
+import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -68,7 +70,7 @@ const harborRoutes: Routes = [
       },
       {
         path: 'logs',
-        component: RecentLogComponent
+        component: LogPageComponent
       },
       {
         path: 'users',
@@ -83,11 +85,11 @@ const harborRoutes: Routes = [
         children: [
           {
             path: 'rules',
-            component: TotalReplicationComponent
+            component: TotalReplicationPageComponent
           },
           {
             path: 'endpoints',
-            component: DestinationComponent
+            component: DestinationPageComponent
           }
         ]
       },
@@ -108,20 +110,24 @@ const harborRoutes: Routes = [
         },
         children: [
           {
-            path: 'repository',
-            component: RepositoryComponent
+            path: 'repositories',
+            component: RepositoryPageComponent
           },
           {
-            path: 'replication',
-            component: ReplicationComponent,
+            path: 'repositories/:repo/tags/:tag',
+            component: TagDetailPageComponent
+          },
+          {
+            path: 'replications',
+            component: ReplicationPageComponent,
             canActivate: [SystemAdminGuard]
           },
           {
-            path: 'member',
+            path: 'members',
             component: MemberComponent
           },
           {
-            path: 'log',
+            path: 'logs',
             component: AuditLogComponent
           }
         ]

@@ -31,7 +31,8 @@
         "MORE_INFO": "更多信息...",
         "YES": "是",
         "NO": "否",
-        "NEGATIVE": "否"
+        "NEGATIVE": "否",
+        "COPY": "拷贝"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -39,7 +40,7 @@
         "FULL_NAME": "长度不能超过20。",
         "COMMENT": "长度不能超过20。",
         "CURRENT_PWD": "当前密码为必填项。",
-        "PASSWORD": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字。",
+        "PASSWORD": "密码长度在8到20之间且需包含至少一个大写字符，一个小写字符和一个数字。",
         "CONFIRM_PWD": "密码输入不一致。",
         "SIGN_IN_USERNAME": "用户名为必填项。",
         "SIGN_IN_PWD": "密码为必填项。",
@@ -76,7 +77,7 @@
         "NEW_PWD": "新密码",
         "CONFIRM_PWD": "确认密码",
         "SAVE_SUCCESS": "成功更改用户密码。",
-        "PASS_TIPS": "至少8个字符且需包含至少一个大写字符、小写字符或者数字"
+        "PASS_TIPS": "8到20个字符且需包含至少一个大写字符、小写字符或者数字"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
@@ -126,16 +127,19 @@
         "PUBLIC_OR_PRIVATE": "访问级别",
         "REPO_COUNT": "镜像仓库数",
         "CREATION_TIME": "创建时间",
+        "ACCESS_LEVEL": "访问级别",
         "PUBLIC": "公开",
         "PRIVATE": "私有",
         "MAKE": "设为",
         "NEW_POLICY": "新建规则",
         "DELETE": "删除",
-        "MY_PROJECTS": "所有项目",
+        "ALL_PROJECTS": "所有项目",
+        "PRIVATE_PROJECTS": "私有项目",
         "PUBLIC_PROJECTS": "公开项目",
         "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
-        "NAME_IS_REQUIRED": "项目名称为必填项",
+        "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "NAME_IS_REQUIRED": "项目名称为必填项。",
         "NAME_MINIMUM_LENGTH": "项目名称长度过短，至少多于2个字符。",
         "NAME_ALREADY_EXISTS": "项目名称已存在。",
         "NAME_IS_ILLEGAL": "项目名称非法。",
@@ -253,6 +257,7 @@
         "CREATION_TIME": "创建时间",
         "END_TIME": "结束时间",
         "LOGS": "日志",
+        "OF": "共计",
         "ITEMS": "条记录",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
@@ -267,7 +272,9 @@
         "POLICY_ALREADY_EXISTS": "规则已存在。",
         "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务或规则未停用。",
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
-        "INVALID_DATE": "无效日期。"
+        "INVALID_DATE": "无效日期。",
+        "PLACEHOLDER": "未发现任何复制规则!",
+        "JOB_PLACEHOLDER": "未发现任何复制任务!"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -289,17 +296,18 @@
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
+        "OF": "共计",
         "ITEMS": "条记录",
         "CREATED_SUCCESS": "成功创建目标。",
         "UPDATED_SUCCESS": "成功更新目标。",
         "DELETED_SUCCESS": "成功删除目标。",
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。"
+        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
+        "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
-        "COPY_ID": "复制ID",
-        "COPY_PARENT_ID": "复制父级ID",
+        "COPY_DIGEST_ID": "复制摘要ID",
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",
@@ -323,12 +331,14 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
+        "OF": "共计",
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
-        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。"
+        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
+        "PLACEHOLDER": "未发现任何镜像库!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -423,7 +433,7 @@
         "TITLE": "统计",
         "PRO_ITEM": "项目",
         "REPO_ITEM": "镜像仓库",
-        "INDEX_MY": "私有",
+        "INDEX_PRIVATE": "私有",
         "INDEX_MY_PROJECTS": "我的项目",
         "INDEX_MY_REPOSITORIES": "我的镜像仓库",
         "INDEX_PUB": "公开",
@@ -434,6 +444,63 @@
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",
         "BACK": "返回"
+    },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "开始扫描",
+            "QUEUED": "已入队列",
+            "ERROR": "错误",
+            "SCANNING": "扫描中",
+            "UNKNOWN": "未知"
+        },
+        "GRID": {
+            "PLACEHOLDER": "没有扫描结果！",
+            "COLUMN_ID": "缺陷码",
+            "COLUMN_SEVERITY": "严重度",
+            "COLUMN_PACKAGE": "组",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_FIXED": "修复版本",
+            "COLUMN_DESCRIPTION": "简介",
+            "FOOT_ITEMS": "项目",
+            "FOOT_OF": "总共"
+        },
+        "CHART": {
+            "SCANNING_TIME": "扫描完成",
+            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
+        },
+        "SEVERITY": {
+            "HIGH": "严重",
+            "MEDIUM": "中等",
+            "LOW": "一般",
+            "NEGLIGIBLE": "可忽略",
+            "UNKNOWN": "未知",
+            "NONE": "无"
+        },
+        "SINGULAR": "缺陷",
+        "PLURAL": "缺陷",
+        "PLACEHOLDER": "过滤缺陷",
+        "PACKAGE": "个组件有",
+        "PACKAGES": "个组件有"
+    },
+    "PUSH_IMAGE": {
+        "TITLE": "推送镜像",
+        "TOOLTIP": "推送一个镜像到当前项目的参考命令。",
+        "TAG_COMMAND": "在项目中标记镜像：",
+        "PUSH_COMMAND": "推送镜像到当前项目：",
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
+    },
+    "TAG": {
+        "CREATION_TIME_PREFIX": "创建时间：",
+        "CREATOR_PREFIX": "创建者：",
+        "ANONYMITY": "匿名用户",
+        "IMAGE_DETAILS": "镜像详情",
+        "DOCKER_VERSION": "Docker版本",
+        "ARCHITECTURE": "架构",
+        "OS": "操作系统",
+        "SCAN_COMPLETION_TIME": "扫描完成时间",
+        "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "PLACEHOLDER": "未发现任何标签!",
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

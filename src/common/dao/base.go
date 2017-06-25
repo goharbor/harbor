@@ -80,6 +80,14 @@ func GetOrmer() orm.Ormer {
 	return globalOrm
 }
 
+// ClearTable is the shortcut for test cases, it should be called only in test cases.
+func ClearTable(table string) error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	_, err := o.Raw(sql).Exec()
+	return err
+}
+
 func paginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }

@@ -31,7 +31,8 @@
         "MORE_INFO": "More info...",
         "YES": "YES",
         "NO": "NO",
-        "NEGATIVE": "NEGATIVE"
+        "NEGATIVE": "NEGATIVE",
+        "COPY": "COPY"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -39,7 +40,7 @@
         "FULL_NAME": "Maximum length should be 20 characters.",
         "COMMENT": "Length of comment should be less than 20 characters.",
         "CURRENT_PWD": "Current password is required.",
-        "PASSWORD": "Password should be at least 8 characters with at least 1 uppercase, 1 lowercase and 1 number.",
+        "PASSWORD": "Password should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
         "CONFIRM_PWD": "Passwords do not match.",
         "SIGN_IN_USERNAME": "Username is required.",
         "SIGN_IN_PWD": "Password is required.",
@@ -76,7 +77,7 @@
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
         "SAVE_SUCCESS": "User password changed successfully.",
-        "PASS_TIPS": "At least 8 characters with 1 uppercase, 1 lowercase and 1 number"
+        "PASS_TIPS": "8-20 characters long with 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
@@ -126,15 +127,18 @@
         "PUBLIC_OR_PRIVATE": "Access Level",
         "REPO_COUNT": "Repositories Count",
         "CREATION_TIME": "Creation Time",
+        "ACCESS_LEVEL": "Access Level",
         "PUBLIC": "Public",
         "PRIVATE": "Private",
         "MAKE": "Make",
         "NEW_POLICY": "New Replication Rule",
         "DELETE": "Delete",
-        "MY_PROJECTS": "All Projects",
+        "ALL_PROJECTS": "All Projects",
+        "PRIVATE_PROJECTS": "Private Projects",
         "PUBLIC_PROJECTS": "Public Projects",
         "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
+        "NAME_TOOLTIP": "Project name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "NAME_IS_REQUIRED": "Project name is required.",
         "NAME_MINIMUM_LENGTH": "Project name is too short, it should be greater than 2 characters.",
         "NAME_ALREADY_EXISTS": "Project name already exists.",
@@ -253,6 +257,7 @@
         "CREATION_TIME": "Start Time",
         "END_TIME": "End Time",
         "LOGS": "Logs",
+        "OF": "of",
         "ITEMS": "item(s)",
         "TOGGLE_ENABLE_TITLE": "Enable Rule",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project will be replicated to the destination registry. \nPlease confirm to continue.",
@@ -267,7 +272,9 @@
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
         "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
-        "INVALID_DATE": "Invalid date."
+        "INVALID_DATE": "Invalid date.",
+        "PLACEHOLDER": "We couldn't find any replication rules!",
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -289,17 +296,18 @@
         "INVALID_NAME": "Invalid endpoint name.",
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time",
+        "OF": "of",
         "ITEMS": "item(s)",
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
         "DELETED_SUCCESS": "Deleted endpoint successfully.",
         "DELETED_FAILED": "Deleted endpoint failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use."
+        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use.",
+        "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_ID": "Copy ID",
-        "COPY_PARENT_ID": "Copy Parent ID",
+        "COPY_DIGEST_ID": "Copy Digest ID",
         "DELETE": "Delete",
         "NAME": "Name",
         "TAGS_COUNT": "Tags",
@@ -323,12 +331,14 @@
         "OS": "OS",
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
+        "OF": "of",
         "ITEMS": "item(s)",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
         "COPY": "Copy",
-        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag."
+        "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
+        "PLACEHOLDER": "We couldn't find any repositories!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -423,7 +433,7 @@
         "TITLE": "STATISTICS",
         "PRO_ITEM": "PROJECTS",
         "REPO_ITEM": "REPOSITORIES",
-        "INDEX_MY": "MY",
+        "INDEX_PRIVATE": "PRIVATE",
         "INDEX_MY_PROJECTS": "MY PROJECTS",
         "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PUBLIC",
@@ -434,6 +444,63 @@
     "SEARCH": {
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
+    },
+    "VULNERABILITY": {
+        "STATE": {
+            "PENDING": "SCAN NOW",
+            "QUEUED": "Queued",
+            "ERROR": "Error",
+            "SCANNING": "Scanning",
+            "UNKNOWN": "Unknown"
+        },
+        "GRID": {
+            "PLACEHOLDER": "We couldn't find any scanning results!",
+            "COLUMN_ID": "Vulnerability",
+            "COLUMN_SEVERITY": "Severity",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_FIXED": "Fixed in version",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "CHART": {
+            "SCANNING_TIME": "Scan completed",
+            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} packages with vulnerabilities across all {{totalPackages}} packages."
+        },
+        "SEVERITY": {
+            "HIGH": "High level",
+            "MEDIUM": "Medium level",
+            "LOW": "Low level",
+            "NEGLIGIBLE": "Negligible",
+            "UNKNOWN": "Unknown",
+            "NONE": "None"
+        },
+        "SINGULAR": "Vulnerability",
+        "PLURAL": "Vulnerabilities",
+        "PLACEHOLDER": "Filter Vulnerabilities",
+        "PACKAGE": "Package with",
+        "PACKAGES": "Packages with"
+    },
+    "PUSH_IMAGE": {
+        "TITLE": "Push Image",
+        "TOOLTIP": "Command references for pushing an image to this project.",
+        "TAG_COMMAND": "Tag an image for this project:",
+        "PUSH_COMMAND": "Push an image to this project:",
+        "COPY_ERROR": "Copy failed, please try to manually copy the command references."
+    },
+    "TAG": {
+        "CREATION_TIME_PREFIX": "Create on",
+        "CREATOR_PREFIX": "by",
+        "ANONYMITY": "anonymity",
+        "IMAGE_DETAILS": "Image Details",
+        "DOCKER_VERSION": "Docker Version",
+        "ARCHITECTURE": "Architecture",
+        "OS": "OS",
+        "SCAN_COMPLETION_TIME": "Scan Completed",
+        "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "PLACEHOLDER": "We couldn't find any tags!",
+        "COPY_ERROR": "Copy failed, please try to manually copy."
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",

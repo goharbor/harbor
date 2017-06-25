@@ -17,8 +17,12 @@ package utils
 import (
 	"encoding/base64"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseEndpoint(t *testing.T) {
@@ -186,8 +190,24 @@ func TestParseLink(t *testing.T) {
 func TestTestTCPConn(t *testing.T) {
 	server := httptest.NewServer(nil)
 	defer server.Close()
-	addr := strings.TrimLeft(server.URL, "http://")
+	addr := strings.TrimPrefix(server.URL, "http://")
 	if err := TestTCPConn(addr, 60, 2); err != nil {
 		t.Fatalf("failed to test tcp connection of %s: %v", addr, err)
 	}
+}
+
+func TestParseTimeStamp(t *testing.T) {
+	// invalid input
+	_, err := ParseTimeStamp("")
+	assert.NotNil(t, err)
+
+	// invalid input
+	_, err = ParseTimeStamp("invalid")
+	assert.NotNil(t, err)
+
+	// valid
+	now := time.Now().Unix()
+	result, err := ParseTimeStamp(strconv.FormatInt(now, 10))
+	assert.Nil(t, err)
+	assert.Equal(t, now, result.Unix())
 }

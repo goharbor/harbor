@@ -52,7 +52,19 @@ export abstract class TagService {
      * 
      * @memberOf TagService
      */
-    abstract deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<Tag> | any;
+    abstract deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<any> | any;
+
+    /**
+     * Get the specified tag.
+     * 
+     * @abstract
+     * @param {string} repositoryName
+     * @param {string} tag
+     * @returns {(Observable<Tag> | Promise<Tag> | Tag)}
+     * 
+     * @memberOf TagService
+     */
+    abstract getTag(repositoryName: string, tag: string, queryParams?: RequestQueryParams): Observable<Tag> | Promise<Tag> | Tag;
 }
 
 /**
@@ -100,27 +112,7 @@ export class TagDefaultService extends TagService {
         if (!repositoryName) {
             return Promise.reject("Bad argument");
         }
-
-        return this._getTags(repositoryName, queryParams)
-            .then(tags => {
-                return this._getSignatures(repositoryName)
-                    .then(signatures => {
-                        tags.forEach(tag => {
-                            let foundOne: VerifiedSignature | undefined = signatures.find(signature => signature.tag === tag.tag);
-                            if (foundOne) {
-                                tag.signed = 1;//Signed
-                            } else {
-                                tag.signed = 0;//Not signed
-                            }
-                        });
-                        return tags;
-                    })
-                    .catch(error => {
-                        tags.forEach(tag => tag.signed = -1);//No signature info
-                        return tags;
-                    })
-            })
-            .catch(error => Promise.reject(error))
+        return this._getTags(repositoryName, queryParams);
     }
 
     public deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<Tag> | any {
@@ -131,6 +123,17 @@ export class TagDefaultService extends TagService {
         let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
+            .catch(error => Promise.reject(error));
+    }
+
+    public getTag(repositoryName: string, tag: string, queryParams?: RequestQueryParams): Observable<Tag> | Promise<Tag> | Tag {
+        if (!repositoryName || !tag) {
+            return Promise.reject("Bad argument");
+        }
+
+        let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
+        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response.json() as Tag)
             .catch(error => Promise.reject(error));
     }
 }

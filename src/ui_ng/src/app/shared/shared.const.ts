@@ -28,15 +28,15 @@ export const httpStatusCode = {
   "Forbidden": 403
 };
 export const enum ConfirmationTargets {
-  EMPTY, 
-  PROJECT, 
-  PROJECT_MEMBER, 
-  USER, 
-  POLICY, 
+  EMPTY,
+  PROJECT,
+  PROJECT_MEMBER,
+  USER,
+  POLICY,
   TOGGLE_CONFIRM,
-  TARGET, 
-  REPOSITORY, 
-  TAG, 
+  TARGET,
+  REPOSITORY,
+  TAG,
   CONFIG,
   CONFIG_ROUTE,
   CONFIG_TAB
@@ -71,6 +71,6 @@ export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
 }
 
-export const ProjectTypes = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
+export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };
 export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
 export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };

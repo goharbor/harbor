@@ -43,21 +43,26 @@ paths:
           description: Unexpected internal errors.
   /projects:
     get:
-      summary: Return projects created by Harbor
+      summary: List projects
       description: |
         This endpoint returns all projects created by Harbor, and can be filtered by project name.
       parameters:
-        - name: project_name 
+        - name: name 
           in: query
-          description: Project name for filtering results.
+          description: The name of project.
           required: false
           type: string
-        - name: is_public
+        - name: public
           in: query
-          description: Public sign for filtering projects.
+          description: The project is public or private.
           required: false
-          type: integer
+          type: boolean
           format: int32
+        - name: owner 
+          in: query
+          description: The name of project owner.
+          required: false
+          type: string
         - name: page
           in: query
           type: integer
@@ -217,8 +222,8 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/logs/filter:
-    post:
+  /projects/{project_id}/logs:
+    get:
       summary: Get access logs accompany with a relevant project.
       description: |
         This endpoint let user search access logs filtered by operations and date time ranges.
@@ -229,11 +234,36 @@ paths:
           format: int64
           required: true
           description: Relevant project ID
-        - name: access_log
-          in: body
-          schema:
-            $ref: '#/definitions/AccessLogFilter'
-          description: Search results of access logs.
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username of the operator.
+        - name: repository
+          in: query
+          type: string
+          required: false
+          description: The name of repository
+        - name: tag
+          in: query
+          type: string
+          required: false
+          description: The name of tag
+        - name: operation
+          in: query
+          type: string
+          required: false
+          description: The operation
+        - name: begin_timestamp
+          in: query
+          type: string
+          required: false
+          description: The begin timestamp
+        - name: end_timestamp
+          in: query
+          type: string
+          required: false
+          description: The end timestamp
         - name: page
           in: query
           type: integer
@@ -466,6 +496,23 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
+        - name: email
+          in: query
+          type: string
+          required: false
+          description: Email for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       tags:
         - Products
       responses:
@@ -722,6 +769,30 @@ paths:
         403:
           description: Forbidden.
   /repositories/{repo_name}/tags/{tag}:
+    get:
+      summary: Get the tag of the repository.
+      description: |
+        This endpoint aims to retrieve the tag of the repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Relevant repository name.
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag of the repository.
+      tags:
+       - Products
+      responses:
+        200:
+          description: Get tag successfully.
+          schema:
+            $ref: '#/definitions/DetailedTag'
+        500:
+          description: Unexpected internal errors.
     delete:
       summary: Delete a tag in a repository.
       description: |
@@ -754,7 +825,7 @@ paths:
     get:
       summary: Get tags of a relevant repository.
       description: |
-        This endpoint aims to retrieve tags from a relevant repository.
+        This endpoint aims to retrieve tags from a relevant repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
       parameters:
         - name: repo_name
           in: path
@@ -804,6 +875,70 @@ paths:
           description: Retrieved manifests from a relevant repository not found.
         500:
           description: Unexpected internal errors.
+  /repositories/{repo_name}/tags/{tag}/scan:
+    post:
+      summary: Scan the image.
+      description: |
+        Trigger jobservice to call Clair API to scan the image identified by the repo_name and tag.  Only project admins have permission to scan images under the project.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successfully created the job to scan image.
+        401:
+          description: User needs to login or call the API with correct credentials.
+        403:
+          description: User doesn't have permission to perform the action.
+        404:
+          description: The image does not exist in Harbor.
+        503:
+          description: Harbor is not deployed with Clair.
+
+  /repositories/{repo_name}/tags/{tag}/vulnerability/detail:
+    get:
+      summary: Get vulnerability details of the image.
+      description: |
+        Call Clair API to get the vulnerability based on the previous successful scan.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successfully retrieved the vulnerabilities.
+          schema:
+            type: array
+            items:
+              $ref: '#definitions/VulnerabilityItem'
+        401:
+          description: User needs to login or call the API with correct credentials.
+        403:
+          description: User doesn't have permission to perform the action.
+        404:
+          description: The image does not exist in Harbor.
+        503:
+          description: Harbor is not deployed with Clair.
+
   /repositories/{repo_name}/signatures:
     get:
       summary: Get signature information of a repository
@@ -861,24 +996,48 @@ paths:
       description: |
         This endpoint let user see the recent operation logs of the projects which he is member of 
       parameters:
-        - name: lines
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username of the operator.
+        - name: repository
+          in: query
+          type: string
+          required: false
+          description: The name of repository
+        - name: tag
+          in: query
+          type: string
+          required: false
+          description: The name of tag
+        - name: operation
+          in: query
+          type: string
+          required: false
+          description: The operation
+        - name: begin_timestamp
+          in: query
+          type: string
+          required: false
+          description: The begin timestamp
+        - name: end_timestamp
+          in: query
+          type: string
+          required: false
+          description: The end timestamp
+        - name: page
           in: query
           type: integer
           format: int32
           required: false
-          description: The number of logs to be shown, default is 10 if lines, start_time, end_time are not provided.
-        - name: start_time
+          description: The page nubmer, default is 1.
+        - name: page_size
           in: query
           type: integer
-          format: int64
+          format: int32
           required: false
-          description: The start time of logs to be shown in unix timestap
-        - name: end_time
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: The end time of logs to be shown in unix timestap
+          description: The size of per page, default is 10, maximum is 100.
       tags:
         - Products
       responses:
@@ -889,7 +1048,7 @@ paths:
             items:
               $ref: '#/definitions/AccessLog'
         400:
-          description: Bad request because of invalid parameter of lines or start_time or end_time.
+          description: Bad request because of invalid parameters.
         401:
           description: User need to login first.
         500:
@@ -1004,7 +1163,7 @@ paths:
           type: integer
           format: int64
           required: true
-          description: Relevant repository ID
+          description: Relevant job ID
       tags:
         - Products
       responses:
@@ -1639,7 +1798,7 @@ definitions:
         description: The count how many times the repository is pulled
       tags_count:
         type: integer
-        description: The count of tags in the repository		
+        description: The count of tags in the repository    
   ProjectReq:
     type: object
     properties:
@@ -1650,6 +1809,18 @@ definitions:
         type: integer
         format: int
         description: The public status of the project.
+      enable_content_trust:
+        type: boolean
+        description: Whether content trust is enabled or not. If it is enabled, user cann't pull unsigned images from this project.
+      prevent_vulnerable_images_from_running:
+        type: boolean
+        description: Whether prevent the vulnerable images from running. 
+      prevent_vulnerable_images_from_running_severity:
+        type: string
+        description: If the vulnerability is high than severity defined here, the images cann't be pulled.
+      automatically_scan_images_on_push:
+        type: boolean
+        description: Whether scan images automatically when pushing.
   Project:
     type: object
     properties:
@@ -1690,6 +1861,18 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+      enable_content_trust:
+        type: boolean
+        description: Whether content trust is enabled or not. If it is enabled, user cann't pull unsigned images from this project.
+      prevent_vulnerable_images_from_running:
+        type: boolean
+        description: Whether prevent the vulnerable images from running. 
+      prevent_vulnerable_images_from_running_severity:
+        type: string
+        description: If the vulnerability is high than severity defined here, the images cann't be pulled.
+      automatically_scan_images_on_push:
+        type: boolean
+        description: Whether scan images automatically when pushing.
   Manifest:
     type: object
     properties:
@@ -1942,6 +2125,10 @@ definitions:
       name: 
         type: string
         description: The policy name.
+      enabled:
+        type: integer
+        format: int
+        description: 1-enable, 0-disable
   RepPolicyUpdate:
     type: object
     properties:
@@ -2075,6 +2262,9 @@ definitions:
       with_notary:
         type: boolean
         description: If the Harbor instance is deployed with nested notary.
+      with_clair:
+        type: boolean
+        description: If the Harbor instance is deployed with nested clair.
       with_admiral:
         type: boolean
         description: If the Harbor instance is deployed with Admiral.
@@ -2095,7 +2285,7 @@ definitions:
         description: Indicate whether there is a ca root cert file ready for download in the file system.
       harbor_version:
         type: string
-        description: The build version of Harbor.		
+        description: The build version of Harbor.    
   SystemInfo:
     type: object
     properties:
@@ -2195,12 +2385,70 @@ definitions:
   DetailedTag:
     type: object
     properties:
-      tag:
+      digest:
         type: string
-        description: The tag of image.
-      manifest:
+        description: The digest of the tag.
+      name:
+        type: string
+        description: The name of the tag.
+      architecture:
+        type: string
+        description: The architecture of the image.
+      os:
+        type: string
+        description: The os of the image.
+      docker_version:
+        type: string
+        description: The version of docker which builds the image.
+      author:
+        type: string
+        description: The author of the image.
+      created:
+        type: string
+        description: The build time of the image.
+      signature:
         type: object
-        description: The detail of manifest.
+        description: The signature of image, defined by RepoSignature. If it is null, the image is unsigned.
+      scan_overview:
+        type: object
+        description: The overview of the scan result.  This is an optional property.
+        properties:
+          digest:
+            type: string
+            description: The digest of the image.
+          scan_status:
+            type: string
+            description: The status of the scan job, it can be "pendnig", "running", "finished", "error".
+          job_id:
+            type: integer
+            description: The ID of the job on jobservice to scan the image.
+          severity:
+            type: integer
+            description: 0-Not scanned, 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+          details_key:
+            type: string
+            description: The top layer name of this image in Clair, this is for calling Clair API to get the vulnerability list of this image.
+          components:
+            type: object
+            description: The components overview of the image.
+            properties:
+              total:
+                type: integer
+                description: Total number of the components in this image.
+              summary:
+                description: List of number of components of different severities.
+                type: array
+                items:
+                  $ref: '#/definitions/ComponentOverviewEntry'
+  ComponentOverviewEntry:
+    type: object
+    properties:
+      severity:
+        type: integer
+        description: 1-None/Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+      count:
+        type: integer
+        description: number of the components with certain severity.
   Repository:
     type: object
     properties:
@@ -2231,3 +2479,24 @@ definitions:
       update_time:
         type: string
         description: The update time of repository.
+  VulnerabilityItem:
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of the vulnerability, normally it is the CVE ID
+      severity: 
+        type: integer
+        description: 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+      package:
+        type: string
+        description: The packge that introduces the vulnerability.
+      version:
+        type: string
+        description: The version of the package.
+      description:
+        type: string
+        description: The description of the vulnerability.
+      fixedVersion:
+        type: string
+        description: The version which the vulnerability is fixed, this is an optional property.

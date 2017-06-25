@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Endpoint, ReplicationRule } from '../service/interface';
 import { EndpointService } from '../service/endpoint.service';
 
@@ -32,7 +32,9 @@ import { CreateEditEndpointComponent } from '../create-edit-endpoint/create-edit
 import { ENDPOINT_STYLE } from './endpoint.component.css';
 import { ENDPOINT_TEMPLATE } from './endpoint.component.html';
 
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
+
+import { State, Comparator } from 'clarity-angular';
 
 @Component({
   selector: 'hbr-endpoint',
@@ -54,6 +56,10 @@ export class EndpointComponent implements OnInit {
 
   targetName: string;
   subscription: Subscription;
+
+  loading: boolean = false;
+
+  creationTimeComparator: Comparator<Endpoint> = new CustomComparator<Endpoint>('creation_time', 'date');
 
   get initEndpoint(): Endpoint {
     return {
@@ -99,11 +105,9 @@ export class EndpointComponent implements OnInit {
     }
   }
 
-  cancelDeletion(message: ConfirmationAcknowledgement) {}
- 
   ngOnInit(): void {
     this.targetName = '';
-    this.retrieve('');
+    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -112,29 +116,34 @@ export class EndpointComponent implements OnInit {
     }
   }
 
-  retrieve(targetName: string): void {
+  retrieve(): void {
+    this.loading = true;
     toPromise<Endpoint[]>(this.endpointService
-      .getEndpoints(targetName))
+      .getEndpoints(this.targetName))
       .then(
       targets => {
         this.targets = targets || [];
         let hnd = setInterval(()=>this.ref.markForCheck(), 100);
         setTimeout(()=>clearInterval(hnd), 1000);
-      }).catch(error => this.errorHandler.error(error));
+        this.loading = false;
+      }).catch(error => {
+        this.errorHandler.error(error); 
+        this.loading = false; 
+      });
   }
 
   doSearchTargets(targetName: string) {
     this.targetName = targetName;
-    this.retrieve(targetName);
+    this.retrieve();
   }
 
   refreshTargets() {
-    this.retrieve('');
+    this.retrieve();
   }
 
   reload($event: any) {
     this.targetName = '';
-    this.retrieve('');
+    this.retrieve();
   }
 
   openModal() {
@@ -165,13 +174,12 @@ export class EndpointComponent implements OnInit {
   }
 
   deleteTarget(target: Endpoint) {
-    console.log('Endpoint:' + JSON.stringify(target));
     if (target) {
       let targetId = target.id;
       let deletionMessage = new ConfirmationMessage(
         'REPLICATION.DELETION_TITLE_TARGET',
         'REPLICATION.DELETION_SUMMARY_TARGET',
-        target.name,
+        target.name || '',
         target.id,
         ConfirmationTargets.TARGET,
         ConfirmationButtons.DELETE_CANCEL);

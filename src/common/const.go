@@ -24,13 +24,9 @@ const (
 	LDAPScopeOnelevel   = "2"
 	LDAPScopeSubtree    = "3"
 
-	RoleSystemAdmin  = 1
-	RoleProjectAdmin = 2
-	RoleDeveloper    = 3
-	RoleGuest        = 4
-
-	DeployModeStandAlone  = "standalone"
-	DeployModeIntegration = "integration"
+	RoleProjectAdmin = 1
+	RoleDeveloper    = 2
+	RoleGuest        = 3
 
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
@@ -68,4 +64,5 @@ const (
 	AdminInitialPassword       = "admin_initial_password"
 	AdmiralEndpoint            = "admiral_url"
 	WithNotary                 = "with_notary"
+	WithClair                  = "with_clair"
 )

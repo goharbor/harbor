@@ -1,15 +1,15 @@
 <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="top: 8px;">
         <div class="row flex-items-xs-between">
-            <div class="flex-xs-middle option-left">
+            <div class="flex-xs-middle option-left" style="position: relative; top: 10px;">
                 <button *ngIf="hasProjectAdminRole" class="btn btn-link" (click)="openAddMemberModal()"><clr-icon shape="add"></clr-icon> {{'MEMBER.MEMBER' | translate }}</button>
                 <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
             </div>
             <div class="flex-xs-middle option-right">
-                <grid-filter filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)" [currentValue]="searchMember"></grid-filter>
-                <a href="javascript:void(0)" (click)="refresh()">
+                <hbr-filter [withDivider]="true" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearch($event)" [currentValue]="searchMember"></hbr-filter>
+                <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
-                </a>
+                </span>
             </div>
         </div>
     </div>

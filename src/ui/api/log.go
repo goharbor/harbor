@@ -15,80 +15,103 @@
 package api
 
 import (
-	"net/http"
-	"strconv"
-	"time"
+	"fmt"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils"
 )
 
 //LogAPI handles request api/logs
 type LogAPI struct {
-	api.BaseAPI
-	userID int
+	BaseController
+	username   string
+	isSysAdmin bool
 }
 
 //Prepare validates the URL and the user
 func (l *LogAPI) Prepare() {
-	l.userID = l.ValidateUser()
+	l.BaseController.Prepare()
+	if !l.SecurityCtx.IsAuthenticated() {
+		l.HandleUnauthorized()
+		return
+	}
+	l.username = l.SecurityCtx.GetUsername()
+	l.isSysAdmin = l.SecurityCtx.IsSysAdmin()
 }
 
 //Get returns the recent logs according to parameters
 func (l *LogAPI) Get() {
-	var err error
-	startTime := l.GetString("start_time")
-	if len(startTime) != 0 {
-		i, err := strconv.ParseInt(startTime, 10, 64)
-		if err != nil {
-			log.Errorf("Parse startTime to int error, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "startTime is not a valid integer")
-		}
-		startTime = time.Unix(i, 0).String()
+	page, size := l.GetPaginationParams()
+	query := &models.LogQueryParam{
+		Username:   l.GetString("username"),
+		Repository: l.GetString("repository"),
+		Tag:        l.GetString("tag"),
+		Operations: l.GetStrings("operation"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
 	}
 
-	endTime := l.GetString("end_time")
-	if len(endTime) != 0 {
-		j, err := strconv.ParseInt(endTime, 10, 64)
+	timestamp := l.GetString("begin_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			log.Errorf("Parse endTime to int error, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "endTime is not a valid integer")
+			l.HandleBadRequest(fmt.Sprintf("invalid begin_timestamp: %s", timestamp))
+			return
 		}
-		endTime = time.Unix(j, 0).String()
+		query.BeginTime = t
 	}
 
-	var linesNum int
-	lines := l.GetString("lines")
-	if len(lines) != 0 {
-		linesNum, err = strconv.Atoi(lines)
+	timestamp = l.GetString("end_timestamp")
+	if len(timestamp) > 0 {
+		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			log.Errorf("Get parameters error--lines, err: %v", err)
-			l.CustomAbort(http.StatusBadRequest, "bad request of lines")
+			l.HandleBadRequest(fmt.Sprintf("invalid end_timestamp: %s", timestamp))
+			return
 		}
-		if linesNum <= 0 {
-			log.Warning("lines must be a positive integer")
-			l.CustomAbort(http.StatusBadRequest, "lines is 0 or negative")
-		}
-	} else if len(startTime) == 0 && len(endTime) == 0 {
-		linesNum = 10
+		query.EndTime = t
 	}
 
-	user, err := dao.GetUser(models.User{
-		UserID: l.userID,
-	})
+	if !l.isSysAdmin {
+		projects, err := l.ProjectMgr.GetByMember(l.username)
+		if err != nil {
+			l.HandleInternalServerError(fmt.Sprintf(
+				"failed to get projects of user %s: %v", l.username, err))
+			return
+		}
+
+		if len(projects) == 0 {
+			l.SetPaginationHeader(0, page, size)
+			l.Data["json"] = nil
+			l.ServeJSON()
+			return
+		}
+
+		ids := []int64{}
+		for _, project := range projects {
+			ids = append(ids, project.ProjectID)
+		}
+		query.ProjectIDs = ids
+	}
+
+	total, err := dao.GetTotalOfAccessLogs(query)
 	if err != nil {
-		log.Errorf("failed to get user by user ID %d: %v", l.userID, err)
-		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		l.HandleInternalServerError(fmt.Sprintf(
+			"failed to get total of access logs: %v", err))
+		return
 	}
 
-	var logList []models.AccessLog
-	logList, err = dao.GetRecentLogs(user.Username, linesNum, startTime, endTime)
+	logs, err := dao.GetAccessLogs(query)
 	if err != nil {
-		log.Errorf("Get recent logs error, err: %v", err)
-		l.CustomAbort(http.StatusInternalServerError, "Internal error")
+		l.HandleInternalServerError(fmt.Sprintf(
+			"failed to get access logs: %v", err))
+		return
 	}
-	l.Data["json"] = logList
+
+	l.SetPaginationHeader(total, page, size)
+
+	l.Data["json"] = logs
 	l.ServeJSON()
 }

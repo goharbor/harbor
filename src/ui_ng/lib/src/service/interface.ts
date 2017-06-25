@@ -12,30 +12,6 @@ export interface Base {
 }
 
 /**
- * Interface for tag history
- * 
- * @export
- * @interface TagCompatibility
- */
-export interface TagCompatibility {
-    v1Compatibility: string;
-}
-
-/**
- * Interface for tag manifest
- * 
- * @export
- * @interface TagManifest
- */
-export interface TagManifest {
-    schemaVersion: number;
-    name: string;
-    tag: string;
-    architecture: string;
-    history: TagCompatibility[];
-}
-
-/**
  * Interface for Repository
  * 
  * @export
@@ -48,7 +24,7 @@ export interface Repository extends Base {
     owner_id?: number;
     project_id?: number;
     description?: string;
-    start_count?: number;
+    star_count?: number;
     pull_count?: number;
 }
 
@@ -59,10 +35,17 @@ export interface Repository extends Base {
  * @interface Tag
  * @extends {Base}
  */
+
 export interface Tag extends Base {
-    tag: string;
-    manifest: TagManifest;
-    signed?: number; //May NOT exist
+    digest: string;
+    name: string;
+    architecture: string;
+    os: string;
+    docker_version: string;
+    author: string;
+    created: Date;
+    signature?: string;
+    scan_overview?: VulnerabilitySummary;
 }
 
 /**
@@ -73,11 +56,11 @@ export interface Tag extends Base {
  * @extends {Base}
  */
 export interface Endpoint extends Base {
-  endpoint: string;
-  name: string;
-  username: string;
-  password: string;
-  type: number;
+    endpoint: string;
+    name: string;
+    username?: string;
+    password?: string;
+    type: number;
 }
 
 /**
@@ -87,9 +70,9 @@ export interface Endpoint extends Base {
  * @interface ReplicationRule
  */
 export interface ReplicationRule extends Base {
-    project_id: number;
+    project_id: number | string;
     project_name: string;
-    target_id: number;
+    target_id: number | string;
     target_name: string;
     enabled: number;
     description?: string;
@@ -114,12 +97,34 @@ export interface ReplicationJob extends Base {
 }
 
 /**
+ * Interface for storing metadata of response.
+ * 
+ * @export
+ * @interface Metadata
+ */
+export interface Metadata {
+    xTotalCount: number;
+}
+
+/**
  * Interface for access log.
  * 
  * @export
  * @interface AccessLog
  */
 export interface AccessLog {
+    metadata?: Metadata;
+    data: AccessLogItem[];
+}
+
+/**
+ * The access log data.
+ * 
+ * @export
+ * @interface AccessLogItem
+ */
+export interface AccessLogItem {
+    [key: string]: any
     log_id: number;
     project_id: number;
     repo_name: string;
@@ -130,4 +135,66 @@ export interface AccessLog {
     username: string;
     keywords?: string; //NOT used now
     guid?: string; //NOT used now
+}
+
+/**
+ * Global system info.
+ * 
+ * @export 
+ * @interface SystemInfo
+ * 
+ */
+export interface SystemInfo {
+    with_clair?: boolean;
+    with_notary?: boolean;
+    with_admiral?: boolean;
+    admiral_endpoint?: string;
+    auth_mode?: string;
+    registry_url?: string;
+    project_creation_restriction?: string;
+    self_registration?: boolean;
+    has_ca_root?: boolean;
+    harbor_version?: string;
+}
+
+export enum VulnerabilitySeverity {
+    _SEVERITY, NONE, UNKNOWN, LOW, MEDIUM, HIGH
+}
+
+export interface VulnerabilityBase {
+    id: string;
+    severity: VulnerabilitySeverity;
+    package: string;
+    version: string;
+}
+
+export interface VulnerabilityItem extends VulnerabilityBase {
+    fixedVersion: string;
+    layer?: string;
+    description: string;
+}
+
+export interface VulnerabilitySummary {
+    image_digest?: string;
+    scan_status: string;
+    job_id?: number;
+    severity: VulnerabilitySeverity;
+    components: VulnerabilityComponents;
+    update_time: Date; //Use as complete timestamp
+}
+
+export interface VulnerabilityComponents {
+    total: number;
+    summary: VulnerabilitySeverityMetrics[];
+}
+
+export interface VulnerabilitySeverityMetrics {
+    severity: VulnerabilitySeverity;
+    count: number;
+}
+
+export interface TagClickEvent {
+    project_id: string | number;
+    repository_name: string;
+    tag_name: string;
 }

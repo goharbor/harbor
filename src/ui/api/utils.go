@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -26,38 +27,14 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager"
 )
-
-func checkProjectPermission(userID int, projectID int64) bool {
-	roles, err := listRoles(userID, projectID)
-	if err != nil {
-		log.Errorf("error occurred in getProjectPermission: %v", err)
-		return false
-	}
-	return len(roles) > 0
-}
-
-// TODO remove
-func hasProjectAdminRole(userID int, projectID int64) bool {
-	roles, err := listRoles(userID, projectID)
-	if err != nil {
-		log.Errorf("error occurred in getProjectPermission: %v", err)
-		return false
-	}
-
-	for _, role := range roles {
-		if role.RoleID == models.PROJECTADMIN {
-			return true
-		}
-	}
-
-	return false
-}
 
 //sysadmin has all privileges to all projects
 func listRoles(userID int, projectID int64) ([]models.Role, error) {
@@ -117,56 +94,14 @@ func TriggerReplication(policyID int64, repository string,
 	if err != nil {
 		return err
 	}
-
 	url := buildReplicationURL()
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-	addAuthentication(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
-}
-
-// GetPoliciesByRepository returns policies according the repository
-func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
-	repository = strings.TrimSpace(repository)
-	repository = strings.TrimRight(repository, "/")
-	projectName, _ := utils.ParseRepository(repository)
-
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		return nil, err
-	}
-
-	policies, err := dao.GetRepPolicyByProject(project.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return policies, nil
+	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
 }
 
 // TriggerReplicationByRepository triggers the replication according to the repository
-func TriggerReplicationByRepository(repository string, tags []string, operation string) {
-	policies, err := GetPoliciesByRepository(repository)
+func TriggerReplicationByRepository(projectID int64, repository string, tags []string, operation string) {
+	policies, err := dao.GetRepPolicyByProject(projectID)
 	if err != nil {
 		log.Errorf("failed to get policies for repository %s: %v", repository, err)
 		return
@@ -238,7 +173,7 @@ func addAuthentication(req *http.Request) {
 }
 
 // SyncRegistry syncs the repositories of registry with database.
-func SyncRegistry() error {
+func SyncRegistry(pm projectmanager.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
@@ -262,7 +197,7 @@ func SyncRegistry() error {
 
 	var reposToAdd []string
 	var reposToDel []string
-	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB)
+	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB, pm)
 	if err != nil {
 		return err
 	}
@@ -275,7 +210,7 @@ func SyncRegistry() error {
 			if err != nil {
 				log.Errorf("Error happens when counting pull count from access log: %v", err)
 			}
-			pro, err := dao.GetProjectByName(project)
+			pro, err := pm.Get(project)
 			if err != nil {
 				log.Errorf("failed to get project %s: %v", project, err)
 				continue
@@ -325,7 +260,8 @@ func catalog() ([]string, error) {
 	return repositories, nil
 }
 
-func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string, error) {
+func diffRepos(reposInRegistry []string, reposInDB []string,
+	pm projectmanager.ProjectManager) ([]string, []string, error) {
 	var needsAdd []string
 	var needsDel []string
 
@@ -340,7 +276,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 		d := strings.Compare(repoInR, repoInD)
 		if d < 0 {
 			i++
-			exist, err := projectExists(repoInR)
+			exist, err := projectExists(pm, repoInR)
 			if err != nil {
 				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
 				continue
@@ -403,7 +339,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	for i < len(reposInRegistry) {
 		repoInR = reposInRegistry[i]
 		i++
-		exist, err := projectExists(repoInR)
+		exist, err := projectExists(pm, repoInR)
 		if err != nil {
 			log.Errorf("failed to check whether project of %s exists: %v", repoInR, err)
 			continue
@@ -412,6 +348,29 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 		if !exist {
 			continue
 		}
+
+		endpoint, err := config.RegistryURL()
+		if err != nil {
+			log.Errorf("failed to get registry URL: %v", err)
+			continue
+		}
+		client, err := NewRepositoryClient(endpoint, true,
+			"admin", repoInR, "repository", repoInR, "pull")
+		if err != nil {
+			log.Errorf("failed to create repository client: %v", err)
+			continue
+		}
+
+		exist, err = repositoryExist(repoInR, client)
+		if err != nil {
+			log.Errorf("failed to check the existence of repository %s: %v", repoInR, err)
+			continue
+		}
+
+		if !exist {
+			continue
+		}
+
 		needsAdd = append(needsAdd, repoInR)
 	}
 
@@ -423,9 +382,9 @@ func diffRepos(reposInRegistry []string, reposInDB []string) ([]string, []string
 	return needsAdd, needsDel, nil
 }
 
-func projectExists(repository string) (bool, error) {
+func projectExists(pm projectmanager.ProjectManager, repository string) (bool, error) {
 	project, _ := utils.ParseRepository(repository)
-	return dao.ProjectExists(project)
+	return pm.Exist(project)
 }
 
 // TODO need a registry client which accept a raw token as param
@@ -450,6 +409,11 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 	return registryClient, nil
+}
+
+func buildScanJobURL() string {
+	url := config.InternalJobServiceURL()
+	return fmt.Sprintf("%s/api/jobs/scan", url)
 }
 
 func buildReplicationURL() string {
@@ -535,4 +499,74 @@ func NewRepositoryClient(endpoint string, insecure bool, username, repository, s
 		return nil, err
 	}
 	return client, nil
+}
+
+// TriggerImageScan triggers an image scan job on jobservice.
+func TriggerImageScan(repository string, tag string) error {
+	data := &models.ImageScanReq{
+		Repo: repository,
+		Tag:  tag,
+	}
+	b, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+	url := buildScanJobURL()
+	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
+}
+
+// Do not use this when you want to handle the response
+// TODO: add a response handler to replace expectSC *when needed*
+func requestAsUI(method, url string, body io.Reader, expectSC int) error {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+	addAuthentication(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != expectSC {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+	}
+	return nil
+}
+
+// transformVulnerabilities transforms the returned value of Clair API to a list of VulnerabilityItem
+func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*models.VulnerabilityItem {
+	res := []*models.VulnerabilityItem{}
+	l := layerWithVuln.Layer
+	if l == nil {
+		return res
+	}
+	features := l.Features
+	if features == nil {
+		return res
+	}
+	for _, f := range features {
+		vulnerabilities := f.Vulnerabilities
+		if vulnerabilities == nil {
+			continue
+		}
+		for _, v := range vulnerabilities {
+			vItem := &models.VulnerabilityItem{
+				ID:          v.Name,
+				Pkg:         f.Name,
+				Version:     f.Version,
+				Severity:    clair.ParseClairSev(v.Severity),
+				Fixed:       v.FixedBy,
+				Description: v.Description,
+			}
+			res = append(res, vItem)
+		}
+	}
+	return res
 }

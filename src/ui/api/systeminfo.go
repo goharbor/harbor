@@ -21,17 +21,13 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
 //SystemInfoAPI handle requests for getting system info /api/systeminfo
 type SystemInfoAPI struct {
-	api.BaseAPI
-	currentUserID int
-	isAdmin       bool
+	BaseController
 }
 
 const defaultRootCert = "/etc/ui/ca/ca.crt"
@@ -51,6 +47,7 @@ type Storage struct {
 //GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
 	WithNotary              bool   `json:"with_notary"`
+	WithClair               bool   `json:"with_clair"`
 	WithAdmiral             bool   `json:"with_admiral"`
 	AdmiralEndpoint         string `json:"admiral_endpoint"`
 	AuthMode                string `json:"auth_mode"`
@@ -63,23 +60,20 @@ type GeneralInfo struct {
 
 // validate for validating user if an admin.
 func (sia *SystemInfoAPI) validate() {
-	sia.currentUserID = sia.ValidateUser()
+	if !sia.SecurityCtx.IsAuthenticated() {
+		sia.HandleUnauthorized()
+		sia.StopRun()
+	}
 
-	var err error
-	sia.isAdmin, err = dao.IsAdminRole(sia.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole:%v", err)
-		sia.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	if !sia.SecurityCtx.IsSysAdmin() {
+		sia.HandleForbidden(sia.SecurityCtx.GetUsername())
+		sia.StopRun()
 	}
 }
 
 // GetVolumeInfo gets specific volume storage info.
 func (sia *SystemInfoAPI) GetVolumeInfo() {
 	sia.validate()
-	if !sia.isAdmin {
-		sia.RenderError(http.StatusForbidden, "User does not have admin role.")
-		return
-	}
 
 	capacity, err := config.AdminserverClient.Capacity()
 	if err != nil {
@@ -100,20 +94,17 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 //GetCert gets default self-signed certificate.
 func (sia *SystemInfoAPI) GetCert() {
 	sia.validate()
-	if sia.isAdmin {
-		if _, err := os.Stat(defaultRootCert); err == nil {
-			sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
-			sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
-			http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
-		} else if os.IsNotExist(err) {
-			log.Error("No certificate found.")
-			sia.CustomAbort(http.StatusNotFound, "No certificate found.")
-		} else {
-			log.Errorf("Unexpected error: %v", err)
-			sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+	if _, err := os.Stat(defaultRootCert); err == nil {
+		sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
+		sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
+		http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
+	} else if os.IsNotExist(err) {
+		log.Error("No certificate found.")
+		sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+	} else {
+		log.Errorf("Unexpected error: %v", err)
+		sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-	sia.CustomAbort(http.StatusForbidden, "")
 }
 
 // GetGeneralInfo returns the general system info, which is to be called by anonymous user
@@ -135,6 +126,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
 		WithAdmiral:             config.WithAdmiral(),
 		WithNotary:              config.WithNotary(),
+		WithClair:               config.WithClair(),
 		AuthMode:                cfg[common.AUTHMode].(string),
 		ProjectCreationRestrict: cfg[common.ProjectCreationRestriction].(string),
 		SelfRegistration:        cfg[common.SelfRegistration].(bool),

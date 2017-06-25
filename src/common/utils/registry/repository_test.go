@@ -25,7 +25,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 

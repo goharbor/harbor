@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -30,7 +29,7 @@ import (
 
 // UserAPI handles request to /api/users/{}
 type UserAPI struct {
-	api.BaseAPI
+	BaseController
 	currentUserID    int
 	userID           int
 	SelfRegistration bool
@@ -45,6 +44,7 @@ type passwordReq struct {
 
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
+	ua.BaseController.Prepare()
 	mode, err := config.AuthMode()
 	if err != nil {
 		log.Errorf("failed to get auth mode: %v", err)
@@ -61,15 +61,24 @@ func (ua *UserAPI) Prepare() {
 
 	ua.SelfRegistration = self
 
-	if ua.Ctx.Input.IsPost() {
-		sessionUserID := ua.GetSession("userId")
-		_, _, ok := ua.Ctx.Request.BasicAuth()
-		if sessionUserID == nil && !ok {
+	if !ua.SecurityCtx.IsAuthenticated() {
+		if ua.Ctx.Input.IsPost() {
 			return
 		}
+		ua.HandleUnauthorized()
+		return
 	}
 
-	ua.currentUserID = ua.ValidateUser()
+	user, err := dao.GetUser(models.User{
+		Username: ua.SecurityCtx.GetUsername(),
+	})
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get user %s: %v",
+			ua.SecurityCtx.GetUsername(), err))
+		return
+	}
+
+	ua.currentUserID = user.UserID
 	id := ua.Ctx.Input.Param(":id")
 	if id == "current" {
 		ua.userID = ua.currentUserID
@@ -92,36 +101,12 @@ func (ua *UserAPI) Prepare() {
 		}
 	}
 
-	ua.IsAdmin, err = dao.IsAdminRole(ua.currentUserID)
-	if err != nil {
-		log.Errorf("Error occurred in IsAdminRole:%v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
+	ua.IsAdmin = ua.SecurityCtx.IsSysAdmin()
 }
 
 // Get ...
 func (ua *UserAPI) Get() {
-	if ua.userID == 0 { //list users
-		if !ua.IsAdmin {
-			log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
-			ua.RenderError(http.StatusForbidden, "User does not have admin role")
-			return
-		}
-		username := ua.GetString("username")
-		userQuery := models.User{}
-		if len(username) > 0 {
-			userQuery.Username = username
-		}
-		userList, err := dao.ListUsers(userQuery)
-		if err != nil {
-			log.Errorf("Failed to get data from database, error: %v", err)
-			ua.RenderError(http.StatusInternalServerError, "Failed to query from database")
-			return
-		}
-		ua.Data["json"] = userList
-
-	} else if ua.userID == ua.currentUserID || ua.IsAdmin {
+	if ua.userID == ua.currentUserID || ua.IsAdmin {
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
@@ -129,11 +114,47 @@ func (ua *UserAPI) Get() {
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		ua.Data["json"] = u
-	} else {
-		log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
+		ua.ServeJSON()
+		return
+	}
+
+	log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
+	ua.RenderError(http.StatusForbidden, "User does not have admin role")
+	return
+}
+
+// List ...
+func (ua *UserAPI) List() {
+	if !ua.IsAdmin {
+		log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
+
+	page, size := ua.GetPaginationParams()
+	query := &models.UserQuery{
+		Username: ua.GetString("username"),
+		Email:    ua.GetString("email"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
+	}
+
+	total, err := dao.GetTotalOfUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))
+		return
+	}
+
+	users, err := dao.ListUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get users: %v", err))
+		return
+	}
+
+	ua.SetPaginationHeader(total, page, size)
+	ua.Data["json"] = users
 	ua.ServeJSON()
 }
 
@@ -251,6 +272,11 @@ func (ua *UserAPI) Delete() {
 		ua.CustomAbort(http.StatusForbidden, "can not delete yourself")
 	}
 
+	if ua.userID == 1 {
+		ua.HandleForbidden(ua.SecurityCtx.GetUsername())
+		return
+	}
+
 	var err error
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {
@@ -348,7 +374,7 @@ func commonValidate(user models.User) error {
 		return fmt.Errorf("Email can't be empty")
 	}
 
-	if isIllegalLength(user.Realname, 0, 20) {
+	if isIllegalLength(user.Realname, 1, 20) {
 		return fmt.Errorf("realname with illegal length")
 	}
 

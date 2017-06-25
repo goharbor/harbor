@@ -98,10 +98,11 @@ func main() {
 		log.Error(err)
 	}
 
+	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	initRouters()
-	if err := api.SyncRegistry(); err != nil {
+	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Error(err)
 	}
 	log.Info("Init proxy")

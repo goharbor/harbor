@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -40,13 +39,6 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func clearTable(table string) error {
-	o := GetOrmer()
-	sql := fmt.Sprintf("delete from %s where 1=1", table)
-	_, err := o.Raw(sql).Exec()
-	return err
 }
 
 func clearUp(username string) {
@@ -415,14 +407,14 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	users, err := ListUsers(models.User{})
+	users, err := ListUsers(nil)
 	if err != nil {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
 	if len(users) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
-	users2, err := ListUsers(models.User{Username: username})
+	users2, err := ListUsers(&models.UserQuery{Username: username})
 	if len(users2) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
@@ -512,7 +504,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := SearchProjects(currentUser.UserID)
+	projects, err := GetHasReadPermProjects(currentUser.Username)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -578,11 +570,11 @@ func TestGetAccessLog(t *testing.T) {
 		t.Errorf("failed to add access log: %v", err)
 	}
 
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
+	accessLogs, err := GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -595,11 +587,11 @@ func TestGetAccessLog(t *testing.T) {
 }
 
 func TestGetTotalOfAccessLogs(t *testing.T) {
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	total, err := GetTotalOfAccessLogs(queryAccessLog)
+	total, err := GetTotalOfAccessLogs(query)
 	if err != nil {
 		t.Fatalf("failed to get total of access log: %v", err)
 	}
@@ -625,7 +617,15 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
+
+	query := &models.LogQueryParam{
+		Username:   accessLog.Username,
+		ProjectIDs: []int64{accessLog.ProjectID},
+		Repository: accessLog.RepoName,
+		Tag:        accessLog.RepoTag,
+		Operations: []string{accessLog.Operation},
+	}
+	accessLogList, err = GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -684,6 +684,7 @@ func TestCountPull(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectExists(t *testing.T) {
 	var exists bool
 	var err error
@@ -702,7 +703,7 @@ func TestProjectExists(t *testing.T) {
 		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
 	}
 }
-
+*/
 func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID
 	p, err := GetProjectByID(id)
@@ -768,13 +769,14 @@ func TestToggleProjectPublicity(t *testing.T) {
 
 }
 
+/*
 func TestIsProjectPublic(t *testing.T) {
 
 	if isPublic := IsProjectPublic(projectName); isPublic {
 		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectID)
 	}
 }
-
+*/
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
@@ -791,6 +793,7 @@ func TestGetUserProjectRoles(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectPermission(t *testing.T) {
 	roleCode, err := GetPermission(currentUser.Username, currentProject.Name)
 	if err != nil {
@@ -800,33 +803,9 @@ func TestProjectPermission(t *testing.T) {
 		t.Errorf("The expected role code is MDRWS,but actual: %s", roleCode)
 	}
 }
-
-func TestGetTotalOfUserRelevantProjects(t *testing.T) {
-	total, err := GetTotalOfUserRelevantProjects(currentUser.UserID, "")
-	if err != nil {
-		t.Fatalf("failed to get total of user relevant projects: %v", err)
-	}
-
-	if total != 1 {
-		t.Errorf("unexpected total: %d != 1", total)
-	}
-}
-
-func TestGetUserRelevantProjects(t *testing.T) {
-	projects, err := GetUserRelevantProjects(currentUser.UserID, "")
-	if err != nil {
-		t.Errorf("Error occurred in GetUserRelevantProjects: %v", err)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expected length of relevant projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[0].Name != projectName {
-		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
+*/
 func TestGetTotalOfProjects(t *testing.T) {
-	total, err := GetTotalOfProjects("")
+	total, err := GetTotalOfProjects(nil)
 	if err != nil {
 		t.Fatalf("failed to get total of projects: %v", err)
 	}
@@ -837,7 +816,7 @@ func TestGetTotalOfProjects(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	projects, err := GetProjects("")
+	projects, err := GetProjects(nil)
 	if err != nil {
 		t.Errorf("Error occurred in GetAllProjects: %v", err)
 	}
@@ -850,7 +829,10 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestGetPublicProjects(t *testing.T) {
-	projects, err := GetProjects("", 1)
+	value := true
+	projects, err := GetProjects(&models.ProjectQueryParam{
+		Public: &value,
+	})
 	if err != nil {
 		t.Errorf("Error occurred in getProjects: %v", err)
 	}
@@ -979,16 +961,6 @@ func TestChangeUserProfile(t *testing.T) {
 		if loginedUser.Comment != "Unit Test" {
 			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 		}
-	}
-}
-
-func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(currentUser.Username, 10, "2016-05-13 00:00:00", time.Now().String())
-	if err != nil {
-		t.Errorf("error occured in getting recent logs, error: %v", err)
-	}
-	if len(logs) <= 0 {
-		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
 	}
 }
 
@@ -1668,7 +1640,7 @@ var sj2 = models.ScanJob{
 	Status:     models.JobPending,
 	Repository: "library/ubuntu",
 	Tag:        "15.10",
-	Digest:     "sha256:1234567890",
+	Digest:     "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f",
 }
 
 func TestAddScanJob(t *testing.T) {
@@ -1680,7 +1652,7 @@ func TestAddScanJob(t *testing.T) {
 	assert.Equal(sj1.Tag, r1.Tag)
 	assert.Equal(sj1.Status, r1.Status)
 	assert.Equal(sj1.Repository, r1.Repository)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 }
 
@@ -1706,7 +1678,7 @@ func TestGetScanJobs(t *testing.T) {
 	assert.Equal(1, len(r))
 	assert.Equal(sj2.Tag, r[0].Tag)
 	assert.Nil(err)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 }
 
@@ -1721,7 +1693,43 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	assert.Equal("newstatus", j.Status)
 	err = UpdateScanJobStatus(id+9, "newstatus")
 	assert.NotNil(err)
-	err = clearTable(ScanJobTable)
+	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
+}
 
+func TestImgScanOverview(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	digest := "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f"
+	res, err := GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Nil(res)
+	err = SetScanJobForImg(digest, 33)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(33), res.JobID)
+	err = SetScanJobForImg(digest, 22)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(22), res.JobID)
+	pk := "22-sha256:sdfsdfarfwefwr23r43t34ggregergerger"
+	comp := &models.ComponentsOverview{
+		Total: 2,
+		Summary: []*models.ComponentsOverviewEntry{
+			&models.ComponentsOverviewEntry{
+				Sev:   int(models.SevMedium),
+				Count: 2,
+			},
+		},
+	}
+	err = UpdateImgScanOverview(digest, pk, models.SevMedium, comp)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(pk, res.DetailsKey)
+	assert.Equal(int(models.SevMedium), res.Sev)
+	assert.Equal(2, res.CompOverview.Summary[0].Count)
 }
