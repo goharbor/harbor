@@ -56,8 +56,6 @@ func (c *Client) ScanLayer(l models.ClairLayer) error {
 	if err != nil {
 		return err
 	}
-	c.logger.Infof("endpoint: %s", c.endpoint)
-	c.logger.Infof("body: %s", string(data))
 	req, err := http.NewRequest("POST", c.endpoint+"/v1/layers", bytes.NewReader(data))
 	if err != nil {
 		return err
@@ -68,13 +66,13 @@ func (c *Client) ScanLayer(l models.ClairLayer) error {
 		return err
 	}
 	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 	c.logger.Infof("response code: %d", resp.StatusCode)
 	if resp.StatusCode != http.StatusCreated {
 		c.logger.Warningf("Unexpected status code: %d", resp.StatusCode)
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
 		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	c.logger.Infof("Returning.")

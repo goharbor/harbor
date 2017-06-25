@@ -65,6 +65,7 @@ func BuildBlobURL(endpoint, repository, digest string) string {
 }
 
 //GetTokenForRepo is a temp solution for job handler to get a token for clair.
+//TODO: Get rid of it when it can get a token from repository client.
 func GetTokenForRepo(repository string) (string, error) {
 	u, err := url.Parse(config.InternalTokenServiceEndpoint())
 	if err != nil {
