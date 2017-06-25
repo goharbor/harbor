@@ -37,13 +37,13 @@ In first node, Build, install and bring up Harbor by following command.
 ``INITFLAG=true`` must be setting in first node that start up at first.
 
 ```
-make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.1.2 CLUSTERFLAG=true NODEIP=[NODE IP] INITFLAG=true
+make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.4 CLUSTERFLAG=true NODEIP=[NODE IP] INITFLAG=true
 ```
 
 In second node, bring up Harbor by following command.
 
 ```
-make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.1.2 CLUSTERFLAG=true NODEIP=[NODE IP] 
+make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.4 CLUSTERFLAG=true NODEIP=[NODE IP] 
 ```
 
 After all processes are brought up in each node, distribute the data table to MySQL Cluster from first node by following command.
