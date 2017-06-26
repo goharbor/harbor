@@ -6,6 +6,7 @@ RUN touch /etc/localtime.bak \
     && tdnf install -y sed shadow gzip postgresql\
     && groupadd -r postgres --gid=999 \
     && useradd -r -g postgres --uid=999 postgres \
+    && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
     && chown -R postgres:postgres /run/postgresql \
     && chmod 2777 /run/postgresql \

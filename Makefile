@@ -94,7 +94,7 @@ NEWCLARITYVERSION=
 #clair parameters
 CLAIRVERSION=v2.0.0
 CLAIRFLAG=false
-CLAIRDBVERSION=9.6.3
+CLAIRDBVERSION=9.6.3-photon
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -178,7 +178,7 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 DOCKERIMAGENAME_CLATIRY=vmware/harbor-clarity-ui-builder
-DOCKERIMAGENAME_POSTGRESQL=vmware/harbor-postgresql
+DOCKERIMAGENAME_POSTGRESQL=vmware/postgresql
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
 DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
@@ -242,7 +242,7 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) vmware/harbor-postgresql:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -312,7 +312,7 @@ build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
 build_postgresql:
 	@echo "buildging postgresql container for photon..."
-	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(CLAIRDBVERSION) .
 	@echo "Done."
 build: build_$(BASEIMAGE)
 
@@ -368,7 +368,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
 		$(DOCKERPULL) quay.io/coreos/clair:$(CLAIRVERSION); \
-		$(DOCKERPULL) vmware/harbor-postgresql:$(CLAIRDBVERSION); \
+		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
 
 	@echo "saving harbor docker image"

@@ -17,7 +17,7 @@ services:
         aliases:
           - postgres
     container_name: clair-db
-    image: vmware/harbor-postgresql:9.6.3
+    image: vmware/postgresql:9.6.3-photon
     restart: always
     depends_on:
       - log
