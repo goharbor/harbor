@@ -26,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // SearchAPI handles requesst to /api/search
@@ -157,13 +158,13 @@ func getTags(repository string) ([]string, error) {
 		return nil, err
 	}
 
-	client, err := NewRepositoryClient(url, true,
-		"admin", repository, "repository", repository, "pull")
+	client, err := uiutils.NewRepositoryClientForUI(url, true,
+		"admin", repository, "pull")
 	if err != nil {
 		return nil, err
 	}
 
-	tags, err := getSimpleTags(client)
+	tags, err := client.ListTag()
 	if err != nil {
 		return nil, err
 	}

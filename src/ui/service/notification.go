@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager/pms"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -102,7 +103,7 @@ func (n *NotificationHandler) Post() {
 
 			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
 			if autoScanEnabled(project) {
-				if err := api.TriggerImageScan(repository, tag); err != nil {
+				if err := uiutils.TriggerImageScan(repository, tag); err != nil {
 					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
 				}
 			}
