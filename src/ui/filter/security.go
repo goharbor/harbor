@@ -51,6 +51,7 @@ func Init() {
 	if config.WithAdmiral() {
 		reqCtxModifiers = []ReqCtxModifier{
 			&secretReqCtxModifier{config.SecretStore},
+			&basicAuthReqCtxModifier{},
 			&tokenReqCtxModifier{},
 			&unauthorizedReqCtxModifier{}}
 		return
@@ -123,34 +124,43 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
-
-	user, err := auth.Login(models.AuthModel{
-		Principal: username,
-		Password:  password,
-	})
-	if err != nil {
-		log.Errorf("failed to authenticate %s: %v", username, err)
-		return false
-	}
-	if user == nil {
-		return false
-	}
+	log.Debug("got user information via basic auth")
 
 	var securCtx security.Context
 	var pm projectmanager.ProjectManager
-	log.Debug("got user information via basic auth")
+
 	if config.WithAdmiral() {
 		// integration with admiral
-		// we can add logic here to support basic auth in integration mode
-		log.Debug("basic auth isn't supported in integration mode")
-		return false
-	}
+		token, authCtx, err := authcontext.Login(username, password)
+		if err != nil {
+			log.Errorf("failed to authenticate %s: %v", username, err)
+			return false
+		}
 
-	// standalone
-	log.Debug("using local database project manager")
-	pm = config.GlobalProjectMgr
-	log.Debug("creating local database security context...")
-	securCtx = local.NewSecurityContext(user, pm)
+		log.Debug("creating PMS project manager...")
+		pm = pms.NewProjectManager(config.AdmiralEndpoint(), token)
+
+		log.Debug("creating admiral security context...")
+		securCtx = admiral.NewSecurityContext(authCtx, pm)
+	} else {
+		// standalone
+		user, err := auth.Login(models.AuthModel{
+			Principal: username,
+			Password:  password,
+		})
+		if err != nil {
+			log.Errorf("failed to authenticate %s: %v", username, err)
+			return false
+		}
+		if user == nil {
+			log.Debug("basic auth user is nil")
+			return false
+		}
+		log.Debug("using local database project manager")
+		pm = config.GlobalProjectMgr
+		log.Debug("creating local database security context...")
+		securCtx = local.NewSecurityContext(user, pm)
+	}
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
