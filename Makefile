@@ -267,9 +267,9 @@ compile_jobservice:
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(SRCPATH):$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
 	else \
-		$(DOCKERCMD) run --rm -v $(SRCPATH):$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
 	fi
 	@echo "Done."
 
