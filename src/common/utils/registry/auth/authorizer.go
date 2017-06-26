@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/registry"
 )
 
@@ -44,28 +43,18 @@ type AuthorizerStore struct {
 
 // NewAuthorizerStore ...
 func NewAuthorizerStore(endpoint string, insecure bool, authorizers ...Authorizer) (*AuthorizerStore, error) {
-	endpoint = utils.FormatEndpoint(endpoint)
-
 	client := &http.Client{
 		Transport: registry.GetHTTPTransport(insecure),
 		Timeout:   30 * time.Second,
 	}
-
-	pingURL := buildPingURL(endpoint)
-	resp, err := client.Get(pingURL)
+	pingURL, challenges, err := ping(client, endpoint)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	challenges := ParseChallengeFromResponse(resp)
-	ping, err := url.Parse(pingURL)
-	if err != nil {
-		return nil, err
-	}
 	return &AuthorizerStore{
 		authorizers: authorizers,
-		ping:        ping,
+		ping:        pingURL,
 		challenges:  challenges,
 	}, nil
 }
