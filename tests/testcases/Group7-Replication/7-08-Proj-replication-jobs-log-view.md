@@ -10,12 +10,12 @@ User guide
 
 # Environment:
 
-* This test requires atleast one Harbor instance is running and available.
+* This test requires at least two Harbor instance is running and available.
 * At least one replication job exist.
 
 # Test Steps:
 
-1. Login UI as admin user.
+1. Login source registry UI as admin user.
 2. In project replication page, select a replication job and view job log.
 
 # Expected Outcome:

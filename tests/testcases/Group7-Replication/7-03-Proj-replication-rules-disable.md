@@ -1,4 +1,4 @@
-Test 7-03 Project replication rules disabe
+Test 7-03 Project replication rules disable
 =======
 
 # Purpose:
@@ -19,7 +19,7 @@ User Guide
 
 # Expected outcome:
 
-* Rule can be disabled.
+* Rule can be disabled. Replication jobs in queues will be canceled
 
 # Possible Problems:
 None

@@ -21,10 +21,13 @@ User guide
 2. Create a project and add an enabled replication rule.  
 3. Push an image to created project.  
 4. Check replication job.  
+5. Check remote registry to see if the image has been replicated:
+* Project exist on remote registry  
+* Project not exist on remote registry  
 
 # Expect Outcome:  
 
-* On endpoint can see duplicated projects and images. 
+* On remote registry can see duplicated projects and images. 
 
 # Possible Problems:
 None

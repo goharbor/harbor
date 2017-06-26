@@ -16,11 +16,13 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In replication page, choose an endpoint and edit setting.  
+2. In replication page, choose an endpoint in use and edit setting.  
+3. In replication page, choose an endpoint not in use and edit setting.
 
 # Expected Outcome:
 
-* In step2, endpoint info can be edited.
+* In step2, endpoint info can not be edited.  
+* In step3, endpoint info can be edited.  
 
 # Possible Problems:
 None

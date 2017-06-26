@@ -16,13 +16,25 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.
-2. In Project replication page, add a replication rule.
-3. Add another rule with different name use the same endpoint.  
+2. In Project replication page, add a replication rule using an exist endpoint with enable checked.  
+3. In Project replication page, add a replication rule using an exist endpoint without enable checked.  
+4. In Project replication page, add a replication rule using a new endpoint.
+5. In Project replication page, add a replication rule using a new endpoint. Provide invalid values of input to see if validation works:
+
+* endpoint name or ip address duplicate with exist endpoint.  
+* endpoint ip address incorrect.  
+* endpoint username or password incorrect.  
+
+6. Add another rule with different name using the same endpoint.  
+
 
 # Expected Outcome:
 
-* In step2, a rule with given name will be added.  
-* In step3, rule add will fail.  
+* In step2, a rule with given name will be added. And all images will be replicated to remote.   
+* In step3, a rule will be added and enabled.  
+* In step4, a rule using new endpoint will be added.  
+* In step5, rule can not be added, and wrong username/password/ip will cause test connection fail.  
+* In step6, rule can not be added.  
 
 # Possible Problems:
 None

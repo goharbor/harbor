@@ -1,4 +1,4 @@
-Test 7-15 Rules rule edit
+Test 7-15 Rules: rule edit
 =======
 
 # Purpose:
@@ -15,11 +15,13 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In replication page,edit replication rules.
+2. In replication page,edit name, description, enable status, endpoint info of enabled replication rules.
+3. In replication page,edit name, description, enable status, endpoint info of disabled replication rules.
 
 # Expected Outcome:
 
-* Rules can be edited.
+* In step2, rules can not be edited.  
+* In step3, rules can be edited.  
 
 # Possible Problems:
 None

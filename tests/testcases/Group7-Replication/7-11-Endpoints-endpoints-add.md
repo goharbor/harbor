@@ -11,7 +11,7 @@ User guide
 
 # Environments:
 
-* This test requires at least one Harbor instance is running and available.
+* This test requires at least two Harbor instance is running and available.
 
 # Test Steps:
 

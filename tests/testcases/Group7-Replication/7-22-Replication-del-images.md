@@ -17,17 +17,19 @@ User guide
 # Test Steps:  
 **NOTE:** In below test, Harbor instance should have at least one available endpoint.  
 
-1. Login UI as admin user.  
+1. Login source registry UI as admin user.  
 2. Create a project and add an enabled replication rule.
 3. Push at least one image to created project, and wait until replication job done.  
 4. Check the job log.  
 5. Delete a pushed image in UI.  
 6. Check the replication job.  
+7. Check remote registry to see if image has been deleted.  
 
 # Expeced Outcome:
 
 * In step3, the remote will see replicated project and images.  
 * In step6, there will be a replication job and the deleted image will be deleted from remote too.  
+* In step7, images on remote registry should be deleted.  
 
 # Possible Problems:
 None

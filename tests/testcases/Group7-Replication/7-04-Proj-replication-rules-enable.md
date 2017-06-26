@@ -20,7 +20,7 @@ User guide
 
 # Expected Outcome:
 
-* In step2 rule become enabled.  
+* In step2 rule become enabled. Push a new image, the replication job(s) will start. 
 
 # Possible Problems:
 None

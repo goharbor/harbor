@@ -9,16 +9,16 @@ To verify rule filter works correctly.
 User guide
 
 # Environment:
-* This test requires that a Harbor instance is running and avaiable.  
+* This test requires that two Harbor instance is running and avaiable and there are at least 5 rules of a project.  
 
 # Test Steps:
 
-1. Login ui as user.
-2. In project replication page,input some character in rule filter.
+1. Login source registry ui as user.
+2. In project replication page,input some character in rule filter and then clear the filter.
 
 # Expected Outcome:
 
-* In step2, rules can be filtered.
+* In step2, rules can be filtered, after cleared filter, all rules are shown again.
 
 # Possible Problems:
 None

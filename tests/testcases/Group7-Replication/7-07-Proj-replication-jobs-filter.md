@@ -10,17 +10,18 @@ User guide
 
 # Environment:
 
-* This test requires at least one Harbor instance is running and available.
+* This test requires at least two Harbor instance is running and available, and a project with a few jobs.
 
 # Test Steps:
 
-1. Login as admin user.
+1. Login source registry as admin user.
 2. Create some project and create replication rules.
-3. In project replication page, input some character in jobs log filter
+3. Push some images into the project to start replication jobs.  
+4. In project replication page, input some character in jobs log filter, and then clear the filter.  
 
 # Expected Outcome:
 
-* In step3, jobs can be filtered. 
+* In step4, jobs can be filtered, and after clear filter, all jobs are shown again.   
 
 # Possible Problems:
 None
