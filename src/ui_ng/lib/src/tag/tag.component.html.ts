@@ -17,8 +17,8 @@ export const TAG_TEMPLATE = `
 <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
     <clr-dg-column style="width: 80px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column style="min-width: 180px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 160px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 150px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 100px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
@@ -35,6 +35,9 @@ export const TAG_TEMPLATE = `
         <span *ngSwitchDefault>{{t.name}}</span>
       </clr-dg-cell>
       <clr-dg-cell style="min-width: 180px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">docker pull {{registryUrl}}/{{repoName}}:{{t.name}}</clr-dg-cell>
+      <clr-dg-cell style="width: 160px;" *ngIf="withClair">
+        <hbr-vulnerability-bar [tagId]="t.name" [summary]="t.scan_overview" (startScanning)="scanTag($event)"></hbr-vulnerability-bar>
+      </clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
         <clr-icon shape="check" *ngSwitchCase="true" style="color: #1D5100;"></clr-icon>
         <clr-icon shape="close" *ngSwitchCase="false" style="color: #C92100;"></clr-icon>
@@ -42,9 +45,6 @@ export const TAG_TEMPLATE = `
           <clr-icon shape="help" style="color: #565656;" size="16"></clr-icon>
           <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
         </a>
-      </clr-dg-cell>
-      <clr-dg-cell style="width: 150px;" *ngIf="withClair">
-        <hbr-vulnerability-bar [tagId]="t.name" [summary]="t.scan_overview" (startScanning)="scanTag($event)"></hbr-vulnerability-bar>
       </clr-dg-cell>
       <clr-dg-cell style="width: 100px;">{{t.author}}</clr-dg-cell>
       <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
