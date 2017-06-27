@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	//	"time"
@@ -106,11 +107,19 @@ func (r *Repository) ListTag() ([]string, error) {
 		if err := json.Unmarshal(b, &tagsResp); err != nil {
 			return tags, err
 		}
-
+		sort.Strings(tags)
 		tags = tagsResp.Tags
 
 		return tags, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+
+		// TODO remove the logic if the bug of registry is fixed
+		// It's a workaround for a bug of registry: when listing tags of
+		// a repository which is being pushed, a "NAME_UNKNOWN" error will
+		// been returned, while the catalog API can list this repository.
+		return tags, nil
 	}
+
 	return tags, &registry_error.Error{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
