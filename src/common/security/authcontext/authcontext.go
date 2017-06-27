@@ -21,8 +21,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/vmware/harbor/src/ui/config"
 )
 
 const (
@@ -92,9 +90,31 @@ func (a *AuthContext) HasAllPerm(project string) bool {
 	return false
 }
 
-// GetByToken ...
-func GetByToken(token string) (*AuthContext, error) {
-	req, err := http.NewRequest(http.MethodGet, buildCtxURL(), nil)
+// GetMyProjects returns all projects which the user is a member of
+func (a *AuthContext) GetMyProjects() ([]string, error) {
+	existence := map[string]string{}
+	projects := []string{}
+	for _, list := range a.Projects {
+		for _, p := range list {
+			if len(existence[p]) > 0 {
+				continue
+			}
+			existence[p] = p
+			projects = append(projects, p)
+		}
+
+	}
+	return projects, nil
+}
+
+// GetByToken gets the user's auth context, if the username is not provided
+// get the default auth context of the token
+func GetByToken(url, token string, username ...string) (*AuthContext, error) {
+	principalID := ""
+	if len(username) > 0 {
+		principalID = username[0]
+	}
+	req, err := http.NewRequest(http.MethodGet, buildCtxURL(url, principalID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +139,7 @@ func GetByToken(token string) (*AuthContext, error) {
 }
 
 // Login ...
-func Login(username, password string) (string, *AuthContext, error) {
+func Login(url, username, password string) (string, *AuthContext, error) {
 	data, err := json.Marshal(&struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -131,7 +151,7 @@ func Login(username, password string) (string, *AuthContext, error) {
 		return "", nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, buildLoginURL(), bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url), bytes.NewBuffer(data))
 	if err != nil {
 		return "", nil, err
 	}
@@ -166,10 +186,14 @@ func send(req *http.Request) (int, http.Header, []byte, error) {
 	return resp.StatusCode, resp.Header, data, nil
 }
 
-func buildCtxURL() string {
-	return strings.TrimRight(config.AdmiralEndpoint(), "/") + "/sso/auth-context"
+func buildCtxURL(url, principalID string) string {
+	url = strings.TrimRight(url, "/") + "/sso/auth-context"
+	if len(principalID) > 0 {
+		url += "/" + principalID
+	}
+	return url
 }
 
-func buildLoginURL() string {
-	return strings.TrimRight(config.AdmiralEndpoint(), "/") + "/sso/login"
+func buildLoginURL(url string) string {
+	return strings.TrimRight(url, "/") + "/sso/login"
 }
