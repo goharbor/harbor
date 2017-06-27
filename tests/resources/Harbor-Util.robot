@@ -83,7 +83,7 @@ Down Harbor
 		Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${HARBOR_URL}  ${with_notary}=true
+		[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true
 		Log To Console  \nStart Docker Daemon
 		Start Docker Daemon Locally
 		${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
@@ -159,7 +159,7 @@ Prepare Cert
 		Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${HARBOR_URL}  ${with_notary}=false
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=false
 		${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
     Log  ${output}
 		Should Be Equal As Integers  ${rc}  0
