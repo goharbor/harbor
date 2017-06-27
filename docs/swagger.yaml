@@ -567,6 +567,33 @@ paths:
         401:
           description: User need to log in first.
   /users/{user_id}:
+    get:
+      summary: Get a user's profile.
+      description: |
+       Get user's profile with user id.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Registered user ID 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get user's profile successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /users/{user_id}:
     put:
       summary: Update a registered user to change his profile.
       description: |
@@ -588,7 +615,7 @@ paths:
         - Products
       responses:
         200:
-          description: Updated user's admin role successfully.
+          description: Updated user's profile successfully.
         400:
           description: Invalid user ID.
         401:
@@ -905,7 +932,7 @@ paths:
         503:
           description: Harbor is not deployed with Clair.
 
-  /repositories/{repo_name}/tags/{tag}/vulnerability/detail:
+  /repositories/{repo_name}/tags/{tag}/vulnerability/details:
     get:
       summary: Get vulnerability details of the image.
       description: |
@@ -1065,7 +1092,7 @@ paths:
           in: query
           type: integer
           format: int
-          required: false
+          required: true
           description: The ID of the policy that triggered this job.
         - name: num
           in: query
@@ -1113,7 +1140,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RepPolicy'
+              $ref: '#/definitions/JobStatus'
           headers:
             X-Total-Count:
               description: The total count of jobs
@@ -1202,7 +1229,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/JobStatus'
+              $ref: '#/definitions/RepPolicy'
         400:
           description: Invalid project ID.
         401:
