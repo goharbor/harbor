@@ -17,12 +17,12 @@ fi
 # Create CA certificate
 openssl req \
     -newkey rsa:4096 -nodes -sha256 -keyout harbor_ca.key \
-    -x509 -days 365 -out harbor_ca.crt -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=Harbor CA'
+    -x509 -days 365 -out harbor_ca.crt -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=HarborCA'
 
 # Generate a Certificate Signing Request
 openssl req \
     -newkey rsa:4096 -nodes -sha256 -keyout $IP.key \
-    -out $IP.csr -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=Harbor CA'
+    -out $IP.csr -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=HarborManager'
 
 # Generate the certificate of local registry host
 echo subjectAltName = IP:$IP > extfile.cnf
