@@ -18,12 +18,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/vmware/harbor/src/common/models"
+	secstore "github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/security"
-	"github.com/vmware/harbor/src/common/security/rbac"
+	"github.com/vmware/harbor/src/common/security/admiral"
+	"github.com/vmware/harbor/src/common/security/authcontext"
+	"github.com/vmware/harbor/src/common/security/local"
 	"github.com/vmware/harbor/src/common/security/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
@@ -35,11 +37,33 @@ import (
 type key string
 
 const (
-	// HarborSecurityContext is the name of security context passed to handlers
-	HarborSecurityContext key = "harbor_security_context"
-	// HarborProjectManager is the name of project manager passed to handlers
-	HarborProjectManager key = "harbor_project_manager"
+	securCtxKey key = "harbor_security_context"
+	pmKey       key = "harbor_project_manager"
 )
+
+var (
+	reqCtxModifiers []ReqCtxModifier
+)
+
+// Init ReqCtxMofiers list
+func Init() {
+	// integration with admiral
+	if config.WithAdmiral() {
+		reqCtxModifiers = []ReqCtxModifier{
+			&secretReqCtxModifier{config.SecretStore},
+			&basicAuthReqCtxModifier{},
+			&tokenReqCtxModifier{},
+			&unauthorizedReqCtxModifier{}}
+		return
+	}
+
+	// standalone
+	reqCtxModifiers = []ReqCtxModifier{
+		&secretReqCtxModifier{config.SecretStore},
+		&basicAuthReqCtxModifier{},
+		&sessionReqCtxModifier{},
+		&unauthorizedReqCtxModifier{}}
+}
 
 // SecurityFilter authenticates the request and passes a security context
 // and a project manager with it which can be used to do some authN & authZ
@@ -53,94 +77,180 @@ func SecurityFilter(ctx *beegoctx.Context) {
 		return
 	}
 
-	if !strings.HasPrefix(req.URL.RequestURI(), "/api/") &&
-		!strings.HasPrefix(req.URL.RequestURI(), "/service/") {
-		return
+	// add security context and project manager to request context
+	for _, modifier := range reqCtxModifiers {
+		if modifier.Modify(ctx) {
+			break
+		}
 	}
-
-	// fill ctx with security context and project manager
-	fillContext(ctx)
 }
 
-func fillContext(ctx *beegoctx.Context) {
-	// secret
+// ReqCtxModifier modifies the context of request
+type ReqCtxModifier interface {
+	Modify(*beegoctx.Context) bool
+}
+
+type secretReqCtxModifier struct {
+	store *secstore.Store
+}
+
+func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	scrt := ctx.GetCookie("secret")
-	if len(scrt) != 0 {
-		ct := context.WithValue(ctx.Request.Context(),
-			HarborProjectManager,
-			getProjectManager(ctx))
-
-		log.Info("creating a secret security context...")
-		ct = context.WithValue(ct, HarborSecurityContext,
-			secret.NewSecurityContext(scrt, config.SecretStore))
-
-		ctx.Request = ctx.Request.WithContext(ct)
-
-		return
+	if len(scrt) == 0 {
+		return false
 	}
 
-	var user *models.User
-	var err error
+	log.Debug("got secret from request")
 
-	// basic auth
+	var pm projectmanager.ProjectManager
+	if config.WithAdmiral() {
+		// TODO project manager with harbor service accout
+	} else {
+		log.Debug("using local database project manager")
+		pm = config.GlobalProjectMgr
+	}
+
+	log.Debug("creating a secret security context...")
+	securCtx := secret.NewSecurityContext(scrt, s.store)
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+
+	return true
+}
+
+type basicAuthReqCtxModifier struct{}
+
+func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	username, password, ok := ctx.Request.BasicAuth()
-	if ok {
-		// TODO the return data contains other params when integrated
-		// with vic
-		user, err = auth.Login(models.AuthModel{
+	if !ok {
+		return false
+	}
+	log.Debug("got user information via basic auth")
+
+	var securCtx security.Context
+	var pm projectmanager.ProjectManager
+
+	if config.WithAdmiral() {
+		// integration with admiral
+		token, authCtx, err := authcontext.Login(username, password)
+		if err != nil {
+			log.Errorf("failed to authenticate %s: %v", username, err)
+			return false
+		}
+
+		log.Debug("creating PMS project manager...")
+		pm = pms.NewProjectManager(config.AdmiralEndpoint(), token)
+
+		log.Debug("creating admiral security context...")
+		securCtx = admiral.NewSecurityContext(authCtx, pm)
+	} else {
+		// standalone
+		user, err := auth.Login(models.AuthModel{
 			Principal: username,
 			Password:  password,
 		})
 		if err != nil {
 			log.Errorf("failed to authenticate %s: %v", username, err)
+			return false
 		}
-		if user != nil {
-			log.Info("got user information via basic auth")
+		if user == nil {
+			log.Debug("basic auth user is nil")
+			return false
 		}
+		log.Debug("using local database project manager")
+		pm = config.GlobalProjectMgr
+		log.Debug("creating local database security context...")
+		securCtx = local.NewSecurityContext(user, pm)
 	}
 
-	// session
-	if user == nil {
-		username := ctx.Input.Session("username")
-		isSysAdmin := ctx.Input.Session("isSysAdmin")
-		if username != nil {
-			user = &models.User{
-				Username: username.(string),
-			}
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
-			if isSysAdmin != nil && isSysAdmin.(bool) {
-				user.HasAdminRole = 1
-			}
-			log.Info("got user information from session")
-		}
-
-		// TODO maybe need to get token from session
-	}
-
-	if user == nil {
-		log.Info("user information is nil")
-	}
-
-	pm := getProjectManager(ctx)
-	ct := context.WithValue(ctx.Request.Context(), HarborProjectManager, pm)
-
-	log.Info("creating a rbac security context...")
-	ct = context.WithValue(ct, HarborSecurityContext,
-		rbac.NewSecurityContext(user, pm))
-	ctx.Request = ctx.Request.WithContext(ct)
-
-	return
+	return true
 }
 
-func getProjectManager(ctx *beegoctx.Context) projectmanager.ProjectManager {
-	if !config.WithAdmiral() {
-		log.Info("filling a project manager based on database...")
-		return config.GlobalProjectMgr
+type sessionReqCtxModifier struct{}
+
+func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	username := ctx.Input.Session("username")
+	if username == nil {
+		return false
 	}
 
-	log.Info("filling a project manager based on PMS...")
-	// TODO pass the token to the function
-	return pms.NewProjectManager(config.AdmiralEndpoint(), "")
+	log.Debug("got user information from session")
+	user := &models.User{
+		Username: username.(string),
+	}
+	isSysAdmin := ctx.Input.Session("isSysAdmin")
+	if isSysAdmin != nil && isSysAdmin.(bool) {
+		user.HasAdminRole = 1
+	}
+
+	log.Debug("using local database project manager")
+	pm := config.GlobalProjectMgr
+	log.Debug("creating local database security context...")
+	securCtx := local.NewSecurityContext(user, pm)
+
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+
+	return true
+}
+
+type tokenReqCtxModifier struct{}
+
+func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	token := ctx.Request.Header.Get(authcontext.AuthTokenHeader)
+	if len(token) == 0 {
+		return false
+	}
+
+	log.Debug("got token from request")
+
+	authContext, err := authcontext.GetByToken(token)
+	if err != nil {
+		log.Errorf("failed to get auth context: %v", err)
+		return false
+	}
+
+	log.Debug("creating PMS project manager...")
+	pm := pms.NewProjectManager(config.AdmiralEndpoint(), token)
+	log.Debug("creating admiral security context...")
+	securCtx := admiral.NewSecurityContext(authContext, pm)
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+
+	return true
+}
+
+// use this one as the last modifier in the modifier list for unauthorized request
+type unauthorizedReqCtxModifier struct{}
+
+func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	log.Debug("user information is nil")
+
+	var securCtx security.Context
+	var pm projectmanager.ProjectManager
+	if config.WithAdmiral() {
+		// integration with admiral
+		log.Debug("creating PMS project manager...")
+		pm = pms.NewProjectManager(config.AdmiralEndpoint(), "")
+		log.Debug("creating admiral security context...")
+		securCtx = admiral.NewSecurityContext(nil, pm)
+	} else {
+		// standalone
+		log.Debug("using local database project manager")
+		pm = config.GlobalProjectMgr
+		log.Debug("creating local database security context...")
+		securCtx = local.NewSecurityContext(nil, pm)
+	}
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	return true
+}
+
+func setSecurCtxAndPM(req *http.Request, ctx security.Context, pm projectmanager.ProjectManager) {
+	addToReqContext(req, securCtxKey, ctx)
+	addToReqContext(req, pmKey, pm)
+}
+
+func addToReqContext(req *http.Request, key, value interface{}) {
+	*req = *(req.WithContext(context.WithValue(req.Context(), key, value)))
 }
 
 // GetSecurityContext tries to get security context from request and returns it
@@ -149,7 +259,7 @@ func GetSecurityContext(req *http.Request) (security.Context, error) {
 		return nil, fmt.Errorf("request is nil")
 	}
 
-	ctx := req.Context().Value(HarborSecurityContext)
+	ctx := req.Context().Value(securCtxKey)
 	if ctx == nil {
 		return nil, fmt.Errorf("the security context got from request is nil")
 	}
@@ -168,7 +278,7 @@ func GetProjectManager(req *http.Request) (projectmanager.ProjectManager, error)
 		return nil, fmt.Errorf("request is nil")
 	}
 
-	pm := req.Context().Value(HarborProjectManager)
+	pm := req.Context().Value(pmKey)
 	if pm == nil {
 		return nil, fmt.Errorf("the project manager got from request is nil")
 	}

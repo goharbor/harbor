@@ -211,12 +211,9 @@ export class UserComponent implements OnInit, OnDestroy {
         //Remove it from current user list
         //and then view refreshed
         this.currentTerm = '';
-        this.originalUsers.then(users => {
-          this.users = users.filter(u => u.user_id != user.user_id);
-          this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
-          let hnd = setInterval(() => this.ref.markForCheck(), 100);
-          setTimeout(() => clearInterval(hnd), 1000);
-        });
+
+        this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
+        this.refresh();
       })
       .catch(error => {
         this.msgHandler.handleError(error);

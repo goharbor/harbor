@@ -1,7 +1,7 @@
 export const PUSH_IMAGE_HTML: string = `
 <div>
     <clr-dropdown [clrMenuPosition]="'bottom-right'">
-        <button class="btn btn-link" clrDropdownToggle (click)="onclick()">
+        <button class="btn btn-link btn-font" clrDropdownToggle (click)="onclick()">
         {{ 'PUSH_IMAGE.TITLE' | translate | uppercase}}
         <clr-icon shape="caret down"></clr-icon>
     </button>
@@ -10,14 +10,16 @@ export const PUSH_IMAGE_HTML: string = `
                 <section>
                     <span><h5 class="h5-override">{{ 'PUSH_IMAGE.TITLE' | translate }}</h5></span>
                     <span>
-                        <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-                            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                            <span class="tooltip-content">{{ 'PUSH_IMAGE.TOOLTIP' | translate }}</span>
-                    </a>
+                      <clr-tooltip [clrTooltipDirection]="'top-right'" [clrTooltipSize]="'md'">
+                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                          <clr-tooltip-content>
+                            {{ 'PUSH_IMAGE.TOOLTIP' | translate }}
+                          </clr-tooltip-content>
+                      </clr-tooltip>
                     </span>
                 </section>
                 <section>
-                  <inline-alert #copyAlert></inline-alert>
+                  <hbr-inline-alert #copyAlert></hbr-inline-alert>
                 </section>
                 <section>
                     <article class="commands-section">

@@ -1,7 +1,7 @@
 export const CREATE_EDIT_RULE_TEMPLATE: string = `
 <clr-modal [(clrModalOpen)]="createEditRuleOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{modalTitle}}</h3>
-  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+  <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body" style="max-height: 85vh;">
     <form #ruleForm="ngForm">
       <section class="form-block">

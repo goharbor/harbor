@@ -15,17 +15,17 @@ import { NgModule } from '@angular/core';
 import { AuditLogComponent } from './audit-log.component';
 import { SharedModule } from '../shared/shared.module';
 import { AuditLogService } from './audit-log.service';
-import { RecentLogComponent } from './recent-log.component';
+import { LogPageComponent } from './log-page.component';
 
 @NgModule({
   imports: [SharedModule],
   declarations: [
     AuditLogComponent,
-    RecentLogComponent
+    LogPageComponent
   ],
   providers: [AuditLogService],
   exports: [
     AuditLogComponent,
-    RecentLogComponent]
+    LogPageComponent]
 })
 export class LogModule { }

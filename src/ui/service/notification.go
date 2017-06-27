@@ -16,6 +16,7 @@ package service
 
 import (
 	"encoding/json"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -25,13 +26,13 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/api"
-
-	"github.com/astaxie/beego"
+	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
-	beego.Controller
+	api.BaseController
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
@@ -55,7 +56,6 @@ func (n *NotificationHandler) Post() {
 
 	for _, event := range events {
 		repository := event.Target.Repository
-
 		project, _ := utils.ParseRepository(repository)
 		tag := event.Target.Tag
 		action := event.Action
@@ -65,12 +65,13 @@ func (n *NotificationHandler) Post() {
 			user = "anonymous"
 		}
 
+		pro, err := n.ProjectMgr.Get(project)
+		if err != nil {
+			log.Errorf("failed to get project by name %s: %v", project, err)
+			return
+		}
+
 		go func() {
-			pro, err := dao.GetProjectByName(project)
-			if err != nil {
-				log.Errorf("failed to get project by name %s: %v", project, err)
-				return
-			}
 			if err := dao.AddAccessLog(models.AccessLog{
 				Username:  user,
 				ProjectID: pro.ProjectID,
@@ -82,6 +83,7 @@ func (n *NotificationHandler) Post() {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}()
+
 		if action == "push" {
 			go func() {
 				exist := dao.RepositoryExists(repository)
@@ -89,11 +91,6 @@ func (n *NotificationHandler) Post() {
 					return
 				}
 				log.Debugf("Add repository %s into DB.", repository)
-				pro, err := dao.GetProjectByName(project)
-				if err != nil {
-					log.Errorf("failed to get project %s: %v", project, err)
-					return
-				}
 				repoRecord := models.RepoRecord{
 					Name:      repository,
 					ProjectID: pro.ProjectID,
@@ -102,7 +99,13 @@ func (n *NotificationHandler) Post() {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}
 			}()
-			go api.TriggerReplicationByRepository(repository, []string{tag}, models.RepOpTransfer)
+
+			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
+			if autoScanEnabled(project) {
+				if err := api.TriggerImageScan(repository, tag); err != nil {
+					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
+				}
+			}
 		}
 		if action == "pull" {
 			go func() {
@@ -149,6 +152,27 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	}
 
 	return events, nil
+}
+
+func autoScanEnabled(projectName string) bool {
+	if !config.WithClair() {
+		log.Debugf("Auto Scan disabled because Harbor is not deployed with Clair")
+		return false
+	}
+	if config.WithAdmiral() {
+		//TODO get a project manager based on service account.
+		var pm *pms.ProjectManager = pms.NewProjectManager("", "")
+		p, err := pm.Get(projectName)
+		if err != nil {
+			log.Warningf("failed to get project, error: %v", err)
+			return false
+		} else if p == nil {
+			log.Warningf("project with name: %s not found.", projectName)
+			return false
+		}
+		return p.AutomaticallyScanImagesOnPush
+	}
+	return os.Getenv("ENABLE_HARBOR_SCAN_ON_PUSH") == "1"
 }
 
 // Render returns nil as it won't render any template.

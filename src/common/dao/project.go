@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware/harbor/src/common/utils/log"
+	//"github.com/vmware/harbor/src/common/utils/log"
 )
 
 //TODO:transaction, return err
@@ -50,6 +50,7 @@ func AddProject(project models.Project) (int64, error) {
 	return projectID, err
 }
 
+/*
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
@@ -85,6 +86,7 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 	return num > 0, nil
 
 }
+*/
 
 // GetProjectByID ...
 func GetProjectByID(id int64) (*models.Project, error) {
@@ -125,6 +127,7 @@ func GetProjectByName(name string) (*models.Project, error) {
 	return &p[0], nil
 }
 
+/*
 // GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
 	o := GetOrmer()
@@ -147,6 +150,7 @@ func GetPermission(username, projectName string) (string, error) {
 
 	return r[0].RoleCode, nil
 }
+*/
 
 // ToggleProjectPublicity toggles the publicity of the project.
 func ToggleProjectPublicity(projectID int64, publicity int) error {

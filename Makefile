@@ -96,7 +96,8 @@ CLAIRDBVERSION=9.6.3
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
-CLARITYSEEDPATH=/harbor_ui
+CLARITYSEEDPATH=/harbor_src
+CLARITYUTPATH=${CLARITYSEEDPATH}/ui_ng/lib
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
@@ -266,9 +267,9 @@ compile_jobservice:
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
 	else \
-		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
 	fi
 	@echo "Done."
 
@@ -389,7 +390,7 @@ refresh_clarity_builder:
 
 run_clarity_ut:
 	@echo "run clarity ut ..."
-	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH)/lib -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
+	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
 
 pushimage:
 	@echo "pushing harbor images ..."

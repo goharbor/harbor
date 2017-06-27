@@ -73,15 +73,15 @@ func (ps *ProjectSorter) Swap(i, j int) {
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
 // List projects which user1 is the project admin : query := &QueryParam{Memeber:&Member{Name:"user1",Role:1}}
 type ProjectQueryParam struct {
-	Name       string      // the name of project
-	Owner      string      // the username of project owner
-	Public     *bool       // the project is public or not, can be ture, false and nil
-	Member     *Member     // the member of project
-	Pagination *Pagination // pagination information
+	Name       string       // the name of project
+	Owner      string       // the username of project owner
+	Public     *bool        // the project is public or not, can be ture, false and nil
+	Member     *MemberQuery // the member of project
+	Pagination *Pagination  // pagination information
 }
 
-// Member fitler by member's username and role
-type Member struct {
+// MemberQuery fitler by member's username and role
+type MemberQuery struct {
 	Name string // the username of member
 	Role int    // the role of the member has to the project
 }
@@ -98,4 +98,14 @@ type Pagination struct {
 type BaseProjectCollection struct {
 	Public bool
 	Member string
+}
+
+// ProjectRequest holds informations that need for creating project API
+type ProjectRequest struct {
+	Name                                       string `json:"project_name"`
+	Public                                     int    `json:"public"`
+	EnableContentTrust                         bool   `json:"enable_content_trust"`
+	PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
+	PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
+	AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
 }

@@ -1,6 +1,6 @@
 export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `<clr-modal [(clrModalOpen)]="createEditDestinationOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{modalTitle}}</h3>
-  <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+  <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body">
     <div class="alert alert-warning" *ngIf="!editable">
       <div class="alert-item">
@@ -40,7 +40,6 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `<clr-modal [(clrModalOpen)
         <div class="form-group">
           <label for="spin" class="col-md-4"></label>
           <span class="col-md-8 spinner spinner-inline" [hidden]="!testOngoing"></span>
-          <span [style.color]="!pingStatus ? 'red': ''" class="form-group-label-override">{{ pingTestMessage }}</span>
         </div>
       </section>
     </form>

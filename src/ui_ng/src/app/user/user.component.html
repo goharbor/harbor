@@ -5,7 +5,7 @@
             <span>
         <button [class.hide-create]="!canCreateUser" type="submit" class="btn btn-link custom-add-button" (click)="addNewUser()"><clr-icon shape="add"></clr-icon>  {{'USER.ADD_ACTION' | translate}}</button>
       </span>
-            <grid-filter class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></grid-filter>
+            <hbr-filter [withDivider]="true" class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span class="refresh-btn" (click)="refresh()">
         <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
