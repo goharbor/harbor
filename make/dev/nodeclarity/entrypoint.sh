@@ -18,8 +18,10 @@ if [ ! -z "$npm_proxy" -a "$npm_proxy" != " " ]; then
 	npm config set proxy $npm_proxy
 fi
 
-rm -rf ./node_modules
-mv /harbor_resources/node_modules ./
+#Check if node_modules directory existing
+if [ ! -d "./node_modules" ]; then
+  mv /harbor_resources/node_modules ./
+fi
 
 cat ./package.json
 npm install
@@ -27,6 +29,9 @@ npm install
 ./node_modules/.bin/ngc -p tsconfig-aot.json
 sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 ./node_modules/.bin/rollup -c rollup-config.js
+
+#Copy built js to the static folder
+cp ./dist/build.min.js ../ui/static/
 
 cp -r ./src/i18n/ ../ui/static/
 cp ./src/styles.css ../ui/static/
