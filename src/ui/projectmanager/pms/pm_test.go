@@ -34,16 +34,16 @@ func TestConvert(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Nil(t, pro)
 
-	//project without property __harborId
+	//project without property __projectIndex
 	p := &project{}
 	pro, err = convert(p)
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __harborId
+	//project with invalid __projectIndex
 	p = &project{
 		CustomProperties: map[string]string{
-			"__harborId": "invalid_value",
+			"__projectIndex": "invalid_value",
 		},
 	}
 	pro, err = convert(p)
@@ -85,7 +85,7 @@ func TestConvert(t *testing.T) {
 		Name:   "test",
 		Public: true,
 		CustomProperties: map[string]string{
-			"__harborId":                                   "1",
+			"__projectIndex":                               "1",
 			"__enableContentTrust":                         "true",
 			"__preventVulnerableImagesFromRunning":         "true",
 			"__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -118,7 +118,7 @@ func TestParse(t *testing.T) {
       "id": "41427587-70e9-4671-9a9e-b9def0a07bb7",
       "name": "project02",
       "customProperties": {
-        "__harborId": "2",
+        "__projectIndex": "2",
         "__enableContentTrust": "true",
         "__preventVulnerableImagesFromRunning": "true",
         "__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -140,7 +140,7 @@ func TestParse(t *testing.T) {
       "id": "default-project",
       "name": "default-project",
       "customProperties": {
-        "__harborId": "2",
+        "__projectIndex": "2",
         "__enableContentTrust": "true",
         "__preventVulnerableImagesFromRunning": "true",
         "__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -374,8 +374,6 @@ func TestCreate(t *testing.T) {
 	assert.True(t, project.AutomaticallyScanImagesOnPush)
 }
 
-// TODO get the case back after Admiral'API is fixed
-/*
 func TestDelete(t *testing.T) {
 	pm := NewProjectManager(endpoint, token)
 
@@ -401,7 +399,7 @@ func TestDelete(t *testing.T) {
 	err = pm.Delete(name)
 	assert.Nil(t, err)
 }
-*/
+
 func TestUpdate(t *testing.T) {
 	pm := NewProjectManager(endpoint, token)
 	err := pm.Update(nil, nil)
@@ -490,9 +488,10 @@ func TestGetTotal(t *testing.T) {
 	assert.Equal(t, total1+1, total2)
 }
 
-// TODO add test case
 func TestGetHasReadPerm(t *testing.T) {
-
+	pm := NewProjectManager(endpoint, token)
+	_, err := pm.GetHasReadPerm()
+	assert.NotNil(t, err)
 }
 
 func delete(t *testing.T, id int64) {

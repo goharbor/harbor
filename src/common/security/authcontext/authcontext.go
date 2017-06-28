@@ -92,14 +92,14 @@ func (a *AuthContext) HasAllPerm(project string) bool {
 
 // GetMyProjects returns all projects which the user is a member of
 func (a *AuthContext) GetMyProjects() ([]string, error) {
-	existence := map[string]string{}
+	existence := map[string]bool{}
 	projects := []string{}
 	for _, list := range a.Projects {
 		for _, p := range list {
-			if len(existence[p]) > 0 {
+			if existence[p] {
 				continue
 			}
-			existence[p] = p
+			existence[p] = true
 			projects = append(projects, p)
 		}
 
@@ -107,9 +107,19 @@ func (a *AuthContext) GetMyProjects() ([]string, error) {
 	return projects, nil
 }
 
-// GetByToken gets the user's auth context, if the username is not provided
+// GetByToken ...
+func GetByToken(url, token string) (*AuthContext, error) {
+	return get(url, token)
+}
+
+// GetAuthCtxOfUser gets the user's auth context
+func GetAuthCtxOfUser(url, token string, username string) (*AuthContext, error) {
+	return get(url, token, username)
+}
+
+// get the user's auth context, if the username is not provided
 // get the default auth context of the token
-func GetByToken(url, token string, username ...string) (*AuthContext, error) {
+func get(url, token string, username ...string) (*AuthContext, error) {
 	principalID := ""
 	if len(username) > 0 {
 		principalID = username[0]
@@ -138,7 +148,7 @@ func GetByToken(url, token string, username ...string) (*AuthContext, error) {
 	return ctx, nil
 }
 
-// Login ...
+// Login with credential and returns token, auth context and error
 func Login(url, username, password string) (string, *AuthContext, error) {
 	data, err := json.Marshal(&struct {
 		Username string `json:"username"`

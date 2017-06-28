@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
@@ -55,7 +54,7 @@ type project struct {
 	CustomProperties map[string]string `json:"customProperties"`
 	Administrators   []*user           `json:"administrators"`
 	Developers       []*user           `json:"members"`
-	Guests           []*user           `json:"guests"` // TODO the json name needs to be modified according to the API
+	Guests           []*user           `json:"viewers"`
 }
 
 // NewProjectManager returns an instance of ProjectManager
@@ -81,7 +80,7 @@ func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, erro
 func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
 	m := map[string]string{}
 	if id, ok := projectIDOrName.(int64); ok {
-		m["customProperties.__harborId"] = strconv.FormatInt(id, 10)
+		m["customProperties.__projectIndex"] = strconv.FormatInt(id, 10)
 	} else if name, ok := projectIDOrName.(string); ok {
 		m["name"] = name
 	} else {
@@ -162,14 +161,14 @@ func convert(p *project) (*models.Project, error) {
 		project.Public = 1
 	}
 
-	value := p.CustomProperties["__harborId"]
+	value := p.CustomProperties["__projectIndex"]
 	if len(value) == 0 {
-		return nil, fmt.Errorf("property __harborId is null")
+		return nil, fmt.Errorf("property __projectIndex is null")
 	}
 
 	id, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse __harborId %s to int64: %v", value, err)
+		return nil, fmt.Errorf("failed to parse __projectIndex %s to int64: %v", value, err)
 	}
 	project.ProjectID = id
 
@@ -308,7 +307,7 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 // GetByMember ...
 func (p *ProjectManager) GetByMember(username string) ([]*models.Project, error) {
 	projects := []*models.Project{}
-	ctx, err := authcontext.GetByToken(p.endpoint, p.token, username)
+	ctx, err := authcontext.GetAuthCtxOfUser(p.endpoint, p.token, username)
 	if err != nil {
 		return projects, err
 	}
@@ -340,9 +339,6 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 	proj.CustomProperties["__preventVulnerableImagesFromRunning"] = strconv.FormatBool(pro.PreventVulnerableImagesFromRunning)
 	proj.CustomProperties["__preventVulnerableImagesFromRunningSeverity"] = pro.PreventVulnerableImagesFromRunningSeverity
 	proj.CustomProperties["__automaticallyScanImagesOnPush"] = strconv.FormatBool(pro.AutomaticallyScanImagesOnPush)
-
-	// TODO remove the logic if Admiral generates the harborId
-	proj.CustomProperties["__harborId"] = strconv.FormatInt(time.Now().UnixNano(), 10)
 
 	data, err := json.Marshal(proj)
 	if err != nil {
