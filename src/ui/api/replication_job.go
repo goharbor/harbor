@@ -25,6 +25,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/utils"
 )
 
 // RepJobAPI handles request to /api/replicationJobs /api/replicationJobs/:id/log
@@ -152,7 +153,7 @@ func (ra *RepJobAPI) GetLog() {
 		log.Errorf("failed to create a request: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
-	addAuthentication(req)
+	utils.AddUISecret(req)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

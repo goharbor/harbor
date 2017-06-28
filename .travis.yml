@@ -79,7 +79,7 @@ script:
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
-  - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.6
+  - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
   - cat ./src/ui_ng/lib/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
@@ -100,7 +100,7 @@ script:
   - docker-compose -f make/docker-compose.test.yml down
   - sudo rm -rf /data/config/*  
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.6 NOTARYFLAG=true
+  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true
   
   - docker ps
   - ./tests/notarytest.sh
