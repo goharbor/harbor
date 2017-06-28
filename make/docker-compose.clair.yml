@@ -24,6 +24,7 @@ services:
     env_file:
       ./common/config/clair/postgres_env
     volumes:
+      - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d
       - /data/clair-db:/var/lib/postgresql/data
     logging:
       driver: "syslog"
