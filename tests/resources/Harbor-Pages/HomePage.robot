@@ -44,6 +44,7 @@ Create An New User
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
 	Capture Page Screenshot
+	Sleep  3
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
     sleep  3
     Input Text  xpath=//*[@id="username"]  ${username}
