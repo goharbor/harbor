@@ -63,6 +63,7 @@ var (
 		common.CfgExpiration,
 		common.JobLogDir,
 		common.AdminInitialPassword,
+		common.ScanAllPolicy,
 	}
 
 	stringKeys = []string{
