@@ -153,7 +153,13 @@ func TestGetPublic(t *testing.T) {
 
 func TestGetByMember(t *testing.T) {
 	pm := &ProjectManager{}
-	projects, err := pm.GetByMember("admin")
+	// empty username
+	projects, err := pm.GetByMember("")
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(projects))
+
+	//non-empty username
+	projects, err = pm.GetByMember("admin")
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(projects))
 }
