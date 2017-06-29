@@ -403,6 +403,15 @@
             "UID": "LDAP UID",
             "SCOPE": "LDAP Scope"
         },
+        "SCANNING": {
+            "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TITLE": "Vulnerability Scanning",
+            "SCAN_ALL": "Scan All",
+            "SCAN_NOW": "SCAN NOW",
+            "NONE_POLICY": "None",
+            "DAILY_POLICY": "Daily At",
+            "REFRESH_POLICY": "Upon Refresh"
+        },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",
         "TEST_MAIL_FAILED": "Failed to verify mail server with error: {{param}}.",
