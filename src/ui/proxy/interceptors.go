@@ -144,10 +144,8 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			digest:      digest,
 		}
 		log.Debugf("image info of the request: %#v", img)
-
 		ctx := context.WithValue(req.Context(), imageInfoCtxKey, img)
 		req = req.WithContext(ctx)
-
 	}
 	uh.next.ServeHTTP(rw, req)
 }
