@@ -96,3 +96,28 @@ type VulnerabilityItem struct {
 	Description string   `json:"description"`
 	Fixed       string   `json:"fixedVersion,omitempty"`
 }
+
+// ScanAllPolicy is represent the json request and object for scan all policy, the parm is het
+type ScanAllPolicy struct {
+	Type string                 `json:"type"`
+	Parm map[string]interface{} `json:"parameter, omitempty"`
+}
+
+const (
+	// ScanAllNone "none" for not doing any scan all
+	ScanAllNone = "none"
+	// ScanAllDaily for doing scan all daily
+	ScanAllDaily = "daily"
+	// ScanAllOnRefresh for doing scan all when the Clair DB is refreshed.
+	ScanAllOnRefresh = "on_refresh"
+	// ScanAllDailyTime the key for parm of daily scan all policy.
+	ScanAllDailyTime = "daily_time"
+)
+
+//DefaultScanAllPolicy ...
+var DefaultScanAllPolicy = ScanAllPolicy{
+	Type: ScanAllDaily,
+	Parm: map[string]interface{}{
+		ScanAllDailyTime: 0,
+	},
+}

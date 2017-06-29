@@ -1005,7 +1005,7 @@ func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
 	return code, cfg, err
 }
 
-func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]string) (int, error) {
+func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]interface{}) (int, error) {
 	_sling := sling.New().Base(a.basePath).Put("/api/configurations").BodyJSON(cfg)
 
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
