@@ -27,7 +27,6 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
@@ -161,9 +160,7 @@ func autoScanEnabled(projectName string) bool {
 		return false
 	}
 	if config.WithAdmiral() {
-		//TODO get a project manager based on service account.
-		var pm *pms.ProjectManager = pms.NewProjectManager("", "")
-		p, err := pm.Get(projectName)
+		p, err := config.GlobalProjectMgr.Get(projectName)
 		if err != nil {
 			log.Warningf("failed to get project, error: %v", err)
 			return false

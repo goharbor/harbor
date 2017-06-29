@@ -102,7 +102,8 @@ func TestEnvPolicyChecker(t *testing.T) {
 }
 
 func TestPMSPolicyChecker(t *testing.T) {
-	pm := pms.NewProjectManager(admiralEndpoint, token)
+	pm := pms.NewProjectManager(http.DefaultClient,
+		admiralEndpoint, nil)
 	name := "project_for_test_get_true"
 	id, err := pm.Create(&models.Project{
 		Name:               name,
