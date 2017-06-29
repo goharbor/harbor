@@ -241,7 +241,6 @@ Test Case - Push Image
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
-    Sleep  2
 	Capture Page Screenshot  PushImage2.png
     Click Element  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
     Sleep  2
