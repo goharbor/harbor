@@ -16,6 +16,7 @@ package config
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -355,7 +356,7 @@ func ClairEndpoint() string {
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint")
+		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
 
 		return ""
 	}
@@ -363,6 +364,30 @@ func AdmiralEndpoint() string {
 		cfg[common.AdmiralEndpoint] = ""
 	}
 	return cfg[common.AdmiralEndpoint].(string)
+}
+
+// ScanAllPolicy returns the policy which controls the scan all.
+func ScanAllPolicy() models.ScanAllPolicy {
+	var res models.ScanAllPolicy
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return default scan all policy, error: %v", err)
+		return models.DefaultScanAllPolicy
+	}
+	v, ok := cfg[common.ScanAllPolicy]
+	if !ok {
+		return models.DefaultScanAllPolicy
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		log.Errorf("Failed to Marshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	return res
 }
 
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.

@@ -20,9 +20,9 @@ const (
 	LDAPAuth            = "ldap_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
-	LDAPScopeBase       = "1"
-	LDAPScopeOnelevel   = "2"
-	LDAPScopeSubtree    = "3"
+	LDAPScopeBase       = 1
+	LDAPScopeOnelevel   = 2
+	LDAPScopeSubtree    = 3
 
 	RoleProjectAdmin = 1
 	RoleDeveloper    = 2
@@ -65,4 +65,5 @@ const (
 	AdmiralEndpoint            = "admiral_url"
 	WithNotary                 = "with_notary"
 	WithClair                  = "with_clair"
+	ScanAllPolicy              = "scan_all_policy"
 )
