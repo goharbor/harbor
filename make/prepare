@@ -373,6 +373,10 @@ if args.clair_mode:
     pg_password = "password"
     clair_temp_dir = os.path.join(templates_dir, "clair")
     clair_config_dir = prep_conf_dir(config_dir, "clair")
+    print("Copying offline data file for clair DB")
+    if os.path.exists(os.path.join(clair_config_dir, "postgresql-init.d")):
+        shutil.rmtree(os.path.join(clair_config_dir, "postgresql-init.d"))
+    shutil.copytree(os.path.join(clair_temp_dir, "postgresql-init.d"), os.path.join(clair_config_dir, "postgresql-init.d"))
     postgres_env = os.path.join(clair_config_dir, "postgres_env") 
     render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = pg_password)
     clair_conf = os.path.join(clair_config_dir, "config.yaml")
