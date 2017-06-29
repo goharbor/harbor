@@ -44,7 +44,8 @@ Create An New User
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-	Capture Page Screenshot
+	${d}=    Get Current Date    result_format=%m%s
+	Capture Page Screenshot  Create New User_${d}
 	Sleep  3
     Click Element  xpath=${sign_up_for_an_account_xpath}
     sleep  3
