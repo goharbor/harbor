@@ -287,18 +287,28 @@ Test Case - Notary Inteceptor
     Should Be Equal As Integers  ${rc}  0
 
     Down Harbor  with_notary=true
-
     ${rc}  ${output}=  Run And Return Rc And Output  echo "PROJECT_CONTENT_TRUST=1\n" >> ./make/common/config/ui/env
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
-    Log To Console  ${output}
-		
-	Up Harbor  with_notary=true
-	
+
+    Log To Console  ${output}		
+	Up Harbor  with_notary=true	
 	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}
-	
+    Log  ${ip}	
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/tomcat:latest
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
+	
+	Down Harbor  with_notary=true
+	${rc}  ${output}=  Run And Return Rc And Output  sed "s/^PROJECT_CONTENT_TRUST=1.*/PROJECT_CONTENT_TRUST=0/g" -i ./make/common/config/ui/env
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
+		
+	Up Harbor  with_notary=true	
+	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${ip}	
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/tomcat:latest
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0	

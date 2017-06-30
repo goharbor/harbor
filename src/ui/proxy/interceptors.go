@@ -167,6 +167,7 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	match, err := matchNotaryDigest(img)
 	if err != nil {
+		log.Debugf("error from notary, %v", err)
 		http.Error(rw, "Failed in communication with Notary please check the log", http.StatusInternalServerError)
 		return
 	}
