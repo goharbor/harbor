@@ -82,7 +82,7 @@ REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
 REGISTRYVERSION=2.6.1-photon
-NGINXVERSION=1.11.5-patched
+NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
@@ -219,7 +219,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		vmware/nginx-photon:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
 		photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -359,7 +359,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
-	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
+	@$(DOCKERPULL) vmware/nginx-photon:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
