@@ -294,9 +294,7 @@ Test Case - Notary Inteceptor
 
     Log To Console  ${output}		
 	Up Harbor  with_notary=true	
-	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/tomcat:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
     Log To Console  ${output}
 	
 	Down Harbor  with_notary=true
@@ -306,8 +304,6 @@ Test Case - Notary Inteceptor
     ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
 		
 	Up Harbor  with_notary=true	
-	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/tomcat:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0	
