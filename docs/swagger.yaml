@@ -2005,14 +2005,14 @@ definitions:
   StatisticMap:
     type: object
     properties:
-      my_project_count: 
+      private_project_count: 
         type: integer
         format: int32
-        description: The count of the projects which the user is a member of.
-      my_repo_count: 
+        description: The count of the private projects which the user is a member of.
+      private_repo_count: 
         type: integer
         format: int32
-        description: The count of the repositories belonging to the projects which the user is a member of.
+        description: The count of the private repositories belonging to the projects which the user is a member of.
       public_project_count: 
         type: integer
         format: int32
