@@ -298,7 +298,6 @@ Test Case - Notary Inteceptor
     Log  ${ip}	
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/tomcat:latest
     Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
 	
 	Down Harbor  with_notary=true
 	${rc}  ${output}=  Run And Return Rc And Output  sed "s/^PROJECT_CONTENT_TRUST=1.*/PROJECT_CONTENT_TRUST=0/g" -i ./make/common/config/ui/env
