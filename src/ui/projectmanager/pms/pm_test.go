@@ -15,6 +15,7 @@
 package pms
 
 import (
+	"net/http"
 	"sort"
 	"testing"
 
@@ -24,8 +25,11 @@ import (
 )
 
 var (
-	endpoint = "http://127.0.0.1:8282"
-	token    = ""
+	client      = http.DefaultClient
+	endpoint    = "http://127.0.0.1:8282"
+	tokenReader = &RawTokenReader{
+		Token: "",
+	}
 )
 
 func TestConvert(t *testing.T) {
@@ -177,7 +181,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	name := "project_for_test_get"
 	id, err := pm.Create(&models.Project{
 		Name: name,
@@ -211,7 +215,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestIsPublic(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// invalid input type
 	public, err := pm.IsPublic([]string{})
@@ -259,7 +263,7 @@ func TestIsPublic(t *testing.T) {
 }
 
 func TestExist(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// invalid input type
 	exist, err := pm.Exist([]string{})
@@ -289,7 +293,7 @@ func TestExist(t *testing.T) {
 }
 
 func TestGetRoles(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// nil username, nil project
 	roles, err := pm.GetRoles("", nil)
@@ -316,7 +320,7 @@ func TestGetRoles(t *testing.T) {
 }
 
 func TestGetPublic(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	projects, err := pm.GetPublic()
 	assert.Nil(t, nil)
@@ -350,7 +354,7 @@ func TestGetByMember(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	name := "project_for_test_create"
 	id, err := pm.Create(&models.Project{
@@ -375,7 +379,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// non-exist project
 	err := pm.Delete(int64(0))
@@ -401,13 +405,13 @@ func TestDelete(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	err := pm.Update(nil, nil)
 	assert.NotNil(t, err)
 }
 
 func TestGetAll(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	name1 := "project_for_test_get_all_01"
 	id1, err := pm.Create(&models.Project{
@@ -471,7 +475,7 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestGetTotal(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	total1, err := pm.GetTotal(nil)
 	require.Nil(t, err)
@@ -489,13 +493,13 @@ func TestGetTotal(t *testing.T) {
 }
 
 func TestGetHasReadPerm(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	_, err := pm.GetHasReadPerm()
 	assert.NotNil(t, err)
 }
 
 func delete(t *testing.T, id int64) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	if err := pm.Delete(id); err != nil {
 		t.Logf("failed to delete project %d: %v", id, err)
 	}

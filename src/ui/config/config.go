@@ -15,8 +15,10 @@
 package config
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -33,8 +35,9 @@ import (
 )
 
 const (
-	defaultKeyPath   string = "/etc/ui/key"
-	secretCookieName string = "secret"
+	defaultKeyPath       string = "/etc/ui/key"
+	defaultTokenFilePath string = "/etc/ui/service_token"
+	secretCookieName     string = "secret"
 )
 
 var (
@@ -46,6 +49,9 @@ var (
 	GlobalProjectMgr projectmanager.ProjectManager
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
+	// AdmiralClient is initialized only under integration deploy mode
+	// and can be passed to project manager as a parameter
+	AdmiralClient *http.Client
 )
 
 // Init configurations
@@ -105,9 +111,19 @@ func initProjectManager() {
 	}
 
 	// integration with admiral
-	// TODO create project manager based on pms using service account
 	log.Info("initializing the project manager based on PMS...")
-	GlobalProjectMgr = pms.NewProjectManager(AdmiralEndpoint(), "")
+	// TODO read ca/cert file and pass it to the TLS config
+	AdminserverClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	GlobalProjectMgr = pms.NewProjectManager(AdminserverClient,
+		AdmiralEndpoint(), &pms.FileTokenReader{
+			Path: defaultTokenFilePath,
+		})
 }
 
 // Load configurations

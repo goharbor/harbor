@@ -32,14 +32,12 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-var transport = &http.Transport{}
-
 // ProjectManager implements projectmanager.ProjecdtManager interface
 // base on project management service
 type ProjectManager struct {
-	endpoint string
-	token    string
-	client   *http.Client
+	client      *http.Client
+	endpoint    string
+	tokenReader TokenReader
 }
 
 type user struct {
@@ -58,13 +56,12 @@ type project struct {
 }
 
 // NewProjectManager returns an instance of ProjectManager
-func NewProjectManager(endpoint, token string) *ProjectManager {
+func NewProjectManager(client *http.Client, endpoint string,
+	tokenReader TokenReader) *ProjectManager {
 	return &ProjectManager{
-		endpoint: strings.TrimRight(endpoint, "/"),
-		token:    token,
-		client: &http.Client{
-			Transport: transport,
-		},
+		client:      client,
+		endpoint:    strings.TrimRight(endpoint, "/"),
+		tokenReader: tokenReader,
 	}
 }
 
@@ -307,7 +304,7 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 // GetByMember ...
 func (p *ProjectManager) GetByMember(username string) ([]*models.Project, error) {
 	projects := []*models.Project{}
-	ctx, err := authcontext.GetAuthCtxOfUser(p.endpoint, p.token, username)
+	ctx, err := authcontext.GetAuthCtxOfUser(p.endpoint, p.getToken(), username)
 	if err != nil {
 		return projects, err
 	}
@@ -425,7 +422,7 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 		return nil, err
 	}
 
-	req.Header.Add("x-xenon-auth-token", p.token)
+	req.Header.Add("x-xenon-auth-token", p.getToken())
 
 	url := req.URL.String()
 
@@ -451,4 +448,17 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 	}
 
 	return b, nil
+}
+
+func (p *ProjectManager) getToken() string {
+	if p.tokenReader == nil {
+		return ""
+	}
+
+	token, err := p.tokenReader.ReadToken()
+	if err != nil {
+		token = ""
+		log.Errorf("failed to read token: %v", err)
+	}
+	return token
 }
