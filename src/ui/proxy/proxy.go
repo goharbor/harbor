@@ -42,7 +42,7 @@ func Init(urls ...string) error {
 	}
 	Proxy = httputil.NewSingleHostReverseProxy(targetURL)
 	//TODO: add vulnerable interceptor.
-	handlers = handlerChain{head: urlHandler{next: contentTrustHandler{next: Proxy}}}
+	handlers = handlerChain{head: urlHandler{next: contentTrustHandler{next: vulnerableHandler{next: funnelHandler{next: Proxy}}}}}
 	return nil
 }
 

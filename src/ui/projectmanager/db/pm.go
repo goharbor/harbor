@@ -115,6 +115,10 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 // GetByMember returns all projects which the user is a member of
 func (p *ProjectManager) GetByMember(username string) (
 	[]*models.Project, error) {
+	if len(username) == 0 {
+		return []*models.Project{}, nil
+	}
+
 	return p.GetAll(&models.ProjectQueryParam{
 		Member: &models.MemberQuery{
 			Name: username,
