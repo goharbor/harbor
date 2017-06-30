@@ -288,7 +288,7 @@ Test Case - Notary Inteceptor
 
     Down Harbor  with_notary=true
 
-    ${rc}  ${output}=  Run And Return Rc And Output  echo -e "PROJECT_CONTENT_TRUST=1\n" >> ./make/common/config/ui/env
+    ${rc}  ${output}=  Run And Return Rc And Output  echo "PROJECT_CONTENT_TRUST=1\n" >> ./make/common/config/ui/env
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
