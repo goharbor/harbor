@@ -241,10 +241,10 @@ Test Case - Push Image
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
-	Capture Page Screenshot  PushImage2.png
-    Click Element  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
     Sleep  2
-	Capture Page Screenshot  PushImage3.png
+    Mouse Down  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
+    Mouse Up  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
+    Sleep  2
     Wait Until Page Contains  test${d}/hello-world
 
 Test Case - Ldap Sign in and out
