@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultKeyPath       string = "/etc/ui/key"
-	defaultTokenFilePath string = "/etc/ui/token"
+	defaultTokenFilePath string = "/etc/ui/service_token"
 	secretCookieName     string = "secret"
 )
 

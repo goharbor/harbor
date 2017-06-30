@@ -53,6 +53,7 @@ func (f *FileTokenReader) ReadToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer file.Close()
 
 	return readToken(file)
 }
