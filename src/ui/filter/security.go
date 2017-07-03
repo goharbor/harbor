@@ -126,11 +126,18 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("got user information via basic auth")
 
-	var securCtx security.Context
-	var pm projectmanager.ProjectManager
-
+	// integration with admiral
 	if config.WithAdmiral() {
-		// integration with admiral
+		// Can't get a token from Admiral's login API, we can only
+		// create a project manager with the token of the solution user.
+		// That way may cause some wrong permission promotion in some API
+		// calls, so we just handle the requests which are necessary
+		if !filterReq(ctx.Request) {
+			log.Debugf("basic auth is not supported for request %s %s, skip",
+				ctx.Request.Method, ctx.Request.URL.Path)
+			return false
+		}
+
 		authCtx, err := authcontext.Login(config.AdmiralClient,
 			config.AdmiralEndpoint(), username, password)
 		if err != nil {
@@ -139,32 +146,43 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		}
 
 		log.Debug("using glocal project manager...")
-		pm = config.GlobalProjectMgr
+		pm := config.GlobalProjectMgr
 		log.Debug("creating admiral security context...")
-		securCtx = admiral.NewSecurityContext(authCtx, pm)
-	} else {
-		// standalone
-		user, err := auth.Login(models.AuthModel{
-			Principal: username,
-			Password:  password,
-		})
-		if err != nil {
-			log.Errorf("failed to authenticate %s: %v", username, err)
-			return false
-		}
-		if user == nil {
-			log.Debug("basic auth user is nil")
-			return false
-		}
-		log.Debug("using local database project manager")
-		pm = config.GlobalProjectMgr
-		log.Debug("creating local database security context...")
-		securCtx = local.NewSecurityContext(user, pm)
+		securCtx := admiral.NewSecurityContext(authCtx, pm)
+
+		setSecurCtxAndPM(ctx.Request, securCtx, pm)
+		return true
 	}
 
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	// standalone
+	user, err := auth.Login(models.AuthModel{
+		Principal: username,
+		Password:  password,
+	})
+	if err != nil {
+		log.Errorf("failed to authenticate %s: %v", username, err)
+		return false
+	}
+	if user == nil {
+		log.Debug("basic auth user is nil")
+		return false
+	}
+	log.Debug("using local database project manager")
+	pm := config.GlobalProjectMgr
+	log.Debug("creating local database security context...")
+	securCtx := local.NewSecurityContext(user, pm)
 
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
+}
+
+func filterReq(req *http.Request) bool {
+	path := req.URL.Path
+	if path == "/api/projects" && req.Method == http.MethodPost ||
+		path == "/service/token" && req.Method == http.MethodGet {
+		return true
+	}
+	return false
 }
 
 type sessionReqCtxModifier struct{}
