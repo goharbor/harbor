@@ -306,3 +306,4 @@ Test Case - Notary Inteceptor
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0	
+	
