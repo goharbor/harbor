@@ -131,7 +131,8 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	if config.WithAdmiral() {
 		// integration with admiral
-		_, authCtx, err := authcontext.Login(config.AdmiralEndpoint(), username, password)
+		authCtx, err := authcontext.Login(config.AdmiralClient,
+			config.AdmiralEndpoint(), username, password)
 		if err != nil {
 			log.Errorf("failed to authenticate %s: %v", username, err)
 			return false
@@ -203,7 +204,8 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	log.Debug("got token from request")
 
-	authContext, err := authcontext.GetByToken(config.AdmiralEndpoint(), token)
+	authContext, err := authcontext.GetAuthCtxOfCurrentUser(config.AdmiralClient,
+		config.AdmiralEndpoint(), token)
 	if err != nil {
 		log.Errorf("failed to get auth context: %v", err)
 		return false
