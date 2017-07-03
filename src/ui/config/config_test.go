@@ -155,4 +155,9 @@ func TestConfig(t *testing.T) {
 	if mode != "db_auth" {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
+
+	if s := ScanAllPolicy(); s.Type != "daily" {
+		t.Errorf("unexpected scan all policy %v", s)
+	}
+
 }

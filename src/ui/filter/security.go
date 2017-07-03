@@ -51,8 +51,8 @@ func Init() {
 	if config.WithAdmiral() {
 		reqCtxModifiers = []ReqCtxModifier{
 			&secretReqCtxModifier{config.SecretStore},
-			&basicAuthReqCtxModifier{},
 			&tokenReqCtxModifier{},
+			&basicAuthReqCtxModifier{},
 			&unauthorizedReqCtxModifier{}}
 		return
 	}
@@ -131,15 +131,14 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	if config.WithAdmiral() {
 		// integration with admiral
-		token, authCtx, err := authcontext.Login(config.AdmiralEndpoint(), username, password)
+		_, authCtx, err := authcontext.Login(config.AdmiralEndpoint(), username, password)
 		if err != nil {
 			log.Errorf("failed to authenticate %s: %v", username, err)
 			return false
 		}
 
-		log.Debug("creating PMS project manager...")
-		pm = pms.NewProjectManager(config.AdmiralEndpoint(), token)
-
+		log.Debug("using glocal project manager...")
+		pm = config.GlobalProjectMgr
 		log.Debug("creating admiral security context...")
 		securCtx = admiral.NewSecurityContext(authCtx, pm)
 	} else {
@@ -211,7 +210,10 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 
 	log.Debug("creating PMS project manager...")
-	pm := pms.NewProjectManager(config.AdmiralEndpoint(), token)
+	pm := pms.NewProjectManager(config.AdmiralClient,
+		config.AdmiralEndpoint(), &pms.RawTokenReader{
+			Token: token,
+		})
 	log.Debug("creating admiral security context...")
 	securCtx := admiral.NewSecurityContext(authContext, pm)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
@@ -230,7 +232,8 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if config.WithAdmiral() {
 		// integration with admiral
 		log.Debug("creating PMS project manager...")
-		pm = pms.NewProjectManager(config.AdmiralEndpoint(), "")
+		pm = pms.NewProjectManager(config.AdmiralClient,
+			config.AdmiralEndpoint(), nil)
 		log.Debug("creating admiral security context...")
 		securCtx = admiral.NewSecurityContext(nil, pm)
 	} else {

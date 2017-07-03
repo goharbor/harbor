@@ -9,7 +9,6 @@ import (
 	//	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 
 	"context"
 	"fmt"
@@ -102,7 +101,7 @@ func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
 // TODO: Get project manager with PM factory.
 func getPolicyChecker() policyChecker {
 	if config.WithAdmiral() {
-		return newPMSPolicyChecker(pms.NewProjectManager(config.AdmiralEndpoint(), ""))
+		return newPMSPolicyChecker(config.GlobalProjectMgr)
 	}
 	return EnvChecker
 }
