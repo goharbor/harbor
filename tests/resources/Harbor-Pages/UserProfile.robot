@@ -50,5 +50,8 @@ Logout Harbor
 		Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Sleep  2
+	Capture Page Screenshot  Logout1.png
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
+	Sleep  1
+	Capture Page Screenshot  Logout2.png
     Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//*[@id="pop_repo"]/top-repo/div/div[1]/h3
