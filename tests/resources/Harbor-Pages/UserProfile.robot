@@ -53,4 +53,4 @@ Logout Harbor
 	Sleep  1
 	Capture Page Screenshot  Logout.png
 	Sleep  2
-    #Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class="title"]
+    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class="title"]

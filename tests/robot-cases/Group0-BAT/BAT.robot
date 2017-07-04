@@ -46,20 +46,15 @@ Test Case - Edit Project Creation
 	
 	#logout and login admin
     Logout Harbor
-	Close Browser
-	
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
 	Set Pro Create Admin Only
 	
 	#logout and login normal user
     Logout Harbor
-	Close Browser
-	
 	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
 	Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
     
 	Logout Harbor
-	Close Browser
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
 	
     Set Pro Create Every One
@@ -69,6 +64,7 @@ Test Case - Edit Self-Registration
 	#login as admin
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+	
 	#disable self reg
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
     #Unselect Checkbox  xpath=//input[@id="clr-checkbox-selfReg"]
@@ -76,13 +72,16 @@ Test Case - Edit Self-Registration
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
     Click Element  xpath=//div/button[1]
 	#logout and check
-    Logout Harbor
+    
+	Logout Harbor
     Page Should Not Contain Element  xpath=//a[@class="signup"]
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    
+	Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
     Sleep  1
-    #restore setting
+    
+	#restore setting
     Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
     Click Element  xpath=//div/button[1]
