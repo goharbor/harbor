@@ -120,9 +120,15 @@ func initProjectManager() {
 			},
 		},
 	}
+
+	path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+	if len(path) == 0 {
+		path = defaultTokenFilePath
+	}
+	log.Infof("service token file path: %s", path)
 	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
 		AdmiralEndpoint(), &pms.FileTokenReader{
-			Path: defaultTokenFilePath,
+			Path: path,
 		})
 }
 

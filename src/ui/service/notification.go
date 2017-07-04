@@ -65,7 +65,7 @@ func (n *NotificationHandler) Post() {
 			user = "anonymous"
 		}
 
-		pro, err := n.ProjectMgr.Get(project)
+		pro, err := config.GlobalProjectMgr.Get(project)
 		if err != nil {
 			log.Errorf("failed to get project by name %s: %v", project, err)
 			return
