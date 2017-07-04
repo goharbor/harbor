@@ -1,0 +1,14 @@
+package task
+
+import "testing"
+
+func TestTask(t *testing.T) {
+	tk := NewScanAllTask()
+	if tk == nil {
+		t.Fail()
+	}
+
+	if tk.TaskName() != "scan all" {
+		t.Fail()
+	}
+}
