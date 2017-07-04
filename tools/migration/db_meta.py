@@ -139,4 +139,40 @@ class Repository(Base):
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+class AccessLog(Base):
+    __tablename__ = "access_log"
 
+    user_id = sa.Column(sa.Integer, nullable=False)
+    log_id = sa.Column(sa.Integer, primary_key=True)
+    username = sa.Column(sa.String(32), nullable=False)
+    project_id = sa.Column(sa.Integer, nullable=False)
+    repo_name = sa.Column(sa.String(256))
+    repo_tag = sa.Column(sa.String(128))
+    GUID = sa.Column(sa.String(64))
+    operation = sa.Column(sa.String(20))
+    op_time = sa.Column(mysql.TIMESTAMP)
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+    __table_args__ = (sa.Index('project_id', "op_time"),)
+	
+class ImageScanJob(Base):
+    __tablename__ = "img_scan_job"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    status = sa.Column(sa.String(64), nullable=False)
+    repository = sa.Column(sa.String(256), nullable=False)
+    tag = sa.Column(sa.String(128), nullable=False)
+    digest = sa.Column(sa.String(128))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+class ImageScanOverview(Base):
+    __tablename__ = "img_scan_overview"
+
+    scan_job_id = sa.Column(sa.Integer, nullable=False)
+    image_digest = sa.Column(sa.String(128), nullable=False, primary_key=True)
+    severity = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
+    components_overview = sa.Column(sa.String(2048))
+    details_key = sa.Column(sa.String(128))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))

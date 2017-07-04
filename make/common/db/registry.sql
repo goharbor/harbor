@@ -204,4 +204,4 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('0.4.0');
+insert into alembic_version values ('1.2.0');
