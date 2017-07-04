@@ -37,4 +37,3 @@ Init Chrome Driver
 	${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
 	Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}
     Sleep  5
-	Set Window Size  ${1600}  ${900}

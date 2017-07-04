@@ -24,12 +24,12 @@ ${HARBOR_VERSION}  v1.1.1
 Create An New Project
 		[Arguments]  ${projectname}
 		sleep  1
-		Click Button  css=.btn
+		Click Button  css=${create_project_button_css}
 		sleep  1
 		Log To Console  Project Name: ${projectname}
-		Input Text  css=#create_project_name  ${projectname}
+		Input Text  css=${project_name_css}  ${projectname}
 		sleep  1
-		Click Element  css=html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
+		Click Element  css=${project_save_css}
 		sleep  2
 		Wait Until Page Contains  ${projectname}
 		Wait Until Page Contains  Project Admin
@@ -38,21 +38,21 @@ Create An New Project
 Create An New Public Project
 		[Arguments]  ${projectname}
 		sleep  1
-		Click Button  css=.btn
+		Click Button  css=${create_project_button_css}
 		sleep  1
 		Log To Console  Project Name: ${projectname}
-		Input Text  css=#create_project_name  ${projectname}
-		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/div[2]/div[1]/create-project/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div/label
-		Click Element  css=html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
+		Input Text  css=${project_name_css}  ${projectname}
+		Click Element  xpath=${project_public_xpath}
+		Click Element  css=${project_save_css}
 		sleep  2
 		Wait Until Page Contains  ${projectname}
 		Wait Until Page Contains  Project Admin
 		Capture Page Screenshot
 
 Switch To Log
-		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
+		Click Element  xpath=${log_xpath}
 		sleep  1
 
 Back To projects
-		Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
+		Click Element  xpath=${projects_xpath}
 		sleep  1
