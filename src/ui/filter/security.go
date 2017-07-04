@@ -145,7 +145,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 			return false
 		}
 
-		log.Debug("using glocal project manager...")
+		log.Debug("using global project manager...")
 		pm := config.GlobalProjectMgr
 		log.Debug("creating admiral security context...")
 		securCtx := admiral.NewSecurityContext(authCtx, pm)

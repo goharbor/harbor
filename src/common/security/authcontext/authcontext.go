@@ -28,9 +28,9 @@ const (
 	// AuthTokenHeader is the key of auth token header
 	AuthTokenHeader  = "x-xenon-auth-token"
 	sysAdminRole     = "CLOUD_ADMIN"
-	projectAdminRole = "DEVOPS_ADMIN"
-	developerRole    = "DEVELOPER"
-	guestRole        = "GUEST"
+	projectAdminRole = "PROJECT_ADMIN"
+	developerRole    = "PROJECT_MEMBER"
+	guestRole        = "PROJECT_VIEWER"
 )
 
 type project struct {

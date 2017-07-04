@@ -604,14 +604,14 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	projectIDs := []int64{}
 	projects, err := ra.ProjectMgr.GetPublic()
 	if err != nil {
-		log.Errorf("failed to get the public projects: %v", err)
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
 		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
 		if err != nil {
-			log.Errorf("failed to get projects which the user %s is a member of: %v",
-				ra.SecurityCtx.GetUsername(), err)
+			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
+				ra.SecurityCtx.GetUsername(), err))
 			return
 		}
 		projects = append(projects, list...)
