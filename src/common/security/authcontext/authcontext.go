@@ -112,13 +112,13 @@ func (a *AuthContext) GetMyProjects() []string {
 	return projects
 }
 
-// GetAuthCtxOfCurrentUser returns the auth context of the current user
-func GetAuthCtxOfCurrentUser(client *http.Client, url, token string) (*AuthContext, error) {
+// GetAuthCtx returns the auth context of the current user
+func GetAuthCtx(client *http.Client, url, token string) (*AuthContext, error) {
 	return get(client, url, token)
 }
 
-// GetAuthCtxOfSpecificUser returns the auth context of the specific user
-func GetAuthCtxOfSpecificUser(client *http.Client, url, token string, username string) (*AuthContext, error) {
+// GetAuthCtxOfUser returns the auth context of the specific user
+func GetAuthCtxOfUser(client *http.Client, url, token string, username string) (*AuthContext, error) {
 	return get(client, url, token, username)
 }
 

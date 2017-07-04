@@ -222,7 +222,7 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	log.Debug("got token from request")
 
-	authContext, err := authcontext.GetAuthCtxOfCurrentUser(config.AdmiralClient,
+	authContext, err := authcontext.GetAuthCtx(config.AdmiralClient,
 		config.AdmiralEndpoint(), token)
 	if err != nil {
 		log.Errorf("failed to get auth context: %v", err)

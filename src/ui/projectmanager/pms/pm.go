@@ -304,7 +304,7 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 // GetByMember ...
 func (p *ProjectManager) GetByMember(username string) ([]*models.Project, error) {
 	projects := []*models.Project{}
-	ctx, err := authcontext.GetAuthCtxOfSpecificUser(p.client, p.endpoint, p.getToken(), username)
+	ctx, err := authcontext.GetAuthCtxOfUser(p.client, p.endpoint, p.getToken(), username)
 	if err != nil {
 		return projects, err
 	}
