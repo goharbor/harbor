@@ -52,4 +52,5 @@ Logout Harbor
     Sleep  2
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
 	Sleep  1
+	Capture Page Screenshot  Logout.png
     Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class="title"]
