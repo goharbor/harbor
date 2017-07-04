@@ -61,3 +61,20 @@ Set Pro Create Every One
     Click Element  xpath=//config//div/button[1]
     Sleep  2
 	Capture Page Screenshot  EveryoneCreate.png
+
+Disable Self Reg	
+	Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+	Sleep  1
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
+	Capture Page Screenshot  DisableSelfReg.png
+	Sleep  1
+
+Enable Self Reg	
+	Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+	Sleep  1
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
+	Capture Page Screenshot  EnableSelfReg.png
+	Sleep  1

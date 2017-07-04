@@ -65,14 +65,8 @@ Test Case - Edit Self-Registration
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
 	
-	#disable self reg
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
-    Click Element  xpath=//div/button[1]
-	#logout and check
-    
+    Disable Self Reg
+	    
 	Logout Harbor
     Page Should Not Contain Element  xpath=//a[@class="signup"]
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
@@ -82,9 +76,7 @@ Test Case - Edit Self-Registration
     Sleep  1
     
 	#restore setting
-    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
-    Click Element  xpath=//div/button[1]
+    Enable Self Reg
     Close Browser
 
  Test Case - Edit Verify Remote Cert
