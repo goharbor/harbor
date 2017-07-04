@@ -17,7 +17,8 @@ package main
 import (
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/controllers"
-	"github.com/vmware/harbor/src/ui/service"
+	"github.com/vmware/harbor/src/ui/service/notifications/clair"
+	"github.com/vmware/harbor/src/ui/service/notifications/registry"
 	"github.com/vmware/harbor/src/ui/service/token"
 
 	"github.com/astaxie/beego"
@@ -109,7 +110,8 @@ func initRouters() {
 	beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
 
 	//external service that hosted on harbor process:
-	beego.Router("/service/notifications", &service.NotificationHandler{})
+	beego.Router("/service/notifications", &registry.NotificationHandler{})
+	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")

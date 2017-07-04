@@ -150,7 +150,7 @@ create table replication_target (
  );
 
 create table replication_job (
- id INTEGER PRIMARY KEY,
+ id INTEGER PRIMARY KEY, 
  status varchar(64) NOT NULL,
  policy_id int NOT NULL,
  repository varchar(256) NOT NULL,
@@ -187,6 +187,13 @@ create table img_scan_overview (
 CREATE INDEX policy ON replication_job (policy_id);
 CREATE INDEX poid_uptime ON replication_job (policy_id, update_time);
  
+create table clair_vuln_timestamp (
+id INTEGER PRIMARY KEY, 
+namespace varchar(128) NOT NULL,
+last_update timestamp NOT NULL,
+UNIQUE(namespace)
+);
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
