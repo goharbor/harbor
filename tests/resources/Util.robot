@@ -28,7 +28,9 @@ Resource  Drone-Util.robot
 Resource  Github-Util.robot
 Resource  Harbor-Util.robot
 Resource  Harbor-Pages/HomePage.robot
+Resource  Harbor-Pages/HomePage_Elements.robot
 Resource  Harbor-Pages/Project.robot
+Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Configuration-Auth.robot

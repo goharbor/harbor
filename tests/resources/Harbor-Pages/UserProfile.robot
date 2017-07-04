@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1

@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -45,3 +44,20 @@ Init LDAP
 Switch To Configure
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[3]/a
     Sleep  1
+
+Set Pro Create Admin Only	
+	#set limit to admin only
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//select[@id="proCreation"]
+    Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
+    Click Element  xpath=//config//div/button[1]
+	Capture Page Screenshot  AdminCreateOnly.png
+	
+Set Pro Create Every One	
+	#set limit to Every One	
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//select[@id="proCreation"]
+    Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
+    Click Element  xpath=//config//div/button[1]
+    Sleep  2
+	Capture Page Screenshot  EveryoneCreate.png
