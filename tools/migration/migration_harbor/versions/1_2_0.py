@@ -38,6 +38,8 @@ def upgrade():
     """
     bind = op.get_bind()
     session = Session(bind=bind)
+	
+    op.alter_column('user', 'realname', type_=sa.String(255), existing_type=sa.String(20))
 
     #delete column access_log.user_id(access_log_ibfk_1), access_log.project_id(access_log_ibfk_2)
     op.drop_constraint('access_log_ibfk_1', 'access_log', type_='foreignkey')
