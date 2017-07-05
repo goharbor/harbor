@@ -87,10 +87,10 @@ Switch To System Settings
 	
 Modify Token Expiration
 	[Arguments]  ${minutes}
-	Input Text  xpath=//input[@id="tokenExpiration"]  ${minutes}
-    Click Button  xpath=//config//div/button[1]
+	Input Text  xpath=//*[@id="tokenExpiration"]  ${minutes}
+    Click Button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1] 
 	Sleep  1
 	
 Token Must Be Match
 	[Arguments]  ${minutes}
-	Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  ${minutes}
+	Textfield Value Should Be  xpath=//*[@id="tokenExpiration"]  ${minutes}
