@@ -24,14 +24,14 @@ import (
 )
 
 const (
-	// MPC : count of my projects
-	MPC = "my_project_count"
-	// MRC : count of my repositories
-	MRC = "my_repo_count"
-	// PPC : count of public projects
-	PPC = "public_project_count"
-	// PRC : count of public repositories
-	PRC = "public_repo_count"
+	// PriPC : count of private projects
+	PriPC = "private_project_count"
+	// PriRC : count of private repositories
+	PriRC = "private_repo_count"
+	// PubPC : count of public projects
+	PubPC = "public_project_count"
+	// PubRC : count of public repositories
+	PubRC = "public_repo_count"
 	// TPC : total count of projects
 	TPC = "total_project_count"
 	// TRC : total count of repositories
@@ -57,17 +57,17 @@ func (s *StatisticAPI) Prepare() {
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
-	projects, err := s.ProjectMgr.GetPublic()
+	pubProjs, err := s.ProjectMgr.GetPublic()
 	if err != nil {
 		s.HandleInternalServerError(fmt.Sprintf(
 			"failed to get public projects: %v", err))
 		return
 	}
 
-	statistic[PPC] = (int64)(len(projects))
+	statistic[PubPC] = (int64)(len(pubProjs))
 
 	ids := []int64{}
-	for _, p := range projects {
+	for _, p := range pubProjs {
 		ids = append(ids, p.ProjectID)
 	}
 	n, err := dao.GetTotalOfRepositoriesByProject(ids, "")
@@ -75,7 +75,7 @@ func (s *StatisticAPI) Get() {
 		log.Errorf("failed to get total of public repositories: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "")
 	}
-	statistic[PRC] = n
+	statistic[PubRC] = n
 
 	if s.SecurityCtx.IsSysAdmin() {
 		n, err := dao.GetTotalOfProjects(nil)
@@ -83,19 +83,21 @@ func (s *StatisticAPI) Get() {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		statistic[MPC] = n
 		statistic[TPC] = n
+		statistic[PriPC] = n - statistic[PubPC]
 
 		n, err = dao.GetTotalOfRepositories("")
 		if err != nil {
 			log.Errorf("failed to get total of repositories: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		statistic[MRC] = n
 		statistic[TRC] = n
+		statistic[PriRC] = n - statistic[PubRC]
 	} else {
+		value := false
 		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
-			Member: &models.Member{
+			Public: &value,
+			Member: &models.MemberQuery{
 				Name: s.username,
 			},
 		})
@@ -104,7 +106,8 @@ func (s *StatisticAPI) Get() {
 				"failed to get projects of user %s: %v", s.username, err))
 			return
 		}
-		statistic[MPC] = (int64)(len(projects))
+
+		statistic[PriPC] = (int64)(len(projects))
 
 		ids := []int64{}
 		for _, p := range projects {
@@ -118,7 +121,7 @@ func (s *StatisticAPI) Get() {
 				s.username, err))
 			return
 		}
-		statistic[MRC] = n
+		statistic[PriRC] = n
 	}
 
 	s.Data["json"] = statistic

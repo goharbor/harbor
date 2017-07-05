@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -33,6 +32,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/ui/config"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -370,7 +370,7 @@ func (ra *RepositoryAPI) GetTags() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	tags, err := getSimpleTags(client)
+	tags, err := client.ListTag()
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get tag of %s: %v", repoName, err))
 		return
@@ -485,31 +485,6 @@ func getV2Manifest(client *registry.Repository, tag string) (
 	return digest, manifest, config, nil
 }
 
-// return tag name list for the repository
-func getSimpleTags(client *registry.Repository) ([]string, error) {
-	tags := []string{}
-
-	ts, err := client.ListTag()
-	if err != nil {
-		// TODO remove the logic if the bug of registry is fixed
-		// It's a workaround for a bug of registry: when listing tags of
-		// a repository which is being pushed, a "NAME_UNKNOWN" error will
-		// been returned, while the catalog API can list this repository.
-
-		if regErr, ok := err.(*registry_error.Error); ok &&
-			regErr.StatusCode == http.StatusNotFound {
-			return tags, nil
-		}
-
-		return nil, err
-	}
-
-	tags = append(tags, ts...)
-	sort.Strings(tags)
-
-	return tags, nil
-}
-
 // GetManifests returns the manifest of a tag
 func (ra *RepositoryAPI) GetManifests() {
 	repoName := ra.GetString(":splat")
@@ -615,8 +590,8 @@ func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repo
 		return nil, err
 	}
 
-	return NewRepositoryClient(endpoint, true, ra.SecurityCtx.GetUsername(),
-		repoName, "repository", repoName, "pull", "push", "*")
+	return uiutils.NewRepositoryClientForUI(endpoint, true, ra.SecurityCtx.GetUsername(),
+		repoName, "pull", "push", "*")
 }
 
 //GetTopRepos returns the most populor repositories
@@ -629,14 +604,14 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	projectIDs := []int64{}
 	projects, err := ra.ProjectMgr.GetPublic()
 	if err != nil {
-		log.Errorf("failed to get the public projects: %v", err)
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
 		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
 		if err != nil {
-			log.Errorf("failed to get projects which the user %s is a member of: %v",
-				ra.SecurityCtx.GetUsername(), err)
+			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
+				ra.SecurityCtx.GetUsername(), err))
 			return
 		}
 		projects = append(projects, list...)
@@ -726,7 +701,7 @@ func (ra *RepositoryAPI) ScanImage() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
-	err = TriggerImageScan(repoName, tag)
+	err = uiutils.TriggerImageScan(repoName, tag)
 	//TODO better check existence
 	if err != nil {
 		log.Errorf("Error while calling job service to trigger image scan: %v", err)
@@ -762,20 +737,47 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
+	res := []*models.VulnerabilityItem{}
 	overview, err := dao.GetImgScanOverview(digest)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
 		return
 	}
-	clairClient := clair.NewClient(config.ClairEndpoint(), nil)
-	log.Debugf("The key for getting details: %s", overview.DetailsKey)
-	details, err := clairClient.GetResult(overview.DetailsKey)
-	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+	if overview != nil && len(overview.DetailsKey) > 0 {
+		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
+		log.Debugf("The key for getting details: %s", overview.DetailsKey)
+		details, err := clairClient.GetResult(overview.DetailsKey)
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+			return
+		}
+		res = transformVulnerabilities(details)
+	}
+	ra.Data["json"] = res
+	ra.ServeJSON()
+}
+
+// ScanAll handles the api to scan all images on Harbor.
+func (ra *RepositoryAPI) ScanAll() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, it's not possible to scan images.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
 		return
 	}
-	ra.Data["json"] = transformVulnerabilities(details)
-	ra.ServeJSON()
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+	if !ra.SecurityCtx.IsSysAdmin() {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	if err := uiutils.ScanAllImages(); err != nil {
+		log.Errorf("Failed triggering scan all images, error: %v", err)
+		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+		return
+	}
+	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 
 func getSignatures(repository, username string) (map[string]*notary.Target, error) {

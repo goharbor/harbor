@@ -15,6 +15,7 @@
 package pms
 
 import (
+	"net/http"
 	"sort"
 	"testing"
 
@@ -24,8 +25,11 @@ import (
 )
 
 var (
-	endpoint = "http://127.0.0.1:8282"
-	token    = ""
+	client      = http.DefaultClient
+	endpoint    = "http://127.0.0.1:8282"
+	tokenReader = &RawTokenReader{
+		Token: "",
+	}
 )
 
 func TestConvert(t *testing.T) {
@@ -34,16 +38,16 @@ func TestConvert(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Nil(t, pro)
 
-	//project without property __harborId
+	//project without property __projectIndex
 	p := &project{}
 	pro, err = convert(p)
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __harborId
+	//project with invalid __projectIndex
 	p = &project{
 		CustomProperties: map[string]string{
-			"__harborId": "invalid_value",
+			"__projectIndex": "invalid_value",
 		},
 	}
 	pro, err = convert(p)
@@ -85,7 +89,7 @@ func TestConvert(t *testing.T) {
 		Name:   "test",
 		Public: true,
 		CustomProperties: map[string]string{
-			"__harborId":                                   "1",
+			"__projectIndex":                               "1",
 			"__enableContentTrust":                         "true",
 			"__preventVulnerableImagesFromRunning":         "true",
 			"__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -118,7 +122,7 @@ func TestParse(t *testing.T) {
       "id": "41427587-70e9-4671-9a9e-b9def0a07bb7",
       "name": "project02",
       "customProperties": {
-        "__harborId": "2",
+        "__projectIndex": "2",
         "__enableContentTrust": "true",
         "__preventVulnerableImagesFromRunning": "true",
         "__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -140,7 +144,7 @@ func TestParse(t *testing.T) {
       "id": "default-project",
       "name": "default-project",
       "customProperties": {
-        "__harborId": "2",
+        "__projectIndex": "2",
         "__enableContentTrust": "true",
         "__preventVulnerableImagesFromRunning": "true",
         "__preventVulnerableImagesFromRunningSeverity": "medium",
@@ -177,17 +181,13 @@ func TestParse(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	name := "project_for_test_get"
 	id, err := pm.Create(&models.Project{
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	// get by invalid input type
 	_, err = pm.Get([]string{})
@@ -215,7 +215,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestIsPublic(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// invalid input type
 	public, err := pm.IsPublic([]string{})
@@ -234,11 +234,7 @@ func TestIsPublic(t *testing.T) {
 		Public: 1,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	public, err = pm.IsPublic(id)
 	assert.Nil(t, err)
@@ -255,11 +251,7 @@ func TestIsPublic(t *testing.T) {
 		Public: 0,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	public, err = pm.IsPublic(id)
 	assert.Nil(t, err)
@@ -271,7 +263,7 @@ func TestIsPublic(t *testing.T) {
 }
 
 func TestExist(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// invalid input type
 	exist, err := pm.Exist([]string{})
@@ -289,11 +281,7 @@ func TestExist(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	exist, err = pm.Exist(id)
 	assert.Nil(t, err)
@@ -305,7 +293,7 @@ func TestExist(t *testing.T) {
 }
 
 func TestGetRoles(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// nil username, nil project
 	roles, err := pm.GetRoles("", nil)
@@ -322,11 +310,7 @@ func TestGetRoles(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	roles, err = pm.GetRoles("user01", id)
 	assert.Nil(t, err)
@@ -336,7 +320,7 @@ func TestGetRoles(t *testing.T) {
 }
 
 func TestGetPublic(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	projects, err := pm.GetPublic()
 	assert.Nil(t, nil)
@@ -348,11 +332,7 @@ func TestGetPublic(t *testing.T) {
 		Public: 1,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	projects, err = pm.GetPublic()
 	assert.Nil(t, nil)
@@ -374,7 +354,7 @@ func TestGetByMember(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	name := "project_for_test_create"
 	id, err := pm.Create(&models.Project{
@@ -386,11 +366,7 @@ func TestCreate(t *testing.T) {
 		AutomaticallyScanImagesOnPush:              true,
 	})
 	require.Nil(t, err)
-	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
-		}
-	}(id)
+	defer delete(t, id)
 
 	project, err := pm.Get(id)
 	assert.Nil(t, err)
@@ -403,7 +379,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 
 	// non-exist project
 	err := pm.Delete(int64(0))
@@ -429,24 +405,102 @@ func TestDelete(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
+	pm := NewProjectManager(client, endpoint, tokenReader)
 	err := pm.Update(nil, nil)
 	assert.NotNil(t, err)
 }
 
 func TestGetAll(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
-	_, err := pm.GetAll(nil)
-	assert.NotNil(t, err)
+	pm := NewProjectManager(client, endpoint, tokenReader)
+
+	name1 := "project_for_test_get_all_01"
+	id1, err := pm.Create(&models.Project{
+		Name: name1,
+	})
+	require.Nil(t, err)
+	defer delete(t, id1)
+
+	name2 := "project_for_test_get_all_02"
+	id2, err := pm.Create(&models.Project{
+		Name:   name2,
+		Public: 1,
+	})
+	require.Nil(t, err)
+	defer delete(t, id2)
+
+	// no filter
+	projects, err := pm.GetAll(nil)
+	require.Nil(t, err)
+	found1 := false
+	found2 := false
+	for _, project := range projects {
+		if project.ProjectID == id1 {
+			found1 = true
+		}
+		if project.ProjectID == id2 {
+			found2 = true
+		}
+	}
+	assert.True(t, found1)
+	assert.True(t, found2)
+
+	// filter by name
+	projects, err = pm.GetAll(&models.ProjectQueryParam{
+		Name: name1,
+	})
+	require.Nil(t, err)
+	found1 = false
+	for _, project := range projects {
+		if project.ProjectID == id1 {
+			found1 = true
+			break
+		}
+	}
+	assert.True(t, found1)
+
+	// filter by public
+	value := true
+	projects, err = pm.GetAll(&models.ProjectQueryParam{
+		Public: &value,
+	})
+	require.Nil(t, err)
+	found2 = false
+	for _, project := range projects {
+		if project.ProjectID == id2 {
+			found2 = true
+			break
+		}
+	}
+	assert.True(t, found2)
 }
 
 func TestGetTotal(t *testing.T) {
-	pm := NewProjectManager(endpoint, token)
-	_, err := pm.GetTotal(nil)
+	pm := NewProjectManager(client, endpoint, tokenReader)
+
+	total1, err := pm.GetTotal(nil)
+	require.Nil(t, err)
+
+	name := "project_for_test_get_total"
+	id, err := pm.Create(&models.Project{
+		Name: name,
+	})
+	require.Nil(t, err)
+	defer delete(t, id)
+
+	total2, err := pm.GetTotal(nil)
+	require.Nil(t, err)
+	assert.Equal(t, total1+1, total2)
+}
+
+func TestGetHasReadPerm(t *testing.T) {
+	pm := NewProjectManager(client, endpoint, tokenReader)
+	_, err := pm.GetHasReadPerm()
 	assert.NotNil(t, err)
 }
 
-// TODO add test case
-func TestGetHasReadPerm(t *testing.T) {
-
+func delete(t *testing.T, id int64) {
+	pm := NewProjectManager(client, endpoint, tokenReader)
+	if err := pm.Delete(id); err != nil {
+		t.Logf("failed to delete project %d: %v", id, err)
+	}
 }

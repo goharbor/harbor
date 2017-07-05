@@ -52,6 +52,7 @@ func Init() {
 		reqCtxModifiers = []ReqCtxModifier{
 			&secretReqCtxModifier{config.SecretStore},
 			&tokenReqCtxModifier{},
+			&basicAuthReqCtxModifier{},
 			&unauthorizedReqCtxModifier{}}
 		return
 	}
@@ -123,7 +124,37 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
+	log.Debug("got user information via basic auth")
 
+	// integration with admiral
+	if config.WithAdmiral() {
+		// Can't get a token from Admiral's login API, we can only
+		// create a project manager with the token of the solution user.
+		// That way may cause some wrong permission promotion in some API
+		// calls, so we just handle the requests which are necessary
+		if !filterReq(ctx.Request) {
+			log.Debugf("basic auth is not supported for request %s %s, skip",
+				ctx.Request.Method, ctx.Request.URL.Path)
+			return false
+		}
+
+		authCtx, err := authcontext.Login(config.AdmiralClient,
+			config.AdmiralEndpoint(), username, password)
+		if err != nil {
+			log.Errorf("failed to authenticate %s: %v", username, err)
+			return false
+		}
+
+		log.Debug("using global project manager...")
+		pm := config.GlobalProjectMgr
+		log.Debug("creating admiral security context...")
+		securCtx := admiral.NewSecurityContext(authCtx, pm)
+
+		setSecurCtxAndPM(ctx.Request, securCtx, pm)
+		return true
+	}
+
+	// standalone
 	user, err := auth.Login(models.AuthModel{
 		Principal: username,
 		Password:  password,
@@ -133,28 +164,25 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 	if user == nil {
+		log.Debug("basic auth user is nil")
 		return false
 	}
-
-	var securCtx security.Context
-	var pm projectmanager.ProjectManager
-	log.Debug("got user information via basic auth")
-	if config.WithAdmiral() {
-		// integration with admiral
-		// we can add logic here to support basic auth in integration mode
-		log.Debug("basic auth isn't supported in integration mode")
-		return false
-	}
-
-	// standalone
 	log.Debug("using local database project manager")
-	pm = config.GlobalProjectMgr
+	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
-	securCtx = local.NewSecurityContext(user, pm)
+	securCtx := local.NewSecurityContext(user, pm)
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
-
 	return true
+}
+
+func filterReq(req *http.Request) bool {
+	path := req.URL.Path
+	if path == "/api/projects" && req.Method == http.MethodPost ||
+		path == "/service/token" && req.Method == http.MethodGet {
+		return true
+	}
+	return false
 }
 
 type sessionReqCtxModifier struct{}
@@ -194,14 +222,18 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	log.Debug("got token from request")
 
-	authContext, err := authcontext.GetByToken(token)
+	authContext, err := authcontext.GetAuthCtx(config.AdmiralClient,
+		config.AdmiralEndpoint(), token)
 	if err != nil {
 		log.Errorf("failed to get auth context: %v", err)
 		return false
 	}
 
 	log.Debug("creating PMS project manager...")
-	pm := pms.NewProjectManager(config.AdmiralEndpoint(), token)
+	pm := pms.NewProjectManager(config.AdmiralClient,
+		config.AdmiralEndpoint(), &pms.RawTokenReader{
+			Token: token,
+		})
 	log.Debug("creating admiral security context...")
 	securCtx := admiral.NewSecurityContext(authContext, pm)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
@@ -220,7 +252,8 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if config.WithAdmiral() {
 		// integration with admiral
 		log.Debug("creating PMS project manager...")
-		pm = pms.NewProjectManager(config.AdmiralEndpoint(), "")
+		pm = pms.NewProjectManager(config.AdmiralClient,
+			config.AdmiralEndpoint(), nil)
 		log.Debug("creating admiral security context...")
 		securCtx = admiral.NewSecurityContext(nil, pm)
 	} else {

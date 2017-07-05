@@ -54,9 +54,8 @@ func DeleteProjectMember(projectID int64, userID int) error {
 }
 
 // GetUserByProject gets all members of the project.
-func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, error) {
+func GetUserByProject(projectID int64, queryUser models.User) ([]*models.Member, error) {
 	o := GetOrmer()
-	u := []models.User{}
 	sql := `select u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
 			r.role_id as role
 		from user u 
@@ -74,6 +73,9 @@ func GetUserByProject(projectID int64, queryUser models.User) ([]models.User, er
 		queryParam = append(queryParam, "%"+escape(queryUser.Username)+"%")
 	}
 	sql += ` order by u.username `
-	_, err := o.Raw(sql, queryParam).QueryRows(&u)
-	return u, err
+
+	members := []*models.Member{}
+	_, err := o.Raw(sql, queryParam).QueryRows(&members)
+
+	return members, err
 }

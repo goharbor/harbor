@@ -17,10 +17,11 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
+	"reflect"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -60,6 +61,34 @@ var (
 		common.MaxJobWorkers,
 		common.TokenExpiration,
 		common.CfgExpiration,
+		common.JobLogDir,
+		common.AdminInitialPassword,
+		common.ScanAllPolicy,
+	}
+
+	stringKeys = []string{
+		common.ExtEndpoint,
+		common.AUTHMode,
+		common.DatabaseType,
+		common.MySQLHost,
+		common.MySQLUsername,
+		common.MySQLPassword,
+		common.MySQLDatabase,
+		common.SQLiteFile,
+		common.LDAPURL,
+		common.LDAPSearchDN,
+		common.LDAPSearchPwd,
+		common.LDAPBaseDN,
+		common.LDAPUID,
+		common.LDAPFilter,
+		common.TokenServiceURL,
+		common.RegistryURL,
+		common.EmailHost,
+		common.EmailUsername,
+		common.EmailPassword,
+		common.EmailFrom,
+		common.EmailIdentity,
+		common.ProjectCreationRestriction,
 		common.JobLogDir,
 		common.AdminInitialPassword,
 	}
@@ -131,10 +160,10 @@ func (c *ConfigAPI) Get() {
 
 // Put updates configurations
 func (c *ConfigAPI) Put() {
-	m := map[string]string{}
+	m := map[string]interface{}{}
 	c.DecodeJSONReq(&m)
 
-	cfg := map[string]string{}
+	cfg := map[string]interface{}{}
 	for _, k := range validKeys {
 		if v, ok := m[k]; ok {
 			cfg[k] = v
@@ -152,35 +181,7 @@ func (c *ConfigAPI) Put() {
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
-	if value, ok := cfg[common.AUTHMode]; ok {
-		mode, err := config.AuthMode()
-		if err != nil {
-			log.Errorf("failed to get auth mode: %v", err)
-			c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		if mode != value {
-			flag, err := authModeCanBeModified()
-			if err != nil {
-				log.Errorf("failed to determine whether auth mode can be modified: %v", err)
-				c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-
-			if !flag {
-				c.CustomAbort(http.StatusBadRequest,
-					fmt.Sprintf("%s can not be modified as new users have been inserted into database",
-						common.AUTHMode))
-			}
-		}
-	}
-
-	result, err := convertForPut(cfg)
-	if err != nil {
-		log.Errorf("failed to convert configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if err := config.Upload(result); err != nil {
+	if err := config.Upload(cfg); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
@@ -199,18 +200,53 @@ func (c *ConfigAPI) Reset() {
 	}
 }
 
-func validateCfg(c map[string]string) (bool, error) {
-	isSysErr := false
+func validateCfg(c map[string]interface{}) (bool, error) {
+	strMap := map[string]string{}
+	for _, k := range stringKeys {
+		if _, ok := c[k]; !ok {
+			continue
+		}
+		if _, ok := c[k].(string); !ok {
+			return false, fmt.Errorf("Invalid value type, expected string, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
+		}
+		strMap[k] = c[k].(string)
+	}
+	numMap := map[string]int{}
+	for _, k := range numKeys {
+		if _, ok := c[k]; !ok {
+			continue
+		}
+		if _, ok := c[k].(float64); !ok {
+			return false, fmt.Errorf("Invalid value type, expected float64, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
+		}
+		numMap[k] = int(c[k].(float64))
+	}
+	boolMap := map[string]bool{}
+	for _, k := range boolKeys {
+		if _, ok := c[k]; !ok {
+			continue
+		}
+		if _, ok := c[k].(bool); !ok {
+			return false, fmt.Errorf("Invalid value type, expected bool, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
+		}
+		boolMap[k] = c[k].(bool)
+	}
 
 	mode, err := config.AuthMode()
 	if err != nil {
-		isSysErr = true
-		return isSysErr, err
+		return true, err
 	}
 
-	if value, ok := c[common.AUTHMode]; ok {
+	if value, ok := strMap[common.AUTHMode]; ok {
 		if value != common.DBAuth && value != common.LDAPAuth {
-			return isSysErr, fmt.Errorf("invalid %s, shoud be %s or %s", common.AUTHMode, common.DBAuth, common.LDAPAuth)
+			return false, fmt.Errorf("invalid %s, shoud be %s or %s", common.AUTHMode, common.DBAuth, common.LDAPAuth)
+		}
+		flag, err := authModeCanBeModified()
+		if err != nil {
+			return true, err
+		}
+		if mode != value && !flag {
+			return false, fmt.Errorf("%s can not be modified as new users have been inserted into database", common.AUTHMode)
 		}
 		mode = value
 	}
@@ -218,123 +254,70 @@ func validateCfg(c map[string]string) (bool, error) {
 	if mode == common.LDAPAuth {
 		ldap, err := config.LDAP()
 		if err != nil {
-			isSysErr = true
-			return isSysErr, err
+			return true, err
 		}
 
 		if len(ldap.URL) == 0 {
-			if _, ok := c[common.LDAPURL]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", common.LDAPURL)
+			if _, ok := strMap[common.LDAPURL]; !ok {
+				return false, fmt.Errorf("%s is missing", common.LDAPURL)
 			}
 		}
 
 		if len(ldap.BaseDN) == 0 {
-			if _, ok := c[common.LDAPBaseDN]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", common.LDAPBaseDN)
+			if _, ok := strMap[common.LDAPBaseDN]; !ok {
+				return false, fmt.Errorf("%s is missing", common.LDAPBaseDN)
 			}
 		}
 		if len(ldap.UID) == 0 {
-			if _, ok := c[common.LDAPUID]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", common.LDAPUID)
+			if _, ok := strMap[common.LDAPUID]; !ok {
+				return false, fmt.Errorf("%s is missing", common.LDAPUID)
 			}
 		}
 		if ldap.Scope == 0 {
-			if _, ok := c[common.LDAPScope]; !ok {
-				return isSysErr, fmt.Errorf("%s is missing", common.LDAPScope)
+			if _, ok := numMap[common.LDAPScope]; !ok {
+				return false, fmt.Errorf("%s is missing", common.LDAPScope)
 			}
 		}
 	}
 
-	if ldapURL, ok := c[common.LDAPURL]; ok && len(ldapURL) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", common.LDAPURL)
+	if ldapURL, ok := strMap[common.LDAPURL]; ok && len(ldapURL) == 0 {
+		return false, fmt.Errorf("%s is empty", common.LDAPURL)
 	}
-	if baseDN, ok := c[common.LDAPBaseDN]; ok && len(baseDN) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", common.LDAPBaseDN)
+	if baseDN, ok := strMap[common.LDAPBaseDN]; ok && len(baseDN) == 0 {
+		return false, fmt.Errorf("%s is empty", common.LDAPBaseDN)
 	}
-	if uID, ok := c[common.LDAPUID]; ok && len(uID) == 0 {
-		return isSysErr, fmt.Errorf("%s is empty", common.LDAPUID)
+	if uID, ok := strMap[common.LDAPUID]; ok && len(uID) == 0 {
+		return false, fmt.Errorf("%s is empty", common.LDAPUID)
 	}
-	if scope, ok := c[common.LDAPScope]; ok &&
+	if scope, ok := numMap[common.LDAPScope]; ok &&
 		scope != common.LDAPScopeBase &&
 		scope != common.LDAPScopeOnelevel &&
 		scope != common.LDAPScopeSubtree {
-		return isSysErr, fmt.Errorf("invalid %s, should be %s, %s or %s",
+		return false, fmt.Errorf("invalid %s, should be %s, %s or %s",
 			common.LDAPScope,
 			common.LDAPScopeBase,
 			common.LDAPScopeOnelevel,
 			common.LDAPScopeSubtree)
 	}
-
-	for _, k := range boolKeys {
-		v, ok := c[k]
-		if !ok {
-			continue
+	for k, n := range numMap {
+		if n < 0 {
+			return false, fmt.Errorf("invalid %s: %d", k, n)
 		}
-
-		if v != "0" && v != "1" {
-			return isSysErr, fmt.Errorf("%s should be %s or %s",
-				k, "0", "1")
-		}
-	}
-
-	for _, k := range numKeys {
-		v, ok := c[k]
-		if !ok {
-			continue
-		}
-
-		n, err := strconv.Atoi(v)
-		if err != nil || n < 0 {
-			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
-		}
-
 		if (k == common.EmailPort ||
 			k == common.MySQLPort) && n > 65535 {
-			return isSysErr, fmt.Errorf("invalid %s: %s", k, v)
+			return false, fmt.Errorf("invalid %s: %d", k, n)
 		}
 	}
 
-	if crt, ok := c[common.ProjectCreationRestriction]; ok &&
+	if crt, ok := strMap[common.ProjectCreationRestriction]; ok &&
 		crt != common.ProCrtRestrEveryone &&
 		crt != common.ProCrtRestrAdmOnly {
-		return isSysErr, fmt.Errorf("invalid %s, should be %s or %s",
+		return false, fmt.Errorf("invalid %s, should be %s or %s",
 			common.ProjectCreationRestriction,
 			common.ProCrtRestrAdmOnly,
 			common.ProCrtRestrEveryone)
 	}
-
-	return isSysErr, nil
-}
-
-//convert map[string]string to map[string]interface{}
-func convertForPut(m map[string]string) (map[string]interface{}, error) {
-	cfg := map[string]interface{}{}
-
-	for k, v := range m {
-		cfg[k] = v
-	}
-
-	for _, k := range numKeys {
-		if _, ok := cfg[k]; !ok {
-			continue
-		}
-
-		v, err := strconv.Atoi(cfg[k].(string))
-		if err != nil {
-			return nil, err
-		}
-		cfg[k] = v
-	}
-
-	for _, k := range boolKeys {
-		if _, ok := cfg[k]; !ok {
-			continue
-		}
-
-		cfg[k] = cfg[k] == "1"
-	}
-
-	return cfg, nil
+	return false, nil
 }
 
 // delete sensitive attrs and add editable field to every attr
@@ -347,6 +330,9 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 		}
 	}
 
+	if _, ok := cfg[common.ScanAllPolicy]; !ok {
+		cfg[common.ScanAllPolicy] = models.DefaultScanAllPolicy
+	}
 	for k, v := range cfg {
 		result[k] = &value{
 			Value:    v,

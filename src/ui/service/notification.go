@@ -27,7 +27,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -65,7 +65,7 @@ func (n *NotificationHandler) Post() {
 			user = "anonymous"
 		}
 
-		pro, err := n.ProjectMgr.Get(project)
+		pro, err := config.GlobalProjectMgr.Get(project)
 		if err != nil {
 			log.Errorf("failed to get project by name %s: %v", project, err)
 			return
@@ -102,7 +102,7 @@ func (n *NotificationHandler) Post() {
 
 			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
 			if autoScanEnabled(project) {
-				if err := api.TriggerImageScan(repository, tag); err != nil {
+				if err := uiutils.TriggerImageScan(repository, tag); err != nil {
 					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
 				}
 			}
@@ -160,9 +160,7 @@ func autoScanEnabled(projectName string) bool {
 		return false
 	}
 	if config.WithAdmiral() {
-		//TODO get a project manager based on service account.
-		var pm *pms.ProjectManager = pms.NewProjectManager("", "")
-		p, err := pm.Get(projectName)
+		p, err := config.GlobalProjectMgr.Get(projectName)
 		if err != nil {
 			log.Warningf("failed to get project, error: %v", err)
 			return false

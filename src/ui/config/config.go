@@ -15,7 +15,10 @@
 package config
 
 import (
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -32,8 +35,9 @@ import (
 )
 
 const (
-	defaultKeyPath   string = "/etc/ui/key"
-	secretCookieName string = "secret"
+	defaultKeyPath       string = "/etc/ui/key"
+	defaultTokenFilePath string = "/etc/ui/service_token"
+	secretCookieName     string = "secret"
 )
 
 var (
@@ -45,6 +49,9 @@ var (
 	GlobalProjectMgr projectmanager.ProjectManager
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
+	// AdmiralClient is initialized only under integration deploy mode
+	// and can be passed to project manager as a parameter
+	AdmiralClient *http.Client
 )
 
 // Init configurations
@@ -104,9 +111,25 @@ func initProjectManager() {
 	}
 
 	// integration with admiral
-	// TODO create project manager based on pms using service account
 	log.Info("initializing the project manager based on PMS...")
-	GlobalProjectMgr = pms.NewProjectManager(AdmiralEndpoint(), "")
+	// TODO read ca/cert file and pass it to the TLS config
+	AdmiralClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+
+	path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+	if len(path) == 0 {
+		path = defaultTokenFilePath
+	}
+	log.Infof("service token file path: %s", path)
+	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
+		AdmiralEndpoint(), &pms.FileTokenReader{
+			Path: path,
+		})
 }
 
 // Load configurations
@@ -339,7 +362,7 @@ func ClairEndpoint() string {
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint")
+		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
 
 		return ""
 	}
@@ -347,6 +370,30 @@ func AdmiralEndpoint() string {
 		cfg[common.AdmiralEndpoint] = ""
 	}
 	return cfg[common.AdmiralEndpoint].(string)
+}
+
+// ScanAllPolicy returns the policy which controls the scan all.
+func ScanAllPolicy() models.ScanAllPolicy {
+	var res models.ScanAllPolicy
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return default scan all policy, error: %v", err)
+		return models.DefaultScanAllPolicy
+	}
+	v, ok := cfg[common.ScanAllPolicy]
+	if !ok {
+		return models.DefaultScanAllPolicy
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		log.Errorf("Failed to Marshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	return res
 }
 
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.

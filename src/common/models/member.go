@@ -12,21 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package utils contains methods to support security, cache, and webhook functions.
-package utils
+package models
 
-import (
-	"net/http"
-
-	"github.com/vmware/harbor/src/common/utils/log"
-)
-
-// VerifySecret verifies the UI_SECRET cookie in a http request.
-// TODO remove
-func VerifySecret(r *http.Request, expectedSecret string) bool {
-	c, err := r.Cookie("secret")
-	if err != nil {
-		log.Warningf("Failed to get secret cookie, error: %v", err)
-	}
-	return c != nil && c.Value == expectedSecret
+// Member holds the details of a member.
+type Member struct {
+	ID       int    `orm:"pk;column(user_id)" json:"user_id"`
+	Username string `json:"username"`
+	Rolename string `json:"role_name"`
+	Role     int    `json:"role_id"`
 }

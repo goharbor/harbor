@@ -3,6 +3,7 @@ package proxy
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
@@ -19,6 +20,7 @@ import (
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
 var adminServer *httptest.Server
+var adminserverClient client.Client
 
 var admiralEndpoint = "http://127.0.0.1:8282"
 var token = ""
@@ -43,6 +45,7 @@ func TestMain(m *testing.M) {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
+	adminserverClient = client.NewClient(adminServer.URL, nil)
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
@@ -95,51 +98,77 @@ func TestEnvPolicyChecker(t *testing.T) {
 	if err := os.Setenv("PROJECT_CONTENT_TRUST", "1"); err != nil {
 		t.Fatalf("Failed to set env variable: %v", err)
 	}
+	if err2 := os.Setenv("PROJECT_VULNERABLE", "1"); err2 != nil {
+		t.Fatalf("Failed to set env variable: %v", err2)
+	}
+	if err3 := os.Setenv("PROJECT_SEVERITY", "negligible"); err3 != nil {
+		t.Fatalf("Failed to set env variable: %v", err3)
+	}
 	contentTrustFlag := getPolicyChecker().contentTrustEnabled("whatever")
-	vulFlag := getPolicyChecker().vulnerableEnabled("whatever")
+	vulFlag, sev := getPolicyChecker().vulnerablePolicy("whatever")
 	assert.True(contentTrustFlag)
-	assert.False(vulFlag)
+	assert.True(vulFlag)
+	assert.Equal(sev, models.SevNone)
 }
 
 func TestPMSPolicyChecker(t *testing.T) {
-	pm := pms.NewProjectManager(admiralEndpoint, token)
-	name := "project_for_test_get_true"
+	var defaultConfigAdmiral = map[string]interface{}{
+		common.ExtEndpoint:     "https://" + endpoint,
+		common.WithNotary:      true,
+		common.CfgExpiration:   5,
+		common.AdmiralEndpoint: admiralEndpoint,
+	}
+	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
+	if err != nil {
+		panic(err)
+	}
+	defer adminServer.Close()
+	if err := os.Setenv("ADMIN_SERVER_URL", adminServer.URL); err != nil {
+		panic(err)
+	}
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
+
+	pm := pms.NewProjectManager(http.DefaultClient,
+		admiralEndpoint, nil)
+	name := "project_for_test_get_sev_low"
 	id, err := pm.Create(&models.Project{
-		Name:               name,
-		EnableContentTrust: true,
+		Name:                                       name,
+		EnableContentTrust:                         true,
+		PreventVulnerableImagesFromRunning:         false,
+		PreventVulnerableImagesFromRunningSeverity: "low",
 	})
 	require.Nil(t, err)
 	defer func(id int64) {
 		if err := pm.Delete(id); err != nil {
-			require.Nil(t, err)
+			t.Logf("failed to delete project %d: %v", id, err)
 		}
 	}(id)
 	project, err := pm.Get(id)
 	assert.Nil(t, err)
 	assert.Equal(t, id, project.ProjectID)
-	server, err2 := utilstest.NewAdminserver(nil)
-	if err2 != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err2)
-	}
-	defer server.Close()
-	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_true")
+
+	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_sev_low")
 	assert.True(t, contentTrustFlag)
+	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy("project_for_test_get_sev_low")
+	assert.False(t, projectVulnerableEnabled)
+	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
 }
 
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
 	//The data from common/utils/notary/helper_test.go
-	img1 := imageInfo{"notary-demo/busybox", "1.0", "notary-demo"}
-	img2 := imageInfo{"notary-demo/busybox", "2.0", "notary-demo"}
-	res1, err := matchNotaryDigest(img1, "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7")
+	img1 := imageInfo{"notary-demo/busybox", "1.0", "notary-demo", "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
+	img2 := imageInfo{"notary-demo/busybox", "2.0", "notary-demo", "sha256:12345678"}
+
+	res1, err := matchNotaryDigest(img1)
 	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img1)
 	assert.True(res1)
-	res2, err := matchNotaryDigest(img1, "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a8")
-	assert.Nil(err, "Unexpected error: %v, image: %#v, take 2", err, img1)
+
+	res2, err := matchNotaryDigest(img2)
+	assert.Nil(err, "Unexpected error: %v, image: %#v, take 2", err, img2)
 	assert.False(res2)
-	res3, err := matchNotaryDigest(img2, "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7")
-	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img2)
-	assert.False(res3)
 }
 
 func TestCopyResp(t *testing.T) {

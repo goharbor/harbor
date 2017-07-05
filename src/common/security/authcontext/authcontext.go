@@ -15,34 +15,37 @@
 package authcontext
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/vmware/harbor/src/ui/config"
 )
 
+// TODO update the value of role when admiral API is ready
 const (
 	// AuthTokenHeader is the key of auth token header
 	AuthTokenHeader  = "x-xenon-auth-token"
 	sysAdminRole     = "CLOUD_ADMIN"
-	projectAdminRole = "DEVOPS_ADMIN"
-	developerRole    = "DEVELOPER"
-	guestRole        = "GUEST"
+	projectAdminRole = "PROJECT_ADMIN"
+	developerRole    = "PROJECT_MEMBER"
+	guestRole        = "PROJECT_VIEWER"
 )
 
-var client = &http.Client{
-	Transport: &http.Transport{},
+type project struct {
+	DocumentSelfLink string   `json:"documentSelfLink"`
+	Name             string   `json:"name"`
+	Roles            []string `json:"roles"`
 }
 
 // AuthContext ...
 type AuthContext struct {
-	PrincipalID string              `json:"principalId"`
-	Name        string              `json:"name"`
-	Roles       []string            `json:"projects"`
-	Projects    map[string][]string `json:"roles"`
+	PrincipalID string     `json:"id"`
+	Name        string     `json:"name"`
+	Email       string     `json:"email"`
+	Roles       []string   `json:"roles"`
+	Projects    []*project `json:"projects"`
 }
 
 // GetUsername ...
@@ -54,7 +57,6 @@ func (a *AuthContext) GetUsername() string {
 func (a *AuthContext) IsSysAdmin() bool {
 	isSysAdmin := false
 	for _, role := range a.Roles {
-		// TODO update the value of role when admiral API is ready
 		if role == sysAdminRole {
 			isSysAdmin = true
 			break
@@ -64,14 +66,14 @@ func (a *AuthContext) IsSysAdmin() bool {
 }
 
 // HasReadPerm ...
-func (a *AuthContext) HasReadPerm(project string) bool {
-	_, exist := a.Projects[project]
-	return exist
+func (a *AuthContext) HasReadPerm(projectName string) bool {
+	roles := a.getRoles(projectName)
+	return len(roles) > 0
 }
 
 // HasWritePerm ...
-func (a *AuthContext) HasWritePerm(project string) bool {
-	roles, _ := a.Projects[project]
+func (a *AuthContext) HasWritePerm(projectName string) bool {
+	roles := a.getRoles(projectName)
 	for _, role := range roles {
 		if role == projectAdminRole || role == developerRole {
 			return true
@@ -81,8 +83,8 @@ func (a *AuthContext) HasWritePerm(project string) bool {
 }
 
 // HasAllPerm ...
-func (a *AuthContext) HasAllPerm(project string) bool {
-	roles, _ := a.Projects[project]
+func (a *AuthContext) HasAllPerm(projectName string) bool {
+	roles := a.getRoles(projectName)
 	for _, role := range roles {
 		if role == projectAdminRole {
 			return true
@@ -91,17 +93,77 @@ func (a *AuthContext) HasAllPerm(project string) bool {
 	return false
 }
 
-// GetByToken ...
-func GetByToken(token string) (*AuthContext, error) {
-	endpoint := config.AdmiralEndpoint()
-	path := strings.TrimRight(endpoint, "/") + "/sso/auth-context"
-	req, err := http.NewRequest(http.MethodGet, path, nil)
+func (a *AuthContext) getRoles(projectName string) []string {
+	for _, project := range a.Projects {
+		if project.Name == projectName {
+			return project.Roles
+		}
+	}
+
+	return []string{}
+}
+
+// GetMyProjects returns all projects which the user is a member of
+func (a *AuthContext) GetMyProjects() []string {
+	projects := []string{}
+	for _, project := range a.Projects {
+		projects = append(projects, project.Name)
+	}
+	return projects
+}
+
+// GetAuthCtx returns the auth context of the current user
+func GetAuthCtx(client *http.Client, url, token string) (*AuthContext, error) {
+	return get(client, url, token)
+}
+
+// GetAuthCtxOfUser returns the auth context of the specific user
+func GetAuthCtxOfUser(client *http.Client, url, token string, username string) (*AuthContext, error) {
+	return get(client, url, token, username)
+}
+
+// get the user's auth context, if the username is not provided
+// get the default auth context of the token
+func get(client *http.Client, url, token string, username ...string) (*AuthContext, error) {
+	endpoint := ""
+	if len(username) > 0 && len(username[0]) > 0 {
+		endpoint = buildSpecificUserAuthCtxURL(url, username[0])
+	} else {
+		endpoint = buildCurrentUserAuthCtxURL(url)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add(AuthTokenHeader, token)
 
+	return send(client, req)
+}
+
+// Login with credential and returns auth context and error
+func Login(client *http.Client, url, username, password string) (*AuthContext, error) {
+	data, err := json.Marshal(&struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}{
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url), bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+
+	return send(client, req)
+}
+
+func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -114,16 +176,27 @@ func GetByToken(token string) (*AuthContext, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get auth context by token: %d %s",
-			resp.StatusCode, string(data))
+		return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, string(data))
 	}
 
-	ctx := &AuthContext{
-		Projects: make(map[string][]string),
-	}
+	ctx := &AuthContext{}
 	if err = json.Unmarshal(data, ctx); err != nil {
 		return nil, err
 	}
 
 	return ctx, nil
+}
+
+func buildCurrentUserAuthCtxURL(url string) string {
+	return strings.TrimRight(url, "/") + "/auth/session"
+}
+
+func buildSpecificUserAuthCtxURL(url, principalID string) string {
+	return fmt.Sprintf("%s/auth/idm/principals/%s/security-context",
+		strings.TrimRight(url, "/"), principalID)
+}
+
+// TODO update the url
+func buildLoginURL(url string) string {
+	return strings.TrimRight(url, "/") + "/sso/login"
 }
