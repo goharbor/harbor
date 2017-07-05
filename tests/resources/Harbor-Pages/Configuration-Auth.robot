@@ -78,3 +78,19 @@ Enable Self Reg
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
 	Capture Page Screenshot  EnableSelfReg.png
 	Sleep  1
+
+## System settings	
+Switch To System Settings
+    Sleep  1
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//config//ul/li[4]
+	
+Modify Token Expiration
+	[Arguments]  ${minutes}
+	Input Text  xpath=//input[@id="tokenExpiration"]  ${minutes}
+    Click Button  xpath=//config//div/button[1]
+	Sleep  1
+	
+Token Must Be Match
+	[Arguments]  ${minutes}
+	Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  ${minutes}
