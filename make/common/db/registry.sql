@@ -194,6 +194,14 @@ create table img_scan_overview (
  PRIMARY KEY(image_digest)
  );
 
+create table clair_vuln_timestamp (
+id int NOT NULL AUTO_INCREMENT, 
+namespace varchar(128) NOT NULL,
+last_update timestamp NOT NULL,
+PRIMARY KEY(id),
+UNIQUE(namespace)
+);
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
