@@ -47,18 +47,23 @@ Switch To Configure
 
 Set Pro Create Admin Only	
 	#set limit to admin only
+	Sleep  2
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
+	Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
-    Click Element  xpath=//config//div/button[1]
+	Sleep  1
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
 	Capture Page Screenshot  AdminCreateOnly.png
 	
 Set Pro Create Every One	
 	#set limit to Every One	
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
+	Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
-    Click Element  xpath=//config//div/button[1]
+	Sleep  1	
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
     Sleep  2
 	Capture Page Screenshot  EveryoneCreate.png
 

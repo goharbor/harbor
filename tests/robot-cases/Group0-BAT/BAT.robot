@@ -46,9 +46,10 @@ Test Case - Edit Project Creation
 	
 	#logout and login admin
     Logout Harbor
+	Sleep  3
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
 	Set Pro Create Admin Only
-	
+		
 	#logout and login normal user
     Logout Harbor
 	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34

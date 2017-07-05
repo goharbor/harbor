@@ -44,7 +44,7 @@ Create An New User
     Should Be Equal  ${title}  Harbor
 	${d}=    Get Current Date    result_format=%m%s
 	Capture Page Screenshot  CreateNewUser_${d}.png
-	Sleep  3
+	Sleep  5
     Click Element  xpath=${sign_up_for_an_account_xpath}
     sleep  3
     Input Text  xpath=${username_xpath}  ${username}
@@ -67,4 +67,4 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-	sleep  2
+	Sleep  3
