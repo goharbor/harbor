@@ -186,10 +186,10 @@ Test Case-Manage Project Member
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
     #create project
-    Create A Project  project${d}
+    Create An New Project  project${d}
     #verify can not change role
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
+    Click Element  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Click Element  xpath=//project-detail//li[2]
     page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
     Logout Harbor
     #login console as usera and push
