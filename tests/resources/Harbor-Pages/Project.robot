@@ -22,28 +22,30 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Create An New Project
 		[Arguments]  ${projectname}
-		sleep  1
+		Sleep  1
 		Click Button  css=${create_project_button_css}
-		sleep  1
+		Sleep  1
 		Log To Console  Project Name: ${projectname}
-		Input Text  css=${project_name_css}  ${projectname}
-		sleep  1
+		Input Text  xpath=${project_name_xpath}  ${projectname}
+		Sleep  3
+		Capture Page Screenshot
 		Click Element  css=${project_save_css}
-		sleep  2
+		Sleep  4
 		Wait Until Page Contains  ${projectname}
 		Wait Until Page Contains  Project Admin
 		Capture Page Screenshot
 
 Create An New Public Project
 		[Arguments]  ${projectname}
-		sleep  1
+		Sleep  1
 		Click Button  css=${create_project_button_css}
-		sleep  1
+		Sleep  1
 		Log To Console  Project Name: ${projectname}
-		Input Text  css=${project_name_css}  ${projectname}
+		Input Text  xpath=${project_name_xpath}  ${projectname}
+		Sleep  3
 		Click Element  xpath=${project_public_xpath}
 		Click Element  css=${project_save_css}
-		sleep  2
+		Sleep  4
 		Wait Until Page Contains  ${projectname}
 		Wait Until Page Contains  Project Admin
 		Capture Page Screenshot
