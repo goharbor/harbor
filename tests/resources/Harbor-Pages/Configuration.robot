@@ -43,7 +43,7 @@ Init LDAP
 
 Switch To Configure
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[3]/a
-    Sleep  1
+    Sleep  2
 
 Set Pro Create Admin Only	
 	#set limit to admin only
@@ -99,3 +99,46 @@ Modify Token Expiration
 Token Must Be Match
 	[Arguments]  ${minutes}
 	Textfield Value Should Be  xpath=//*[@id="tokenExpiration"]  ${minutes}
+
+## Replication	
+Check Verify Remote Cert	
+    Mouse Down  xpath=//*[@id="clr-checkbox-verifyRemoteCert"] 
+    Mouse Up  xpath=//*[@id="clr-checkbox-verifyRemoteCert"]
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
+	Capture Page Screenshot  RemoteCert.png
+	Sleep  1
+
+Switch To System Replication
+    Sleep  1
+    Switch To Configure
+    Click Element  xpath=//*[@id="config-replication"]
+	Sleep  1
+	
+Should Verify Remote Cert Be Enabled
+	Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-verifyRemoteCert"]
+	
+## Email	
+Switch To Email
+	Switch To Configure
+	Click Element  xpath=//*[@id="config-email"]
+	Sleep  1
+
+Config Email
+    Input Text  xpath=//*[@id="mailServer"]  smtp.vmware.com
+    Input Text  xpath=//*[@id="emailPort"]  25
+    Input Text  xpath=//*[@id="emailUsername"]  example@vmware.com 
+    Input Text  xpath=//*[@id="emailPassword"]  example
+    Input Text  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
+	Sleep  1    
+	Mouse Down  xpath=//*[@id="clr-checkbox-emailSSL"]
+    Mouse Up  xpath=//*[@id="clr-checkbox-emailSSL"]
+	Sleep  1
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
+	Sleep  6
+	
+Verify Email
+    Textfield Value Should Be  xpath=//*[@id="mailServer"]  smtp.vmware.com
+    Textfield Value Should Be  xpath=//*[@id="emailPort"]  25
+    Textfield Value Should Be  xpath=//*[@id="emailUsername"]  example@vmware.com
+    Textfield Value Should Be  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
+    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]	

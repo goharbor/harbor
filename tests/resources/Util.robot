@@ -34,7 +34,7 @@ Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
-Resource  Harbor-Pages/Configuration-Auth.robot
+Resource  Harbor-Pages/Configuration.robot
 Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot

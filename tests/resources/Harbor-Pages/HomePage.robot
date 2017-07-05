@@ -23,13 +23,14 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
 	Go To    ${url}
-    sleep  5
+    Sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
+	Sleep  2
     Input Text  login_username  ${user}
     Input Text  login_password  ${pw}
-    sleep  2
+    Sleep  2
     Click button  css=.btn
     sleep  5
 	Log To Console  ${user}

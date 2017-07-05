@@ -47,7 +47,7 @@ Test Case - Edit Project Creation
 	#logout and login admin
     Logout Harbor
 	Sleep  3
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	Set Pro Create Admin Only
 		
 	#logout and login normal user
@@ -56,7 +56,7 @@ Test Case - Edit Project Creation
 	Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
     
 	Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	
     Set Pro Create Every One
     Close browser
@@ -64,15 +64,16 @@ Test Case - Edit Project Creation
 Test Case - Edit Self-Registration
 	#login as admin
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	
     Disable Self Reg
 	    
 	Logout Harbor
     Page Should Not Contain Element  xpath=//a[@class="signup"]
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     
-	Click Element  xpath=//clr-main-container//nav//ul/li[3]
+	Switch To Configure
+	
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
     Sleep  1
     
@@ -80,78 +81,46 @@ Test Case - Edit Self-Registration
     Enable Self Reg
     Close Browser
 
- Test Case - Edit Verify Remote Cert
+Test Case - Edit Verify Remote Cert
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[2]
-    #by defalut verify is on
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Click Element  xpath=//div/button[1]
-    #assume checkbox uncheck
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+
+    Switch To System Replication
+    Check Verify Remote Cert
+
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[2]
-    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-verifyRemoteCert"] 
-    Sleep  1
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+
+    Switch To System Replication
+    Should Verify Remote Cert Be Enabled
+
     #restore setting
-    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Click Element  xpath=//div/button[1]
-    Sleep  1
-    Close Browser   
+    Check Verify Remote Cert
+    Close Browser  
 
 Test Case - Edit Email Settings
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[3]
-    Input Text  xpath=//input[@id="mailServer"]  smtp.vmware.com
-    Input Text  xpath=//input[@id="emailPort"]  25
-    Input Text  xpath=//input[@id="emailUsername"]  example@vmware.com 
-    Input Text  xpath=//input[@id="emailPassword"]  example
-    Input Text  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
-    #checkbox status by default it is checked
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Click Button  xpath=//config//div/button[1]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    
+	Switch To Email
+    Config Email
 
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[3]
-    #check value
-    Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
-    Textfield Value Should Be  xpath=//input[@id="emailPort"]  25
-    Textfield Value Should Be  xpath=//input[@id="emailUsername"]  example@vmware.com
-    #password can not get value
-    #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
-    Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
-    Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     
-    #restore setting
-    Input Text  xpath=//input[@id="mailServer"]  smtp.mydomain.com
-    Input Text  xpath=//input[@id="emailPort"]  25
-    Input Text  xpath=//input[@id="emailUsername"]  sample_admin@mydomain.com 
-    #Input Text  xpath=//input[@id="emailPassword"]  example
-    Input Text  xpath=//input[@id="emailFrom"]  admin<sample_admin@mydomain.com>
-    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Click Button  xpath=//config//div/button[1]
+	Switch To Email
+    Verify Email
+    
     Close Browser
 
 Test Case - Edit Token Expire
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	Switch To System Settings
 	Modify Token Expiration  20
     Logout Harbor
     
-	Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+	Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	Switch To System Settings
     Token Must Be Match  20
     
@@ -164,7 +133,7 @@ Test Case - Assign Sys Admin
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch to User Tag
     Assign User Admin  tester${d}
     Logout Harbor
@@ -292,4 +261,3 @@ Test Case - Notary Inteceptor
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0	
-	
