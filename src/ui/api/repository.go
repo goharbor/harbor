@@ -608,7 +608,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
-		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
+		list, err := ra.SecurityCtx.GetMyProjects()
 		if err != nil {
 			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
 				ra.SecurityCtx.GetUsername(), err))
