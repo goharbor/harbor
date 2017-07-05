@@ -15,7 +15,7 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs/Subscription';
 
-import { Configuration } from '../config';
+import { Configuration } from 'harbor-ui';
 
 @Component({
     selector: 'config-auth',

@@ -403,6 +403,15 @@
             "UID": "LDAP用户UID的属性",
             "SCOPE": "LDAP搜索范围"
         },
+        "SCANNING": {
+            "TRIGGER_SCAN_ALL_SUCCESS": "成功启动扫描所有镜像任务!",
+            "TITLE": "缺陷扫描",
+            "SCAN_ALL": "扫描所有",
+            "SCAN_NOW": "开始扫描",
+            "NONE_POLICY": "无",
+            "DAILY_POLICY": "每日",
+            "REFRESH_POLICY": "缺陷库刷新后"
+        },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
         "TEST_MAIL_FAILED": "验证邮件服务器失败，错误: {{param}}。",

@@ -22,6 +22,7 @@ import { INLINE_ALERT_DIRECTIVES } from './inline-alert/index';
 import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
+import { CONFIGURATION_DIRECTIVES } from './config/index';
 
 import {
   SystemInfoService,
@@ -37,7 +38,9 @@ import {
   TagService,
   TagDefaultService,
   ScanningResultService,
-  ScanningResultDefaultService
+  ScanningResultDefaultService,
+  ConfigurationService,
+  ConfigurationDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -68,7 +71,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessageLoader: "local",
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
-  localI18nMessageVariableMap: {}
+  localI18nMessageVariableMap: {},
+  configurationEndpoint: "/api/configurations"
 };
 
 /**
@@ -103,7 +107,10 @@ export interface HarborModuleConfig {
   tagService?: Provider,
 
   //Service implementation for vulnerability scanning
-  scanningService?: Provider
+  scanningService?: Provider,
+
+  //Service implementation for configuration
+  configService?: Provider
 }
 
 /**
@@ -145,7 +152,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     CREATE_EDIT_RULE_DIRECTIVES,
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
-    PUSH_IMAGE_BUTTON_DIRECTIVES
+    PUSH_IMAGE_BUTTON_DIRECTIVES,
+    CONFIGURATION_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -164,6 +172,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
+    CONFIGURATION_DIRECTIVES,
     TranslateModule
   ],
   providers: []
@@ -176,13 +185,14 @@ export class HarborLibraryModule {
       providers: [
         config.config || { provide: SERVICE_CONFIG, useValue: DefaultServiceConfig },
         config.errorHandler || { provide: ErrorHandler, useClass: DefaultErrorHandler },
-        config.systemInfoService || { provide: SystemInfoService,useClass: SystemInfoDefaultService },
+        config.systemInfoService || { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
+        config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         //Do initializing
         TranslateServiceInitializer,
         {
@@ -201,13 +211,14 @@ export class HarborLibraryModule {
       providers: [
         config.config || { provide: SERVICE_CONFIG, useValue: DefaultServiceConfig },
         config.errorHandler || { provide: ErrorHandler, useClass: DefaultErrorHandler },
-        config.systemInfoService || { provide: SystemInfoService,useClass: SystemInfoDefaultService },
+        config.systemInfoService || { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
+        config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService }
       ]
     };
   }

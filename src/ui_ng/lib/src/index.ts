@@ -15,3 +15,4 @@ export * from './vulnerability-scanning/index';
 export * from './i18n/index';
 export * from './push-image/index';
 export * from './third-party/index';
+export * from './config/index';

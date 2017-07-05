@@ -404,6 +404,15 @@
             "UID": "LDAP UID",
             "SCOPE": "LDAP Ámbito"
         },
+        "SCANNING": {
+            "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TITLE": "Vulnerability Scanning",
+            "SCAN_ALL": "Scan All",
+            "SCAN_NOW": "SCAN NOW",
+            "NONE_POLICY": "None",
+            "DAILY_POLICY": "Daily At",
+            "REFRESH_POLICY": "Upon Refresh"
+        },
         "TEST_MAIL_SUCCESS": "La conexión al servidor de correo ha sido verificada.",
         "TEST_LDAP_SUCCESS": "La conexión al servidor LDAP ha sido verificada.",
         "TEST_MAIL_FAILED": "Fallo al verificar el servidor de correo con el error: {{param}}.",
