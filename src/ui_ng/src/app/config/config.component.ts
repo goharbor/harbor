@@ -71,11 +71,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private session: SessionService) { }
 
-    consoleTest(): void {
-        console.log(this.allConfig, this.originalCopy);
-        console.log("-------------");
-        console.log(this.getChanges());
-    }
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }

@@ -8,6 +8,7 @@ import { ReplicationConfigComponent } from './replication/replication-config.com
 import { SystemSettingsComponent } from './system/system-settings.component';
 import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-config.component';
 import { RegistryConfigComponent } from './registry-config.component';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 import { 
   ConfigurationService, 
@@ -29,7 +30,7 @@ describe('RegistryConfigComponent (inline template)', () => {
   mockConfig.verify_remote_cert.value = true;
   mockConfig.scan_all_policy.value = {
     type: "daily",
-    parameters: {
+    parameter: {
       daily_time: 0
     }
   };
@@ -46,7 +47,8 @@ describe('RegistryConfigComponent (inline template)', () => {
         ReplicationConfigComponent,
         SystemSettingsComponent,
         VulnerabilityConfigComponent,
-        RegistryConfigComponent
+        RegistryConfigComponent,
+        ConfirmationDialogComponent
       ],
       providers: [
         ErrorHandler,

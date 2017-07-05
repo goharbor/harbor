@@ -1,10 +1,22 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, ViewChild } from '@angular/core';
 
 import { Configuration, ComplexValueItem } from './config';
 import { REGISTRY_CONFIG_HTML } from './registry-config.component.html';
 import { ConfigurationService } from '../service/index';
 import { toPromise } from '../utils';
 import { ErrorHandler } from '../error-handler';
+import {
+    ReplicationConfigComponent,
+    SystemSettingsComponent,
+    VulnerabilityConfigComponent
+} from './index';
+
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
+import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
     selector: 'hbr-registry-config',
@@ -13,27 +25,56 @@ import { ErrorHandler } from '../error-handler';
 export class RegistryConfigComponent implements OnInit {
     config: Configuration = new Configuration();
     configCopy: Configuration;
+    onGoing: boolean = false;
 
-    @Output() configChanged: EventEmitter<any> = new EventEmitter<any>();
+    @ViewChild("replicationConfig") replicationCfg: ReplicationConfigComponent;
+    @ViewChild("systemSettings") systemSettings: SystemSettingsComponent;
+    @ViewChild("vulnerabilityConfig") vulnerabilityCfg: VulnerabilityConfigComponent;
+    @ViewChild("cfgConfirmationDialog") confirmationDlg: ConfirmationDialogComponent;
 
     constructor(
         private configService: ConfigurationService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private translate: TranslateService
     ) { }
+
+    get shouldDisable(): boolean {
+        return !this.isValid() || !this.hasChanges() || this.onGoing;
+    }
 
     ngOnInit(): void {
         //Initialize
         this.load();
     }
 
+    isValid(): boolean {
+        return this.replicationCfg &&
+            this.replicationCfg.isValid &&
+            this.systemSettings &&
+            this.systemSettings.isValid &&
+            this.vulnerabilityCfg &&
+            this.vulnerabilityCfg.isValid;
+    }
+
+    hasChanges(): boolean {
+        return !this._isEmptyObject(this.getChanges());
+    }
+
     //Load configurations
     load(): void {
+        this.onGoing = true;
         toPromise<Configuration>(this.configService.getConfigurations())
             .then((config: Configuration) => {
-                this.configCopy = Object.assign({}, config);
+                this.onGoing = false;
+
+                this.configCopy = this._clone(config);
                 this.config = config;
             })
-            .catch(error => this.errorHandler.error(error));
+            .catch(error => {
+                this.onGoing = false;
+
+                this.errorHandler.error(error);
+            });
     }
 
     //Save configuration changes
@@ -45,26 +86,48 @@ export class RegistryConfigComponent implements OnInit {
             return;
         }
 
-        //Fix policy parameters issue
-        let scanningAllPolicy = changes["scan_all_policy"];
-        if (scanningAllPolicy &&
-            scanningAllPolicy.type !== "daily" &&
-            scanningAllPolicy.parameters) {
-            delete (scanningAllPolicy.parameters);
-        }
-
+        this.onGoing = true;
         toPromise<any>(this.configService.saveConfigurations(changes))
             .then(() => {
-                this.configChanged.emit(changes);
+                this.onGoing = false;
+
+                this.translate.get("CONFIG.SAVE_SUCCESS").subscribe((res: string) => {
+                    this.errorHandler.info(res);
+                });
+                //Reload to fetch all the updates
+                this.load();
             })
-            .catch(error => this.errorHandler.error(error));
+            .catch(error => {
+                this.onGoing = false;
+                this.errorHandler.error(error);
+            });
+    }
+
+    //Cancel the changes if have
+    cancel(): void {
+        let msg = new ConfirmationMessage(
+            "CONFIG.CONFIRM_TITLE",
+            "CONFIG.CONFIRM_SUMMARY",
+            "",
+            {},
+            ConfirmationTargets.CONFIG
+        );
+        this.confirmationDlg.open(msg);
+    }
+
+    //Confirm cancel
+    confirmCancel(ack: ConfirmationAcknowledgement): void {
+        if (ack && ack.source === ConfirmationTargets.CONFIG &&
+            ack.state === ConfirmationState.CONFIRMED) {
+            this.reset();
+        }
     }
 
     reset(): void {
         //Reset to the values of copy
         let changes: { [key: string]: any | any[] } = this.getChanges();
         for (let prop in changes) {
-            this.config[prop] = Object.assign({}, this.configCopy[prop]);
+            this.config[prop] = this._clone(this.configCopy[prop]);
         }
     }
 
@@ -106,5 +169,11 @@ export class RegistryConfigComponent implements OnInit {
     //private
     _isEmptyObject(obj: any): boolean {
         return !obj || JSON.stringify(obj) === "{}";
+    }
+
+    //Deeper clone all
+    _clone(srcObj: any): any {
+        if (!srcObj) return null;
+        return JSON.parse(JSON.stringify(srcObj));
     }
 }
