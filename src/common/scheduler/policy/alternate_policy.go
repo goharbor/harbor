@@ -6,18 +6,18 @@ import "time"
 
 //AlternatePolicyConfiguration store the related configurations for alternate policy.
 type AlternatePolicyConfiguration struct {
-	//The interval of executing attached tasks.
+	//Duration is the interval of executing attached tasks.
 	Duration time.Duration
 
-	//The execution time point of each turn
+	//OffsetTime is the execution time point of each turn
 	//It's a number to indicate the seconds offset to the 00:00 of UTC time.
 	OffsetTime int64
 
-	//Time should be later than start time.
+	//StartTimestamp is the time should be later than start time.
 	//If set <=0 value, no limitation.
 	StartTimestamp int64
 
-	//Time should be earlier than end time.
+	//EndTimestamp is the time should be earlier than end time.
 	//If set <=0 value, no limitation.
 	EndTimestamp int64
 }

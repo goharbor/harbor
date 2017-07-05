@@ -15,7 +15,7 @@ type Store interface {
 	//Get the corresponding policy with the key.
 	Get(key string) *Watcher
 
-	//Check if the key existing in the store.
+	//Exists is to check if the key existing in the store.
 	Exists(key string) bool
 
 	//Remove the specified policy and return its reference.
@@ -24,7 +24,7 @@ type Store interface {
 	//Size return the total count of items in store.
 	Size() uint32
 
-	//Get all the items in the store.
+	//GetAll is to get all the items in the store.
 	GetAll() []*Watcher
 
 	//Clear store.
@@ -112,7 +112,7 @@ func (cs *ConcurrentStore) Size() uint32 {
 	return (uint32)(len(cs.data))
 }
 
-//Get all the items of store.
+//GetAll to get all the items of store.
 func (cs *ConcurrentStore) GetAll() []*Watcher {
 	all := []*Watcher{}
 

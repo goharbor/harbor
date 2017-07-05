@@ -12,13 +12,13 @@ import "github.com/vmware/harbor/src/common/scheduler/task"
 //Please be aware that policy with no tasks will be treated as invalid.
 //
 type Policy interface {
-	//Return the name of the policy.
+	//Name will return the name of the policy.
 	Name() string
 
-	//Return the attached tasks with this policy.
+	//Tasks will return the attached tasks with this policy.
 	Tasks() []task.Task
 
-	//Attach tasks to this policy
+	//AttachTasks is to attach tasks to this policy
 	AttachTasks(...task.Task) error
 
 	//Done will setup a channel for other components to check whether or not
