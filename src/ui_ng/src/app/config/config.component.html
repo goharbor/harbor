@@ -16,7 +16,7 @@
                 <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
             </li>
             <li role="presentation" class="nav-item">
-                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>Vulnerability</button>
+                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'VULNERABILITY.SINGULAR' | translate}}</button>
             </li>
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
@@ -41,7 +41,6 @@
             <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
             <span id="forTestingMail" class="spinner spinner-inline" [hidden]="hideMailTestingSpinner"></span>
             <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
-            <button type="button" class="btn btn-primary" (click)="consoleTest()">CONSOLE</button>
         </div>
     </div>
 </div>
