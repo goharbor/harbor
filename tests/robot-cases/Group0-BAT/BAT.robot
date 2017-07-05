@@ -179,8 +179,11 @@ Test Case-Manage Project Member
     ${rc}  ${ip}=     run and return rc and output  ip add s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
     log to console  ${ip}
     Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
     Create An New User  url=${HARBOR_URL}  username=userb${d}  email=userb${d}@vmware.com  realname=userb${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
     Create An New User  url=${HARBOR_URL}  username=userc${d}  email=userc${d}@vmware.com  realname=userc${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
     #create project
     Create A Project  project${d}
