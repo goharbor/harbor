@@ -9,7 +9,6 @@ import (
 	//	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 
 	"context"
 	"fmt"
@@ -102,7 +101,7 @@ func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
 // TODO: Get project manager with PM factory.
 func getPolicyChecker() policyChecker {
 	if config.WithAdmiral() {
-		return newPMSPolicyChecker(pms.NewProjectManager(config.AdmiralEndpoint(), ""))
+		return newPMSPolicyChecker(config.GlobalProjectMgr)
 	}
 	return EnvChecker
 }
@@ -167,6 +166,7 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	match, err := matchNotaryDigest(img)
 	if err != nil {
+		log.Debugf("error from notary, %v", err)
 		http.Error(rw, "Failed in communication with Notary please check the log", http.StatusInternalServerError)
 		return
 	}

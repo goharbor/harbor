@@ -77,6 +77,7 @@ services:
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
+      - /data/service_token:/etc/ui/service_token:z
     networks:
       - harbor
     depends_on:
@@ -109,7 +110,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: vmware/nginx:1.11.5-patched
+    image: vmware/nginx-photon:1.11.13
     container_name: nginx
     restart: always
     volumes:

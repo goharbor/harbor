@@ -79,12 +79,18 @@ func (p *ProjectAPI) Post() {
 		p.HandleUnauthorized()
 		return
 	}
-
-	onlyAdmin, err := config.OnlyAdminCreateProject()
-	if err != nil {
-		log.Errorf("failed to determine whether only admin can create projects: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	var onlyAdmin bool
+	var err error
+	if config.WithAdmiral() {
+		onlyAdmin = true
+	} else {
+		onlyAdmin, err = config.OnlyAdminCreateProject()
+		if err != nil {
+			log.Errorf("failed to determine whether only admin can create projects: %v", err)
+			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 	}
+
 	if onlyAdmin && !p.SecurityCtx.IsSysAdmin() {
 		log.Errorf("Only sys admin can create project")
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
