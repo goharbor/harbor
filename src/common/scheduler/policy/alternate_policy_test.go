@@ -9,7 +9,7 @@ type fakeTask struct {
 	number int
 }
 
-func (ft *fakeTask) TaskName() string {
+func (ft *fakeTask) Name() string {
 	return "for testing"
 }
 

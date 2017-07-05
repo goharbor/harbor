@@ -1,8 +1,11 @@
 package policy
 
-import "github.com/vmware/harbor/src/common/scheduler/task"
-import "errors"
-import "time"
+import (
+	"errors"
+	"time"
+
+	"github.com/vmware/harbor/src/common/scheduler/task"
+)
 
 //AlternatePolicyConfiguration store the related configurations for alternate policy.
 type AlternatePolicyConfiguration struct {

@@ -1,6 +1,8 @@
 package policy
 
-import "github.com/vmware/harbor/src/common/scheduler/task"
+import (
+	"github.com/vmware/harbor/src/common/scheduler/task"
+)
 
 //Policy is an if-then logic to determine how the attached tasks should be
 //executed based on the evaluation result of the defined conditions.

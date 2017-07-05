@@ -1,6 +1,8 @@
 package task
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTask(t *testing.T) {
 	tk := NewScanAllTask()
@@ -8,7 +10,7 @@ func TestTask(t *testing.T) {
 		t.Fail()
 	}
 
-	if tk.TaskName() != "scan all" {
+	if tk.Name() != "scan all" {
 		t.Fail()
 	}
 }

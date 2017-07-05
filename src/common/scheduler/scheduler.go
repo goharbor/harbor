@@ -1,13 +1,15 @@
 package scheduler
 
-import "github.com/vmware/harbor/src/common/scheduler/policy"
-import "github.com/vmware/harbor/src/common/utils/log"
+import (
+	"github.com/vmware/harbor/src/common/scheduler/policy"
+	"github.com/vmware/harbor/src/common/utils/log"
 
-import "errors"
-import "strings"
-import "fmt"
-import "reflect"
-import "time"
+	"errors"
+	"fmt"
+	"reflect"
+	"strings"
+	"time"
+)
 
 const (
 	defaultQueueSize = 10
@@ -74,8 +76,8 @@ type Scheduler struct {
 	//The stat metrics of scheduler.
 	stats *StatSummary
 
-	//To indicate whether scheduler is stopped or not
-	stopped bool
+	//To indicate whether scheduler is running or not
+	isRunning bool
 }
 
 //DefaultScheduler is a default scheduler.
@@ -93,7 +95,7 @@ func NewScheduler(config *Configuration) *Scheduler {
 	stChan := make(chan *StatItem, 4)
 	tc := make(chan bool, 2)
 
-	store := NewConcurrentStore(10)
+	store := NewConcurrentStore()
 	return &Scheduler{
 		config:          config,
 		policies:        store,
@@ -107,13 +109,13 @@ func NewScheduler(config *Configuration) *Scheduler {
 			CompletedTasks: 0,
 			TasksWithError: 0,
 		},
-		stopped: true,
+		isRunning: false,
 	}
 }
 
 //Start the scheduler damon.
 func (sch *Scheduler) Start() {
-	if !sch.stopped {
+	if sch.isRunning {
 		return
 	}
 	go func() {
@@ -123,7 +125,7 @@ func (sch *Scheduler) Start() {
 			}
 		}()
 		defer func() {
-			sch.stopped = true
+			sch.isRunning = false
 		}()
 		for {
 			select {
@@ -187,13 +189,13 @@ func (sch *Scheduler) Start() {
 		}
 	}()
 
-	sch.stopped = false
+	sch.isRunning = true
 	log.Infof("Policy scheduler start at %s\n", time.Now().UTC().Format(time.RFC3339))
 }
 
 //Stop the scheduler damon.
 func (sch *Scheduler) Stop() {
-	if sch.stopped {
+	if !sch.isRunning {
 		return
 	}
 
@@ -227,7 +229,7 @@ func (sch *Scheduler) Schedule(scheduledPolicy policy.Policy) error {
 	}
 
 	if sch.policies.Exists(scheduledPolicy.Name()) {
-		return errors.New("Duplicated policy")
+		return fmt.Errorf("Duplicated policy: %s", scheduledPolicy.Name())
 	}
 
 	//Schedule the policy.
@@ -252,7 +254,7 @@ func (sch *Scheduler) UnSchedule(policyName string) error {
 	return nil
 }
 
-//IsStopped to indicate whether the scheduler is stopped
-func (sch *Scheduler) IsStopped() bool {
-	return sch.stopped
+//IsRunning to indicate whether the scheduler is running.
+func (sch *Scheduler) IsRunning() bool {
+	return sch.isRunning
 }

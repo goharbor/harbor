@@ -1,9 +1,9 @@
 package scheduler
 
-import "sync"
-import "strings"
-
-const defaultSize = 10
+import (
+	"strings"
+	"sync"
+)
 
 //Store define the basic operations for storing and managing policy watcher.
 //The concrete implementation should consider concurrent supporting scenario.
@@ -34,20 +34,16 @@ type Store interface {
 //ConcurrentStore implements Store interface and supports concurrent operations.
 type ConcurrentStore struct {
 	//Read-write mutex to synchronize the data map.
-	mutex *sync.RWMutex
+	*sync.RWMutex
 
 	//Map used to keep the policy list.
 	data map[string]*Watcher
 }
 
 //NewConcurrentStore is used to create a new store and return the pointer reference.
-func NewConcurrentStore(initialSize uint32) *ConcurrentStore {
-	var initSize uint32 = defaultSize
-	if initialSize > 0 {
-		initSize = initialSize
-	}
+func NewConcurrentStore() *ConcurrentStore {
 	mutex := new(sync.RWMutex)
-	data := make(map[string]*Watcher, initSize)
+	data := make(map[string]*Watcher)
 
 	return &ConcurrentStore{mutex, data}
 }
@@ -58,9 +54,9 @@ func (cs *ConcurrentStore) Put(key string, value *Watcher) {
 		return
 	}
 
-	defer cs.mutex.Unlock()
+	defer cs.Unlock()
 
-	cs.mutex.Lock()
+	cs.Lock()
 	cs.data[key] = value
 }
 
@@ -70,9 +66,9 @@ func (cs *ConcurrentStore) Get(key string) *Watcher {
 		return nil
 	}
 
-	defer cs.mutex.RUnlock()
+	defer cs.RUnlock()
 
-	cs.mutex.RLock()
+	cs.RLock()
 	return cs.data[key]
 }
 
@@ -82,9 +78,9 @@ func (cs *ConcurrentStore) Exists(key string) bool {
 		return false
 	}
 
-	defer cs.mutex.RUnlock()
+	defer cs.RUnlock()
 
-	cs.mutex.RLock()
+	cs.RLock()
 	_, ok := cs.data[key]
 
 	return ok
@@ -96,9 +92,9 @@ func (cs *ConcurrentStore) Remove(key string) *Watcher {
 		return nil
 	}
 
-	defer cs.mutex.Unlock()
+	defer cs.Unlock()
 
-	cs.mutex.Lock()
+	cs.Lock()
 	if wt, ok := cs.data[key]; ok {
 		delete(cs.data, key)
 		return wt
@@ -116,8 +112,8 @@ func (cs *ConcurrentStore) Size() uint32 {
 func (cs *ConcurrentStore) GetAll() []*Watcher {
 	all := []*Watcher{}
 
-	defer cs.mutex.RUnlock()
-	cs.mutex.RLock()
+	defer cs.RUnlock()
+	cs.RLock()
 	for _, v := range cs.data {
 		all = append(all, v)
 	}
@@ -131,8 +127,8 @@ func (cs *ConcurrentStore) Clear() {
 		return
 	}
 
-	defer cs.mutex.Unlock()
-	cs.mutex.Lock()
+	defer cs.Unlock()
+	cs.Lock()
 
 	for k := range cs.data {
 		delete(cs.data, k)

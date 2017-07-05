@@ -1,6 +1,8 @@
 package task
 
-import "github.com/vmware/harbor/src/ui/utils"
+import (
+	"github.com/vmware/harbor/src/ui/utils"
+)
 
 //ScanAllTask is task of scanning all tags.
 type ScanAllTask struct{}
@@ -10,8 +12,8 @@ func NewScanAllTask() *ScanAllTask {
 	return &ScanAllTask{}
 }
 
-//TaskName returns the name of the task.
-func (sat *ScanAllTask) TaskName() string {
+//Name returns the name of the task.
+func (sat *ScanAllTask) Name() string {
 	return "scan all"
 }
 

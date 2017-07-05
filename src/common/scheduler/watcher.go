@@ -4,6 +4,8 @@ import (
 	"github.com/vmware/harbor/src/common/scheduler/policy"
 	"github.com/vmware/harbor/src/common/scheduler/task"
 	"github.com/vmware/harbor/src/common/utils/log"
+
+	"fmt"
 )
 
 //Watcher is an asynchronous runner to provide an evaluation environment for the policy.
@@ -64,7 +66,10 @@ func (wc *Watcher) Start() {
 						go func(tk task.Task) {
 							defer func() {
 								if r := recover(); r != nil {
-									log.Errorf("Runtime error in task execution:%s\n", r)
+									st := &StatItem{statTaskFail, 1, fmt.Errorf("Runtime error in task execution:%s", r)}
+									if wc.stats != nil {
+										wc.stats <- st
+									}
 								}
 							}()
 							err := tk.Run()
@@ -92,7 +97,9 @@ func (wc *Watcher) Start() {
 					wc.isRunning = false
 
 					//Report policy change stats.
-					wc.doneChan <- wc.p.Name()
+					if wc.doneChan != nil {
+						wc.doneChan <- wc.p.Name()
+					}
 
 					return
 				}
