@@ -14,4 +14,61 @@
 
 package authcontext
 
-// TODO add test cases
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestIsSysAdmin(t *testing.T) {
+	// nil roles
+	ctx := &AuthContext{}
+	assert.False(t, ctx.IsSysAdmin())
+
+	// has no admin role
+	ctx = &AuthContext{
+		Roles: []string{projectAdminRole, developerRole, guestRole},
+	}
+	assert.False(t, ctx.IsSysAdmin())
+
+	// has admin role
+	ctx = &AuthContext{
+		Roles: []string{sysAdminRole},
+	}
+	assert.True(t, ctx.IsSysAdmin())
+}
+
+func TestGetProjectRoles(t *testing.T) {
+	ctx := &AuthContext{
+		Projects: []*project{
+			&project{
+				Name:  "project",
+				Roles: []string{projectAdminRole, developerRole, guestRole},
+			},
+		},
+	}
+
+	// test with name
+	roles := ctx.GetProjectRoles("project")
+	assert.Equal(t, 3, len(roles))
+
+	// TODO add test case with ID
+}
+
+func TestGetMyProjects(t *testing.T) {
+	ctx := &AuthContext{
+		Projects: []*project{
+			&project{
+				Name:  "project1",
+				Roles: []string{projectAdminRole},
+			},
+			&project{
+				Name:  "project2",
+				Roles: []string{developerRole},
+			},
+		},
+	}
+
+	projects := ctx.GetMyProjects()
+	assert.Equal(t, 2, len(projects))
+}

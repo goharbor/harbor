@@ -21,9 +21,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// TODO update the value of role when admiral API is ready
 const (
 	// AuthTokenHeader is the key of auth token header
 	AuthTokenHeader  = "x-xenon-auth-token"
@@ -48,68 +51,81 @@ type AuthContext struct {
 	Projects    []*project `json:"projects"`
 }
 
-// GetUsername ...
-func (a *AuthContext) GetUsername() string {
-	return a.PrincipalID
-}
-
 // IsSysAdmin ...
 func (a *AuthContext) IsSysAdmin() bool {
-	isSysAdmin := false
 	for _, role := range a.Roles {
 		if role == sysAdminRole {
-			isSysAdmin = true
-			break
-		}
-	}
-	return isSysAdmin
-}
-
-// HasReadPerm ...
-func (a *AuthContext) HasReadPerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	return len(roles) > 0
-}
-
-// HasWritePerm ...
-func (a *AuthContext) HasWritePerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	for _, role := range roles {
-		if role == projectAdminRole || role == developerRole {
 			return true
 		}
 	}
 	return false
 }
 
-// HasAllPerm ...
-func (a *AuthContext) HasAllPerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	for _, role := range roles {
-		if role == projectAdminRole {
-			return true
-		}
-	}
-	return false
-}
+// GetProjectRoles ...
+func (a *AuthContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	var isID bool
+	var id int64
+	var name string
 
-func (a *AuthContext) getRoles(projectName string) []string {
+	id, isID = projectIDOrName.(int64)
+	if !isID {
+		name, _ = projectIDOrName.(string)
+	}
+
+	roles := []string{}
 	for _, project := range a.Projects {
-		if project.Name == projectName {
-			return project.Roles
+		p := convertProject(project)
+		if isID {
+			if p.ProjectID == id {
+				roles = append(roles, project.Roles...)
+				break
+			}
+		} else {
+			if p.Name == name {
+				roles = append(roles, project.Roles...)
+				break
+			}
 		}
 	}
 
-	return []string{}
+	return convertRoles(roles)
 }
 
 // GetMyProjects returns all projects which the user is a member of
-func (a *AuthContext) GetMyProjects() []string {
-	projects := []string{}
+func (a *AuthContext) GetMyProjects() []*models.Project {
+	projects := []*models.Project{}
 	for _, project := range a.Projects {
-		projects = append(projects, project.Name)
+		projects = append(projects, convertProject(project))
 	}
 	return projects
+}
+
+// TODO populate harbor ID to the project
+// convert project returned by Admiral to project used in Harbor
+func convertProject(p *project) *models.Project {
+	project := &models.Project{
+		Name: p.Name,
+	}
+	return project
+}
+
+// convert roles defined by Admiral to roles used in Harbor
+func convertRoles(roles []string) []int {
+	list := []int{}
+	for _, role := range roles {
+		switch role {
+		case projectAdminRole:
+			list = append(list, common.RoleProjectAdmin)
+		case developerRole:
+			list = append(list, common.RoleDeveloper)
+		case guestRole:
+			list = append(list, common.RoleGuest)
+		default:
+			log.Warningf("unknow role: %s", role)
+		}
+	}
+
+	return list
 }
 
 // GetAuthCtx returns the auth context of the current user

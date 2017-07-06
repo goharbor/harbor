@@ -311,13 +311,7 @@ func (p *ProjectAPI) List() {
 
 	for _, project := range projects {
 		if p.SecurityCtx.IsAuthenticated() {
-			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
-			if err != nil {
-				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",
-					p.SecurityCtx.GetUsername(), project.ProjectID, err))
-				return
-			}
-
+			roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
 			if len(roles) != 0 {
 				project.Role = roles[0]
 			}

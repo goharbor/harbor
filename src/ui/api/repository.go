@@ -322,18 +322,8 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	result, err := assemble(client, repository, []string{tag},
+	result := assemble(client, repository, []string{tag},
 		ra.SecurityCtx.GetUsername())
-	if err != nil {
-		regErr, ok := err.(*registry_error.Error)
-		if !ok {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to get tag %s of %s: %v", tag, repository, err))
-			return
-		}
-		ra.RenderError(regErr.StatusCode, regErr.Detail)
-		return
-	}
-
 	ra.Data["json"] = result[0]
 	ra.ServeJSON()
 }
@@ -376,112 +366,95 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	result, err := assemble(client, repoName, tags, ra.SecurityCtx.GetUsername())
-	if err != nil {
-		regErr, ok := err.(*registry_error.Error)
-		if !ok {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to get tag of %s: %v", repoName, err))
-			return
-		}
-		ra.RenderError(regErr.StatusCode, regErr.Detail)
-		return
-	}
-
-	ra.Data["json"] = result
+	ra.Data["json"] = assemble(client, repoName, tags, ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
 }
 
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
 func assemble(client *registry.Repository, repository string,
-	tags []string, username string) ([]*tagResp, error) {
-	// get configs
-	list, err := getDetailedTags(client, tags)
-	if err != nil {
-		return nil, err
-	}
+	tags []string, username string) []*tagResp {
 
-	// get signatures
+	var err error
 	signatures := map[string]*notary.Target{}
 	if config.WithNotary() {
 		signatures, err = getSignatures(repository, username)
 		if err != nil {
-			return nil, err
+			signatures = map[string]*notary.Target{}
+			log.Errorf("failed to get signatures of %s: %v", repository, err)
 		}
 	}
 
-	// assemble the response
 	result := []*tagResp{}
-	for _, tag := range list {
-		item := &tagResp{
-			tag: *tag,
+	for _, t := range tags {
+		item := &tagResp{}
+
+		// tag configuration
+		digest, _, cfg, err := getV2Manifest(client, t)
+		if err != nil {
+			cfg = &tag{
+				Digest: digest,
+				Name:   t,
+			}
+			log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, t, err)
 		}
+		if cfg != nil {
+			item.tag = *cfg
+		}
+
+		// scan overview
 		if config.WithClair() {
 			item.ScanOverview = getScanOverview(item.Digest, item.Name)
 		}
 
-		// compare both digest and tag
-		if signature, ok := signatures[item.Digest]; ok {
-			if item.Name == signature.Tag {
-				item.Signature = signature
+		// signature, compare both digest and tag
+		if config.WithNotary() {
+			if signature, ok := signatures[item.Digest]; ok {
+				if item.Name == signature.Tag {
+					item.Signature = signature
+				}
 			}
 		}
+
 		result = append(result, item)
 	}
 
-	return result, nil
-}
-
-// get tags of the repository, read manifest for every tag
-// and assemble necessary attrs(os, architecture, etc.) into
-// one struct
-func getDetailedTags(client *registry.Repository, tags []string) ([]*tag, error) {
-	list := []*tag{}
-	for _, t := range tags {
-		// the ignored manifest can be used to calculate the image size
-		digest, _, config, err := getV2Manifest(client, t)
-		if err != nil {
-			return nil, err
-		}
-
-		tag := &tag{}
-		if err = json.Unmarshal(config, tag); err != nil {
-			return nil, err
-		}
-
-		tag.Name = t
-		tag.Digest = digest
-
-		list = append(list, tag)
-	}
-
-	return list, nil
+	return result
 }
 
 // get v2 manifest of tag, returns digest, manifest,
 // manifest config and error. The manifest config contains
 // architecture, os, author, etc.
-func getV2Manifest(client *registry.Repository, tag string) (
-	string, *schema2.DeserializedManifest, []byte, error) {
-	digest, _, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
+func getV2Manifest(client *registry.Repository, tagName string) (
+	string, *schema2.DeserializedManifest, *tag, error) {
+	digest, _, payload, err := client.PullManifest(tagName, []string{schema2.MediaTypeManifest})
 	if err != nil {
 		return "", nil, nil, err
 	}
 
 	manifest := &schema2.DeserializedManifest{}
 	if err = manifest.UnmarshalJSON(payload); err != nil {
-		return "", nil, nil, err
+		return digest, nil, nil, err
 	}
 
 	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
 	if err != nil {
-		return "", nil, nil, err
+		return digest, manifest, nil, err
 	}
 
-	config, err := ioutil.ReadAll(reader)
+	configData, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return "", nil, nil, err
+		return digest, manifest, nil, err
 	}
+
+	config := &tag{}
+	if err = json.Unmarshal(configData, config); err != nil {
+		return digest, manifest, nil, err
+	}
+
+	config.Name = tagName
+	config.Digest = digest
+
 	return digest, manifest, config, nil
 }
 
@@ -608,7 +581,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
-		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
+		list, err := ra.SecurityCtx.GetMyProjects()
 		if err != nil {
 			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
 				ra.SecurityCtx.GetUsername(), err))
@@ -826,6 +799,10 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 
 //will return nil when it failed to get data.  The parm "tag" is for logging only.
 func getScanOverview(digest string, tag string) *models.ImgScanOverview {
+	if len(digest) == 0 {
+		log.Debug("digest is nil")
+		return nil
+	}
 	data, err := dao.GetImgScanOverview(digest)
 	if err != nil {
 		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)

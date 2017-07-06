@@ -16,6 +16,7 @@ package admiral
 
 import (
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security/authcontext"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
@@ -41,7 +42,7 @@ func (s *SecurityContext) IsAuthenticated() bool {
 	if s.ctx == nil {
 		return false
 	}
-	return len(s.ctx.GetUsername()) > 0
+	return len(s.ctx.PrincipalID) > 0
 }
 
 // GetUsername returns the username of the authenticated user
@@ -50,7 +51,7 @@ func (s *SecurityContext) GetUsername() string {
 	if !s.IsAuthenticated() {
 		return ""
 	}
-	return s.ctx.GetUsername()
+	return s.ctx.PrincipalID
 }
 
 // IsSysAdmin returns whether the authenticated user is system admin
@@ -59,12 +60,12 @@ func (s *SecurityContext) IsSysAdmin() bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
+
 	return s.ctx.IsSysAdmin()
 }
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	// public project
 	public, err := s.pm.IsPublic(projectIDOrName)
 	if err != nil {
 		log.Errorf("failed to check the public of project %v: %v",
@@ -85,27 +86,9 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	if name, ok := projectIDOrName.(string); ok {
-		return s.ctx.HasReadPerm(name)
-	}
+	roles := s.GetProjectRoles(projectIDOrName)
 
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
-
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin,
-			common.RoleDeveloper,
-			common.RoleGuest:
-			return true
-		}
-	}
-
-	return false
+	return len(roles) > 0
 }
 
 // HasWritePerm returns whether the user has write permission to the project
@@ -119,17 +102,7 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	if name, ok := projectIDOrName.(string); ok {
-		return s.ctx.HasWritePerm(name)
-	}
-
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
-
+	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -152,17 +125,7 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	if name, ok := projectIDOrName.(string); ok {
-		return s.ctx.HasAllPerm(name)
-	}
-
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
-
+	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin:
@@ -171,4 +134,18 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	}
 
 	return false
+}
+
+// GetMyProjects ...
+func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return s.ctx.GetMyProjects(), nil
+}
+
+// GetProjectRoles ...
+func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	if !s.IsAuthenticated() || projectIDOrName == nil {
+		return []int{}
+	}
+
+	return s.ctx.GetProjectRoles(projectIDOrName)
 }
