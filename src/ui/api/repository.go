@@ -380,6 +380,7 @@ func assemble(client *registry.Repository, repository string,
 	if config.WithNotary() {
 		signatures, err = getSignatures(repository, username)
 		if err != nil {
+			signatures = map[string]*notary.Target{}
 			log.Errorf("failed to get signatures of %s: %v", repository, err)
 		}
 	}
@@ -397,7 +398,9 @@ func assemble(client *registry.Repository, repository string,
 			}
 			log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, t, err)
 		}
-		item.tag = *cfg
+		if cfg != nil {
+			item.tag = *cfg
+		}
 
 		// scan overview
 		if config.WithClair() {
@@ -796,6 +799,10 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 
 //will return nil when it failed to get data.  The parm "tag" is for logging only.
 func getScanOverview(digest string, tag string) *models.ImgScanOverview {
+	if len(digest) == 0 {
+		log.Debug("digest is nil")
+		return nil
+	}
 	data, err := dao.GetImgScanOverview(digest)
 	if err != nil {
 		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
