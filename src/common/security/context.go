@@ -14,6 +14,10 @@
 
 package security
 
+import (
+	"github.com/vmware/harbor/src/common/models"
+)
+
 // Context abstracts the operations related with authN and authZ
 type Context interface {
 	// IsAuthenticated returns whether the context has been authenticated or not
@@ -28,4 +32,6 @@ type Context interface {
 	HasWritePerm(projectIDOrName interface{}) bool
 	// HasAllPerm returns whether the user has all permissions to the project
 	HasAllPerm(projectIDOrName interface{}) bool
+	GetMyProjects() ([]*models.Project, error)
+	GetProjectRoles(projectIDOrName interface{}) []int
 }

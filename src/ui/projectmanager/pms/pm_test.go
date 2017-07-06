@@ -292,33 +292,6 @@ func TestExist(t *testing.T) {
 	assert.True(t, exist)
 }
 
-func TestGetRoles(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	// nil username, nil project
-	roles, err := pm.GetRoles("", nil)
-	assert.Nil(t, err)
-	assert.Zero(t, len(roles))
-
-	// non-exist project
-	_, err = pm.GetRoles("user01", "non_exist_project")
-	assert.NotNil(t, err)
-
-	// exist project
-	name := "project_for_test_get_roles"
-	id, err := pm.Create(&models.Project{
-		Name: name,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	roles, err = pm.GetRoles("user01", id)
-	assert.Nil(t, err)
-	assert.Zero(t, len(roles))
-
-	// TODO add test cases for real role of user
-}
-
 func TestGetPublic(t *testing.T) {
 	pm := NewProjectManager(client, endpoint, tokenReader)
 
@@ -346,11 +319,6 @@ func TestGetPublic(t *testing.T) {
 		}
 	}
 	assert.True(t, found)
-}
-
-// TODO add test case
-func TestGetByMember(t *testing.T) {
-
 }
 
 func TestCreate(t *testing.T) {
@@ -490,12 +458,6 @@ func TestGetTotal(t *testing.T) {
 	total2, err := pm.GetTotal(nil)
 	require.Nil(t, err)
 	assert.Equal(t, total1+1, total2)
-}
-
-func TestGetHasReadPerm(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-	_, err := pm.GetHasReadPerm()
-	assert.NotNil(t, err)
 }
 
 func delete(t *testing.T, id int64) {

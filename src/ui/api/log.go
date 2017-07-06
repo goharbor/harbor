@@ -75,7 +75,7 @@ func (l *LogAPI) Get() {
 	}
 
 	if !l.isSysAdmin {
-		projects, err := l.ProjectMgr.GetByMember(l.username)
+		projects, err := l.SecurityCtx.GetMyProjects()
 		if err != nil {
 			l.HandleInternalServerError(fmt.Sprintf(
 				"failed to get projects of user %s: %v", l.username, err))

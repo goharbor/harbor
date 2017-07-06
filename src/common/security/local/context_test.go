@@ -15,109 +15,132 @@
 package local
 
 import (
-	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/projectmanager/db"
 )
 
 var (
-	public = &models.Project{
-		Name:   "public_project",
-		Public: 1,
-	}
-
 	private = &models.Project{
-		Name:   "private_project",
-		Public: 0,
+		Name:    "private_project",
+		OwnerID: 1,
 	}
 
-	read = &models.Project{
-		Name: "has_read_perm_project",
+	projectAdminUser = &models.User{
+		Username: "projectAdminUser",
+		Email:    "projectAdminUser@vmware.com",
+	}
+	developerUser = &models.User{
+		Username: "developerUser",
+		Email:    "developerUser@vmware.com",
+	}
+	guestUser = &models.User{
+		Username: "guestUser",
+		Email:    "guestUser@vmware.com",
 	}
 
-	write = &models.Project{
-		Name: "has_write_perm_project",
-	}
-
-	all = &models.Project{
-		Name: "has_all_perm_project",
-	}
+	pm = &db.ProjectManager{}
 )
 
-type fakePM struct {
-	projects []*models.Project
-	roles    map[string][]int
-}
-
-func (f *fakePM) IsPublic(projectIDOrName interface{}) (bool, error) {
-	for _, project := range f.projects {
-		if project.Name == projectIDOrName.(string) {
-			return project.Public == 1, nil
-		}
+func TestMain(m *testing.M) {
+	dbHost := os.Getenv("MYSQL_HOST")
+	if len(dbHost) == 0 {
+		log.Fatalf("environment variable MYSQL_HOST is not set")
 	}
-	return false, nil
-}
-func (f *fakePM) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
-	return f.roles[projectIDOrName.(string)], nil
-}
-func (f *fakePM) Get(projectIDOrName interface{}) (*models.Project, error) {
-	for _, project := range f.projects {
-		if project.Name == projectIDOrName.(string) {
-			return project, nil
-		}
+	dbPortStr := os.Getenv("MYSQL_PORT")
+	if len(dbPortStr) == 0 {
+		log.Fatalf("environment variable MYSQL_PORT is not set")
 	}
-	return nil, nil
-}
-func (f *fakePM) Exist(projectIDOrName interface{}) (bool, error) {
-	for _, project := range f.projects {
-		if project.Name == projectIDOrName.(string) {
-			return true, nil
-		}
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("invalid MYSQL_PORT: %v", err)
 	}
-	return false, nil
-}
+	dbUser := os.Getenv("MYSQL_USR")
+	if len(dbUser) == 0 {
+		log.Fatalf("environment variable MYSQL_USR is not set")
+	}
 
-// nil implement
-func (f *fakePM) GetPublic() ([]*models.Project, error) {
-	return []*models.Project{}, nil
-}
+	dbPassword := os.Getenv("MYSQL_PWD")
+	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	if len(dbDatabase) == 0 {
+		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+	}
 
-// nil implement
-func (f *fakePM) GetByMember(username string) ([]*models.Project, error) {
-	return []*models.Project{}, nil
-}
+	database := &models.Database{
+		Type: "mysql",
+		MySQL: &models.MySQL{
+			Host:     dbHost,
+			Port:     dbPort,
+			Username: dbUser,
+			Password: dbPassword,
+			Database: dbDatabase,
+		},
+	}
 
-// nil implement
-func (f *fakePM) Create(*models.Project) (int64, error) {
-	return 0, fmt.Errorf("not support")
-}
+	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
-// nil implement
-func (f *fakePM) Delete(projectIDOrName interface{}) error {
-	return fmt.Errorf("not support")
-}
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
 
-// nil implement
-func (f *fakePM) Update(projectIDOrName interface{}, project *models.Project) error {
-	return fmt.Errorf("not support")
-}
+	// regiser users
+	id, err := dao.Register(*projectAdminUser)
+	if err != nil {
+		log.Fatalf("failed to register user: %v", err)
+	}
+	projectAdminUser.UserID = int(id)
+	defer dao.DeleteUser(int(id))
 
-// nil implement
-func (f *fakePM) GetAll(*models.ProjectQueryParam, ...*models.BaseProjectCollection) ([]*models.Project, error) {
-	return []*models.Project{}, nil
-}
+	id, err = dao.Register(*developerUser)
+	if err != nil {
+		log.Fatalf("failed to register user: %v", err)
+	}
+	developerUser.UserID = int(id)
+	defer dao.DeleteUser(int(id))
 
-// nil implement
-func (f *fakePM) GetHasReadPerm(username ...string) ([]*models.Project, error) {
-	return []*models.Project{}, nil
-}
+	id, err = dao.Register(*guestUser)
+	if err != nil {
+		log.Fatalf("failed to register user: %v", err)
+	}
+	guestUser.UserID = int(id)
+	defer dao.DeleteUser(int(id))
 
-// nil implement
-func (f *fakePM) GetTotal(*models.ProjectQueryParam, ...*models.BaseProjectCollection) (int64, error) {
-	return 0, nil
+	// add project
+	id, err = dao.AddProject(*private)
+	if err != nil {
+		log.Fatalf("failed to add project: %v", err)
+	}
+	private.ProjectID = id
+	defer dao.DeleteProject(id)
+
+	// add project members
+	err = dao.AddProjectMember(private.ProjectID, projectAdminUser.UserID, common.RoleProjectAdmin)
+	if err != nil {
+		log.Fatalf("failed to add member: %v", err)
+	}
+	defer dao.DeleteProjectMember(private.ProjectID, projectAdminUser.UserID)
+
+	err = dao.AddProjectMember(private.ProjectID, developerUser.UserID, common.RoleDeveloper)
+	if err != nil {
+		log.Fatalf("failed to add member: %v", err)
+	}
+	defer dao.DeleteProjectMember(private.ProjectID, developerUser.UserID)
+
+	err = dao.AddProjectMember(private.ProjectID, guestUser.UserID, common.RoleGuest)
+	if err != nil {
+		log.Fatalf("failed to add member: %v", err)
+	}
+	defer dao.DeleteProjectMember(private.ProjectID, guestUser.UserID)
+
+	os.Exit(m.Run())
 }
 
 func TestIsAuthenticated(t *testing.T) {
@@ -164,147 +187,104 @@ func TestIsSysAdmin(t *testing.T) {
 }
 
 func TestHasReadPerm(t *testing.T) {
-	pm := &fakePM{
-		projects: []*models.Project{public, private, read},
-		roles: map[string][]int{
-			"has_read_perm_project": []int{common.RoleGuest},
-		},
-	}
-
-	// non-exist project
-	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasReadPerm("non_exist_project"))
-
 	// public project
-	ctx = NewSecurityContext(nil, pm)
-	assert.True(t, ctx.HasReadPerm("public_project"))
+	ctx := NewSecurityContext(nil, pm)
+	assert.True(t, ctx.HasReadPerm("library"))
 
 	// private project, unauthenticated
 	ctx = NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasReadPerm("private_project"))
+	assert.False(t, ctx.HasReadPerm(private.Name))
 
 	// private project, authenticated, has no perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
 	}, pm)
-	assert.False(t, ctx.HasReadPerm("private_project"))
+	assert.False(t, ctx.HasReadPerm(private.Name))
 
 	// private project, authenticated, has read perm
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.True(t, ctx.HasReadPerm("has_read_perm_project"))
+	ctx = NewSecurityContext(guestUser, pm)
+	assert.True(t, ctx.HasReadPerm(private.Name))
 
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
+		Username:     "admin",
 		HasAdminRole: 1,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm("private_project"))
-
-	// non-exist project, authenticated, system admin
-	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
-		HasAdminRole: 1,
-	}, pm)
-	assert.False(t, ctx.HasReadPerm("non_exist_project"))
+	assert.True(t, ctx.HasReadPerm(private.Name))
 }
 
 func TestHasWritePerm(t *testing.T) {
-	pm := &fakePM{
-		projects: []*models.Project{read, write, private},
-		roles: map[string][]int{
-			"has_read_perm_project":  []int{common.RoleGuest},
-			"has_write_perm_project": []int{common.RoleGuest, common.RoleDeveloper},
-		},
-	}
-
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasWritePerm("has_write_perm_project"))
-
-	// authenticated, non-exist project
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.False(t, ctx.HasWritePerm("non_exist_project"))
+	assert.False(t, ctx.HasWritePerm(private.Name))
 
 	// authenticated, has read perm
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.False(t, ctx.HasWritePerm("has_read_perm_project")) // authenticated, has read perm
+	ctx = NewSecurityContext(guestUser, pm)
+	assert.False(t, ctx.HasWritePerm(private.Name))
 
 	// authenticated, has write perm
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.True(t, ctx.HasWritePerm("has_write_perm_project"))
+	ctx = NewSecurityContext(developerUser, pm)
+	assert.True(t, ctx.HasWritePerm(private.Name))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
+		Username:     "admin",
 		HasAdminRole: 1,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm("private_project"))
-
-	// authenticated, system admin, non-exist project
-	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
-		HasAdminRole: 1,
-	}, pm)
-	assert.False(t, ctx.HasReadPerm("non_exist_project"))
+	assert.True(t, ctx.HasReadPerm(private.Name))
 }
 
 func TestHasAllPerm(t *testing.T) {
-	pm := &fakePM{
-		projects: []*models.Project{read, write, all, private},
-		roles: map[string][]int{
-			"has_read_perm_project":  []int{common.RoleGuest},
-			"has_write_perm_project": []int{common.RoleGuest, common.RoleDeveloper},
-			"has_all_perm_project":   []int{common.RoleGuest, common.RoleDeveloper, common.RoleProjectAdmin},
-		},
-	}
-
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasAllPerm("has_all_perm_project"))
-
-	// authenticated, non-exist project
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.False(t, ctx.HasAllPerm("non_exist_project"))
-
-	// authenticated, has read perm
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.False(t, ctx.HasAllPerm("has_read_perm_project"))
-
-	// authenticated, has write perm
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.False(t, ctx.HasAllPerm("has_write_perm_project"))
+	assert.False(t, ctx.HasAllPerm(private.Name))
 
 	// authenticated, has all perms
-	ctx = NewSecurityContext(&models.User{
-		Username: "test",
-	}, pm)
-	assert.True(t, ctx.HasAllPerm("has_all_perm_project"))
+	ctx = NewSecurityContext(projectAdminUser, pm)
+	assert.True(t, ctx.HasAllPerm(private.Name))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
+		Username:     "admin",
 		HasAdminRole: 1,
 	}, pm)
-	assert.True(t, ctx.HasAllPerm("private_project"))
+	assert.True(t, ctx.HasAllPerm(private.Name))
+}
 
-	// authenticated, system admin, non-exist project
-	ctx = NewSecurityContext(&models.User{
-		Username:     "test",
-		HasAdminRole: 1,
-	}, pm)
-	assert.False(t, ctx.HasAllPerm("non_exist_project"))
+func TestGetMyProjects(t *testing.T) {
+	ctx := NewSecurityContext(guestUser, pm)
+	projects, err := ctx.GetMyProjects()
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(projects))
+	assert.Equal(t, private.ProjectID, projects[0].ProjectID)
+}
+
+func TestGetProjectRoles(t *testing.T) {
+	// unauthenticated
+	ctx := NewSecurityContext(nil, pm)
+	roles := ctx.GetProjectRoles(private.Name)
+	assert.Equal(t, 0, len(roles))
+
+	// authenticated, project name of ID is nil
+	ctx = NewSecurityContext(guestUser, pm)
+	roles = ctx.GetProjectRoles(nil)
+	assert.Equal(t, 0, len(roles))
+
+	// authenticated, has read perm
+	ctx = NewSecurityContext(guestUser, pm)
+	roles = ctx.GetProjectRoles(private.Name)
+	assert.Equal(t, 1, len(roles))
+	assert.Equal(t, common.RoleGuest, roles[0])
+
+	// authenticated, has write perm
+	ctx = NewSecurityContext(developerUser, pm)
+	roles = ctx.GetProjectRoles(private.Name)
+	assert.Equal(t, 1, len(roles))
+	assert.Equal(t, common.RoleDeveloper, roles[0])
+
+	// authenticated, has all perms
+	ctx = NewSecurityContext(projectAdminUser, pm)
+	roles = ctx.GetProjectRoles(private.Name)
+	assert.Equal(t, 1, len(roles))
+	assert.Equal(t, common.RoleProjectAdmin, roles[0])
 }
