@@ -211,3 +211,35 @@ func TestParseTimeStamp(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, now, result.Unix())
 }
+
+func TestParseHarborIDOrName(t *testing.T) {
+	// nil input
+	id, name, err := ParseProjectIDOrName(nil)
+	assert.NotNil(t, err)
+
+	// invalid ID
+	id, name, err = ParseProjectIDOrName(0)
+	assert.NotNil(t, err)
+
+	// invalid name
+	id, name, err = ParseProjectIDOrName("")
+	assert.NotNil(t, err)
+
+	// valid int ID
+	id, name, err = ParseProjectIDOrName(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), id)
+	assert.Equal(t, "", name)
+
+	// valid int64 ID
+	id, name, err = ParseProjectIDOrName(int64(1))
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), id)
+	assert.Equal(t, "", name)
+
+	// valid name
+	id, name, err = ParseProjectIDOrName("project")
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), id)
+	assert.Equal(t, "project", name)
+}

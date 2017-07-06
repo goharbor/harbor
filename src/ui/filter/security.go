@@ -24,7 +24,7 @@ import (
 	secstore "github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/security/admiral"
-	"github.com/vmware/harbor/src/common/security/authcontext"
+	"github.com/vmware/harbor/src/common/security/admiral/authcontext"
 	"github.com/vmware/harbor/src/common/security/local"
 	"github.com/vmware/harbor/src/common/security/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -99,19 +99,14 @@ func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if len(scrt) == 0 {
 		return false
 	}
-
 	log.Debug("got secret from request")
 
-	var pm projectmanager.ProjectManager
-	if config.WithAdmiral() {
-		// TODO project manager with harbor service accout
-	} else {
-		log.Debug("using local database project manager")
-		pm = config.GlobalProjectMgr
-	}
+	log.Debug("using global project manager")
+	pm := config.GlobalProjectMgr
 
 	log.Debug("creating a secret security context...")
 	securCtx := secret.NewSecurityContext(scrt, s.store)
+
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
 	return true
