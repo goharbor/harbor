@@ -29,11 +29,11 @@ func (fp *fakePolicy) AttachTasks(tasks ...task.Task) error {
 	return nil
 }
 
-func (fp *fakePolicy) Done() chan bool {
+func (fp *fakePolicy) Done() <-chan bool {
 	return fp.done
 }
 
-func (fp *fakePolicy) Evaluate() chan policy.EvaluationResult {
+func (fp *fakePolicy) Evaluate() <-chan policy.EvaluationResult {
 	fp.evaluation = make(chan policy.EvaluationResult, 2)
 	fp.done = make(chan bool)
 	fp.terminate = make(chan bool)
@@ -136,7 +136,7 @@ func TestScheduler(t *testing.T) {
 	}
 
 	DefaultScheduler.Stop()
-	if DefaultScheduler.policies.Size() != 0 {
+	if DefaultScheduler.policies.Size() != 0 || DefaultScheduler.IsRunning() {
 		t.Fatal("Scheduler is not cleared after stopping")
 	}
 }

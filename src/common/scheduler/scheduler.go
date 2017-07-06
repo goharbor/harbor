@@ -93,7 +93,7 @@ func NewScheduler(config *Configuration) *Scheduler {
 	sq := make(chan policy.Policy, qSize)
 	usq := make(chan string, qSize)
 	stChan := make(chan *StatItem, 4)
-	tc := make(chan bool, 2)
+	tc := make(chan bool, 1)
 
 	store := NewConcurrentStore()
 	return &Scheduler{
@@ -129,6 +129,9 @@ func (sch *Scheduler) Start() {
 		}()
 		for {
 			select {
+			case <-sch.terminateChan:
+				//Exit
+				return
 			case p := <-sch.scheduleQueue:
 				//Schedule the policy.
 				watcher := NewWatcher(p, sch.statChan, sch.unscheduleQueue)
@@ -148,9 +151,6 @@ func (sch *Scheduler) Start() {
 				}
 
 				sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
-			case <-sch.terminateChan:
-				//Exit
-				return
 
 			case stat := <-sch.statChan:
 				{
@@ -257,4 +257,9 @@ func (sch *Scheduler) UnSchedule(policyName string) error {
 //IsRunning to indicate whether the scheduler is running.
 func (sch *Scheduler) IsRunning() bool {
 	return sch.isRunning
+}
+
+//HasScheduled is to check whether the given policy has been scheduled or not.
+func (sch *Scheduler) HasScheduled(policyName string) bool {
+	return sch.policies.Exists(policyName)
 }

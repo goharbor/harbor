@@ -25,13 +25,13 @@ type Policy interface {
 
 	//Done will setup a channel for other components to check whether or not
 	//the policy is completed. Possibly designed for the none loop policy.
-	Done() chan bool
+	Done() <-chan bool
 
 	//Evaluate the policy based on its definition and return the result via
 	//result channel. Policy is enabled after it is evaluated.
 	//Make sure Evaluate is idempotent, that means one policy can be only enabled
 	//only once even if Evaluate is called more than one times.
-	Evaluate() chan EvaluationResult
+	Evaluate() <-chan EvaluationResult
 
 	//Disable the enabled policy and release all the allocated resources.
 	//Disable should also send signal to the terminated channel which returned by Done.

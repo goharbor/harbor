@@ -54,6 +54,10 @@ func (wc *Watcher) Start() {
 			}
 		}()
 
+		defer func() {
+			wc.isRunning = false
+		}()
+
 		evalChan := pl.Evaluate()
 		done := pl.Done()
 
@@ -94,8 +98,6 @@ func (wc *Watcher) Start() {
 			case <-done:
 				{
 					//Policy is automatically completed.
-					wc.isRunning = false
-
 					//Report policy change stats.
 					if wc.doneChan != nil {
 						wc.doneChan <- wc.p.Name()
@@ -125,8 +127,6 @@ func (wc *Watcher) Stop() {
 	}
 	//Stop watcher.
 	wc.cmdChan <- true
-
-	wc.isRunning = false
 }
 
 //IsRunning to indicate if the watcher is still running.
