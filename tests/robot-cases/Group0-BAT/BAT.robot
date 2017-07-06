@@ -40,137 +40,92 @@ Test Case - Edit Project Creation
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+	
 	#check project creation
     Page Should Contain Element  xpath=//project//div[@class="option-left"]/button
+	
 	#logout and login admin
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-	#set limit to admin only
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//select[@id="proCreation"]
-    Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
-    Click Element  xpath=//config//div/button[1]
-	Capture Page Screenshot
+	Sleep  3
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+	Set Pro Create Admin Only
+		
 	#logout and login normal user
     Logout Harbor
 	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
-	#check if can create project
-	Capture Page Screenshot
-    Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//select[@id="proCreation"]
-    Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
-    Click Element  xpath=//config//div/button[1]
-    Sleep  2
+	Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
+    
+	Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+	
+    Set Pro Create Every One
     Close browser
 
 Test Case - Edit Self-Registration
-#login as admin
+	#login as admin
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-#disable self reg
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
-    Click Element  xpath=//div/button[1]
-#logout and check
-    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+	
+    Disable Self Reg
+	    
+	Logout Harbor
     Page Should Not Contain Element  xpath=//a[@class="signup"]
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    
+	Switch To Configure
+	
     Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
     Sleep  1
-    #restore setting
-    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
-    Click Element  xpath=//div/button[1]
+    
+	#restore setting
+    Enable Self Reg
     Close Browser
 
- Test Case - Edit Verify Remote Cert
+Test Case - Edit Verify Remote Cert
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[2]
-    #by defalut verify is on
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Click Element  xpath=//div/button[1]
-    #assume checkbox uncheck
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+
+    Switch To System Replication
+    Check Verify Remote Cert
+
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[2]
-    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-verifyRemoteCert"] 
-    Sleep  1
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+
+    Switch To System Replication
+    Should Verify Remote Cert Be Enabled
+
     #restore setting
-    Mouse Down  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-verifyRemoteCert"]
-    Click Element  xpath=//div/button[1]
-    Sleep  1
-    Close Browser   
+    Check Verify Remote Cert
+    Close Browser  
 
 Test Case - Edit Email Settings
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[3]
-    Input Text  xpath=//input[@id="mailServer"]  smtp.vmware.com
-    Input Text  xpath=//input[@id="emailPort"]  25
-    Input Text  xpath=//input[@id="emailUsername"]  example@vmware.com 
-    Input Text  xpath=//input[@id="emailPassword"]  example
-    Input Text  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
-    #checkbox status by default it is checked
-    #Unselect Checkbox  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Click Button  xpath=//config//div/button[1]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    
+	Switch To Email
+    Config Email
 
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[3]
-    #check value
-    Textfield Value Should Be  xpath=//input[@id="mailServer"]  smtp.vmware.com
-    Textfield Value Should Be  xpath=//input[@id="emailPort"]  25
-    Textfield Value Should Be  xpath=//input[@id="emailUsername"]  example@vmware.com
-    #password can not get value
-    #Textfield Value Should Be  xpath=//input[@id="emailPassword"]  example
-    Textfield Value Should Be  xpath=//input[@id="emailFrom"]  example<example@vmware.com>
-    Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-emailSSL"]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     
-    #restore setting
-    Input Text  xpath=//input[@id="mailServer"]  smtp.mydomain.com
-    Input Text  xpath=//input[@id="emailPort"]  25
-    Input Text  xpath=//input[@id="emailUsername"]  sample_admin@mydomain.com 
-    #Input Text  xpath=//input[@id="emailPassword"]  example
-    Input Text  xpath=//input[@id="emailFrom"]  admin<sample_admin@mydomain.com>
-    Mouse Down  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-emailSSL"]
-    Click Button  xpath=//config//div/button[1]
+	Switch To Email
+    Verify Email
+    
     Close Browser
 
 Test Case - Edit Token Expire
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Sleep  1
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[4]
-    #by default 30,change to other number
-    Input Text  xpath=//input[@id="tokenExpiration"]  20
-    Click Button  xpath=//config//div/button[1]
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+	Switch To System Settings
+	Modify Token Expiration  20
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Sleep  1
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[4]
-    Textfield Value Should Be  xpath=//input[@id="tokenExpiration"]  20
-    #restore setting
-    Input Text  xpath=//input[@id="tokenExpiration"]  30
-    Click Button  xpath=//config//div/button[1]
+    
+	Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+	Switch To System Settings
+    Token Must Be Match  20
+    
+	#reset to default
+    Modify Token Expiration  30
     Close Browser   
 
 Test Case-Manage Project Member
@@ -304,7 +259,7 @@ Test Case - Assign Sys Admin
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch to User Tag
     Assign User Admin  tester${d}
     Logout Harbor
@@ -405,3 +360,30 @@ Test Case - Admin Push Signed Image
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+	
+Test Case - Notary Inteceptor
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+    Down Harbor  with_notary=true
+    ${rc}  ${output}=  Run And Return Rc And Output  echo "PROJECT_CONTENT_TRUST=1\n" >> ./make/common/config/ui/env
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
+
+    Log To Console  ${output}		
+	Up Harbor  with_notary=true	
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
+    Log To Console  ${output}
+	
+	Down Harbor  with_notary=true
+	${rc}  ${output}=  Run And Return Rc And Output  sed "s/^PROJECT_CONTENT_TRUST=1.*/PROJECT_CONTENT_TRUST=0/g" -i ./make/common/config/ui/env
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
+		
+	Up Harbor  with_notary=true	
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0	

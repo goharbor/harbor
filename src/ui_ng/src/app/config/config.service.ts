@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { Configuration } from './config';
+import { Configuration } from 'harbor-ui';
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";

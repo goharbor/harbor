@@ -14,9 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
-Resource  HomePage_Elements.robot
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -25,13 +23,14 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
 	Go To    ${url}
-    sleep  5
+    Sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
+	Sleep  2
     Input Text  login_username  ${user}
     Input Text  login_password  ${pw}
-    sleep  2
+    Sleep  2
     Click button  css=.btn
     sleep  5
 	Log To Console  ${user}
@@ -46,7 +45,7 @@ Create An New User
     Should Be Equal  ${title}  Harbor
 	${d}=    Get Current Date    result_format=%m%s
 	Capture Page Screenshot  CreateNewUser_${d}.png
-	Sleep  3
+	Sleep  5
     Click Element  xpath=${sign_up_for_an_account_xpath}
     sleep  3
     Input Text  xpath=${username_xpath}  ${username}
@@ -69,4 +68,4 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-	sleep  2
+	Sleep  3

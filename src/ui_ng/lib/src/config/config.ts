@@ -41,7 +41,18 @@ export class BoolValueItem {
     }
 }
 
+export class ComplexValueItem {
+    value: any | { [key: string]: any | any[] };
+    editable: boolean;
+
+    public constructor(v: any | { [key: string]: any | any[] }, e: boolean) {
+        this.value = v;
+        this.editable = e;
+    }
+}
+
 export class Configuration {
+    [key: string]: any | any[]
     auth_mode: StringValueItem;
     project_creation_restriction: StringValueItem;
     self_registration: BoolValueItem;
@@ -63,6 +74,7 @@ export class Configuration {
     verify_remote_cert: BoolValueItem;
     token_expiration: NumberValueItem;
     cfg_expiration: NumberValueItem;
+    scan_all_policy: ComplexValueItem;
 
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
@@ -83,8 +95,14 @@ export class Configuration {
         this.email_ssl = new BoolValueItem(false, true);
         this.email_username = new StringValueItem("", true);
         this.email_password = new StringValueItem("", true);
-        this.token_expiration = new NumberValueItem(5, true);
+        this.token_expiration = new NumberValueItem(30, true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);
+        this.scan_all_policy = new ComplexValueItem({
+            type: "daily",
+            parameters: {
+                daily_time: 0
+            }
+        }, true);
     }
 }

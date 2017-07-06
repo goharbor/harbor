@@ -15,20 +15,13 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
-	//"github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	token_util "github.com/vmware/harbor/src/ui/service/token"
 )
 
@@ -36,13 +29,14 @@ const (
 	latency int = 10 //second, the network latency when token is received
 )
 
-type scope struct {
+// Scope ...
+type Scope struct {
 	Type    string
 	Name    string
 	Actions []string
 }
 
-func (s *scope) string() string {
+func (s *Scope) string() string {
 	return fmt.Sprintf("%s:%s:%s", s.Type, s.Name, strings.Join(s.Actions, ","))
 }
 
@@ -50,7 +44,7 @@ type tokenGenerator func(realm, service string, scopes []string) (token string, 
 
 // Implements interface Authorizer
 type tokenAuthorizer struct {
-	scope     *scope
+	scope     *Scope
 	tg        tokenGenerator
 	cache     string     // cached token
 	expiresAt *time.Time // The UTC standard time at when the token will expire
@@ -64,13 +58,13 @@ func (t *tokenAuthorizer) Scheme() string {
 
 // AuthorizeRequest will add authorization header which contains a token before the request is sent
 func (t *tokenAuthorizer) Authorize(req *http.Request, params map[string]string) error {
-	var scopes []*scope
+	var scopes []*Scope
 	var token string
 
 	hasFrom := false
 	from := req.URL.Query().Get("from")
 	if len(from) != 0 {
-		s := &scope{
+		s := &Scope{
 			Type:    "repository",
 			Name:    from,
 			Actions: []string{"pull"},
@@ -154,7 +148,7 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 	}
 
 	if len(scopeType) != 0 || len(scopeName) != 0 {
-		authorizer.scope = &scope{
+		authorizer.scope = &Scope{
 			Type:    scopeType,
 			Name:    scopeName,
 			Actions: scopeActions,
@@ -166,66 +160,21 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 	return authorizer
 }
 
-func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (token string, expiresIn int, issuedAt *time.Time, err error) {
+func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []string) (string, int, *time.Time, error) {
 	realm = s.tokenURL(realm)
+	tk, err := getToken(s.client, s.credential, realm,
+		service, scopes)
 
-	u, err := url.Parse(realm)
+	if len(tk.IssuedAt) == 0 {
+		return tk.Token, tk.ExpiresIn, nil, nil
+	}
+
+	issuedAt, err := time.Parse(time.RFC3339, tk.IssuedAt)
 	if err != nil {
-		return
-	}
-	q := u.Query()
-	q.Add("service", service)
-	for _, scope := range scopes {
-		q.Add("scope", scope)
-	}
-	u.RawQuery = q.Encode()
-	r, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return
+		return "", 0, nil, err
 	}
 
-	if s.credential != nil {
-		s.credential.AddAuthorization(r)
-	}
-
-	resp, err := s.client.Do(r)
-	if err != nil {
-		return
-	}
-
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = &registry_error.Error{
-			StatusCode: resp.StatusCode,
-			Detail:     string(b),
-		}
-		return
-	}
-
-	tk := models.Token{}
-	if err = json.Unmarshal(b, &tk); err != nil {
-		return
-	}
-
-	token = tk.Token
-
-	expiresIn = tk.ExpiresIn
-
-	if len(tk.IssuedAt) != 0 {
-		t, err := time.Parse(time.RFC3339, tk.IssuedAt)
-		if err != nil {
-			log.Errorf("error occurred while parsing issued_at: %v", err)
-			err = nil
-		} else {
-			issuedAt = &t
-		}
-	}
-
-	return
+	return tk.Token, tk.ExpiresIn, &issuedAt, nil
 }
 
 // when the registry client is used inside Harbor, the token request
@@ -267,7 +216,7 @@ func newUsernameTokenAuthorizer(notary bool, username, scopeType, scopeName stri
 		username: username,
 	}
 
-	authorizer.scope = &scope{
+	authorizer.scope = &Scope{
 		Type:    scopeType,
 		Name:    scopeName,
 		Actions: scopeActions,

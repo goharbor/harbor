@@ -53,6 +53,16 @@ export abstract class ScanningResultService {
      * @memberOf ScanningResultService
      */
     abstract startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any;
+
+    /**
+     * Trigger the scanning all action.
+     * 
+     * @abstract
+     * @returns {(Observable<any> | Promise<any> | any)}
+     * 
+     * @memberOf ScanningResultService
+     */
+    abstract startScanningAll(): Observable<any> | Promise<any> | any;
 }
 
 @Injectable()
@@ -94,5 +104,11 @@ export class ScanningResultDefaultService extends ScanningResultService {
         return this.http.post(`${this._baseUrl}/${repoName}/tags/${tagId}/scan`, null).toPromise()
             .then(() => { return true })
             .catch(error => Promise.reject(error));
+    }
+
+    startScanningAll(): Observable<any> | Promise<any> | any {
+        return this.http.post(`${this._baseUrl}/scanAll`,{}).toPromise()
+        .then(() => {return true})
+        .catch(error => Promise.reject(error));
     }
 }

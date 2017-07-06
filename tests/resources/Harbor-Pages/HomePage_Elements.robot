@@ -14,8 +14,6 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
 
 *** Variables ***
 ${sign_up_for_an_account_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a

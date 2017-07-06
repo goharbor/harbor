@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides helper functions for docker operations
-Library  OperatingSystem
-Library  Process
+Resource  Util.robot
 
 *** Keywords ***
 Start Selenium Standalone Server Locally

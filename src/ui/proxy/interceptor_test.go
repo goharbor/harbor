@@ -112,7 +112,6 @@ func TestEnvPolicyChecker(t *testing.T) {
 }
 
 func TestPMSPolicyChecker(t *testing.T) {
-
 	var defaultConfigAdmiral = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
 		common.WithNotary:      true,
@@ -131,7 +130,8 @@ func TestPMSPolicyChecker(t *testing.T) {
 		panic(err)
 	}
 
-	pm := pms.NewProjectManager(admiralEndpoint, token)
+	pm := pms.NewProjectManager(http.DefaultClient,
+		admiralEndpoint, nil)
 	name := "project_for_test_get_sev_low"
 	id, err := pm.Create(&models.Project{
 		Name:                                       name,
