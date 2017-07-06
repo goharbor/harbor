@@ -15,7 +15,7 @@ class User(Base):
     username = sa.Column(sa.String(15), unique=True)
     email = sa.Column(sa.String(30), unique=True)
     password = sa.Column(sa.String(40), nullable=False)
-    realname = sa.Column(sa.String(20), nullable=False)
+    realname = sa.Column(sa.String(255), nullable=False)
     comment = sa.Column(sa.String(30))
     deleted = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     reset_uuid = sa.Column(sa.String(40))

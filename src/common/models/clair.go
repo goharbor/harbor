@@ -14,6 +14,25 @@
 
 package models
 
+import (
+	"time"
+)
+
+// ClairVulnTimestampTable is the name of the table that tracks the timestamp of vulnerability in Clair.
+const ClairVulnTimestampTable = "clair_vuln_timestamp"
+
+// ClairVulnTimestamp represents a record in DB that tracks the timestamp of vulnerability in Clair.
+type ClairVulnTimestamp struct {
+	ID         int64     `orm:"pk;auto;column(id)" json:"-"`
+	Namespace  string    `orm:"column(namespace)" json:"namespace"`
+	LastUpdate time.Time `orm:"column(last_update)" json:"last_update"`
+}
+
+//TableName is required by beego to map struct to table.
+func (ct *ClairVulnTimestamp) TableName() string {
+	return ClairVulnTimestampTable
+}
+
 //ClairLayer ...
 type ClairLayer struct {
 	Name           string            `json:"Name,omitempty"`
@@ -56,4 +75,35 @@ type ClairError struct {
 type ClairLayerEnvelope struct {
 	Layer *ClairLayer `json:"Layer,omitempty"`
 	Error *ClairError `json:"Error,omitempty"`
+}
+
+//ClairNotification ...
+type ClairNotification struct {
+	Name     string                        `json:"Name,omitempty"`
+	Created  string                        `json:"Created,omitempty"`
+	Notified string                        `json:"Notified,omitempty"`
+	Deleted  string                        `json:"Deleted,omitempty"`
+	Limit    int                           `json:"Limit,omitempty"`
+	Page     string                        `json:"Page,omitempty"`
+	NextPage string                        `json:"NextPage,omitempty"`
+	Old      *ClairVulnerabilityWithLayers `json:"Old,omitempty"`
+	New      *ClairVulnerabilityWithLayers `json:"New,omitempty"`
+}
+
+//ClairNotificationEnvelope ...
+type ClairNotificationEnvelope struct {
+	Notification *ClairNotification `json:"Notification,omitempty"`
+	Error        *ClairError        `json:"Error,omitempty"`
+}
+
+//ClairVulnerabilityWithLayers ...
+type ClairVulnerabilityWithLayers struct {
+	Vulnerability                         *ClairVulnerability     `json:"Vulnerability,omitempty"`
+	OrderedLayersIntroducingVulnerability []ClairOrderedLayerName `json:"OrderedLayersIntroducingVulnerability,omitempty"`
+}
+
+//ClairOrderedLayerName ...
+type ClairOrderedLayerName struct {
+	Index     int    `json:"Index"`
+	LayerName string `json:"LayerName"`
 }

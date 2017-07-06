@@ -1733,3 +1733,33 @@ func TestImgScanOverview(t *testing.T) {
 	assert.Equal(int(models.SevMedium), res.Sev)
 	assert.Equal(2, res.CompOverview.Summary[0].Count)
 }
+
+func TestVulnTimestamp(t *testing.T) {
+
+	assert := assert.New(t)
+	err := ClearTable(models.ClairVulnTimestampTable)
+	assert.Nil(err)
+	ns := "ubuntu:14"
+	res, err := ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(0, len(res))
+	err = SetClairVulnTimestamp(ns, time.Now())
+	assert.Nil(err)
+	res, err = ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(1, len(res))
+	assert.Equal(ns, res[0].Namespace)
+	old := time.Now()
+	t.Logf("Sleep 3 seconds")
+	time.Sleep(3 * time.Second)
+	err = SetClairVulnTimestamp(ns, time.Now())
+	assert.Nil(err)
+	res, err = ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(1, len(res))
+
+	d := res[0].LastUpdate.Sub(old)
+	if d < 2*time.Second {
+		t.Errorf("Delta should be larger than 2 seconds! old: %v, lastupdate: %v", old, res[0].LastUpdate)
+	}
+}
