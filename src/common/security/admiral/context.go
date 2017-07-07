@@ -17,7 +17,7 @@ package admiral
 import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/security/authcontext"
+	"github.com/vmware/harbor/src/common/security/admiral/authcontext"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
 )

@@ -169,3 +169,34 @@ func setField(object interface{}, field string, value interface{}) error {
 
 	return nil
 }
+
+// ParseProjectIDOrName parses value to ID(int64) or name(string)
+func ParseProjectIDOrName(value interface{}) (int64, string, error) {
+	if value == nil {
+		return 0, "", errors.New("harborIDOrName is nil")
+	}
+
+	var id int64
+	var name string
+	switch value.(type) {
+	case int:
+		i := value.(int)
+		id = int64(i)
+		if id == 0 {
+			return 0, "", fmt.Errorf("invalid ID: 0")
+		}
+	case int64:
+		id = value.(int64)
+		if id == 0 {
+			return 0, "", fmt.Errorf("invalid ID: 0")
+		}
+	case string:
+		name = value.(string)
+		if len(name) == 0 {
+			return 0, "", fmt.Errorf("empty name")
+		}
+	default:
+		return 0, "", fmt.Errorf("unsupported type")
+	}
+	return id, name, nil
+}
