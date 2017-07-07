@@ -20,17 +20,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
-
-	"errors"
 
 	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/adminserver/client/auth"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
@@ -149,15 +145,7 @@ func Reset() error {
 
 // Upload uploads all system configurations to admin server
 func Upload(cfg map[string]interface{}) error {
-	err := mg.Upload(cfg)
-	if err == nil {
-		//Watch configuration changes after updating.
-		if er := watchConfigChanges(cfg); er != nil {
-			log.Errorf("Error occurred when watching configuration changes: %s\n", er.Error())
-		}
-	}
-
-	return err
+	return mg.Upload(cfg)
 }
 
 // GetSystemCfg returns the system configurations
@@ -411,32 +399,4 @@ func ScanAllPolicy() models.ScanAllPolicy {
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
-}
-
-func watchConfigChanges(cfg map[string]interface{}) error {
-	if cfg == nil {
-		return errors.New("Empty configurations")
-	}
-
-	//Currently only watch the scan all policy change.
-	if v, ok := cfg[notifier.ScanAllPolicyTopic]; ok {
-		if reflect.TypeOf(v).Kind() == reflect.Struct &&
-			reflect.TypeOf(v).String() == "models.ScanAllPolicy" {
-			policyCfg := v.(models.ScanAllPolicy)
-			policyNotification := notifier.ScanPolicyNotification{
-				Type:      policyCfg.Type,
-				DailyTime: 0,
-			}
-
-			if t, yes := policyCfg.Parm["daily_time"]; yes {
-				if reflect.TypeOf(t).Kind() == reflect.Int {
-					policyNotification.DailyTime = t.(int64)
-				}
-			}
-
-			return notifier.Publish(notifier.ScanAllPolicyTopic, policyNotification)
-		}
-	}
-
-	return nil
 }
