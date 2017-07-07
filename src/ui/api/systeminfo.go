@@ -137,7 +137,9 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
 		HarborVersion:           harborVersion,
-		ClairVulnStatus:         getClairVulnStatus(),
+	}
+	if info.WithClair {
+		info.ClairVulnStatus = getClairVulnStatus()
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
