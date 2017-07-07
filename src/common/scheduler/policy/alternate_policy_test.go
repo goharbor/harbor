@@ -44,50 +44,44 @@ func TestEvaluatePolicy(t *testing.T) {
 	now := time.Now().UTC()
 	utcOffset := (int64)(now.Hour()*3600 + now.Minute()*60)
 	tp := NewAlternatePolicy(&AlternatePolicyConfiguration{
-		Duration:       1 * time.Second,
-		OffsetTime:     utcOffset + 1,
-		StartTimestamp: -1,
-		EndTimestamp:   now.Add(3 * time.Second).Unix(),
+		Duration:   1 * time.Second,
+		OffsetTime: utcOffset + 1,
 	})
 	err := tp.AttachTasks(&fakeTask{number: 100})
 	if err != nil {
 		t.Fail()
 	}
-	ch := tp.Evaluate()
-	done := tp.Done()
+	ch, _ := tp.Evaluate()
 	counter := 0
-READ_SIGNAL:
-	for {
+
+	for i := 0; i < 3; i++ {
 		select {
 		case <-ch:
 			counter++
-		case <-done:
-			break READ_SIGNAL
-		case <-time.After(5 * time.Second):
-			t.Fail()
-			return
+		case <-time.After(2 * time.Second):
+			continue
 		}
 	}
 
-	if counter != 2 {
+	if counter != 3 {
 		t.Fail()
 	}
+
+	tp.Disable()
 }
 
 func TestDisablePolicy(t *testing.T) {
 	now := time.Now().UTC()
 	utcOffset := (int64)(now.Hour()*3600 + now.Minute()*60)
 	tp := NewAlternatePolicy(&AlternatePolicyConfiguration{
-		Duration:       1 * time.Second,
-		OffsetTime:     utcOffset + 1,
-		StartTimestamp: -1,
-		EndTimestamp:   -1,
+		Duration:   1 * time.Second,
+		OffsetTime: utcOffset + 1,
 	})
 	err := tp.AttachTasks(&fakeTask{number: 100})
 	if err != nil {
 		t.Fail()
 	}
-	ch := tp.Evaluate()
+	ch, _ := tp.Evaluate()
 	counter := 0
 	terminate := make(chan bool)
 	defer func() {
@@ -109,7 +103,7 @@ func TestDisablePolicy(t *testing.T) {
 	if tp.Disable() != nil {
 		t.Fatal("Failed to disable policy")
 	}
-	//Waiting for everything is stabel
+	//Waiting for everything is stable
 	<-time.After(1 * time.Second)
 	//Copy value
 	copiedCounter := counter

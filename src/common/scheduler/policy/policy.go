@@ -31,7 +31,7 @@ type Policy interface {
 	//result channel. Policy is enabled after it is evaluated.
 	//Make sure Evaluate is idempotent, that means one policy can be only enabled
 	//only once even if Evaluate is called more than one times.
-	Evaluate() <-chan EvaluationResult
+	Evaluate() (<-chan bool, error)
 
 	//Disable the enabled policy and release all the allocated resources.
 	//Disable should also send signal to the terminated channel which returned by Done.

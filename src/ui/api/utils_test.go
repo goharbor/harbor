@@ -21,7 +21,7 @@ var jsonText = `
 
 func TestWatchConfiguration(t *testing.T) {
 	now := time.Now().UTC()
-	offset := (now.Hour+1)*3600 + now.Minute*60
+	offset := (now.Hour()+1)*3600 + now.Minute()*60
 	jsonT := strings.Replace(jsonText, "<PLACE_HOLDER>", strconv.Itoa(offset), -1)
 	v := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(jsonT), &v); err != nil {

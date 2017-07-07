@@ -15,14 +15,6 @@ type AlternatePolicyConfiguration struct {
 	//OffsetTime is the execution time point of each turn
 	//It's a number to indicate the seconds offset to the 00:00 of UTC time.
 	OffsetTime int64
-
-	//StartTimestamp is the time should be later than start time.
-	//If set <=0 value, no limitation.
-	StartTimestamp int64
-
-	//EndTimestamp is the time should be earlier than end time.
-	//If set <=0 value, no limitation.
-	EndTimestamp int64
 }
 
 //AlternatePolicy is a policy that repeatedly executing tasks with specified duration during a specified time scope.
@@ -40,7 +32,7 @@ type AlternatePolicy struct {
 	isEnabled bool
 
 	//Channel used to send evaluation result signals.
-	evaluation chan EvaluationResult
+	evaluation chan bool
 
 	//Channel used to notify policy termination.
 	done chan bool
@@ -109,39 +101,21 @@ func (alp *AlternatePolicy) Disable() error {
 }
 
 //Evaluate is an implementation of same method in policy interface.
-func (alp *AlternatePolicy) Evaluate() <-chan EvaluationResult {
+func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 	//Keep idempotent
 	if alp.isEnabled && alp.evaluation != nil {
-		return alp.evaluation
+		return alp.evaluation, nil
 	}
 
 	alp.done = make(chan bool)
 	alp.terminator = make(chan bool)
-	alp.evaluation = make(chan EvaluationResult)
+	alp.evaluation = make(chan bool)
 
 	go func() {
 		defer func() {
 			alp.isEnabled = false
 		}()
 		timeNow := time.Now().UTC()
-		timeSeconds := timeNow.Unix()
-
-		//Pre-check
-		//If now is still in the specified time scope.
-		if alp.config.EndTimestamp > 0 && timeSeconds >= alp.config.EndTimestamp {
-			//Invalid configuration, exit.
-			alp.done <- true
-			return
-		}
-		if alp.config.StartTimestamp > 0 && timeSeconds < alp.config.StartTimestamp {
-			//Let's hold on for a while.
-			forWhile := alp.config.StartTimestamp - timeSeconds
-			select {
-			case <-time.After(time.Duration(forWhile) * time.Second):
-			case <-alp.terminator:
-				return
-			}
-		}
 
 		//Reach the execution time point?
 		utcTime := (int64)(timeNow.Hour()*3600 + timeNow.Minute()*60)
@@ -159,29 +133,14 @@ func (alp *AlternatePolicy) Evaluate() <-chan EvaluationResult {
 		}
 
 		//Trigger the first tick.
-		alp.evaluation <- EvaluationResult{}
+		alp.evaluation <- true
 
 		//Start the ticker for repeat checking.
 		alp.ticker = time.NewTicker(alp.config.Duration)
 		for {
 			select {
-			case now := <-alp.ticker.C:
-				{
-					time := now.UTC().Unix()
-					if alp.config.EndTimestamp > 0 && time >= alp.config.EndTimestamp {
-						//Ploicy is done.
-						alp.done <- true
-						if alp.ticker != nil {
-							alp.ticker.Stop()
-						}
-						alp.ticker = nil
-
-						return
-					}
-
-					res := EvaluationResult{}
-					alp.evaluation <- res
-				}
+			case <-alp.ticker.C:
+				alp.evaluation <- true
 			case <-alp.terminator:
 				return
 			}
@@ -191,5 +150,5 @@ func (alp *AlternatePolicy) Evaluate() <-chan EvaluationResult {
 	//Enabled
 	alp.isEnabled = true
 
-	return alp.evaluation
+	return alp.evaluation, nil
 }

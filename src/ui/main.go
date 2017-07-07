@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -111,11 +112,13 @@ func main() {
 	if scanAllPolicy.Type == notifier.PolicyTypeDaily {
 		dailyTime := 0
 		if t, ok := scanAllPolicy.Parm["daily_time"]; ok {
-			dailyTime = t
+			if reflect.TypeOf(t).Kind() == reflect.Int {
+				dailyTime = t.(int)
+			}
 		}
 
 		//Send notification to handle first policy change.
-		notifier.publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{scanAllPolicy.Type, dailyTime})
+		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
 	filter.Init()

@@ -4,14 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/common/scheduler/policy"
 	"github.com/vmware/harbor/src/common/scheduler/task"
 )
 
 type fakePolicy struct {
 	tasks      []task.Task
 	done       chan bool
-	evaluation chan policy.EvaluationResult
+	evaluation chan bool
 	terminate  chan bool
 	ticker     *time.Ticker
 }
@@ -33,12 +32,12 @@ func (fp *fakePolicy) Done() <-chan bool {
 	return fp.done
 }
 
-func (fp *fakePolicy) Evaluate() <-chan policy.EvaluationResult {
-	fp.evaluation = make(chan policy.EvaluationResult, 2)
+func (fp *fakePolicy) Evaluate() (<-chan bool, error) {
+	fp.evaluation = make(chan bool, 1)
 	fp.done = make(chan bool)
 	fp.terminate = make(chan bool)
 
-	fp.evaluation <- policy.EvaluationResult{}
+	fp.evaluation <- true
 	go func() {
 		fp.ticker = time.NewTicker(1 * time.Second)
 		for {
@@ -46,11 +45,11 @@ func (fp *fakePolicy) Evaluate() <-chan policy.EvaluationResult {
 			case <-fp.terminate:
 				return
 			case <-fp.ticker.C:
-				fp.evaluation <- policy.EvaluationResult{}
+				fp.evaluation <- true
 			}
 		}
 	}()
-	return fp.evaluation
+	return fp.evaluation, nil
 }
 
 func (fp *fakePolicy) Disable() error {
@@ -136,7 +135,8 @@ func TestScheduler(t *testing.T) {
 	}
 
 	DefaultScheduler.Stop()
+	<-time.After(1 * time.Second)
 	if DefaultScheduler.policies.Size() != 0 || DefaultScheduler.IsRunning() {
-		t.Fatal("Scheduler is not cleared after stopping")
+		t.Fatal("Scheduler is still running after stopping")
 	}
 }
