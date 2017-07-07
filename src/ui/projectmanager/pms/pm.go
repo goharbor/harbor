@@ -412,7 +412,7 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &er.Error{
+		return nil, &er.HTTPError{
 			StatusCode: resp.StatusCode,
 			Detail:     string(b),
 		}

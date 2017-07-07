@@ -126,7 +126,7 @@ func (r *Registry) Catalog() ([]string, error) {
 				suffix = ""
 			}
 		} else {
-			return repos, &registry_error.Error{
+			return repos, &registry_error.HTTPError{
 				StatusCode: resp.StatusCode,
 				Detail:     string(b),
 			}
@@ -157,7 +157,7 @@ func (r *Registry) Ping() error {
 		return err
 	}
 
-	return &registry_error.Error{
+	return &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
