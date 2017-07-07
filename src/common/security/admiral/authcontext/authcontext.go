@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -37,9 +39,10 @@ const (
 )
 
 type project struct {
-	DocumentSelfLink string   `json:"documentSelfLink"`
-	Name             string   `json:"name"`
-	Roles            []string `json:"roles"`
+	SelfLink   string            `json:"documentSelfLink"`
+	Name       string            `json:"name"`
+	Roles      []string          `json:"roles"`
+	Properties map[string]string `json:"customProperties"`
 }
 
 // AuthContext ...
@@ -63,28 +66,18 @@ func (a *AuthContext) IsSysAdmin() bool {
 
 // GetProjectRoles ...
 func (a *AuthContext) GetProjectRoles(projectIDOrName interface{}) []int {
-	var isID bool
-	var id int64
-	var name string
-
-	id, isID = projectIDOrName.(int64)
-	if !isID {
-		name, _ = projectIDOrName.(string)
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to parse project ID or name: %v", err)
+		return []int{}
 	}
 
 	roles := []string{}
 	for _, project := range a.Projects {
 		p := convertProject(project)
-		if isID {
-			if p.ProjectID == id {
-				roles = append(roles, project.Roles...)
-				break
-			}
-		} else {
-			if p.Name == name {
-				roles = append(roles, project.Roles...)
-				break
-			}
+		if p.ProjectID == id || p.Name == name {
+			roles = append(roles, project.Roles...)
+			break
 		}
 	}
 
@@ -100,12 +93,29 @@ func (a *AuthContext) GetMyProjects() []*models.Project {
 	return projects
 }
 
-// TODO populate harbor ID to the project
 // convert project returned by Admiral to project used in Harbor
 func convertProject(p *project) *models.Project {
 	project := &models.Project{
 		Name: p.Name,
 	}
+
+	index := ""
+	if p.Properties != nil {
+		index = p.Properties["__projectIndex"]
+	}
+
+	if len(index) == 0 {
+		log.Errorf("property __projectIndex not found when parsing project")
+		return project
+	}
+
+	id, err := strconv.ParseInt(index, 10, 64)
+	if err != nil {
+		log.Errorf("failed to parse __projectIndex %s: %v", index, err)
+		return project
+	}
+
+	project.ProjectID = id
 	return project
 }
 

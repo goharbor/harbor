@@ -42,8 +42,9 @@ func TestGetProjectRoles(t *testing.T) {
 	ctx := &AuthContext{
 		Projects: []*project{
 			&project{
-				Name:  "project",
-				Roles: []string{projectAdminRole, developerRole, guestRole},
+				Name:       "project",
+				Roles:      []string{projectAdminRole, developerRole, guestRole},
+				Properties: map[string]string{"__projectIndex": "9"},
 			},
 		},
 	}
@@ -52,7 +53,9 @@ func TestGetProjectRoles(t *testing.T) {
 	roles := ctx.GetProjectRoles("project")
 	assert.Equal(t, 3, len(roles))
 
-	// TODO add test case with ID
+	// test with ID
+	roles = ctx.GetProjectRoles(9)
+	assert.Equal(t, 3, len(roles))
 }
 
 func TestGetMyProjects(t *testing.T) {
