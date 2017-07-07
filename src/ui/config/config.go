@@ -113,16 +113,22 @@ func initProjectManager() {
 	// integration with admiral
 	log.Info("initializing the project manager based on PMS...")
 	// TODO read ca/cert file and pass it to the TLS config
-	AdminserverClient := &http.Client{
+	AdmiralClient = &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
 		},
 	}
-	GlobalProjectMgr = pms.NewProjectManager(AdminserverClient,
+
+	path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+	if len(path) == 0 {
+		path = defaultTokenFilePath
+	}
+	log.Infof("service token file path: %s", path)
+	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
 		AdmiralEndpoint(), &pms.FileTokenReader{
-			Path: defaultTokenFilePath,
+			Path: path,
 		})
 }
 

@@ -47,7 +47,7 @@ create table user (
 # 11 bytes is reserved for marking the deleted users.
  email varchar(255),
  password varchar(40) NOT NULL,
- realname varchar (20) NOT NULL,
+ realname varchar (255) NOT NULL,
  comment varchar (30),
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  reset_uuid varchar(40) DEFAULT NULL,
@@ -194,6 +194,14 @@ create table img_scan_overview (
  PRIMARY KEY(image_digest)
  );
 
+create table clair_vuln_timestamp (
+id int NOT NULL AUTO_INCREMENT, 
+namespace varchar(128) NOT NULL,
+last_update timestamp NOT NULL,
+PRIMARY KEY(id),
+UNIQUE(namespace)
+);
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
@@ -204,4 +212,4 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('0.4.0');
+insert into alembic_version values ('1.2.0');

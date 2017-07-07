@@ -15,6 +15,10 @@
 package secret
 
 import (
+	"fmt"
+
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -78,4 +82,18 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 // HasAllPerm always returns false
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return false
+}
+
+// GetMyProjects ...
+func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return nil, fmt.Errorf("GetMyProjects is unsupported")
+}
+
+// GetProjectRoles return guest role if has read permission, otherwise return nil
+func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	roles := []int{}
+	if s.HasReadPerm(projectIDOrName) {
+		roles = append(roles, common.RoleGuest)
+	}
+	return roles
 }
