@@ -168,8 +168,8 @@ Test Case Manage project publicity
     Click element  xpath=//select/option[@value=1]
     Sleep  1
     Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
-    ${rc}  ${output}=  run and return rc and output  docker login
-    ${rc}=  run and return rc and output  docker pull
+    ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
     Should Not Be Equal As Integers  ${rc}  0
     Logout Harbor
     #sign in as a and change project to public
