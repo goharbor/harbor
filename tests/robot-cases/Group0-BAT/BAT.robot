@@ -128,130 +128,66 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser   
 
-Test Case-Manage Project Member
+Test Case Manage project publicity
     Init Chrome Driver
-    ${d}=    Get current Date  result_format=%m%s
-    ${rc}  ${ip}=     run and return rc and output  ip add s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    log to console  ${ip}
+    ${d}=    Get Current Date  result_format=%m%s
+    ${rc}  ${ip}=    run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}' 
+    Log to console  ${ip}
     Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
     Logout Harbor
     Create An New User  url=${HARBOR_URL}  username=userb${d}  email=userb${d}@vmware.com  realname=userb${d}  newPassword=Test1@34  comment=harbor
     Logout Harbor
-    Create An New User  url=${HARBOR_URL}  username=userc${d}  email=userc${d}@vmware.com  realname=userc${d}  newPassword=Test1@34  comment=harbor
-    Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    #create project
-    Create An New Project  project${d}
-    #verify can not change role
-    Click Element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    Click Element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    Logout Harbor
-    #login console as usera and push
-    ${rc}  run and return rc and output  docker pull hello-world
-    ${rc} ${output}  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
-    ${rc}  run and return rc and output  docker tag hello-world ${d}/project${d}/hello-world
-    ${rc}  run and return rc and output  docker push ${d}/project${d}/hello-world
-    ${rc}  run and return rc and output  docker logout ${d}
-    #logout change userb and pull push
-    ${rc} ${output} run and return rc and output docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}  run and return rc and output docker tag hello-world ${d}/project${d}/bbbbb
-    ${rc}  run and return rc and output docker pull ${ip}/project${d}/hello-world
-    should not be equal as integers  ${rc}  0  
-    ${rc}  run and return rc and output docker push ${ip}/project${d}/bbbbb
-    should not be equal as integers  ${rc}  0
-    #login ui as b
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should not contain element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    Logout Harbor
-    #login as a
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    #click add member
-    click element  xpath=//project-detail//button//clr-icon
-    input text  xpath=//add-member//input[@id="member_name"]  userb${d}
-    #select guest
-    click element  xpath=//project-detail//form//input[@id="checkrads_guest"]#mouse down mouse up
-    click button  xpath=//project-detail//add-member//button[2]
-    Logout Harbor
-    #sign in as b
-    Sign In Harbor   ${HARBOR_URL}  userb${d}  Test1@34
-    #step 12
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    #step 13
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    #step 14
-    page should not contain element  xpath=//project-detail//button//clr-icon
-    ${rc}  ${output}  run and return rc and output docker login -u userb${d} -p Test1@34 ${ip}
-    #step 15
-    ${rc} run and return rc and output docker pull ${ip}/project${d}/hello-world
-    #step 16
-    ${rc} run and return rc and output docker push ${ip}/project${d}/bbbbb
-    should not be equal as integers  ${rc}  0
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  usera  Test1@34
-    #change userb to developer
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Developer")]
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    #step 20
-    page should not contain element  xpath=//project-detail//button//clr-icon
-    #step 21
-    ${rc}  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc} run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world:v1
-    ${rc}  run and return rc and output  docker push ${ip}/project${d}/hello-world:v1
+    Create An New Public Project  project${d}
+    ${rc}=  run and return rc and output  docker pull hello-world
+    ${rc}  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc and output  docker logout ${ip}
+   #docker login as b
+    ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
     should be equal as integers  ${rc}  0
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    #step 22
-    #change userb to admin of project
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Admin")]
-    Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    # add userc
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//button//clr-icon
-    input text  xpath=//add-member//input[@id="member_name"]  userc${d}
-    click element  xpath=//project-detail//form//input[@id="checkrads_guest"]#mouse down mouse up
-    click button  xpath=//project-detail//add-member//button[2]
-    #step 25 verify b can change c role
-    page should contain element  xpath=//project-detail//clr-dg-row-master[contains(.,"userc")]//clr-dg-action-overflow
-    ${rc} run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc} run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world:v2
-    ${rc} run and return rc and output  docker push ${ip}/project${d}/hello-world:v2
-    should be equal as integers  ${rc}  0
+    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    #choose private
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
     Logout Harbor
-    #step 27 remove b from project
+    #login as a and change project to private
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    click element  xpath=//clr-dg-cell//a[contains(.,"project")]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-row-master[contains(.,"userb")]//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Delete")]   
-    #step28 
-    ${rc}  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${}  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    should not be equal as integers  ${rc}  0
-    #step 29
-    ${rc}  run and return rc and output  docker logout ${ip}
-    #step 30
-    ${rc}  run and return rc and output  docker login -u userc${d} -p Test1@34 ${ip}
-    ${rc}  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    should be equal as integers  ${rc}  0
+    Sleep  1
+    capture page screenshot  chprivate.png
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    Logout Harbor
+    #signin as userb
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    ${rc}  ${output}=  run and return rc and output  docker login
+    ${rc}=  run and return rc and output  docker pull
+    Should Not Be Equal As Integers  ${rc}  0
+    Logout Harbor
+    #sign in as a and change project to public
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Sleep  1
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    Logout Harbor
+    #sign in userb to verify
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
     Close Browser
 
 Test Case - Assign Sys Admin
