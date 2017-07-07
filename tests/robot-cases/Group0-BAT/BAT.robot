@@ -158,7 +158,6 @@ Test Case Manage project publicity
     #login as a and change project to private
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
     Sleep  1
-    capture page screenshot  chprivate.png
     Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
     Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
     Logout Harbor
