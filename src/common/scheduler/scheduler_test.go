@@ -136,7 +136,8 @@ func TestScheduler(t *testing.T) {
 	}
 
 	DefaultScheduler.Stop()
+	<-time.After(1 * time.Second)
 	if DefaultScheduler.policies.Size() != 0 || DefaultScheduler.IsRunning() {
-		t.Fatal("Scheduler is not cleared after stopping")
+		t.Fatal("Scheduler is still running after stopping")
 	}
 }
