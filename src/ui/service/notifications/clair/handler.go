@@ -96,7 +96,18 @@ func (h *Handler) Handle() {
 	if rescanTimer.needReschedule() {
 		go func() {
 			<-time.After(rescanInterval)
-			log.Debugf("TODO: rescan or resfresh scan_overview!")
+			l, err := dao.ListImgScanOverviews()
+			if err != nil {
+				log.Errorf("Failed to list scan overview records, error: %v", err)
+				return
+			}
+			for _, e := range l {
+				if err := clair.UpdateScanOverview(e.Digest, e.DetailsKey); err != nil {
+					log.Errorf("Failed to refresh scan overview for image: %s", e.Digest)
+				} else {
+					log.Debugf("Refreshed scan overview for record with digest: %s", e.Digest)
+				}
+			}
 		}()
 	} else {
 		log.Debugf("There is a rescan scheduled already, skip.")

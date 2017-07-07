@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	//	"path"
 
 	"github.com/vmware/harbor/src/common/models"
@@ -40,7 +41,7 @@ func NewClient(endpoint string, logger *log.Logger) *Client {
 		logger = log.DefaultLogger()
 	}
 	return &Client{
-		endpoint: endpoint,
+		endpoint: strings.TrimSuffix(endpoint, "/"),
 		logger:   logger,
 		client:   &http.Client{},
 	}

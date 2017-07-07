@@ -19,8 +19,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -46,16 +49,17 @@ type Storage struct {
 
 //GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
-	WithNotary              bool   `json:"with_notary"`
-	WithClair               bool   `json:"with_clair"`
-	WithAdmiral             bool   `json:"with_admiral"`
-	AdmiralEndpoint         string `json:"admiral_endpoint"`
-	AuthMode                string `json:"auth_mode"`
-	RegistryURL             string `json:"registry_url"`
-	ProjectCreationRestrict string `json:"project_creation_restriction"`
-	SelfRegistration        bool   `json:"self_registration"`
-	HasCARoot               bool   `json:"has_ca_root"`
-	HarborVersion           string `json:"harbor_version"`
+	WithNotary              bool                             `json:"with_notary"`
+	WithClair               bool                             `json:"with_clair"`
+	WithAdmiral             bool                             `json:"with_admiral"`
+	AdmiralEndpoint         string                           `json:"admiral_endpoint"`
+	AuthMode                string                           `json:"auth_mode"`
+	RegistryURL             string                           `json:"registry_url"`
+	ProjectCreationRestrict string                           `json:"project_creation_restriction"`
+	SelfRegistration        bool                             `json:"self_registration"`
+	HasCARoot               bool                             `json:"has_ca_root"`
+	HarborVersion           string                           `json:"harbor_version"`
+	ClairVulnStatus         *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
 }
 
 // validate for validating user if an admin.
@@ -133,12 +137,13 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		RegistryURL:             registryURL,
 		HasCARoot:               caStatErr == nil,
 		HarborVersion:           harborVersion,
+		ClairVulnStatus:         getClairVulnStatus(),
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
 }
 
-// GetVersion gets harbor version.
+// getVersion gets harbor version.
 func (sia *SystemInfoAPI) getVersion() string {
 	version, err := ioutil.ReadFile(harborVersionFile)
 	if err != nil {
@@ -146,4 +151,35 @@ func (sia *SystemInfoAPI) getVersion() string {
 		return ""
 	}
 	return string(version[:])
+}
+
+func getClairVulnStatus() *models.ClairVulnerabilityStatus {
+	res := &models.ClairVulnerabilityStatus{}
+	l, err := dao.ListClairVulnTimestamps()
+	if err != nil {
+		log.Errorf("Failed to list Clair vulnerability timestamps, error:%v", err)
+		return nil
+	}
+	m := make(map[string]time.Time)
+	var t time.Time
+	for _, e := range l {
+		if e.LastUpdate.After(t) {
+			t = e.LastUpdate
+		}
+		ns := strings.Split(e.Namespace, ":")
+		if ts, ok := m[ns[0]]; !ok || ts.Before(e.LastUpdate) {
+			m[ns[0]] = e.LastUpdate
+		}
+	}
+	res.Overall = &t
+	details := []models.ClairNamespaceTimestamp{}
+	for k, v := range m {
+		e := models.ClairNamespaceTimestamp{
+			Namespace: k,
+			Timestamp: v,
+		}
+		details = append(details, e)
+	}
+	res.Details = details
+	return res
 }
