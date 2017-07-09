@@ -53,7 +53,8 @@ func (s *ScanJob) TableName() string {
 
 //ImgScanOverview mapped to a record of image scan overview.
 type ImgScanOverview struct {
-	Digest          string              `orm:"pk;column(image_digest)" json:"image_digest"`
+	ID              int64               `orm:"pk;auto;column(id)" json:"-"`
+	Digest          string              `orm:"column(image_digest)" json:"image_digest"`
 	Status          string              `orm:"-" json:"scan_status"`
 	JobID           int64               `orm:"column(scan_job_id)" json:"job_id"`
 	Sev             int                 `orm:"column(severity)" json:"severity"`
