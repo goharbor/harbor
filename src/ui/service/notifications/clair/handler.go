@@ -21,6 +21,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/api"
@@ -93,7 +94,7 @@ func (h *Handler) Handle() {
 			}
 		}
 	}
-	if rescanTimer.needReschedule() {
+	if utils.ScanOverviewMarker().Mark() {
 		go func() {
 			<-time.After(rescanInterval)
 			l, err := dao.ListImgScanOverviews()
@@ -110,7 +111,7 @@ func (h *Handler) Handle() {
 			}
 		}()
 	} else {
-		log.Debugf("There is a rescan scheduled already, skip.")
+		log.Debugf("There is a rescan scheduled at %v already, skip.", utils.ScanOverviewMarker().Next())
 	}
 	if err := clairClient.DeleteNotification(ne.Notification.Name); err != nil {
 		log.Warningf("Failed to remove notification from Clair, name: %s", ne.Notification.Name)
