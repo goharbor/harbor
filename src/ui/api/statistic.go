@@ -59,8 +59,7 @@ func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
 	pubProjs, err := s.ProjectMgr.GetPublic()
 	if err != nil {
-		s.HandleInternalServerError(fmt.Sprintf(
-			"failed to get public projects: %v", err))
+		s.ParseAndHandleError("failed to get public projects", err)
 		return
 	}
 
@@ -102,8 +101,8 @@ func (s *StatisticAPI) Get() {
 			},
 		})
 		if err != nil {
-			s.HandleInternalServerError(fmt.Sprintf(
-				"failed to get projects of user %s: %v", s.username, err))
+			s.ParseAndHandleError(fmt.Sprintf(
+				"failed to get projects of user %s", s.username), err)
 			return
 		}
 
