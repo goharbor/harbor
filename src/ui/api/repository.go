@@ -749,6 +749,7 @@ func (ra *RepositoryAPI) ScanAll() {
 	if !utils.ScanAllMarker().Mark() {
 		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
 		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
+		return
 	}
 
 	if err := uiutils.ScanAllImages(); err != nil {

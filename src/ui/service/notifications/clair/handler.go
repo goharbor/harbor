@@ -16,7 +16,6 @@ package clair
 
 import (
 	"encoding/json"
-	"sync"
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
@@ -32,24 +31,7 @@ const (
 	rescanInterval = 15 * time.Minute
 )
 
-type timer struct {
-	sync.Mutex
-	next time.Time
-}
-
-// returns true to indicate it should reshedule the "rescan" action.
-func (t *timer) needReschedule() bool {
-	t.Lock()
-	defer t.Unlock()
-	if time.Now().Before(t.next) {
-		return false
-	}
-	t.next = time.Now().Add(rescanInterval)
-	return true
-}
-
 var (
-	rescanTimer = timer{}
 	clairClient = clair.NewClient(config.ClairEndpoint(), nil)
 )
 
