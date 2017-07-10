@@ -16,11 +16,11 @@ package clair
 
 import (
 	"encoding/json"
-	"sync"
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/api"
@@ -31,24 +31,7 @@ const (
 	rescanInterval = 15 * time.Minute
 )
 
-type timer struct {
-	sync.Mutex
-	next time.Time
-}
-
-// returns true to indicate it should reshedule the "rescan" action.
-func (t *timer) needReschedule() bool {
-	t.Lock()
-	defer t.Unlock()
-	if time.Now().Before(t.next) {
-		return false
-	}
-	t.next = time.Now().Add(rescanInterval)
-	return true
-}
-
 var (
-	rescanTimer = timer{}
 	clairClient = clair.NewClient(config.ClairEndpoint(), nil)
 )
 
@@ -93,7 +76,7 @@ func (h *Handler) Handle() {
 			}
 		}
 	}
-	if rescanTimer.needReschedule() {
+	if utils.ScanOverviewMarker().Mark() {
 		go func() {
 			<-time.After(rescanInterval)
 			l, err := dao.ListImgScanOverviews()
@@ -110,7 +93,7 @@ func (h *Handler) Handle() {
 			}
 		}()
 	} else {
-		log.Debugf("There is a rescan scheduled already, skip.")
+		log.Debugf("There is a rescan scheduled at %v already, skip.", utils.ScanOverviewMarker().Next())
 	}
 	if err := clairClient.DeleteNotification(ne.Notification.Name); err != nil {
 		log.Warningf("Failed to remove notification from Clair, name: %s", ne.Notification.Name)
