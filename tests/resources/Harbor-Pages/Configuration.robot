@@ -72,6 +72,7 @@ Disable Self Reg
     Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
 	Sleep  1
+	Self Reg Should Be Disabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
 	Capture Page Screenshot  DisableSelfReg.png
 	Sleep  1
@@ -80,10 +81,17 @@ Enable Self Reg
 	Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
     Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
 	Sleep  1
+	Self Reg Should Be Enabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
 	Capture Page Screenshot  EnableSelfReg.png
 	Sleep  1
+	
+Self Reg Should Be Disabled
+	Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
 
+Self Reg Should Be Enabled
+	Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
+	
 ## System settings	
 Switch To System Settings
     Sleep  1

@@ -67,8 +67,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 	}
 	project, err := pma.ProjectMgr.Get(pid)
 	if err != nil {
-		pma.HandleInternalServerError(
-			fmt.Sprintf("failed to get project %d: %v", pid, err))
+		pma.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
 		return
 	}
 	if project == nil {

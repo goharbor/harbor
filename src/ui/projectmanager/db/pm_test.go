@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -121,25 +120,6 @@ func TestIsPublic(t *testing.T) {
 	assert.False(t, public)
 }
 
-func TestGetRoles(t *testing.T) {
-	pm := &ProjectManager{}
-
-	// non exist user
-	roles, err := pm.GetRoles("non_exist_user", int64(1))
-	assert.Nil(t, err)
-	assert.Equal(t, []int{}, roles)
-
-	// exist project
-	roles, err = pm.GetRoles("admin", "library")
-	assert.Nil(t, err)
-	assert.Equal(t, []int{common.RoleProjectAdmin}, roles)
-
-	// non-exist project
-	roles, err = pm.GetRoles("admin", "non_exist_project")
-	assert.Nil(t, err)
-	assert.Equal(t, []int{}, roles)
-}
-
 func TestGetPublic(t *testing.T) {
 	pm := &ProjectManager{}
 	projects, err := pm.GetPublic()
@@ -149,19 +129,6 @@ func TestGetPublic(t *testing.T) {
 	for _, project := range projects {
 		assert.Equal(t, 1, project.Public)
 	}
-}
-
-func TestGetByMember(t *testing.T) {
-	pm := &ProjectManager{}
-	// empty username
-	projects, err := pm.GetByMember("")
-	assert.Nil(t, err)
-	assert.Equal(t, 0, len(projects))
-
-	//non-empty username
-	projects, err = pm.GetByMember("admin")
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(projects))
 }
 
 func TestCreateAndDelete(t *testing.T) {
@@ -303,59 +270,4 @@ func TestGetAll(t *testing.T) {
 		}
 	}
 	assert.True(t, exist)
-}
-
-func TestGetHasReadPerm(t *testing.T) {
-	pm := &ProjectManager{}
-
-	// do not pass username
-	projects, err := pm.GetHasReadPerm()
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(projects))
-	exist := false
-	for _, project := range projects {
-		if project.ProjectID == 1 {
-			exist = true
-			break
-		}
-	}
-	assert.True(t, exist)
-
-	// username is nil
-	projects, err = pm.GetHasReadPerm("")
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(projects))
-	exist = false
-	for _, project := range projects {
-		if project.ProjectID == 1 {
-			exist = true
-			break
-		}
-	}
-	assert.True(t, exist)
-
-	// valid username
-	id, err := pm.Create(&models.Project{
-		Name:    "get_has_read_perm_test",
-		OwnerID: 1,
-		Public:  0,
-	})
-	assert.Nil(t, err)
-	defer pm.Delete(id)
-
-	projects, err = pm.GetHasReadPerm("admin")
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(projects))
-	exist1 := false
-	exist2 := false
-	for _, project := range projects {
-		if project.ProjectID == 1 {
-			exist1 = true
-		}
-		if project.ProjectID == id {
-			exist2 = true
-		}
-	}
-	assert.True(t, exist1)
-	assert.True(t, exist2)
 }

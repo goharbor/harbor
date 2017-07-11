@@ -65,16 +65,14 @@ Test Case - Edit Self-Registration
 	#login as admin
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-	
     Disable Self Reg
 	    
 	Logout Harbor
     Page Should Not Contain Element  xpath=//a[@class="signup"]
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    
-	Switch To Configure
-	
-    Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
+   
+	Switch To Configure	
+    Self Reg Should Be Disabled
     Sleep  1
     
 	#restore setting
