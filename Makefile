@@ -92,7 +92,7 @@ REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
 
 #clair parameters
-CLAIRVERSION=v2.0.1
+CLAIRVERSION=v2.0.1-photon
 CLAIRFLAG=false
 CLAIRDBVERSION=9.6.3-photon
 
@@ -243,7 +243,7 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= vmware/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -368,7 +368,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
-		$(DOCKERPULL) quay.io/coreos/clair:$(CLAIRVERSION); \
+		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
 		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
 
