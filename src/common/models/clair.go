@@ -23,9 +23,10 @@ const ClairVulnTimestampTable = "clair_vuln_timestamp"
 
 // ClairVulnTimestamp represents a record in DB that tracks the timestamp of vulnerability in Clair.
 type ClairVulnTimestamp struct {
-	ID         int64     `orm:"pk;auto;column(id)" json:"-"`
-	Namespace  string    `orm:"column(namespace)" json:"namespace"`
-	LastUpdate time.Time `orm:"column(last_update)" json:"last_update"`
+	ID            int64     `orm:"pk;auto;column(id)" json:"-"`
+	Namespace     string    `orm:"column(namespace)" json:"namespace"`
+	LastUpdate    time.Time `orm:"column(last_update)" json:"-"`
+	LastUpdateUTC int64     `orm:"-" json:"last_update"`
 }
 
 //TableName is required by beego to map struct to table.
@@ -111,13 +112,13 @@ type ClairOrderedLayerName struct {
 //ClairVulnerabilityStatus reflects the readiness and freshness of vulnerability data in Clair,
 //which will be returned in response of systeminfo API.
 type ClairVulnerabilityStatus struct {
-	Overall *time.Time                `json:"overall_last_update,omitempty"`
-	Details []ClairNamespaceTimestamp `json:"details,omitempty"`
+	OverallUTC int64                     `json:"overall_last_update,omitempty"`
+	Details    []ClairNamespaceTimestamp `json:"details,omitempty"`
 }
 
 //ClairNamespaceTimestamp is a record to store the clairname space and the timestamp,
 //in practice different namespace in Clair maybe merged into one, e.g. ubuntu:14.04 and ubuntu:16.4 maybe merged into ubuntu and put into response.
 type ClairNamespaceTimestamp struct {
-	Namespace string    `json:"namespace"`
-	Timestamp time.Time `json:"last_update"`
+	Namespace string `json:"namespace"`
+	Timestamp int64  `json:"last_update"`
 }
