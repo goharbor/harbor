@@ -59,8 +59,7 @@ func (p *ProjectAPI) Prepare() {
 
 		project, err := p.ProjectMgr.Get(id)
 		if err != nil {
-			p.HandleInternalServerError(fmt.Sprintf("failed to get project %d: %v",
-				id, err))
+			p.ParseAndHandleError(fmt.Sprintf("failed to get project %d", id), err)
 			return
 		}
 
@@ -107,8 +106,8 @@ func (p *ProjectAPI) Post() {
 
 	exist, err := p.ProjectMgr.Exist(pro.Name)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			pro.Name, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			pro.Name), err)
 		return
 	}
 	if exist {
@@ -126,12 +125,12 @@ func (p *ProjectAPI) Post() {
 		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
-		log.Errorf("Failed to add project, error: %v", err)
 		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
 		if dup {
+			log.Debugf("conflict %s", pro.Name)
 			p.RenderError(http.StatusConflict, "")
 		} else {
-			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+			p.ParseAndHandleError("failed to add project", err)
 		}
 		return
 	}
@@ -163,8 +162,7 @@ func (p *ProjectAPI) Head() {
 
 	project, err := p.ProjectMgr.Get(name)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get project %s: %v",
-			name, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to get project %s", name), err)
 		return
 	}
 
@@ -223,8 +221,7 @@ func (p *ProjectAPI) Delete() {
 	}
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
-		p.HandleInternalServerError(
-			fmt.Sprintf("failed to delete project %d: %v", p.project.ProjectID, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
 		return
 	}
 
@@ -299,13 +296,13 @@ func (p *ProjectAPI) List() {
 
 	total, err := p.ProjectMgr.GetTotal(query, base)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get total of projects: %v", err))
+		p.ParseAndHandleError("failed to get total of projects", err)
 		return
 	}
 
 	projects, err := p.ProjectMgr.GetAll(query, base)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v", err))
+		p.ParseAndHandleError("failed to get projects", err)
 		return
 	}
 
@@ -359,8 +356,8 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 		&models.Project{
 			Public: req.Public,
 		}); err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to update project %d: %v",
-			p.project.ProjectID, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
+			p.project.ProjectID), err)
 		return
 	}
 }

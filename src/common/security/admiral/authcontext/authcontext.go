@@ -26,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	http_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -202,7 +203,10 @@ func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, string(data))
+		return nil, &http_error.HTTPError{
+			StatusCode: resp.StatusCode,
+			Detail:     string(data),
+		}
 	}
 
 	ctx := &AuthContext{}
