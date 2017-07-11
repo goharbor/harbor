@@ -84,8 +84,8 @@ func (ra *RepositoryAPI) Get() {
 
 	exist, err := ra.ProjectMgr.Exist(projectID)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %d: %v",
-			projectID, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
+			projectID), err)
 		return
 	}
 
@@ -169,8 +169,8 @@ func (ra *RepositoryAPI) Delete() {
 	projectName, _ := utils.ParseRepository(repoName)
 	project, err := ra.ProjectMgr.Get(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get the project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to get the project %s",
+			projectName), err)
 		return
 	}
 
@@ -200,7 +200,7 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
-			if regErr, ok := err.(*registry_error.Error); ok {
+			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
 
@@ -242,7 +242,7 @@ func (ra *RepositoryAPI) Delete() {
 
 	for _, t := range tags {
 		if err = rc.DeleteTag(t); err != nil {
-			if regErr, ok := err.(*registry_error.Error); ok {
+			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				if regErr.StatusCode == http.StatusNotFound {
 					continue
 				}
@@ -335,8 +335,8 @@ func (ra *RepositoryAPI) GetTags() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 
@@ -475,8 +475,8 @@ func (ra *RepositoryAPI) GetManifests() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 
@@ -503,7 +503,7 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
+		if regErr, ok := err.(*registry_error.HTTPError); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
 
@@ -577,7 +577,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	projectIDs := []int64{}
 	projects, err := ra.ProjectMgr.GetPublic()
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
+		ra.ParseAndHandleError("failed to get public projects", err)
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
@@ -617,8 +617,8 @@ func (ra *RepositoryAPI) GetSignatures() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 
@@ -658,8 +658,8 @@ func (ra *RepositoryAPI) ScanImage() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 	if !exist {
@@ -745,6 +745,13 @@ func (ra *RepositoryAPI) ScanAll() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
+
+	if !utils.ScanAllMarker().Mark() {
+		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
+		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
+		return
+	}
+
 	if err := uiutils.ScanAllImages(); err != nil {
 		log.Errorf("Failed triggering scan all images, error: %v", err)
 		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
@@ -776,7 +783,7 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 	project, _ := utils.ParseRepository(repository)
 	exist, err := ra.ProjectMgr.Exist(project)
 	if err != nil {
-		return false, "", fmt.Errorf("failed to check the existence of project %s: %v", project, err)
+		return false, "", err
 	}
 	if !exist {
 		log.Errorf("project %s not found", project)

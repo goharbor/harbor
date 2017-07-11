@@ -58,7 +58,11 @@ func (wc *Watcher) Start() {
 			wc.isRunning = false
 		}()
 
-		evalChan := pl.Evaluate()
+		evalChan, err := pl.Evaluate()
+		if err != nil {
+			log.Errorf("Failed to evaluate ploicy %s with error: %s\n", pl.Name(), err.Error())
+			return
+		}
 		done := pl.Done()
 
 		for {

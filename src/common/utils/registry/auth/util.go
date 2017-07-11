@@ -78,7 +78,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, &registry_error.Error{
+		return nil, &registry_error.HTTPError{
 			StatusCode: resp.StatusCode,
 			Detail:     string(data),
 		}
