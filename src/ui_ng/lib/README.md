@@ -12,7 +12,7 @@ The Harbor UI library is built on **[Angular ](https://angular.io/)** 4.x and **
 
 The library is published to the public npm repository with name **[harbor-ui](https://www.npmjs.com/package/harbor-ui)**.
 
-## Build & Test & Install
+## Build & Test
 Build library with command:
 ```
 npm run build

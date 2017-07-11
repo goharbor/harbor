@@ -112,13 +112,13 @@ func main() {
 	if scanAllPolicy.Type == notifier.PolicyTypeDaily {
 		dailyTime := 0
 		if t, ok := scanAllPolicy.Parm["daily_time"]; ok {
-			if reflect.Type(t).Kind() == reflect.Int {
-				dailyTime = (int64)(t.(int))
+			if reflect.TypeOf(t).Kind() == reflect.Int {
+				dailyTime = t.(int)
 			}
 		}
 
 		//Send notification to handle first policy change.
-		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: dailyTime})
+		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
 	filter.Init()
