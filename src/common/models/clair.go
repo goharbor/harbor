@@ -107,6 +107,7 @@ type ClairOrderedLayerName struct {
 	Index     int    `json:"Index"`
 	LayerName string `json:"LayerName"`
 }
+
 //ClairVulnerabilityStatus reflects the readiness and freshness of vulnerability data in Clair,
 //which will be returned in response of systeminfo API.
 type ClairVulnerabilityStatus struct {
