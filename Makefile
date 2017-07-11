@@ -90,6 +90,7 @@ MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
+COMPILEHARBORUI=false
 
 #clair parameters
 CLAIRVERSION=v2.0.0
@@ -167,6 +168,7 @@ DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
+DOCKERFILE_BUILD_UI=$(MAKEPATH)/dev/npm-installer/Dockerfile
 
 DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH_COMMON)/postgresql
 DOCKERFILENAME_POSTGRESQL=Dockerfile
@@ -178,7 +180,7 @@ DOCKERIMAGENAME_UI=vmware/harbor-ui
 DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
-DOCKERIMAGENAME_CLATIRY=vmware/harbor-clarity-ui-builder
+DOCKERIMAGENAME_CLARITY=vmware/harbor-clarity-ui-builder
 DOCKERIMAGENAME_POSTGRESQL=vmware/postgresql
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -272,10 +274,32 @@ compile_jobservice:
 
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
-	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+	@if [ "$(COMPILEHARBORUI)" = "true" ] ; then \
+		if [ ! -e $(UINGPATH)/package.json.org ] ; then \
+			cp $(UINGPATH)/package.json $(UINGPATH)/package.json.org; \
+			sed -i -e "s/\"harbor-ui\": \"\^[0-9].\+\"/\"harbor-ui\": \"file:.\/lib\/\"/g" $(UINGPATH)/package.json; \
+		fi; \
+		if [ "$(HTTPPROXY)" != "" ] ; then \
+			$(SEDCMD) -i 's/__proxy__/--proxy $(HTTPPROXY)/g' $(DOCKERFILE_BUILD_UI) ; \
+			$(DOCKERBUILD) -f $(DOCKERFILE_BUILD_UI) -t $(DOCKERIMAGENAME_CLARITY):dev . ; \
+			$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(DOCKERIMAGENAME_CLARITY):dev $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		else \
+			$(SEDCMD) -i 's/__proxy__/ /g' $(DOCKERFILE_BUILD_UI) ; \
+			$(DOCKERBUILD) -f $(DOCKERFILE_BUILD_UI) -t $(DOCKERIMAGENAME_CLARITY):dev . ; \
+			$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(DOCKERIMAGENAME_CLARITY):dev $(SHELL) $(CLARITYBUILDSCRIPT); \
+		fi ; \
 	else \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		if [ -e $(UINGPATH)/package.json.org ] ; then \
+			mv $(UINGPATH)/package.json.org $(UINGPATH)/package.json; \
+		fi; \
+		if [ "$(HTTPPROXY)" != "" ] ; then \
+			$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		else \
+			$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		fi; \
+	fi
+	@if [ -e $(UINGPATH)/package.json.org ] ; then \
+		mv $(UINGPATH)/package.json.org $(UINGPATH)/package.json; \
 	fi
 	@echo "Done."
 
@@ -388,10 +412,10 @@ refresh_clarity_builder:
 			$(SEDCMD) -i 's/__proxy__/ /g' $(DOCKERFILE_CLARITY) ; \
 		fi ; \
 		echo "build new clarity image.."; \
-		$(DOCKERBUILD) -f $(DOCKERFILE_CLARITY) -t $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) . ; \
+		$(DOCKERBUILD) -f $(DOCKERFILE_CLARITY) -t $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) . ; \
 		echo "push clarity image.."; \
-		$(DOCKERTAG) $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) $(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION); \
-		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CLATIRY):$(NEWCLARITYVERSION) \
+		$(DOCKERTAG) $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION); \
+		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) \
 			$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER); \
 		echo "remove local clarity image.."; \
 		$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(NEWCLARITYVERSION); \
