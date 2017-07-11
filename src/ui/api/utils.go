@@ -440,7 +440,7 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok && regErr.StatusCode == http.StatusNotFound {
+		if regErr, ok := err.(*registry_error.HTTPError); ok && regErr.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
 		return false, err

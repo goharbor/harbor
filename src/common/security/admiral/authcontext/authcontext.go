@@ -20,10 +20,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
+	http_error "github.com/vmware/harbor/src/common/utils/error"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// TODO update the value of role when admiral API is ready
 const (
 	// AuthTokenHeader is the key of auth token header
 	AuthTokenHeader  = "x-xenon-auth-token"
@@ -34,9 +40,10 @@ const (
 )
 
 type project struct {
-	DocumentSelfLink string   `json:"documentSelfLink"`
-	Name             string   `json:"name"`
-	Roles            []string `json:"roles"`
+	SelfLink   string            `json:"documentSelfLink"`
+	Name       string            `json:"name"`
+	Roles      []string          `json:"roles"`
+	Properties map[string]string `json:"customProperties"`
 }
 
 // AuthContext ...
@@ -48,68 +55,88 @@ type AuthContext struct {
 	Projects    []*project `json:"projects"`
 }
 
-// GetUsername ...
-func (a *AuthContext) GetUsername() string {
-	return a.PrincipalID
-}
-
 // IsSysAdmin ...
 func (a *AuthContext) IsSysAdmin() bool {
-	isSysAdmin := false
 	for _, role := range a.Roles {
 		if role == sysAdminRole {
-			isSysAdmin = true
+			return true
+		}
+	}
+	return false
+}
+
+// GetProjectRoles ...
+func (a *AuthContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to parse project ID or name: %v", err)
+		return []int{}
+	}
+
+	roles := []string{}
+	for _, project := range a.Projects {
+		p := convertProject(project)
+		if p.ProjectID == id || p.Name == name {
+			roles = append(roles, project.Roles...)
 			break
 		}
 	}
-	return isSysAdmin
-}
 
-// HasReadPerm ...
-func (a *AuthContext) HasReadPerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	return len(roles) > 0
-}
-
-// HasWritePerm ...
-func (a *AuthContext) HasWritePerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	for _, role := range roles {
-		if role == projectAdminRole || role == developerRole {
-			return true
-		}
-	}
-	return false
-}
-
-// HasAllPerm ...
-func (a *AuthContext) HasAllPerm(projectName string) bool {
-	roles := a.getRoles(projectName)
-	for _, role := range roles {
-		if role == projectAdminRole {
-			return true
-		}
-	}
-	return false
-}
-
-func (a *AuthContext) getRoles(projectName string) []string {
-	for _, project := range a.Projects {
-		if project.Name == projectName {
-			return project.Roles
-		}
-	}
-
-	return []string{}
+	return convertRoles(roles)
 }
 
 // GetMyProjects returns all projects which the user is a member of
-func (a *AuthContext) GetMyProjects() []string {
-	projects := []string{}
+func (a *AuthContext) GetMyProjects() []*models.Project {
+	projects := []*models.Project{}
 	for _, project := range a.Projects {
-		projects = append(projects, project.Name)
+		projects = append(projects, convertProject(project))
 	}
 	return projects
+}
+
+// convert project returned by Admiral to project used in Harbor
+func convertProject(p *project) *models.Project {
+	project := &models.Project{
+		Name: p.Name,
+	}
+
+	index := ""
+	if p.Properties != nil {
+		index = p.Properties["__projectIndex"]
+	}
+
+	if len(index) == 0 {
+		log.Errorf("property __projectIndex not found when parsing project")
+		return project
+	}
+
+	id, err := strconv.ParseInt(index, 10, 64)
+	if err != nil {
+		log.Errorf("failed to parse __projectIndex %s: %v", index, err)
+		return project
+	}
+
+	project.ProjectID = id
+	return project
+}
+
+// convert roles defined by Admiral to roles used in Harbor
+func convertRoles(roles []string) []int {
+	list := []int{}
+	for _, role := range roles {
+		switch role {
+		case projectAdminRole:
+			list = append(list, common.RoleProjectAdmin)
+		case developerRole:
+			list = append(list, common.RoleDeveloper)
+		case guestRole:
+			list = append(list, common.RoleGuest)
+		default:
+			log.Warningf("unknow role: %s", role)
+		}
+	}
+
+	return list
 }
 
 // GetAuthCtx returns the auth context of the current user
@@ -176,7 +203,10 @@ func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, string(data))
+		return nil, &http_error.HTTPError{
+			StatusCode: resp.StatusCode,
+			Detail:     string(data),
+		}
 	}
 
 	ctx := &AuthContext{}

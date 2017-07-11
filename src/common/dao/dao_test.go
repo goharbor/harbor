@@ -1763,3 +1763,14 @@ func TestVulnTimestamp(t *testing.T) {
 		t.Errorf("Delta should be larger than 2 seconds! old: %v, lastupdate: %v", old, res[0].LastUpdate)
 	}
 }
+
+func TestListScanOverviews(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	l, err := ListImgScanOverviews()
+	assert.Nil(err)
+	assert.Equal(0, len(l))
+	err = ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+}

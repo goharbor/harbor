@@ -16,6 +16,7 @@ package local
 
 import (
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/projectmanager"
@@ -60,18 +61,6 @@ func (s *SecurityContext) IsSysAdmin() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	// not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// public project
 	public, err := s.pm.IsPublic(projectIDOrName)
 	if err != nil {
@@ -93,23 +82,9 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 		return true
 	}
 
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
+	roles := s.GetProjectRoles(projectIDOrName)
 
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin,
-			common.RoleDeveloper,
-			common.RoleGuest:
-			return true
-		}
-	}
-
-	return false
+	return len(roles) > 0
 }
 
 // HasWritePerm returns whether the user has write permission to the project
@@ -118,30 +93,12 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
-	// project does not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
 
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
-
+	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin,
@@ -159,30 +116,12 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 		return false
 	}
 
-	// project does not exist
-	exist, err := s.pm.Exist(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the existence of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-
-	if !exist {
-		return false
-	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
 
-	roles, err := s.pm.GetRoles(s.GetUsername(), projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to get roles of user %s to project %v: %v",
-			s.GetUsername(), projectIDOrName, err)
-		return false
-	}
-
+	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
 		case common.RoleProjectAdmin:
@@ -191,4 +130,62 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	}
 
 	return false
+}
+
+// GetMyProjects ...
+func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return dao.GetProjects(&models.ProjectQueryParam{
+		Member: &models.MemberQuery{
+			Name: s.GetUsername(),
+		},
+	})
+}
+
+// GetProjectRoles ...
+func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	if !s.IsAuthenticated() || projectIDOrName == nil {
+		return []int{}
+	}
+
+	roles := []int{}
+	user, err := dao.GetUser(models.User{
+		Username: s.GetUsername(),
+	})
+	if err != nil {
+		log.Errorf("failed to get user %s: %v", s.GetUsername(), err)
+		return roles
+	}
+	if user == nil {
+		log.Debugf("user %s not found", s.GetUsername())
+		return roles
+	}
+
+	project, err := s.pm.Get(projectIDOrName)
+	if err != nil {
+		log.Errorf("failed to get project %v: %v", projectIDOrName, err)
+		return roles
+	}
+	if project == nil {
+		log.Errorf("project %v not found", projectIDOrName)
+		return roles
+	}
+
+	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID)
+	if err != nil {
+		log.Errorf("failed to get roles of user %d to project %d: %v", user.UserID, project.ProjectID, err)
+		return roles
+	}
+
+	for _, role := range roleList {
+		switch role.RoleCode {
+		case "MDRWS":
+			roles = append(roles, common.RoleProjectAdmin)
+		case "RWS":
+			roles = append(roles, common.RoleDeveloper)
+		case "RS":
+			roles = append(roles, common.RoleGuest)
+		}
+	}
+
+	return roles
 }

@@ -396,10 +396,10 @@ func TestListTag(t *testing.T) {
 
 func TestParseError(t *testing.T) {
 	err := &url.Error{
-		Err: &registry_error.Error{},
+		Err: &registry_error.HTTPError{},
 	}
 	e := parseError(err)
-	if _, ok := e.(*registry_error.Error); !ok {
+	if _, ok := e.(*registry_error.HTTPError); !ok {
 		t.Errorf("error type does not match registry error")
 	}
 }
