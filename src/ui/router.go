@@ -65,18 +65,15 @@ func initRouters() {
 		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
 
 		//API:
-		beego.Router("/api/search", &api.SearchAPI{})
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
 		beego.Router("/api/projects/:id([0-9]+)/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
 
-		beego.Router("/api/statistics", &api.StatisticAPI{})
 		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
 		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
 		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
-		beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
 		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
 		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
 		beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
@@ -84,6 +81,7 @@ func initRouters() {
 	}
 
 	// API
+	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
@@ -96,6 +94,7 @@ func initRouters() {
 	beego.Router("/api/repositories/*/tags/:tag/vulnerability/details", &api.RepositoryAPI{}, "Get:VulnerabilityDetails")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
+	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
@@ -112,6 +111,7 @@ func initRouters() {
 	beego.Router("/api/logs", &api.LogAPI{})
 	beego.Router("/api/configurations", &api.ConfigAPI{})
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
+	beego.Router("/api/statistics", &api.StatisticAPI{})
 
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
