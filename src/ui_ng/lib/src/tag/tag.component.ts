@@ -167,7 +167,7 @@ export class TagComponent implements OnInit, OnDestroy {
         this.loading = false;
       });
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
+    setTimeout(() => clearInterval(hnd), 5000);
   }
 
   deleteTag(tag: Tag) {

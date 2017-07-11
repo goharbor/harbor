@@ -181,6 +181,7 @@ create table img_scan_job (
  );
 
 create table img_scan_overview (
+ id int NOT NULL AUTO_INCREMENT,
  image_digest varchar(128) NOT NULL,
  scan_job_id int NOT NULL,
  /* 0 indicates none, the higher the number, the more severe the status */
@@ -191,7 +192,8 @@ create table img_scan_overview (
  details_key varchar(128),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY(image_digest)
+ PRIMARY KEY(id),
+ UNIQUE(image_digest)
  );
 
 create table clair_vuln_timestamp (

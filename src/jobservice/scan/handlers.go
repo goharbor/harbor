@@ -17,7 +17,6 @@ package scan
 import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -135,44 +134,9 @@ func (sh *SummarizeHandler) Enter() (string, error) {
 	logger.Infof("Entered summarize handler")
 	layerName := sh.Context.layers[len(sh.Context.layers)-1].Name
 	logger.Infof("Top layer's name: %s, will use it to get the vulnerability result of image", layerName)
-	res, err := sh.Context.clairClient.GetResult(layerName)
-	if err != nil {
-		logger.Errorf("Failed to get result from Clair, error: %v", err)
-		return "", err
+	if err := clair.UpdateScanOverview(sh.Context.Digest, layerName); err != nil {
+		return "", nil
 	}
-	vulnMap := make(map[models.Severity]int)
-	features := res.Layer.Features
-	totalComponents := len(features)
-	logger.Infof("total features: %d", totalComponents)
-	var temp models.Severity
-	for _, f := range features {
-		sev := models.SevNone
-		for _, v := range f.Vulnerabilities {
-			temp = clair.ParseClairSev(v.Severity)
-			if temp > sev {
-				sev = temp
-			}
-		}
-		logger.Infof("Feature: %s, Severity: %d", f.Name, sev)
-		vulnMap[sev]++
-	}
-	overallSev := models.SevNone
-	compSummary := []*models.ComponentsOverviewEntry{}
-	for k, v := range vulnMap {
-		if k > overallSev {
-			overallSev = k
-		}
-		entry := &models.ComponentsOverviewEntry{
-			Sev:   int(k),
-			Count: v,
-		}
-		compSummary = append(compSummary, entry)
-	}
-	compOverview := &models.ComponentsOverview{
-		Total:   totalComponents,
-		Summary: compSummary,
-	}
-	err = dao.UpdateImgScanOverview(sh.Context.Digest, layerName, overallSev, compOverview)
 	return models.JobFinished, nil
 }
 
