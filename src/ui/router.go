@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/vmware/harbor/src/ui/api"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/controllers"
 	"github.com/vmware/harbor/src/ui/service/notifications/clair"
 	"github.com/vmware/harbor/src/ui/service/notifications/registry"
@@ -55,23 +56,36 @@ func initRouters() {
 	beego.Router("/harbor/tags", &controllers.IndexController{})
 	beego.Router("/harbor/configs", &controllers.IndexController{})
 
-	beego.Router("/login", &controllers.CommonController{}, "post:Login")
-	beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
-	beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
-	beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
-	beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
+	// standalone
+	if !config.WithAdmiral() {
+		beego.Router("/login", &controllers.CommonController{}, "post:Login")
+		beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
+		beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
+		beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
+		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
 
-	//API:
-	beego.Router("/api/search", &api.SearchAPI{})
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
-	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post;head:Head")
-	beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
-	beego.Router("/api/projects/:id([0-9]+)/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
+		//API:
+		beego.Router("/api/search", &api.SearchAPI{})
+		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
+		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
+		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
+		beego.Router("/api/projects/:id([0-9]+)/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
+
+		beego.Router("/api/statistics", &api.StatisticAPI{})
+		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
+		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
+		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
+		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
+		beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
+		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
+		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
+		beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
+		beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
+	}
+
+	// API
+	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
-	beego.Router("/api/statistics", &api.StatisticAPI{})
-	beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
-	beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
-	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
@@ -95,8 +109,6 @@ func initRouters() {
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 	beego.Router("/api/targets/:id([0-9]+)/ping", &api.TargetAPI{}, "post:PingByID")
-	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/logs", &api.LogAPI{})
 	beego.Router("/api/configurations", &api.ConfigAPI{})
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
@@ -104,10 +116,6 @@ func initRouters() {
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
-	beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
-	beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
-	beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
-	beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
