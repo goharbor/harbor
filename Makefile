@@ -90,7 +90,7 @@ MARIADBVERSION=mariadb-10.1.10
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
-COMPILEHARBORUI=false
+COMPILEHARBORUIFLAG=false
 
 #clair parameters
 CLAIRVERSION=v2.0.1-photon
@@ -274,7 +274,7 @@ compile_jobservice:
 
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
-	@if [ "$(COMPILEHARBORUI)" = "true" ] ; then \
+	@if [ "$(COMPILEHARBORUIFLAG)" = "true" ] ; then \
 		if [ ! -e $(UINGPATH)/package.json.org ] ; then \
 			cp $(UINGPATH)/package.json $(UINGPATH)/package.json.org; \
 			sed -i -e "s/\"harbor-ui\": \"\^[0-9].\+\"/\"harbor-ui\": \"file:.\/lib\/\"/g" $(UINGPATH)/package.json; \
