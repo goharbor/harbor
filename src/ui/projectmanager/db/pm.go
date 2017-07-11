@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 )
@@ -62,67 +61,11 @@ func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
 	return project.Public == 1, nil
 }
 
-// GetRoles return a role list which contains the user's roles to the project
-func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
-	roles := []int{}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user %s: %v",
-			username, err)
-	}
-	if user == nil {
-		return roles, nil
-	}
-
-	project, err := p.Get(projectIDOrName)
-	if err != nil {
-		return nil, err
-	}
-	if project == nil {
-		return roles, nil
-	}
-
-	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, role := range roleList {
-		switch role.RoleCode {
-		case "MDRWS":
-			roles = append(roles, common.RoleProjectAdmin)
-		case "RWS":
-			roles = append(roles, common.RoleDeveloper)
-		case "RS":
-			roles = append(roles, common.RoleGuest)
-		}
-	}
-
-	return roles, nil
-}
-
 // GetPublic returns all public projects
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 	t := true
 	return p.GetAll(&models.ProjectQueryParam{
 		Public: &t,
-	})
-}
-
-// GetByMember returns all projects which the user is a member of
-func (p *ProjectManager) GetByMember(username string) (
-	[]*models.Project, error) {
-	if len(username) == 0 {
-		return []*models.Project{}, nil
-	}
-
-	return p.GetAll(&models.ProjectQueryParam{
-		Member: &models.MemberQuery{
-			Name: username,
-		},
 	})
 }
 
@@ -203,14 +146,4 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
 	int64, error) {
 	return dao.GetTotalOfProjects(query, base...)
-}
-
-// GetHasReadPerm returns projects which are public or the user is a member of
-func (p *ProjectManager) GetHasReadPerm(username ...string) (
-	[]*models.Project, error) {
-	if len(username) == 0 || len(username[0]) == 0 {
-		return p.GetPublic()
-	}
-
-	return dao.GetHasReadPermProjects(username[0])
 }

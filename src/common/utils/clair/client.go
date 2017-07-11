@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	//	"path"
 
 	"github.com/vmware/harbor/src/common/models"
@@ -40,7 +41,7 @@ func NewClient(endpoint string, logger *log.Logger) *Client {
 		logger = log.DefaultLogger()
 	}
 	return &Client{
-		endpoint: endpoint,
+		endpoint: strings.TrimSuffix(endpoint, "/"),
 		logger:   logger,
 		client:   &http.Client{},
 	}
@@ -103,4 +104,56 @@ func (c *Client) GetResult(layerName string) (*models.ClairLayerEnvelope, error)
 		return nil, err
 	}
 	return &res, nil
+}
+
+// GetNotification calls Clair's API to get details of notification
+func (c *Client) GetNotification(id string) (*models.ClairNotification, error) {
+	req, err := http.NewRequest("GET", c.endpoint+"/v1/notifications/"+id+"?limit=2", nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+	}
+	var ne models.ClairNotificationEnvelope
+	err = json.Unmarshal(b, &ne)
+	if err != nil {
+		return nil, err
+	}
+	if ne.Error != nil {
+		return nil, fmt.Errorf("Clair error: %s", ne.Error.Message)
+	}
+	log.Debugf("Retrived notification %s from Clair.", id)
+	return ne.Notification, nil
+}
+
+// DeleteNotification deletes a notification record from Clair
+func (c *Client) DeleteNotification(id string) error {
+	req, err := http.NewRequest("DELETE", c.endpoint+"/v1/notifications/"+id, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+	}
+	log.Debugf("Deleted notification %s from Clair.", id)
+	return nil
 }

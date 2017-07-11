@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/secret"
 )
 
@@ -131,4 +132,35 @@ func TestHasAllPerm(t *testing.T) {
 	// project ID
 	hasAllPerm = context.HasAllPerm(1)
 	assert.False(t, hasAllPerm)
+}
+
+func TestGetMyProjects(t *testing.T) {
+	context := NewSecurityContext("secret",
+		secret.NewStore(map[string]string{
+			"secret": "username",
+		}))
+
+	_, err := context.GetMyProjects()
+	assert.NotNil(t, err)
+}
+
+func TestGetProjectRoles(t *testing.T) {
+	//invalid secret
+	context := NewSecurityContext("invalid_secret",
+		secret.NewStore(map[string]string{
+			"jobservice_secret": secret.JobserviceUser,
+		}))
+
+	roles := context.GetProjectRoles("any_project")
+	assert.Equal(t, 0, len(roles))
+
+	// valid secret
+	context = NewSecurityContext("jobservice_secret",
+		secret.NewStore(map[string]string{
+			"jobservice_secret": secret.JobserviceUser,
+		}))
+
+	roles = context.GetProjectRoles("any_project")
+	assert.Equal(t, 1, len(roles))
+	assert.Equal(t, common.RoleGuest, roles[0])
 }

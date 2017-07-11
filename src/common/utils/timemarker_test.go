@@ -11,20 +11,38 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package error
+
+package utils
 
 import (
+	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
+	"time"
 )
 
-func TestError(t *testing.T) {
-	err := &HTTPError{
-		StatusCode: 404,
-		Detail:     "not found",
+func TestTimeMarker(t *testing.T) {
+	assert := assert.New(t)
+	m := &TimeMarker{
+		interval: 1 * time.Second,
 	}
+	r1 := m.Mark()
+	assert.True(r1)
+	r2 := m.Mark()
+	assert.False(r2)
+	t.Log("Sleep for 2 seconds...")
+	time.Sleep(2 * time.Second)
+	r3 := m.Mark()
+	assert.True(r3)
+}
 
-	if err.Error() != "404 not found" {
-		t.Fatalf("unexpected content: %s != %s",
-			err.Error(), "404 not found")
-	}
+func TestScanMarkers(t *testing.T) {
+	assert := assert.New(t)
+	os.Setenv("HARBOR_SCAN_ALL_INTERVAL", "5")
+	sm := ScanAllMarker()
+	d := sm.Next().Sub(time.Now())
+	assert.True(d <= 5*time.Minute)
+	som := ScanOverviewMarker()
+	d = som.Next().Sub(time.Now())
+	assert.True(d <= 15*time.Second)
 }

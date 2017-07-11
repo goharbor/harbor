@@ -44,7 +44,7 @@ create table user (
 */
  email varchar(255),
  password varchar(40) NOT NULL,
- realname varchar (20) NOT NULL,
+ realname varchar (255) NOT NULL,
  comment varchar (30),
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  reset_uuid varchar(40) DEFAULT NULL,
@@ -150,7 +150,7 @@ create table replication_target (
  );
 
 create table replication_job (
- id INTEGER PRIMARY KEY,
+ id INTEGER PRIMARY KEY, 
  status varchar(64) NOT NULL,
  policy_id int NOT NULL,
  repository varchar(256) NOT NULL,
@@ -172,7 +172,8 @@ create table img_scan_job (
  );
 
 create table img_scan_overview (
- image_digest varchar(128) PRIMARY KEY,
+ id INTEGER PRIMARY KEY, 
+ image_digest varchar(128),
  scan_job_id int NOT NULL,
  /* 0 indicates none, the higher the number, the more severe the status */
  severity int NOT NULL default 0,
@@ -181,12 +182,20 @@ create table img_scan_overview (
  /* primary key for querying details, in clair it should be the name of the "top layer" */
  details_key varchar(128),
  creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP 
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE(image_digest)
  );
 
 CREATE INDEX policy ON replication_job (policy_id);
 CREATE INDEX poid_uptime ON replication_job (policy_id, update_time);
  
+create table clair_vuln_timestamp (
+id INTEGER PRIMARY KEY, 
+namespace varchar(128) NOT NULL,
+last_update timestamp NOT NULL,
+UNIQUE(namespace)
+);
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,

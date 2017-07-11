@@ -25,9 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/security/authcontext"
 	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -227,6 +225,7 @@ func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
 	return project != nil, nil
 }
 
+/*
 // GetRoles gets roles that the user has to the project
 // This method is used in GET /projects API.
 // Jobservice calls GET /projects API to get information of source
@@ -279,6 +278,7 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 
 	return roles, nil
 }
+*/
 
 func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (string, error) {
 	pro, err := p.get(projectIDOrName)
@@ -299,26 +299,6 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 	return p.GetAll(&models.ProjectQueryParam{
 		Public: &t,
 	})
-}
-
-// GetByMember ...
-func (p *ProjectManager) GetByMember(username string) ([]*models.Project, error) {
-	projects := []*models.Project{}
-	ctx, err := authcontext.GetAuthCtxOfUser(p.client, p.endpoint, p.getToken(), username)
-	if err != nil {
-		return projects, err
-	}
-
-	names := ctx.GetMyProjects()
-	for _, name := range names {
-		project, err := p.Get(name)
-		if err != nil {
-			return projects, err
-		}
-		projects = append(projects, project)
-	}
-
-	return projects, nil
 }
 
 // Create ...
@@ -407,11 +387,6 @@ func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*mode
 	return int64(len(projects)), err
 }
 
-// GetHasReadPerm ...
-func (p *ProjectManager) GetHasReadPerm(username ...string) ([]*models.Project, error) {
-	return nil, errors.New("GetHasReadPerm is unsupported")
-}
-
 func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, error) {
 	req, err := http.NewRequest(method, p.endpoint+path, body)
 	if err != nil {
@@ -437,7 +412,7 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &er.Error{
+		return nil, &er.HTTPError{
 			StatusCode: resp.StatusCode,
 			Detail:     string(b),
 		}

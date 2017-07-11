@@ -293,7 +293,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 		scope != common.LDAPScopeBase &&
 		scope != common.LDAPScopeOnelevel &&
 		scope != common.LDAPScopeSubtree {
-		return false, fmt.Errorf("invalid %s, should be %s, %s or %s",
+		return false, fmt.Errorf("invalid %s, should be %d, %d or %d",
 			common.LDAPScope,
 			common.LDAPScopeBase,
 			common.LDAPScopeOnelevel,
