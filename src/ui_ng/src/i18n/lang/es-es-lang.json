@@ -83,8 +83,7 @@
         "PROFILE": "Perfil de usuario",
         "CHANGE_PWD": "Cambiar contraseña",
         "ABOUT": "Acerca de",
-        "LOGOUT": "Cerrar sesión",
-        "ROOT_CERT": "Descargar Certificado Raíz"
+        "LOGOUT": "Cerrar sesión"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "Buscar en Harbor...",
@@ -384,6 +383,8 @@
         "SCOPE_SUBTREE": "Subárbol",
         "PRO_CREATION_EVERYONE": "Todos",
         "PRO_CREATION_ADMIN": "Solo Administradores",
+        "ROOT_CERT": "Registro Certificado Raíz",
+        "ROOT_CERT_LINK": "Descargar",
         "TOOLTIP": {
             "SELF_REGISTRATION": "Activar registro.",
             "VERIFY_REMOTE_CERT": "Determina si la replicación de la imagen debería verificar el certificado de un registro Harbor remoto. Desmarque esta opción cuando el registro remoto use un certificado de confianza o autofirmado.",
@@ -393,7 +394,9 @@
             "LDAP_UID": "El atributo usado en una búsqueda para encontrar un usuario. Debe ser el uid, cn, email, sAMAccountName u otro atributo dependiendo del LDAP/AD.",
             "LDAP_SCOPE": "El ámbito de búsqueda para usuarios",
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
-            "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos."
+            "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
+            "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday; 'Upon Refresh': Triggering scanning when database refreshed."
         },
         "LDAP": {
             "URL": "LDAP URL",

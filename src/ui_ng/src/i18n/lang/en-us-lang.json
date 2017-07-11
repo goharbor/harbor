@@ -83,8 +83,7 @@
         "PROFILE": "User Profile",
         "CHANGE_PWD": "Change Password",
         "ABOUT": "About",
-        "LOGOUT": "Log Out",
-        "ROOT_CERT": "Download Root Cert"
+        "LOGOUT": "Log Out"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "Search Harbor...",
@@ -383,6 +382,8 @@
         "SCOPE_SUBTREE": "Subtree",
         "PRO_CREATION_EVERYONE": "Everyone",
         "PRO_CREATION_ADMIN": "Admin Only",
+        "ROOT_CERT": "Registry Root Certificate",
+        "ROOT_CERT_LINK": "Download",
         "TOOLTIP": {
             "SELF_REGISTRATION": "Enable sign up.",
             "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
@@ -390,9 +391,11 @@
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
             "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD.",
             "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD.",
-            "LDAP_SCOPE": "The scope to search for users",
+            "LDAP_SCOPE": "The scope to search for users.",
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
-            "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project."
+            "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
+            "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday; 'Upon Refresh': Triggering scanning when database refreshed."
         },
         "LDAP": {
             "URL": "LDAP URL",

@@ -1,8 +1,8 @@
-import { Component, OnInit, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, ViewChild, Input } from '@angular/core';
 
 import { Configuration, ComplexValueItem } from './config';
 import { REGISTRY_CONFIG_HTML } from './registry-config.component.html';
-import { ConfigurationService } from '../service/index';
+import { ConfigurationService, SystemInfoService, SystemInfo } from '../service/index';
 import { toPromise } from '../utils';
 import { ErrorHandler } from '../error-handler';
 import {
@@ -26,6 +26,9 @@ export class RegistryConfigComponent implements OnInit {
     config: Configuration = new Configuration();
     configCopy: Configuration;
     onGoing: boolean = false;
+    systemInfo: SystemInfo;
+
+    @Input() hasAdminRole: boolean = false;
 
     @ViewChild("replicationConfig") replicationCfg: ReplicationConfigComponent;
     @ViewChild("systemSettings") systemSettings: SystemSettingsComponent;
@@ -35,14 +38,28 @@ export class RegistryConfigComponent implements OnInit {
     constructor(
         private configService: ConfigurationService,
         private errorHandler: ErrorHandler,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private systemInfoService: SystemInfoService
     ) { }
 
     get shouldDisable(): boolean {
         return !this.isValid() || !this.hasChanges() || this.onGoing;
     }
 
+    get hasCAFile(): boolean {
+        return this.systemInfo && this.systemInfo.has_ca_root;
+    }
+
+    get withClair(): boolean {
+        return this.systemInfo && this.systemInfo.with_clair;
+    }
+
     ngOnInit(): void {
+        //Get system info
+        toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+            .then((info: SystemInfo) => this.systemInfo = info)
+            .catch(error => this.errorHandler.error(error));
+
         //Initialize
         this.load();
     }

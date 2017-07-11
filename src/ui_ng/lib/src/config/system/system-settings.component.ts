@@ -21,6 +21,10 @@ export class SystemSettingsComponent {
         this.configChange.emit(this.config);
     }
 
+    @Input() showSubTitle: boolean = false;
+    @Input() hasAdminRole: boolean = false;
+    @Input() hasCAFile: boolean = false;
+
     @ViewChild("systemConfigFrom") systemSettingsForm: NgForm;
 
     get editable(): boolean {
@@ -31,5 +35,9 @@ export class SystemSettingsComponent {
 
     get isValid(): boolean {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
+    }
+
+    get canDownloadCert(): boolean {
+        return this.hasAdminRole && this.hasCAFile;
     }
 }

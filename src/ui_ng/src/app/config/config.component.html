@@ -15,7 +15,7 @@
             <li role="presentation" class="nav-item">
                 <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
             </li>
-            <li role="presentation" class="nav-item">
+            <li role="presentation" class="nav-item" *ngIf="withClair">
                 <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'VULNERABILITY.SINGULAR' | translate}}</button>
             </li>
         </ul>
@@ -29,9 +29,9 @@
             <config-email [mailConfig]="allConfig"></config-email>
         </section>
         <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
-            <system-settings [(systemSettings)]="allConfig"></system-settings>
+            <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
         </section>
-        <section id="vulnerability" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
+        <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
             <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
         </section>
         <div>
