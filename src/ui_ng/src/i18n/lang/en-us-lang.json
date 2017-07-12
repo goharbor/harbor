@@ -413,7 +413,9 @@
             "SCAN_NOW": "SCAN NOW",
             "NONE_POLICY": "None",
             "DAILY_POLICY": "Daily At",
-            "REFRESH_POLICY": "Upon Refresh"
+            "REFRESH_POLICY": "Upon Refresh",
+            "DB_REFRESH_TIME": "Database updated on",
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!"
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",

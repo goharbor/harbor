@@ -32,7 +32,8 @@ import {
     ComplexValueItem,
     ReplicationConfigComponent,
     SystemSettingsComponent,
-    VulnerabilityConfigComponent
+    VulnerabilityConfigComponent,
+    ClairDBStatus
 } from 'harbor-ui';
 
 const fakePass = "aWpLOSYkIzJTTU4wMDkx";
@@ -82,6 +83,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get withClair(): boolean {
         return this.appConfigService.getConfig().with_clair;
+    }
+
+    public get clairDB(): ClairDBStatus {
+        return this.appConfigService.getConfig().clair_vulnerability_status;
     }
 
     isCurrentTabLink(tabId: string): boolean {
