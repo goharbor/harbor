@@ -23,6 +23,7 @@ import (
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	clairdao "github.com/vmware/harbor/src/common/dao/clair"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -157,28 +158,31 @@ func (sia *SystemInfoAPI) getVersion() string {
 
 func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 	res := &models.ClairVulnerabilityStatus{}
+	last, err := clairdao.GetLastUpdate()
+	if err != nil {
+		log.Errorf("Failed to get last update from Clair DB, error: %v", err)
+		res.OverallUTC = 0
+	} else {
+		res.OverallUTC = last
+		log.Debugf("Clair vuln DB last update: %d", last)
+	}
 	l, err := dao.ListClairVulnTimestamps()
 	if err != nil {
 		log.Errorf("Failed to list Clair vulnerability timestamps, error:%v", err)
-		return nil
+		return res
 	}
 	m := make(map[string]time.Time)
-	var t time.Time
 	for _, e := range l {
-		if e.LastUpdate.After(t) {
-			t = e.LastUpdate
-		}
 		ns := strings.Split(e.Namespace, ":")
 		if ts, ok := m[ns[0]]; !ok || ts.Before(e.LastUpdate) {
 			m[ns[0]] = e.LastUpdate
 		}
 	}
-	res.Overall = &t
 	details := []models.ClairNamespaceTimestamp{}
 	for k, v := range m {
 		e := models.ClairNamespaceTimestamp{
 			Namespace: k,
-			Timestamp: v,
+			Timestamp: v.UTC().Unix(),
 		}
 		details = append(details, e)
 	}

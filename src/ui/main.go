@@ -88,9 +88,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if config.WithClair() {
+		if err := dao.InitClairDB(); err != nil {
+			log.Fatalf("failed to initialize clair database: %v", err)
+		}
 	}
 
 	password, err := config.InitialAdminPassword()
