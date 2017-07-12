@@ -83,8 +83,7 @@
         "PROFILE": "用户设置",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
-        "LOGOUT": "退出",
-        "ROOT_CERT": "下载根证书"
+        "LOGOUT": "退出"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "搜索 Harbor...",
@@ -383,6 +382,8 @@
         "SCOPE_SUBTREE": "子树",
         "PRO_CREATION_EVERYONE": "所有人",
         "PRO_CREATION_ADMIN": "仅管理员",
+        "ROOT_CERT": "镜像库根证书",
+        "ROOT_CERT_LINK": "下载",
         "TOOLTIP": {
             "SELF_REGISTRATION": "激活注册功能。",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
@@ -392,7 +393,9 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。"
+            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
+            "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描；‘缺陷库刷新后’：当缺陷数据库刷新后。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -409,7 +412,7 @@
             "SCAN_ALL": "扫描所有",
             "SCAN_NOW": "开始扫描",
             "NONE_POLICY": "无",
-            "DAILY_POLICY": "每日",
+            "DAILY_POLICY": "每日定时",
             "REFRESH_POLICY": "缺陷库刷新后"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",

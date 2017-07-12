@@ -143,7 +143,7 @@ func Reset() error {
 	return mg.Reset()
 }
 
-// Upload uploads all system configutations to admin server
+// Upload uploads all system configurations to admin server
 func Upload(cfg map[string]interface{}) error {
 	return mg.Upload(cfg)
 }

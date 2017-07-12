@@ -6,6 +6,7 @@ Wrap the following Harbor UI components into a sharable library and published as
 * Replication endpoints management view
 * Access log list view
 * Vulnerability scanning result bar chart and list view (Embedded in tag management view)
+* Registry(Harbor) related configuration options
 
 The Harbor UI library is built on **[Angular ](https://angular.io/)** 4.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.9.x .
 
@@ -22,12 +23,20 @@ Execute the testing specs with command:
 npm run test
 ```
 
+Install the package
+```
+npm install harbor-ui[@version]
+```
+
 ## Usage
 **Add dependency to application**
 
 Execute install command to add dependency to package.json
 ```
 npm install harbor-ui --save
+
+//OR
+npm install harbor-ui@0.2.x --save
 ```
 The latest version of the library will be installed.
 
@@ -113,6 +122,16 @@ This view is linked by the repository stack view only when the Clair is enabled 
 ```
 <hbr-tag-detail (backEvt)="goBack($event)" [tagId]="..." [repositoryId]="..."></hbr-tag-detail>
 ```
+
+* **Registry related configuration**
+
+This component provides some options for registry(Harbor) related configurations.
+
+**hasAdminRole** is an @Input property to indicate if the current logged user has administrator role.
+
+```
+<hbr-registry-config [hasAdminRole]="***"></hbr-registry-config>
+```
 ## Configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
 
@@ -127,6 +146,7 @@ export const DefaultServiceConfig: IServiceConfig = {
   replicationRuleEndpoint: "/api/policies/replication",
   replicationJobEndpoint: "/api/jobs/replication",
   vulnerabilityScanningBaseEndpoint: "/api/repositories",
+  configurationEndpoint: "/api/configurations",
   enablei18Support: false,
   defaultLang: DEFAULT_LANG, //'en-us'
   langCookieKey: DEFAULT_LANG_COOKIE_KEY, //'harbor-lang'
@@ -164,6 +184,8 @@ It supports partially overriding. For the items not overridden, default values w
 * **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
 
 * **vulnerabilityScanningBaseEndpoint:** The base endpoint of the service used to handle the vulnerability scanning results.Default value is "/api/repositories".
+
+* **configurationEndpoint:** The base endpoint of the service used to configure registry related options. Default is "/api/configurations".
 
 * **langCookieKey:** The cookie key used to store the current used language preference. Default is "harbor-lang".
 
@@ -254,7 +276,6 @@ export class MyAccessLogService extends AccessLogService {
      *  - page
      *  - pageSize
      * 
-     * @abstract
      * @param {(number | string)} projectId
      * @param {RequestQueryParams} [queryParams]
      * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
@@ -268,7 +289,6 @@ export class MyAccessLogService extends AccessLogService {
     /**
      * Get the recent logs.
      * 
-     * @abstract
      * @param {number} lines : Specify how many lines should be returned.
      * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
      * 
@@ -295,7 +315,6 @@ export class MyEndpointService extends EndpointService {
      * Get all the endpoints.
      * Set the argument 'endpointName' to return only the endpoints match the name pattern.
      * 
-     * @abstract
      * @param {string} [endpointName]
      * @param {RequestQueryParams} [queryParams]
      * @returns {(Observable<Endpoint[]> | Endpoint[])}
@@ -309,7 +328,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Get the specified endpoint.
      * 
-     * @abstract
      * @param {(number | string)} endpointId
      * @returns {(Observable<Endpoint> | Endpoint)}
      * 
@@ -322,7 +340,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Create new endpoint.
      * 
-     * @abstract
      * @param {Endpoint} endpoint
      * @returns {(Observable<any> | any)}
      * 
@@ -335,7 +352,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Update the specified endpoint.
      * 
-     * @abstract
      * @param {(number | string)} endpointId
      * @param {Endpoint} endpoint
      * @returns {(Observable<any> | any)}
@@ -349,7 +365,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Delete the specified endpoint.
      * 
-     * @abstract
      * @param {(number | string)} endpointId
      * @returns {(Observable<any> | any)}
      * 
@@ -362,7 +377,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Ping the specified endpoint.
      * 
-     * @abstract
      * @param {Endpoint} endpoint
      * @returns {(Observable<any> | any)}
      * 
@@ -375,7 +389,6 @@ export class MyEndpointService extends EndpointService {
     /**
      * Check endpoint whether in used with specific replication rule.
      * 
-     * @abstract 
      * @param {{number | string}} endpointId
      * @returns {{Observable<any> | any}}
      */
@@ -402,7 +415,6 @@ export class MyReplicationService extends ReplicationService {
      * set the argument 'ruleName' to return the rule only match the name pattern;
      * if pagination needed, use the queryParams to add query parameters.
      * 
-     * @abstract
      * @param {(number | string)} [projectId]
      * @param {string} [ruleName]
      * @param {RequestQueryParams} [queryParams]
@@ -417,7 +429,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Get the specified replication rule.
      * 
-     * @abstract
      * @param {(number | string)} ruleId
      * @returns {(Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule)}
      * 
@@ -430,7 +441,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Create new replication rule.
      * 
-     * @abstract
      * @param {ReplicationRule} replicationRule
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -443,7 +453,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Update the specified replication rule.
      * 
-     * @abstract
      * @param {ReplicationRule} replicationRule
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -456,7 +465,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Delete the specified replication rule.
      * 
-     * @abstract
      * @param {(number | string)} ruleId
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -469,7 +477,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Enable the specified replication rule.
      * 
-     * @abstract
      * @param {(number | string)} ruleId
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -482,7 +489,6 @@ export class MyReplicationService extends ReplicationService {
     /**
      * Disable the specified replication rule.
      * 
-     * @abstract
      * @param {(number | string)} ruleId
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -501,7 +507,6 @@ export class MyReplicationService extends ReplicationService {
      *   - page
      *   - pageSize
      * 
-     * @abstract
      * @param {(number | string)} ruleId
      * @param {RequestQueryParams} [queryParams]
      * @returns {(Observable<ReplicationJob> | Promise<ReplicationJob[]> | ReplicationJob)}
@@ -532,7 +537,6 @@ export class MyRepositoryService extends RepositoryService {
      *   'page': current page,
      *   'page_size': page size.
      * 
-     * @abstract
      * @param {(number | string)} projectId
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
@@ -547,7 +551,6 @@ export class MyRepositoryService extends RepositoryService {
     /**
      * DELETE the specified repository.
      * 
-     * @abstract
      * @param {string} repositoryName
      * @returns {(Observable<any> | Promise<any> | any)}
      * 
@@ -572,8 +575,7 @@ export class MyTagService extends TagService {
     /**
      * Get all the tags under the specified repository.
      * NOTES: If the Notary is enabled, the signatures should be included in the returned data.
-     * 
-     * @abstract
+     *  
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
      * @returns {(Observable<Tag[]> | Promise<Tag[]> | Tag[])}
@@ -587,7 +589,6 @@ export class MyTagService extends TagService {
     /**
      * Delete the specified tag.
      * 
-     * @abstract
      * @param {string} repositoryName
      * @param {string} tag
      * @returns {(Observable<any> | any)}
@@ -614,14 +615,12 @@ HarborLibraryModule.forRoot({
  * Get the vulnerabilities scanning results for the specified tag.
  * 
  * @export
- * @abstract
  * @class ScanningResultService
  */
 export class MyScanningResultService extends ScanningResultService {
     /**
      * Get the summary of vulnerability scanning result.
      * 
-     * @abstract
      * @param {string} tagId
      * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
      * 
@@ -634,7 +633,6 @@ export class MyScanningResultService extends ScanningResultService {
     /**
      * Get the detailed vulnerabilities scanning results.
      * 
-     * @abstract
      * @param {string} tagId
      * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
      * 
@@ -648,7 +646,6 @@ export class MyScanningResultService extends ScanningResultService {
     /**
      * Start a new vulnerability scanning
      * 
-     * @abstract
      * @param {string} repoName
      * @param {string} tagId
      * @returns {(Observable<any> | Promise<any> | any)}
@@ -672,13 +669,11 @@ HarborLibraryModule.forRoot({
 ```
 /**
  * Get System information about current backend server.
- * @abstract
  * @class
  */
 export class MySystemInfoService extends SystemInfoService {
   /**
    *  Get global system information.
-   *  @abstract
    *  @returns 
    */
    getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo {
@@ -692,4 +687,47 @@ HarborLibraryModule.forRoot({
 })
 ...
 
+```
+
+* **ConfigurationService:** Get and save the registry related configuration options.
+
+```
+/**
+ * Service used to get and save registry-related configurations.
+ * 
+ * @export
+ * @class MyConfigurationService
+ */
+export class MyConfigurationService extends ConfigurationService{
+
+    /**
+     * Get configurations.
+     * 
+    
+     * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+     * 
+     * @memberOf ConfigurationService
+     */
+    getConfigurations(): Observable<Configuration> | Promise<Configuration> | Configuration{
+        ...
+    }
+
+    /**
+     * Save configurations.
+     * 
+    
+     * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+     * 
+     * @memberOf ConfigurationService
+     */
+    saveConfigurations(changedConfigs: any | { [key: string]: any | any[] }): Observable<any> | Promise<any> | any{
+        ...
+    }
+}
+
+...
+HarborLibraryModule.forRoot({
+    config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService }
+})
+...
 ```
