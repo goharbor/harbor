@@ -65,5 +65,9 @@ func GetLastUpdate() (int64, error) {
 		}
 		return res, nil
 	}
+	if num > 1 {
+		return 0, fmt.Errorf("Multiple entries for %s in Clair DB", updaterLast)
+	}
+	//num is zero, it's not updated yet.
 	return 0, nil
 }
