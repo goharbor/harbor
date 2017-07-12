@@ -128,140 +128,107 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser   
 
-Test Case-Manage Project Member
+Test case add rule use new endpoint
+
     Init Chrome Driver
-    ${d}=    Get current Date  result_format=%m%s
-    ${rc}  ${ip}=     run and return rc and output  ip add s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    log to console  ${ip}
-    Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
-    Logout Harbor
-    Create An New User  url=${HARBOR_URL}  username=userb${d}  email=userb${d}@vmware.com  realname=userb${d}  newPassword=Test1@34  comment=harbor
-    Logout Harbor
-    Create An New User  url=${HARBOR_URL}  username=userc${d}  email=userc${d}@vmware.com  realname=userc${d}  newPassword=Test1@34  comment=harbor
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    #create project
+    ${d}=  Get current date  result_format=%m%s
+    
+    #Create An New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harbor
+    #Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Create An New Project  project${d}
-    #verify can not change role
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Click Element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    Logout Harbor
-    #login console as usera and push
-    ${rc}=  run and return rc and output  docker pull hello-world
-    ${rc}  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker tag hello-world ${d}/project${d}/hello-world
-    ${rc}=  run and return rc and output  docker push ${d}/project${d}/hello-world
-    ${rc}=  run and return rc and output  docker logout ${d}
-    #logout change userb and pull push
-    ${rc} ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker tag hello-world ${d}/project${d}/bbbbb
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    should not be equal as integers  ${rc}  0  
-    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/bbbbb
-    should not be equal as integers  ${rc}  0
-    #login ui as b
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should not contain element  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Logout Harbor
-    #login as a
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    #click add member
-    click element  xpath=//project-detail//button//clr-icon
-    input text  xpath=//add-member//input[@id="member_name"]  userb${d}
-    #select guest
-    mouse down  xpath=//project-detail//form//input[@id="checkrads_guest"]
-    mouse up  xpath=//project-detail//form//input[@id="checkrads_guest"]
-    click button  xpath=//project-detail//add-member//button[2]
-    Logout Harbor
-    #sign in as b
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    #step 12
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    #step 13
-    mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    #step 14
-    page should not contain element  xpath=//project-detail//button//clr-icon
-    ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    #step 15
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    #step 16
-    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/bbbbb
-    should not be equal as integers  ${rc}  0
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  usera  Test1@34
-    #change userb to developer
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Developer")]
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    page should not contain element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    #step 20
-    page should not contain element  xpath=//project-detail//button//clr-icon
-    #step 21
-    ${rc}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world:v1
-    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/hello-world:v1
-    should be equal as integers  ${rc}  0
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    #step 22
-    #change userb to admin of project
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Admin")]
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
-    page should contain element  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    # add userc
-    click element  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//button//clr-icon
-    input text  xpath=//add-member//input[@id="member_name"]  userc${d}
-    Mouse down  xpath=//project-detail//form//input[@id="checkrads_guest"]
-    Mouse up  xpath=//project-detail//form//input[@id="checkrads_guest"]
-    click button  xpath=//project-detail//add-member//button[2]
-    #step 25 verify b can change c role
-    page should contain element  xpath=//project-detail//clr-dg-row-master[contains(.,"userc")]//clr-dg-action-overflow
-    ${rc}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world:v2
-    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/hello-world:v2
-    should be equal as integers  ${rc}  0
-    Logout Harbor
-    #step 27 remove b from project
-    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    Mouse down  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    Mouse up  xpath=//clr-dg-cell//a[contains(.,'project${d}')]
-    click element  xpath=//project-detail//li[2]
-    click element  xpath=//project-detail//clr-dg-row-master[contains(.,"userb")]//clr-dg-action-overflow
-    click element  xpath=//project-detail//clr-dg-cell//clr-dg-action-overflow//button[contains(.,"Delete")]   
-    #step28 
-    ${rc}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    should not be equal as integers  ${rc}  0
-    #step 29
-    ${rc}=  run and return rc and output  docker logout ${ip}
-    #step 30
-    ${rc}=  run and return rc and output  docker login -u userc${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
-    should be equal as integers  ${rc}  0
-    Close Browser
+    Mouse down  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
+    Mouse up  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
+    Sleep  1
+    #click replication
+    Click element  xpath=//project-detail//li[4]
+    #click add buton
+    Click element  xpath=//hbr-replication//button/clr-icon
+    sleep  2
+    input text  xpath=//input[@id='policy_name']  aa${d}
+    input text  xpath=//textarea[@id='policy_description']   aa${d}
+    #click enable
+    mouse down  xpath=//input[@id='policy_enable']
+    mouse up  xpath=//input[@id='policy_enable']
+    #click new endpoint checkbox
+    mouse down  xpath=//input[@id='check_new']
+    mouse up  xpath=//input[@id='check_new']
+    #endpoint info
+    input text  xpath=//input[@id='destination_name']  bb${d}
+    input text  xpath=//input[@id='destination_url']  bb${d}
+    input text  xpath=//input[@id='destination_username']  bb${d}
+    input text  xpath=//input[@id='destination_password']  bb${d}
+    click element  xpath=//create-edit-rule//button[3]
+    sleep  2
+    # edit
+    #select rule
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
+    #click edit
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
+    #rules can not be edit if enable
+    sleep  1
+    page should contain element  xpath=//div[@class='alert alert-warning']
+    click element  xpath=//create-edit-rule//button[2]
+    #disable to edit
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
+    click element  xpath=//confirmation-dialog//button[2]
+    sleep  2
+    #select rule
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
+    #click edit
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
+    sleep  2
+    #rule name
+    input text  xpath=//input[@id='policy_name']  cc${d}
+    #rule description
+    input text   xpath=//textarea[@id='policy_description']  cc${d}
+    #endpoint info
+    mouse down  xpath=//input[@id='check_new']
+    mouse up  xpath=//input[@id='check_new']
+    sleep  1
+    input text  xpath=//input[@id='destination_name']  bc${d}
+    input text  xpath=//input[@id='destination_url']  bc${d}
+    input text  xpath=//input[@id='destination_username']  bc${d}
+    input text  xpath=//input[@id='destination_password']  bc${d}
+
+    #rule enable status this must after edit endpoint or endpoint can not be edit
+    mouse down  xpath=//input[@id='policy_enable']
+    mouse up  xpath=//input[@id='policy_enable']
+    click element  xpath=//create-edit-rule//button[3]
+    sleep  2
+    #Rule Disable
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
+    click element  xpath=//confirmation-dialog//button[2]
+    sleep  2
+    #Rule enable
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Enable")]
+    click element  xpath=//confirmation-dialog//button[2]
+    sleep  2
+    
+    #Rule Delete
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
+    click element  xpath=//confirmation-dialog//button[2]
+    #rule can not deleted if enable
+    page should contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
+
+    #Disable to delete
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
+    click element  xpath=//confirmation-dialog//button[2]
+    sleep  2
+    #Rule Delete
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
+    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
+    sleep  1
+    click element  xpath=//confirmation-dialog//button[2]
+    sleep  2
+    #rule can  deleted if disable
+    page should not contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
+    close browser 
 
 Test Case - Assign Sys Admin
     Init Chrome Driver
