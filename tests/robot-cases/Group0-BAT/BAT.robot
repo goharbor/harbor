@@ -125,108 +125,17 @@ Test Case - Edit Token Expire
 	#reset to default
     Modify Token Expiration  30
     Close Browser   
-
-Test case add rule use new endpoint
-
+	
+Test Case - Create An Replication Rule New Endpoint
     Init Chrome Driver
     ${d}=  Get current date  result_format=%m%s
-    
-    #Create An New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harbor
-    #Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Mouse down  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
-    Mouse up  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
-    Sleep  1
-    #click replication
-    Click element  xpath=//project-detail//li[4]
-    #click add buton
-    Click element  xpath=//hbr-replication//button/clr-icon
-    sleep  2
-    input text  xpath=//input[@id='policy_name']  aa${d}
-    input text  xpath=//textarea[@id='policy_description']   aa${d}
-    #click enable
-    mouse down  xpath=//input[@id='policy_enable']
-    mouse up  xpath=//input[@id='policy_enable']
-    #click new endpoint checkbox
-    mouse down  xpath=//input[@id='check_new']
-    mouse up  xpath=//input[@id='check_new']
-    #endpoint info
-    input text  xpath=//input[@id='destination_name']  bb${d}
-    input text  xpath=//input[@id='destination_url']  bb${d}
-    input text  xpath=//input[@id='destination_username']  bb${d}
-    input text  xpath=//input[@id='destination_password']  bb${d}
-    click element  xpath=//create-edit-rule//button[3]
-    sleep  2
-    # edit
-    #select rule
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    #click edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
-    #rules can not be edit if enable
-    sleep  1
-    page should contain element  xpath=//div[@class='alert alert-warning']
-    click element  xpath=//create-edit-rule//button[2]
-    #disable to edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #select rule
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    #click edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
-    sleep  2
-    #rule name
-    input text  xpath=//input[@id='policy_name']  cc${d}
-    #rule description
-    input text   xpath=//textarea[@id='policy_description']  cc${d}
-    #endpoint info
-    mouse down  xpath=//input[@id='check_new']
-    mouse up  xpath=//input[@id='check_new']
-    sleep  1
-    input text  xpath=//input[@id='destination_name']  bc${d}
-    input text  xpath=//input[@id='destination_url']  bc${d}
-    input text  xpath=//input[@id='destination_username']  bc${d}
-    input text  xpath=//input[@id='destination_password']  bc${d}
-
-    #rule enable status this must after edit endpoint or endpoint can not be edit
-    mouse down  xpath=//input[@id='policy_enable']
-    mouse up  xpath=//input[@id='policy_enable']
-    click element  xpath=//create-edit-rule//button[3]
-    sleep  2
-    #Rule Disable
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #Rule enable
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Enable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    
-    #Rule Delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
-    click element  xpath=//confirmation-dialog//button[2]
-    #rule can not deleted if enable
-    page should contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
-
-    #Disable to delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #Rule Delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
-    sleep  1
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #rule can  deleted if disable
-    page should not contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
-    close browser 
+    Sleep  3
+	Go Into Project  project${d}
+    Switch To Replication
+    Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
+	Close Browser 
 
 Test Case - Assign Sys Admin
     Init Chrome Driver
