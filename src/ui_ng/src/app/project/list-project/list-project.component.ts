@@ -30,6 +30,7 @@ import { State } from 'clarity-angular';
 export class ListProjectComponent {
   _filterType: string = ProjectTypes[0];
 
+  @Input() loading: boolean = true;
   @Input() projects: Project[];
   @Input()
   get filteredType(): string {
@@ -68,7 +69,7 @@ export class ListProjectComponent {
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(true);
 
-    let linkUrl = ['harbor', 'projects', proId, 'repository'];
+    let linkUrl = ['harbor', 'projects', proId, 'repositories'];
     this.router.navigate(linkUrl);
   }
 

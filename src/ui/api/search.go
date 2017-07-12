@@ -26,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // SearchAPI handles requesst to /api/search
@@ -42,23 +43,41 @@ type searchResult struct {
 func (s *SearchAPI) Get() {
 	keyword := s.GetString("q")
 	isAuthenticated := s.SecurityCtx.IsAuthenticated()
-	username := s.SecurityCtx.GetUsername()
 	isSysAdmin := s.SecurityCtx.IsSysAdmin()
 
 	var projects []*models.Project
 	var err error
 
-	if !isAuthenticated {
-		projects, err = s.ProjectMgr.GetPublic()
-	} else if isSysAdmin {
+	if isSysAdmin {
 		projects, err = s.ProjectMgr.GetAll(nil)
+		if err != nil {
+			s.ParseAndHandleError("failed to get projects", err)
+			return
+		}
 	} else {
-		projects, err = s.ProjectMgr.GetHasReadPerm(username)
-	}
-	if err != nil {
-		s.HandleInternalServerError(fmt.Sprintf(
-			"failed to get projects: %v", err))
-		return
+		projects, err = s.ProjectMgr.GetPublic()
+		if err != nil {
+			s.ParseAndHandleError("failed to get projects", err)
+			return
+		}
+		if isAuthenticated {
+			mys, err := s.SecurityCtx.GetMyProjects()
+			if err != nil {
+				s.HandleInternalServerError(fmt.Sprintf(
+					"failed to get projects: %v", err))
+				return
+			}
+			exist := map[int64]bool{}
+			for _, p := range projects {
+				exist[p.ProjectID] = true
+			}
+
+			for _, p := range mys {
+				if !exist[p.ProjectID] {
+					projects = append(projects, p)
+				}
+			}
+		}
 	}
 
 	projectSorter := &models.ProjectSorter{Projects: projects}
@@ -70,13 +89,7 @@ func (s *SearchAPI) Get() {
 		}
 
 		if isAuthenticated {
-			roles, err := s.ProjectMgr.GetRoles(username, p.ProjectID)
-			if err != nil {
-				s.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",
-					username, p.ProjectID, err))
-				return
-			}
-
+			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
 			if len(roles) != 0 {
 				p.Role = roles[0]
 			}
@@ -157,13 +170,13 @@ func getTags(repository string) ([]string, error) {
 		return nil, err
 	}
 
-	client, err := NewRepositoryClient(url, true,
-		"admin", repository, "repository", repository, "pull")
+	client, err := uiutils.NewRepositoryClientForUI(url, true,
+		"admin", repository, "pull")
 	if err != nil {
 		return nil, err
 	}
 
-	tags, err := getSimpleTags(client)
+	tags, err := client.ListTag()
 	if err != nil {
 		return nil, err
 	}

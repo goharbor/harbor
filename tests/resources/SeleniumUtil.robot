@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides helper functions for docker operations
-Library  OperatingSystem
-Library  Process
+Resource  Util.robot
 
 *** Keywords ***
 Start Selenium Standalone Server Locally
@@ -35,6 +34,7 @@ Init Chrome Driver
     Call Method    ${chrome options}    add_argument    --ignore-certificate-errors
 	Call Method  	 ${chrome options}    add_argument    --disable-web-security
 	Call Method    ${chrome options}    add_argument    --allow-running-insecure-content
+	Call Method    ${chrome options}    add_argument    --window-size\=1600,900
 	${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
 	Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}
     Sleep  5

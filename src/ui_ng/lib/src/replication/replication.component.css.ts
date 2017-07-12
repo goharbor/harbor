@@ -9,7 +9,7 @@ export const REPLICATION_STYLE: string = `
 
 .option-left {
   padding-left: 16px;
-  margin-top: 12px;
+  margin-top: 18px;
 }
 .option-right {
   padding-right: 16px;

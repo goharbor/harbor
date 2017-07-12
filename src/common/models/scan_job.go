@@ -53,7 +53,8 @@ func (s *ScanJob) TableName() string {
 
 //ImgScanOverview mapped to a record of image scan overview.
 type ImgScanOverview struct {
-	Digest          string              `orm:"pk;column(image_digest)" json:"image_digest"`
+	ID              int64               `orm:"pk;auto;column(id)" json:"-"`
+	Digest          string              `orm:"column(image_digest)" json:"image_digest"`
 	Status          string              `orm:"-" json:"scan_status"`
 	JobID           int64               `orm:"column(scan_job_id)" json:"job_id"`
 	Sev             int                 `orm:"column(severity)" json:"severity"`
@@ -85,4 +86,39 @@ type ComponentsOverviewEntry struct {
 type ImageScanReq struct {
 	Repo string `json:"repository"`
 	Tag  string `json:"tag"`
+}
+
+// VulnerabilityItem is an item in the vulnerability result returned by vulnerability details API.
+type VulnerabilityItem struct {
+	ID          string   `json:"id"`
+	Severity    Severity `json:"severity"`
+	Pkg         string   `json:"package"`
+	Version     string   `json:"version"`
+	Description string   `json:"description"`
+	Fixed       string   `json:"fixedVersion,omitempty"`
+}
+
+// ScanAllPolicy is represent the json request and object for scan all policy, the parm is het
+type ScanAllPolicy struct {
+	Type string                 `json:"type"`
+	Parm map[string]interface{} `json:"parameter, omitempty"`
+}
+
+const (
+	// ScanAllNone "none" for not doing any scan all
+	ScanAllNone = "none"
+	// ScanAllDaily for doing scan all daily
+	ScanAllDaily = "daily"
+	// ScanAllOnRefresh for doing scan all when the Clair DB is refreshed.
+	ScanAllOnRefresh = "on_refresh"
+	// ScanAllDailyTime the key for parm of daily scan all policy.
+	ScanAllDailyTime = "daily_time"
+)
+
+//DefaultScanAllPolicy ...
+var DefaultScanAllPolicy = ScanAllPolicy{
+	Type: ScanAllDaily,
+	Parm: map[string]interface{}{
+		ScanAllDailyTime: 0,
+	},
 }

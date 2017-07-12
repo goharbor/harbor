@@ -15,7 +15,12 @@
 package secret
 
 import (
+	"fmt"
+
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // SecurityContext implements security.Context interface based on secret store
@@ -35,9 +40,15 @@ func NewSecurityContext(secret string, store *secret.Store) *SecurityContext {
 // IsAuthenticated returns true if the secret is valid
 func (s *SecurityContext) IsAuthenticated() bool {
 	if s.store == nil {
+		log.Debug("secret store is nil")
 		return false
 	}
-	return s.store.IsValid(s.secret)
+	valid := s.store.IsValid(s.secret)
+	if !valid {
+		log.Debugf("invalid secret: %s", s.secret)
+	}
+
+	return valid
 }
 
 // GetUsername returns the corresponding username of the secret
@@ -60,7 +71,7 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	if s.store == nil {
 		return false
 	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.UIUser
 }
 
 // HasWritePerm always returns false
@@ -71,4 +82,18 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 // HasAllPerm always returns false
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return false
+}
+
+// GetMyProjects ...
+func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return nil, fmt.Errorf("GetMyProjects is unsupported")
+}
+
+// GetProjectRoles return guest role if has read permission, otherwise return nil
+func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
+	roles := []int{}
+	if s.HasReadPerm(projectIDOrName) {
+		roles = append(roles, common.RoleGuest)
+	}
+	return roles
 }

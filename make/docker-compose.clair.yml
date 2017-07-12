@@ -17,13 +17,14 @@ services:
         aliases:
           - postgres
     container_name: clair-db
-    image: postgres:9.6.3
+    image: vmware/postgresql:9.6.3-photon
     restart: always
     depends_on:
       - log
     env_file:
       ./common/config/clair/postgres_env
     volumes:
+      - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d
       - /data/clair-db:/var/lib/postgresql/data
     logging:
       driver: "syslog"
@@ -34,7 +35,7 @@ services:
     networks:
       - harbor-clair
     container_name: clair
-    image: quay.io/coreos/clair:v2.0.0
+    image: vmware/clair:v2.0.1-photon
     restart: always
     depends_on:
       - postgres

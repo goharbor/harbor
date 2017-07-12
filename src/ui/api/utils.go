@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -27,12 +26,14 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 //sysadmin has all privileges to all projects
@@ -95,31 +96,12 @@ func TriggerReplication(policyID int64, repository string,
 	}
 	url := buildReplicationURL()
 
-	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
-}
-
-// GetPoliciesByRepository returns policies according the repository
-func GetPoliciesByRepository(repository string) ([]*models.RepPolicy, error) {
-	repository = strings.TrimSpace(repository)
-	repository = strings.TrimRight(repository, "/")
-	projectName, _ := utils.ParseRepository(repository)
-
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		return nil, err
-	}
-
-	policies, err := dao.GetRepPolicyByProject(project.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return policies, nil
+	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
 }
 
 // TriggerReplicationByRepository triggers the replication according to the repository
-func TriggerReplicationByRepository(repository string, tags []string, operation string) {
-	policies, err := GetPoliciesByRepository(repository)
+func TriggerReplicationByRepository(projectID int64, repository string, tags []string, operation string) {
+	policies, err := dao.GetRepPolicyByProject(projectID)
 	if err != nil {
 		log.Errorf("failed to get policies for repository %s: %v", repository, err)
 		return
@@ -158,7 +140,7 @@ func postReplicationAction(policyID int64, acton string) error {
 		return err
 	}
 
-	addAuthentication(req)
+	uiutils.AddUISecret(req)
 
 	client := &http.Client{}
 
@@ -179,15 +161,6 @@ func postReplicationAction(policyID int64, acton string) error {
 	}
 
 	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
-}
-
-func addAuthentication(req *http.Request) {
-	if req != nil {
-		req.AddCookie(&http.Cookie{
-			Name:  models.UISecretCookie,
-			Value: config.UISecret(),
-		})
-	}
 }
 
 // SyncRegistry syncs the repositories of registry with database.
@@ -309,8 +282,8 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
-			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR, "pull")
+			client, err := uiutils.NewRepositoryClientForUI(endpoint, true,
+				"admin", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -334,8 +307,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
-			client, err := NewRepositoryClient(endpoint, true,
-				"admin", repoInR, "repository", repoInR, "pull")
+			client, err := uiutils.NewRepositoryClientForUI(endpoint, true, "admin", repoInR, "pull")
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -372,8 +344,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			log.Errorf("failed to get registry URL: %v", err)
 			continue
 		}
-		client, err := NewRepositoryClient(endpoint, true,
-			"admin", repoInR, "repository", repoInR, "pull")
+		client, err := uiutils.NewRepositoryClientForUI(endpoint, true, "admin", repoInR, "pull")
 		if err != nil {
 			log.Errorf("failed to create repository client: %v", err)
 			continue
@@ -429,11 +400,6 @@ func initRegistryClient() (r *registry.Registry, err error) {
 	return registryClient, nil
 }
 
-func buildScanJobURL() string {
-	url := config.InternalJobServiceURL()
-	return fmt.Sprintf("%s/api/jobs/scan", url)
-}
-
 func buildReplicationURL() string {
 	url := config.InternalJobServiceURL()
 	return fmt.Sprintf("%s/api/jobs/replication", url)
@@ -474,7 +440,7 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok && regErr.StatusCode == http.StatusNotFound {
+		if regErr, ok := err.(*registry_error.HTTPError); ok && regErr.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
 		return false, err
@@ -500,60 +466,33 @@ func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scop
 	return client, nil
 }
 
-// NewRepositoryClient ...
-// TODO need a registry client which accept a raw token as param
-func NewRepositoryClient(endpoint string, insecure bool, username, repository, scopeType, scopeName string,
-	scopeActions ...string) (*registry.Repository, error) {
-
-	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
-
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
-	if err != nil {
-		return nil, err
+// transformVulnerabilities transforms the returned value of Clair API to a list of VulnerabilityItem
+func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*models.VulnerabilityItem {
+	res := []*models.VulnerabilityItem{}
+	l := layerWithVuln.Layer
+	if l == nil {
+		return res
 	}
-
-	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
-	if err != nil {
-		return nil, err
+	features := l.Features
+	if features == nil {
+		return res
 	}
-	return client, nil
-}
-
-// TriggerImageScan triggers an image scan job on jobservice.
-func TriggerImageScan(repository string, tag string) error {
-	data := &models.ImageScanReq{
-		Repo: repository,
-		Tag:  tag,
-	}
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-	url := buildScanJobURL()
-	return requestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
-}
-
-// Do not use this when you want to handle the response
-// TODO: add a response handler to replace expectSC *when needed*
-func requestAsUI(method, url string, body io.Reader, expectSC int) error {
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return err
-	}
-	addAuthentication(req)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != expectSC {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
+	for _, f := range features {
+		vulnerabilities := f.Vulnerabilities
+		if vulnerabilities == nil {
+			continue
 		}
-		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+		for _, v := range vulnerabilities {
+			vItem := &models.VulnerabilityItem{
+				ID:          v.Name,
+				Pkg:         f.Name,
+				Version:     f.Version,
+				Severity:    clair.ParseClairSev(v.Severity),
+				Fixed:       v.FixedBy,
+				Description: v.Description,
+			}
+			res = append(res, vItem)
+		}
 	}
-	return nil
+	return res
 }

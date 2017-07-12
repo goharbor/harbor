@@ -17,7 +17,8 @@ package main
 import (
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/controllers"
-	"github.com/vmware/harbor/src/ui/service"
+	"github.com/vmware/harbor/src/ui/service/notifications/clair"
+	"github.com/vmware/harbor/src/ui/service/notifications/registry"
 	"github.com/vmware/harbor/src/ui/service/token"
 
 	"github.com/astaxie/beego"
@@ -40,10 +41,10 @@ func initRouters() {
 	beego.Router("/harbor/sign-up", &controllers.IndexController{})
 	beego.Router("/harbor/dashboard", &controllers.IndexController{})
 	beego.Router("/harbor/projects", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/repository", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/replication", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/member", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/log", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/repositories", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/replications", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/members", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/logs", &controllers.IndexController{})
 	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
 
 	beego.Router("/harbor/users", &controllers.IndexController{})
@@ -73,10 +74,12 @@ func initRouters() {
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
+	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete")
 	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
+	beego.Router("/api/repositories/*/tags/:tag/vulnerability/details", &api.RepositoryAPI{}, "Get:VulnerabilityDetails")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
@@ -107,7 +110,8 @@ func initRouters() {
 	beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
 
 	//external service that hosted on harbor process:
-	beego.Router("/service/notifications", &service.NotificationHandler{})
+	beego.Router("/service/notifications", &registry.NotificationHandler{})
+	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")

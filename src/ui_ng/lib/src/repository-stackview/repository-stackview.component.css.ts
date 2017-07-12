@@ -12,9 +12,16 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
 .refresh-btn:hover {
     color: #007CBB;
 }
-:host >>> .datagrid .datagrid-body .datagrid-row {
+
+:host >>> .datagrid .datagrid-body {
   overflow-x: hidden;
-  overflow-y: hidden;
+}
+
+:host >>> .datagrid .datagrid-foot {
+  border-top: 1px solid #ccc;
+}
+
+:host >>> .datagrid .datagrid-body .datagrid-row {
   background-color: #ccc;
 }
 

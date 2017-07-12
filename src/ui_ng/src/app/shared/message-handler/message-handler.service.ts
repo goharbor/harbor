@@ -20,8 +20,10 @@ import { errorHandler } from '../../shared/shared.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { SessionService } from '../../shared/session.service';
 
+import { ErrorHandler } from 'harbor-ui';
+
 @Injectable()
-export class MessageHandlerService {
+export class MessageHandlerService implements ErrorHandler{
 
     constructor(
         private msgService: MessageService,
@@ -84,5 +86,21 @@ export class MessageHandlerService {
 
     public isAppLevel(error: any): boolean {
         return error && error.statusCode === httpStatusCode.Unauthorized;
+    }
+
+    public error(error: any): void {
+        this.handleError(error);
+    }
+
+    public warning(warning: any): void {
+        this.showWarning(warning);
+    }
+
+    public info(info: any): void {
+        this.showSuccess(info);
+    }
+
+    public log(log: any): void {
+        this.showInfo(log);
     }
 }

@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -23,7 +22,8 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Assign User Admin
     [Arguments]  ${user}
-    Input Text  xpath=//harbor-shell/clr-main-container//harbor-user//grid-filter//input  ${user}
+    Click Element  xpath=//clr-main-container//harbor-user//hbr-filter//clr-icon
+    Input Text  xpath=//harbor-shell/clr-main-container//harbor-user//hbr-filter//input  ${user}
     Sleep  2
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/h2
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//harbor-user//clr-datagrid//clr-dg-action-overflow
@@ -31,8 +31,8 @@ Assign User Admin
     Sleep  1
 
 Switch to User Tag
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[1]/a
+    Click Element  xpath=${administration_user_tag_xpath}
     Sleep  1
 
 Administration Tag Should Display
-    Page Should Contain Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/label
+    Page Should Contain Element  xpath=${administration_tag_xpath}

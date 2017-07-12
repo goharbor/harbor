@@ -29,6 +29,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -224,6 +225,12 @@ func (f *fakeSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 }
 func (f *fakeSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return false
+}
+func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return nil, nil
+}
+func (f *fakeSecurityContext) GetProjectRoles(interface{}) []int {
+	return nil
 }
 
 func TestFilterAccess(t *testing.T) {

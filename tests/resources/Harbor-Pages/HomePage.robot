@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -24,13 +23,14 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
 	Go To    ${url}
-    sleep  5
+    Sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
+	Sleep  2
     Input Text  login_username  ${user}
     Input Text  login_password  ${pw}
-    sleep  2
+    Sleep  2
     Click button  css=.btn
     sleep  5
 	Log To Console  ${user}
@@ -43,22 +43,24 @@ Create An New User
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-	Capture Page Screenshot
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
+	${d}=    Get Current Date    result_format=%m%s
+	Capture Page Screenshot  CreateNewUser_${d}.png
+	Sleep  5
+    Click Element  xpath=${sign_up_for_an_account_xpath}
     sleep  3
-    Input Text  xpath=//*[@id="username"]  ${username}
+    Input Text  xpath=${username_xpath}  ${username}
     sleep  1
-    Input Text  xpath=//*[@id="email"]  ${email}
+    Input Text  xpath=${email_xpath}  ${email}
     sleep  1
-    Input Text  xpath=//*[@id="realname"]  ${realname}
+    Input Text  xpath=${realname_xpath}  ${realname}
     sleep  1
-    Input Text  xpath=//*[@id="newPassword"]  ${newPassword}
+    Input Text  xpath=${newPassword_xpath}  ${newPassword}
     sleep  1
-    Input Text  xpath=//*[@id="confirmPassword"]  ${newPassword}
+    Input Text  xpath=${confirmPassword_xpath}  ${newPassword}
     sleep  1
-    Input Text  xpath=//*[@id="comment"]  ${comment}
+    Input Text  xpath=${comment_xpath}  ${comment}
     sleep  2
-    Click button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Click button  xpath=${signup_xpath}
     sleep  5
     Input Text  login_username  ${username}
     Input Text  login_password  ${newPassword}
@@ -66,4 +68,4 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-	sleep  2
+	Sleep  3

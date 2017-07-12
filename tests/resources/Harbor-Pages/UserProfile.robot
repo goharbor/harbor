@@ -14,8 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
-Library  OperatingSystem
+Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
@@ -24,13 +23,13 @@ ${HARBOR_VERSION}  v1.1.1
 Change Password
     [Arguments]  ${cur_pw}  ${new_pw}
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/div/div/a[2]
+    Click Element  xpath=//clr-main-container//clr-dropdown//a[2]
     Sleep  2
     Input Text  xpath=//*[@id="oldPassword"]  ${cur_pw}
     Input Text  xpath=//*[@id="newPassword"]  ${new_pw}
     Input Text  xpath=//*[@id="reNewPassword"]  ${new_pw}
     Sleep  1
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/password-setting/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Click Element  xpath=//password-setting/clr-modal//button[2]
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
     Sleep  1
@@ -38,11 +37,11 @@ Change Password
 Update User Comment
     [Arguments]  ${new_comment}
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/div/div/a[1]
+    Click Element  xpath=//clr-main-container//clr-dropdown//a[1]
     Sleep  2
     Input Text  xpath=//*[@id="account_settings_comments"]  ${new_comment}
     Sleep  1
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/account-settings-modal/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Click Element  xpath=//account-settings-modal/clr-modal//button[2]
     Sleep  2
 
 Logout Harbor
@@ -50,5 +49,8 @@ Logout Harbor
 		Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/div/div/a[4]
-    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//*[@id="pop_repo"]/top-repo/div/div[1]/h3
+    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
+	Sleep  1
+	Capture Page Screenshot  Logout.png
+	Sleep  2
+    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class="title"]

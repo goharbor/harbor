@@ -27,8 +27,8 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	comutils "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -98,7 +98,7 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 		logger:         logger,
 	}
 
-	base.project = getProjectName(base.repository)
+	base.project, _ = comutils.ParseRepository(base.repository)
 
 	return base
 }
@@ -106,12 +106,6 @@ func InitBaseHandler(repository, srcURL, srcSecret,
 // Exit ...
 func (b *BaseHandler) Exit() error {
 	return nil
-}
-
-func getProjectName(repository string) string {
-	repository = strings.TrimSpace(repository)
-	repository = strings.TrimRight(repository, "/")
-	return repository[:strings.LastIndex(repository, "/")]
 }
 
 // Initializer creates clients for source and destination registry,
@@ -187,13 +181,13 @@ func (c *Checker) Enter() (string, error) {
 }
 
 func (c *Checker) enter() (string, error) {
-	project, err := dao.GetProjectByName(c.project)
+	project, err := getProject(c.project)
 	if err != nil {
-		c.logger.Errorf("an error occurred while getting project %s in DB: %v", c.project, err)
+		c.logger.Errorf("failed to get project %s from %s: %v", c.project, c.srcURL, err)
 		return "", err
 	}
 
-	err = c.createProject(project.Public)
+	err = c.createProject(project)
 	if err == nil {
 		c.logger.Infof("project %s is created on %s with user %s", c.project, c.dstURL, c.dstUsr)
 		return StatePullManifest, nil
@@ -212,16 +206,61 @@ func (c *Checker) enter() (string, error) {
 	return "", err
 }
 
-func (c *Checker) createProject(public int) error {
-	project := struct {
-		ProjectName string `json:"project_name"`
-		Public      int    `json:"public"`
-	}{
-		ProjectName: c.project,
-		Public:      public,
+func getProject(name string) (*models.Project, error) {
+	req, err := http.NewRequest(http.MethodGet, buildProjectURL(), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	data, err := json.Marshal(project)
+	req.URL.Query().Set("name", name)
+	req.URL.Query().Encode()
+	req.AddCookie(&http.Cookie{
+		Name:  models.UISecretCookie,
+		Value: config.JobserviceSecret(),
+	})
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	list := []*models.Project{}
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+
+	var project *models.Project
+	for _, p := range list {
+		if p.Name == name {
+			project = p
+			break
+		}
+	}
+	if project == nil {
+		return nil, fmt.Errorf("project %s not found", name)
+	}
+
+	return project, nil
+}
+
+func (c *Checker) createProject(project *models.Project) error {
+	pro := &models.ProjectRequest{
+		Name:                                       project.Name,
+		Public:                                     project.Public,
+		EnableContentTrust:                         project.EnableContentTrust,
+		PreventVulnerableImagesFromRunning:         project.PreventVulnerableImagesFromRunning,
+		PreventVulnerableImagesFromRunningSeverity: project.PreventVulnerableImagesFromRunningSeverity,
+		AutomaticallyScanImagesOnPush:              project.AutomaticallyScanImagesOnPush,
+	}
+
+	data, err := json.Marshal(pro)
 	if err != nil {
 		return err
 	}
@@ -266,6 +305,10 @@ func (c *Checker) createProject(public int) error {
 
 	return fmt.Errorf("failed to create project %s on %s with user %s: %d %s",
 		c.project, c.dstURL, c.dstUsr, resp.StatusCode, string(message))
+}
+
+func buildProjectURL() string {
+	return strings.TrimRight(config.LocalUIURL(), "/") + "/api/projects/"
 }
 
 // ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,

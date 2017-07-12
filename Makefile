@@ -12,10 +12,12 @@
 #							golang:1.7.3
 # compile_adminserver, compile_ui, compile_jobservice: compile specific binary
 #
-# build: 		build Harbor docker images (defuault: build_photon)
+# build: 		build Harbor docker images (default: build_photon)
 #			for example: make build -e BASEIMAGE=photon
 # build_photon:	build Harbor docker images from photon baseimage
 #
+# build_postgresql: build postgresql images basaed on photon os
+#       make build -e BASEIMAGE=postgresql
 # install:		include compile binarys, build images, prepare specific \
 #				version composefile and startup Harbor instance
 #
@@ -80,7 +82,7 @@ REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
 REGISTRYVERSION=2.6.1-photon
-NGINXVERSION=1.11.5-patched
+NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
@@ -90,13 +92,14 @@ REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
 
 #clair parameters
-CLAIRVERSION=v2.0.0
+CLAIRVERSION=v2.0.1-photon
 CLAIRFLAG=false
-CLAIRDBVERSION=9.6.3
+CLAIRDBVERSION=9.6.3-photon
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
-CLARITYSEEDPATH=/harbor_ui
+CLARITYSEEDPATH=/harbor_src
+CLARITYUTPATH=${CLARITYSEEDPATH}/ui_ng/lib
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
@@ -165,6 +168,10 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
 
+DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH_COMMON)/postgresql
+DOCKERFILENAME_POSTGRESQL=Dockerfile
+
+
 # docker image name
 DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
 DOCKERIMAGENAME_UI=vmware/harbor-ui
@@ -172,7 +179,7 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 DOCKERIMAGENAME_CLATIRY=vmware/harbor-clarity-ui-builder
-
+DOCKERIMAGENAME_POSTGRESQL=vmware/postgresql
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
 DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
@@ -212,7 +219,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		vmware/nginx:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		vmware/nginx-photon:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
 		photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -236,7 +243,7 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) postgres:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= vmware/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -266,9 +273,9 @@ compile_jobservice:
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
 	else \
-		$(DOCKERCMD) run --rm -v $(UIPATH)/static:$(CLARITYSEEDPATH)/dist -v $(UINGPATH)/src:$(CLARITYSEEDPATH)/src $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
 	fi
 	@echo "Done."
 
@@ -304,7 +311,10 @@ build_common: version
 
 build_photon: build_common
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
-
+build_postgresql:
+	@echo "buildging postgresql container for photon..."
+	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(CLAIRDBVERSION) .
+	@echo "Done."
 build: build_$(BASEIMAGE)
 
 modify_composefile:
@@ -349,7 +359,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
-	@$(DOCKERPULL) vmware/nginx:$(NGINXVERSION)
+	@$(DOCKERPULL) vmware/nginx-photon:$(NGINXVERSION)
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
@@ -358,8 +368,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
-		$(DOCKERPULL) quay.io/coreos/clair:$(CLAIRVERSION); \
-		$(DOCKERPULL) postgres:$(CLAIRDBVERSION); \
+		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
+		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
 
 	@echo "saving harbor docker image"
@@ -389,7 +399,7 @@ refresh_clarity_builder:
 
 run_clarity_ut:
 	@echo "run clarity ut ..."
-	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH)/lib -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
+	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
 
 pushimage:
 	@echo "pushing harbor images ..."

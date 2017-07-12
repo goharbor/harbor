@@ -7,10 +7,10 @@ export const TAG_DETAIL_HTML: string = `
             </div>
             <div class="title-block">
                 <div class="tag-name">
-                    {{tagDetails.name}}:v{{tagDetails.docker_version}}
+                    {{tagDetails.name}}
                 </div>
                 <div class="tag-timestamp">
-                    {{'TAG.CREATION_TIME_PREFIX' | translate }} {{tagDetails.created | date }} {{'TAG.CREATOR_PREFIX' | translate }} {{tagDetails.author}}
+                    {{'TAG.CREATION_TIME_PREFIX' | translate }} {{tagDetails.created | date }} {{'TAG.CREATOR_PREFIX' | translate }} {{author | translate}}
                 </div>
             </div>
         </div>
@@ -23,11 +23,13 @@ export const TAG_DETAIL_HTML: string = `
                     <div class="image-detail-label">
                         <div>{{'TAG.ARCHITECTURE' | translate }}</div>
                         <div>{{'TAG.OS' | translate }}</div>
+                        <div>{{'TAG.DOCKER_VERSION' | translate }}</div>
                         <div>{{'TAG.SCAN_COMPLETION_TIME' | translate }}</div>
                     </div>
                     <div class="image-detail-value">
                         <div>{{tagDetails.architecture}}</div>
                         <div>{{tagDetails.os}}</div>
+                        <div>{{tagDetails.docker_version}}</div>
                         <div>{{scanCompletedDatetime | date}}</div>
                     </div>
                 </div>
@@ -46,8 +48,8 @@ export const TAG_DETAIL_HTML: string = `
                         </div>
                     </div>
                     <div class="second-column">
-                        <div>{{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
-                        <div class="second-row">{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                        <div>{{highCount}} {{getPackageText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
+                        <div class="second-row">{{mediumCount}} {{getPackageText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
                     </div>
                     <div class="third-column">
                         <div>
@@ -58,8 +60,8 @@ export const TAG_DETAIL_HTML: string = `
                         </div>
                     </div>
                     <div class="fourth-column">
-                        <div>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
-                        <div class="second-row">{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
+                        <div>{{lowCount}} {{getPackageText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
+                        <div class="second-row">{{unknownCount}} {{getPackageText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
                     </div>
                 </div>
             </div>
@@ -67,7 +69,7 @@ export const TAG_DETAIL_HTML: string = `
     </section>
     <section class="detail-section">
         <div class="vulnerability-block">
-            <hbr-vulnerabilities-grid tagId="tagId"></hbr-vulnerabilities-grid>
+            <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [tagId]="tagId"></hbr-vulnerabilities-grid>
         </div>
         <div>
             <ng-content></ng-content>

@@ -11,7 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Output, EventEmitter, ViewChild, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  ViewChild,
+  AfterViewChecked
+} from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { EndpointService } from '../service/endpoint.service';
@@ -35,22 +41,18 @@ const FAKE_PASSWORD = 'rjGcfuRu';
 @Component({
   selector: 'create-edit-endpoint',
   template: CREATE_EDIT_ENDPOINT_TEMPLATE,
-  styles: [ CREATE_EDIT_ENDPOINT_STYLE ]
+  styles: [CREATE_EDIT_ENDPOINT_STYLE]
 })
 export class CreateEditEndpointComponent implements AfterViewChecked {
 
   modalTitle: string;
   createEditDestinationOpened: boolean;
-
   editable: boolean;
-
   testOngoing: boolean;
-  pingTestMessage: string;
-  pingStatus: boolean;
 
   actionType: ActionType;
 
-  target: Endpoint =  this.initEndpoint;
+  target: Endpoint = this.initEndpoint;
   initVal: Endpoint = this.initEndpoint;
 
   targetForm: NgForm;
@@ -69,7 +71,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   inlineAlert: InlineAlertComponent;
 
   @Output() reload = new EventEmitter<boolean>();
-  
+
 
   get initEndpoint(): Endpoint {
     return {
@@ -84,10 +86,10 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
-    private translateService: TranslateService) {}
+    private translateService: TranslateService) { }
 
   openCreateEditTarget(editable: boolean, targetId?: number | string) {
-    
+
     this.target = this.initEndpoint;
     this.editable = editable;
     this.createEditDestinationOpened = true;
@@ -95,38 +97,32 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
     this.endpointHasChanged = false;
     this.targetNameHasChanged = false;
 
-    this.pingTestMessage = '';
-    this.pingStatus = true;
-    this.testOngoing = false;  
+    this.testOngoing = false;
 
-    if(targetId) {
+    if (targetId) {
       this.actionType = ActionType.EDIT;
-      this.translateService.get('DESTINATION.TITLE_EDIT').subscribe(res=>this.modalTitle=res);
+      this.translateService.get('DESTINATION.TITLE_EDIT').subscribe(res => this.modalTitle = res);
       toPromise<Endpoint>(this.endpointService
-          .getEndpoint(targetId))
-          .then(
-            target=>{ 
-              this.target = target;
-              this.initVal.name = this.target.name;
-              this.initVal.endpoint = this.target.endpoint;
-              this.initVal.username = this.target.username;
-              this.initVal.password = FAKE_PASSWORD;
-              this.target.password = this.initVal.password;
-            })
-          .catch(error=>this.errorHandler.error(error));
+        .getEndpoint(targetId))
+        .then(
+        target => {
+          this.target = target;
+          this.initVal.name = this.target.name;
+          this.initVal.endpoint = this.target.endpoint;
+          this.initVal.username = this.target.username;
+          this.initVal.password = FAKE_PASSWORD;
+          this.target.password = this.initVal.password;
+        })
+        .catch(error => this.errorHandler.error(error));
     } else {
       this.actionType = ActionType.ADD_NEW;
-      this.translateService.get('DESTINATION.TITLE_ADD').subscribe(res=>this.modalTitle=res);
+      this.translateService.get('DESTINATION.TITLE_ADD').subscribe(res => this.modalTitle = res);
     }
   }
 
   testConnection() {
-    this.translateService.get('DESTINATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
-    this.pingStatus = true;
-    this.testOngoing = !this.testOngoing;
-
     let payload: Endpoint = this.initEndpoint;
-    if(this.endpointHasChanged) {
+    if (this.endpointHasChanged) {
       payload.endpoint = this.target.endpoint;
       payload.username = this.target.username;
       payload.password = this.target.password;
@@ -134,42 +130,41 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
       payload.id = this.target.id;
     }
 
+    this.testOngoing = true;
     toPromise<Endpoint>(this.endpointService
       .pingEndpoint(payload))
       .then(
-        response=>{
-          this.pingStatus = true;
-          this.translateService.get('DESTINATION.TEST_CONNECTION_SUCCESS').subscribe(res=>this.pingTestMessage=res);
-          this.testOngoing = !this.testOngoing;
-        }).catch(
-        error=>{
-          this.pingStatus = false;
-          this.translateService.get('DESTINATION.TEST_CONNECTION_FAILURE').subscribe(res=>this.pingTestMessage=res);
-          this.testOngoing = !this.testOngoing;
-        });
+      response => {
+        this.testOngoing = false;
+        this.inlineAlert.showInlineSuccess({ message: "DESTINATION.TEST_CONNECTION_SUCCESS" });
+      }).catch(
+      error => {
+        this.testOngoing = false;
+        this.inlineAlert.showInlineError('DESTINATION.TEST_CONNECTION_FAILURE');
+      });
   }
 
   changedTargetName($event: any) {
-    if(this.editable) {
+    if (this.editable) {
       this.targetNameHasChanged = true;
     }
   }
 
   clearPassword($event: any) {
-    if(this.editable) {
+    if (this.editable) {
       this.target.password = '';
       this.endpointHasChanged = true;
     }
   }
 
   onSubmit() {
-    switch(this.actionType) {
-    case ActionType.ADD_NEW:
-      this.addEndpoint();
-      break;
-    case ActionType.EDIT:
-      this.updateEndpoint();
-      break;
+    switch (this.actionType) {
+      case ActionType.ADD_NEW:
+        this.addEndpoint();
+        break;
+      case ActionType.EDIT:
+        this.updateEndpoint();
+        break;
     }
   }
 
@@ -177,31 +172,31 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
     toPromise<number>(this.endpointService
       .createEndpoint(this.target))
       .then(
-        response=>{
-          this.translateService.get('DESTINATION.CREATED_SUCCESS')
-              .subscribe(res=>this.errorHandler.info(res));
-          this.createEditDestinationOpened = false;
-          this.reload.emit(true);
-        })
+      response => {
+        this.translateService.get('DESTINATION.CREATED_SUCCESS')
+          .subscribe(res => this.errorHandler.info(res));
+        this.createEditDestinationOpened = false;
+        this.reload.emit(true);
+      })
       .catch(
-        error=>{
-          let errorMessageKey = this.handleErrorMessageKey(error.status);
-          this.translateService
-              .get(errorMessageKey)
-              .subscribe(res=>{
-                this.errorHandler.error(res);
-              });
-        }
+      error => {
+        let errorMessageKey = this.handleErrorMessageKey(error.status);
+        this.translateService
+          .get(errorMessageKey)
+          .subscribe(res => {
+            this.inlineAlert.showInlineError(res);
+          });
+      }
       );
   }
 
   updateEndpoint() {
-    if(!(this.targetNameHasChanged || this.endpointHasChanged)) {
+    if (!(this.targetNameHasChanged || this.endpointHasChanged)) {
       this.createEditDestinationOpened = false;
       return;
-    } 
+    }
     let payload: Endpoint = this.initEndpoint;
-    if(this.targetNameHasChanged) {
+    if (this.targetNameHasChanged) {
       payload.name = this.target.name;
       delete payload.endpoint;
     }
@@ -210,47 +205,47 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
       payload.username = this.target.username;
       payload.password = this.target.password;
       delete payload.name;
-    } 
+    }
 
-    if(!this.target.id) { return; }
+    if (!this.target.id) { return; }
     toPromise<number>(this.endpointService
       .updateEndpoint(this.target.id, payload))
       .then(
-        response=>{ 
-          this.translateService.get('DESTINATION.UPDATED_SUCCESS')
-              .subscribe(res=>this.errorHandler.info(res)); 
-          this.createEditDestinationOpened = false;
-          this.reload.emit(true);
-        })
+      response => {
+        this.translateService.get('DESTINATION.UPDATED_SUCCESS')
+          .subscribe(res => this.errorHandler.info(res));
+        this.createEditDestinationOpened = false;
+        this.reload.emit(true);
+      })
       .catch(
-        error=>{
-          let errorMessageKey = this.handleErrorMessageKey(error.status);
-          this.translateService
-              .get(errorMessageKey)
-              .subscribe(res=>{
-                this.errorHandler.error(res);
-              });
-        }
+      error => {
+        let errorMessageKey = this.handleErrorMessageKey(error.status);
+        this.translateService
+          .get(errorMessageKey)
+          .subscribe(res => {
+            this.inlineAlert.showInlineError(res);
+          });
+      }
       );
   }
 
   handleErrorMessageKey(status: number): string {
-    switch(status) {
-      case 409:this
+    switch (status) {
+      case 409: this
         return 'DESTINATION.CONFLICT_NAME';
       case 400:
         return 'DESTINATION.INVALID_NAME';
       default:
         return 'UNKNOWN_ERROR';
-      }
+    }
   }
 
   onCancel() {
-    if(this.hasChanged) {
-      this.inlineAlert.showInlineConfirmation({message: 'ALERT.FORM_CHANGE_CONFIRMATION'});
+    if (this.hasChanged) {
+      this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
     } else {
       this.createEditDestinationOpened = false;
-      if(this.targetForm)
+      if (this.targetForm)
         this.targetForm.reset();
     }
   }
@@ -262,20 +257,20 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
 
   ngAfterViewChecked(): void {
     this.targetForm = this.currentForm;
-    if(this.targetForm) {
-      let comparison: {[key: string]: any} = {
+    if (this.targetForm) {
+      let comparison: { [key: string]: any } = {
         targetName: this.initVal.name,
         endpointUrl: this.initVal.endpoint,
         username: this.initVal.username,
         password: this.initVal.password
       };
       let self: CreateEditEndpointComponent | any = this;
-      if(self) {
-        self.targetForm.valueChanges.subscribe((data: any)=>{
-          for(let key in data) {
+      if (self) {
+        self.targetForm.valueChanges.subscribe((data: any) => {
+          for (let key in data) {
             let current = data[key];
             let origin: string = comparison[key];
-            if(((this.actionType === ActionType.EDIT && this.editable && !current)  || current) && 
+            if (((this.actionType === ActionType.EDIT && this.editable && !current) || current) &&
               current !== origin) {
               this.hasChanged = true;
               break;
