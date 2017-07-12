@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"encoding/json"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/clair"
@@ -126,7 +128,7 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if flag {
 		components := strings.SplitN(repository, "/", 2)
 		if len(components) < 2 {
-			http.Error(rw, fmt.Sprintf("Bad repository name: %s", repository), http.StatusBadRequest)
+			http.Error(rw, marshalError(fmt.Sprintf("Bad repository name: %s", repository), http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
 		rec = httptest.NewRecorder()
@@ -166,12 +168,12 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	match, err := matchNotaryDigest(img)
 	if err != nil {
-		http.Error(rw, "Failed in communication with Notary please check the log", http.StatusInternalServerError)
+		http.Error(rw, marshalError("Failed in communication with Notary please check the log", http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !match {
 		log.Debugf("digest mismatch, failing the response.")
-		http.Error(rw, "The image is not signed in Notary.", http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("The image is not signed in Notary.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	cth.next.ServeHTTP(rw, req)
@@ -196,18 +198,18 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	overview, err := dao.GetImgScanOverview(img.digest)
 	if err != nil {
 		log.Errorf("failed to get ImgScanOverview with repo: %s, tag: %s, digest: %s. Error: %v", img.repository, img.tag, img.digest, err)
-		http.Error(rw, "Failed to get ImgScanOverview.", http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("Failed to get ImgScanOverview.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	if overview == nil {
 		log.Debugf("cannot get the image scan overview info, failing the response.")
-		http.Error(rw, "Cannot get the image scan overview info.", http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("Cannot get the image scan overview info.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	imageSev := overview.Sev
 	if imageSev > int(projectVulnerableSeverity) {
 		log.Debugf("the image severity is higher then project setting, failing the response.")
-		http.Error(rw, "The image scan result doesn't pass the project setting.", http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("The image scan result doesn't pass the project setting.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	vh.next.ServeHTTP(rw, req)
@@ -252,4 +254,25 @@ func copyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 	}
 	rw.WriteHeader(rec.Result().StatusCode)
 	rw.Write(rec.Body.Bytes())
+}
+
+func marshalError(msg string, statusCode int) string {
+	je := &JSONError{
+		Message: msg,
+		Code:    statusCode,
+		Details: msg,
+	}
+	str, err := json.Marshal(je)
+	if err != nil {
+		log.Debugf("failed to marshal json error, %v", err)
+		return msg
+	}
+	return string(str)
+}
+
+// JSONError wraps a concrete Code and Message, it's readable for docker deamon.
+type JSONError struct {
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+	Details string `json:"details,omitempty"`
 }

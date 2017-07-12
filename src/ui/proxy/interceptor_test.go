@@ -181,3 +181,9 @@ func TestCopyResp(t *testing.T) {
 	assert.Equal(418, rec2.Result().StatusCode)
 	assert.Equal("mytest", rec2.Header().Get("X-Test"))
 }
+
+func TestMarshalError(t *testing.T) {
+	assert := assert.New(t)
+	js := marshalError("Not Found", 404)
+	assert.Equal("{\"code\":404,\"message\":\"Not Found\",\"details\":\"Not Found\"}", js)
+}
