@@ -126,108 +126,6 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser   
 
-Test case add rule use new endpoint
-
-    Init Chrome Driver
-    ${d}=  Get current date  result_format=%m%s
-    
-    #Create An New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harbor
-    #Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
-    Create An New Project  project${d}
-    Mouse down  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
-    Mouse up  xpath=//clr-dg-row-master[contains(.,'project${d}')]//a
-    Sleep  1
-    #click replication
-    Click element  xpath=//project-detail//li[4]
-    #click add buton
-    Click element  xpath=//hbr-replication//button/clr-icon
-    sleep  2
-    input text  xpath=//input[@id='policy_name']  aa${d}
-    input text  xpath=//textarea[@id='policy_description']   aa${d}
-    #click enable
-    mouse down  xpath=//input[@id='policy_enable']
-    mouse up  xpath=//input[@id='policy_enable']
-    #click new endpoint checkbox
-    mouse down  xpath=//input[@id='check_new']
-    mouse up  xpath=//input[@id='check_new']
-    #endpoint info
-    input text  xpath=//input[@id='destination_name']  bb${d}
-    input text  xpath=//input[@id='destination_url']  bb${d}
-    input text  xpath=//input[@id='destination_username']  bb${d}
-    input text  xpath=//input[@id='destination_password']  bb${d}
-    click element  xpath=//create-edit-rule//button[3]
-    sleep  2
-    # edit
-    #select rule
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    #click edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
-    #rules can not be edit if enable
-    sleep  1
-    page should contain element  xpath=//div[@class='alert alert-warning']
-    click element  xpath=//create-edit-rule//button[2]
-    #disable to edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #select rule
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow
-    #click edit
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'aa${d}')]//clr-dg-action-overflow//button[contains(.,"Edit")]
-    sleep  2
-    #rule name
-    input text  xpath=//input[@id='policy_name']  cc${d}
-    #rule description
-    input text   xpath=//textarea[@id='policy_description']  cc${d}
-    #endpoint info
-    mouse down  xpath=//input[@id='check_new']
-    mouse up  xpath=//input[@id='check_new']
-    sleep  1
-    input text  xpath=//input[@id='destination_name']  bc${d}
-    input text  xpath=//input[@id='destination_url']  bc${d}
-    input text  xpath=//input[@id='destination_username']  bc${d}
-    input text  xpath=//input[@id='destination_password']  bc${d}
-
-    #rule enable status this must after edit endpoint or endpoint can not be edit
-    mouse down  xpath=//input[@id='policy_enable']
-    mouse up  xpath=//input[@id='policy_enable']
-    click element  xpath=//create-edit-rule//button[3]
-    sleep  2
-    #Rule Disable
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #Rule enable
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Enable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    
-    #Rule Delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
-    click element  xpath=//confirmation-dialog//button[2]
-    #rule can not deleted if enable
-    page should contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
-
-    #Disable to delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Disable")]
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #Rule Delete
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow
-    click element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]//clr-dg-action-overflow//button[contains(.,"Delete")]
-    sleep  1
-    click element  xpath=//confirmation-dialog//button[2]
-    sleep  2
-    #rule can  deleted if disable
-    page should not contain element  xpath=//hbr-list-replication-rule//clr-dg-row[contains(.,'bc${d}')]
-    close browser 
-
 Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
@@ -251,33 +149,25 @@ Test Case - User View Logs
     log  ${rc}
     Sleep  1
    #delete image to add a delete log
-    Click Element  xpath=//project//clr-dg-cell/a[contains(.,"test")]
+    mouse down  xpath=//project//clr-dg-cell/a[contains(.,"test")]
+    mouse up  xpath=//project//clr-dg-cell/a[contains(.,"test")]
     Sleep  1
-    Click Element  xpath=//project-detail//clr-dg-cell/a[contains(.,"test")]
+    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"test")]//clr-dg-action-overflow
     Sleep  1
-    Click Element  xpath=//clr-dg-action-overflow
-    Log to console  click delete
-    Sleep  1
-    Capture Page Screenshot  Deletebutton.png
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
-    Log to console  confirm delete
     Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
     Sleep  1
-    Log to console  back to project list page
     Click Element  xpath=//harbor-shell//nav//section/a[1]
     Click Element  xpath=//list-project//a[contains(.,"test")]
     Sleep  1
     Click Element  xpath=//project-detail//ul/li[3]
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
-    Log to console  advanced button exist
     Click Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
     Sleep  1
     Click Element  xpath=//project-detail//audit-log//clr-dropdown/button
     Sleep  1
-    #Click Element  xpath=//project-detail//audit-log//clr-dropdwon//a
     #pull log
-    #Click Element  xpath=//audit-log//clr-dropdown/button
     Sleep  1
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Pull")]
     Sleep  1
@@ -331,7 +221,8 @@ Test Case - User View Logs
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-    Input Text  xpath = //audit-log//grid-filter//input  harbor
+    click element  xpath=//audit-log//hbr-filter//clr-icon
+    Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
     ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
     Should be equal as integers  ${c}  0
