@@ -161,7 +161,7 @@ func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 	last, err := clairdao.GetLastUpdate()
 	if err != nil {
 		log.Errorf("Failed to get last update from Clair DB, error: %v", err)
-		res.OverallUTC = -1
+		res.OverallUTC = 0
 	} else {
 		res.OverallUTC = last
 		log.Debugf("Clair vuln DB last update: %d", last)

@@ -76,7 +76,7 @@ func (h *Handler) Handle() {
 			}
 		}
 	}
-	if utils.ScanOverviewMarker().Mark() {
+	if utils.ScanOverviewMarker().Check() {
 		go func() {
 			<-time.After(rescanInterval)
 			l, err := dao.ListImgScanOverviews()
@@ -92,6 +92,7 @@ func (h *Handler) Handle() {
 				}
 			}
 		}()
+		utils.ScanOverviewMarker().Mark()
 	} else {
 		log.Debugf("There is a rescan scheduled at %v already, skip.", utils.ScanOverviewMarker().Next())
 	}
