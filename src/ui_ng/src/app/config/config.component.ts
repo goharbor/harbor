@@ -71,6 +71,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private session: SessionService) { }
 
+    public get hasAdminRole(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0;
+    }
+
+    public get hasCAFile(): boolean {
+        return this.appConfigService.getConfig().has_ca_root;
+    }
+
+    public get withClair(): boolean {
+        return this.appConfigService.getConfig().with_clair;
+    }
+
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }
