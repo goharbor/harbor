@@ -168,12 +168,8 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	match, err := matchNotaryDigest(img)
 	if err != nil {
-<<<<<<< HEAD
 		log.Debugf("error from notary, %v", err)
-		http.Error(rw, "Failed in communication with Notary please check the log", http.StatusInternalServerError)
-=======
 		http.Error(rw, marshalError("Failed in communication with Notary please check the log", http.StatusInternalServerError), http.StatusInternalServerError)
->>>>>>> upstream/master
 		return
 	}
 	if !match {
