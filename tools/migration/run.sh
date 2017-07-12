@@ -31,7 +31,7 @@ if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
     case $ans in
         [Yy]* )
             ;;
-        [Nn]* ) 
+        [Nn]* )
             exit 0
             ;;
         * ) echo "illegal answer: $ans. Upgrade abort!!"
@@ -96,6 +96,14 @@ backup)
     echo "Performing backup..."
     mysqldump $DBCNF --add-drop-database --databases registry > ./backup/registry.sql
     echo "Backup performed."
+    ;;
+export)
+    echo "Performing export..."
+    ./export --dbuser ${DB_USR} --dbpwd ${DB_PWD} --exportpath ${EXPORTPATH}
+    rc="$?"
+    echo "Export performed."
+    echo $rc
+    exit $rc
     ;;
 restore)
     echo "Performing restore..."
