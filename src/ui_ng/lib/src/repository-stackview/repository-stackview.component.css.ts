@@ -3,7 +3,7 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
   padding-right: 16px;
 }
 .sub-grid-custom {
-  position: relative;
+  /*position: relative;*/  /*for issue #2688*/
   left: 40px;
 }
 .refresh-btn {
