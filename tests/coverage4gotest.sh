@@ -26,7 +26,7 @@ for package in $packages
 do
 	listDeps $package
 	
-	GORACE="halt_on_error=1" go test -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+	GORACE="exitcode=0" go test -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 	if [ -f profile.tmp ]	
 	then
 		cat profile.tmp | tail -n +2 >> profile.cov
