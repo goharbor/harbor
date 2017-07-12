@@ -64,6 +64,8 @@ func (pma *ProjectMemberAPI) Prepare() {
 		} else {
 			text += fmt.Sprintf("%d", pid)
 		}
+		pma.HandleBadRequest(text)
+		return
 	}
 	project, err := pma.ProjectMgr.Get(pid)
 	if err != nil {

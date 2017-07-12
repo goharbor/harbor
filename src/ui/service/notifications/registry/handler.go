@@ -70,6 +70,10 @@ func (n *NotificationHandler) Post() {
 			log.Errorf("failed to get project by name %s: %v", project, err)
 			return
 		}
+		if pro == nil {
+			log.Warningf("project %s not found", project)
+			continue
+		}
 
 		go func() {
 			if err := dao.AddAccessLog(models.AccessLog{
