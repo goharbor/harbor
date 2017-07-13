@@ -155,6 +155,23 @@ export interface SystemInfo {
     self_registration?: boolean;
     has_ca_root?: boolean;
     harbor_version?: string;
+    clair_vulnerability_status?: ClairDBStatus;
+}
+
+/**
+ * Clair database status info.
+ * 
+ * @export
+ * @interface ClairDetail
+ */
+export interface ClairDetail {
+    namespace: string;
+    last_update: number;
+}
+
+export interface ClairDBStatus {
+    overall_last_update: number;
+    details: ClairDetail[];
 }
 
 export enum VulnerabilitySeverity {

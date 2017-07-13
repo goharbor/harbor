@@ -32,7 +32,7 @@
             <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
         </section>
         <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
-            <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
+            <vulnerability-config [(vulnerabilityConfig)]="allConfig" [clairDBStatus]="clairDB"></vulnerability-config>
         </section>
         <div>
             <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>

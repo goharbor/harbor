@@ -3,10 +3,12 @@ import { NgForm } from '@angular/forms';
 
 import { SYSTEM_SETTINGS_HTML } from './system-settings.component.html';
 import { Configuration } from '../config';
+import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
 
 @Component({
     selector: 'system-settings',
-    template: SYSTEM_SETTINGS_HTML
+    template: SYSTEM_SETTINGS_HTML,
+    styles: [REGISTRY_CONFIG_STYLES]
 })
 export class SystemSettingsComponent {
     config: Configuration;

@@ -3,10 +3,12 @@ import { NgForm } from '@angular/forms';
 
 import { REPLICATION_CONFIG_HTML } from './replication-config.component.html';
 import { Configuration } from '../config';
+import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
 
 @Component({
     selector: 'replication-config',
-    template: REPLICATION_CONFIG_HTML
+    template: REPLICATION_CONFIG_HTML,
+    styles: [REGISTRY_CONFIG_STYLES]
 })
 export class ReplicationConfigComponent {
     config: Configuration;

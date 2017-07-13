@@ -413,7 +413,9 @@
             "SCAN_NOW": "开始扫描",
             "NONE_POLICY": "无",
             "DAILY_POLICY": "每日定时",
-            "REFRESH_POLICY": "缺陷库刷新后"
+            "REFRESH_POLICY": "缺陷库刷新后",
+            "DB_REFRESH_TIME": "数据库更新于",
+            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
