@@ -37,15 +37,17 @@ type TimeMarker struct {
 }
 
 //Mark tries to mark a future time, which is after the duration of interval from the time it's called.
-//It returns false if there is a mark in fugure, true if the mark is successfully set.
-func (t *TimeMarker) Mark() bool {
+func (t *TimeMarker) Mark() {
 	t.Lock()
 	defer t.Unlock()
-	if time.Now().Before(t.next) {
-		return false
-	}
 	t.next = time.Now().Add(t.interval)
-	return true
+}
+
+//Check returns true if the current time is after the mark by this marker, and the caction the mark guards and be taken.
+func (t *TimeMarker) Check() bool {
+	t.RLock()
+	defer t.RUnlock()
+	return time.Now().After(t.next)
 }
 
 //Next returns the time of the next mark.

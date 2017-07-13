@@ -3,10 +3,12 @@ import { NgForm } from '@angular/forms';
 
 import { SYSTEM_SETTINGS_HTML } from './system-settings.component.html';
 import { Configuration } from '../config';
+import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
 
 @Component({
     selector: 'system-settings',
-    template: SYSTEM_SETTINGS_HTML
+    template: SYSTEM_SETTINGS_HTML,
+    styles: [REGISTRY_CONFIG_STYLES]
 })
 export class SystemSettingsComponent {
     config: Configuration;
@@ -21,6 +23,10 @@ export class SystemSettingsComponent {
         this.configChange.emit(this.config);
     }
 
+    @Input() showSubTitle: boolean = false;
+    @Input() hasAdminRole: boolean = false;
+    @Input() hasCAFile: boolean = false;
+
     @ViewChild("systemConfigFrom") systemSettingsForm: NgForm;
 
     get editable(): boolean {
@@ -31,5 +37,9 @@ export class SystemSettingsComponent {
 
     get isValid(): boolean {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
+    }
+
+    get canDownloadCert(): boolean {
+        return this.hasAdminRole && this.hasCAFile;
     }
 }

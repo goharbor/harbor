@@ -33,8 +33,7 @@ type ImageScanJob struct {
 
 // Prepare ...
 func (isj *ImageScanJob) Prepare() {
-	//TODO Uncomment to enable security check.
-	//	isj.authenticate()
+	isj.authenticate()
 }
 
 // Post creates a scanner job and hand it to statemachine.
