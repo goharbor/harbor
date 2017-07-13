@@ -76,11 +76,7 @@ func (h *Handler) Handle() {
 			}
 		}
 	}
-<<<<<<< HEAD
-	if utils.ScanOverviewMarker().Mark() {
-=======
 	if utils.ScanOverviewMarker().Check() {
->>>>>>> upstream/master
 		go func() {
 			<-time.After(rescanInterval)
 			l, err := dao.ListImgScanOverviews()
