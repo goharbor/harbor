@@ -122,3 +122,15 @@ type ClairNamespaceTimestamp struct {
 	Namespace string `json:"namespace"`
 	Timestamp int64  `json:"last_update"`
 }
+
+//ClairNamespace ...
+type ClairNamespace struct {
+	Name          string `json:"Name,omitempty"`
+	VersionFormat string `json:"VersionFormat,omitempty"`
+}
+
+//ClairNamespaceEnvelope ...
+type ClairNamespaceEnvelope struct {
+	Namespaces *[]ClairNamespace `json:"Namespaces,omitempty"`
+	Error      *ClairError       `json:"Error,omitempty"`
+}
