@@ -12,13 +12,14 @@ export interface Base {
 }
 
 /**
- * Interface for Repository
+ * Interface for Repository Info
  * 
  * @export
  * @interface Repository
  * @extends {Base}
  */
-export interface Repository extends Base {
+export interface RepositoryItem extends Base {
+    [key: string]: any | any[]
     name: string;
     tags_count: number;
     owner_id?: number;
@@ -26,6 +27,17 @@ export interface Repository extends Base {
     description?: string;
     star_count?: number;
     pull_count?: number;
+}
+
+/**
+ * Interface for repository
+ * 
+ * @export
+ * @interface Repository
+ */
+export interface Repository {
+    metadata?: Metadata;
+    data: RepositoryItem[];
 }
 
 /**
@@ -124,7 +136,7 @@ export interface AccessLog {
  * @interface AccessLogItem
  */
 export interface AccessLogItem {
-    [key: string]: any
+    [key: string]: any | any[]
     log_id: number;
     project_id: number;
     repo_name: string;

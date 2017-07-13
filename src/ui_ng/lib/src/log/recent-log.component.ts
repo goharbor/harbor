@@ -23,7 +23,12 @@ import { ErrorHandler } from '../error-handler/index';
 import { Observable } from 'rxjs/Observable';
 import { toPromise, CustomComparator } from '../utils';
 import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
-import { DEFAULT_PAGE_SIZE } from '../utils';
+import {
+    DEFAULT_PAGE_SIZE,
+    calculatePage,
+    doFiltering,
+    doSorting
+} from '../utils';
 
 import { Comparator, State } from 'clarity-angular';
 
@@ -93,7 +98,7 @@ export class RecentLogComponent implements OnInit {
         //Keep it for future filter
         this.currentState = state;
 
-        let pageNumber: number = this._calculatePage(state);
+        let pageNumber: number = calculatePage(state);
         if (pageNumber !== this.currentPagePvt) {
             //load data
             let params: RequestQueryParams = new RequestQueryParams();
@@ -110,10 +115,10 @@ export class RecentLogComponent implements OnInit {
                     this.recentLogs = this.logsCache.data.filter(log => log.username != "");//To display
 
                     //Do customized filter
-                    this._doFilter(state);
+                    this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
 
                     //Do customized sorting
-                    this._doSorting(state);
+                    this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
 
                     this.currentPagePvt = pageNumber;
 
@@ -129,10 +134,10 @@ export class RecentLogComponent implements OnInit {
             this.recentLogs = this.logsCache.data.filter(log => log.username != "");//Reset data
 
             //Do customized filter
-            this._doFilter(state);
+            this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
 
             //Do customized sorting
-            this._doSorting(state);
+            this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
         }
     }
 
@@ -142,69 +147,5 @@ export class RecentLogComponent implements OnInit {
             reg.test(log.repo_name) ||
             reg.test(log.operation) ||
             reg.test(log.repo_tag);
-    }
-
-    _calculatePage(state: State): number {
-        if (!state || !state.page) {
-            return 1;
-        }
-
-        return Math.ceil((state.page.to + 1) / state.page.size);
-    }
-
-    _doFilter(state: State): void {
-        if (!this.recentLogs || this.recentLogs.length === 0) {
-            return;
-        }
-
-        if (!state || !state.filters || state.filters.length === 0) {
-            return;
-        }
-
-        state.filters.forEach((filter: {
-            property: string;
-            value: string;
-        }) => {
-            this.recentLogs = this.recentLogs.filter(logItem => this._regexpFilter(filter["value"], logItem[filter["property"]]));
-        });
-    }
-
-    _regexpFilter(terms: string, testedValue: any): boolean {
-        let reg = new RegExp('.*' + terms + '.*', 'i');
-        return reg.test(testedValue);
-    }
-
-    _doSorting(state: State): void {
-        if (!this.recentLogs || this.recentLogs.length === 0) {
-            return;
-        }
-
-        if (!state || !state.sort) {
-            return;
-        }
-
-        this.recentLogs = this.recentLogs.sort((a: AccessLogItem, b: AccessLogItem) => {
-            let comp: number = 0;
-            if (typeof state.sort.by !== "string") {
-                comp = state.sort.by.compare(a, b);
-            } else {
-                let propA = a[state.sort.by.toString()], propB = b[state.sort.by.toString()];
-                if (typeof propA === "string") {
-                    comp = propA.localeCompare(propB);
-                } else {
-                    if (propA > propB) {
-                        comp = 1;
-                    } else if (propA < propB) {
-                        comp = -1;
-                    }
-                }
-            }
-
-            if (state.sort.reverse) {
-                comp = -comp;
-            }
-
-            return comp;
-        });
     }
 }
