@@ -184,7 +184,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
     this.projectForm.reset();
   }
 
-  public get isValid(): boolean {git 
+  public get isValid(): boolean {
     return this.currentForm &&
     this.currentForm.valid &&
     this.btnIsOk&&
