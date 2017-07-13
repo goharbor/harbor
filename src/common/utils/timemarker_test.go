@@ -15,10 +15,11 @@
 package utils
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTimeMarker(t *testing.T) {
@@ -26,13 +27,14 @@ func TestTimeMarker(t *testing.T) {
 	m := &TimeMarker{
 		interval: 1 * time.Second,
 	}
-	r1 := m.Mark()
+	r1 := m.Check()
 	assert.True(r1)
-	r2 := m.Mark()
+	m.Mark()
+	r2 := m.Check()
 	assert.False(r2)
 	t.Log("Sleep for 2 seconds...")
 	time.Sleep(2 * time.Second)
-	r3 := m.Mark()
+	r3 := m.Check()
 	assert.True(r3)
 }
 

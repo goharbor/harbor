@@ -32,7 +32,8 @@ import {
     ComplexValueItem,
     ReplicationConfigComponent,
     SystemSettingsComponent,
-    VulnerabilityConfigComponent
+    VulnerabilityConfigComponent,
+    ClairDBStatus
 } from 'harbor-ui';
 
 const fakePass = "aWpLOSYkIzJTTU4wMDkx";
@@ -71,11 +72,23 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private session: SessionService) { }
 
-    consoleTest(): void {
-        console.log(this.allConfig, this.originalCopy);
-        console.log("-------------");
-        console.log(this.getChanges());
+    public get hasAdminRole(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0;
     }
+
+    public get hasCAFile(): boolean {
+        return this.appConfigService.getConfig().has_ca_root;
+    }
+
+    public get withClair(): boolean {
+        return this.appConfigService.getConfig().with_clair;
+    }
+
+    public get clairDB(): ClairDBStatus {
+        return this.appConfigService.getConfig().clair_vulnerability_status;
+    }
+
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }

@@ -22,4 +22,4 @@ ${project_public_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/d
 ${project_save_css}  html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
 ${log_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
 ${projects_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
-
+${replication_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/nav/ul/li[4]/a

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -125,6 +126,48 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 	}
 	t := time.Unix(i, 0)
 	return &t, nil
+}
+
+//ConvertMapToStruct is used to fill the specified struct with map.
+func ConvertMapToStruct(object interface{}, valuesInMap map[string]interface{}) error {
+	if object == nil {
+		return fmt.Errorf("nil struct is not supported")
+	}
+
+	if reflect.TypeOf(object).Kind() != reflect.Ptr {
+		return fmt.Errorf("object should be referred by pointer")
+	}
+
+	for k, v := range valuesInMap {
+		if err := setField(object, k, v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setField(object interface{}, field string, value interface{}) error {
+	structValue := reflect.ValueOf(object).Elem()
+
+	structFieldValue := structValue.FieldByName(field)
+	if !structFieldValue.IsValid() {
+		return fmt.Errorf("No such field: %s in obj", field)
+	}
+
+	if !structFieldValue.CanSet() {
+		return fmt.Errorf("Cannot set value for field %s", field)
+	}
+
+	structFieldType := structFieldValue.Type()
+	val := reflect.ValueOf(value)
+	if structFieldType != val.Type() {
+		return errors.New("Provided value type didn't match object field type")
+	}
+
+	structFieldValue.Set(val)
+
+	return nil
 }
 
 // ParseProjectIDOrName parses value to ID(int64) or name(string)

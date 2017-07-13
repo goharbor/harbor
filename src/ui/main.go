@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -26,6 +27,8 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
+	"github.com/vmware/harbor/src/common/scheduler"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
@@ -85,9 +88,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if config.WithClair() {
+		if err := dao.InitClairDB(); err != nil {
+			log.Fatalf("failed to initialize clair database: %v", err)
+		}
 	}
 
 	password, err := config.InitialAdminPassword()
@@ -96,6 +103,26 @@ func main() {
 	}
 	if err := updateInitPassword(adminUserID, password); err != nil {
 		log.Error(err)
+	}
+
+	//Enable the policy scheduler here.
+	scheduler.DefaultScheduler.Start()
+
+	//Subscribe the policy change topic.
+	notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{})
+
+	//Get policy configuration.
+	scanAllPolicy := config.ScanAllPolicy()
+	if scanAllPolicy.Type == notifier.PolicyTypeDaily {
+		dailyTime := 0
+		if t, ok := scanAllPolicy.Parm["daily_time"]; ok {
+			if reflect.TypeOf(t).Kind() == reflect.Int {
+				dailyTime = t.(int)
+			}
+		}
+
+		//Send notification to handle first policy change.
+		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
 	filter.Init()

@@ -40,7 +40,7 @@ export class ListProjectROComponent {
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(true);
 
-    let linkUrl = ['harbor', 'projects', proId, 'repository'];
+    let linkUrl = ['harbor', 'projects', proId, 'repositories'];
     this.router.navigate(linkUrl);
   }
 

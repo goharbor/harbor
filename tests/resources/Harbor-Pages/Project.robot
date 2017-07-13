@@ -52,8 +52,12 @@ Create An New Public Project
 
 Switch To Log
 		Click Element  xpath=${log_xpath}
-		sleep  1
+		Sleep  1
 
+Switch To Replication
+		Click Element  xpath=${replication_xpath}
+		Sleep  1
+		
 Back To projects
 		Click Element  xpath=${projects_xpath}
-		sleep  1
+		Sleep  1
