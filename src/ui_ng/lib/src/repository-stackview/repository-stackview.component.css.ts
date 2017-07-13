@@ -3,7 +3,6 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
   padding-right: 16px;
 }
 .sub-grid-custom {
-  position: relative;
   left: 40px;
 }
 .refresh-btn {

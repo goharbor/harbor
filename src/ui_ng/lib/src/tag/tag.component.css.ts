@@ -5,6 +5,7 @@ export const TAG_STYLE = `
 
 .embeded-datagrid {
   width: 98%;
+  float:right; /*add for issue #2688*/
 }
 
 .hidden-tag {

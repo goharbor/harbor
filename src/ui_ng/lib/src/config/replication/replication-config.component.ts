@@ -21,6 +21,8 @@ export class ReplicationConfigComponent {
         this.configChange.emit(this.config);
     }
 
+    @Input() showSubTitle: boolean = false
+
     @ViewChild("replicationConfigFrom") replicationConfigForm: NgForm;
 
     get editable(): boolean {

@@ -16,6 +16,7 @@ export class AppConfig {
         //Set default value
         this.with_notary = false;
         this.with_admiral = false;
+        this.with_clair = false;
         this.admiral_endpoint = "";
         this.auth_mode = "db_auth";
         this.registry_url = "";
@@ -27,6 +28,7 @@ export class AppConfig {
     
     with_notary: boolean;
     with_admiral: boolean;
+    with_clair: boolean;
     admiral_endpoint: string;
     auth_mode: string;
     registry_url: string;
