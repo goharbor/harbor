@@ -2,7 +2,7 @@ import { Component, OnInit, EventEmitter, Output, ViewChild, Input } from '@angu
 
 import { Configuration, ComplexValueItem } from './config';
 import { REGISTRY_CONFIG_HTML } from './registry-config.component.html';
-import { ConfigurationService, SystemInfoService, SystemInfo } from '../service/index';
+import { ConfigurationService, SystemInfoService, SystemInfo, ClairDBStatus } from '../service/index';
 import { toPromise } from '../utils';
 import { ErrorHandler } from '../error-handler';
 import {
@@ -52,6 +52,11 @@ export class RegistryConfigComponent implements OnInit {
 
     get withClair(): boolean {
         return this.systemInfo && this.systemInfo.with_clair;
+    }
+
+    get clairDB(): ClairDBStatus {
+        return this.systemInfo && this.systemInfo.clair_vulnerability_status ?
+            this.systemInfo.clair_vulnerability_status : null;
     }
 
     ngOnInit(): void {
