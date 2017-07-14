@@ -137,6 +137,114 @@ Test Case - Create An Replication Rule New Endpoint
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
 	Close Browser 
 
+Test Case-Search Project Members
+    Init Chrome Driver
+    ${d}=    Get Current Date  result_format=%m%s
+    Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=userb${d}  email=userb${d}@vmware.com  realname=userb${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=userc${d}  email=userc${d}@vmware.com  realname=userc${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=userd${d}  email=userd${d}@vmware.com  realname=userd${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=usere${d}  email=usere${d}@vmware.com  realname=usere${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Create An New Project  project${d}
+    #add user b as admin
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  1
+    Click Element  xpath=//project-detail//li[2]
+    #click add member
+    Click Element  xpath=//project-detail//button//clr-icon
+    Sleep  1
+    Input Text  xpath=//add-member//input[@id="member_name"]  userb${d}
+    Mouse Down  xpath=//project-detail//form//input[@id="checkrads_project_admin"]
+    Mouse Up  xpath=//project-detail//form//input[@id="checkrads_project_admin"]
+    Click Button  xpath=//project-detail//add-member//button[2]
+    #add 3 more user to other role
+    #click add member
+    Sleep  1
+    Click Element  xpath=//project-detail//button//clr-icon
+    Sleep  1
+    Input Text  xpath=//add-member//input[@id="member_name"]  userc${d}
+    Mouse Down  xpath=//project-detail//form//input[@id="checkrads_project_admin"]
+    Mouse Up  xpath=//project-detail//form//input[@id="checkrads_project_admin"]
+    Click Button  xpath=//project-detail//add-member//button[2]
+    #click add member
+    Sleep  1
+    Click Element  xpath=//project-detail//button//clr-icon
+    Sleep  1
+    Input Text  xpath=//add-member//input[@id="member_name"]  userd${d}
+    Mouse Down  xpath=//project-detail//form//input[@id="checkrads_developer"]
+    Mouse Up  xpath=//project-detail//form//input[@id="checkrads_developer"]   
+    Click Button  xpath=//project-detail//add-member//button[2]
+    #click add member
+    Sleep  1
+    Click Element  xpath=//project-detail//button//clr-icon
+    Sleep  1
+    Input Text  xpath=//add-member//input[@id="member_name"]  usere${d}
+    Mouse Down  xpath=//project-detail//form//input[@id="checkrads_guest"]
+    Mouse Up  xpath=//project-detail//form//input[@id="checkrads_guest"]   
+    Click Button  xpath=//project-detail//add-member//button[2]
+    Logout Harbor
+    #sign in as b
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  2
+    Click Element  xpath=//project-detail//li[2]
+    Click Element  xpath=//project-detail//hbr-filter//clr-icon
+    Input Text  xpath=//project-detail//hbr-filter//input  userc${d}
+    Sleep  2
+    Page Should Contain Element  //project-detail//clr-dg-row[contains(.,'userc')]
+    Logout Harbor
+    #change b to developer
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  2
+    Click Element  xpath=//project-detail//li[2]
+    Sleep  2
+    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"userb")]//clr-dg-action-overflow
+    Click Element  xpath=//project-detail//clr-dg-action-overflow//button[contains(.,"Developer")]
+    Logout Harbor
+    #sign in as b
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    sleep  1
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  1
+    Click Element  xpath=//project-detail//li[2]
+    Click Element  xpath=//project-detail//hbr-filter//clr-icon
+    Input Text  xpath=//project-detail//hbr-filter//input  userd${d}
+    Sleep  2
+    Page Should Contain Element  //project-detail//clr-dg-row[contains(.,'userd')]
+    Logout Harbor
+    #change b to guest
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  2
+    Click Element  xpath=//project-detail//li[2]
+    Sleep  2
+    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"userb")]//clr-dg-action-overflow
+    Click Element  xpath=//project-detail//clr-dg-action-overflow//button[contains(.,"Guest")]
+    Logout Harbor
+    #sign in as b
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Mouse Down  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Mouse Up  xpath=//clr-dg-cell//a[contains(.,"project")]
+    Sleep  2
+    Click Element  xpath=//project-detail//li[2]
+    Click Element  xpath=//project-detail//hbr-filter//clr-icon
+    Input Text  xpath=//project-detail//hbr-filter//input  usere${d}
+    Sleep  2
+    Page Should Contain Element  //project-detail//clr-dg-row[contains(.,'usere')]
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
