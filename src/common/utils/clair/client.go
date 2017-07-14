@@ -57,7 +57,7 @@ func (c *Client) send(req *http.Request, expectedStatus int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != expectedStatus {
 		return nil, fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	return b, nil
