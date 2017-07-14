@@ -24,11 +24,11 @@ export abstract class AccessLogService {
      * @abstract
      * @param {(number | string)} projectId
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
+     * @returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
      * 
      * @memberOf AccessLogService
      */
-    abstract getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[];
+    abstract getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog> | Promise<AccessLog> | AccessLog;
 
     /**
      * Get the recent logs.
@@ -57,8 +57,8 @@ export class AccessLogDefaultService extends AccessLogService {
         super();
     }
 
-    public getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[] {
-        return Observable.of([]);
+    public getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog> | Promise<AccessLog> | AccessLog {
+        return Observable.of({});
     }
 
     public getRecentLogs(queryParams?: RequestQueryParams): Observable<AccessLog> | Promise<AccessLog> | AccessLog {

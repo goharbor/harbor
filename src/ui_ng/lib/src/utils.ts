@@ -3,7 +3,7 @@ import 'rxjs/add/operator/toPromise';
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator } from 'clarity-angular';
+import { Comparator, State } from 'clarity-angular';
 
 /**
  * Convert the different async channels to the Promise<T> type.
@@ -136,3 +136,86 @@ export const VULNERABILITY_SCAN_STATUS = {
     stopped: "stopped",
     finished: "finished"
 };
+
+/**
+ * Calculate page number by state
+ */
+export function calculatePage(state: State): number {
+    if (!state || !state.page) {
+        return 1;
+    }
+
+    return Math.ceil((state.page.to + 1) / state.page.size);
+}
+
+/**
+ * Filter columns via RegExp
+ * 
+ * @export
+ * @param {State} state 
+ * @returns {void} 
+ */
+export function doFiltering<T extends {[key:string]: any | any[]}>(items: T[], state: State): T[] {
+    if (!items || items.length === 0) {
+        return items;
+    }
+
+    if (!state || !state.filters || state.filters.length === 0) {
+        return items;
+    }
+
+    state.filters.forEach((filter: {
+        property: string;
+        value: string;
+    }) => {
+        items = items.filter(item => regexpFilter(filter["value"], item[filter["property"]]));
+    });
+
+    return items;
+}
+
+/**
+ * Match items via RegExp
+ * 
+ * @export
+ * @param {string} terms 
+ * @param {*} testedValue 
+ * @returns {boolean} 
+ */
+export function regexpFilter(terms: string, testedValue: any): boolean {
+    let reg = new RegExp('.*' + terms + '.*', 'i');
+    return reg.test(testedValue);
+}
+
+export function doSorting<T extends {[key:string]: any | any[]}>(items: T[], state: State): T[] {
+    if (!items || items.length === 0) {
+        return items;
+    }
+    if (!state || !state.sort) {
+        return items;
+    }
+
+    return items.sort((a: T, b: T) => {
+        let comp: number = 0;
+        if (typeof state.sort.by !== "string") {
+            comp = state.sort.by.compare(a, b);
+        } else {
+            let propA = a[state.sort.by.toString()], propB = b[state.sort.by.toString()];
+            if (typeof propA === "string") {
+                comp = propA.localeCompare(propB);
+            } else {
+                if (propA > propB) {
+                    comp = 1;
+                } else if (propA < propB) {
+                    comp = -1;
+                }
+            }
+        }
+
+        if (state.sort.reverse) {
+            comp = -comp;
+        }
+
+        return comp;
+    });
+}

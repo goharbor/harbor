@@ -31,4 +31,10 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
 :host >>> .datagrid .datagrid-placeholder-container {
   display: none;
 }
+
+.db-status-warning {
+  position: absolute;
+  left: 24px;
+  display: inline-block;
+}
 `;
