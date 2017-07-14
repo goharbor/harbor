@@ -15,8 +15,8 @@
             <li role="presentation" class="nav-item">
                 <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
             </li>
-            <li role="presentation" class="nav-item">
-                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>Vulnerability</button>
+            <li role="presentation" class="nav-item" *ngIf="withClair">
+                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'VULNERABILITY.SINGULAR' | translate}}</button>
             </li>
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
@@ -29,10 +29,10 @@
             <config-email [mailConfig]="allConfig"></config-email>
         </section>
         <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
-            <system-settings [(systemSettings)]="allConfig"></system-settings>
+            <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
         </section>
-        <section id="vulnerability" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
-            <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
+        <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
+            <vulnerability-config [(vulnerabilityConfig)]="allConfig" [clairDBStatus]="clairDB"></vulnerability-config>
         </section>
         <div>
             <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
@@ -41,7 +41,6 @@
             <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn" [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
             <span id="forTestingMail" class="spinner spinner-inline" [hidden]="hideMailTestingSpinner"></span>
             <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
-            <button type="button" class="btn btn-primary" (click)="consoleTest()">CONSOLE</button>
         </div>
     </div>
 </div>

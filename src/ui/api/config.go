@@ -190,6 +190,9 @@ func (c *ConfigAPI) Put() {
 		log.Errorf("failed to load configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
+
+	//Everything is ok, detect the configurations to confirm if the option we are caring is changed.
+	watchConfigChanges(cfg)
 }
 
 // Reset system configurations
@@ -293,7 +296,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 		scope != common.LDAPScopeBase &&
 		scope != common.LDAPScopeOnelevel &&
 		scope != common.LDAPScopeSubtree {
-		return false, fmt.Errorf("invalid %s, should be %s, %s or %s",
+		return false, fmt.Errorf("invalid %s, should be %d, %d or %d",
 			common.LDAPScope,
 			common.LDAPScopeBase,
 			common.LDAPScopeOnelevel,

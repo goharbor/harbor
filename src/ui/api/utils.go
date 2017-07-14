@@ -17,14 +17,17 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
@@ -440,7 +443,7 @@ func getReposByProject(name string, keyword ...string) ([]string, error) {
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok && regErr.StatusCode == http.StatusNotFound {
+		if regErr, ok := err.(*registry_error.HTTPError); ok && regErr.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
 		return false, err
@@ -495,4 +498,36 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 		}
 	}
 	return res
+}
+
+//Watch the configuration changes.
+func watchConfigChanges(cfg map[string]interface{}) error {
+	if cfg == nil {
+		return errors.New("Empty configurations")
+	}
+
+	//Currently only watch the scan all policy change.
+	if v, ok := cfg[notifier.ScanAllPolicyTopic]; ok {
+		if reflect.TypeOf(v).Kind() == reflect.Map {
+			policyCfg := &models.ScanAllPolicy{}
+			if err := utils.ConvertMapToStruct(policyCfg, v.(map[string]interface{})); err != nil {
+				return err
+			}
+
+			policyNotification := notifier.ScanPolicyNotification{
+				Type:      policyCfg.Type,
+				DailyTime: 0,
+			}
+
+			if t, yes := policyCfg.Parm["daily_time"]; yes {
+				if reflect.TypeOf(t).Kind() == reflect.Int {
+					policyNotification.DailyTime = (int64)(t.(int))
+				}
+			}
+
+			return notifier.Publish(notifier.ScanAllPolicyTopic, policyNotification)
+		}
+	}
+
+	return nil
 }

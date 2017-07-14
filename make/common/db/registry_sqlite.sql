@@ -172,7 +172,8 @@ create table img_scan_job (
  );
 
 create table img_scan_overview (
- image_digest varchar(128) PRIMARY KEY,
+ id INTEGER PRIMARY KEY, 
+ image_digest varchar(128),
  scan_job_id int NOT NULL,
  /* 0 indicates none, the higher the number, the more severe the status */
  severity int NOT NULL default 0,
@@ -181,7 +182,8 @@ create table img_scan_overview (
  /* primary key for querying details, in clair it should be the name of the "top layer" */
  details_key varchar(128),
  creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP 
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE(image_digest)
  );
 
 CREATE INDEX policy ON replication_job (policy_id);

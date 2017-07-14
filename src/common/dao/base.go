@@ -25,8 +25,12 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// NonExistUserID : if a user does not exist, the ID of the user will be 0.
-const NonExistUserID = 0
+const (
+	// NonExistUserID : if a user does not exist, the ID of the user will be 0.
+	NonExistUserID = 0
+	// ClairDBAlias ...
+	ClairDBAlias = "clair-db"
+)
 
 // Database is an interface of different databases
 type Database interface {
@@ -36,6 +40,24 @@ type Database interface {
 	String() string
 	// Register registers the database which will be used
 	Register(alias ...string) error
+}
+
+// InitClairDB ...
+func InitClairDB() error {
+	//TODO: Read from env vars.
+	p := &pgsql{
+		host:     "postgres",
+		port:     5432,
+		usr:      "postgres",
+		pwd:      "password",
+		database: "postgres",
+		sslmode:  false,
+	}
+	if err := p.Register(ClairDBAlias); err != nil {
+		return err
+	}
+	log.Info("initialized clair databas")
+	return nil
 }
 
 // InitDatabase initializes the database

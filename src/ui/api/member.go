@@ -64,11 +64,12 @@ func (pma *ProjectMemberAPI) Prepare() {
 		} else {
 			text += fmt.Sprintf("%d", pid)
 		}
+		pma.HandleBadRequest(text)
+		return
 	}
 	project, err := pma.ProjectMgr.Get(pid)
 	if err != nil {
-		pma.HandleInternalServerError(
-			fmt.Sprintf("failed to get project %d: %v", pid, err))
+		pma.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
 		return
 	}
 	if project == nil {
@@ -77,8 +78,8 @@ func (pma *ProjectMemberAPI) Prepare() {
 	}
 	pma.project = project
 
-	if pma.Ctx.Input.IsGet() && !pma.SecurityCtx.HasReadPerm(pid) ||
-		!pma.SecurityCtx.HasAllPerm(pid) {
+	if !(pma.Ctx.Input.IsGet() && pma.SecurityCtx.HasReadPerm(pid) ||
+		pma.SecurityCtx.HasAllPerm(pid)) {
 		pma.HandleForbidden(pma.SecurityCtx.GetUsername())
 		return
 	}

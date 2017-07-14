@@ -81,7 +81,7 @@ func (t *TargetAPI) ping(endpoint, username, password string) {
 	}
 
 	if err = registry.Ping(); err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
+		if regErr, ok := err.(*registry_error.HTTPError); ok {
 			t.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
 

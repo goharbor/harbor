@@ -95,6 +95,7 @@ func SetScanJobForImg(digest string, jobID int64) error {
 	}
 	if !created {
 		rec.JobID = jobID
+		rec.UpdateTime = time.Now()
 		n, err := o.Update(rec, "JobID", "UpdateTime")
 		if n == 0 {
 			return fmt.Errorf("Failed to set scan job for image with digest: %s, error: %v", digest, err)
@@ -105,17 +106,18 @@ func SetScanJobForImg(digest string, jobID int64) error {
 
 // GetImgScanOverview returns the ImgScanOverview based on the digest.
 func GetImgScanOverview(digest string) (*models.ImgScanOverview, error) {
-	o := GetOrmer()
-	rec := &models.ImgScanOverview{
-		Digest: digest,
-	}
-	err := o.Read(rec)
-	if err != nil && err != orm.ErrNoRows {
+	res := []*models.ImgScanOverview{}
+	_, err := scanOverviewQs().Filter("image_digest", digest).All(&res)
+	if err != nil {
 		return nil, err
 	}
-	if err == orm.ErrNoRows {
+	if len(res) == 0 {
 		return nil, nil
 	}
+	if len(res) > 1 {
+		return nil, fmt.Errorf("Found multiple scan_overview entries for digest: %s", digest)
+	}
+	rec := res[0]
 	if len(rec.CompOverviewStr) > 0 {
 		co := &models.ComponentsOverview{}
 		if err := json.Unmarshal([]byte(rec.CompOverviewStr), co); err != nil {
@@ -129,20 +131,38 @@ func GetImgScanOverview(digest string) (*models.ImgScanOverview, error) {
 // UpdateImgScanOverview updates the serverity and components status of a record in img_scan_overview
 func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compOverview *models.ComponentsOverview) error {
 	o := GetOrmer()
+	rec, err := GetImgScanOverview(digest)
+	if err != nil {
+		return fmt.Errorf("Failed to getting scan_overview record for update: %v", err)
+	}
+	if rec == nil {
+		return fmt.Errorf("No scan_overview record for digest: %s", digest)
+	}
 	b, err := json.Marshal(compOverview)
 	if err != nil {
 		return err
 	}
-	rec := &models.ImgScanOverview{
-		Digest:          digest,
-		Sev:             int(sev),
-		CompOverviewStr: string(b),
-		DetailsKey:      detailsKey,
-		UpdateTime:      time.Now(),
-	}
+	rec.Sev = int(sev)
+	rec.CompOverviewStr = string(b)
+	rec.DetailsKey = detailsKey
+	rec.UpdateTime = time.Now()
+
 	n, err := o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
 	if n == 0 || err != nil {
 		return fmt.Errorf("Failed to update scan overview record with digest: %s, error: %v", digest, err)
 	}
 	return nil
+}
+
+// ListImgScanOverviews list all records in table img_scan_overview, it is called in notificaiton handler when it needs to refresh the severity of all images.
+func ListImgScanOverviews() ([]*models.ImgScanOverview, error) {
+	var res []*models.ImgScanOverview
+	o := GetOrmer()
+	_, err := o.QueryTable(models.ScanOverviewTable).All(&res)
+	return res, err
+}
+
+func scanOverviewQs() orm.QuerySeter {
+	o := GetOrmer()
+	return o.QueryTable(models.ScanOverviewTable)
 }

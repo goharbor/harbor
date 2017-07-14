@@ -26,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	http_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -192,9 +193,11 @@ func Login(client *http.Client, url, username, password string) (*AuthContext, e
 func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Debugf("\"%s %s\" failed", req.Method, req.URL.String())
 		return nil, err
 	}
 	defer resp.Body.Close()
+	log.Debugf("\"%s %s\" %d", req.Method, req.URL.String(), resp.StatusCode)
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -202,7 +205,10 @@ func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, string(data))
+		return nil, &http_error.HTTPError{
+			StatusCode: resp.StatusCode,
+			Detail:     string(data),
+		}
 	}
 
 	ctx := &AuthContext{}

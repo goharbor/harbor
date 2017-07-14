@@ -164,6 +164,9 @@ func (s *standardTokenAuthorizer) generateToken(realm, service string, scopes []
 	realm = s.tokenURL(realm)
 	tk, err := getToken(s.client, s.credential, realm,
 		service, scopes)
+	if err != nil {
+		return "", 0, nil, err
+	}
 
 	if len(tk.IssuedAt) == 0 {
 		return tk.Token, tk.ExpiresIn, nil, nil

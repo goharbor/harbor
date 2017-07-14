@@ -80,12 +80,13 @@ func RequestAsUI(method, url string, body io.Reader, expectSC int) error {
 	if err != nil {
 		return err
 	}
+
+	AddUISecret(req)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	AddUISecret(req)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != expectSC {

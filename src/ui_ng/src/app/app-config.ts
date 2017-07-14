@@ -11,22 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { ClairDBStatus } from 'harbor-ui';
+
 export class AppConfig {
-    constructor(){
+    constructor() {
         //Set default value
         this.with_notary = false;
         this.with_admiral = false;
+        this.with_clair = false;
         this.admiral_endpoint = "";
         this.auth_mode = "db_auth";
         this.registry_url = "";
         this.project_creation_restriction = "everyone";
         this.self_registration = true;
         this.has_ca_root = false;
-        this.harbor_version = "0.5.0";//default
+        this.harbor_version = "1.2.0";//default
+        this.clair_vulnerability_status = {
+            overall_last_update: 0,
+            details: []
+        };
     }
-    
+
     with_notary: boolean;
     with_admiral: boolean;
+    with_clair: boolean;
     admiral_endpoint: string;
     auth_mode: string;
     registry_url: string;
@@ -34,4 +42,5 @@ export class AppConfig {
     self_registration: boolean;
     has_ca_root: boolean;
     harbor_version: string;
+    clair_vulnerability_status?: ClairDBStatus;
 }

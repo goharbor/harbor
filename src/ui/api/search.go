@@ -51,15 +51,13 @@ func (s *SearchAPI) Get() {
 	if isSysAdmin {
 		projects, err = s.ProjectMgr.GetAll(nil)
 		if err != nil {
-			s.HandleInternalServerError(fmt.Sprintf(
-				"failed to get projects: %v", err))
+			s.ParseAndHandleError("failed to get projects", err)
 			return
 		}
 	} else {
 		projects, err = s.ProjectMgr.GetPublic()
 		if err != nil {
-			s.HandleInternalServerError(fmt.Sprintf(
-				"failed to get projects: %v", err))
+			s.ParseAndHandleError("failed to get projects", err)
 			return
 		}
 		if isAuthenticated {
