@@ -51,12 +51,12 @@ type Storage struct {
 
 //namespaces stores all name spaces on Clair, it should be initialised only once.
 type clairNamespaces struct {
-	*sync.RWMutex
+	sync.RWMutex
 	l     []string
 	clair *clair.Client
 }
 
-func (n clairNamespaces) get() ([]string, error) {
+func (n *clairNamespaces) get() ([]string, error) {
 	n.Lock()
 	defer n.Unlock()
 	if len(n.l) == 0 {
@@ -80,7 +80,7 @@ func (n clairNamespaces) get() ([]string, error) {
 }
 
 var (
-	namespaces clairNamespaces
+	namespaces = &clairNamespaces{}
 )
 
 //GeneralInfo wraps common systeminfo for anonymous request
