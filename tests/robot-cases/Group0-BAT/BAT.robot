@@ -137,14 +137,14 @@ Test Case Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
     Create An New Public Project  project${d}
-    ${rc}=  run and return rc and output  docker pull hello-world
+    ${rc}=  run and return rc  docker pull hello-world
     ${rc}  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker tag hello-world ${ip}/project${d}/hello-world
-    ${rc}=  run and return rc and output  docker push ${ip}/project${d}/hello-world
-    ${rc}=  run and return rc and output  docker logout ${ip}
+    ${rc}=  run and return rc  docker tag hello-world ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker push ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker logout ${ip}
    #docker login as b
     ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker pull ${ip}/project${d}/hello-world
     should be equal as integers  ${rc}  0
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
@@ -169,7 +169,7 @@ Test Case Manage project publicity
     Sleep  1
     Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
     ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc and output  docker pull ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker pull ${ip}/project${d}/hello-world
     Should Not Be Equal As Integers  ${rc}  0
     Logout Harbor
     #sign in as a and change project to public
