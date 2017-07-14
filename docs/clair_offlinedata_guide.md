@@ -10,7 +10,7 @@ This document is a step by step instruction on update Clair vulnerability databa
 A. User need to install Clair 2.0.1 ( if you have a harbor1.2 instance with internet access will also works.)
 
 B. Check the Clair already update the vulnerability to the latest.
-   
+
     a. 'docker ps' to list the Clair container. Get the Clair container id .
 
     b. Check the log of the Clair container.
