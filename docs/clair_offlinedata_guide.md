@@ -10,12 +10,14 @@ This document is a step by step instruction on update Clair vulnerability databa
 A. User need to install Clair 2.0.1 ( if you have a harbor1.2 instance with internet access will also works.)
 
 B. Check the Clair already update the vulnerability to the latest.
-  a. 'docker ps' to list the Clair container. Get the Clair container id .
+   
+    a. 'docker ps' to list the Clair container. Get the Clair container id .
+
     b. Check the log of the Clair container.
 
-      c. If you are using harbor you can find the latest Clair log under /var/log/harbor/2017--xx-xx/clair.log
+    c. If you are using harbor you can find the latest Clair log under /var/log/harbor/2017--xx-xx/clair.log
 
-      d. You will find some logs like follow:
+    d. You will find some logs like follow:
 
       ```
       Jul 3 20:40:45 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:45.890364","updater name":"rhel"}
@@ -28,7 +30,7 @@ B. Check the Clair already update the vulnerability to the latest.
       Jul 4 00:38:05 172.18.0.1 clair[3516]: {"Event":"update finished","Level":"info","Location":"updater.go:198","Time":"2017-07-04 07:38:05.251580"}
       ```
 
-e. The update finished indicate that Clair has finished an vulnerability update round. You need to check that logs above it to make sure all the endpoints are update correctly.
+    e. The update finished indicate that Clair has finished an vulnerability update round. You need to check that logs above it to make sure all the endpoints are update correctly.
 
 ### Data dump
 
