@@ -78,8 +78,8 @@ func (pma *ProjectMemberAPI) Prepare() {
 	}
 	pma.project = project
 
-	if pma.Ctx.Input.IsGet() && !pma.SecurityCtx.HasReadPerm(pid) ||
-		!pma.SecurityCtx.HasAllPerm(pid) {
+	if !(pma.Ctx.Input.IsGet() && pma.SecurityCtx.HasReadPerm(pid) ||
+		pma.SecurityCtx.HasAllPerm(pid)) {
 		pma.HandleForbidden(pma.SecurityCtx.GetUsername())
 		return
 	}
