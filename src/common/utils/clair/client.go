@@ -47,6 +47,22 @@ func NewClient(endpoint string, logger *log.Logger) *Client {
 	}
 }
 
+func (c *Client) send(req *http.Request, expectedStatus int) ([]byte, error) {
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != expectedStatus {
+		return nil, fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+	}
+	return b, nil
+}
+
 // ScanLayer calls Clair's API to scan a layer.
 func (c *Client) ScanLayer(l models.ClairLayer) error {
 	layer := models.ClairLayerEnvelope{
@@ -57,46 +73,27 @@ func (c *Client) ScanLayer(l models.ClairLayer) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", c.endpoint+"/v1/layers", bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, c.endpoint+"/v1/layers", bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
 	req.Header.Set(http.CanonicalHeaderKey("Content-Type"), "application/json")
-	resp, err := c.client.Do(req)
+	_, err = c.send(req, http.StatusCreated)
 	if err != nil {
-		return err
+		log.Errorf("Unexpected error: %v", err)
 	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	c.logger.Infof("response code: %d", resp.StatusCode)
-	if resp.StatusCode != http.StatusCreated {
-		c.logger.Warningf("Unexpected status code: %d", resp.StatusCode)
-		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
-	}
-	c.logger.Infof("Returning.")
-	return nil
+	return err
 }
 
 // GetResult calls Clair's API to get layers with detailed vulnerability list
 func (c *Client) GetResult(layerName string) (*models.ClairLayerEnvelope, error) {
-	req, err := http.NewRequest("GET", c.endpoint+"/v1/layers/"+layerName+"?features&vulnerabilities", nil)
+	req, err := http.NewRequest(http.MethodGet, c.endpoint+"/v1/layers/"+layerName+"?features&vulnerabilities", nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.client.Do(req)
+	b, err := c.send(req, http.StatusOK)
 	if err != nil {
 		return nil, err
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	var res models.ClairLayerEnvelope
 	err = json.Unmarshal(b, &res)
@@ -108,21 +105,13 @@ func (c *Client) GetResult(layerName string) (*models.ClairLayerEnvelope, error)
 
 // GetNotification calls Clair's API to get details of notification
 func (c *Client) GetNotification(id string) (*models.ClairNotification, error) {
-	req, err := http.NewRequest("GET", c.endpoint+"/v1/notifications/"+id+"?limit=2", nil)
+	req, err := http.NewRequest(http.MethodGet, c.endpoint+"/v1/notifications/"+id+"?limit=2", nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.client.Do(req)
+	b, err := c.send(req, http.StatusOK)
 	if err != nil {
 		return nil, err
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	var ne models.ClairNotificationEnvelope
 	err = json.Unmarshal(b, &ne)
@@ -138,22 +127,36 @@ func (c *Client) GetNotification(id string) (*models.ClairNotification, error) {
 
 // DeleteNotification deletes a notification record from Clair
 func (c *Client) DeleteNotification(id string) error {
-	req, err := http.NewRequest("DELETE", c.endpoint+"/v1/notifications/"+id, nil)
+	req, err := http.NewRequest(http.MethodDelete, c.endpoint+"/v1/notifications/"+id, nil)
 	if err != nil {
 		return err
 	}
-	resp, err := c.client.Do(req)
+	_, err = c.send(req, http.StatusOK)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	log.Debugf("Deleted notification %s from Clair.", id)
 	return nil
+}
+
+// ListNamespaces list the namespaces in Clair
+func (c *Client) ListNamespaces() ([]string, error) {
+	req, err := http.NewRequest(http.MethodGet, c.endpoint+"/v1/namespaces", nil)
+	if err != nil {
+		return nil, err
+	}
+	b, err := c.send(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	var nse models.ClairNamespaceEnvelope
+	err = json.Unmarshal(b, &nse)
+	if err != nil {
+		return nil, err
+	}
+	res := []string{}
+	for _, ns := range *nse.Namespaces {
+		res = append(res, ns.Name)
+	}
+	return res, nil
 }
