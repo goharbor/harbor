@@ -160,7 +160,7 @@ Test Case-Manage Project Member
     Logout Harbor
     #login console as usera and push
     ${rc}=  run and return rc  docker pull hello-world
-    ${rc}=  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
+    ${rc}  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
     ${rc}=  run and return rc  docker tag hello-world ${d}/project${d}/hello-world
     ${rc}=  run and return rc  docker push ${d}/project${d}/hello-world
     ${rc}=  run and return rc  docker logout ${d}
