@@ -19,16 +19,16 @@ B. Check the Clair already update the vulnerability to the latest.
 
     d. You will find some logs like follow:
 
-      ```
-      Jul 3 20:40:45 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:45.890364","updater name":"rhel"}
-      Jul 3 20:40:46 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:46.768924","updater name":"alpine"}
-      Jul 3 20:40:47 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:47.190982","updater name":"oracle"}
-      Jul 3 20:41:07 172.18.0.1 clair[3516]: {"Event":"Debian buster is not mapped to any version number (eg. Jessie-\u003e8). Please update me.","Level":"warning","Location":"debian.go:128","Time":"2017-07-04 03:41:07.833720"}
-      Jul 3 20:41:07 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:41:07.833975","updater name":"debian"}
-      Jul 4 00:26:17 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 07:26:17.596986","updater name":"ubuntu"}
-      Jul 4 00:26:18 172.18.0.1 clair[3516]: {"Event":"adding metadata to vulnerabilities","Level":"info","Location":"updater.go:253","Time":"2017-07-04 07:26:18.060810"}
-      Jul 4 00:38:05 172.18.0.1 clair[3516]: {"Event":"update finished","Level":"info","Location":"updater.go:198","Time":"2017-07-04 07:38:05.251580"}
-      ```
+    ```
+    Jul 3 20:40:45 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:45.890364","updater name":"rhel"}
+    Jul 3 20:40:46 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:46.768924","updater name":"alpine"}
+    Jul 3 20:40:47 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:47.190982","updater name":"oracle"}
+    Jul 3 20:41:07 172.18.0.1 clair[3516]: {"Event":"Debian buster is not mapped to any version number (eg. Jessie-\u003e8). Please update me.","Level":"warning","Location":"debian.go:128","Time":"2017-07-04 03:41:07.833720"}
+    Jul 3 20:41:07 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:41:07.833975","updater name":"debian"}
+    Jul 4 00:26:17 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 07:26:17.596986","updater name":"ubuntu"}
+    Jul 4 00:26:18 172.18.0.1 clair[3516]: {"Event":"adding metadata to vulnerabilities","Level":"info","Location":"updater.go:253","Time":"2017-07-04 07:26:18.060810"}
+    Jul 4 00:38:05 172.18.0.1 clair[3516]: {"Event":"update finished","Level":"info","Location":"updater.go:198","Time":"2017-07-04 07:38:05.251580"}
+    ```
 
     e. The update finished indicate that Clair has finished an vulnerability update round. You need to check that logs above it to make sure all the endpoints are update correctly.
 
