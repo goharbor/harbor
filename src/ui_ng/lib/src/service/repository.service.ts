@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { Repository } from './interface';
+import { Repository, RepositoryItem } from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http } from '@angular/http';
@@ -27,11 +27,11 @@ export abstract class RepositoryService {
      * @param {(number | string)} projectId
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<Repository[]> | Promise<Repository[]> | Repository[])}
+     * @returns {(Observable<Repository> | Promise<Repository> | Repository)}
      * 
      * @memberOf RepositoryService
      */
-    abstract getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Promise<Repository[]> | Repository[];
+    abstract getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository> | Promise<Repository> | Repository;
 
     /**
      * DELETE the specified repository.
@@ -61,7 +61,7 @@ export class RepositoryDefaultService extends RepositoryService {
         super();
     }
 
-    public getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Promise<Repository[]> | Repository[] {
+    public getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository> | Promise<Repository> | Repository {
         if (!projectId) {
             return Promise.reject("Bad argument");
         }
@@ -71,14 +71,29 @@ export class RepositoryDefaultService extends RepositoryService {
         }
 
         queryParams.set('project_id', "" + projectId);
-        queryParams.set('detail', '1');
         if (repositoryName && repositoryName.trim() !== '') {
             queryParams.set('q', repositoryName);
         }
 
         let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : "/api/repositories";
         return this.http.get(url, buildHttpRequestOptions(queryParams)).toPromise()
-            .then(response => response.json() as Repository[])
+            .then(response => {
+                let result: Repository = {
+                    metadata: { xTotalCount: 0 },
+                    data: []
+                };
+
+                if (response && response.headers) {
+                    let xHeader: string = response.headers.get("X-Total-Count");
+                    if (xHeader) {
+                        result.metadata.xTotalCount = parseInt(xHeader, 0);
+                    }
+                }
+
+                result.data = response.json() as RepositoryItem[];
+
+                return result;
+            })
             .catch(error => Promise.reject(error));
     }
 
