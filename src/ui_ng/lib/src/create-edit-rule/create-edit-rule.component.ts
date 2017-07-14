@@ -75,6 +75,9 @@ export class CreateEditRuleComponent implements AfterViewChecked {
   testOngoing: boolean;
   pingStatus: boolean;
 
+  btnAbled:boolean;
+
+
   ruleForm: NgForm;
 
   staticBackdrop: boolean = true;
@@ -135,8 +138,13 @@ export class CreateEditRuleComponent implements AfterViewChecked {
     return this.actionType === ActionType.EDIT && (this.initVal.enable || false);
   }
 
+
   get showNewDestination(): boolean {
     return this.actionType === ActionType.ADD_NEW || (!this.createEditRule.enable || false);
+  }
+  get connectAbled():boolean{
+    return !this.createEditRule.endpointId &&  !this.isCreateEndpoint;
+
   }
 
   constructor(
@@ -393,6 +401,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
 
   testConnection() {
     this.pingStatus = true;
+    this.btnAbled=true;
     this.translateService.get('REPLICATION.TESTING_CONNECTION').subscribe(res=>this.pingTestMessage=res);
     this.testOngoing = !this.testOngoing;
     let pingTarget: Endpoint = this.initEndpoint;
@@ -409,11 +418,13 @@ export class CreateEditRuleComponent implements AfterViewChecked {
             this.testOngoing = !this.testOngoing;
             this.translateService.get('REPLICATION.TEST_CONNECTION_SUCCESS').subscribe(res=>this.pingTestMessage=res);
             this.pingStatus = true;
+          this.btnAbled=false;
           })
          .catch(error=>{
             this.testOngoing = !this.testOngoing;
             this.translateService.get('REPLICATION.TEST_CONNECTION_FAILURE').subscribe(res=>this.pingTestMessage=res);
             this.pingStatus = false;
+           this.btnAbled=false;
           });
   }
 }
