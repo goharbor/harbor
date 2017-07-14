@@ -12,8 +12,11 @@ A. User need to install Clair 2.0.1 ( if you have a harbor1.2 instance with inte
 B. Check the Clair already update the vulnerability to the latest.
   a. 'docker ps' to list the Clair container. Get the Clair container id .
     b. Check the log of the Clair container.
+
       c. If you are using harbor you can find the latest Clair log under /var/log/harbor/2017--xx-xx/clair.log
+
       d. You will find some logs like follow:
+
       ```
       Jul 3 20:40:45 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:45.890364","updater name":"rhel"}
       Jul 3 20:40:46 172.18.0.1 clair[3516]: {"Event":"finished fetching","Level":"info","Location":"updater.go:227","Time":"2017-07-04 03:40:46.768924","updater name":"alpine"}
@@ -24,7 +27,8 @@ B. Check the Clair already update the vulnerability to the latest.
       Jul 4 00:26:18 172.18.0.1 clair[3516]: {"Event":"adding metadata to vulnerabilities","Level":"info","Location":"updater.go:253","Time":"2017-07-04 07:26:18.060810"}
       Jul 4 00:38:05 172.18.0.1 clair[3516]: {"Event":"update finished","Level":"info","Location":"updater.go:198","Time":"2017-07-04 07:38:05.251580"}
       ```
-      e. The update finished indicate that Clair has finished an vulnerability update round. You need to check that logs above it to make sure all the endpoints are update correctly.
+
+e. The update finished indicate that Clair has finished an vulnerability update round. You need to check that logs above it to make sure all the endpoints are update correctly.
 
 ### Data dump
 
@@ -49,8 +53,11 @@ A. Before update the offline data, user are strongly suggested to backup their C
 ### Update Clair DB
 A. Copy the vulnerability.sql and clear.sql to the clair-db container which you want to update.
 (if you check the harbor docker compose file you will find clair-db has two volumes: ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d and /data/clair-db:/var/lib/postgresql/data, you can put the above sql file in ether of this two folder as a transfer)
+
 B. Get the clair db shell by "docker exec –it clair-db bash"
+
 C. $>psql -U postgres < clear.sql
+
 D. $>psql –U postgres < vulnerability.sql
 
 ### Rescan
