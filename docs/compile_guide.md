@@ -105,7 +105,6 @@ BASEIMAGE          | Container base image, default: photon
 CLARITYIMAGE       | Clarity UI builder image, default: harbor-clarity-ui-builder
 DEVFLAG            | Build model flag, default: dev
 COMPILETAG         | Compile model flag, default: compile_normal (local golang build)
-COMPILEHARBORUIFLAG| Compile with Harbor UI Library
 NOTARYFLAG         | Notary mode flag, default: false
 HTTPPROXY          | NPM http proxy for Clarity UI builder
 REGISTRYSERVER     | Remote registry server IP address

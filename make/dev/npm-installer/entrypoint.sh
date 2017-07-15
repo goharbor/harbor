@@ -19,9 +19,11 @@ if [ ! -z "$npm_proxy" -a "$npm_proxy" != " " ]; then
 fi
 
 cat ./package.json
+#Prepare the harbor-ui npm module
 npm install
 ./node_modules/.bin/ngc -p tsconfig-aot.json
 
+#Install npm package
 npm install
 ./node_modules/.bin/ngc -p tsconfig-aot.json
 sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
