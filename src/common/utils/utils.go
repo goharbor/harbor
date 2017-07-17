@@ -129,6 +129,7 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 }
 
 //ConvertMapToStruct is used to fill the specified struct with map.
+//Only support the exported fields.
 func ConvertMapToStruct(object interface{}, valuesInMap map[string]interface{}) error {
 	if object == nil {
 		return fmt.Errorf("nil struct is not supported")
@@ -139,7 +140,7 @@ func ConvertMapToStruct(object interface{}, valuesInMap map[string]interface{}) 
 	}
 
 	for k, v := range valuesInMap {
-		if err := setField(object, k, v); err != nil {
+		if err := setField(object, strings.Title(strings.ToLower(k)), v); err != nil {
 			return err
 		}
 	}
