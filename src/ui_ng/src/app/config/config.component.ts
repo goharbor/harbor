@@ -178,12 +178,17 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             this.replicationConfig.isValid &&
             this.systemSettingsConfig &&
             this.systemSettingsConfig.isValid &&
-            this.vulnerabilityConfig &&
-            this.vulnerabilityConfig.isValid &&
             this.mailConfig &&
             this.mailConfig.isValid() &&
             this.authConfig &&
-            this.authConfig.isValid();
+            this.authConfig.isValid() &&
+            this.isVulnerabiltyValid;
+    }
+
+    public get isVulnerabiltyValid(): boolean {
+        return !this.appConfigService.getConfig().with_clair ||
+            (this.vulnerabilityConfig &&
+                this.vulnerabilityConfig.isValid);
     }
 
     public hasChanges(): boolean {

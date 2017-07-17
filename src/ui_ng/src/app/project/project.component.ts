@@ -124,7 +124,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
     this.loading = true;
-
     this.projectService
       .listProjects(name, isPublic, page, pageSize)
       .subscribe(
@@ -184,7 +183,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
         response => {
           this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
           this.statisticHandler.refresh();
-          this.getProjects("", this.currentFilteredType - 1);
+          if (this.currentFilteredType === 0) {
+            this.getProjects();
+          } else {
+            this.getProjects("", this.currentFilteredType - 1);
+          }
         },
         error => this.messageHandlerService.handleError(error)
         );
