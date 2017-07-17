@@ -15,11 +15,10 @@
 package utils
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestTimeMarker(t *testing.T) {
