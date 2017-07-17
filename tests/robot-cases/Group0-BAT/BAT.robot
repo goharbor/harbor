@@ -137,6 +137,67 @@ Test Case - Create An Replication Rule New Endpoint
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
 	Close Browser 
 
+Test Case Manage project publicity
+    Init Chrome Driver
+    ${d}=    Get Current Date  result_format=%m%s
+    ${rc}  ${ip}=    run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}' 
+    Log to console  ${ip}
+    Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=userb${d}  email=userb${d}@vmware.com  realname=userb${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Create An New Public Project  project${d}
+    ${rc}=  run and return rc  docker pull hello-world
+    ${rc}  ${output}=  run and return rc and output  docker login -u usera${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc  docker tag hello-world ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker push ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker logout ${ip}
+   #docker login as b
+    ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc  docker pull ${ip}/project${d}/hello-world
+    should be equal as integers  ${rc}  0
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    #choose private
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Logout Harbor
+    #login as a and change project to private
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Sleep  1
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    Logout Harbor
+    #signin as userb
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    ${rc}  ${output}=  run and return rc and output  docker login -u userb${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc  docker pull ${ip}/project${d}/hello-world
+    Should Not Be Equal As Integers  ${rc}  0
+    Logout Harbor
+    #sign in as a and change project to public
+    Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
+    Sleep  1
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    Logout Harbor
+    #sign in userb to verify
+    Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
+    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'project${d}')]
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
