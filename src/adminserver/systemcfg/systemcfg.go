@@ -45,6 +45,7 @@ var (
 		common.LDAPSearchPwd,
 		common.MySQLPassword,
 		common.AdminInitialPassword,
+		common.ClairDBPassword,
 	}
 
 	// all configurations need read from environment variables
@@ -120,6 +121,7 @@ var (
 			env:   "WITH_CLAIR",
 			parse: parseStringToBool,
 		},
+		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
 	}
 
 	// configurations need read from environment variables
@@ -144,6 +146,7 @@ var (
 			env:   "WITH_CLAIR",
 			parse: parseStringToBool,
 		},
+		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
 	}
 )
 
