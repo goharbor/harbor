@@ -133,25 +133,30 @@ func (sch *Scheduler) Start() {
 				//Exit
 				return
 			case p := <-sch.scheduleQueue:
-				//Schedule the policy.
-				watcher := NewWatcher(p, sch.statChan, sch.unscheduleQueue)
+				if !sch.policies.Exists(p.Name()) {
+					//Schedule the policy.
+					watcher := NewWatcher(p, sch.statChan, sch.unscheduleQueue)
 
-				//Keep the policy for future use after it's successfully scheduled.
-				sch.policies.Put(p.Name(), watcher)
+					//Keep the policy for future use after it's successfully scheduled.
+					sch.policies.Put(p.Name(), watcher)
 
-				//Enable it.
-				watcher.Start()
+					//Enable it.
+					watcher.Start()
 
-				sch.statChan <- &StatItem{statSchedulePolicy, 1, nil}
+					//Update stats and log info.
+					log.Infof("Policy %s is scheduled", p.Name())
+					sch.statChan <- &StatItem{statSchedulePolicy, 1, nil}
+				}
 			case name := <-sch.unscheduleQueue:
 				//Find the watcher.
 				watcher := sch.policies.Remove(name)
 				if watcher != nil && watcher.IsRunning() {
 					watcher.Stop()
+
+					//Update stats and log info.
+					log.Infof("Policy %s is unscheduled", name)
+					sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
 				}
-
-				sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
-
 			case stat := <-sch.statChan:
 				{
 					switch stat.Type {
@@ -262,4 +267,13 @@ func (sch *Scheduler) IsRunning() bool {
 //HasScheduled is to check whether the given policy has been scheduled or not.
 func (sch *Scheduler) HasScheduled(policyName string) bool {
 	return sch.policies.Exists(policyName)
+}
+
+//GetPolicy is used to get related policy reference by its name.
+func (sch *Scheduler) GetPolicy(policyName string) policy.Policy {
+	if sch.policies.Exists(policyName) {
+		return sch.policies.Get(policyName).p
+	}
+
+	return nil
 }

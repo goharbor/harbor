@@ -44,9 +44,10 @@ type AlternatePolicy struct {
 //NewAlternatePolicy is constructor of creating AlternatePolicy.
 func NewAlternatePolicy(config *AlternatePolicyConfiguration) *AlternatePolicy {
 	return &AlternatePolicy{
-		tasks:     []task.Task{},
-		config:    config,
-		isEnabled: false,
+		tasks:      []task.Task{},
+		config:     config,
+		isEnabled:  false,
+		terminator: make(chan bool),
 	}
 }
 
@@ -108,7 +109,6 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 	}
 
 	alp.done = make(chan bool)
-	alp.terminator = make(chan bool)
 	alp.evaluation = make(chan bool)
 
 	go func() {

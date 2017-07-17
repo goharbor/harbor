@@ -106,6 +106,9 @@ func TestScheduler(t *testing.T) {
 	if DefaultScheduler.stats.PolicyCount != 1 {
 		t.Fatal("Policy stats do not match")
 	}
+	if DefaultScheduler.GetPolicy(fp.Name()) == nil {
+		t.Fatal("Failed to get poicy by name")
+	}
 
 	time.Sleep(2 * time.Second)
 	if fk.number == 100 {
