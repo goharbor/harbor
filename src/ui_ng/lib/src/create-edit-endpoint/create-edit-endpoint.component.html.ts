@@ -45,7 +45,7 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `<clr-modal [(clrModalOpen)
     </form>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || targetEndpoint.errors">{{ 'DESTINATION.TEST_CONNECTION' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || hasConnectData">{{ 'DESTINATION.TEST_CONNECTION' | translate }}</button>
       <button type="button" class="btn btn-outline" (click)="onCancel()"  [disabled]="testOngoing">{{ 'BUTTON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-primary" (click)="onSubmit()"  [disabled]="testOngoing || targetForm.form.invalid || !editable">{{ 'BUTTON.OK' | translate }}</button>
   </div>
