@@ -273,7 +273,8 @@
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
         "INVALID_DATE": "无效日期。",
         "PLACEHOLDER": "未发现任何复制规则!",
-        "JOB_PLACEHOLDER": "未发现任何复制任务!"
+        "JOB_PLACEHOLDER": "未发现任何复制任务!",
+        "JOB_LOG_VIEWER": "查看复制任务日志"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -395,7 +396,7 @@
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
-            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描；‘缺陷库刷新后’：当缺陷数据库刷新后。"
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。"
         },
         "LDAP": {
             "URL": "LDAP URL",
