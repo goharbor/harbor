@@ -358,12 +358,20 @@ func ClairEndpoint() string {
 	return common.DefaultClairEndpoint
 }
 
+// ClairDBPassword returns the password for accessing Clair's DB.
+func ClairDBPassword() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[common.ClairDBPassword].(string), nil
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
-
 		return ""
 	}
 	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
