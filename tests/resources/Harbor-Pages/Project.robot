@@ -57,7 +57,33 @@ Switch To Log
 Switch To Replication
 		Click Element  xpath=${replication_xpath}
 		Sleep  1
-		
+
 Back To projects
 		Click Element  xpath=${projects_xpath}
 		Sleep  1
+
+Project Should Display
+		[Arguments]  ${projectname}
+		Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+
+Project Should Not Display
+		[Arguments]  ${projectname}
+		Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+
+Search Private Projects
+		Click element  xpath=//select
+		Click element  xpath=//select/option[@value=1]
+		Sleep  1
+		Capture Page Screenshot  SearchPrivateProjects.png
+
+Make Project Private
+		[Arguments]  ${projectname}
+		Sleep  1
+		Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+		Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+
+Make Project Public
+		[Arguments]  ${projectname}
+		Sleep  1
+		Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+		Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
