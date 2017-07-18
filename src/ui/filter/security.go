@@ -133,8 +133,13 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 			return false
 		}
 
+		token, err := config.TokenReader.ReadToken()
+		if err != nil {
+			log.Errorf("failed to read solution user token: %v", err)
+			return false
+		}
 		authCtx, err := authcontext.Login(config.AdmiralClient,
-			config.AdmiralEndpoint(), username, password)
+			config.AdmiralEndpoint(), username, password, token)
 		if err != nil {
 			log.Errorf("failed to authenticate %s: %v", username, err)
 			return false
