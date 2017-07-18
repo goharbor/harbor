@@ -32,33 +32,24 @@ B. Check the Clair already update the vulnerability to the latest.
 
 ### Data dump
 
-A. Login into the PostgreSQL container of Clair.
-* $>docker exec -it clair-db bash
+A. Login into the host where Clair db is running.
 
 B. Dump the Clair vulnerability database by the follow command
-* $> pg_dump -U postgres -a -t feature -t keyvalue -t namespace -t schema_migrations -t vulnerability -t vulnerability_fixedin_feature > vulnerability.sqll
-* $> pg_dump -U postgres -c -s > clear.sql
+* $>docker exec clair-db /bin/bash -c  "pg_dump -U postgres -a -t feature -t keyvalue -t namespace -t schema_migrations -t vulnerability -t vulnerability_fixedin_feature" > vulnerability.sql
+* $>docker exec clair-db /bin/bash -c "pg_dump -U postgres -c -s" > clear.sql
 
-C. Collect the offline data
-* Exit the container and back to the host where the container running. (assume you are using aufs as storage driver)
-* cd /var/lib/docker/aufs/mnt
-* find . -name clear.sql
-* find . -name vulnerability.sql
-* Copy the above two file to the host where Harbor is running.
 
 ### Back Up Clair DB
 A. Before update the offline data, user are strongly suggested to backup their Clair db.
-* pg_dump -U postgres -c > all.sql
+* docker exec clair-db /bin/bash -c  "pg_dump -U postgres -c" > all.sql
 
 ### Update Clair DB
-A. Copy the vulnerability.sql and clear.sql to the clair-db container which you want to update.
-(if you check the harbor docker compose file you will find clair-db has two volumes: ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d and /data/clair-db:/var/lib/postgresql/data, you can put the above sql file in ether of this two folder as a transfer)
+A. Copy the vulnerability.sql and clear.sql to the host where clair-db container which you want to update is running on.
 
-B. Get the Clair db shell by "docker exec –it clair-db bash"
 
-C. $>psql -U postgres < clear.sql
+C. $>docker exec -i clair-db psql -U postgres < clear.sql
 
-D. $>psql –U postgres < vulnerability.sql
+D. $>docker exec -i clair-db psql –U postgres < vulnerability.sql
 
 ### Rescan
 After update the offline data, user need to trigger the "rescan all" functionality to scan all the images and Harbor reflect the new changes automatically after the scan finished.(Otherwise the vulnerability detail will not show up) 
