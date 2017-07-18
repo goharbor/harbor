@@ -54,7 +54,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   createProjectOpened: boolean;
 
   hasChanged: boolean;
-  isSubmitValid:boolean=false;
+  isSubmitOnGoing:boolean=false;
 
   staticBackdrop: boolean = true;
   closable: boolean = false;
@@ -87,17 +87,18 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
           if (this.isNameValid) {
             //Check exiting from backend
             this.checkOnGoing = true;
-            this.isSubmitValid=true;
             this.projectService
               .checkProjectExists(cont.value).toPromise()
               .then(() => {
                 //Project existing
                 this.isNameValid = false;
+                this.isSubmitOnGoing=false;
                 this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
                 this.checkOnGoing = false;
               })
               .catch(error => {
                 this.checkOnGoing = false;
+                this.isSubmitOnGoing=true;
               });
           } else {
             this.nameTooltipText = 'PROJECT.NAME_TOOLTIP';
@@ -111,7 +112,10 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   }
 
   onSubmit() {
-    this.isSubmitValid=false;
+    if (this.isSubmitOnGoing){
+      return ;
+    }
+    this.isSubmitOnGoing=false;
     this.projectService
       .createProject(this.project.name, this.project.public ? 1 : 0)
       .subscribe(
@@ -187,7 +191,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   public get isValid(): boolean {
     return this.currentForm &&
     this.currentForm.valid &&
-    this.isSubmitValid&&
+    this.isSubmitOnGoing&&
     this.isNameValid &&
     !this.checkOnGoing;
   }
