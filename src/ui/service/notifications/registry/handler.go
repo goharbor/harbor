@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
+	clairdao "github.com/vmware/harbor/src/common/dao/clair"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -105,8 +106,14 @@ func (n *NotificationHandler) Post() {
 			}()
 
 			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
+
 			if autoScanEnabled(project) {
-				if err := uiutils.TriggerImageScan(repository, tag); err != nil {
+				last, err := clairdao.GetLastUpdate()
+				if err != nil {
+					log.Errorf("Failed to get last update from Clair DB, error: %v, the auto scan will be skipped.", err)
+				} else if last == 0 {
+					log.Infof("The Vulnerability data is not ready in Clair DB, the auto scan will be skipped.", err)
+				} else if err := uiutils.TriggerImageScan(repository, tag); err != nil {
 					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
 				}
 			}

@@ -54,7 +54,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   createProjectOpened: boolean;
 
   hasChanged: boolean;
-  btnIsOk:boolean=false;
+  isSubmitOnGoing:boolean=false;
 
   staticBackdrop: boolean = true;
   closable: boolean = false;
@@ -86,12 +86,10 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
           this.isNameValid = cont.valid;
           if (this.isNameValid) {
             //Check exiting from backend
-            this.checkOnGoing = true;
             this.projectService
               .checkProjectExists(cont.value).toPromise()
               .then(() => {
                 //Project existing
-                this.btnIsOk=true;
                 this.isNameValid = false;
                 this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
                 this.checkOnGoing = false;
@@ -111,16 +109,24 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   }
 
   onSubmit() {
-    this.btnIsOk=false;
+    if (this.isSubmitOnGoing){
+      return ;
+    }
+
+    this.isSubmitOnGoing=true;
     this.projectService
       .createProject(this.project.name, this.project.public ? 1 : 0)
       .subscribe(
       status => {
+        this.isSubmitOnGoing=false;
+
         this.create.emit(true);
         this.messageHandlerService.showSuccess('PROJECT.CREATED_SUCCESS');
         this.createProjectOpened = false;
       },
       error => {
+        this.isSubmitOnGoing=false;
+
         let errorMessage: string;
         if (error instanceof Response) {
           switch (error.status) {
@@ -187,7 +193,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   public get isValid(): boolean {
     return this.currentForm &&
     this.currentForm.valid &&
-    this.btnIsOk&&
+    !this.isSubmitOnGoing&&
     this.isNameValid &&
     !this.checkOnGoing;
   }
@@ -198,6 +204,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
     if (cont) {
       this.proNameChecker.next(cont.value);
     }
+
   }
 }
 

@@ -30,7 +30,7 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
           <clr-icon shape="warning" class="is-warning" size="24"></clr-icon>
           {{'CONFIG.SCANNING.DB_NOT_READY' | translate }}
         </span>
-        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
+        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
         {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
         <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
       </clr-dg-footer>

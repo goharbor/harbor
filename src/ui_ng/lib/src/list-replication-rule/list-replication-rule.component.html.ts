@@ -34,7 +34,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
         </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-      {{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} {{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
+      <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
       <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>

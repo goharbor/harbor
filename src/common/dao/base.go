@@ -43,13 +43,13 @@ type Database interface {
 }
 
 // InitClairDB ...
-func InitClairDB() error {
-	//TODO: Read from env vars.
+func InitClairDB(password string) error {
+	//Except for password other information will not be configurable, so keep it hard coded for 1.2.0.
 	p := &pgsql{
 		host:     "postgres",
 		port:     5432,
 		usr:      "postgres",
-		pwd:      "password",
+		pwd:      password,
 		database: "postgres",
 		sslmode:  false,
 	}
