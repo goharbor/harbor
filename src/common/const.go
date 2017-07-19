@@ -66,6 +66,7 @@ const (
 	WithNotary                 = "with_notary"
 	WithClair                  = "with_clair"
 	ScanAllPolicy              = "scan_all_policy"
+	ClairDBPassword            = "clair_db_password"
 
 	DefaultClairEndpoint = "http://clair:6060"
 )
