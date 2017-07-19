@@ -273,7 +273,8 @@
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
-        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
+        "JOB_LOG_VIEWER": "View Replication Job Log"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -395,7 +396,7 @@
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday; 'Upon Refresh': Triggering scanning when database refreshed."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
         },
         "LDAP": {
             "URL": "LDAP URL",

@@ -23,6 +23,7 @@ import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 import { CONFIGURATION_DIRECTIVES } from './config/index';
+import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 
 import {
   SystemInfoService,
@@ -153,7 +154,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
-    CONFIGURATION_DIRECTIVES
+    CONFIGURATION_DIRECTIVES,
+    JOB_LOG_VIEWER_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -173,6 +175,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
+    JOB_LOG_VIEWER_DIRECTIVES,
     TranslateModule
   ],
   providers: []

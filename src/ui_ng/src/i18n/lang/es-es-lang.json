@@ -273,7 +273,8 @@
         "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos.",
         "INVALID_DATE": "Fecha invalida.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
-        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
+        "JOB_LOG_VIEWER": "View Replication Job Log"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -396,7 +397,7 @@
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday; 'Upon Refresh': Triggering scanning when database refreshed."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
         },
         "LDAP": {
             "URL": "LDAP URL",

@@ -114,6 +114,16 @@ export abstract class ReplicationService {
      * @memberOf ReplicationService
      */
     abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[];
+
+    /**
+     * Get the log of the specified job.
+     * 
+     * @abstract
+     * @param {(number | string)} jobId 
+     * @returns {(Observable<string> | Promise<string> | string)} 
+     * @memberof ReplicationService
+     */
+    abstract getJobLog(jobId: number | string): Observable<string> | Promise<string> | string;
 }
 
 /**
@@ -241,5 +251,16 @@ export class ReplicationDefaultService extends ReplicationService {
         return this.http.get(this._jobBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
             .then(response => response.json() as ReplicationJob[])
             .catch(error => Promise.reject(error));
+    }
+
+    public getJobLog(jobId: number | string): Observable<string> | Promise<string> | string {
+        if (!jobId || jobId <= 0) {
+            return Promise.reject('Bad argument');
+        }
+
+        let logUrl: string = `${this._jobBaseUrl}/${jobId}/log`;
+        return this.http.get(logUrl).toPromise()
+        .then(response => response.text())
+        .catch(error => Promise.reject(error));
     }
 }

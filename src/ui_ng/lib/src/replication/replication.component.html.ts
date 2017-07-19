@@ -61,7 +61,7 @@ export const REPLICATION_TEMPLATE: string = `
             <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>
-              <a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK">
+              <a href="javascript:void(0);" (click)="viewLog(j.id)">
                 <clr-icon shape="clipboard"></clr-icon>
               </a>
             </clr-dg-cell>
@@ -73,4 +73,5 @@ export const REPLICATION_TEMPLATE: string = `
         </clr-dg-footer>
       </clr-datagrid>
     </div>
+    <job-log-viewer #replicationLogViewer></job-log-viewer>
 </div>`;
