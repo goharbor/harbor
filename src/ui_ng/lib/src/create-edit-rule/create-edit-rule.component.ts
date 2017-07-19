@@ -144,9 +144,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
   }
   get connectAbled():boolean{
     return !this.createEditRule.endpointId &&  !this.isCreateEndpoint;
-  }
-  get hasConnectData():boolean{
-    return !this.createEditRule.endpointUrl || !this.createEditRule.username || !this.createEditRule.password;
+
   }
 
   constructor(

@@ -81,7 +81,7 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
     </form>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || hasConnectData || connectAbled">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
+      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || endpointUrl.errors || connectAbled">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
       <button type="button" class="btn btn-outline" [disabled]="btnAbled" (click)="onCancel()">{{'BUTTON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="!ruleForm.form.valid || testOngoing || !editable" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
   </div>

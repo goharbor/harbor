@@ -53,7 +53,7 @@ export const TAG_TEMPLATE = `
       <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.os}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer> 
-      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
+      <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
       {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
       <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
     </clr-dg-footer>

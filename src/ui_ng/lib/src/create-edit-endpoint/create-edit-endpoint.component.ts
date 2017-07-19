@@ -83,10 +83,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked {
     };
   }
 
-  get hasConnectData():boolean{
-    return !this.target.endpoint || !this.target.username || !this.target.password;
-  }
-
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
