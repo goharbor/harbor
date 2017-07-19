@@ -16,6 +16,7 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -129,45 +130,21 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 }
 
 //ConvertMapToStruct is used to fill the specified struct with map.
-func ConvertMapToStruct(object interface{}, valuesInMap map[string]interface{}) error {
+func ConvertMapToStruct(object interface{}, values interface{}) error {
 	if object == nil {
-		return fmt.Errorf("nil struct is not supported")
+		return errors.New("nil struct is not supported")
 	}
 
 	if reflect.TypeOf(object).Kind() != reflect.Ptr {
-		return fmt.Errorf("object should be referred by pointer")
+		return errors.New("object should be referred by pointer")
 	}
 
-	for k, v := range valuesInMap {
-		if err := setField(object, k, v); err != nil {
-			return err
-		}
+	bytes, err := json.Marshal(values)
+	if err != nil {
+		return err
 	}
 
-	return nil
-}
-
-func setField(object interface{}, field string, value interface{}) error {
-	structValue := reflect.ValueOf(object).Elem()
-
-	structFieldValue := structValue.FieldByName(field)
-	if !structFieldValue.IsValid() {
-		return fmt.Errorf("No such field: %s in obj", field)
-	}
-
-	if !structFieldValue.CanSet() {
-		return fmt.Errorf("Cannot set value for field %s", field)
-	}
-
-	structFieldType := structFieldValue.Type()
-	val := reflect.ValueOf(value)
-	if structFieldType != val.Type() {
-		return errors.New("Provided value type didn't match object field type")
-	}
-
-	structFieldValue.Set(val)
-
-	return nil
+	return json.Unmarshal(bytes, object)
 }
 
 // ParseProjectIDOrName parses value to ID(int64) or name(string)

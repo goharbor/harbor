@@ -34,6 +34,11 @@ type Policy interface {
 	Evaluate() (<-chan bool, error)
 
 	//Disable the enabled policy and release all the allocated resources.
-	//Disable should also send signal to the terminated channel which returned by Done.
 	Disable() error
+
+	//Equal will compare the two policies based on related factors if existing such as confgiuration etc.
+	//to determine whether the two policies are same ones or not. Please pay attention that, not every policy
+	//needs to support this method. If no need, please directly return false to indicate each policies are
+	//different.
+	Equal(p Policy) bool
 }

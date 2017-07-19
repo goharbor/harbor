@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common/scheduler"
+	"github.com/vmware/harbor/src/common/scheduler/policy"
 )
 
 var testingScheduler = scheduler.DefaultScheduler
@@ -27,19 +28,37 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Waiting for everything is ready.
-	<-time.After(1 * time.Second)
 	if !testingScheduler.HasScheduled("Alternate Policy") {
 		t.Fatal("Handler does not work")
 	}
 
-	notification2 := ScanPolicyNotification{"none", 0}
+	//Policy parameter changed.
+	notification2 := ScanPolicyNotification{"daily", utcTime + 7200}
 	if err := handler.Handle(notification2); err != nil {
 		t.Fatal(err)
 	}
 
-	//Waiting for everything is ready.
-	<-time.After(1 * time.Second)
+	if !testingScheduler.HasScheduled("Alternate Policy") {
+		t.Fatal("Handler does not work [2]")
+	}
+	pl := testingScheduler.GetPolicy("Alternate Policy")
+	if pl == nil {
+		t.Fail()
+	}
+	spl := pl.(*policy.AlternatePolicy)
+	cfg := spl.GetConfig()
+	if cfg == nil {
+		t.Fail()
+	}
+	if cfg.OffsetTime != utcTime+7200 {
+		t.Fatal("Policy is not updated")
+	}
+
+	notification3 := ScanPolicyNotification{"none", 0}
+	if err := handler.Handle(notification3); err != nil {
+		t.Fatal(err)
+	}
+
 	if testingScheduler.HasScheduled("Alternate Policy") {
 		t.Fail()
 	}

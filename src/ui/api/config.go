@@ -192,7 +192,9 @@ func (c *ConfigAPI) Put() {
 	}
 
 	//Everything is ok, detect the configurations to confirm if the option we are caring is changed.
-	watchConfigChanges(cfg)
+	if err := watchConfigChanges(cfg); err != nil {
+		log.Errorf("Failed to watch configuration change with error: %s\n", err)
+	}
 }
 
 // Reset system configurations

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 
+	"fmt"
 	"time"
 
 	"github.com/vmware/harbor/src/common/scheduler"
@@ -14,6 +15,9 @@ import (
 const (
 	//PolicyTypeDaily specify the policy type is "daily"
 	PolicyTypeDaily = "daily"
+
+	//PolicyTypeNone specify the policy type is "none"
+	PolicyTypeNone = "none"
 
 	alternatePolicy = "Alternate Policy"
 )
@@ -53,20 +57,50 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 	hasScheduled := scheduler.DefaultScheduler.HasScheduled(alternatePolicy)
 	if notification.Type == PolicyTypeDaily {
 		if !hasScheduled {
-			schedulePolicy := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
+			//Schedule a new policy.
+			return schedulePolicy(notification)
+		}
+
+		//To check and compare if the related parameter is changed.
+		if pl := scheduler.DefaultScheduler.GetPolicy(alternatePolicy); pl != nil {
+			policyCandidate := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
 				Duration:   24 * time.Hour,
 				OffsetTime: notification.DailyTime,
 			})
-			attachTask := task.NewScanAllTask()
-			schedulePolicy.AttachTasks(attachTask)
+			if !pl.Equal(policyCandidate) {
+				//Parameter changed.
+				//Unschedule policy.
+				if err := scheduler.DefaultScheduler.UnSchedule(alternatePolicy); err != nil {
+					return err
+				}
 
-			return scheduler.DefaultScheduler.Schedule(schedulePolicy)
+				//Schedule a new policy.
+				return schedulePolicy(notification)
+			}
+			//Same policy configuration, do nothing
+			return nil
 		}
-	} else {
+
+		return errors.New("Inconsistent policy scheduling status")
+	} else if notification.Type == PolicyTypeNone {
 		if hasScheduled {
 			return scheduler.DefaultScheduler.UnSchedule(alternatePolicy)
 		}
+	} else {
+		return fmt.Errorf("Notification type %s is not supported", notification.Type)
 	}
 
 	return nil
+}
+
+//Schedule policy.
+func schedulePolicy(notification ScanPolicyNotification) error {
+	schedulePolicy := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
+		Duration:   24 * time.Hour,
+		OffsetTime: notification.DailyTime,
+	})
+	attachTask := task.NewScanAllTask()
+	schedulePolicy.AttachTasks(attachTask)
+
+	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }
