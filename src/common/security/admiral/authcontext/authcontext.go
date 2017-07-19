@@ -144,11 +144,6 @@ func GetAuthCtx(client *http.Client, url, token string) (*AuthContext, error) {
 	return get(client, url, token)
 }
 
-// GetAuthCtxOfUser returns the auth context of the specific user
-func GetAuthCtxOfUser(client *http.Client, url, token string, username string) (*AuthContext, error) {
-	return get(client, url, token, username)
-}
-
 // get the user's auth context, if the username is not provided
 // get the default auth context of the token
 func get(client *http.Client, url, token string, username ...string) (*AuthContext, error) {
