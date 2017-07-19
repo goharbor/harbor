@@ -24,14 +24,35 @@ Run Docker Info
     Should Be Equal As Integers  ${rc}  0
 
 Pull image
-    [Arguments]  ${image}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
     Log To Console  \nRunning docker pull ${image}...
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} pull ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${project}/${image}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
+
+Push image
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
+    Log To Console  \nRunning docker pulsh ${image}...
+    ${rc}=  Run And Return Rc  docker pull ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc  docker tag hello-world ${ip}/${project}/${image}
+    ${rc}=  Run And Return Rc  docker push ${ip}/${project}/${image}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc  docker logout ${ip}
+
+Cannot Pull image
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${project}/${image}
+    Log To Console  ${output}
+    Should Not Be Equal As Integers  ${rc}  0
 
 Wait Until Container Stops
     [Arguments]  ${container}

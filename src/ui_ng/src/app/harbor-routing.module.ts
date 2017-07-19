@@ -90,6 +90,10 @@ const harborRoutes: Routes = [
           {
             path: 'endpoints',
             component: DestinationPageComponent
+          },
+          {
+            path: '**',
+            redirectTo: 'endpoints'
           }
         ]
       },
