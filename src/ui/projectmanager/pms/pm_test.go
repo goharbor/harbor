@@ -28,7 +28,7 @@ var (
 	client      = http.DefaultClient
 	endpoint    = "http://127.0.0.1:8282"
 	tokenReader = &RawTokenReader{
-		Token: "",
+		Token: "token",
 	}
 )
 
@@ -195,7 +195,7 @@ func TestGet(t *testing.T) {
 
 	// get by invalid ID
 	project, err := pm.Get(int64(0))
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, project)
 
 	// get by invalid name
@@ -223,7 +223,7 @@ func TestIsPublic(t *testing.T) {
 	assert.False(t, public)
 
 	// non-exist project
-	public, err = pm.IsPublic(int64(0))
+	public, err = pm.IsPublic(int64(2))
 	assert.Nil(t, err)
 	assert.False(t, public)
 
@@ -271,7 +271,7 @@ func TestExist(t *testing.T) {
 	assert.False(t, exist)
 
 	// non-exist project
-	exist, err = pm.Exist(int64(0))
+	exist, err = pm.Exist(int64(2))
 	assert.Nil(t, err)
 	assert.False(t, exist)
 

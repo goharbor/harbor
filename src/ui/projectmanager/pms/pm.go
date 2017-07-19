@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -72,14 +73,54 @@ func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, erro
 	return convert(project)
 }
 
+// get Admiral project with Harbor project ID or name
 func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
+	// if token is provided, search project from my projects list first
+	if len(p.getToken()) != 0 {
+		project, err := p.getFromMy(projectIDOrName)
+		if err != nil {
+			return nil, err
+		}
+		if project != nil {
+			return project, nil
+		}
+	}
+
+	// try to get project from public projects list
+	return p.getFromPublic(projectIDOrName)
+}
+
+// call GET /projects?$filter=xxx eq xxx, the API can only filter projects
+// which the user is a member of
+func (p *ProjectManager) getFromMy(projectIDOrName interface{}) (*project, error) {
+	return p.getAdmiralProject(projectIDOrName, false)
+}
+
+// call GET /projects?public=true&$filter=xxx eq xxx
+func (p *ProjectManager) getFromPublic(projectIDOrName interface{}) (*project, error) {
+	project, err := p.getAdmiralProject(projectIDOrName, true)
+	if project != nil {
+		// the projects returned by GET /projects?public=true&xxx have no
+		// "public" property, populate it here
+		project.Public = true
+	}
+	return project, err
+}
+
+func (p *ProjectManager) getAdmiralProject(projectIDOrName interface{}, public bool) (*project, error) {
 	m := map[string]string{}
-	if id, ok := projectIDOrName.(int64); ok {
+
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		return nil, err
+	}
+	if id > 0 {
 		m["customProperties.__projectIndex"] = strconv.FormatInt(id, 10)
-	} else if name, ok := projectIDOrName.(string); ok {
-		m["name"] = name
 	} else {
-		return nil, fmt.Errorf("unsupported type: %v", projectIDOrName)
+		m["name"] = name
+	}
+	if public {
+		m["public"] = "true"
 	}
 
 	projects, err := p.filter(m)
@@ -109,7 +150,11 @@ func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
 		} else {
 			query += "&"
 		}
-		query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
+		if k == "public" {
+			query += fmt.Sprintf("%s=%s", k, v)
+		} else {
+			query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
+		}
 	}
 
 	if len(query) == 0 {
@@ -208,6 +253,7 @@ func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	if project == nil {
 		return false, nil
 	}
@@ -360,7 +406,7 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 			m["name"] = query.Name
 		}
 		if query.Public != nil {
-			m["isPublic"] = strconv.FormatBool(*query.Public)
+			m["public"] = strconv.FormatBool(*query.Public)
 		}
 	}
 
