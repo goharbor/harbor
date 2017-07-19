@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/vmware/harbor/src/common/models"
@@ -177,7 +178,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 }
 
 func filterReq(req *http.Request) bool {
-	path := req.URL.Path
+	path := strings.TrimRight(req.URL.Path, "/")
 	if path == "/api/projects" && req.Method == http.MethodPost ||
 		path == "/service/token" && req.Method == http.MethodGet {
 		return true
