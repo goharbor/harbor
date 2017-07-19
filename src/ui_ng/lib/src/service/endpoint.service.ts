@@ -36,7 +36,7 @@ export abstract class EndpointService {
      * @abstract
      * @param {(number | string)} endpointId
      * @returns {(Observable<Endpoint> | Endpoint)}
-     * 
+     *
      * @memberOf EndpointService
      */
     abstract getEndpoint(endpointId: number | string): Observable<Endpoint> | Promise<Endpoint> | Endpoint;
@@ -185,14 +185,16 @@ export class EndpointDefaultService extends EndpointService {
         if(!endpoint) {
            return Promise.reject('Invalid endpoint.'); 
         }
-        let requestUrl: string = `${this._endpointUrl}/ping`;
+        let requestUrl: string ;
         if(endpoint.id) {
+            requestUrl = `${this._endpointUrl}/${endpoint.id}/ping`;
           return this.http
                  .post(requestUrl, {})
                  .toPromise()
                  .then(response=>response.status)
                  .catch(error=>Promise.reject(error));
         } else {
+            requestUrl = `${this._endpointUrl}/ping`;
           return this.http
                  .post(requestUrl, endpoint)
                  .toPromise()

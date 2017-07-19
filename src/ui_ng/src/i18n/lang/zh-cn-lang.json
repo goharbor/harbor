@@ -117,6 +117,7 @@
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "成功删除用户。",
+        "OF": "共计",
         "ITEMS": "条记录"
     },
     "PROJECT": {
@@ -143,6 +144,7 @@
         "NAME_ALREADY_EXISTS": "项目名称已存在。",
         "NAME_IS_ILLEGAL": "项目名称非法。",
         "UNKNOWN_ERROR": "创建项目时发生未知错误。",
+        "OF": "共计",
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
@@ -171,6 +173,7 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
+        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -199,6 +202,7 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
+        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。"
