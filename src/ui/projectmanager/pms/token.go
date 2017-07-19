@@ -16,6 +16,7 @@ package pms
 
 import (
 	"io/ioutil"
+	"strings"
 )
 
 const (
@@ -49,5 +50,5 @@ func (f *FileTokenReader) ReadToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return strings.TrimRight(string(data), "\n"), nil
 }
