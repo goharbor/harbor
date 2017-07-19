@@ -15,11 +15,7 @@
 package pms
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-	"strings"
+	"io/ioutil"
 )
 
 const (
@@ -49,36 +45,9 @@ type FileTokenReader struct {
 
 // ReadToken ...
 func (f *FileTokenReader) ReadToken() (string, error) {
-	file, err := os.Open(f.Path)
+	data, err := ioutil.ReadFile(f.Path)
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
-
-	return readToken(file)
-}
-
-func readToken(reader io.Reader) (string, error) {
-	if reader == nil {
-		return "", fmt.Errorf("reader is nil")
-	}
-
-	r := bufio.NewReader(reader)
-	for {
-		line, _, err := r.ReadLine()
-		if err != nil {
-			if err == io.EOF {
-				err = fmt.Errorf("%s not found", key)
-			}
-			return "", err
-		}
-
-		strs := strings.SplitN(string(line), "=", 2)
-		if len(strs) != 2 {
-			continue
-		}
-		if strs[0] == key {
-			return strs[1], nil
-		}
-	}
+	return string(data), nil
 }
