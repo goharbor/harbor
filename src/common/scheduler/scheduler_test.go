@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware/harbor/src/common/scheduler/policy"
 	"github.com/vmware/harbor/src/common/scheduler/task"
 )
 
@@ -61,6 +62,10 @@ func (fp *fakePolicy) Disable() error {
 	return nil
 }
 
+func (fp *fakePolicy) Equal(policy.Policy) bool {
+	return false
+}
+
 type fakeTask struct {
 	number int
 }
@@ -98,13 +103,8 @@ func TestScheduler(t *testing.T) {
 	if DefaultScheduler.Schedule(fp) != nil {
 		t.Fatal("Schedule policy failed")
 	}
-	//Waiting for everything is stable
-	time.Sleep(1 * time.Second)
 	if DefaultScheduler.policies.Size() == 0 {
 		t.Fatal("No policy in the store after calling Schedule()")
-	}
-	if DefaultScheduler.stats.PolicyCount != 1 {
-		t.Fatal("Policy stats do not match")
 	}
 	if DefaultScheduler.GetPolicy(fp.Name()) == nil {
 		t.Fatal("Failed to get poicy by name")
@@ -124,12 +124,11 @@ func TestScheduler(t *testing.T) {
 	if DefaultScheduler.UnSchedule(fp.Name()) != nil {
 		t.Fatal("Unschedule policy failed")
 	}
-	//Waiting for everything is stable
-	time.Sleep(1 * time.Second)
 
-	if DefaultScheduler.stats.PolicyCount != 0 {
+	if DefaultScheduler.policies.Size() != 0 {
 		t.Fatal("Policy count does not match after calling UnSchedule()")
 	}
+	<-time.After(1 * time.Second)
 	copiedValue := DefaultScheduler.stats.CompletedTasks
 	<-time.After(2 * time.Second)
 

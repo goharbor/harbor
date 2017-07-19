@@ -63,33 +63,22 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 
 		//To check and compare if the related parameter is changed.
 		if pl := scheduler.DefaultScheduler.GetPolicy(alternatePolicy); pl != nil {
-			if reflect.TypeOf(pl).Kind() == reflect.Ptr &&
-				reflect.TypeOf(pl).String() == "*policy.AlternatePolicy" {
-				spl := pl.(*policy.AlternatePolicy)
-				plConfig := spl.GetConfig()
-				if plConfig != nil {
-					if plConfig.OffsetTime != notification.DailyTime {
-						//Parameter changed.
-						//Unschedule policy.
-						if err := scheduler.DefaultScheduler.UnSchedule(alternatePolicy); err != nil {
-							return err
-						}
-
-						//Waiting for async action is done!
-						<-time.After(500 * time.Millisecond)
-
-						//Reschedule policy.
-						return schedulePolicy(notification)
-					}
-
-					//No change, do nothing.
-					return nil
+			policyCandidate := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
+				Duration:   24 * time.Hour,
+				OffsetTime: notification.DailyTime,
+			})
+			if !pl.Equal(policyCandidate) {
+				//Parameter changed.
+				//Unschedule policy.
+				if err := scheduler.DefaultScheduler.UnSchedule(alternatePolicy); err != nil {
+					return err
 				}
 
-				return errors.New("*policy.AlternatePolicy should not have nil configuration")
+				//Schedule a new policy.
+				return schedulePolicy(notification)
 			}
-
-			return fmt.Errorf("Invalid policy type: %s", reflect.TypeOf(pl).String())
+			//Same policy configuration, do nothing
+			return nil
 		}
 
 		return errors.New("Inconsistent policy scheduling status")

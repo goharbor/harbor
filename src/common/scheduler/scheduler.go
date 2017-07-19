@@ -61,9 +61,6 @@ type Scheduler struct {
 	//Store to keep the references of scheduled policies.
 	policies Store
 
-	//Queue for accepting the scheduling polices.
-	scheduleQueue chan policy.Policy
-
 	//Queue for receiving policy unschedule request or complete signal.
 	unscheduleQueue chan string
 
@@ -90,7 +87,6 @@ func NewScheduler(config *Configuration) *Scheduler {
 		qSize = config.QueueSize
 	}
 
-	sq := make(chan policy.Policy, qSize)
 	usq := make(chan string, qSize)
 	stChan := make(chan *StatItem, 4)
 	tc := make(chan bool, 1)
@@ -99,7 +95,6 @@ func NewScheduler(config *Configuration) *Scheduler {
 	return &Scheduler{
 		config:          config,
 		policies:        store,
-		scheduleQueue:   sq,
 		unscheduleQueue: usq,
 		statChan:        stChan,
 		terminateChan:   tc,
@@ -125,37 +120,25 @@ func (sch *Scheduler) Start() {
 			}
 		}()
 		defer func() {
+			//Exit and clear.
 			sch.isRunning = false
+			//Stop all watchers.
+			for _, wt := range sch.policies.GetAll() {
+				wt.Stop()
+			}
+			//Clear resources
+			sch.policies.Clear()
+			log.Infof("Policy scheduler stop at %s\n", time.Now().UTC().Format(time.RFC3339))
 		}()
 		for {
 			select {
 			case <-sch.terminateChan:
 				//Exit
 				return
-			case p := <-sch.scheduleQueue:
-				if !sch.policies.Exists(p.Name()) {
-					//Schedule the policy.
-					watcher := NewWatcher(p, sch.statChan, sch.unscheduleQueue)
-
-					//Keep the policy for future use after it's successfully scheduled.
-					sch.policies.Put(p.Name(), watcher)
-
-					//Enable it.
-					watcher.Start()
-
-					//Update stats and log info.
-					log.Infof("Policy %s is scheduled", p.Name())
-					sch.statChan <- &StatItem{statSchedulePolicy, 1, nil}
-				}
 			case name := <-sch.unscheduleQueue:
-				//Find the watcher.
-				watcher := sch.policies.Remove(name)
-				if watcher != nil && watcher.IsRunning() {
-					watcher.Stop()
-
-					//Update stats and log info.
-					log.Infof("Policy %s is unscheduled", name)
-					sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
+				//Unscheduled when policy is completed.
+				if err := sch.UnSchedule(name); err != nil {
+					log.Error(err.Error())
 				}
 			case stat := <-sch.statChan:
 				{
@@ -204,18 +187,8 @@ func (sch *Scheduler) Stop() {
 		return
 	}
 
-	//Terminate damon firstly to stop receiving signals.
+	//Terminate damon to stop receiving signals.
 	sch.terminateChan <- true
-
-	//Stop all watchers.
-	for _, wt := range sch.policies.GetAll() {
-		wt.Stop()
-	}
-
-	//Clear resources
-	sch.policies.Clear()
-
-	log.Infof("Policy scheduler stop at %s\n", time.Now().UTC().Format(time.RFC3339))
 }
 
 //Schedule and enable the policy.
@@ -238,7 +211,16 @@ func (sch *Scheduler) Schedule(scheduledPolicy policy.Policy) error {
 	}
 
 	//Schedule the policy.
-	sch.scheduleQueue <- scheduledPolicy
+	watcher := NewWatcher(scheduledPolicy, sch.statChan, sch.unscheduleQueue)
+	//Enable it.
+	watcher.Start()
+
+	//Keep the policy for future use after it's successfully scheduled.
+	sch.policies.Put(scheduledPolicy.Name(), watcher)
+
+	//Update stats and log info.
+	log.Infof("Policy %s is scheduled", scheduledPolicy.Name())
+	sch.statChan <- &StatItem{statSchedulePolicy, 1, nil}
 
 	return nil
 }
@@ -254,7 +236,17 @@ func (sch *Scheduler) UnSchedule(policyName string) error {
 	}
 
 	//Unschedule the policy.
-	sch.unscheduleQueue <- policyName
+	//Find the watcher.
+	watcher := sch.policies.Remove(policyName)
+	if watcher != nil && watcher.IsRunning() {
+		watcher.Stop()
+
+		//Update stats and log info.
+		log.Infof("Policy %s is unscheduled", policyName)
+		sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
+	} else {
+		log.Warningf("Inconsistent worker status for policy '%s'.\n", policyName)
+	}
 
 	return nil
 }
@@ -271,8 +263,9 @@ func (sch *Scheduler) HasScheduled(policyName string) bool {
 
 //GetPolicy is used to get related policy reference by its name.
 func (sch *Scheduler) GetPolicy(policyName string) policy.Policy {
-	if sch.policies.Exists(policyName) {
-		return sch.policies.Get(policyName).p
+	wk := sch.policies.Get(policyName)
+	if wk != nil {
+		return wk.p
 	}
 
 	return nil

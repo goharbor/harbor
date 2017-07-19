@@ -28,8 +28,6 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Waiting for everything is ready.
-	<-time.After(1 * time.Second)
 	if !testingScheduler.HasScheduled("Alternate Policy") {
 		t.Fatal("Handler does not work")
 	}
@@ -40,8 +38,6 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Waiting for everything is ready.
-	<-time.After(1 * time.Second)
 	if !testingScheduler.HasScheduled("Alternate Policy") {
 		t.Fatal("Handler does not work [2]")
 	}
@@ -63,8 +59,6 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Waiting for everything is ready.
-	<-time.After(1 * time.Second)
 	if testingScheduler.HasScheduled("Alternate Policy") {
 		t.Fail()
 	}

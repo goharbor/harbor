@@ -16,31 +16,23 @@ func WatchConfigChanges(cfg map[string]interface{}) error {
 
 	//Currently only watch the scan all policy change.
 	if v, ok := cfg[ScanAllPolicyTopic]; ok {
-		if reflect.TypeOf(v).Kind() == reflect.Map {
-			policyCfg := &models.ScanAllPolicy{}
-			vMap := v.(map[string]interface{})
-			//Reset filed name.
-			if pv, yes := vMap["parameter"]; yes {
-				vMap["Parm"] = pv
-				delete(vMap, "parameter")
-			}
-			if err := utils.ConvertMapToStruct(policyCfg, vMap); err != nil {
-				return err
-			}
-
-			policyNotification := ScanPolicyNotification{
-				Type:      policyCfg.Type,
-				DailyTime: 0,
-			}
-
-			if t, yes := policyCfg.Parm["daily_time"]; yes {
-				if reflect.TypeOf(t).Kind() == reflect.Int {
-					policyNotification.DailyTime = (int64)(t.(int))
-				}
-			}
-
-			return Publish(ScanAllPolicyTopic, policyNotification)
+		policyCfg := &models.ScanAllPolicy{}
+		if err := utils.ConvertMapToStruct(policyCfg, v); err != nil {
+			return err
 		}
+
+		policyNotification := ScanPolicyNotification{
+			Type:      policyCfg.Type,
+			DailyTime: 0,
+		}
+
+		if t, yes := policyCfg.Parm["daily_time"]; yes {
+			if reflect.TypeOf(t).Kind() == reflect.Int {
+				policyNotification.DailyTime = (int64)(t.(int))
+			}
+		}
+
+		return Publish(ScanAllPolicyTopic, policyNotification)
 	}
 
 	return nil

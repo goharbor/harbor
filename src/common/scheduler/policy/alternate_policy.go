@@ -152,3 +152,23 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 
 	return alp.evaluation, nil
 }
+
+//Equal is an implementation of same method in policy interface.
+func (alp *AlternatePolicy) Equal(p Policy) bool {
+	if p == nil {
+		return false
+	}
+
+	pl, ok := p.(*AlternatePolicy)
+	if !ok {
+		return false
+	}
+
+	cfg := pl.GetConfig()
+	cfg2 := alp.GetConfig()
+	if (cfg == nil && cfg2 != nil) || (cfg != nil && cfg2 == nil) {
+		return false
+	}
+
+	return cfg == nil || (cfg.Duration == cfg2.Duration && cfg.OffsetTime == cfg2.OffsetTime)
+}

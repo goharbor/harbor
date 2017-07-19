@@ -192,8 +192,6 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 	if len(notificationWatcher.handlers) != 1 {
 		t.Fatal("Handler is not registered")
 	}
-	//Wating for everything is ready.
-	<-time.After(1 * time.Second)
 
 	utcTime := time.Now().UTC().Unix()
 	notification := ScanPolicyNotification{"daily", utcTime + 3600}
@@ -206,6 +204,7 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 
 	//Wating for everything is ready.
 	<-time.After(2 * time.Second)
+
 	if err := UnSubscribe("testing_topic", ""); err != nil {
 		t.Fatal(err.Error())
 	}
