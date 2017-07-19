@@ -36,11 +36,10 @@ Test Case - Update Password
     Close Browser
 
 Test Case - User View Logs
-	Start Docker Daemon Locally
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    #${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    #Log to console  ${ip}
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
+    Log to console  ${ip}
 			
 	Create An New Public Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}
 
