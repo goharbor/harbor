@@ -52,6 +52,8 @@ var (
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
 	AdmiralClient *http.Client
+	// TokenReader is used in integration mode to read token
+	TokenReader pms.TokenReader
 )
 
 // Init configurations
@@ -126,10 +128,11 @@ func initProjectManager() {
 		path = defaultTokenFilePath
 	}
 	log.Infof("service token file path: %s", path)
+	TokenReader = &pms.FileTokenReader{
+		Path: path,
+	}
 	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
-		AdmiralEndpoint(), &pms.FileTokenReader{
-			Path: path,
-		})
+		AdmiralEndpoint(), TokenReader)
 }
 
 // Load configurations
