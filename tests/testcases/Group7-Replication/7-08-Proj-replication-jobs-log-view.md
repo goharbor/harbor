@@ -10,7 +10,7 @@ User guide
 
 # Environment:
 
-* This test requires at least two Harbor instance is running and available.
+* This test requires at least two Harbor instance are running and available.
 * At least one replication job exist.
 
 # Test Steps:

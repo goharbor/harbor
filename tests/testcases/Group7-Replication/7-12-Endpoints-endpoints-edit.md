@@ -11,13 +11,13 @@ User guide
 
 # Environment:
 
-* This test requires at least two Harbor instance is running and available.
+* This test requires at least two Harbor instance are running and available.
 
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In replication page, choose an endpoint in use and edit setting.  
-3. In replication page, choose an endpoint not in use and edit setting.
+2. In replication page, choose an endpoint in use by a rule and edit setting.  
+3. In replication page, choose an endpoint not in use by a rule and edit setting.
 
 # Expected Outcome:
 

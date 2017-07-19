@@ -9,7 +9,7 @@ To verify rule filter works correctly.
 User guide
 
 # Environment:
-* This test requires that two Harbor instance is running and avaiable and there are at least 5 rules of a project.  
+* This test requires that two Harbor instance are running and avaiable and there are at least 5 rules of a project.  
 
 # Test Steps:
 
@@ -18,7 +18,7 @@ User guide
 
 # Expected Outcome:
 
-* In step2, rules can be filtered, after cleared filter, all rules are shown again.
+* In step2, rules can be filtered, after clearing filter, all rules are shown again.
 
 # Possible Problems:
 None

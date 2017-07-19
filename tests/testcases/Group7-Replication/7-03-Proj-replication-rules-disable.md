@@ -11,7 +11,7 @@ User Guide
 # Environment:
 
 * This test requires that at least two Harbor instances are running and available.  
-* Need at least one project has at least one enabled rule.
+* Need at least one project that has at least one enabled rule.
 
 # Test Steps:
 1. Login UI as admin user.  

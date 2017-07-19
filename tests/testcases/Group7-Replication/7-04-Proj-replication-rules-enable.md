@@ -11,16 +11,17 @@ User guide
 # Environment:
 
 * This test requires that at least two Harbor instance are running and avaliable.  
-* Need at least one project has at least one disabled rule.
+* Need at least one project that has at least one disabled rule.
 
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In project replication page, enable a disabled rule.
+2. Push an image to project.  
+3. In project replication page, enable a disabled rule.
 
 # Expected Outcome:
 
-* In step2 rule become enabled. Push a new image, the replication job(s) will start. 
+* In step3 rule become enabled, replication should start.   
 
 # Possible Problems:
 None

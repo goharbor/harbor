@@ -11,7 +11,7 @@ User guide
 # Environment:
 
 * This test requires at least two Harbor instances run and available.  
-* The remote endpoint instance should configured to use https.  
+* The remote endpoint instance should be configured to use https and the remote harbor instance is set up with self-signed certificate.  
 
 # Test Steps:  
 

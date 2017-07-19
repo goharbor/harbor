@@ -19,11 +19,10 @@ User guide
 
 1. Login UI as admin user;  
 2. Create a project and add an enabled replication rule.  
-3. Push an image to created project.  
+3. Push an image to the created project.  
 4. Check replication job.  
-5. Check remote registry to see if the image has been replicated:
-* Project exist on remote registry  
-* Project not exist on remote registry  
+5. Check remote registry to see if the image has been replicated if project exist on remote registry.  
+6. Check remote registry to see if the image has been replicated if project not exist on remote registry.  
 
 # Expect Outcome:  
 

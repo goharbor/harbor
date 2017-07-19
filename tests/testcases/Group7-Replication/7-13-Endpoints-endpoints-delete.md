@@ -16,8 +16,8 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In replication page, delete an endpoint in use.  
-3. In replication page, delete an endpoint not in use.  
+2. In replication page, delete an endpoint in use by a rule.  
+3. In replication page, delete an endpoint not in use by a rule.  
 
 # Expected Outcome:
 

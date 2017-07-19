@@ -9,7 +9,7 @@ To verify that an admin user can delete replication rules.
 User guide
 
 # Environment:
-* This test requires that a Harbor instance is running and avaiable.  
+* This test requires that a Harbor instance is running and available.  
 
 # Test Steps:
 

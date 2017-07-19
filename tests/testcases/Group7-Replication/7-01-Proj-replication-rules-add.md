@@ -31,9 +31,10 @@ User guide
 # Expected Outcome:
 
 * In step2, a rule with given name will be added. And all images will be replicated to remote.   
-* In step3, a rule will be added and enabled.  
+* In step3, a rule will be added and enabled,no image replication job is started.  
 * In step4, a rule using new endpoint will be added.  
-* In step5, rule can not be added, and wrong username/password/ip will cause test connection fail.  
+* In step5, rule can not be added if use duplicate name or ip, 
+* In step5, if input wrong username/password/ip,rule can be added,but will cause test connection fail.  
 * In step6, rule can not be added.  
 
 # Possible Problems:

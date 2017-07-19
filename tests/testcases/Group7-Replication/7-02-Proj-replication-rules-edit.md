@@ -11,7 +11,7 @@ User guide
 # Environment:  
 
 * This test requires that at least two Harbor instances are running and available.  
-* Need at least one project has at least one replication rule.  
+* Need at least one project that has at least one replication rule.  
   
 # Test Steps:  
   
@@ -21,7 +21,7 @@ User guide
   
 # Expect Outcome:  
   
-* In step 2, Rule can be edited and error hint works correctly.  
+* In step 2, Rule can be edited and error hint works correctly,if rule is enabled, should see jobs start.  
 * In step 3, Rule can not be edited.  
   
 # Possible Problems:  

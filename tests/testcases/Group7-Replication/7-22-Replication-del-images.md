@@ -19,11 +19,11 @@ User guide
 
 1. Login source registry UI as admin user.  
 2. Create a project and add an enabled replication rule.
-3. Push at least one image to created project, and wait until replication job done.  
+3. Push at least one image to the created project, and wait until replication job is done.  
 4. Check the job log.  
-5. Delete a pushed image in UI.  
+5. Delete a pushed image in UI from the source registry.  
 6. Check the replication job.  
-7. Check remote registry to see if image has been deleted.  
+7. Check remote registry to see if the image has been deleted.  
 
 # Expeced Outcome:
 
