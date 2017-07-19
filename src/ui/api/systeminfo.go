@@ -25,6 +25,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	clairdao "github.com/vmware/harbor/src/common/dao/clair"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -95,6 +96,7 @@ type GeneralInfo struct {
 	SelfRegistration        bool                             `json:"self_registration"`
 	HasCARoot               bool                             `json:"has_ca_root"`
 	HarborVersion           string                           `json:"harbor_version"`
+	NextScanAll             int64                            `json:"next_scan_all"`
 	ClairVulnStatus         *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
 }
 
@@ -176,6 +178,11 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()
+		t := utils.ScanAllMarker().Next().UTC().Unix()
+		if t < 0 {
+			t = 0
+		}
+		info.NextScanAll = t
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
