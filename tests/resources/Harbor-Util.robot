@@ -71,22 +71,22 @@ Install Harbor With Notary to Test Server
     Log To Console  \n${output}
 
 Up Harbor
-	[Arguments]  ${with_notary}=true
-	${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary}
+	[Arguments]  ${with_notary}=true  ${with_clair}=true
+	${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
 	Log To Console  ${rc}
 	Should Be Equal As Integers  ${rc}  0
 
 Down Harbor
-	[Arguments]  ${with_notary}=true
-	${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary}
+	[Arguments]  ${with_notary}=true  ${with_clair}=true
+	${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
 	Log To Console  ${rc}
 	Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-	[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true
+	[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true
 	Log To Console  \nStart Docker Daemon
 	Start Docker Daemon Locally
-	${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
+	${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} HTTPPROXY=
 	Log To Console  ${rc}
 	Log  ${output}
 	Should Be Equal As Integers  ${rc}  0
@@ -126,14 +126,14 @@ Switch To Notary
 	Should Be Equal As Integers  ${rc}  0
 	Prepare  with_notary=true
 	Up Harbor  with_notary=true
+    Sleep  20s
 	${rc}  ${output}=  Run And Return Rc And Output  docker ps
-  Should Be Equal As Integers  ${rc}  0
-  Sleep  20s
+    Should Be Equal As Integers  ${rc}  0
 	Log To Console  \n${output}
 
 Prepare
-	[Arguments]  ${with_notary}=true
-	${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary}
+	[Arguments]  ${with_notary}=true  ${with_clair}=true
+	${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
 	Log To Console  ${rc}
 	Should Be Equal As Integers  ${rc}  0
 
@@ -159,14 +159,14 @@ Prepare Cert
 	Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=false
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=false  ${with_clair}=true
 	${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
     Log  ${output}
 	Should Be Equal As Integers  ${rc}  0
 	${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
     Log  ${output}
 	Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} HTTPPROXY=
 	Log  ${output}
 	Should Be Equal As Integers  ${rc}  0
     Sleep  20

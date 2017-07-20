@@ -40,6 +40,7 @@ Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+	Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
@@ -97,92 +98,3 @@ Kill Local Docker Daemon
     Process Should Be Stopped  ${handle}
     ${rc}=  Run And Return Rc  kill -9 ${dockerd-pid}
     Should Be Equal As Integers  ${rc}  0
-
-Get container shortID
-    [Arguments]  ${id}
-    ${shortID}=  Get Substring  ${id}  0  12
-    [Return]  ${shortID}
-
-Get VM display name
-    [Arguments]  ${id}
-    ${rc}  ${name}=  Run And Return Rc And Output  docker %{VCH-PARAMS} inspect --format='{{.Name}}' ${id}
-    Should Be Equal As Integers  ${rc}  0
-    ${name}=  Get Substring  ${name}  1
-    ${shortID}=  Get container shortID  ${id}
-    [Return]  ${name}-${shortID}
-
-Verify Container Rename
-    [Arguments]  ${oldname}  ${newname}  ${contID}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} ps -a
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  ${newname}
-    Should Not Contain  ${output}  ${oldname}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} inspect -f '{{.Name}}' ${newname}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  ${newname}
-    ${vmName}=  Get VM display name  ${contID}
-    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.info ${vmname}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  ${vmName}
-
-Run Regression Tests
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} pull busybox
-    Should Be Equal As Integers  ${rc}  0
-    # Pull an image that has been pulled already
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} pull busybox
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} images
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  busybox
-    ${rc}  ${container}=  Run And Return Rc And Output  docker %{VCH-PARAMS} create busybox /bin/top
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} start ${container}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} ps
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  /bin/top
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} stop ${container}
-    Should Be Equal As Integers  ${rc}  0
-    Wait Until Container Stops  ${container}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} ps -a
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  Exited
-
-    ${vmName}=  Get VM Display Name  ${container}
-    Wait Until Keyword Succeeds  5x  10s  Check For The Proper Log Files  ${vmName}
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} rm ${container}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} ps -a
-    Should Be Equal As Integers  ${rc}  0
-    Should Not Contain  ${output}  /bin/top
-
-    # Check for regression for #1265
-    ${rc}  ${container1}=  Run And Return Rc And Output  docker %{VCH-PARAMS} create -it busybox /bin/top
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${container2}=  Run And Return Rc And Output  docker %{VCH-PARAMS} create -it busybox
-    Should Be Equal As Integers  ${rc}  0
-    ${shortname}=  Get Substring  ${container2}  1  12
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} ps -a
-    ${lines}=  Get Lines Containing String  ${output}  ${shortname}
-    Should Not Contain  ${lines}  /bin/top
-    ${rc}=  Run And Return Rc  docker %{VCH-PARAMS} rm ${container1}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker %{VCH-PARAMS} rm ${container2}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} rmi busybox
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker %{VCH-PARAMS} images
-    Should Be Equal As Integers  ${rc}  0
-    Should Not Contain  ${output}  busybox
-
-    Scrape Logs For The Password
-
-Launch Container
-    [Arguments]  ${name}  ${network}=default  ${dockercmd}=docker
-    ${rc}  ${output}=  Run And Return Rc And Output  ${dockercmd} %{VCH-PARAMS} run --name ${name} --net ${network} -itd busybox
-    Should Be Equal As Integers  ${rc}  0
-    ${id}=  Get Line  ${output}  -1
-    ${ip}=  Get Container IP  %{VCH-PARAMS}  ${id}  ${network}  ${dockercmd}
-    [Return]  ${id}  ${ip}
