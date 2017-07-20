@@ -32,37 +32,37 @@ type ScanJobAPI struct {
 }
 
 // Prepare validates that whether user has read permission to the project of the repo the scan job scanned.
-func (this *ScanJobAPI) Prepare() {
-	this.BaseController.Prepare()
-	if !this.SecurityCtx.IsAuthenticated() {
-		this.HandleUnauthorized()
+func (sj *ScanJobAPI) Prepare() {
+	sj.BaseController.Prepare()
+	if !sj.SecurityCtx.IsAuthenticated() {
+		sj.HandleUnauthorized()
 		return
 	}
-	id, err := this.GetInt64FromPath(":id")
+	id, err := sj.GetInt64FromPath(":id")
 	if err != nil {
-		this.CustomAbort(http.StatusBadRequest, "ID is invalid")
+		sj.CustomAbort(http.StatusBadRequest, "ID is invalid")
 	}
-	this.jobID = id
+	sj.jobID = id
 
 	data, err := dao.GetScanJob(id)
 	if err != nil {
 		log.Errorf("Failed to load job data for job: %d, error: %v", id, err)
-		this.CustomAbort(http.StatusInternalServerError, "Failed to get Job data")
+		sj.CustomAbort(http.StatusInternalServerError, "Failed to get Job data")
 	}
 	projectName := strings.SplitN(data.Repository, "/", 2)[0]
-	if !this.SecurityCtx.HasReadPerm(projectName) {
+	if !sj.SecurityCtx.HasReadPerm(projectName) {
 		log.Errorf("User does not have read permission for project: %s", projectName)
-		this.HandleForbidden(this.SecurityCtx.GetUsername())
+		sj.HandleForbidden(sj.SecurityCtx.GetUsername())
 	}
-	this.projectName = projectName
+	sj.projectName = projectName
 }
 
 //GetLog ...
-func (this *ScanJobAPI) GetLog() {
-	url := buildJobLogURL(strconv.FormatInt(this.jobID, 10), ScanJobType)
-	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&this.BaseAPI))
+func (sj *ScanJobAPI) GetLog() {
+	url := buildJobLogURL(strconv.FormatInt(sj.jobID, 10), ScanJobType)
+	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&sj.BaseAPI))
 	if err != nil {
-		this.RenderError(http.StatusInternalServerError, err.Error())
+		sj.RenderError(http.StatusInternalServerError, err.Error())
 		return
 	}
 }
