@@ -61,16 +61,17 @@ export const REPLICATION_TEMPLATE: string = `
             <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>
-              <a href="/api/jobs/replication/{{j.id}}/log" target="_BLANK">
+              <a href="javascript:void(0);" (click)="viewLog(j.id)">
                 <clr-icon shape="clipboard"></clr-icon>
               </a>
             </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}
+            <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
             {{pagination.totalItems}} {{'REPLICATION.ITEMS' | translate}}
             <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>
     </div>
+    <job-log-viewer #replicationLogViewer></job-log-viewer>
 </div>`;

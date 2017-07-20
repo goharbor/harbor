@@ -31,7 +31,7 @@ export const ENDPOINT_TEMPLATE: string = `
                     <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                  {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}
+                  <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
                   {{pagination.totalItems}} {{'DESTINATION.ITEMS' | translate}}
                   <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
                 </clr-dg-footer>

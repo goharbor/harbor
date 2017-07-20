@@ -117,7 +117,7 @@
         "DELETION_TITLE": "Confirmar eliminación de usuario",
         "DELETION_SUMMARY": "¿Quiere eliminar el usuario {{param}}?",
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
-        "ITEMS": "elemento(s)"
+        "ITEMS": "elementos"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
@@ -143,7 +143,7 @@
         "NAME_ALREADY_EXISTS": "Ya existe un proyecto con ese nombre.",
         "NAME_IS_ILLEGAL": "El nombre del proyecto no es valido.",
         "UNKNOWN_ERROR": "Ha ocurrido un error al crear el proyecto.",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "DELETION_TITLE": "Confirmar eliminación del proyecto",
         "DELETION_SUMMARY": "¿Quiere eliminar el proyecto {{param}}?",
         "FILTER_PLACEHOLDER": "Filtrar proyectos",
@@ -171,7 +171,7 @@
         "DEVELOPER": "Desarrollador",
         "GUEST": "Invitado",
         "DELETE": "Eliminar",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "ACTIONS": "Acciones",
         "USERNAME_IS_REQUIRED": "El nombre de usuario es obligatorio",
         "USERNAME_DOES_NOT_EXISTS": "Ese nombre de usuario no existe.",
@@ -199,7 +199,7 @@
         "OTHERS": "Otros",
         "ADVANCED": "Avanzado",
         "SIMPLE": "Simple",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "FILTER_PLACEHOLDER": "Filtrar logs",
         "INVALID_DATE": "Fecha invalida."
     },
@@ -257,7 +257,7 @@
         "END_TIME": "Fecha de Finalización",
         "LOGS": "Logs",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "TOGGLE_ENABLE_TITLE": "Activar Regla",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "Después de la activación de esta regla, todos los repositorios de este proyecto serán replicados al registro de destino.\nPor favor, confirme para continuar.",
         "TOGGLE_DISABLE_TITLE": "Desactivar Regla",
@@ -273,7 +273,8 @@
         "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos.",
         "INVALID_DATE": "Fecha invalida.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
-        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
+        "JOB_LOG_VIEWER": "View Replication Job Log"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -296,7 +297,7 @@
         "FAILED_TO_GET_TARGET": "Fallo al obtener el endpoint.",
         "CREATION_TIME": "Fecha de creación",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "CREATED_SUCCESS": "Endpoint creado satisfactoriamente.",
         "UPDATED_SUCCESS": "Endpoint actualizado satisfactoriamente.",
         "DELETED_SUCCESS": "Endpoint eliminado satisfactoriamente.",
@@ -332,7 +333,7 @@
         "SHOW_DETAILS": "Mostrar Detalles",
         "REPOSITORIES": "Repositorios",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
@@ -396,7 +397,7 @@
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday; 'Upon Refresh': Triggering scanning when database refreshed."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -460,7 +461,7 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "SCAN NOW",
+            "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
             "ERROR": "Error",
             "SCANNING": "Scanning",
@@ -493,7 +494,8 @@
         "PLURAL": "Vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "Package with",
-        "PACKAGES": "Packages with"
+        "PACKAGES": "Packages with",
+        "SCAN_NOW": "Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",

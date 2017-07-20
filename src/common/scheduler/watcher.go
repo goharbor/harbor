@@ -56,6 +56,7 @@ func (wc *Watcher) Start() {
 
 		defer func() {
 			wc.isRunning = false
+			log.Infof("Work for policy %s is stopped.\n", wc.p.Name())
 		}()
 
 		evalChan, err := pl.Evaluate()
