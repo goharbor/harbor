@@ -466,7 +466,7 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "开始扫描",
+            "STOPPED": "未扫描",
             "QUEUED": "已入队列",
             "ERROR": "错误",
             "SCANNING": "扫描中",
@@ -499,7 +499,8 @@
         "PLURAL": "缺陷",
         "PLACEHOLDER": "过滤缺陷",
         "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有"
+        "PACKAGES": "个组件有",
+        "SCAN_NOW": "扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",

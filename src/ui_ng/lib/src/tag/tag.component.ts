@@ -20,14 +20,17 @@ import {
   EventEmitter,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  ElementRef,
-  OnDestroy
+  ElementRef
 } from '@angular/core';
 
 import { TagService } from '../service/tag.service';
-
 import { ErrorHandler } from '../error-handler/error-handler';
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../shared/shared.const';
+import { ChannelService } from '../channel/index';
+import {
+  ConfirmationTargets,
+  ConfirmationState,
+  ConfirmationButtons
+} from '../shared/shared.const';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -38,17 +41,15 @@ import { Tag, TagClickEvent } from '../service/interface';
 import { TAG_TEMPLATE } from './tag.component.html';
 import { TAG_STYLE } from './tag.component.css';
 
-import { toPromise, CustomComparator, VULNERABILITY_SCAN_STATUS } from '../utils';
+import {
+  toPromise,
+  CustomComparator,
+  VULNERABILITY_SCAN_STATUS
+} from '../utils';
 
 import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
-
-import { ScanningResultService } from '../service/index';
-
-import { Observable, Subscription } from 'rxjs/Rx';
-
-const STATE_CHECK_INTERVAL: number = 2000;//2s
 
 @Component({
   selector: 'hbr-tag',
@@ -56,7 +57,7 @@ const STATE_CHECK_INTERVAL: number = 2000;//2s
   styles: [TAG_STYLE],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TagComponent implements OnInit, OnDestroy {
+export class TagComponent implements OnInit {
 
   @Input() projectId: number;
   @Input() repoName: string;
@@ -83,11 +84,6 @@ export class TagComponent implements OnInit, OnDestroy {
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>('created', 'date');
 
   loading: boolean = false;
-
-  stateCheckTimer: Subscription;
-  tagsInScanning: { [key: string]: any } = {};
-  scanningTagCount: number = 0;
-
   copyFailed: boolean = false;
 
   @ViewChild('confirmationDialog')
@@ -99,8 +95,9 @@ export class TagComponent implements OnInit, OnDestroy {
     private errorHandler: ErrorHandler,
     private tagService: TagService,
     private translateService: TranslateService,
-    private scanningService: ScanningResultService,
-    private ref: ChangeDetectorRef) { }
+    private ref: ChangeDetectorRef,
+    private channel: ChannelService
+  ) { }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
@@ -135,18 +132,6 @@ export class TagComponent implements OnInit, OnDestroy {
     }
 
     this.retrieve();
-
-    this.stateCheckTimer = Observable.timer(STATE_CHECK_INTERVAL, STATE_CHECK_INTERVAL).subscribe(() => {
-      if (this.scanningTagCount > 0) {
-        this.updateScanningStates();
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.stateCheckTimer) {
-      this.stateCheckTimer.unsubscribe();
-    }
   }
 
   retrieve() {
@@ -203,7 +188,7 @@ export class TagComponent implements OnInit, OnDestroy {
       this.copyFailed = false;
     }
   }
-  
+
   onTagClick(tag: Tag): void {
     if (tag) {
       let evt: TagClickEvent = {
@@ -213,49 +198,6 @@ export class TagComponent implements OnInit, OnDestroy {
       };
       this.tagClickEvent.emit(evt);
     }
-  }
-
-  scanTag(tagId: string): void {
-    //Double check
-    if (this.tagsInScanning[tagId]) {
-      return;
-    }
-    toPromise<any>(this.scanningService.startVulnerabilityScanning(this.repoName, tagId))
-      .then(() => {
-        //Add to scanning map
-        this.tagsInScanning[tagId] = tagId;
-        //Counting
-        this.scanningTagCount += 1;
-      })
-      .catch(error => this.errorHandler.error(error));
-  }
-
-  updateScanningStates(): void {
-    toPromise<Tag[]>(this.tagService
-      .getTags(this.repoName))
-      .then(items => {
-        console.debug("updateScanningStates called!");
-        //Reset the scanning states
-        this.tagsInScanning = {};
-        this.scanningTagCount = 0;
-
-        items.forEach(item => {
-          if (item.scan_overview) {
-            if (item.scan_overview.scan_status === VULNERABILITY_SCAN_STATUS.pending ||
-              item.scan_overview.scan_status === VULNERABILITY_SCAN_STATUS.running) {
-              this.tagsInScanning[item.name] = item.name;
-              this.scanningTagCount += 1;
-            }
-          }
-        });
-
-        this.tags = items;
-      })
-      .catch(error => {
-        this.errorHandler.error(error);
-      });
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   onSuccess($event: any): void {
@@ -268,8 +210,33 @@ export class TagComponent implements OnInit, OnDestroy {
     //Show error
     this.copyFailed = true;
     //Select all text
-    if(this.textInput){
+    if (this.textInput) {
       this.textInput.nativeElement.select();
+    }
+  }
+
+  //Get vulnerability scanning status 
+  scanStatus(t: Tag): string {
+    if (t && t.scan_overview && t.scan_overview.scan_status) {
+      return t.scan_overview.scan_status;
+    }
+
+    return VULNERABILITY_SCAN_STATUS.unknown;
+  }
+
+  //Whether show the 'scan now' menu
+  canScanNow(t: Tag): boolean {
+    if (!this.withClair) { return false; }
+    let st: string = this.scanStatus(t);
+
+    return st !== VULNERABILITY_SCAN_STATUS.pending &&
+      st !== VULNERABILITY_SCAN_STATUS.running;
+  }
+
+  //Trigger scan
+  scanNow(tagId: string): void {
+    if (tagId) {
+      this.channel.publishScanEvent(tagId);
     }
   }
 }

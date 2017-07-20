@@ -27,8 +27,9 @@ export const TAG_TEMPLATE = `
     <clr-dg-placeholder>{{'TGA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
       <clr-dg-action-overflow>
+        <button class="action-item" *ngIf="canScanNow(t)" (click)="scanNow(t.name)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+        <button class="action-item" *ngIf="hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
         <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-        <button class="action-item" [hidden]="!hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
       </clr-dg-action-overflow>
       <clr-dg-cell style="width: 80px;" [ngSwitch]="withClair">
         <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)">{{t.name}}</a>
@@ -36,7 +37,7 @@ export const TAG_TEMPLATE = `
       </clr-dg-cell>
       <clr-dg-cell style="min-width: 180px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">docker pull {{registryUrl}}/{{repoName}}:{{t.name}}</clr-dg-cell>
       <clr-dg-cell style="width: 160px;" *ngIf="withClair">
-        <hbr-vulnerability-bar [tagId]="t.name" [summary]="t.scan_overview" (startScanning)="scanTag($event)"></hbr-vulnerability-bar>
+        <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="t.scan_overview"></hbr-vulnerability-bar>
       </clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
         <clr-icon shape="check" *ngSwitchCase="true" style="color: #1D5100;"></clr-icon>

@@ -462,7 +462,7 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "SCAN NOW",
+            "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
             "ERROR": "Error",
             "SCANNING": "Scanning",
@@ -495,7 +495,8 @@
         "PLURAL": "Vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "Package with",
-        "PACKAGES": "Packages with"
+        "PACKAGES": "Packages with",
+        "SCAN_NOW": "Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",
