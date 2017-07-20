@@ -2077,23 +2077,6 @@ definitions:
       new_password:
         type: string
         description: New password for marking as to be updated.
-  AccessLogFilter:
-    type: object
-    properties:
-      username:
-        type: string
-        description: Relevant user's name that accessed this project.
-      keywords:
-        type: string
-        description: Operation name specified when project created.
-      begin_timestamp:
-        type: integer
-        format: int64
-        description: Begin timestamp for querying access logs.
-      end_timestamp:
-        type: integer
-        format: int64
-        description: End timestamp for querying accessl logs.
   AccessLog:
     type: object
     properties:
@@ -2142,16 +2125,6 @@ definitions:
       username:
         type: string
         description: Username relevant to a project role member.
-  TopRepo:
-    type: object
-    properties:
-      name:
-        type: string
-        description: The name of the repo
-      count:
-        type: integer
-        format: int
-        description: The access count of the repo
   StatisticMap:
     type: object
     properties:
