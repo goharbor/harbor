@@ -144,34 +144,7 @@ Do Log Advanced Search
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-    #pull
-    Click Element  xpath=//audit-log//clr-dropdown/button
-    Sleep  1
-    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Pull")]
-    Sleep  1
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
-    #push
-    Click Element  xpath=//audit-log//clr-dropdown/button
-    Sleep  1
-    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Push")]
-    Sleep  1
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"push")]
-    #create
-    Click Element  xpath=//audit-log//clr-dropdown/button
-    Sleep  1
-    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Create")]
-    Sleep  1
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"create")]
-    #delete
-    Click Element  xpath=//audit-log//clr-dropdown/button
-    Sleep  1
-    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Delete")]
-    Sleep  1
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
-    #others
-    Click Element  xpath=//audit-log//clr-dropdown/button
-    Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-    Sleep  1
+   	Sleep  1
     Click element  xpath=//audit-log//hbr-filter//clr-icon
     Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
