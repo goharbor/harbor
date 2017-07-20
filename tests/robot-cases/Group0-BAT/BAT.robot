@@ -34,6 +34,40 @@ Test Case - Update Password
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test12#4
     Close Browser
+	
+Test Case - Create An New Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New Project  test${d}
+    Close Browser
+
+Test Case - User View Projects
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New Project  test${d}1
+    Create An New Project  test${d}2
+    Create An New Project  test${d}3
+    Switch To Log
+	Capture Page Screenshot  UserViewProjects.png
+    Wait Until Page Contains  test${d}1
+    Wait Until Page Contains  test${d}2
+    Wait Until Page Contains  test${d}3
+    Close Browser	
+	
+Test Case - Push Image
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New Project  test${d}
+
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log To Console  ${ip}	
+	Push image  ${ip}  tester${d}  Test1@34  test${d}  hello-world:latest
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/hello-world
 
 Test Case - User View Logs
     Init Chrome Driver
@@ -95,6 +129,7 @@ Test Case - Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Display  project${d}
+	Close Browser
 
 Test Case - Edit Project Creation
 	# create normal user and login
@@ -210,67 +245,6 @@ Test Case - Assign Sys Admin
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Administration Tag Should Display
     Close Browser
-
-Test Case - Create An New Project
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
-    Create An New Project  test${d}
-    Close Browser
-
-Test Case - User View Projects
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
-    Create An New Project  test${d}1
-    Create An New Project  test${d}2
-    Create An New Project  test${d}3
-    Switch To Log
-	Capture Page Screenshot  UserViewProjects.png
-    Wait Until Page Contains  test${d}1
-    Wait Until Page Contains  test${d}2
-    Wait Until Page Contains  test${d}3
-    Close Browser
-
-Test Case - Push Image
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
-    Create An New Project  test${d}
-    Close Browser
-
-    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log To Console  ${ip}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker pull hello-world
-    Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u tester${d} -p Test1@34 ${ip}
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker tag hello-world ${ip}/test${d}/hello-world:latest
-    Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker push ${ip}/test${d}/hello-world:latest
-    Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
-
-    Init Chrome Driver
-    Go To    ${HARBOR_URL}
-    Sleep  2
-    ${title}=  Get Title
-    Should Be Equal  ${title}  Harbor
-    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
-    Sleep  2
-	Capture Page Screenshot  PushImage1.png
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
-    Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[1]
-    Sleep  2
-    Mouse Down  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
-    Mouse Up  xpath=//project//list-project/clr-datagrid//clr-dg-row/clr-dg-row-master//a[contains(.,"test")]
-    Sleep  2
-    Wait Until Page Contains  test${d}/hello-world
 
 Test Case - Ldap Sign in and out
     Switch To LDAP
