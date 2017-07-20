@@ -35,7 +35,28 @@ Test Case - Update Password
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test12#4
     Close Browser
 
-Test Case Manage project publicity
+Test Case - User View Logs
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
+    Log to console  ${ip}
+			
+	Create An New Public Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}
+
+	Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
+    Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
+    
+	Go Into Project  project${d}
+	Delete Repo  project${d}
+	
+	Go To Project Log
+	Capture Page Screenshot  111.png
+	Advanced Search Should Display
+	
+	Do Log Advanced Search
+    Close Browser
+	
+Test Case - Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
     ${rc}  ${ip}=    run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'

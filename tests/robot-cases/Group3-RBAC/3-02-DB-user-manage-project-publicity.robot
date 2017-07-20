@@ -13,8 +13,8 @@ Test Case Manage project publicity
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
     Create An New Public Project  project${d}
 
-    Push image  10.112.122.188  usera${d}  Test1@34  project${d}  hello-world:latest
-    Pull image  10.112.122.188  userb${d}  Test1@34  project${d}  hello-world:latest
+    Push image  ${ip}  usera${d}  Test1@34  project${d}  hello-world:latest
+    Pull image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
@@ -29,7 +29,7 @@ Test Case Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Not Display  project${d}
-    Cannot Pull image  10.112.122.188  usera${d}  Test1@34  project${d}  hello-world:latest
+    Cannot Pull image  ${ip}  usera${d}  Test1@34  project${d}  hello-world:latest
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
