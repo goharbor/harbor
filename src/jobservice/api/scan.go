@@ -16,6 +16,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -82,4 +83,18 @@ func (isj *ImageScanJob) Post() {
 	sj := job.NewScanJob(jid)
 	log.Debugf("Sent job to scheduler, job: %v", sj)
 	job.Schedule(sj)
+}
+
+// GetLog gets logs of the job
+func (isj *ImageScanJob) GetLog() {
+	idStr := isj.Ctx.Input.Param(":id")
+	jid, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing job id: %s, error: %v", idStr, err)
+		isj.RenderError(http.StatusBadRequest, "Invalid job id")
+		return
+	}
+	scanJob := job.NewScanJob(jid)
+	logFile := scanJob.LogPath()
+	isj.Ctx.Output.Download(logFile)
 }
