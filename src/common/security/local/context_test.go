@@ -186,6 +186,11 @@ func TestIsSysAdmin(t *testing.T) {
 	assert.True(t, ctx.IsSysAdmin())
 }
 
+func TestIsSolutionUser(t *testing.T) {
+	ctx := NewSecurityContext(nil, nil)
+	assert.False(t, ctx.IsSolutionUser())
+}
+
 func TestHasReadPerm(t *testing.T) {
 	// public project
 	ctx := NewSecurityContext(nil, pm)

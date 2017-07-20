@@ -65,6 +65,11 @@ func (s *SecurityContext) IsSysAdmin() bool {
 	return false
 }
 
+// IsSolutionUser ...
+func (s *SecurityContext) IsSolutionUser() bool {
+	return s.IsAuthenticated()
+}
+
 // HasReadPerm returns true if the corresponding user of the secret
 // is jobservice, otherwise returns false
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {

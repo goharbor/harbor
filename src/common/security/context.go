@@ -26,6 +26,8 @@ type Context interface {
 	GetUsername() string
 	// IsSysAdmin returns whether the user is system admin
 	IsSysAdmin() bool
+	// IsSolutionUser returns whether the user is solution user
+	IsSolutionUser() bool
 	// HasReadPerm returns whether the user has read permission to the project
 	HasReadPerm(projectIDOrName interface{}) bool
 	// HasWritePerm returns whether the user has write permission to the project
