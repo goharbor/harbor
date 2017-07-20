@@ -127,9 +127,9 @@ Switch To Notary
 	Prepare  with_notary=true
 	Up Harbor  with_notary=true
 	${rc}  ${output}=  Run And Return Rc And Output  docker ps
-    Should Be Equal As Integers  ${rc}  0
-    Log To Console  \n${output}
-	Sleep  20s
+  Should Be Equal As Integers  ${rc}  0
+  Sleep  20s
+	Log To Console  \n${output}
 
 Prepare
 	[Arguments]  ${with_notary}=true

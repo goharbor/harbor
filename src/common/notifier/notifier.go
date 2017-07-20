@@ -183,7 +183,6 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 	//Trigger handlers
 	for _, h := range handlers {
 		var handlerChan chan bool
-
 		if h.IsStateful() {
 			t := reflect.TypeOf(h).String()
 			handlerChan = nw.handlerChannels[t].channel

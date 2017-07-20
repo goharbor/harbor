@@ -170,22 +170,22 @@ func get(client *http.Client, url, token string, username ...string) (*AuthConte
 }
 
 // Login with credential and returns auth context and error
-func Login(client *http.Client, url, username, password string) (*AuthContext, error) {
+func Login(client *http.Client, url, username, password, token string) (*AuthContext, error) {
 	data, err := json.Marshal(&struct {
-		Username string `json:"username"`
 		Password string `json:"password"`
 	}{
-		Username: username,
 		Password: password,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url), bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url, username), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add(AuthTokenHeader, token)
 
 	return send(client, req)
 }
@@ -228,7 +228,7 @@ func buildSpecificUserAuthCtxURL(url, principalID string) string {
 		strings.TrimRight(url, "/"), principalID)
 }
 
-// TODO update the url
-func buildLoginURL(url string) string {
-	return strings.TrimRight(url, "/") + "/sso/login"
+func buildLoginURL(url, principalID string) string {
+	return fmt.Sprintf("%s/auth/idm/principals/%s/security-context",
+		strings.TrimRight(url, "/"), principalID)
 }

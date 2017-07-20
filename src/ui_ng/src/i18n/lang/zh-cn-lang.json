@@ -117,6 +117,7 @@
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "成功删除用户。",
+        "OF": "共计",
         "ITEMS": "条记录"
     },
     "PROJECT": {
@@ -143,6 +144,7 @@
         "NAME_ALREADY_EXISTS": "项目名称已存在。",
         "NAME_IS_ILLEGAL": "项目名称非法。",
         "UNKNOWN_ERROR": "创建项目时发生未知错误。",
+        "OF": "共计",
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
@@ -171,6 +173,7 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
+        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -199,6 +202,7 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
+        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。"
@@ -273,7 +277,8 @@
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
         "INVALID_DATE": "无效日期。",
         "PLACEHOLDER": "未发现任何复制规则!",
-        "JOB_PLACEHOLDER": "未发现任何复制任务!"
+        "JOB_PLACEHOLDER": "未发现任何复制任务!",
+        "JOB_LOG_VIEWER": "查看复制任务日志"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -395,7 +400,7 @@
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
-            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描；‘缺陷库刷新后’：当缺陷数据库刷新后。"
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -461,7 +466,7 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "开始扫描",
+            "STOPPED": "未扫描",
             "QUEUED": "已入队列",
             "ERROR": "错误",
             "SCANNING": "扫描中",
@@ -494,7 +499,8 @@
         "PLURAL": "缺陷",
         "PLACEHOLDER": "过滤缺陷",
         "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有"
+        "PACKAGES": "个组件有",
+        "SCAN_NOW": "扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",
