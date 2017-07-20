@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/vmware/harbor/src/common/models"
@@ -133,8 +134,13 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 			return false
 		}
 
+		token, err := config.TokenReader.ReadToken()
+		if err != nil {
+			log.Errorf("failed to read solution user token: %v", err)
+			return false
+		}
 		authCtx, err := authcontext.Login(config.AdmiralClient,
-			config.AdmiralEndpoint(), username, password)
+			config.AdmiralEndpoint(), username, password, token)
 		if err != nil {
 			log.Errorf("failed to authenticate %s: %v", username, err)
 			return false
@@ -172,7 +178,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 }
 
 func filterReq(req *http.Request) bool {
-	path := req.URL.Path
+	path := strings.TrimRight(req.URL.Path, "/")
 	if path == "/api/projects" && req.Method == http.MethodPost ||
 		path == "/service/token" && req.Method == http.MethodGet {
 		return true

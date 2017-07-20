@@ -17,11 +17,9 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"sort"
 	"strings"
 
@@ -501,33 +499,7 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 }
 
 //Watch the configuration changes.
+//Wrap the same method in common utils.
 func watchConfigChanges(cfg map[string]interface{}) error {
-	if cfg == nil {
-		return errors.New("Empty configurations")
-	}
-
-	//Currently only watch the scan all policy change.
-	if v, ok := cfg[notifier.ScanAllPolicyTopic]; ok {
-		if reflect.TypeOf(v).Kind() == reflect.Map {
-			policyCfg := &models.ScanAllPolicy{}
-			if err := utils.ConvertMapToStruct(policyCfg, v.(map[string]interface{})); err != nil {
-				return err
-			}
-
-			policyNotification := notifier.ScanPolicyNotification{
-				Type:      policyCfg.Type,
-				DailyTime: 0,
-			}
-
-			if t, yes := policyCfg.Parm["daily_time"]; yes {
-				if reflect.TypeOf(t).Kind() == reflect.Int {
-					policyNotification.DailyTime = (int64)(t.(int))
-				}
-			}
-
-			return notifier.Publish(notifier.ScanAllPolicyTopic, policyNotification)
-		}
-	}
-
-	return nil
+	return notifier.WatchConfigChanges(cfg)
 }

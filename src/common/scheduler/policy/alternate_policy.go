@@ -44,9 +44,10 @@ type AlternatePolicy struct {
 //NewAlternatePolicy is constructor of creating AlternatePolicy.
 func NewAlternatePolicy(config *AlternatePolicyConfiguration) *AlternatePolicy {
 	return &AlternatePolicy{
-		tasks:     []task.Task{},
-		config:    config,
-		isEnabled: false,
+		tasks:      []task.Task{},
+		config:     config,
+		isEnabled:  false,
+		terminator: make(chan bool),
 	}
 }
 
@@ -108,7 +109,6 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 	}
 
 	alp.done = make(chan bool)
-	alp.terminator = make(chan bool)
 	alp.evaluation = make(chan bool)
 
 	go func() {
@@ -151,4 +151,24 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 	alp.isEnabled = true
 
 	return alp.evaluation, nil
+}
+
+//Equal is an implementation of same method in policy interface.
+func (alp *AlternatePolicy) Equal(p Policy) bool {
+	if p == nil {
+		return false
+	}
+
+	pl, ok := p.(*AlternatePolicy)
+	if !ok {
+		return false
+	}
+
+	cfg := pl.GetConfig()
+	cfg2 := alp.GetConfig()
+	if (cfg == nil && cfg2 != nil) || (cfg != nil && cfg2 == nil) {
+		return false
+	}
+
+	return cfg == nil || (cfg.Duration == cfg2.Duration && cfg.OffsetTime == cfg2.OffsetTime)
 }
