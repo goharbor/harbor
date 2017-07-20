@@ -286,7 +286,7 @@ func (p *ProjectAPI) List() {
 		// not login, only get public projects
 		base.Public = true
 	} else {
-		if !p.SecurityCtx.IsSysAdmin() {
+		if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
 			// login, but not system admin, get public projects and
 			// projects that the user is member of
 			base.Member = p.SecurityCtx.GetUsername()
