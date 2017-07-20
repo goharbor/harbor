@@ -233,6 +233,66 @@ Test Case - Create An Replication Rule New Endpoint
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
 	Close Browser
 
+Test Case - Scan a tag
+    init chrome driver
+    ${d}=  get current date  result_format=%m%s
+    ${rc}  ${ip}=  run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
+    log to console  ${ip}
+    Create An New user  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  test${d}  Test1@34  harbor
+    create an new project  project${d}
+    #push an image
+    ${rc}=  run and return rc  docker pull hello-world
+    ${rc}  ${output}=  run and return rc and output  docker login -u tester${d} -p Test1@34 ${ip}
+    ${rc}=  run and return rc  docker tag hello-world ${ip}/project${d}/hello-world
+    ${rc}=  run and return rc  docker push ${ip}/project${d}/hello-world
+    should be equal as integers  ${rc}  0
+    click element  //list-project//clr-dg-row//a[contains(.,'project${d}')]
+    sleep  1
+    #expand repo
+    click element  //repository//clr-dg-row-master[contains(.,'project${d}')]//button/clr-icon
+    sleep  1
+    #click scan
+    click element  //hbr-tag//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
+    click element  //hbr-tag//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    sleep  5
+    page should contain element  //clr-dg-row-master[contains(.,'project${d}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+    close browser
+    
+Test case scan config    
+    init chrome driver
+    #sigin in as admin
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    #click configuration
+    click element  //nav//li[3]
+    #click vulnerability
+    click element  //config//li[5]
+    sleep  1
+    #none
+    click element  //vulnerability-config//select
+    click element  //vulnerability-config//select/option[@value='none']
+    sleep  1
+    page should contain element  //vulnerability-config//input[@hidden='']
+    #save
+    click element  //config//div/button[contains(.,'SAVE')]
+    #change to other page and back to check
+    click element  //config//li[1]
+    click element  //config//li[5]
+    page should contain element  //vulnerability-config//input[@hidden='']
+    #change to daily change value
+    click element  //vulnerability-config//select
+    click element  //vulnerability-config//select/option[@value='daily']
+    #save
+    click element  //config//div/button[contains(.,'SAVE')]
+    #should not has hidden
+    page should not contain element  //vulnerability-config//input[@hidden='']
+    #click scan now
+    click element  //vulnerability-config//button[contains(.,'SCAN')]
+    sleep  2
+    #click too frequently wil cause error
+    click element  //vulnerability-config//button[contains(.,'SCAN')]
+    page should contain element  //global-message//div[@class='alert-item']
+    close browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
