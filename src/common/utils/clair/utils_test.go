@@ -33,17 +33,3 @@ func TestParseServerity(t *testing.T) {
 		assert.Equal(v, ParseClairSev(k))
 	}
 }
-
-func TestParseHarborSev(t *testing.T) {
-	assert := assert.New(t)
-	in := map[models.Severity]string{
-		models.SevNone:    "negligible",
-		models.SevUnknown: "unknown",
-		models.SevLow:     "low",
-		models.SevMedium:  "Medium",
-		models.SevHigh:    "high",
-	}
-	for k, v := range in {
-		assert.Equal(v, ParseHarborSev(k))
-	}
-}

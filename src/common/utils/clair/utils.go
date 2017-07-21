@@ -43,24 +43,6 @@ func ParseClairSev(clairSev string) models.Severity {
 	}
 }
 
-// ParseHarborClairSev parse Harbor's Severity type to the severity of clair if the integer is not recognized the value will be set to unknown.
-func ParseHarborSev(sev models.Severity) string {
-	switch sev {
-	case models.SevNone:
-		return "negligible"
-	case models.SevUnknown:
-		return "unknown"
-	case models.SevLow:
-		return "low"
-	case models.SevMedium:
-		return "medium"
-	case models.SevHigh:
-		return "high"
-	default:
-		return "unknown"
-	}
-}
-
 // UpdateScanOverview qeuries the vulnerability based on the layerName and update the record in img_scan_overview table based on digest.
 func UpdateScanOverview(digest, layerName string, l ...*log.Logger) error {
 	var logger *log.Logger
