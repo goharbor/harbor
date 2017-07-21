@@ -46,6 +46,18 @@ const (
 	SevHigh
 )
 
+//String is the output function for sererity variable
+func (sev Severity) String() string {
+	name := []string{"negligible", "unknown", "low", "medium", "high"}
+	i := int64(sev)
+	switch {
+	case i >= 1 && i <= int64(SevHigh):
+		return name[i-1]
+	default:
+		return "unknown"
+	}
+}
+
 //TableName is required by by beego orm to map ScanJob to table img_scan_job
 func (s *ScanJob) TableName() string {
 	return ScanJobTable

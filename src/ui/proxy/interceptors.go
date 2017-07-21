@@ -207,9 +207,10 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 	imageSev := overview.Sev
-	if imageSev > int(projectVulnerableSeverity) {
-		log.Debugf("the image severity is higher then project setting, failing the response.")
-		http.Error(rw, marshalError("The image scan result doesn't pass the project setting.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+	if imageSev >= int(projectVulnerableSeverity) {
+		log.Debugf("the image severity: %q is higher then project setting: %q, failing the response.", models.Severity(imageSev), projectVulnerableSeverity)
+		http.Error(rw, marshalError(fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity),
+			http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	vh.next.ServeHTTP(rw, req)
@@ -236,7 +237,7 @@ func matchNotaryDigest(img imageInfo) (bool, error) {
 	}
 	for _, t := range targets {
 		if t.Tag == img.tag {
-			log.Debugf("found tag: %s in notary, try to match digest.")
+			log.Debugf("found tag: %s in notary, try to match digest.", img.tag)
 			d, err := notary.DigestFromTarget(t)
 			if err != nil {
 				return false, err
