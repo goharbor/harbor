@@ -227,11 +227,22 @@ func initCfgStore() (err error) {
 }
 
 // LoadFromEnv loads the configurations from allEnvs, if all is false, it just loads
-// the repeatLoadEnvs
+// the repeatLoadEnvs and the env which is absent in cfgs
 func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
-	envs := repeatLoadEnvs
+	var envs map[string]interface{}
+
 	if all {
 		envs = allEnvs
+	} else {
+		envs = make(map[string]interface{})
+		for k, v := range repeatLoadEnvs {
+			envs[k] = v
+		}
+		for k, v := range allEnvs {
+			if _, exist := cfgs[k]; !exist {
+				envs[k] = v
+			}
+		}
 	}
 
 	for k, v := range envs {
