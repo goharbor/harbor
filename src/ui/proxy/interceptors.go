@@ -209,7 +209,7 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	imageSev := overview.Sev
 	if imageSev >= int(projectVulnerableSeverity) {
 		log.Debugf("the image severity: %q is higher then project setting: %q, failing the response.", models.Severity(imageSev), projectVulnerableSeverity)
-		http.Error(rw, marshalError(fmt.Sprintf("The image scan result: %q is not slower than the project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity),
+		http.Error(rw, marshalError(fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity),
 			http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
