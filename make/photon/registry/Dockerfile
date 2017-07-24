@@ -6,7 +6,7 @@ MAINTAINER wangyan@vmware.com
 COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 
-COPY registry /usr/bin
+COPY binary/registry /usr/bin
 RUN chmod u+x /usr/bin/registry
 
 VOLUME ["/var/lib/registry"]
