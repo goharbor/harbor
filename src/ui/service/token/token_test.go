@@ -217,6 +217,9 @@ func (f *fakeSecurityContext) GetUsername() string {
 func (f *fakeSecurityContext) IsSysAdmin() bool {
 	return f.isAdmin
 }
+func (f *fakeSecurityContext) IsSolutionUser() bool {
+	return false
+}
 func (f *fakeSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	return false
 }
