@@ -30,7 +30,7 @@ import (
 	"net/http"
 )
 
-// ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move one if failed to subit any job of a single image.
+// ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move on if failed to submit any job of a single image.
 func ScanAllImages() error {
 	regURL, err := config.RegistryURL()
 	if err != nil {
@@ -42,33 +42,52 @@ func ScanAllImages() error {
 		log.Errorf("Failed to list all repositories, error: %v", err)
 		return err
 	}
-	log.Infof("Rescanning all images.")
+	log.Infof("Scanning all images on Harbor.")
 
-	go func() {
-		var repoClient *registry.Repository
-		var err error
-		var tags []string
-		for _, r := range repos {
-			repoClient, err = NewRepositoryClientForUI(regURL, true, "harbor-ui", r.Name, "pull")
-			if err != nil {
-				log.Errorf("Failed to initialize client for repository: %s, error: %v, skip scanning", r.Name, err)
-				continue
-			}
-			tags, err = repoClient.ListTag()
-			if err != nil {
-				log.Errorf("Failed to get tags for repository: %s, error: %v, skip scanning.", r.Name, err)
-				continue
-			}
-			for _, t := range tags {
-				if err = TriggerImageScan(r.Name, t); err != nil {
-					log.Errorf("Failed to scan image with repository: %s, tag: %s, error: %v.", r.Name, t, err)
-				} else {
-					log.Debugf("Triggered scan for image with repository: %s, tag: %s", r.Name, t)
-				}
+	go scanRepos(repos, regURL)
+	return nil
+}
+
+// ScanImagesByProjectID scans all images under a projet, the whole process will move on if failed to submit any job of a single image.
+func ScanImagesByProjectID(id int64) error {
+	regURL, err := config.RegistryURL()
+	if err != nil {
+		log.Errorf("Failed to load registry url")
+		return err
+	}
+	repos, err := dao.GetRepositoriesByProject(id, "", 0, 0)
+	if err != nil {
+		log.Errorf("Failed list repositories in project %d, error: %v", id, err)
+		return err
+	}
+	log.Infof("Scanning all images in project: %d ", id)
+	go scanRepos(repos, regURL)
+	return nil
+}
+
+func scanRepos(repos []*models.RepoRecord, regURL string) {
+	var repoClient *registry.Repository
+	var err error
+	var tags []string
+	for _, r := range repos {
+		repoClient, err = NewRepositoryClientForUI(regURL, true, "harbor-ui", r.Name, "pull")
+		if err != nil {
+			log.Errorf("Failed to initialize client for repository: %s, error: %v, skip scanning", r.Name, err)
+			continue
+		}
+		tags, err = repoClient.ListTag()
+		if err != nil {
+			log.Errorf("Failed to get tags for repository: %s, error: %v, skip scanning.", r.Name, err)
+			continue
+		}
+		for _, t := range tags {
+			if err = TriggerImageScan(r.Name, t); err != nil {
+				log.Errorf("Failed to scan image with repository: %s, tag: %s, error: %v.", r.Name, t, err)
+			} else {
+				log.Debugf("Triggered scan for image with repository: %s, tag: %s", r.Name, t)
 			}
 		}
-	}()
-	return nil
+	}
 }
 
 // RequestAsUI is a shortcut to make a request attach UI secret and send the request.
