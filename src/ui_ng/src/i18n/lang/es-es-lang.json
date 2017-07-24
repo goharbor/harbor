@@ -117,7 +117,8 @@
         "DELETION_TITLE": "Confirmar eliminación de usuario",
         "DELETION_SUMMARY": "¿Quiere eliminar el usuario {{param}}?",
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
-        "ITEMS": "elementos"
+        "ITEMS": "elementos",
+        "OF": "of"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
@@ -152,7 +153,8 @@
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "FAILED_TO_DELETE_PROJECT": "Los proyectos que contienen repositorios o reglas de replicación no pueden eliminarse.",
-        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos."
+        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
+        "OF": "of"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositorios",
@@ -182,7 +184,8 @@
         "DELETION_SUMMARY": "¿Quiere eliminar el miembro {{param}} del proyecto?",
         "ADDED_SUCCESS": "Miembro añadido satisfactoriamente.",
         "DELETED_SUCCESS": "Miembro eliminado satisfactoriamente",
-        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente."
+        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
+        "OF": "of"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -201,7 +204,8 @@
         "SIMPLE": "Simple",
         "ITEMS": "elementos",
         "FILTER_PLACEHOLDER": "Filtrar logs",
-        "INVALID_DATE": "Fecha invalida."
+        "INVALID_DATE": "Fecha invalida.",
+        "OF": "of"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Reglas de Replicación",
