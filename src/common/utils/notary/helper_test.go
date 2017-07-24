@@ -16,6 +16,7 @@ package notary
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
@@ -36,9 +37,10 @@ func TestMain(m *testing.M) {
 	notaryServer = notarytest.NewNotaryServer(endpoint)
 	defer notaryServer.Close()
 	var defaultConfig = map[string]interface{}{
-		common.ExtEndpoint:   "https://" + endpoint,
-		common.WithNotary:    true,
-		common.CfgExpiration: 5,
+		common.ExtEndpoint:     "https://" + endpoint,
+		common.WithNotary:      true,
+		common.CfgExpiration:   5,
+		common.TokenExpiration: 30,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfig)
 	if err != nil {

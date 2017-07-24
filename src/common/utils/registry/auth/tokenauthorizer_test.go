@@ -15,54 +15,184 @@
 package auth
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-func TestAuthorizeOfStandardTokenAuthorizer(t *testing.T) {
-	handler := test.Handler(&test.Response{
-		Body: []byte(`
-		{
-			"token":"token",
-			"expires_in":300,
-			"issued_at":"2016-08-17T23:17:58+08:00"
-		}
-		`),
-	})
+func TestFilterReq(t *testing.T) {
+	authorizer := tokenAuthorizer{}
 
-	server := test.NewServer(&test.RequestHandlerMapping{
-		Method:  "GET",
-		Pattern: "/token",
-		Handler: handler,
-	})
-	defer server.Close()
+	// v2
+	req, err := http.NewRequest(http.MethodGet, "http://registry/v2/", nil)
+	require.Nil(t, err)
+	goon, err := authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.True(t, goon)
 
-	authorizer := NewStandardTokenAuthorizer(nil, false, "", "repository", "library/ubuntu", "pull")
-	req, err := http.NewRequest("GET", "http://registry", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
+	// catalog
+	req, err = http.NewRequest(http.MethodGet, "http://registry/v2/_catalog?n=1000", nil)
+	require.Nil(t, err)
+	goon, err = authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.True(t, goon)
 
-	params := map[string]string{
-		"realm": server.URL + "/token",
-	}
+	// contains two v2 in path
+	req, err = http.NewRequest(http.MethodGet, "http://registry/v2/library/v2/tags/list", nil)
+	require.Nil(t, err)
+	goon, err = authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.True(t, goon)
 
-	if err := authorizer.Authorize(req, params); err != nil {
-		t.Fatalf("failed to authorize request: %v", err)
-	}
+	// different scheme
+	req, err = http.NewRequest(http.MethodGet, "https://registry/v2/library/golang/tags/list", nil)
+	require.Nil(t, err)
+	goon, err = authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.False(t, goon)
 
-	tk := req.Header.Get("Authorization")
-	if tk != "Bearer token" {
-		t.Errorf("unexpected token: %s != %s", tk, "Bearer token")
-	}
+	// different host
+	req, err = http.NewRequest(http.MethodGet, "http://vmware.com/v2/library/golang/tags/list", nil)
+	require.Nil(t, err)
+	goon, err = authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.False(t, goon)
+
+	// different path
+	req, err = http.NewRequest(http.MethodGet, "https://registry/s3/ssss", nil)
+	require.Nil(t, err)
+	goon, err = authorizer.filterReq(req)
+	assert.Nil(t, err)
+	assert.False(t, goon)
 }
 
-func TestSchemeOfStandardTokenAuthorizer(t *testing.T) {
-	authorizer := &standardTokenAuthorizer{}
-	if authorizer.Scheme() != "bearer" {
-		t.Errorf("unexpected scheme: %s != %s", authorizer.Scheme(), "bearer")
+func TestParseScopes(t *testing.T) {
+	// contains from in query string
+	req, err := http.NewRequest(http.MethodGet, "http://registry/v2?from=library", nil)
+	require.Nil(t, err)
+	scopses := parseScopes(req)
+	assert.Equal(t, 1, len(scopses))
+	assert.EqualValues(t, &Scope{
+		Type: "repository",
+		Name: "library",
+		Actions: []string{
+			"pull"},
+	}, scopses[0])
+
+	// v2
+	req, err = http.NewRequest(http.MethodGet, "http://registry/v2", nil)
+	require.Nil(t, err)
+	scopses = parseScopes(req)
+	assert.Equal(t, 0, len(scopses))
+
+	// catalog
+	req, err = http.NewRequest(http.MethodGet, "http://registry/v2/_catalog", nil)
+	require.Nil(t, err)
+	scopses = parseScopes(req)
+	assert.Equal(t, 1, len(scopses))
+	assert.EqualValues(t, &Scope{
+		Type: "registry",
+		Name: "catalog",
+		Actions: []string{
+			"*"},
+	}, scopses[0])
+
+	// manifest
+	req, err = http.NewRequest(http.MethodPut, "http://registry/v2/library/mysql/5.6/manifests/1", nil)
+	require.Nil(t, err)
+	scopses = parseScopes(req)
+	assert.Equal(t, 1, len(scopses))
+	assert.EqualValues(t, &Scope{
+		Type: "repository",
+		Name: "library/mysql/5.6",
+		Actions: []string{
+			"push"},
+	}, scopses[0])
+}
+
+func TestGetAndUpdateCachedToken(t *testing.T) {
+	authorizer := &tokenAuthorizer{
+		cachedTokens: make(map[string]*models.Token),
 	}
 
+	// empty cache
+	token := authorizer.getCachedToken("")
+	assert.Nil(t, token)
+
+	// put a valid token into cache
+	token = &models.Token{
+		Token:     "token",
+		ExpiresIn: 60,
+		IssuedAt:  time.Now().Format(time.RFC3339),
+	}
+	authorizer.updateCachedToken("", token)
+	token2 := authorizer.getCachedToken("")
+	assert.EqualValues(t, token, token2)
+
+	// put a expired token into cache
+	token = &models.Token{
+		Token:     "token",
+		ExpiresIn: 60,
+		IssuedAt:  time.Now().Add(-time.Second * 120).Format("2006-01-02 15:04:05.999999999 -0700 MST"),
+	}
+	authorizer.updateCachedToken("", token)
+	token2 = authorizer.getCachedToken("")
+	assert.Nil(t, token2)
+}
+
+func TestModifyOfStandardTokenAuthorizer(t *testing.T) {
+	token := &models.Token{
+		Token:     "token",
+		ExpiresIn: 3600,
+		IssuedAt:  time.Now().String(),
+	}
+	data, err := json.Marshal(token)
+	require.Nil(t, err)
+
+	tokenHandler := test.Handler(&test.Response{
+		Body: data,
+	})
+
+	tokenServer := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: "/service/token",
+			Handler: tokenHandler,
+		})
+	defer tokenServer.Close()
+
+	header := fmt.Sprintf("Bearer realm=\"%s/service/token\",service=\"registry\"",
+		tokenServer.URL)
+	pingHandler := test.Handler(&test.Response{
+		StatusCode: http.StatusUnauthorized,
+		Headers: map[string]string{
+			"WWW-Authenticate": header,
+		},
+	})
+	registryServer := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: "/v2",
+			Handler: pingHandler,
+		})
+	defer registryServer.Close()
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v2/", registryServer.URL), nil)
+	require.Nil(t, err)
+
+	authorizer := NewStandardTokenAuthorizer(nil, false)
+
+	err = authorizer.Modify(req)
+	require.Nil(t, err)
+
+	tk := req.Header.Get("Authorization")
+	assert.Equal(t, strings.ToLower("Bearer "+token.Token), strings.ToLower(tk))
 }

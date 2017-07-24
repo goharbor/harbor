@@ -189,7 +189,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -305,7 +305,7 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	client, err := ra.initRepositoryClient(repository)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to initialize the client for %s: %v",
 			repository, err))
@@ -354,7 +354,7 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	client, err := ra.initRepositoryClient(repoName)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -495,7 +495,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -555,16 +555,6 @@ func getManifest(client *registry.Repository,
 	}
 
 	return result, nil
-}
-
-func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint, err := config.RegistryURL()
-	if err != nil {
-		return nil, err
-	}
-
-	return uiutils.NewRepositoryClientForUI(endpoint, true, ra.SecurityCtx.GetUsername(),
-		repoName, "pull", "push", "*")
 }
 
 //GetTopRepos returns the most populor repositories
@@ -790,7 +780,7 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 		log.Errorf("project %s not found", project)
 		return false, "", nil
 	}
-	client, err := ra.initRepositoryClient(repository)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
 		return false, "", fmt.Errorf("failed to initialize the client for %s: %v", repository, err)
 	}

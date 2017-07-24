@@ -93,9 +93,6 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 	return nil
 }
 
-// TODO merge RegistryTokenForUI NotaryTokenForUI genTokenForUI
-// to one function
-
 //RegistryTokenForUI calls genTokenForUI to get raw token for registry
 func RegistryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
 	return genTokenForUI(username, service, scopes)

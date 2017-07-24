@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/service/token"
 
 	"bytes"
 	"encoding/json"
@@ -32,11 +33,6 @@ import (
 
 // ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move one if failed to subit any job of a single image.
 func ScanAllImages() error {
-	regURL, err := config.RegistryURL()
-	if err != nil {
-		log.Errorf("Failed to load registry url")
-		return err
-	}
 	repos, err := dao.GetAllRepositories()
 	if err != nil {
 		log.Errorf("Failed to list all repositories, error: %v", err)
@@ -49,7 +45,7 @@ func ScanAllImages() error {
 		var err error
 		var tags []string
 		for _, r := range repos {
-			repoClient, err = NewRepositoryClientForUI(regURL, true, "harbor-ui", r.Name, "pull")
+			repoClient, err = NewRepositoryClientForUI("harbor-ui", r.Name)
 			if err != nil {
 				log.Errorf("Failed to initialize client for repository: %s, error: %v, skip scanning", r.Name, err)
 				continue
@@ -113,19 +109,13 @@ func TriggerImageScan(repository string, tag string) error {
 }
 
 // NewRepositoryClientForUI ...
-// TODO need a registry client which accept a raw token as param
-func NewRepositoryClientForUI(endpoint string, insecure bool, username, repository string,
-	scopeActions ...string) (*registry.Repository, error) {
-
-	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, "repository", repository, scopeActions...)
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+func NewRepositoryClientForUI(username, repository string) (*registry.Repository, error) {
+	endpoint, err := config.RegistryURL()
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+	insecure := true
+	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
+	return registry.NewRepositoryWithModifiers(repository, endpoint, insecure, authorizer)
 }

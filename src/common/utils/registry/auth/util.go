@@ -37,16 +37,11 @@ func GetToken(endpoint string, insecure bool, credential Credential,
 		Transport: registry.GetHTTPTransport(insecure),
 	}
 
-	scopesStr := []string{}
-	for _, scope := range scopes {
-		scopesStr = append(scopesStr, scope.string())
-	}
-
-	return getToken(client, credential, endpoint, service, scopesStr)
+	return getToken(client, credential, endpoint, service, scopes)
 }
 
 func getToken(client *http.Client, credential Credential, realm, service string,
-	scopes []string) (*models.Token, error) {
+	scopes []*Scope) (*models.Token, error) {
 	u, err := url.Parse(realm)
 	if err != nil {
 		return nil, err
@@ -54,7 +49,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 	query := u.Query()
 	query.Add("service", service)
 	for _, scope := range scopes {
-		query.Add("scope", scope)
+		query.Add("scope", scope.string())
 	}
 	u.RawQuery = query.Encode()
 
