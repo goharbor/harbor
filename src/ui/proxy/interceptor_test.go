@@ -131,7 +131,9 @@ func TestPMSPolicyChecker(t *testing.T) {
 	}
 
 	pm := pms.NewProjectManager(http.DefaultClient,
-		admiralEndpoint, nil)
+		admiralEndpoint, &pms.RawTokenReader{
+			Token: "token",
+		})
 	name := "project_for_test_get_sev_low"
 	id, err := pm.Create(&models.Project{
 		Name:                                       name,

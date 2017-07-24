@@ -59,6 +59,11 @@ func (s *SecurityContext) IsSysAdmin() bool {
 	return s.user.HasAdminRole == 1
 }
 
+// IsSolutionUser ...
+func (s *SecurityContext) IsSolutionUser() bool {
+	return false
+}
+
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	// public project

@@ -99,6 +99,7 @@ func initRouters() {
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
+	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")

@@ -2,10 +2,8 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: "0.3.0"
-# the domain of the service
+  version: 0.3.0
 host: localhost
-# array of all schemes that your API supports
 schemes:
   - http
 basePath: /api
@@ -19,10 +17,14 @@ paths:
   /search:
     get:
       summary: Search for projects and repositories
-      description: |
-        The Search endpoint returns information about the projects and repositories
+      description: >
+        The Search endpoint returns information about the projects and
+        repositories
+
         offered at public status or related to the current logged in user. The
+
         response includes the project and repository list in a proper
+
         display order.
       parameters:
         - name: q
@@ -33,21 +35,22 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: An array of search results
           schema:
             type: array
             items:
               $ref: '#/definitions/Search'
-        500:
+        '500':
           description: Unexpected internal errors.
   /projects:
     get:
       summary: List projects
-      description: |
-        This endpoint returns all projects created by Harbor, and can be filtered by project name.
+      description: >
+        This endpoint returns all projects created by Harbor, and can be
+        filtered by project name.
       parameters:
-        - name: name 
+        - name: name
           in: query
           description: The name of project.
           required: false
@@ -58,7 +61,7 @@ paths:
           required: false
           type: boolean
           format: int32
-        - name: owner 
+        - name: owner
           in: query
           description: The name of project owner.
           required: false
@@ -68,17 +71,17 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: The size of per page, default is 10, maximum is 100.
+          description: 'The size of per page, default is 10, maximum is 100.'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Return all matched projects.
           schema:
             type: array
@@ -91,14 +94,15 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Internal errors.
     head:
       summary: Check if the project name user provided already exists.
-      description: |
-        This endpoint is used to check if the project name user provided already exist.
+      description: >
+        This endpoint is used to check if the project name user provided already
+        exist.
       parameters:
         - name: project_name
           in: query
@@ -108,13 +112,13 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Project name exists.
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: Project name does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
     post:
       summary: Create a new project.
@@ -130,17 +134,17 @@ paths:
       tags:
         - Products
       responses:
-        201:
+        '201':
           description: Project created successfully.
-        400:
+        '400':
           description: Unsatisfied with constraints of the project creation.
-        401:
+        '401':
           description: User need to log in first.
-        409:
+        '409':
           description: Project name already exists.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /projects/{project_id}:
+  '/projects/{project_id}':
     get:
       summary: Return specific project detail infomation
       description: |
@@ -155,13 +159,13 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Return matched project information.
           schema:
             $ref: '#/definitions/Project'
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Internal errors.
     delete:
       summary: Delete project by projectID
@@ -177,19 +181,19 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Project is deleted successfully.
-        400:
+        '400':
           description: Invalid project id.
-        403:
+        '403':
           description: User need to log in first.
-        404:
+        '404':
           description: Project does not exist.
-        412:
-          description: Project contains policies, can not be deleted.
-        500:
+        '412':
+          description: 'Project contains policies, can not be deleted.'
+        '500':
           description: Internal errors.
-  /projects/{project_id}/publicity:
+  '/projects/{project_id}/publicity':
     put:
       summary: Update properties for a selected project.
       description: |
@@ -203,30 +207,31 @@ paths:
           description: Selected project ID.
         - name: project
           in: body
-          required: true 
+          required: true
           schema:
             $ref: '#/definitions/Project'
           description: Updates of project.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Updated project publicity status successfully.
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission to the project.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /projects/{project_id}/logs:
+  '/projects/{project_id}/logs':
     get:
       summary: Get access logs accompany with a relevant project.
-      description: |
-        This endpoint let user search access logs filtered by operations and date time ranges.
+      description: >
+        This endpoint let user search access logs filtered by operations and
+        date time ranges.
       parameters:
         - name: project_id
           in: path
@@ -269,17 +274,17 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: The size of per page, default is 10, maximum is 100.
+          description: 'The size of per page, default is 10, maximum is 100.'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get access log successfully.
           schema:
             type: array
@@ -292,17 +297,18 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /projects/{project_id}/members/:
+  '/projects/{project_id}/members/':
     get:
       summary: Return a project's relevant role members.
-      description: |
-        This endpoint is for user to search a specified project's relevant role members.
+      description: >
+        This endpoint is for user to search a specified project's relevant role
+        members.
       parameters:
         - name: project_id
           in: path
@@ -313,26 +319,27 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get project's relevant role members successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/User'
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User in session does not have permission to the project.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
     post:
       summary: Add project role member accompany with relevant project and user.
-      description: |
-        This endpoint is for user to add project role member accompany with relevant project and user.
+      description: >
+        This endpoint is for user to add project role member accompany with
+        relevant project and user.
       parameters:
         - name: project_id
           in: path
@@ -342,31 +349,34 @@ paths:
           description: Relevant project ID.
         - name: roles
           in: body
-          description: Role members for adding to relevant project. Only one role is supported in the role list.
+          description: >-
+            Role members for adding to relevant project. Only one role is
+            supported in the role list.
           schema:
             $ref: '#/definitions/RoleParam'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Role members added to relevant project successfully.
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User in session does not have permission to the project.
-        404:
+        '404':
           description: Project ID or username does not exist.
-        409:
+        '409':
           description: User has already added as a project role member.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /projects/{project_id}/members/{user_id}:
+  '/projects/{project_id}/members/{user_id}':
     get:
       summary: Return role members accompany with relevant project and user.
-      description: |
-        This endpoint is for user to get role members accompany with relevant project and user. 
+      description: >
+        This endpoint is for user to get role members accompany with relevant
+        project and user. 
       parameters:
         - name: project_id
           in: path
@@ -383,26 +393,27 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get project role members successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/Role'
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User in session does not have permission to the project.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
     put:
       summary: Update project role members accompany with relevant project and user.
-      description: |
-        This endpoint is for user to update current project role members accompany with relevant project and user.
+      description: >
+        This endpoint is for user to update current project role members
+        accompany with relevant project and user.
       parameters:
         - name: project_id
           in: path
@@ -424,22 +435,23 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Project role members updated successfully.
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User in session does not have permission to the project.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
-          description: Unexpected internal errors.      
+        '500':
+          description: Unexpected internal errors.
     delete:
       summary: Delete project role members accompany with relevant project and user.
-      description: |
-        This endpoint is aimed to remove project role members already added to the relevant project and user.
+      description: >
+        This endpoint is aimed to remove project role members already added to
+        the relevant project and user.
       parameters:
         - name: project_id
           in: path
@@ -456,40 +468,46 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Project role members deleted successfully.
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User in session does not have permission to the project.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
   /statistics:
     get:
       summary: Get projects number and repositories number relevant to the user
-      description: |
-        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the logined user, also the public projects number and repositories number. If the user is admin, he can also get total projects number and total repositories number.
+      description: >
+        This endpoint is aimed to statistic all of the projects number and
+        repositories number relevant to the logined user, also the public
+        projects number and repositories number. If the user is admin, he can
+        also get total projects number and total repositories number.
       tags:
         - Products
       responses:
-        200:
-          description: Get the projects number and repositories number relevant to the user successfully.
+        '200':
+          description: >-
+            Get the projects number and repositories number relevant to the user
+            successfully.
           schema:
             $ref: '#/definitions/StatisticMap'
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Unexpected internal errors.
-
   /users:
     get:
       summary: Get registered users of Harbor.
-      description: |
-        This endpoint is for user to search registered users, support for filtering results with username.Notice, by now this operation is only for administrator.
+      description: >
+        This endpoint is for user to search registered users, support for
+        filtering results with username.Notice, by now this operation is only
+        for administrator.
       parameters:
         - name: username
           in: query
@@ -506,7 +524,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -516,19 +534,19 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Searched for users of Harbor successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/User'
-        400:
+        '400':
           description: Invalid user ID.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        500:
+        '500':
           description: Unexpected internal errors.
     post:
       summary: Creates a new user account.
@@ -544,13 +562,15 @@ paths:
       tags:
         - Products
       responses:
-        201:
+        '201':
           description: User created successfully.
-        400:
+        '400':
           description: Unsatisfied with constraints of the user creation.
-        403:
-          description: User registration can only be used by admin role user when self-registration is off.
-        500:
+        '403':
+          description: >-
+            User registration can only be used by admin role user when
+            self-registration is off.
+        '500':
           description: Unexpected internal errors.
   /users/current:
     get:
@@ -560,44 +580,43 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get current user information successfully.
           schema:
             $ref: '#/definitions/User'
-        401:
+        '401':
           description: User need to log in first.
-  /users/{user_id}:
+  '/users/{user_id}':
     get:
       summary: Get a user's profile.
       description: |
-       Get user's profile with user id.
+        Get user's profile with user id.
       parameters:
         - name: user_id
           in: path
           type: integer
           format: int
           required: true
-          description: Registered user ID 
+          description: Registered user ID
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get user's profile successfully.
-        400:
+        '400':
           description: Invalid user ID.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        404:
+        '404':
           description: User ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /users/{user_id}:
     put:
       summary: Update a registered user to change his profile.
       description: |
-       This endpoint let a registered user change his profile.
+        This endpoint let a registered user change his profile.
       parameters:
         - name: user_id
           in: path
@@ -607,24 +626,24 @@ paths:
           description: Registered user ID
         - name: profile
           in: body
-          description: Only email, realname and comment can be modified.
+          description: 'Only email, realname and comment can be modified.'
           required: true
           schema:
-            $ref: '#/definitions/UserProfile' 
+            $ref: '#/definitions/UserProfile'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Updated user's profile successfully.
-        400:
+        '400':
           description: Invalid user ID.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        404:
+        '404':
           description: User ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
     delete:
       summary: Mark a registered user as be removed.
@@ -641,23 +660,25 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Marked user as be removed successfully.
-        400:
+        '400':
           description: Invalid user ID.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        404:
+        '404':
           description: User ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /users/{user_id}/password:
+  '/users/{user_id}/password':
     put:
       summary: Change the password on a user that already exists.
-      description: |
-        This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
+      description: >
+        This endpoint is for user to update password. Users with the admin role
+        can change any user's password. Guest users can change only their own
+        password.
       parameters:
         - name: user_id
           in: path
@@ -670,22 +691,22 @@ paths:
           description: Password to be updated.
           required: true
           schema:
-            $ref: '#/definitions/Password'          
+            $ref: '#/definitions/Password'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Updated password successfully.
-        400:
+        '400':
           description: Invalid user ID; Old password is blank; New password is blank.
-        401:
+        '401':
           description: Don't have authority to change password. Please check login status.
-        403:
+        '403':
           description: Old password is not correct.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /users/{user_id}/sysadmin:
-     put:
+  '/users/{user_id}/sysadmin':
+    put:
       summary: Update a registered user to change to be an administrator of Harbor.
       description: |
         This endpoint let a registered user change to be an administrator
@@ -699,30 +720,31 @@ paths:
           description: Registered user ID
         - name: has_admin_role
           in: body
-          description:  Toggle a user to admin or not.
+          description: Toggle a user to admin or not.
           required: true
           schema:
             $ref: '#/definitions/HasAdminRole'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Updated user's admin role successfully.
-        400:
+        '400':
           description: Invalid user ID.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        404:
+        '404':
           description: User ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
-      description: |
-        This endpoint let user search repositories accompanying with relevant project ID and repo name.
+      description: >
+        This endpoint let user search repositories accompanying with relevant
+        project ID and repo name.
       parameters:
         - name: project_id
           in: query
@@ -740,17 +762,17 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: The size of per page, default is 10, maximum is 100.
+          description: 'The size of per page, default is 10, maximum is 100.'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get repositories successfully.
           schema:
             type: array
@@ -763,15 +785,17 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
-        400:
+        '400':
           description: Invalid project ID.
-        403:
-          description: Project is not public or current user is irrelevant to the repository.
-        404:
+        '403':
+          description: >-
+            Project is not public or current user is irrelevant to the
+            repository.
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /repositories/{repo_name}:
+  '/repositories/{repo_name}':
     delete:
       summary: Delete a repository.
       description: |
@@ -785,21 +809,23 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Delete successfully.
-        400:
+        '400':
           description: Invalid repo_name.
-        401:
+        '401':
           description: Unauthorized.
-        404:
-          description: Repository not found.
-        403:
+        '403':
           description: Forbidden.
-  /repositories/{repo_name}/tags/{tag}:
+        '404':
+          description: Repository not found.
+  '/repositories/{repo_name}/tags/{tag}':
     get:
       summary: Get the tag of the repository.
-      description: |
-        This endpoint aims to retrieve the tag of the repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
+      description: >
+        This endpoint aims to retrieve the tag of the repository. If deployed
+        with Notary, the signature property of response represents whether the
+        image is singed or not. If the property is null, the image is unsigned.
       parameters:
         - name: repo_name
           in: path
@@ -812,13 +838,13 @@ paths:
           required: true
           description: Tag of the repository.
       tags:
-       - Products
+        - Products
       responses:
-        200:
+        '200':
           description: Get tag successfully.
           schema:
             $ref: '#/definitions/DetailedTag'
-        500:
+        '500':
           description: Unexpected internal errors.
     delete:
       summary: Delete a tag in a repository.
@@ -838,21 +864,24 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Delete tag successfully.
-        400:
+        '400':
           description: Invalid repo_name.
-        401:
+        '401':
           description: Unauthorized.
-        404:
-          description: Repository or tag not found.
-        403:
+        '403':
           description: Forbidden.
-  /repositories/{repo_name}/tags:
+        '404':
+          description: Repository or tag not found.
+  '/repositories/{repo_name}/tags':
     get:
       summary: Get tags of a relevant repository.
-      description: |
-        This endpoint aims to retrieve tags from a relevant repository. If deployed with Notary, the signature property of response represents whether the image is singed or not. If the property is null, the image is unsigned.
+      description: >
+        This endpoint aims to retrieve tags from a relevant repository. If
+        deployed with Notary, the signature property of response represents
+        whether the image is singed or not. If the property is null, the image
+        is unsigned.
       parameters:
         - name: repo_name
           in: path
@@ -860,17 +889,17 @@ paths:
           required: true
           description: Relevant repository name.
       tags:
-       - Products
+        - Products
       responses:
-        200:
+        '200':
           description: Get tags successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/DetailedTag'
-        500:
+        '500':
           description: Unexpected internal errors.
-  /repositories/{repo_name}/tags/{tag}/manifest:
+  '/repositories/{repo_name}/tags/{tag}/manifest':
     get:
       summary: Get manifests of a relevant repository.
       description: |
@@ -890,23 +919,27 @@ paths:
           in: query
           type: string
           required: false
-          description: The version of manifest, valid value are "v1" and "v2", default is "v2"
+          description: >-
+            The version of manifest, valid value are "v1" and "v2", default is
+            "v2"
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Retrieved manifests from a relevant repository successfully.
           schema:
             $ref: '#/definitions/Manifest'
-        404:
+        '404':
           description: Retrieved manifests from a relevant repository not found.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /repositories/{repo_name}/tags/{tag}/scan:
+  '/repositories/{repo_name}/tags/{tag}/scan':
     post:
       summary: Scan the image.
-      description: |
-        Trigger jobservice to call Clair API to scan the image identified by the repo_name and tag.  Only project admins have permission to scan images under the project.
+      description: >
+        Trigger jobservice to call Clair API to scan the image identified by the
+        repo_name and tag.  Only project admins have permission to scan images
+        under the project.
       parameters:
         - name: repo_name
           in: path
@@ -921,22 +954,44 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Successfully created the job to scan image.
-        401:
+        '401':
           description: User needs to login or call the API with correct credentials.
-        403:
+        '403':
           description: User doesn't have permission to perform the action.
-        404:
+        '404':
           description: The image does not exist in Harbor.
-        503:
+        '503':
           description: Harbor is not deployed with Clair.
-
-  /repositories/{repo_name}/tags/{tag}/vulnerability/details:
+  /repositories/scanAll:
+    post:
+      summary: Scan all images of the registry.
+      description: >
+        The server will launch different jobs to scan each image on the
+        regsitry, so this is equivalent to calling  the API to scan the image
+        one by one in background, so there's no way to track the overall status
+        of the "scan all" action.  Only system adim has permission to call this
+        API.  
+      responses:
+        '202':
+          description: >-
+            The action is successully taken in the background.  If some images
+            are failed to scan it will only be reflected in the job status.
+        '401':
+          description: User needs to login or call the API with correct credentials.
+        '403':
+          description: User doesn't have permission to perform the action.
+        '500':
+          description: Failed to initiate the action.
+        '503':
+          description: Harbor is not deployed with Clair.
+  '/repositories/{repo_name}/tags/{tag}/vulnerability/details':
     get:
       summary: Get vulnerability details of the image.
-      description: |
-        Call Clair API to get the vulnerability based on the previous successful scan.
+      description: >
+        Call Clair API to get the vulnerability based on the previous successful
+        scan.
       parameters:
         - name: repo_name
           in: path
@@ -951,28 +1006,32 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Successfully retrieved the vulnerabilities.
           schema:
             type: array
             items:
               $ref: '#definitions/VulnerabilityItem'
-        401:
+        '401':
           description: User needs to login or call the API with correct credentials.
-        403:
+        '403':
           description: User doesn't have permission to perform the action.
-        404:
+        '404':
           description: The image does not exist in Harbor.
-        503:
+        '503':
           description: Harbor is not deployed with Clair.
-
-  /repositories/{repo_name}/signatures:
+  '/repositories/{repo_name}/signatures':
     get:
       summary: Get signature information of a repository
-      description: |
-        This endpoint aims to retrieve signature information of a repository, the data is
+      description: >
+        This endpoint aims to retrieve signature information of a repository,
+        the data is
+
         from the nested notary instance of Harbor.
-        If the repository does not have any signature information in notary, this API will
+
+        If the repository does not have any signature information in notary,
+        this API will
+
         return an empty list with response code 200, instead of 404
       parameters:
         - name: repo_name
@@ -983,15 +1042,14 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Retrieved signatures.
           schema:
             type: array
             items:
               $ref: '#/definitions/RepoSignature'
-        500:
+        '500':
           description: Server side error.
-      
   /repositories/top:
     get:
       summary: Get public repositories which are accessed most.
@@ -1003,25 +1061,28 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The number of the requested public repositories, default is 10 if not provided.
+          description: >-
+            The number of the requested public repositories, default is 10 if
+            not provided.
       tags:
-       - Products
+        - Products
       responses:
-        200:
+        '200':
           description: Get popular repositories successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/Repository'
-        400:
+        '400':
           description: Bad request because of invalid count.
-        500:
+        '500':
           description: Unexpected internal errors.
   /logs:
     get:
       summary: Get recent logs of the projects which the user is a member of
-      description: |
-        This endpoint let user see the recent operation logs of the projects which he is member of 
+      description: >
+        This endpoint let user see the recent operation logs of the projects
+        which he is member of 
       parameters:
         - name: username
           in: query
@@ -1058,33 +1119,35 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: The size of per page, default is 10, maximum is 100.
+          description: 'The size of per page, default is 10, maximum is 100.'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get the required logs successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/AccessLog'
-        400:
+        '400':
           description: Bad request because of invalid parameters.
-        401:
+        '401':
           description: User need to login first.
-        500:
+        '500':
           description: Unexpected internal errors.
   /jobs/replication:
     get:
       summary: List filters jobs according to the policy and repository
-      description: |
-        This endpoint let user list filters jobs according to the policy and repository. (if start_time and end_time are both null, list jobs of last 10 days)
+      description: >
+        This endpoint let user list filters jobs according to the policy and
+        repository. (if start_time and end_time are both null, list jobs of last
+        10 days)
       tags:
         - Products
       parameters:
@@ -1099,7 +1162,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The return list length number. 
+          description: The return list length number.
         - name: end_time
           in: query
           type: integer
@@ -1127,15 +1190,15 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer, default is 1.
+          description: 'The page nubmer, default is 1.'
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: The size of per page, default is 10, maximum is 100.
+          description: 'The size of per page, default is 10, maximum is 100.'
       responses:
-        200:
+        '200':
           description: Get the required logs successfully.
           schema:
             type: array
@@ -1148,13 +1211,13 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
-        400:
+        '400':
           description: Bad request because of invalid parameters.
-        401:
+        '401':
           description: User need to login first.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /jobs/replication/{id}:
+  '/jobs/replication/{id}':
     delete:
       summary: Delete specific ID job.
       description: |
@@ -1169,17 +1232,17 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Job deleted successfully.
-        400:
+        '400':
           description: Job ID is invalid or can't remove this job.
-        401:
+        '401':
           description: Only admin has this authority.
-        404:
+        '404':
           description: Project ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /jobs/replication/{id}/log:
+  '/jobs/replication/{id}/log':
     get:
       summary: Get job logs.
       description: |
@@ -1194,21 +1257,22 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get job log successfully.
-        400:
+        '400':
           description: Illegal format of provided ID value.
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: The specific repository ID's log does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
   /policies/replication:
     get:
       summary: List filters policies by name and project_id
-      description: |
-        This endpoint let user list filters policies by name and project_id, if name and project_id are nil, list returns all policies
+      description: >
+        This endpoint let user list filters policies by name and project_id, if
+        name and project_id are nil, list returns all policies
       parameters:
         - name: name
           in: query
@@ -1224,22 +1288,23 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get policy successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/RepPolicy'
-        400:
+        '400':
           description: Invalid project ID.
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Unexpected internal errors.
     post:
       summary: Post creates a policy
-      description: |
-          This endpoint let user creates a policy, and if it is enabled, the replication will be triggered right now.
+      description: >
+        This endpoint let user creates a policy, and if it is enabled, the
+        replication will be triggered right now.
       parameters:
         - name: policyinfo
           in: body
@@ -1250,17 +1315,19 @@ paths:
       tags:
         - Products
       responses:
-        201:
+        '201':
           description: Create policy successfully.
-        400:
+        '400':
           description: Invalid project ID or target ID.
-        401:
+        '401':
           description: User need to log in first.
-        409:
-          description: Policy name already used or policy already exists with the same project and target.
-        500:
+        '409':
+          description: >-
+            Policy name already used or policy already exists with the same
+            project and target.
+        '500':
           description: Unexpected internal errors.
-  /policies/replication/{id}:
+  '/policies/replication/{id}':
     get:
       summary: Get replication policy.
       description: |
@@ -1275,20 +1342,21 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get job policy successfully.
           schema:
             $ref: '#/definitions/RepPolicy'
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: The specific repository ID's policy does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
     put:
-      summary: Put modifies name, description, target and enablement of policy.
-      description: |
-        This endpoint let user update policy name, description, target and enablement.
+      summary: 'Put modifies name, description, target and enablement of policy.'
+      description: >
+        This endpoint let user update policy name, description, target and
+        enablement.
       parameters:
         - name: id
           in: path
@@ -1298,26 +1366,28 @@ paths:
           description: policy ID
         - name: policyupdate
           in: body
-          description: Update policy name, description, target and enablement.
+          description: 'Update policy name, description, target and enablement.'
           required: true
           schema:
             $ref: '#/definitions/RepPolicyUpdate'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Update job policy content successfully.
-        400:
+        '400':
           description: policy is enabled or target does not exist
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: The specific repository ID's policy does not exist.
-        409:
-          description: Policy name already used or policy already exists with the same project and target.
-        500:
+        '409':
+          description: >-
+            Policy name already used or policy already exists with the same
+            project and target.
+        '500':
           description: Unexpected internal errors.
-  /policies/replication/{id}/enablement:
+  '/policies/replication/{id}/enablement':
     put:
       summary: Put modifies enablement of the policy.
       description: |
@@ -1338,21 +1408,22 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Update job policy enablement successfully.
-        400:
+        '400':
           description: Invalid enabled value.
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: The specific repository ID's policy does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
   /targets:
     get:
       summary: List filters targets by name.
-      description: |
-        This endpoint let user list filters targets by name, if name is nil, list returns all targets.
+      description: >
+        This endpoint let user list filters targets by name, if name is nil,
+        list returns all targets.
       parameters:
         - name: name
           in: query
@@ -1362,15 +1433,15 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get policy successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/RepTarget'
-        401:
+        '401':
           description: User need to log in first.
-        500:
+        '500':
           description: Unexpected internal errors.
     post:
       summary: Create a new replication target.
@@ -1386,21 +1457,22 @@ paths:
       tags:
         - Products
       responses:
-        201:
+        '201':
           description: Replication target created successfully.
-        400:
+        '400':
           description: Unsatisfied with constraints of the target creation.
-        401:
+        '401':
           description: User need to log in first.
-        409:
+        '409':
           description: Replication target name already exists.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /targets/ping:    
+  /targets/ping:
     post:
       summary: Ping validates target.
-      description: |
-        This endpoint is for ping validates whether the target is reachable and whether the credential is valid.
+      description: >
+        This endpoint is for ping validates whether the target is reachable and
+        whether the credential is valid.
       parameters:
         - name: target
           in: body
@@ -1409,19 +1481,23 @@ paths:
           schema:
             $ref: '#/definitions/PingTarget'
       tags:
-        - Products  
+        - Products
       responses:
-        200:
+        '200':
           description: Ping target successfully.
-        400:
-          description: Target id is invalid/ endpoint is needed/ invaild URL/ network issue.
-        401:
-          description: User need to log in first or wrong username/password for remote target.
-        404:
+        '400':
+          description: >-
+            Target id is invalid/ endpoint is needed/ invaild URL/ network
+            issue.
+        '401':
+          description: >-
+            User need to log in first or wrong username/password for remote
+            target.
+        '404':
           description: Target not found.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /targets/{id}/ping: 
+  '/targets/{id}/ping':
     post:
       summary: Ping target.
       description: |
@@ -1436,17 +1512,17 @@ paths:
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Ping replication's target successfully.
-        400:
+        '400':
           description: Can not ping target.
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: Target ID does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /targets/{id}: 
+  '/targets/{id}':
     put:
       summary: Update replication's target.
       description: |
@@ -1460,24 +1536,24 @@ paths:
           description: The replication's target ID.
         - name: repo_target
           in: body
-          required: true 
+          required: true
           schema:
             $ref: '#/definitions/PutTarget'
           description: Updates of replication's target.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Updated replication's target successfully.
-        400:
+        '400':
           description: The target is associated with policy which is enabled.
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: Target ID does not exist.
-        409:
+        '409':
           description: Target name or endpoint is already used.
-        500:
+        '500':
           description: Unexpected internal errors.
     get:
       summary: Get replication's target.
@@ -1492,15 +1568,15 @@ paths:
           required: true
           description: The replication's target ID.
       responses:
-        200:
+        '200':
           description: Get replication's target successfully.
           schema:
             $ref: '#/definitions/RepTarget'
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: Replication's target not found
-        500:
+        '500':
           description: Unexpected internal errors.
     delete:
       summary: Delete specific replication's target.
@@ -1512,147 +1588,160 @@ paths:
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.  
+          description: The replication's target ID.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Replication's target deleted successfully.
-        400:
-          description: Replication's target ID is invalid or the target is used by policies.
-        401:
+        '400':
+          description: >-
+            Replication's target ID is invalid or the target is used by
+            policies.
+        '401':
           description: Only admin has this authority.
-        404:
+        '404':
           description: Replication's target does not exist.
-        500:
+        '500':
           description: Unexpected internal errors.
-  /targets/{id}/policies/:
+  '/targets/{id}/policies/':
     get:
       summary: List the target relevant policies.
-      description: |
-        This endpoint list policies filter with specific replication's target ID.
+      description: >
+        This endpoint list policies filter with specific replication's target
+        ID.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.  
+          description: The replication's target ID.
       tags:
-        - Products  
+        - Products
       responses:
-        200:
+        '200':
           description: Get relevant policies successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/RepPolicy'
-        401:
+        '401':
           description: User need to log in first.
-        404:
+        '404':
           description: Replication's target not found
-        500:
+        '500':
           description: Unexpected internal errors.
-  /internal/syncregistry:    
+  /internal/syncregistry:
     post:
-      summary: Sync repositories from registry to DB. 
-      description: |
-        This endpoint is for syncing all repositories of registry with database. 
-      tags:
-        - Products  
-      responses:
-        200:
-          description: Sync repositories successfully.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission of admin role.
-        500:
-          description: Unexpected internal errors. 
-  /systeminfo:
-    get:
-      summary: Get general system info
-      description: |
-        This API is for retrieving general system info, this can be called by anonymous request.
+      summary: Sync repositories from registry to DB.
+      description: >
+        This endpoint is for syncing all repositories of registry with
+        database. 
       tags:
         - Products
       responses:
-        200:
+        '200':
+          description: Sync repositories successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '500':
+          description: Unexpected internal errors.
+  /systeminfo:
+    get:
+      summary: Get general system info
+      description: >
+        This API is for retrieving general system info, this can be called by
+        anonymous request.
+      tags:
+        - Products
+      responses:
+        '200':
           description: Get general info successfully.
           schema:
             type: object
             items:
-              $ref: "#/definitions/GeneralInfo"
-        500:
+              $ref: '#/definitions/GeneralInfo'
+        '500':
           description: Unexpected internal error.
   /systeminfo/volumes:
     get:
       summary: Get system volume info (total/free size).
-      description: |
-        This endpoint is for retrieving system volume info that only provides for admin user.
+      description: >
+        This endpoint is for retrieving system volume info that only provides
+        for admin user.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get system volumes successfully.
           schema:
             type: object
             items:
               $ref: '#/definitions/SystemInfo'
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        500:
+        '500':
           description: Unexpected internal errors.
   /systeminfo/getcert:
     get:
       summary: Get default root certificate under OVA deployment.
-      description: |
-        This endpoint is for downloading a default root certificate that only provides for admin user under OVA deployment.
+      description: >
+        This endpoint is for downloading a default root certificate that only
+        provides for admin user under OVA deployment.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get default root certificate successfully.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        404:
+        '404':
           description: Not found the default root certificate.
-        500:
+        '500':
           description: Unexpected internal errors.
   /ldap/ping:
     post:
       summary: Ping available ldap service.
-      description: |
-        This endpoint ping the available ldap service for test related configuration parameters. 
+      description: >
+        This endpoint ping the available ldap service for test related
+        configuration parameters. 
       parameters:
         - name: ldapconf
           in: body
-          description: ldap configuration. support input ldap service configuration. If it's a empty request, will load current configuration from the system.
+          description: >-
+            ldap configuration. support input ldap service configuration. If
+            it's a empty request, will load current configuration from the
+            system.
           required: false
           schema:
             $ref: '#/definitions/LdapConf'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Ping ldap service successfully.
-        400:
+        '400':
           description: Inviald ldap configuration parameters.
-        401:
+        '401':
           description: User need to login first.
-        403:
+        '403':
           description: Only admin has this authority.
-        500:
-          description: Unexpected internal errors.        
+        '500':
+          description: Unexpected internal errors.
   /ldap/users/search:
     post:
       summary: Search available ldap users.
-      description: |
-        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+      description: >
+        This endpoint searches the available ldap users based on related
+        configuration parameters. Support searched by input ladp configuration,
+        load configuration from the system and specific filter.
       parameters:
         - name: username
           in: query
@@ -1661,51 +1750,61 @@ paths:
           description: Registered user ID
         - name: ldap_conf
           in: body
-          description: ldap search configuration. ldapconf field can input ldap service configuration. If this item are blank, will load default configuration will load current configuration from the system. 
+          description: >-
+            ldap search configuration. ldapconf field can input ldap service
+            configuration. If this item are blank, will load default
+            configuration will load current configuration from the system.
           required: false
           schema:
             $ref: '#/definitions/LdapConf'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Search ldap users successfully.
           schema:
             type: array
             items:
               $ref: '#/definitions/LdapUsers'
-        400:
+        '400':
           description: Inviald ldap configuration parameters.
-        401:
+        '401':
           description: User need to login first.
-        403:
+        '403':
           description: Only admin has this authority.
-        500:
-          description: Unexpected internal errors. 
+        '500':
+          description: Unexpected internal errors.
   /ldap/users/import:
     post:
       summary: Import selected available ldap users.
-      description: |
-        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. 
-        If have errors when import user, will return the list of importing failed uid and the failed reason.
+      description: >
+        This endpoint adds the selected available ldap users to harbor based on
+        related configuration parameters from the system. System will try to
+        guess the user email address and realname, add to harbor user
+        information. 
+
+        If have errors when import user, will return the list of importing
+        failed uid and the failed reason.
       parameters:
         - name: uid_list
           in: body
-          description: The uid listed for importing. This list will check users validity of ldap service based on configuration from the system.
+          description: >-
+            The uid listed for importing. This list will check users validity of
+            ldap service based on configuration from the system.
           required: true
           schema:
             $ref: '#/definitions/LdapImportUsers'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Add ldap users successfully.
-        401:
+        '401':
           description: User need to login first.
-        403:
+        '403':
           description: Only admin has this authority.
-        500:
-          description: Failed import some users. 
+        '500':
+          description: Failed import some users.
           schema:
             type: array
             items:
@@ -1713,58 +1812,68 @@ paths:
   /configurations:
     get:
       summary: Get system configurations.
-      description: |
-        This endpoint is for retrieving system configurations that only provides for admin user.
+      description: >
+        This endpoint is for retrieving system configurations that only provides
+        for admin user.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Get system configurations successfully. The response body is a map.
           schema:
             type: object
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        500:
+        '500':
           description: Unexpected internal errors.
     put:
       summary: Modify system configurations.
-      description: |
-        This endpoint is for modifying system configurations that only provides for admin user.
+      description: >
+        This endpoint is for modifying system configurations that only provides
+        for admin user.
       tags:
         - Products
       parameters:
         - name: configurations
           in: body
-          required: true 
+          required: true
           schema:
             type: object
-          description: The configurations map need to be modified, the following are keys "auth_mode", "email_from", "email_host", "email_identity", "email_password", "email_port", "email_ssl", "email_username", "ldap_base_dn", "ldap_filter", "ldap_scope", "ldap_search_dn", "ldap_search_password", "ldap_timeout", "ldap_uid", "ldap_url", "project_creation_restriction", "self_registration", "verify_remote_cert".
+          description: >-
+            The configurations map need to be modified, the following are keys
+            "auth_mode", "email_from", "email_host", "email_identity",
+            "email_password", "email_port", "email_ssl", "email_username",
+            "ldap_base_dn", "ldap_filter", "ldap_scope", "ldap_search_dn",
+            "ldap_search_password", "ldap_timeout", "ldap_uid", "ldap_url",
+            "project_creation_restriction", "self_registration",
+            "verify_remote_cert".
       responses:
-        200:
+        '200':
           description: Modify system configurations successfully.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        500:
+        '500':
           description: Unexpected internal errors.
   /configurations/reset:
     post:
       summary: Reset system configurations.
-      description: |
-        Reset system configurations from environment variables. Can only be accessed by admin user.
+      description: >
+        Reset system configurations from environment variables. Can only be
+        accessed by admin user.
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Reset system configurations successfully.
-        401:
+        '401':
           description: User need to log in first.
-        403:
+        '403':
           description: User does not have permission of admin role.
-        500:
+        '500':
           description: Unexpected internal errors.
   /email/ping:
     post:
@@ -1774,23 +1883,25 @@ paths:
       parameters:
         - name: settings
           in: body
-          description: Email server settings, if some of the settings are not assigned, they will be read from system configuration.
+          description: >-
+            Email server settings, if some of the settings are not assigned,
+            they will be read from system configuration.
           required: false
           schema:
             $ref: '#/definitions/EmailServerSetting'
       tags:
         - Products
       responses:
-        200:
+        '200':
           description: Ping email server successfully.
-        400:
+        '400':
           description: Inviald email server settings.
-        401:
+        '401':
           description: User need to login first.
-        403:
+        '403':
           description: Only admin has this authority.
-        500:
-          description: Unexpected internal errors.        
+        '500':
+          description: Unexpected internal errors.
 definitions:
   Search:
     type: object
@@ -1816,7 +1927,9 @@ definitions:
         description: The name of the project that the repository belongs to
       project_public:
         type: integer
-        description: The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)
+        description: >-
+          The flag to indicate the publicity of the project that the repository
+          belongs to (1 is public, 0 is not)
       repository_name:
         type: string
         description: The name of the repository
@@ -1825,7 +1938,7 @@ definitions:
         description: The count how many times the repository is pulled
       tags_count:
         type: integer
-        description: The count of tags in the repository    
+        description: The count of tags in the repository
   ProjectReq:
     type: object
     properties:
@@ -1838,13 +1951,17 @@ definitions:
         description: The public status of the project.
       enable_content_trust:
         type: boolean
-        description: Whether content trust is enabled or not. If it is enabled, user cann't pull unsigned images from this project.
+        description: >-
+          Whether content trust is enabled or not. If it is enabled, user cann't
+          pull unsigned images from this project.
       prevent_vulnerable_images_from_running:
         type: boolean
-        description: Whether prevent the vulnerable images from running. 
+        description: Whether prevent the vulnerable images from running.
       prevent_vulnerable_images_from_running_severity:
         type: string
-        description: If the vulnerability is high than severity defined here, the images cann't be pulled.
+        description: >-
+          If the vulnerability is high than severity defined here, the images
+          cann't be pulled.
       automatically_scan_images_on_push:
         type: boolean
         description: Whether scan images automatically when pushing.
@@ -1871,7 +1988,7 @@ definitions:
       deleted:
         type: integer
         format: int32
-        description: A deletion mark of the project (1 means it's deleted, 0 is not)
+        description: 'A deletion mark of the project (1 means it''s deleted, 0 is not)'
       owner_name:
         type: string
         description: The owner name of the project.
@@ -1881,7 +1998,9 @@ definitions:
         description: The public status of the project.
       Togglable:
         type: boolean
-        description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
+        description: >-
+          Correspond to the UI about whether the project's publicity is 
+          updatable (for UI)
       current_user_role_id:
         type: integer
         description: The role ID of the current user who triggered the API (for UI)
@@ -1890,13 +2009,17 @@ definitions:
         description: The number of the repositories under this project.
       enable_content_trust:
         type: boolean
-        description: Whether content trust is enabled or not. If it is enabled, user cann't pull unsigned images from this project.
+        description: >-
+          Whether content trust is enabled or not. If it is enabled, user cann't
+          pull unsigned images from this project.
       prevent_vulnerable_images_from_running:
         type: boolean
-        description: Whether prevent the vulnerable images from running. 
+        description: Whether prevent the vulnerable images from running.
       prevent_vulnerable_images_from_running_severity:
         type: string
-        description: If the vulnerability is high than severity defined here, the images cann't be pulled.
+        description: >-
+          If the vulnerability is high than severity defined here, the images
+          cann't be pulled.
       automatically_scan_images_on_push:
         type: boolean
         description: Whether scan images automatically when pushing.
@@ -1954,23 +2077,6 @@ definitions:
       new_password:
         type: string
         description: New password for marking as to be updated.
-  AccessLogFilter:
-    type: object
-    properties:
-      username:
-        type: string
-        description: Relevant user's name that accessed this project.
-      keywords:
-        type: string
-        description: Operation name specified when project created.
-      begin_timestamp:
-        type: integer
-        format: int64
-        description: Begin timestamp for querying access logs.
-      end_timestamp:
-        type: integer
-        format: int64
-        description: End timestamp for querying accessl logs.
   AccessLog:
     type: object
     properties:
@@ -1995,11 +2101,11 @@ definitions:
   Role:
     type: object
     properties:
-      role_id: 
+      role_id:
         type: integer
         format: int32
         description: ID in table.
-      role_code: 
+      role_code:
         type: string
         description: Description of permissions for the role.
       role_name:
@@ -2013,49 +2119,45 @@ definitions:
       roles:
         type: array
         items:
-          type: integer  
+          type: integer
           format: int32
         description: Role ID for updating project role member.
       username:
         type: string
         description: Username relevant to a project role member.
-  TopRepo:
-    type: object
-    properties:
-      name: 
-        type: string
-        description: The name of the repo 
-      count:
-        type: integer
-        format: int
-        description: The access count of the repo
   StatisticMap:
     type: object
     properties:
-      private_project_count: 
+      private_project_count:
         type: integer
         format: int32
         description: The count of the private projects which the user is a member of.
-      private_repo_count: 
+      private_repo_count:
         type: integer
         format: int32
-        description: The count of the private repositories belonging to the projects which the user is a member of.
-      public_project_count: 
+        description: >-
+          The count of the private repositories belonging to the projects which
+          the user is a member of.
+      public_project_count:
         type: integer
         format: int32
         description: The count of the public projects.
-      public_repo_count: 
+      public_repo_count:
         type: integer
         format: int32
-        description: The count of the public repositories belonging to the public projects which the user is a member of.
-      total_project_count: 
+        description: >-
+          The count of the public repositories belonging to the public projects
+          which the user is a member of.
+      total_project_count:
         type: integer
         format: int32
-        description: The count of the total projects, only be seen when the is admin.
-      total_repo_count: 
+        description: 'The count of the total projects, only be seen when the is admin.'
+      total_repo_count:
         type: integer
         format: int32
-        description: The count of the total repositories, only be seen when the user is admin.
+        description: >-
+          The count of the total repositories, only be seen when the user is
+          admin.
   JobStatus:
     type: object
     properties:
@@ -2063,17 +2165,17 @@ definitions:
         type: integer
         format: int64
         description: The job ID.
-      status: 
+      status:
         type: string
         description: The status of the job.
-      repository: 
+      repository:
         type: string
         description: The repository handled by the job.
       policy_id:
         type: integer
         format: int64
         description: The ID of the policy that triggered this job.
-      operation: 
+      operation:
         type: string
         description: The operation of the job.
       tags:
@@ -2086,7 +2188,7 @@ definitions:
         description: The creation time of the job.
       update_time:
         type: string
-        description: The update time of the job.   
+        description: The update time of the job.
   Tags:
     type: object
     properties:
@@ -2100,25 +2202,25 @@ definitions:
         type: integer
         format: int64
         description: The policy ID.
-      project_id: 
+      project_id:
         type: integer
         format: int64
         description: The project ID.
-      project_name: 
+      project_name:
         type: string
         description: The project name.
-      target_id: 
+      target_id:
         type: integer
         format: int64
         description: The target ID.
-      name: 
+      name:
         type: string
         description: The policy name.
       enabled:
         type: integer
         format: int
         description: The policy's enabled status.
-      description: 
+      description:
         type: string
         description: The description of the policy.
       cron_str:
@@ -2141,36 +2243,36 @@ definitions:
   RepPolicyPost:
     type: object
     properties:
-      project_id: 
+      project_id:
         type: integer
         format: int64
         description: The project ID.
-      target_id: 
+      target_id:
         type: integer
         format: int64
         description: The target ID.
-      name: 
+      name:
         type: string
         description: The policy name.
       enabled:
         type: integer
         format: int
-        description: 1-enable, 0-disable
+        description: '1-enable, 0-disable'
   RepPolicyUpdate:
     type: object
     properties:
-      target_id: 
+      target_id:
         type: integer
         format: int64
         description: The target ID.
-      name: 
+      name:
         type: string
         description: The policy name.
       enabled:
         type: integer
         format: int
         description: The policy's enabled status.
-      description: 
+      description:
         type: string
         description: The description of the policy.
       cron_str:
@@ -2179,27 +2281,27 @@ definitions:
   RepPolicyEnablementReq:
     type: object
     properties:
-      enabled: 
+      enabled:
         type: integer
         format: int
         description: The policy enablement flag.
   RepTarget:
     type: object
     properties:
-      id: 
+      id:
         type: integer
         format: int64
         description: The target ID.
       endpoint:
         type: string
         description: The target address URL string.
-      name: 
+      name:
         type: string
         description: The target name.
-      username: 
+      username:
         type: string
         description: The target server username.
-      password: 
+      password:
         type: string
         description: The target server password.
       type:
@@ -2218,13 +2320,13 @@ definitions:
       endpoint:
         type: string
         description: The target address URL string.
-      name: 
+      name:
         type: string
         description: The target name.
-      username: 
+      username:
         type: string
         description: The target server username.
-      password: 
+      password:
         type: string
         description: The target server password.
   PingTarget:
@@ -2233,33 +2335,33 @@ definitions:
       endpoint:
         type: string
         description: The target address URL string.
-      username: 
+      username:
         type: string
         description: The target server username.
-      password: 
+      password:
         type: string
         description: The target server password.
   PutTarget:
     type: object
     properties:
-      name: 
+      name:
         type: string
         description: The target name.
       endpoint:
         type: string
         description: The target address URL string.
-      username: 
+      username:
         type: string
         description: The target server username.
-      password: 
+      password:
         type: string
         description: The target server password.
   HasAdminRole:
     type: object
     properties:
-      has_admin_role: 
+      has_admin_role:
         type: integer
-        description: 1-has admin, 0-not.
+        description: '1-has admin, 0-not.'
   UserProfile:
     type: object
     properties:
@@ -2275,7 +2377,7 @@ definitions:
   Storage:
     type: object
     properties:
-      total: 
+      total:
         type: integer
         format: int64
         description: Total volume size.
@@ -2303,20 +2405,58 @@ definitions:
         description: The auth mode of current Harbor instance.
       project_creation_restriction:
         type: string
-        description: Indicate who can create projects, it could be 'adminonly' or 'everyone'.
+        description: >-
+          Indicate who can create projects, it could be 'adminonly' or
+          'everyone'.
       self_registration:
         type: boolean
         description: Indicate whether the Harbor instance enable user to register himself.
       has_ca_root:
         type: boolean
-        description: Indicate whether there is a ca root cert file ready for download in the file system.
+        description: >-
+          Indicate whether there is a ca root cert file ready for download in
+          the file system.
       harbor_version:
         type: string
-        description: The build version of Harbor.    
+        description: The build version of Harbor.
+      next_scan_all:
+        type: integer
+        description: >-
+          The UTC time in milliseconds, after which user can call scanAll API to
+          scan all images.
+      clair_vulnerability_status:
+        type: object
+        description: The status of vulnerability data of Clair.
+        properties:
+          overall_last_update:
+            type: integer
+            description: >-
+              The UTC timestamp in milliseconds of last successful update for
+              Clair vulnerability data, when all the updaters are successfully
+              executed.
+          details:
+            type: array
+            description: >-
+              Detail timestamp of different namespace.  This is introduced to
+              handle the case when some updaters are executed successfully and
+              some not.
+            items:
+              $ref: '#/definitions/VulnNamespaceTimestamp'
+  VulnNamespaceTimestamp:
+    type: object
+    properties:
+      namespace:
+        type: string
+        description: The namespace of the Vulnerability
+      last_update:
+        type: integer
+        description: >-
+          The UTC timestamp in miliseconds of last successful update for
+          vulnerability data.
   SystemInfo:
     type: object
     properties:
-      storage: 
+      storage:
         type: array
         description: The storage of system.
         items:
@@ -2324,7 +2464,7 @@ definitions:
   LdapConf:
     type: object
     properties:
-      ldap_url: 
+      ldap_url:
         type: string
         description: The url of ldap service.
       ldap_search_dn:
@@ -2353,15 +2493,19 @@ definitions:
   LdapUsers:
     type: object
     properties:
-      ldap_username: 
+      ldap_username:
         type: string
         description: search ldap user name based on ldapconf.
       ldap_realname:
         type: string
-        description: system will try to guess the user realname form "uid" or "cn" attribute.
+        description: >-
+          system will try to guess the user realname form "uid" or "cn"
+          attribute.
       ldap_email:
         type: string
-        description: system will try to guess the user email address form "mail" or "email" attribute.
+        description: >-
+          system will try to guess the user email address form "mail" or "email"
+          attribute.
   LdapImportUsers:
     type: object
     properties:
@@ -2382,7 +2526,7 @@ definitions:
   EmailServerSetting:
     type: object
     properties:
-      email_host: 
+      email_host:
         type: string
         description: The host of email server.
       email_port:
@@ -2435,7 +2579,9 @@ definitions:
         description: The build time of the image.
       signature:
         type: object
-        description: The signature of image, defined by RepoSignature. If it is null, the image is unsigned.
+        description: >-
+          The signature of image, defined by RepoSignature. If it is null, the
+          image is unsigned.
       scan_overview:
         type: object
         description: The overview of the scan result.  This is an optional property.
@@ -2445,16 +2591,20 @@ definitions:
             description: The digest of the image.
           scan_status:
             type: string
-            description: The status of the scan job, it can be "pendnig", "running", "finished", "error".
+            description: >-
+              The status of the scan job, it can be "pendnig", "running",
+              "finished", "error".
           job_id:
             type: integer
             description: The ID of the job on jobservice to scan the image.
           severity:
             type: integer
-            description: 0-Not scanned, 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+            description: '0-Not scanned, 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
           details_key:
             type: string
-            description: The top layer name of this image in Clair, this is for calling Clair API to get the vulnerability list of this image.
+            description: >-
+              The top layer name of this image in Clair, this is for calling
+              Clair API to get the vulnerability list of this image.
           components:
             type: object
             description: The components overview of the image.
@@ -2472,7 +2622,7 @@ definitions:
     properties:
       severity:
         type: integer
-        description: 1-None/Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+        description: '1-None/Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
       count:
         type: integer
         description: number of the components with certain severity.
@@ -2511,10 +2661,10 @@ definitions:
     properties:
       id:
         type: string
-        description: ID of the vulnerability, normally it is the CVE ID
-      severity: 
+        description: 'ID of the vulnerability, normally it is the CVE ID'
+      severity:
         type: integer
-        description: 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High
+        description: '1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
       package:
         type: string
         description: The packge that introduces the vulnerability.
@@ -2526,4 +2676,6 @@ definitions:
         description: The description of the vulnerability.
       fixedVersion:
         type: string
-        description: The version which the vulnerability is fixed, this is an optional property.
+        description: >-
+          The version which the vulnerability is fixed, this is an optional
+          property.

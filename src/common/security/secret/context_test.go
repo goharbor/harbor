@@ -77,6 +77,24 @@ func TestIsSysAdmin(t *testing.T) {
 	assert.False(t, isSysAdmin)
 }
 
+func TestIsSolutionUser(t *testing.T) {
+	// invalid secret
+	context := NewSecurityContext("invalid_secret",
+		secret.NewStore(map[string]string{
+			"secret": "username",
+		}))
+	isSolutionUser := context.IsSolutionUser()
+	assert.False(t, isSolutionUser)
+
+	// valid secret
+	context = NewSecurityContext("secret",
+		secret.NewStore(map[string]string{
+			"secret": "username",
+		}))
+	isSolutionUser = context.IsSolutionUser()
+	assert.True(t, isSolutionUser)
+}
+
 func TestHasReadPerm(t *testing.T) {
 	// secret store is null
 	context := NewSecurityContext("", nil)
