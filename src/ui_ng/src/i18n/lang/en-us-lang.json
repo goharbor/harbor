@@ -416,7 +416,8 @@
             "DAILY_POLICY": "Daily At",
             "REFRESH_POLICY": "Upon Refresh",
             "DB_REFRESH_TIME": "Database updated on",
-            "DB_NOT_READY": "Vulnerability database might not be fully ready!"
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!",
+            "NEXT_SCAN": "Available after"
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",
@@ -464,7 +465,7 @@
         "STATE": {
             "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
-            "ERROR": "Error",
+            "ERROR": "View Log",
             "SCANNING": "Scanning",
             "UNKNOWN": "Unknown"
         },
@@ -496,7 +497,8 @@
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "Package with",
         "PACKAGES": "Packages with",
-        "SCAN_NOW": "Scan"
+        "SCAN_NOW": "Scan",
+        "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",
