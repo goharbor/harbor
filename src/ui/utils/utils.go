@@ -27,7 +27,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -74,8 +73,7 @@ func ScanAllImages() error {
 
 // RequestAsUI is a shortcut to make a request attach UI secret and send the request.
 // Do not use this when you want to handle the response
-// TODO: add a response handler to replace expectSC *when needed*
-func RequestAsUI(method, url string, body io.Reader, expectSC int) error {
+func RequestAsUI(method, url string, body io.Reader, h ResponseHandler) error {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
@@ -87,16 +85,7 @@ func RequestAsUI(method, url string, body io.Reader, expectSC int) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != expectSC {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
-	}
-	return nil
+	return h.Handle(resp)
 }
 
 //AddUISecret add secret cookie to a request
@@ -120,7 +109,7 @@ func TriggerImageScan(repository string, tag string) error {
 		return err
 	}
 	url := fmt.Sprintf("%s/api/jobs/scan", config.InternalJobServiceURL())
-	return RequestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
+	return RequestAsUI("POST", url, bytes.NewBuffer(b), NewStatusRespHandler(http.StatusOK))
 }
 
 // NewRepositoryClientForUI ...
