@@ -1,6 +1,6 @@
 export const JOB_LOG_VIEWER_TEMPLATE: string = `
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalSize]="'xl'">
-    <h3 class="modal-title" class="log-viewer-title" style="margin-top: 0px;">{{'REPLICATION.JOB_LOG_VIEWER' | translate }}</h3>
+    <h3 class="modal-title" class="log-viewer-title" style="margin-top: 0px;">{{title | translate }}</h3>
     <div class="modal-body">
       <div class="loading-back" [hidden]="!onGoing">
         <span class="spinner spinner-md"></span>

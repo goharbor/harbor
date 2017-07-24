@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { JOB_LOG_VIEWER_TEMPLATE, JOB_LOG_VIEWER_STYLES } from './job-log-viewer.component.template';
-import { ReplicationService } from '../service/index';
+import { JobLogService } from '../service/index';
 import { ErrorHandler } from '../error-handler/index';
 import { toPromise } from '../utils';
+
+const supportSet: string[] = ["replication", "scan"];
 
 @Component({
     selector: 'job-log-viewer',
@@ -25,12 +27,32 @@ import { toPromise } from '../utils';
 })
 
 export class JobLogViewerComponent {
+    _jobType: string = "replication";
+
     opened: boolean = false;
     log: string = '';
     onGoing: boolean = true;
 
+    @Input()
+    get jobType(): string {
+        return this._jobType;
+    }
+    set jobType(v: string) {
+        if (supportSet.find((t: string) => t === v)) {
+            this._jobType = v;
+        }
+    }
+
+    get title(): string {
+        if(this.jobType === "scan"){
+            return "VULNERABILITY.JOB_LOG_VIEWER";
+        }
+
+        return "REPLICATION.JOB_LOG_VIEWER";
+    }
+
     constructor(
-        private replicationService: ReplicationService,
+        private jobLogService: JobLogService,
         private errorHandler: ErrorHandler
     ) { }
 
@@ -47,7 +69,7 @@ export class JobLogViewerComponent {
     load(jobId: number | string): void {
         this.onGoing = true;
 
-        toPromise<string>(this.replicationService.getJobLog(jobId))
+        toPromise<string>(this.jobLogService.getJobLog(this.jobType, jobId))
             .then((log: string) => {
                 this.onGoing = false;
                 this.log = log;
