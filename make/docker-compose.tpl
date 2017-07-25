@@ -11,7 +11,7 @@ services:
     networks:
       - harbor
   registry:
-    image: vmware/registry:2.6.1-photon
+    image: vmware/registry:2.6.2-photon
     container_name: registry
     restart: always
     volumes:
