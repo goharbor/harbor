@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DebugElement } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { ReplicationService, ReplicationDefaultService } from '../service/index';
+import { JobLogService, JobLogDefaultService } from '../service/index';
 
 import { JobLogViewerComponent } from './job-log-viewer.component';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
@@ -13,7 +13,7 @@ describe('JobLogViewerComponent (inline template)', () => {
   let component: JobLogViewerComponent;
   let fixture: ComponentFixture<JobLogViewerComponent>;
   let serviceConfig: IServiceConfig;
-  let replicationService: ReplicationService;
+  let jobLogService: JobLogDefaultService;
   let spy: jasmine.Spy;
   let testConfig: IServiceConfig = {
     replicationJobEndpoint: "/api/jobs/replication/testing"
@@ -29,7 +29,7 @@ describe('JobLogViewerComponent (inline template)', () => {
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: testConfig },
-        { provide: ReplicationService, useClass: ReplicationDefaultService }
+        { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));
@@ -39,9 +39,9 @@ describe('JobLogViewerComponent (inline template)', () => {
     component = fixture.componentInstance;
 
     serviceConfig = TestBed.get(SERVICE_CONFIG);
-    replicationService = fixture.debugElement.injector.get(ReplicationService);
-    spy = spyOn(replicationService, 'getJobLog')
-      .and.returnValues(Promise.resolve("job log text"));
+    jobLogService = fixture.debugElement.injector.get(JobLogService);
+    spy = spyOn(jobLogService, 'getJobLog')
+      .and.returnValue(Promise.resolve("job log text"));
     fixture.detectChanges();
   });
 

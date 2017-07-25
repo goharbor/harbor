@@ -23,7 +23,7 @@ import {
   ElementRef
 } from '@angular/core';
 
-import { TagService } from '../service/tag.service';
+import { TagService, VulnerabilitySeverity } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { ChannelService } from '../channel/index';
 import {
@@ -141,6 +141,20 @@ export class TagComponent implements OnInit {
     toPromise<Tag[]>(this.tagService
       .getTags(this.repoName))
       .then(items => {
+        //To keep easy use for vulnerability bar
+        items.forEach((t: Tag) => {
+          if (!t.scan_overview) {
+            t.scan_overview = {
+              scan_status: VULNERABILITY_SCAN_STATUS.stopped,
+              severity: VulnerabilitySeverity.UNKNOWN,
+              update_time: new Date(),
+              components: {
+                total: 0,
+                summary: []
+              }
+            };
+          }
+        });
         this.tags = items;
         this.loading = false;
         if (this.tags && this.tags.length === 0) {
@@ -236,7 +250,7 @@ export class TagComponent implements OnInit {
   //Trigger scan
   scanNow(tagId: string): void {
     if (tagId) {
-      this.channel.publishScanEvent(tagId);
+      this.channel.publishScanEvent(this.repoName + "/" + tagId);
     }
   }
 }

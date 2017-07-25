@@ -97,7 +97,7 @@ func TriggerReplication(policyID int64, repository string,
 	}
 	url := buildReplicationURL()
 
-	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), http.StatusOK)
+	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), uiutils.NewStatusRespHandler(http.StatusOK))
 }
 
 // TriggerReplicationByRepository triggers the replication according to the repository
@@ -406,9 +406,9 @@ func buildReplicationURL() string {
 	return fmt.Sprintf("%s/api/jobs/replication", url)
 }
 
-func buildJobLogURL(jobID string) string {
+func buildJobLogURL(jobID string, jobType string) string {
 	url := config.InternalJobServiceURL()
-	return fmt.Sprintf("%s/api/jobs/replication/%s/log", url, jobID)
+	return fmt.Sprintf("%s/api/jobs/%s/%s/log", url, jobType, jobID)
 }
 
 func buildReplicationActionURL() string {

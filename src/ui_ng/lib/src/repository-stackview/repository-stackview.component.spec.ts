@@ -17,6 +17,7 @@ import { SystemInfoService, SystemInfoDefaultService } from '../service/system-i
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
+import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 import { click } from '../utils';
 
@@ -101,7 +102,8 @@ describe('RepositoryComponentStackview (inline template)', () => {
         FilterComponent,
         VULNERABILITY_DIRECTIVES,
         PUSH_IMAGE_BUTTON_DIRECTIVES,
-        INLINE_ALERT_DIRECTIVES
+        INLINE_ALERT_DIRECTIVES,
+        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,

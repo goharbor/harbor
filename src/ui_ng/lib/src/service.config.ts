@@ -180,4 +180,12 @@ export interface IServiceConfig {
      * @memberOf IServiceConfig
      */
     configurationEndpoint?: string;
+
+    /**
+     * The base endpoint of scan job service.
+     * 
+     * @type {string}
+     * @memberof IServiceConfig
+     */
+    scanJobEndpoint?: string;
 }
