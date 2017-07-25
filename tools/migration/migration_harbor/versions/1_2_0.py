@@ -59,10 +59,11 @@ def upgrade():
     op.drop_column("access_log", "user_id")
     op.drop_column("repository", "owner_id")
 
-    #create tables: img_scan_job, img_scan_overview
+    #create tables: img_scan_job, img_scan_overview, clair_vuln_timestamp
     ImageScanJob.__table__.create(bind)
     ImageScanOverview.__table__.create(bind)
-
+    ClairVulnTimestamp.__table__.create(bind)
+	
 def downgrade():
     """
     Downgrade has been disabled.
