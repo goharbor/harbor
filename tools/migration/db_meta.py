@@ -142,6 +142,7 @@ class Repository(Base):
 class AccessLog(Base):
     __tablename__ = "access_log"
 
+    user_id = sa.Column(sa.Integer, nullable=False)
     log_id = sa.Column(sa.Integer, primary_key=True)
     username = sa.Column(sa.String(32), nullable=False)
     project_id = sa.Column(sa.Integer, nullable=False)
