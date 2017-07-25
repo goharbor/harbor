@@ -50,15 +50,13 @@ Go Into Project2
 Add User To Project Admin
 	[Arguments]  ${project}  ${user}
 	Go Into Project2
-	Sleep  2
-	Capture Page Screenshot  444.png   
+	Sleep  2  
 	Click Element  xpath=${project_member_tag_xpath}
 	Sleep  1
     Click Element  xpath=${project_member_add_button_xpath}
     Sleep  2	
     Input Text  xpath=${project_member_add_username_xpath}  ${user}
 	Sleep  3
-	Capture Page Screenshot  222.png
     Click Element  xpath=${project_member_add_admin_xpath}
     Click Element  xpath=${project_member_add_save_button_xpath}
 	Sleep  4
