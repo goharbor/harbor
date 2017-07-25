@@ -132,9 +132,13 @@ Switch To Notary
 	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
 	Log To Console  ${output}
 	Should Be Equal As Integers  ${rc}  0
-	Prepare  with_notary=true
+	${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
+	Log To Console  ${output}
+	${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
+	Log To Console  ${output}
+	Prepare
 	Sleep  3s
-	Up Harbor  with_notary=true
+	Up Harbor
     Sleep  30s
 	${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
@@ -144,6 +148,7 @@ Prepare
 	[Arguments]  ${with_notary}=true  ${with_clair}=true
 	${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
 	Log To Console  ${rc}
+	Log To Console  ${output}
 	Should Be Equal As Integers  ${rc}  0
 
 Config Harbor cfg

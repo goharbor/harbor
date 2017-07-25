@@ -274,7 +274,7 @@ Test Case - Admin Push Un-Signed Image
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${ip}
 	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull {ip}/library/hello-world:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/hello-world:latest
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 
