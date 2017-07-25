@@ -40,7 +40,7 @@ TEMP=`mktemp -d /$TMPDIR/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
 
 echo 'build the registry binary bases on the golang:1.7.3...'
-cp Dockerfile_Golang $TEMP
+cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
 echo 'copy the registry binary to local...'
