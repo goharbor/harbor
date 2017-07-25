@@ -12,10 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component } from '@angular/core';
+import {ReplicationRule} from "../../../../lib/src/service/interface";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'total-replication',
   templateUrl: 'total-replication-page.component.html'
 })
 export class TotalReplicationPageComponent {
+
+  rule: ReplicationRule[];
+  constructor(private router: Router){}
+  customRedirect(rule: ReplicationRule): void {
+    if (rule) {
+      this.router.navigateByUrl(`/harbor/projects/${rule.project_id}/replications`);
+    }
+  }
 }
