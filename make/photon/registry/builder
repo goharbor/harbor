@@ -41,7 +41,7 @@ git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
 
 echo 'build the registry binary bases on the golang:1.7.3...'
 cp Dockerfile_Golang $TEMP
-docker build -f $TEMP/Dockerfile_Golang -t registry-golang $TEMP
+docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
 echo 'copy the registry binary to local...'
 ID=$(docker create registry-golang)
