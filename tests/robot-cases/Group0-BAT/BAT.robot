@@ -241,20 +241,13 @@ Test Case - Scan a tag
     Create An New user  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  test${d}  Test1@34  harbor
     create an new project  project${d}
     #push an image
-    ${rc}=  run and return rc  docker pull hello-world
-    ${rc}  ${output}=  run and return rc and output  docker login -u tester${d} -p Test1@34 ${ip}
-    ${rc}=  run and return rc  docker tag hello-world ${ip}/project${d}/hello-world
-    ${rc}=  run and return rc  docker push ${ip}/project${d}/hello-world
-    should be equal as integers  ${rc}  0
-    click element  //list-project//clr-dg-row//a[contains(.,'project${d}')]
+    push image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
+    go into project  project${d}
     sleep  1
-    #expand repo
-    click element  //repository//clr-dg-row-master[contains(.,'project${d}')]//button/clr-icon
+    expand repo  project${d}
     sleep  1
-    #click scan
-    click element  //hbr-tag//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow
-    click element  //hbr-tag//clr-dg-row-master[contains(.,'project${d}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
-    sleep  5
+    repo click scan  project${d}
+    sleep  15
     page should contain element  //clr-dg-row-master[contains(.,'project${d}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
     close browser
     
@@ -263,33 +256,25 @@ Test case scan config
     #sigin in as admin
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     #click configuration
-    click element  //nav//li[3]
+    switch to configure
     #click vulnerability
     click element  //config//li[5]
     sleep  1
     #none
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='none']
-    sleep  1
-    page should contain element  //vulnerability-config//input[@hidden='']
-    #save
-    click element  //config//div/button[contains(.,'SAVE')]
+    set scan all to none
     #change to other page and back to check
     click element  //config//li[1]
     click element  //config//li[5]
     page should contain element  //vulnerability-config//input[@hidden='']
     #change to daily change value
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='daily']
-    #save
-    click element  //config//div/button[contains(.,'SAVE')]
+    set scan all to daily
     #should not has hidden
     page should not contain element  //vulnerability-config//input[@hidden='']
     #click scan now
-    click element  //vulnerability-config//button[contains(.,'SCAN')]
+    click scan now
     sleep  2
     #click too frequently wil cause error
-    click element  //vulnerability-config//button[contains(.,'SCAN')]
+    click scan now
     page should contain element  //global-message//div[@class='alert-item']
     close browser
 
