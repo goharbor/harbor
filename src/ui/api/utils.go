@@ -416,28 +416,6 @@ func buildReplicationActionURL() string {
 	return fmt.Sprintf("%s/api/jobs/replication/actions", url)
 }
 
-func getReposByProject(name string, keyword ...string) ([]string, error) {
-	repositories := []string{}
-
-	repos, err := dao.GetRepositoryByProjectName(name)
-	if err != nil {
-		return repositories, err
-	}
-
-	needMatchKeyword := len(keyword) > 0 && len(keyword[0]) != 0
-
-	for _, repo := range repos {
-		if needMatchKeyword &&
-			!strings.Contains(repo.Name, keyword[0]) {
-			continue
-		}
-
-		repositories = append(repositories, repo.Name)
-	}
-
-	return repositories, nil
-}
-
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
