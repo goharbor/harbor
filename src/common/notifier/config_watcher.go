@@ -2,7 +2,6 @@ package notifier
 
 import (
 	"errors"
-	"reflect"
 
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -27,8 +26,10 @@ func WatchConfigChanges(cfg map[string]interface{}) error {
 		}
 
 		if t, yes := policyCfg.Parm["daily_time"]; yes {
-			if reflect.TypeOf(t).Kind() == reflect.Int {
-				policyNotification.DailyTime = (int64)(t.(int))
+			if dt, success := t.(float64); success {
+				policyNotification.DailyTime = (int64)(dt)
+			} else {
+				return errors.New("Invalid daily_time type")
 			}
 		}
 
