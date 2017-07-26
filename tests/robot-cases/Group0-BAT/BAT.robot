@@ -242,39 +242,9 @@ Test Case - Scan a tag
     #push an image
     push image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     go into project  project${d}
-    sleep  1
     expand repo  project${d}
-    sleep  1
     repo click scan  project${d}
-    sleep  15
-    page should contain element  //clr-dg-row-master[contains(.,'project${d}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
-    close browser
-    
-Test case scan config    
-    init chrome driver
-    #sigin in as admin
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    #click configuration
-    switch to configure
-    #click vulnerability
-    click element  //config//li[5]
-    sleep  1
-    #none
-    set scan all to none
-    #change to other page and back to check
-    click element  //config//li[1]
-    click element  //config//li[5]
-    page should contain element  //vulnerability-config//input[@hidden='']
-    #change to daily change value
-    set scan all to daily
-    #should not has hidden
-    page should not contain element  //vulnerability-config//input[@hidden='']
-    #click scan now
-    click scan now
-    sleep  2
-    #click too frequently wil cause error
-    click scan now
-    page should contain element  //global-message//div[@class='alert-item']
+    summary chart should display
     close browser
 
 Test Case - Assign Sys Admin

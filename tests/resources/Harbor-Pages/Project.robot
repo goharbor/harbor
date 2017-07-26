@@ -166,5 +166,7 @@ Repo Click Scan
     [Arguments]  ${projectname}
     click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
     click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    sleep  15
+Summary Chart Should Display
+    page should contain element  //clr-dg-row-master[contains(.,'project')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
 
-	
