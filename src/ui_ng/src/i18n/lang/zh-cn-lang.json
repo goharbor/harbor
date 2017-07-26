@@ -412,7 +412,8 @@
             "SCOPE": "LDAP搜索范围"
         },
         "SCANNING": {
-            "TRIGGER_SCAN_ALL_SUCCESS": "成功启动扫描所有镜像任务!",
+            "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
             "SCAN_NOW": "开始扫描",
@@ -420,7 +421,8 @@
             "DAILY_POLICY": "每日定时",
             "REFRESH_POLICY": "缺陷库刷新后",
             "DB_REFRESH_TIME": "数据库更新于",
-            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!"
+            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
+            "NEXT_SCAN": "下次可用时间"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
@@ -468,7 +470,7 @@
         "STATE": {
             "STOPPED": "未扫描",
             "QUEUED": "已入队列",
-            "ERROR": "错误",
+            "ERROR": "查看日志",
             "SCANNING": "扫描中",
             "UNKNOWN": "未知"
         },
@@ -476,7 +478,7 @@
             "PLACEHOLDER": "没有扫描结果！",
             "COLUMN_ID": "缺陷码",
             "COLUMN_SEVERITY": "严重度",
-            "COLUMN_PACKAGE": "组",
+            "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
@@ -485,7 +487,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
+            "TOOLTIPS_TITLE": "在此镜像总共包含{{totalPackages}}{{package}},其中{{totalVulnerability}}个{{packageExt}}含有{{vulnerability}}。"
         },
         "SEVERITY": {
             "HIGH": "严重",
@@ -495,12 +497,13 @@
             "UNKNOWN": "未知",
             "NONE": "无"
         },
-        "SINGULAR": "缺陷",
-        "PLURAL": "缺陷",
-        "PLACEHOLDER": "过滤缺陷",
-        "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有",
-        "SCAN_NOW": "扫描"
+        "SINGULAR": "漏洞",
+        "PLURAL": "漏洞",
+        "PLACEHOLDER": "过滤漏洞",
+        "PACKAGE": "组件",
+        "PACKAGES": "组件",
+        "SCAN_NOW": "扫描",
+        "JOB_LOG_VIEWER": "查看扫描日志"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",

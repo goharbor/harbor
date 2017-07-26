@@ -41,7 +41,9 @@ import {
   ScanningResultService,
   ScanningResultDefaultService,
   ConfigurationService,
-  ConfigurationDefaultService
+  ConfigurationDefaultService,
+  JobLogService,
+  JobLogDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -74,7 +76,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations"
+  configurationEndpoint: "/api/configurations",
+  scanJobEndpoint: "/api/jobs/scan"
 };
 
 /**
@@ -112,7 +115,10 @@ export interface HarborModuleConfig {
   scanningService?: Provider,
 
   //Service implementation for configuration
-  configService?: Provider
+  configService?: Provider,
+
+  //Service implementation for job log
+  jobLogService?: Provider
 }
 
 /**
@@ -197,6 +203,7 @@ export class HarborLibraryModule {
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
+        config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         //Do initializing
         TranslateServiceInitializer,
         {
@@ -224,6 +231,7 @@ export class HarborLibraryModule {
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
+        config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         ChannelService
       ]
     };

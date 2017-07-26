@@ -117,7 +117,8 @@
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
         "DELETE_SUCCESS": "User deleted successfully.",
-        "ITEMS": "items"
+        "ITEMS": "items",
+        "OF": "of"
     },
     "PROJECT": {
         "PROJECTS": "Projects",
@@ -152,7 +153,8 @@
         "DELETED_SUCCESS": "Deleted project successfully.",
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules cannot be deleted.",
-        "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project."
+        "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
+        "OF": "of"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -182,7 +184,8 @@
         "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
         "ADDED_SUCCESS": "Added member successfully.",
         "DELETED_SUCCESS": "Deleted member successfully.",
-        "SWITCHED_SUCCESS": "Switched member role successfully."
+        "SWITCHED_SUCCESS": "Switched member role successfully.",
+        "OF": "of"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -201,7 +204,8 @@
         "SIMPLE": "Simple",
         "ITEMS": "items",
         "FILTER_PLACEHOLDER": "Filter Logs",
-        "INVALID_DATE": "Invalid date."
+        "INVALID_DATE": "Invalid date.",
+        "OF": "of"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Replication Rule",
@@ -409,6 +413,7 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
             "TITLE": "Vulnerability Scanning",
             "SCAN_ALL": "Scan All",
             "SCAN_NOW": "SCAN NOW",
@@ -416,7 +421,8 @@
             "DAILY_POLICY": "Daily At",
             "REFRESH_POLICY": "Upon Refresh",
             "DB_REFRESH_TIME": "Database updated on",
-            "DB_NOT_READY": "Vulnerability database might not be fully ready!"
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!",
+            "NEXT_SCAN": "Available after"
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",
@@ -464,7 +470,7 @@
         "STATE": {
             "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
-            "ERROR": "Error",
+            "ERROR": "View Log",
             "SCANNING": "Scanning",
             "UNKNOWN": "Unknown"
         },
@@ -480,8 +486,8 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} package(s) with vulnerabilities across all {{totalPackages}} package(s)."
+            "SCANNING_TIME": "Scan completed datetime",
+            "TOOLTIPS_TITLE": "This image includes {{totalPackages}} {{package}} with {{vulnerability}} in {{totalVulnerability}} of the {{packageExt}}."
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -494,9 +500,10 @@
         "SINGULAR": "Vulnerability",
         "PLURAL": "Vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
-        "PACKAGE": "Package with",
-        "PACKAGES": "Packages with",
-        "SCAN_NOW": "Scan"
+        "PACKAGE": "package",
+        "PACKAGES": "packages",
+        "SCAN_NOW": "Scan",
+        "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",

@@ -69,6 +69,7 @@ export class AuditLogComponent implements OnInit {
   pageOffset: number = 1;
   pageSize: number = 15;
   totalRecordCount: number;
+  currentPage: number;
   totalPage: number;
   
   @ViewChild('fromTime') fromTimeInput: NgModel;
@@ -96,14 +97,14 @@ export class AuditLogComponent implements OnInit {
 
   retrieve(state?: State): void {
     if(state) {
-      this.queryParam.page = state.page.to + 1;
+      this.queryParam.page = Math.ceil((state.page.to + 1) / this.pageSize);
+      this.currentPage = this.queryParam.page;
     }
     this.auditLogService
         .listAuditLogs(this.queryParam)
         .subscribe(
           response=>{
-            this.totalRecordCount = response.headers.get('x-total-count');
-            this.totalPage = Math.ceil(this.totalRecordCount / this.pageSize);
+            this.totalRecordCount =parseInt(response.headers.get('x-total-count'));
             this.auditLogs = response.json();
           },
           error=>{

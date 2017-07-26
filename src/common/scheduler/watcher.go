@@ -70,6 +70,7 @@ func (wc *Watcher) Start() {
 			select {
 			case <-evalChan:
 				{
+					log.Infof("Receive evaluation signal from policy '%s'\n", pl.Name())
 					//Start to run the attached tasks.
 					for _, t := range pl.Tasks() {
 						go func(tk task.Task) {

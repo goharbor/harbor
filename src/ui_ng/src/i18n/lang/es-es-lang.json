@@ -117,7 +117,8 @@
         "DELETION_TITLE": "Confirmar eliminación de usuario",
         "DELETION_SUMMARY": "¿Quiere eliminar el usuario {{param}}?",
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
-        "ITEMS": "elementos"
+        "ITEMS": "elementos",
+        "OF": "of"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
@@ -152,7 +153,8 @@
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "FAILED_TO_DELETE_PROJECT": "Los proyectos que contienen repositorios o reglas de replicación no pueden eliminarse.",
-        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos."
+        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
+        "OF": "of"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositorios",
@@ -182,7 +184,8 @@
         "DELETION_SUMMARY": "¿Quiere eliminar el miembro {{param}} del proyecto?",
         "ADDED_SUCCESS": "Miembro añadido satisfactoriamente.",
         "DELETED_SUCCESS": "Miembro eliminado satisfactoriamente",
-        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente."
+        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
+        "OF": "of"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -201,7 +204,8 @@
         "SIMPLE": "Simple",
         "ITEMS": "elementos",
         "FILTER_PLACEHOLDER": "Filtrar logs",
-        "INVALID_DATE": "Fecha invalida."
+        "INVALID_DATE": "Fecha invalida.",
+        "OF": "of"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Reglas de Replicación",
@@ -410,6 +414,7 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
             "TITLE": "Vulnerability Scanning",
             "SCAN_ALL": "Scan All",
             "SCAN_NOW": "SCAN NOW",
@@ -417,7 +422,8 @@
             "DAILY_POLICY": "Daily At",
             "REFRESH_POLICY": "Upon Refresh",
             "DB_REFRESH_TIME": "Database updated on",
-            "DB_NOT_READY": "Vulnerability database might not be fully ready!"
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!",
+            "NEXT_SCAN": "Available after"
         },
         "TEST_MAIL_SUCCESS": "La conexión al servidor de correo ha sido verificada.",
         "TEST_LDAP_SUCCESS": "La conexión al servidor LDAP ha sido verificada.",
@@ -463,7 +469,7 @@
         "STATE": {
             "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
-            "ERROR": "Error",
+            "ERROR": "View Log",
             "SCANNING": "Scanning",
             "UNKNOWN": "Unknown"
         },
@@ -479,8 +485,8 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} package(s) with vulnerabilities across all {{totalPackages}} package(s)."
+            "SCANNING_TIME": "Scan completed datetime",
+            "TOOLTIPS_TITLE": "This image includes {{totalPackages}} {{package}} with {{vulnerability}} in {{totalVulnerability}} of the {{packageExt}}."
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -493,9 +499,10 @@
         "SINGULAR": "Vulnerability",
         "PLURAL": "Vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
-        "PACKAGE": "Package with",
-        "PACKAGES": "Packages with",
-        "SCAN_NOW": "Scan"
+        "PACKAGE": "package",
+        "PACKAGES": "packages",
+        "SCAN_NOW": "Scan",
+        "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",

@@ -30,6 +30,7 @@ export class AppConfig {
             overall_last_update: 0,
             details: []
         };
+        this.next_scan_all = 0;
     }
 
     with_notary: boolean;
@@ -43,4 +44,5 @@ export class AppConfig {
     has_ca_root: boolean;
     harbor_version: string;
     clair_vulnerability_status?: ClairDBStatus;
+    next_scan_all: number;
 }

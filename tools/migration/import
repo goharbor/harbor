@@ -1,0 +1,88 @@
+#!/usr/bin/python
+import json
+from optparse import OptionParser
+import os
+import urllib2
+import sys
+import logging
+import logging.config
+
+logging.basicConfig(filename="import_project.log", level=logging.INFO)
+logger = logging.getLogger()
+
+class Parameters(object):
+    def __init__(self):
+        self.admiral_endpoint = ''
+        self.admiral_token = ''
+        self.projectsfile = ''
+        self.init_from_input()
+
+    @staticmethod
+    def parse_input():
+        usage = "usage: %prog [options] <admiralendpoint> <token> <projectsfile>"
+        parser = OptionParser(usage)
+        parser.add_option("-a", "--admiralendpoint", dest="admiral_endpoint", help="admiral endpoint")
+        parser.add_option("-t", "--token", dest="admiral_token", help="admiral token")
+        parser.add_option("-f", "--projectsfile", dest="projectsfile", help="the path of exported json file")
+
+        (options, args) = parser.parse_args()
+        return (options.admiral_endpoint, options.admiral_token, options.projectsfile)
+
+    def init_from_input(self):
+        (self.admiral_endpoint, self.admiral_token, self.projectsfile) = Parameters.parse_input()
+
+class Project:
+    def __init__(self, name, public):
+        self.project_name = name
+        self.public = public
+
+class Admiral:
+    def __init__(self, admiral_url, token):
+        self.admiral_url = admiral_url + '/projects'
+        self.token = token
+
+    def __import_project(self, project, retry=True):
+        project_data = json.dumps({ "name": project.project_name, "isPublic": project.public,
+                                    "customProperties": {"__enableContentTrust": False, "__preventVulnerableImagesFromRunning":False,
+                                    "__preventVulnerableImagesFromRunningSeverity":"high", "__automaticallyScanImagesOnPush":False }})
+        data_len = len(project_data)
+        request = urllib2.Request(self.admiral_url, project_data)
+        request.add_header('x-xenon-auth-token', self.token)
+        request.add_header('Content-Type', 'application/json')
+        request.add_header('Content-Length', data_len)
+
+        try:
+            urllib2.urlopen(request)
+        except Exception, e:
+            if not retry:
+                logger.error("failed to import project: %s, admiral_endpoint: %s, error: %s " % (project.project_name, self.admiral_url, str(e)))
+                return
+            self.__import_project(project, False)
+
+    def import_project(self, projects):
+        for project in projects:
+            self.__import_project(project)
+
+def main():
+    commandline_input = Parameters()
+    admiral = Admiral(commandline_input.admiral_endpoint, commandline_input.admiral_token)
+
+    try:
+        if not os.path.exists(commandline_input.projectsfile):
+            raise Exception('Error: %s does not exist' % commandline_input.projectsfile)
+
+        with open(commandline_input.projectsfile, 'r') as project_data_file:
+            project_data = json.load(project_data_file)
+
+        projects_import_list = []
+        for item in project_data['projects']:
+        	projects_import_list.append(Project(item['project_name'], item['public']))
+
+        admiral.import_project(projects_import_list)
+
+    except Exception, e:
+        logger.error("failed to import project, admiral_endpoint: %s, error: %s " % (commandline_input.admiral_endpoint, str(e)))
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

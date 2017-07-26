@@ -176,7 +176,7 @@ func SyncRegistry(pm projectmanager.ProjectManager) error {
 		return err
 	}
 
-	var repoRecordsInDB []models.RepoRecord
+	var repoRecordsInDB []*models.RepoRecord
 	repoRecordsInDB, err = dao.GetAllRepositories()
 	if err != nil {
 		log.Errorf("error occurred while getting all registories. %v", err)
