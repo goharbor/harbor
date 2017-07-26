@@ -113,6 +113,12 @@ Advanced Search Should Display
 
 # it's not a common keywords, only used into log case.	
 Do Log Advanced Search
+	Capture Page Screenshot  LogAdvancedSearch.png
+	Sleep  1
+	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
+	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"push")]
+	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"create")]
+	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
 	Sleep  1
 	Click Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
     Sleep  1

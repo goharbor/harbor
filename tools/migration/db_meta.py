@@ -169,10 +169,18 @@ class ImageScanJob(Base):
 class ImageScanOverview(Base):
     __tablename__ = "img_scan_overview"
 
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    image_digest = sa.Column(sa.String(128), nullable=False)
     scan_job_id = sa.Column(sa.Integer, nullable=False)
-    image_digest = sa.Column(sa.String(128), nullable=False, primary_key=True)
     severity = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     components_overview = sa.Column(sa.String(2048))
     details_key = sa.Column(sa.String(128))
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+class ClairVulnTimestamp(Base):
+    __tablename__ = "clair_vuln_timestamp"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    namespace = sa.Column(sa.String(128), nullable=False, unique=True)
+    last_update = sa.Column(mysql.TIMESTAMP)

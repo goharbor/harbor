@@ -18,7 +18,12 @@ import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface'
 
 import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
+import { 
+  ReplicationService, 
+  ReplicationDefaultService,
+  JobLogService,
+  JobLogDefaultService
+ } from '../service/index';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 
@@ -183,7 +188,8 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService }
+        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));

@@ -99,6 +99,14 @@ Switch To LDAP
 	Config Harbor cfg  auth=ldap_auth
 	Prepare  with_notary=false
 	Up Harbor  with_notary=false
+    ${rc}=  Run And Return Rc  docker pull vmware/harbor-ldap-test:1.1.1
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc   docker run --name ldap-container -p 389:389 --detach vmware/harbor-ldap-test:1.1.1
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Should Be Equal As Integers  ${rc}  0	
 
 Switch To Notary
 	Down Harbor  with_notary=false
@@ -124,9 +132,14 @@ Switch To Notary
 	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
 	Log To Console  ${output}
 	Should Be Equal As Integers  ${rc}  0
-	Prepare  with_notary=true
-	Up Harbor  with_notary=true
-    Sleep  20s
+	${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
+	Log To Console  ${output}
+	${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
+	Log To Console  ${output}
+	Prepare
+	Sleep  3s
+	Up Harbor
+    Sleep  30s
 	${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
 	Log To Console  \n${output}
@@ -135,6 +148,7 @@ Prepare
 	[Arguments]  ${with_notary}=true  ${with_clair}=true
 	${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
 	Log To Console  ${rc}
+	Log To Console  ${output}
 	Should Be Equal As Integers  ${rc}  0
 
 Config Harbor cfg

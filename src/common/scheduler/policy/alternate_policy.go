@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common/scheduler/task"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 //AlternatePolicyConfiguration store the related configurations for alternate policy.
@@ -125,6 +126,7 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 		}
 		if diff > 0 {
 			//Wait for a while.
+			log.Infof("Waiting for %d seconds after comparing offset %d and utc time %d\n", diff, alp.config.OffsetTime, utcTime)
 			select {
 			case <-time.After(time.Duration(diff) * time.Second):
 			case <-alp.terminator:

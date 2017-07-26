@@ -52,7 +52,8 @@ describe('RegistryConfigComponent (inline template)', () => {
     "project_creation_restriction": "everyone",
     "self_registration": true,
     "has_ca_root": true,
-    "harbor_version": "v1.1.1-rc1-160-g565110d"
+    "harbor_version": "v1.1.1-rc1-160-g565110d",
+    "next_scan_all": 0
   };
 
   beforeEach(async(() => {
@@ -85,7 +86,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     spy = spyOn(cfgService, 'getConfigurations').and.returnValue(Promise.resolve(mockConfig));
     saveSpy = spyOn(cfgService, 'saveConfigurations').and.returnValue(Promise.resolve(true));
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValue(Promise.resolve(mockSystemInfo));
 
     fixture.detectChanges();
   });

@@ -54,17 +54,8 @@ export class RegistryConfigComponent implements OnInit {
         return this.systemInfo && this.systemInfo.with_clair;
     }
 
-    get clairDB(): ClairDBStatus {
-        return this.systemInfo && this.systemInfo.clair_vulnerability_status ?
-            this.systemInfo.clair_vulnerability_status : null;
-    }
-
     ngOnInit(): void {
-        //Get system info
-        toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-            .then((info: SystemInfo) => this.systemInfo = info)
-            .catch(error => this.errorHandler.error(error));
-
+        this.loadSystemInfo();
         //Initialize
         this.load();
     }
@@ -82,20 +73,25 @@ export class RegistryConfigComponent implements OnInit {
         return !this._isEmptyObject(this.getChanges());
     }
 
+    //Get system info
+    loadSystemInfo(): void {
+        toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+            .then((info: SystemInfo) => this.systemInfo = info)
+            .catch(error => this.errorHandler.error(error));
+    }
+
     //Load configurations
     load(): void {
         this.onGoing = true;
         toPromise<Configuration>(this.configService.getConfigurations())
             .then((config: Configuration) => {
-                this.onGoing = false;
-
                 this.configCopy = this._clone(config);
                 this.config = config;
+                this.onGoing = false;
             })
             .catch(error => {
-                this.onGoing = false;
-
                 this.errorHandler.error(error);
+                this.onGoing = false;
             });
     }
 
@@ -118,6 +114,8 @@ export class RegistryConfigComponent implements OnInit {
                 });
                 //Reload to fetch all the updates
                 this.load();
+                //Reload all system info 
+                //this.loadSystemInfo();
             })
             .catch(error => {
                 this.onGoing = false;
