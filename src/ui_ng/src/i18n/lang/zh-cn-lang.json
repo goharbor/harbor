@@ -477,7 +477,7 @@
             "PLACEHOLDER": "没有扫描结果！",
             "COLUMN_ID": "缺陷码",
             "COLUMN_SEVERITY": "严重度",
-            "COLUMN_PACKAGE": "组",
+            "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
@@ -486,7 +486,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
+            "TOOLTIPS_TITLE": "在此镜像总共包含{{totalPackages}}{{package}},其中{{totalVulnerability}}个{{packageExt}}含有{{vulnerability}}。"
         },
         "SEVERITY": {
             "HIGH": "严重",
@@ -496,11 +496,11 @@
             "UNKNOWN": "未知",
             "NONE": "无"
         },
-        "SINGULAR": "缺陷",
-        "PLURAL": "缺陷",
-        "PLACEHOLDER": "过滤缺陷",
-        "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有",
+        "SINGULAR": "漏洞",
+        "PLURAL": "漏洞",
+        "PLACEHOLDER": "过滤漏洞",
+        "PACKAGE": "组件",
+        "PACKAGES": "组件",
         "SCAN_NOW": "扫描",
         "JOB_LOG_VIEWER": "查看扫描日志"
     },

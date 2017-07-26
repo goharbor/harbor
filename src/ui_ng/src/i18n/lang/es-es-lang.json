@@ -484,8 +484,8 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} package(s) with vulnerabilities across all {{totalPackages}} package(s)."
+            "SCANNING_TIME": "Scan completed datetime",
+            "TOOLTIPS_TITLE": "This image includes {{totalPackages}} {{package}} with {{vulnerability}} in {{totalVulnerability}} of the {{packageExt}}."
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -498,8 +498,8 @@
         "SINGULAR": "Vulnerability",
         "PLURAL": "Vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
-        "PACKAGE": "Package with",
-        "PACKAGES": "Packages with",
+        "PACKAGE": "package",
+        "PACKAGES": "packages",
         "SCAN_NOW": "Scan",
         "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
