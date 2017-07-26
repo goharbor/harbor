@@ -13,23 +13,23 @@ logger = logging.getLogger()
 class Parameters(object):
     def __init__(self):
         self.admiral_endpoint = ''
-        self.admiral_token = ''
+        self.tokenfile = ''
         self.projectsfile = ''
         self.init_from_input()
 
     @staticmethod
     def parse_input():
-        usage = "usage: %prog [options] <admiralendpoint> <token> <projectsfile>"
+        usage = "usage: %prog [options] <admiralendpoint> <tokenfile> <projectsfile>"
         parser = OptionParser(usage)
         parser.add_option("-a", "--admiralendpoint", dest="admiral_endpoint", help="admiral endpoint")
-        parser.add_option("-t", "--token", dest="admiral_token", help="admiral token")
+        parser.add_option("-t", "--tokenfile", dest="tokenfile", help="the path of token file")
         parser.add_option("-f", "--projectsfile", dest="projectsfile", help="the path of exported json file")
 
         (options, args) = parser.parse_args()
-        return (options.admiral_endpoint, options.admiral_token, options.projectsfile)
+        return (options.admiral_endpoint, options.tokenfile, options.projectsfile)
 
     def init_from_input(self):
-        (self.admiral_endpoint, self.admiral_token, self.projectsfile) = Parameters.parse_input()
+        (self.admiral_endpoint, self.tokenfile, self.projectsfile) = Parameters.parse_input()
 
 class Project:
     def __init__(self, name, public):
@@ -65,12 +65,22 @@ class Admiral:
 
 def main():
     commandline_input = Parameters()
-    admiral = Admiral(commandline_input.admiral_endpoint, commandline_input.admiral_token)
-
+    
     try:
         if not os.path.exists(commandline_input.projectsfile):
             raise Exception('Error: %s does not exist' % commandline_input.projectsfile)
 
+        if not os.path.exists(commandline_input.tokenfile):
+            raise Exception('Error: %s does not exist' % commandline_input.tokenfile)
+
+        with open(commandline_input.tokenfile, 'r') as f:
+            token = f.readlines()
+
+        if len(token) == 0:
+            raise Exception('No token found in the properties file %s' % commandline_input.tokenfile)
+
+        admiral = Admiral(commandline_input.admiral_endpoint, token[0])
+			
         with open(commandline_input.projectsfile, 'r') as project_data_file:
             project_data = json.load(project_data_file)
 
