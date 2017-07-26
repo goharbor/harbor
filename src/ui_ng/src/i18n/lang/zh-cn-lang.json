@@ -412,7 +412,8 @@
             "SCOPE": "LDAP搜索范围"
         },
         "SCANNING": {
-            "TRIGGER_SCAN_ALL_SUCCESS": "成功启动扫描所有镜像任务!",
+            "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
             "SCAN_NOW": "开始扫描",
