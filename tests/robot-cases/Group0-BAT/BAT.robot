@@ -258,6 +258,9 @@ Test Case - Ldap Sign in and out
 Test Case - Admin Push Signed Image
     Switch To Notary
 
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
+    Log To Console  ${output}
+	
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -274,9 +277,8 @@ Test Case - Admin Push Un-Signed Image
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${ip}
 	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/library/hello-world:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
 
 #Test Case - Notary Inteceptor
 #    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
