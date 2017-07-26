@@ -58,5 +58,5 @@ docker build -f Dockerfile -t $PHOTONIMAGE .
 rm -rf $TEMP
 rm -rf binary
 
-echo 'Push image to server.'
+echo 'Push image to docker hub.'
 ../../pushimage.sh $PHOTONIMAGE USERNAME PASSWORD
