@@ -45,15 +45,13 @@ func (s *Scope) string() string {
 }
 
 type tokenGenerator interface {
-	generate(realm, service string, scopes []*Scope) (*models.Token, error)
+	generate(scopes []*Scope, endpoint string) (*models.Token, error)
 }
 
 // tokenAuthorizer implements registry.Modifier interface. It parses scopses
 // from the request, generates authentication token and modifies the requset
 // by adding the token
 type tokenAuthorizer struct {
-	realm        string
-	service      string
 	registryURL  *url.URL // used to filter request
 	generator    tokenGenerator
 	client       *http.Client
@@ -90,22 +88,12 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 
 	// request a new token if the token is null
 	if token == nil {
-		// ping first if the realm and service are both null
-		if len(t.realm) == 0 && len(t.service) == 0 {
-			realm, service, err := ping(t.client, t.registryURL.String())
-			if err != nil {
-				return err
-			}
-			if len(realm) == 0 {
-				log.Warning("empty realm, skip")
-				return nil
-			}
-			t.realm = realm
-			t.service = service
-		}
-		token, err = t.generator.generate(t.realm, t.service, scopes)
+		token, err = t.generator.generate(scopes, t.registryURL.String())
 		if err != nil {
 			return err
+		}
+		if token == nil {
+			return nil
 		}
 		// only cache the token for empty scope(login) or single scope request
 		if len(scopes) <= 1 {
@@ -253,13 +241,14 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 			return realm, service, nil
 		}
 	}
-	return "", "", fmt.Errorf("schemes %v are unsupportted", challenges)
+
+	log.Warningf("schemes %v are unsupportted", challenges)
+	return "", "", nil
 }
 
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
 // If customizedTokenService is set, the token request will be sent to it instead of the server get from authorizer
-// The usage please refer to the function tokenURL
 func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 	customizedTokenService ...string) registry.Modifier {
 	client := &http.Client{
@@ -271,8 +260,16 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 		credential: credential,
 		client:     client,
 	}
+
+	// when the registry client is used inside Harbor, the token request
+	// can be posted to token service directly rather than going through nginx.
+	// If realm is set as the internal url of token service, this can resolve
+	// two problems:
+	// 1. performance issue
+	// 2. the realm field returned by registry is an IP which can not reachable
+	// inside Harbor
 	if len(customizedTokenService) > 0 {
-		generator.customizedTokenService = customizedTokenService[0]
+		generator.realm = customizedTokenService[0]
 	}
 
 	return &tokenAuthorizer{
@@ -284,40 +281,42 @@ func NewStandardTokenAuthorizer(credential Credential, insecure bool,
 
 // standardTokenGenerator implements interface tokenGenerator
 type standardTokenGenerator struct {
-	credential             Credential
-	customizedTokenService string
-	client                 *http.Client
+	realm      string
+	service    string
+	credential Credential
+	client     *http.Client
 }
 
 // get token from token service
-func (s *standardTokenGenerator) generate(realm, service string, scopes []*Scope) (*models.Token, error) {
-	realm = s.tokenURL(realm)
-	return getToken(s.client, s.credential, realm, service, scopes)
-}
-
-// when the registry client is used inside Harbor, the token request
-// can be posted to token service directly rather than going through nginx.
-// If realm is set as the internal url of token service, this can resolve
-// two problems:
-// 1. performance issue
-// 2. the realm field returned by registry is an IP which can not reachable
-// inside Harbor
-func (s *standardTokenGenerator) tokenURL(realm string) string {
-	if len(s.customizedTokenService) != 0 {
-		return s.customizedTokenService
+func (s *standardTokenGenerator) generate(scopes []*Scope, endpoint string) (*models.Token, error) {
+	// ping first if the realm or service is null
+	if len(s.realm) == 0 || len(s.service) == 0 {
+		realm, service, err := ping(s.client, endpoint)
+		if err != nil {
+			return nil, err
+		}
+		if len(realm) == 0 {
+			log.Warning("empty realm, skip")
+			return nil, nil
+		}
+		if len(s.realm) == 0 {
+			s.realm = realm
+		}
+		s.service = service
 	}
-	return realm
+
+	return getToken(s.client, s.credential, s.realm, s.service, scopes)
 }
 
 // NewRawTokenAuthorizer returns a token authorizer which calls method to create
 // token directly
 func NewRawTokenAuthorizer(username, service string) registry.Modifier {
 	generator := &rawTokenGenerator{
+		service:  service,
 		username: username,
 	}
 
 	return &tokenAuthorizer{
-		service:      service,
 		cachedTokens: make(map[string]*models.Token),
 		generator:    generator,
 	}
@@ -325,16 +324,17 @@ func NewRawTokenAuthorizer(username, service string) registry.Modifier {
 
 // rawTokenGenerator implements interface tokenGenerator
 type rawTokenGenerator struct {
+	service  string
 	username string
 }
 
 // generate token directly
-func (r *rawTokenGenerator) generate(realm, service string, scopes []*Scope) (*models.Token, error) {
+func (r *rawTokenGenerator) generate(scopes []*Scope, endpoint string) (*models.Token, error) {
 	strs := []string{}
 	for _, scope := range scopes {
 		strs = append(strs, scope.string())
 	}
-	token, expiresIn, issuedAt, err := token_util.RegistryTokenForUI(r.username, service, strs)
+	token, expiresIn, issuedAt, err := token_util.RegistryTokenForUI(r.username, r.service, strs)
 	if err != nil {
 		return nil, err
 	}
