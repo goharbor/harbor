@@ -34,6 +34,13 @@ type BaseController struct {
 	ProjectMgr projectmanager.ProjectManager
 }
 
+const (
+	//ReplicationJobType ...
+	ReplicationJobType = "replication"
+	//ScanJobType ...
+	ScanJobType = "scan"
+)
+
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {

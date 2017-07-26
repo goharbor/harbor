@@ -107,7 +107,7 @@ func (n *NotificationHandler) Post() {
 
 			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
 
-			if autoScanEnabled(project) {
+			if autoScanEnabled(pro) {
 				last, err := clairdao.GetLastUpdate()
 				if err != nil {
 					log.Errorf("Failed to get last update from Clair DB, error: %v, the auto scan will be skipped.", err)
@@ -165,21 +165,13 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	return events, nil
 }
 
-func autoScanEnabled(projectName string) bool {
+func autoScanEnabled(project *models.Project) bool {
 	if !config.WithClair() {
 		log.Debugf("Auto Scan disabled because Harbor is not deployed with Clair")
 		return false
 	}
 	if config.WithAdmiral() {
-		p, err := config.GlobalProjectMgr.Get(projectName)
-		if err != nil {
-			log.Warningf("failed to get project, error: %v", err)
-			return false
-		} else if p == nil {
-			log.Warningf("project with name: %s not found.", projectName)
-			return false
-		}
-		return p.AutomaticallyScanImagesOnPush
+		return project.AutomaticallyScanImagesOnPush
 	}
 	return os.Getenv("ENABLE_HARBOR_SCAN_ON_PUSH") == "1"
 }

@@ -32,7 +32,7 @@ export const LOG_TEMPLATE: string = `
             </clr-dg-row>
             <clr-dg-footer>
             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-    of {{pagination.totalItems}} {{'AUDIT_LOG.ITEMS' | translate}}
+    {{'AUDIT_LOG.OF' | translate}} {{pagination.totalItems}} {{'AUDIT_LOG.ITEMS' | translate}}
             <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>

@@ -46,3 +46,6 @@ Changelog for harbor database schema
   - delete foreign key (project_id) references project(project_id)from table `access_log`
   - add column `username` varchar (32) to table `access_log`
   - alter column `realname` on table `user`: varchar(20)->varchar(255)
+  - create table `img_scan_job`
+  - create table `img_scan_overview`
+  - create table `clair_vuln_timestamp`

@@ -420,7 +420,8 @@
             "DAILY_POLICY": "每日定时",
             "REFRESH_POLICY": "缺陷库刷新后",
             "DB_REFRESH_TIME": "数据库更新于",
-            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!"
+            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
+            "NEXT_SCAN": "下次可用时间"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
@@ -468,7 +469,7 @@
         "STATE": {
             "STOPPED": "未扫描",
             "QUEUED": "已入队列",
-            "ERROR": "错误",
+            "ERROR": "查看日志",
             "SCANNING": "扫描中",
             "UNKNOWN": "未知"
         },
@@ -500,7 +501,8 @@
         "PLACEHOLDER": "过滤缺陷",
         "PACKAGE": "个组件有",
         "PACKAGES": "个组件有",
-        "SCAN_NOW": "扫描"
+        "SCAN_NOW": "扫描",
+        "JOB_LOG_VIEWER": "查看扫描日志"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",

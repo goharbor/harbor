@@ -29,8 +29,6 @@ export class TagRepositoryComponent implements OnInit {
   repoName: string;
   hasProjectAdminRole: boolean = false;
   registryUrl: string;
-  withNotary: boolean;
-  hasSignedIn: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,7 +38,6 @@ export class TagRepositoryComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.hasSignedIn = (this.session.getCurrentUser() !== null);
     let resolverData = this.route.snapshot.data;
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
@@ -49,7 +46,18 @@ export class TagRepositoryComponent implements OnInit {
     this.repoName = this.route.snapshot.params['repo'];
 
     this.registryUrl = this.appConfigService.getConfig().registry_url;
-    this.withNotary = this.appConfigService.getConfig().with_notary;
+  }
+
+  get withNotary(): boolean {
+    return this.appConfigService.getConfig().with_notary;
+  }
+
+  get withClair(): boolean {
+    return this.appConfigService.getConfig().with_clair;
+  }
+
+  get hasSignedIn(): boolean {
+    return this.session.getCurrentUser() !== null;
   }
 
   watchTagClickEvt(tagEvt: TagClickEvent): void {

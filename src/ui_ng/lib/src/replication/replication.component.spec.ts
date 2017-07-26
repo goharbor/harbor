@@ -19,6 +19,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
+import { JobLogService, JobLogDefaultService } from '../service/index';
 
 describe('Replication Component (inline template)', ()=>{
 
@@ -183,7 +184,8 @@ describe('Replication Component (inline template)', ()=>{
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService }
+        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));
