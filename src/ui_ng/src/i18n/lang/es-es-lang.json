@@ -414,6 +414,7 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
             "TITLE": "Vulnerability Scanning",
             "SCAN_ALL": "Scan All",
             "SCAN_NOW": "SCAN NOW",
