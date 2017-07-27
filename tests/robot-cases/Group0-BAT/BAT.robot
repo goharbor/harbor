@@ -232,6 +232,21 @@ Test Case - Create An Replication Rule New Endpoint
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
 	Close Browser
 
+Test Case - Scan a tag
+    init chrome driver
+    ${d}=  get current date  result_format=%m%s
+    ${rc}  ${ip}=  run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
+    log to console  ${ip}
+    Create An New user  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  test${d}  Test1@34  harbor
+    create an new project  project${d}
+    #push an image
+    push image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
+    go into project  project${d}
+    expand repo  project${d}
+    repo click scan  project${d}
+    summary chart should display
+    close browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s

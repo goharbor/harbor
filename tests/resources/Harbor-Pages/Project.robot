@@ -156,3 +156,17 @@ Do Log Advanced Search
     Sleep  1
     ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
     Should be equal as integers  ${c}  0
+
+####
+Expand Repo
+    [Arguments]  ${projectname}
+    click element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
+    sleep  1
+Repo Click Scan
+    [Arguments]  ${projectname}
+    click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    sleep  15
+Summary Chart Should Display
+    page should contain element  //clr-dg-row-master[contains(.,'project')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+
