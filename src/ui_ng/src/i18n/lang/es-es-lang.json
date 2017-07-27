@@ -496,8 +496,8 @@
             "UNKNOWN": "unknown",
             "NONE": "none"
         },
-        "SINGULAR": "Vulnerability",
-        "PLURAL": "Vulnerabilities",
+        "SINGULAR": "vulnerability",
+        "PLURAL": "vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "package",
         "PACKAGES": "packages",
