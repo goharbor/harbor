@@ -28,7 +28,6 @@ Create An New Project
 	Log To Console  Project Name: ${projectname}
 	Input Text  xpath=${project_name_xpath}  ${projectname}
 	Sleep  3
-	Capture Page Screenshot
 	Click Element  css=${project_save_css}
 	Sleep  4
 	Wait Until Page Contains  ${projectname}
@@ -55,6 +54,15 @@ Create An New Public Project With New User
     Sign In Harbor  ${url}  ${username}  ${newPassword}
     Create An New Public Project  ${projectname}
     Sleep  1
+	
+Create An New Project With New User
+	[Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
+	Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
+    Logout Harbor
+    Sign In Harbor  ${url}  ${username}  ${newPassword}
+	Run Keyword If  '${public}' == 'true'  Create An New Public Project  ${projectname}
+	Run Keyword If  '${public}' == 'false'  Create An New Project  ${projectname}
+    Sleep  1	
 
 #It's the log of project.
 Go To Project Log
@@ -157,16 +165,17 @@ Do Log Advanced Search
     ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
     Should be equal as integers  ${c}  0
 
-####
 Expand Repo
     [Arguments]  ${projectname}
-    click element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
+    Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
     sleep  1
-Repo Click Scan
+	
+Scan Repo
     [Arguments]  ${projectname}
-    click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    click element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
-    sleep  15
+    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    Sleep  15
+	
 Summary Chart Should Display
-    page should contain element  //clr-dg-row-master[contains(.,'project')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
-
+    [Arguments]  ${projectname}
+    Page Should Contain Element  //clr-dg-row-master[contains(.,'${projectname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart

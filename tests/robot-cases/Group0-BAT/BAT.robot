@@ -226,26 +226,22 @@ Test Case - Create An Replication Rule New Endpoint
     ${d}=  Get current date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Sleep  3
 	Go Into Project  project${d}
     Switch To Replication
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
 	Close Browser
 
-Test Case - Scan a tag
-    init chrome driver
+Test Case - Scan A Tag
+    Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
-    ${rc}  ${ip}=  run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    log to console  ${ip}
-    Create An New user  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  test${d}  Test1@34  harbor
-    create an new project  project${d}
-    #push an image
-    push image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
-    go into project  project${d}
-    expand repo  project${d}
-    repo click scan  project${d}
-    summary chart should display
-    close browser
+    ${rc}  ${ip}=  run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'	
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
+    Go Into Project  project${d}
+    Expand Repo  project${d}
+    Scan Repo  project${d}
+    Summary Chart Should Display  project${d}
+	Close Browser
 
 Test Case - Assign Sys Admin
     Init Chrome Driver
