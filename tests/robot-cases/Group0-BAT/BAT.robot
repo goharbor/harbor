@@ -75,7 +75,7 @@ Test Case - User View Logs
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
     Log to console  ${ip}
 			
-	Create An New Public Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}
+	Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
 	Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
@@ -101,7 +101,7 @@ Test Case - Manage project publicity
     Logout Harbor
 
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
-    Create An New Public Project  project${d}
+    Create An New Project  project${d}  public=true
 
     Push image  ${ip}  usera${d}  Test1@34  project${d}  hello-world:latest
     Pull image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest

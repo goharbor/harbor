@@ -21,47 +21,25 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Create An New Project
-	[Arguments]  ${projectname}
+	[Arguments]  ${projectname}  ${public}=false
 	Sleep  1
 	Click Button  css=${create_project_button_css}
 	Sleep  1
 	Log To Console  Project Name: ${projectname}
 	Input Text  xpath=${project_name_xpath}  ${projectname}
 	Sleep  3
+	Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
 	Click Element  css=${project_save_css}
 	Sleep  4
 	Wait Until Page Contains  ${projectname}
 	Wait Until Page Contains  Project Admin
-
-Create An New Public Project
-	[Arguments]  ${projectname}
-	Sleep  1
-	Click Button  css=${create_project_button_css}
-	Sleep  1
-	Log To Console  Project Name: ${projectname}
-	Input Text  xpath=${project_name_xpath}  ${projectname}
-	Sleep  3
-	Click Element  xpath=${project_public_xpath}
-	Click Element  css=${project_save_css}
-	Sleep  4
-	Wait Until Page Contains  ${projectname}
-	Wait Until Page Contains  Project Admin
-
-Create An New Public Project With New User
-	[Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}
-	Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
-    Logout Harbor
-    Sign In Harbor  ${url}  ${username}  ${newPassword}
-    Create An New Public Project  ${projectname}
-    Sleep  1
 	
 Create An New Project With New User
 	[Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
 	Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
-	Run Keyword If  '${public}' == 'true'  Create An New Public Project  ${projectname}
-	Run Keyword If  '${public}' == 'false'  Create An New Project  ${projectname}
+	Create An New Project  ${projectname}  ${public}
     Sleep  1	
 
 #It's the log of project.
