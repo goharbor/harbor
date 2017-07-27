@@ -56,7 +56,7 @@ type tokenAuthorizer struct {
 	generator    tokenGenerator
 	client       *http.Client
 	cachedTokens map[string]*models.Token
-	sync.RWMutex
+	sync.Mutex
 }
 
 // add token to the request
@@ -73,7 +73,10 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 	}
 
 	// parse scopes from request
-	scopes := parseScopes(req)
+	scopes, err := parseScopes(req)
+	if err != nil {
+		return err
+	}
 
 	var token *models.Token
 	// try to get token from cache if the request is for empty scope(login)
@@ -92,6 +95,8 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 		if err != nil {
 			return err
 		}
+		// if the token is null(this happens if the registry needs no authentication), return
+		// directly. Or the token will be cached
 		if token == nil {
 			return nil
 		}
@@ -137,7 +142,7 @@ func (t *tokenAuthorizer) filterReq(req *http.Request) (bool, error) {
 }
 
 // parse scopes from the request according to its method, path and query string
-func parseScopes(req *http.Request) []*Scope {
+func parseScopes(req *http.Request) ([]*Scope, error) {
 	scopes := []*Scope{}
 
 	from := req.URL.Query().Get("from")
@@ -159,7 +164,7 @@ func parseScopes(req *http.Request) []*Scope {
 			Name: repository,
 		}
 		switch req.Method {
-		case http.MethodGet:
+		case http.MethodGet, http.MethodHead:
 			scope.Actions = []string{"pull"}
 		case http.MethodPost, http.MethodPut, http.MethodPatch:
 			scope.Actions = []string{"push"}
@@ -181,7 +186,7 @@ func parseScopes(req *http.Request) []*Scope {
 		scope = nil
 	} else {
 		// unknow
-		log.Warningf("can not parse scope from the request: %s %s", req.Method, req.URL.Path)
+		return scopes, fmt.Errorf("can not parse scope from the request: %s %s", req.Method, req.URL.Path)
 	}
 
 	if scope != nil {
@@ -194,12 +199,12 @@ func parseScopes(req *http.Request) []*Scope {
 	}
 	log.Debugf("scopses parsed from request: %s", strings.Join(strs, " "))
 
-	return scopes
+	return scopes, nil
 }
 
 func (t *tokenAuthorizer) getCachedToken(scope string) *models.Token {
-	t.RLock()
-	defer t.RUnlock()
+	t.Lock()
+	defer t.Unlock()
 	token := t.cachedTokens[scope]
 	if token == nil {
 		return nil
@@ -208,14 +213,16 @@ func (t *tokenAuthorizer) getCachedToken(scope string) *models.Token {
 	issueAt, err := time.Parse(time.RFC3339, token.IssuedAt)
 	if err != nil {
 		log.Errorf("failed parse %s: %v", token.IssuedAt, err)
+		delete(t.cachedTokens, scope)
 		return nil
 	}
 
 	if issueAt.Add(time.Duration(token.ExpiresIn-latency) * time.Second).Before(time.Now().UTC()) {
+		delete(t.cachedTokens, scope)
 		return nil
 	}
 
-	log.Debug("get token from cache")
+	log.Debugf("get token for scope %s from cache", scope)
 	return token
 }
 

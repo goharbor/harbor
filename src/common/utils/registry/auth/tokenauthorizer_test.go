@@ -78,7 +78,8 @@ func TestParseScopes(t *testing.T) {
 	// contains from in query string
 	req, err := http.NewRequest(http.MethodGet, "http://registry/v2?from=library", nil)
 	require.Nil(t, err)
-	scopses := parseScopes(req)
+	scopses, err := parseScopes(req)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
 	assert.EqualValues(t, &Scope{
 		Type: "repository",
@@ -90,13 +91,15 @@ func TestParseScopes(t *testing.T) {
 	// v2
 	req, err = http.NewRequest(http.MethodGet, "http://registry/v2", nil)
 	require.Nil(t, err)
-	scopses = parseScopes(req)
+	scopses, err = parseScopes(req)
+	assert.Nil(t, err)
 	assert.Equal(t, 0, len(scopses))
 
 	// catalog
 	req, err = http.NewRequest(http.MethodGet, "http://registry/v2/_catalog", nil)
 	require.Nil(t, err)
-	scopses = parseScopes(req)
+	scopses, err = parseScopes(req)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
 	assert.EqualValues(t, &Scope{
 		Type: "registry",
@@ -108,7 +111,8 @@ func TestParseScopes(t *testing.T) {
 	// manifest
 	req, err = http.NewRequest(http.MethodPut, "http://registry/v2/library/mysql/5.6/manifests/1", nil)
 	require.Nil(t, err)
-	scopses = parseScopes(req)
+	scopses, err = parseScopes(req)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
 	assert.EqualValues(t, &Scope{
 		Type: "repository",
@@ -116,6 +120,12 @@ func TestParseScopes(t *testing.T) {
 		Actions: []string{
 			"push"},
 	}, scopses[0])
+
+	// invalid
+	req, err = http.NewRequest(http.MethodPut, "http://registry/other", nil)
+	require.Nil(t, err)
+	scopses, err = parseScopes(req)
+	assert.NotNil(t, err)
 }
 
 func TestGetAndUpdateCachedToken(t *testing.T) {

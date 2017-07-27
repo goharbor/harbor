@@ -45,6 +45,9 @@ func parseRepository(path string) string {
 		}
 
 		// match
+		// the subs should contain at least 2 matching texts, the first one matches
+		// the whole regular expression, and the second one matches the repository
+		// part
 		if len(subs) < 2 {
 			log.Warningf("unexpected length of sub matches: %d, should >= 2 ", len(subs))
 			continue
