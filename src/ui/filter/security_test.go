@@ -322,3 +322,20 @@ func TestGetProjectManager(t *testing.T) {
 	_, ok := pm.(projectmanager.ProjectManager)
 	assert.True(t, ok)
 }
+
+func TestFilterReq(t *testing.T) {
+	cases := []struct {
+		path   string
+		result bool
+	}{
+		{"http://server/api/", true},
+		{"http://server/service/", true},
+		{"http://server/registryproxy/v2/", false},
+	}
+
+	for _, c := range cases {
+		req, err := http.NewRequest(http.MethodGet, c.path, nil)
+		assert.Nil(t, err)
+		assert.Equal(t, c.result, filterReq(req))
+	}
+}
