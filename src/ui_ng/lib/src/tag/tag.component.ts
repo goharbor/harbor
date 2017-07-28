@@ -241,6 +241,7 @@ export class TagComponent implements OnInit {
   //Whether show the 'scan now' menu
   canScanNow(t: Tag): boolean {
     if (!this.withClair) { return false; }
+    if (!this.hasProjectAdminRole) { return false; }
     let st: string = this.scanStatus(t);
 
     return st !== VULNERABILITY_SCAN_STATUS.pending &&

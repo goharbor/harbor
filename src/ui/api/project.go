@@ -30,6 +30,11 @@ import (
 	"time"
 )
 
+type deletableResp struct {
+	Deletable bool   `json:"deletable"`
+	Message   string `json:"message"`
+}
+
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
 	BaseController
@@ -202,22 +207,14 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	contains, err := projectContainsRepo(p.project.Name)
+	result, err := deletable(p.project.ProjectID)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any repository: %v", p.project.Name, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
+		return
 	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
-	}
-
-	contains, err = projectContainsPolicy(p.project.ProjectID)
-	if err != nil {
-		log.Errorf("failed to check whether project %s contains any policy: %v", p.project.Name, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
-	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
+	if !result.Deletable {
+		p.CustomAbort(http.StatusPreconditionFailed, result.Message)
 	}
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
@@ -239,22 +236,57 @@ func (p *ProjectAPI) Delete() {
 	}()
 }
 
-func projectContainsRepo(name string) (bool, error) {
-	repositories, err := getReposByProject(name)
-	if err != nil {
-		return false, err
+// Deletable ...
+func (p *ProjectAPI) Deletable() {
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
 	}
 
-	return len(repositories) > 0, nil
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
+		p.HandleForbidden(p.SecurityCtx.GetUsername())
+		return
+	}
+
+	result, err := deletable(p.project.ProjectID)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
+		return
+	}
+
+	p.Data["json"] = result
+	p.ServeJSON()
 }
 
-func projectContainsPolicy(id int64) (bool, error) {
-	policies, err := dao.GetRepPolicyByProject(id)
+func deletable(projectID int64) (*deletableResp, error) {
+	count, err := dao.GetTotalOfRepositoriesByProject([]int64{projectID}, "")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return len(policies) > 0, nil
+	if count > 0 {
+		return &deletableResp{
+			Deletable: false,
+			Message:   "the project contains repositories, can not be deleled",
+		}, nil
+	}
+
+	policies, err := dao.GetRepPolicyByProject(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(policies) > 0 {
+		return &deletableResp{
+			Deletable: false,
+			Message:   "the project contains replication rules, can not be deleled",
+		}, nil
+	}
+
+	return &deletableResp{
+		Deletable: true,
+	}, nil
 }
 
 // List ...

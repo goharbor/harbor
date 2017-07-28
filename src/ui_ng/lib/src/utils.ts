@@ -155,7 +155,7 @@ export function calculatePage(state: State): number {
  * @param {State} state 
  * @returns {void} 
  */
-export function doFiltering<T extends {[key:string]: any | any[]}>(items: T[], state: State): T[] {
+export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
     if (!items || items.length === 0) {
         return items;
     }
@@ -187,7 +187,16 @@ export function regexpFilter(terms: string, testedValue: any): boolean {
     return reg.test(testedValue);
 }
 
-export function doSorting<T extends {[key:string]: any | any[]}>(items: T[], state: State): T[] {
+/**
+ * Sorting the data by column
+ * 
+ * @export
+ * @template T 
+ * @param {T[]} items 
+ * @param {State} state 
+ * @returns {T[]} 
+ */
+export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
     if (!items || items.length === 0) {
         return items;
     }
@@ -218,4 +227,42 @@ export function doSorting<T extends {[key:string]: any | any[]}>(items: T[], sta
 
         return comp;
     });
+}
+
+/**
+ * Compare the two objects to adjust if they're equal
+ * 
+ * @export
+ * @param {*} a 
+ * @param {*} b 
+ * @returns {boolean} 
+ */
+export function compareValue(a: any, b: any): boolean {
+    if ((a && !b) || (!a && b)) return false;
+    if (!a && !b) return true;
+
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/**
+ * Check if the object is null or empty '{}'
+ * 
+ * @export
+ * @param {*} obj 
+ * @returns {boolean} 
+ */
+export function isEmptyObject(obj: any): boolean {
+    return !obj || JSON.stringify(obj) === "{}";
+}
+
+/**
+ * Deeper clone all
+ * 
+ * @export
+ * @param {*} srcObj 
+ * @returns {*} 
+ */
+export function clone(srcObj: any): any {
+    if (!srcObj) return null;
+    return JSON.parse(JSON.stringify(srcObj));
 }

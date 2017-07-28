@@ -16,6 +16,7 @@ package job
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -32,6 +33,9 @@ type workerPool struct {
 
 // WorkerPools is a map contains workerpools for different types of jobs.
 var WorkerPools map[Type]*workerPool
+
+// For WorkerPools initialization.
+var once sync.Once
 
 //TODO: remove the hard code?
 const maxScanWorker = 3
@@ -118,16 +122,15 @@ func NewWorker(id int, t Type, wp *workerPool) *Worker {
 
 // InitWorkerPools create worker pools for different types of jobs.
 func InitWorkerPools() error {
-	if len(WorkerPools) > 0 {
-		return fmt.Errorf("The WorkerPool map has been initialised")
-	}
 	maxRepWorker, err := config.MaxJobWorkers()
 	if err != nil {
 		return err
 	}
-	WorkerPools = make(map[Type]*workerPool)
-	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker, ReplicationType)
-	WorkerPools[ScanType] = createWorkerPool(maxScanWorker, ScanType)
+	once.Do(func() {
+		WorkerPools = make(map[Type]*workerPool)
+		WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker, ReplicationType)
+		WorkerPools[ScanType] = createWorkerPool(maxScanWorker, ScanType)
+	})
 	return nil
 }
 

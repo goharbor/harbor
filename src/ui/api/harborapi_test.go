@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -99,6 +100,7 @@ func init() {
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
+	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
@@ -382,6 +384,30 @@ func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.Log
 		QueryStruct(query)
 
 	return request(_sling, jsonAcceptHeader, prjUsr)
+}
+
+// ProjectDeletable check whether a project can be deleted
+func (a testapi) ProjectDeletable(prjUsr usrInfo, projectID int64) (int, bool, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("/api/projects/" + strconv.FormatInt(projectID, 10) + "/_deletable")
+
+	code, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	if err != nil {
+		return 0, false, err
+	}
+
+	if code != http.StatusOK {
+		return code, false, nil
+	}
+
+	deletable := struct {
+		Deletable bool `json:"deletable"`
+	}{}
+	if err = json.Unmarshal(body, &deletable); err != nil {
+		return 0, false, err
+	}
+
+	return code, deletable.Deletable, nil
 }
 
 //-------------------------Member Test---------------------------------------//

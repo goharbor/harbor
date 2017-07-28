@@ -3,7 +3,12 @@ import { Component, OnInit, EventEmitter, Output, ViewChild, Input } from '@angu
 import { Configuration, ComplexValueItem } from './config';
 import { REGISTRY_CONFIG_HTML } from './registry-config.component.html';
 import { ConfigurationService, SystemInfoService, SystemInfo, ClairDBStatus } from '../service/index';
-import { toPromise } from '../utils';
+import {
+    toPromise,
+    compareValue,
+    isEmptyObject,
+    clone
+} from '../utils';
 import { ErrorHandler } from '../error-handler';
 import {
     ReplicationConfigComponent,
@@ -70,7 +75,7 @@ export class RegistryConfigComponent implements OnInit {
     }
 
     hasChanges(): boolean {
-        return !this._isEmptyObject(this.getChanges());
+        return !isEmptyObject(this.getChanges());
     }
 
     //Get system info
@@ -85,7 +90,7 @@ export class RegistryConfigComponent implements OnInit {
         this.onGoing = true;
         toPromise<Configuration>(this.configService.getConfigurations())
             .then((config: Configuration) => {
-                this.configCopy = this._clone(config);
+                this.configCopy = clone(config);
                 this.config = config;
                 this.onGoing = false;
             })
@@ -99,7 +104,7 @@ export class RegistryConfigComponent implements OnInit {
     save(): void {
         let changes: { [key: string]: any | any[] } = this.getChanges();
 
-        if (this._isEmptyObject(changes)) {
+        if (isEmptyObject(changes)) {
             //Guard code, do nothing
             return;
         }
@@ -147,7 +152,7 @@ export class RegistryConfigComponent implements OnInit {
         //Reset to the values of copy
         let changes: { [key: string]: any | any[] } = this.getChanges();
         for (let prop in changes) {
-            this.config[prop] = this._clone(this.configCopy[prop]);
+            this.config[prop] = clone(this.configCopy[prop]);
         }
     }
 
@@ -160,7 +165,7 @@ export class RegistryConfigComponent implements OnInit {
         for (let prop in this.config) {
             let field = this.configCopy[prop];
             if (field && field.editable) {
-                if (!this._compareValue(field.value, this.config[prop].value)) {
+                if (!compareValue(field.value, this.config[prop].value)) {
                     changes[prop] = this.config[prop].value;
                     //Number 
                     if (typeof field.value === "number") {
@@ -176,24 +181,5 @@ export class RegistryConfigComponent implements OnInit {
         }
 
         return changes;
-    }
-
-    //private
-    _compareValue(a: any, b: any): boolean {
-        if ((a && !b) || (!a && b)) return false;
-        if (!a && !b) return true;
-
-        return JSON.stringify(a) === JSON.stringify(b);
-    }
-
-    //private
-    _isEmptyObject(obj: any): boolean {
-        return !obj || JSON.stringify(obj) === "{}";
-    }
-
-    //Deeper clone all
-    _clone(srcObj: any): any {
-        if (!srcObj) return null;
-        return JSON.parse(JSON.stringify(srcObj));
     }
 }

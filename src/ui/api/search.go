@@ -25,7 +25,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
@@ -165,13 +164,7 @@ func filterRepositories(projects []*models.Project, keyword string) (
 }
 
 func getTags(repository string) ([]string, error) {
-	url, err := config.RegistryURL()
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := uiutils.NewRepositoryClientForUI(url, true,
-		"admin", repository, "pull")
+	client, err := uiutils.NewRepositoryClientForUI("harbor-ui", repository)
 	if err != nil {
 		return nil, err
 	}
