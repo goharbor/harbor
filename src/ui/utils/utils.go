@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/service/token"
 
 	"bytes"
 	"encoding/json"
@@ -32,11 +33,6 @@ import (
 
 // ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move on if failed to submit any job of a single image.
 func ScanAllImages() error {
-	regURL, err := config.RegistryURL()
-	if err != nil {
-		log.Errorf("Failed to load registry url")
-		return err
-	}
 	repos, err := dao.GetAllRepositories()
 	if err != nil {
 		log.Errorf("Failed to list all repositories, error: %v", err)
@@ -44,33 +40,28 @@ func ScanAllImages() error {
 	}
 	log.Infof("Scanning all images on Harbor.")
 
-	go scanRepos(repos, regURL)
+	go scanRepos(repos)
 	return nil
 }
 
 // ScanImagesByProjectID scans all images under a projet, the whole process will move on if failed to submit any job of a single image.
 func ScanImagesByProjectID(id int64) error {
-	regURL, err := config.RegistryURL()
-	if err != nil {
-		log.Errorf("Failed to load registry url")
-		return err
-	}
 	repos, err := dao.GetRepositoriesByProject(id, "", 0, 0)
 	if err != nil {
 		log.Errorf("Failed list repositories in project %d, error: %v", id, err)
 		return err
 	}
 	log.Infof("Scanning all images in project: %d ", id)
-	go scanRepos(repos, regURL)
+	go scanRepos(repos)
 	return nil
 }
 
-func scanRepos(repos []*models.RepoRecord, regURL string) {
+func scanRepos(repos []*models.RepoRecord) {
 	var repoClient *registry.Repository
 	var err error
 	var tags []string
 	for _, r := range repos {
-		repoClient, err = NewRepositoryClientForUI(regURL, true, "harbor-ui", r.Name, "pull")
+		repoClient, err = NewRepositoryClientForUI("harbor-ui", r.Name)
 		if err != nil {
 			log.Errorf("Failed to initialize client for repository: %s, error: %v, skip scanning", r.Name, err)
 			continue
@@ -131,20 +122,15 @@ func TriggerImageScan(repository string, tag string) error {
 	return RequestAsUI("POST", url, bytes.NewBuffer(b), NewStatusRespHandler(http.StatusOK))
 }
 
-// NewRepositoryClientForUI ...
-// TODO need a registry client which accept a raw token as param
-func NewRepositoryClientForUI(endpoint string, insecure bool, username, repository string,
-	scopeActions ...string) (*registry.Repository, error) {
-
-	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, "repository", repository, scopeActions...)
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
+// NewRepositoryClientForUI creates a repository client that can only be used to
+// access the internal registry
+func NewRepositoryClientForUI(username, repository string) (*registry.Repository, error) {
+	endpoint, err := config.RegistryURL()
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := registry.NewRepositoryWithModifiers(repository, endpoint, insecure, store)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+	insecure := true
+	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
+	return registry.NewRepositoryWithModifiers(repository, endpoint, insecure, authorizer)
 }

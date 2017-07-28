@@ -191,6 +191,7 @@ func TokenExpiration() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return int(cfg[common.TokenExpiration].(float64)), nil
 }
 

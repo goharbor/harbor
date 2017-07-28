@@ -43,7 +43,7 @@ func (iz *Initializer) Enter() (string, error) {
 	}
 	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
 	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), iz.Context.Repository, "pull")
+		config.InternalTokenServiceEndpoint(), iz.Context.Repository)
 	if err != nil {
 		logger.Errorf("An error occurred while creating repository client: %v", err)
 		return "", err
