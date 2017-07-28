@@ -42,7 +42,9 @@ func main() {
 	}
 
 	initRouters()
-	job.InitWorkerPools()
+	if err := job.InitWorkerPools(); err != nil {
+		log.Fatalf("Failed to initialize worker pools, error: %v", err)
+	}
 	go job.Dispatch()
 	resumeJobs()
 	beego.Run()
@@ -71,6 +73,8 @@ func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		beego.LoadAppConfig("ini", configPath)
+		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+			log.Fatalf("Failed to load config file: %s, error: %v", configPath, err)
+		}
 	}
 }

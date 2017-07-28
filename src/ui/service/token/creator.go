@@ -33,8 +33,10 @@ var registryFilterMap map[string]accessFilter
 var notaryFilterMap map[string]accessFilter
 
 const (
-	notary   = "harbor-notary"
-	registry = "harbor-registry"
+	// Notary service
+	Notary = "harbor-notary"
+	// Registry service
+	Registry = "harbor-registry"
 )
 
 //InitCreators initialize the token creators for different services
@@ -57,14 +59,14 @@ func InitCreators() {
 				},
 			},
 		}
-		creatorMap[notary] = &generalCreator{
-			service:   notary,
+		creatorMap[Notary] = &generalCreator{
+			service:   Notary,
 			filterMap: notaryFilterMap,
 		}
 	}
 
-	creatorMap[registry] = &generalCreator{
-		service:   registry,
+	creatorMap[Registry] = &generalCreator{
+		service:   Registry,
 		filterMap: registryFilterMap,
 	}
 }
@@ -200,7 +202,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return makeToken(ctx.GetUsername(), g.service, access)
+	return MakeToken(ctx.GetUsername(), g.service, access)
 }
 
 func parseScopes(u *url.URL) []string {

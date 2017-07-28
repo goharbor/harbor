@@ -132,7 +132,7 @@ func (i *Initializer) enter() (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	srcClient, err := utils.NewRepositoryClient(i.srcURL, i.insecure, srcCred,
-		config.InternalTokenServiceEndpoint(), i.repository, "pull", "push", "*")
+		config.InternalTokenServiceEndpoint(), i.repository)
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return "", err
@@ -141,7 +141,7 @@ func (i *Initializer) enter() (string, error) {
 
 	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
 	dstClient, err := utils.NewRepositoryClient(i.dstURL, i.insecure, dstCred,
-		"", i.repository, "pull", "push", "*")
+		"", i.repository)
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return "", err

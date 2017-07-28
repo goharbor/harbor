@@ -27,7 +27,7 @@ const (
 	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
 	imageInfoCtxKey    = contextKey("ImageInfo")
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
-	tokenUsername = "admin"
+	tokenUsername = "harbor-ui"
 )
 
 // Record the docker deamon raw response.

@@ -93,54 +93,26 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 	return nil
 }
 
-// TODO merge RegistryTokenForUI NotaryTokenForUI genTokenForUI
-// to one function
-
-//RegistryTokenForUI calls genTokenForUI to get raw token for registry
-func RegistryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
-	return genTokenForUI(username, service, scopes)
-}
-
-//NotaryTokenForUI calls genTokenForUI to get raw token for notary
-func NotaryTokenForUI(username string, service string, scopes []string) (string, int, *time.Time, error) {
-	return genTokenForUI(username, service, scopes)
-}
-
-// genTokenForUI is for the UI process to call, so it won't establish a https connection from UI to proxy.
-func genTokenForUI(username string, service string,
-	scopes []string) (string, int, *time.Time, error) {
-	access := GetResourceActions(scopes)
-	return MakeRawToken(username, service, access)
-}
-
-// MakeRawToken makes a valid jwt token based on parms.
-func MakeRawToken(username, service string, access []*token.ResourceActions) (token string, expiresIn int, issuedAt *time.Time, err error) {
+// MakeToken makes a valid jwt token based on parms.
+func MakeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {
-		return "", 0, nil, err
+		return nil, err
 	}
 	expiration, err := config.TokenExpiration()
 	if err != nil {
-		return "", 0, nil, err
+		return nil, err
 	}
 
 	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
 	if err != nil {
-		return "", 0, nil, err
-	}
-	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
-	return rs, expiresIn, issuedAt, nil
-}
-
-func makeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
-	raw, expires, issued, err := MakeRawToken(username, service, access)
-	if err != nil {
 		return nil, err
 	}
+	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
 	return &models.Token{
-		Token:     raw,
-		ExpiresIn: expires,
-		IssuedAt:  issued.Format(time.RFC3339),
+		Token:     rs,
+		ExpiresIn: expiresIn,
+		IssuedAt:  issuedAt.Format(time.RFC3339),
 	}, nil
 }
 

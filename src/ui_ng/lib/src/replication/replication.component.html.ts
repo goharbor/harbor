@@ -51,7 +51,7 @@ export const REPLICATION_TEMPLATE: string = `
         <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'operation'">{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.UPDATE_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPLICATION.JOB_PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let j of jobs" [clrDgItem]='j'>
@@ -61,9 +61,12 @@ export const REPLICATION_TEMPLATE: string = `
             <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>
-              <a href="javascript:void(0);" (click)="viewLog(j.id)">
+             <span *ngIf="j.status=='pending'; else elseBlock" class="label">{{'REPLICATION.NO_LOGS' | translate}}</span>
+                <ng-template #elseBlock>
+                    <a href="javascript:void(0);" (click)="viewLog(j.id)">
                 <clr-icon shape="clipboard"></clr-icon>
-              </a>
+              </a></ng-template>
+              
             </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
