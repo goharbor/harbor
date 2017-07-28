@@ -43,6 +43,7 @@ export class ListReplicationRuleComponent implements OnInit {
   @Input() projectId: number;
   @Input() selectedId: number | string;
   @Input() withReplicationJob: boolean;
+  @Input() readonly: boolean;
 
   @Input() loading: boolean = false;
 

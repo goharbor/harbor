@@ -9,7 +9,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
     <clr-dg-column [clrDgSortBy]="enabledComparator">{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" (click)="selectRule(p)" [style.backgroundColor]="(!projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
-        <clr-dg-action-overflow>
+        <clr-dg-action-overflow *ngIf="!readonly">
             <button class="action-item" (click)="editRule(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
             <button class="action-item" (click)="toggleRule(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
             <button class="action-item" (click)="deleteRule(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
