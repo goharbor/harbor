@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -56,14 +57,15 @@ func BuildBlobURL(endpoint, repository, digest string) string {
 func GetTokenForRepo(repository string) (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
 	credentail := auth.NewCookieCredential(c)
-	token, err := auth.GetToken(config.InternalTokenServiceEndpoint(), true, credentail, []*auth.Scope{&auth.Scope{
-		Type:    "repository",
-		Name:    repository,
-		Actions: []string{"pull"},
-	}})
+	t, err := auth.GetToken(config.InternalTokenServiceEndpoint(), true, credentail,
+		[]*token.ResourceActions{&token.ResourceActions{
+			Type:    "repository",
+			Name:    repository,
+			Actions: []string{"pull"},
+		}})
 	if err != nil {
 		return "", err
 	}
 
-	return token.Token, nil
+	return t.Token, nil
 }
