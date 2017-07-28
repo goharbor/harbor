@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
@@ -33,19 +34,8 @@ const (
 	scheme      = "bearer"
 )
 
-// Scope ...
-type Scope struct {
-	Type    string
-	Name    string
-	Actions []string
-}
-
-func (s *Scope) string() string {
-	return fmt.Sprintf("%s:%s:%s", s.Type, s.Name, strings.Join(s.Actions, ","))
-}
-
 type tokenGenerator interface {
-	generate(scopes []*Scope, endpoint string) (*models.Token, error)
+	generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error)
 }
 
 // tokenAuthorizer implements registry.Modifier interface. It parses scopses
@@ -84,7 +74,7 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 	if len(scopes) <= 1 {
 		key := ""
 		if len(scopes) == 1 {
-			key = scopes[0].string()
+			key = scopeString(scopes[0])
 		}
 		token = t.getCachedToken(key)
 	}
@@ -104,7 +94,7 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 		if len(scopes) <= 1 {
 			key := ""
 			if len(scopes) == 1 {
-				key = scopes[0].string()
+				key = scopeString(scopes[0])
 			}
 			t.updateCachedToken(key, token)
 		}
@@ -113,6 +103,13 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token.Token))
 
 	return nil
+}
+
+func scopeString(scope *token.ResourceActions) string {
+	if scope == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s:%s:%s", scope.Type, scope.Name, strings.Join(scope.Actions, ","))
 }
 
 // some requests are sent to backend storage, such as s3, this method filters
@@ -142,24 +139,24 @@ func (t *tokenAuthorizer) filterReq(req *http.Request) (bool, error) {
 }
 
 // parse scopes from the request according to its method, path and query string
-func parseScopes(req *http.Request) ([]*Scope, error) {
-	scopes := []*Scope{}
+func parseScopes(req *http.Request) ([]*token.ResourceActions, error) {
+	scopes := []*token.ResourceActions{}
 
 	from := req.URL.Query().Get("from")
 	if len(from) != 0 {
-		scopes = append(scopes, &Scope{
+		scopes = append(scopes, &token.ResourceActions{
 			Type:    "repository",
 			Name:    from,
 			Actions: []string{"pull"},
 		})
 	}
 
-	var scope *Scope
+	var scope *token.ResourceActions
 	path := strings.TrimRight(req.URL.Path, "/")
 	repository := parseRepository(path)
 	if len(repository) > 0 {
 		// pull, push, delete blob/manifest
-		scope = &Scope{
+		scope = &token.ResourceActions{
 			Type: "repository",
 			Name: repository,
 		}
@@ -176,7 +173,7 @@ func parseScopes(req *http.Request) ([]*Scope, error) {
 		}
 	} else if catalog.MatchString(path) {
 		// catalog
-		scope = &Scope{
+		scope = &token.ResourceActions{
 			Type:    "registry",
 			Name:    "catalog",
 			Actions: []string{"*"},
@@ -195,7 +192,7 @@ func parseScopes(req *http.Request) ([]*Scope, error) {
 
 	strs := []string{}
 	for _, s := range scopes {
-		strs = append(strs, s.string())
+		strs = append(strs, scopeString(s))
 	}
 	log.Debugf("scopses parsed from request: %s", strings.Join(strs, " "))
 
@@ -295,7 +292,7 @@ type standardTokenGenerator struct {
 }
 
 // get token from token service
-func (s *standardTokenGenerator) generate(scopes []*Scope, endpoint string) (*models.Token, error) {
+func (s *standardTokenGenerator) generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error) {
 	// ping first if the realm or service is null
 	if len(s.realm) == 0 || len(s.service) == 0 {
 		realm, service, err := ping(s.client, endpoint)
@@ -336,21 +333,8 @@ type rawTokenGenerator struct {
 }
 
 // generate token directly
-func (r *rawTokenGenerator) generate(scopes []*Scope, endpoint string) (*models.Token, error) {
-	strs := []string{}
-	for _, scope := range scopes {
-		strs = append(strs, scope.string())
-	}
-	token, expiresIn, issuedAt, err := token_util.RegistryTokenForUI(r.username, r.service, strs)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.Token{
-		Token:     token,
-		ExpiresIn: expiresIn,
-		IssuedAt:  issuedAt.Format(time.RFC3339),
-	}, nil
+func (r *rawTokenGenerator) generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error) {
+	return token_util.MakeToken(r.username, r.service, scopes)
 }
 
 func buildPingURL(endpoint string) string {

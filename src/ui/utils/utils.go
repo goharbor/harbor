@@ -122,7 +122,8 @@ func TriggerImageScan(repository string, tag string) error {
 	return RequestAsUI("POST", url, bytes.NewBuffer(b), NewStatusRespHandler(http.StatusOK))
 }
 
-// NewRepositoryClientForUI ...
+// NewRepositoryClientForUI creates a repository client that can only be used to
+// access the internal registry
 func NewRepositoryClientForUI(username, repository string) (*registry.Repository, error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {

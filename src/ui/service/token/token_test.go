@@ -111,7 +111,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := makeToken(u, svc, ra)
+	tokenJSON, err := MakeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}

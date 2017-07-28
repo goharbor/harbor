@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/vmware/harbor/src/common/models"
-
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/registry"
 )
@@ -32,7 +32,7 @@ const (
 
 // GetToken requests a token against the endpoint using credetial provided
 func GetToken(endpoint string, insecure bool, credential Credential,
-	scopes []*Scope) (*models.Token, error) {
+	scopes []*token.ResourceActions) (*models.Token, error) {
 	client := &http.Client{
 		Transport: registry.GetHTTPTransport(insecure),
 	}
@@ -41,7 +41,7 @@ func GetToken(endpoint string, insecure bool, credential Credential,
 }
 
 func getToken(client *http.Client, credential Credential, realm, service string,
-	scopes []*Scope) (*models.Token, error) {
+	scopes []*token.ResourceActions) (*models.Token, error) {
 	u, err := url.Parse(realm)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 	query := u.Query()
 	query.Add("service", service)
 	for _, scope := range scopes {
-		query.Add("scope", scope.string())
+		query.Add("scope", scopeString(scope))
 	}
 	u.RawQuery = query.Encode()
 

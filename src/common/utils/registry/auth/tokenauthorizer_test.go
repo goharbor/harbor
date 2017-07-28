@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
@@ -81,7 +82,7 @@ func TestParseScopes(t *testing.T) {
 	scopses, err := parseScopes(req)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
-	assert.EqualValues(t, &Scope{
+	assert.EqualValues(t, &token.ResourceActions{
 		Type: "repository",
 		Name: "library",
 		Actions: []string{
@@ -101,7 +102,7 @@ func TestParseScopes(t *testing.T) {
 	scopses, err = parseScopes(req)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
-	assert.EqualValues(t, &Scope{
+	assert.EqualValues(t, &token.ResourceActions{
 		Type: "registry",
 		Name: "catalog",
 		Actions: []string{
@@ -114,7 +115,7 @@ func TestParseScopes(t *testing.T) {
 	scopses, err = parseScopes(req)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
-	assert.EqualValues(t, &Scope{
+	assert.EqualValues(t, &token.ResourceActions{
 		Type: "repository",
 		Name: "library/mysql/5.6",
 		Actions: []string{
