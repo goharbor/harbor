@@ -29,3 +29,14 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+.tooltip-content{white-space: normal;word-wrap: break-word;}
+
+ .alert.alert-warning{
+    padding:10px 12px;
+}
+ .alert-warning .alert-actions button{
+     margin: -2px 0 0px 0;
+}
+ .modal-header{
+     padding: 0;
+ }
