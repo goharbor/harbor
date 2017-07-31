@@ -50,11 +50,6 @@ const (
 
 var (
 	reqCtxModifiers []ReqCtxModifier
-	// the pattern needs security filter
-	reqPatterns = []string{
-		"/api/",
-		"/service/",
-	}
 	// basic auth request context modifier only takes effect on the patterns
 	// in the slice
 	basicAuthReqPatterns = []*pathMethod{
@@ -113,32 +108,12 @@ func SecurityFilter(ctx *beegoctx.Context) {
 		return
 	}
 
-	if !filterReq(req) {
-		log.Debugf("%s doesn't match security filter pattern, skip", req.URL.Path)
-		return
-	}
-
 	// add security context and project manager to request context
 	for _, modifier := range reqCtxModifiers {
 		if modifier.Modify(ctx) {
 			break
 		}
 	}
-}
-
-func filterReq(req *http.Request) bool {
-	path := req.URL.Path
-	for _, pattern := range reqPatterns {
-		match, err := regexp.MatchString(pattern, path)
-		if err != nil {
-			log.Errorf("failed to match %s with pattern %s", path, pattern)
-			continue
-		}
-		if match {
-			return true
-		}
-	}
-	return false
 }
 
 // ReqCtxModifier modifies the context of request
