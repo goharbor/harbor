@@ -2,7 +2,7 @@
 import json
 from optparse import OptionParser
 import os
-import urllib2
+import urllib2, ssl
 import sys
 import logging
 import logging.config
@@ -52,7 +52,7 @@ class Admiral:
         request.add_header('Content-Length', data_len)
 
         try:
-            urllib2.urlopen(request)
+            urllib2.urlopen(request, context=ssl._create_unverified_context())
         except Exception, e:
             if not retry:
                 logger.error("failed to import project: %s, admiral_endpoint: %s, error: %s " % (project.project_name, self.admiral_url, str(e)))
