@@ -75,6 +75,7 @@ export class ReplicationComponent implements OnInit {
 
   @Input() projectId: number | string;
   @Input() withReplicationJob: boolean;
+  @Input() readonly: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
 
@@ -116,6 +117,10 @@ export class ReplicationComponent implements OnInit {
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
     private translateService: TranslateService) {
+  }
+
+  public get creationAvailable(): boolean {
+    return !this.readonly && this.projectId ? true : false;
   }
 
   ngOnInit() {
