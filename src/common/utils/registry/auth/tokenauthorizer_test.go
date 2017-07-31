@@ -199,7 +199,7 @@ func TestModifyOfStandardTokenAuthorizer(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v2/", registryServer.URL), nil)
 	require.Nil(t, err)
 
-	authorizer := NewStandardTokenAuthorizer(nil, false)
+	authorizer := NewStandardTokenAuthorizer(http.DefaultClient, nil)
 
 	err = authorizer.Modify(req)
 	require.Nil(t, err)

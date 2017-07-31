@@ -345,9 +345,14 @@ func (t *TargetAPI) Delete() {
 }
 
 func newRegistryClient(endpoint string, insecure bool, username, password string) (*registry.Registry, error) {
+	transport := registry.GetHTTPTransport(insecure)
 	credential := auth.NewBasicAuthCredential(username, password)
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure)
-	return registry.NewRegistryWithModifiers(endpoint, insecure, authorizer)
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: transport,
+	}, credential)
+	return registry.NewRegistry(endpoint, &http.Client{
+		Transport: registry.NewTransport(transport, authorizer),
+	})
 }
 
 // ListPolicies ...

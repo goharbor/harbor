@@ -19,12 +19,10 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/clair"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/utils"
 
 	"fmt"
-	"net/http"
 )
 
 // Initializer will handle the initialise state pull the manifest, prepare token.
@@ -41,9 +39,7 @@ func (iz *Initializer) Enter() (string, error) {
 		logger.Errorf("Failed to read regURL, error: %v", err)
 		return "", err
 	}
-	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
-	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), iz.Context.Repository)
+	repoClient, err := utils.NewRepositoryClientForJobservice(iz.Context.Repository)
 	if err != nil {
 		logger.Errorf("An error occurred while creating repository client: %v", err)
 		return "", err

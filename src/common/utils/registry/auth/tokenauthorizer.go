@@ -253,13 +253,8 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
 // If customizedTokenService is set, the token request will be sent to it instead of the server get from authorizer
-func NewStandardTokenAuthorizer(credential Credential, insecure bool,
+func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
 	customizedTokenService ...string) registry.Modifier {
-	client := &http.Client{
-		Transport: registry.GetHTTPTransport(insecure),
-		Timeout:   30 * time.Second,
-	}
-
 	generator := &standardTokenGenerator{
 		credential: credential,
 		client:     client,
