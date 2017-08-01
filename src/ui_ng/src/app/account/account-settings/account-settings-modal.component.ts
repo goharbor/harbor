@@ -31,21 +31,21 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     account: SessionUser;
     error: any = null;
     originalStaticData: SessionUser;
-    private emailTooltip: string = 'TOOLTIP.EMAIL';
+    emailTooltip: string = 'TOOLTIP.EMAIL';
     private validationStateMap: any = {
         "account_settings_email": true,
         "account_settings_full_name": true
     };
-    private mailAlreadyChecked = {};
+    mailAlreadyChecked = {};
 
-    private isOnCalling: boolean = false;
-    private formValueChanged: boolean = false;
-    private checkOnGoing: boolean = false;
+    isOnCalling: boolean = false;
+    formValueChanged: boolean = false;
+    checkOnGoing: boolean = false;
 
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
     @ViewChild(InlineAlertComponent)
-    private inlineAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
     constructor(
         private session: SessionService,
@@ -56,11 +56,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.account = Object.assign({}, this.session.getCurrentUser());
     }
 
-    private getValidationState(key: string): boolean {
+    getValidationState(key: string): boolean {
         return this.validationStateMap[key];
     }
 
-    private handleValidation(key: string, flag: boolean): void {
+    handleValidation(key: string, flag: boolean): void {
         if (flag) {
             //Checking
             let cont = this.accountForm.controls[key];
@@ -104,7 +104,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         }
     }
 
-    private isUserDataChange(): boolean {
+    isUserDataChange(): boolean {
         if (!this.originalStaticData || !this.account) {
             return false;
         }
@@ -215,7 +215,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    confirmCancel(): void {
+    confirmCancel($event: any): void {
         this.inlineAlert.close();
         this.opened = false;
     }

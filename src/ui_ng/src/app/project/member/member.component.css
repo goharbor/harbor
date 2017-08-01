@@ -1,12 +1,15 @@
 .option-left {
-  padding-left: 16px;
-  margin-top: 24px;
-}
-.option-right {
-  padding-right: 16px;
-  margin-top: 18px;
+    padding-left: 16px;
 }
 
-.datagrid-foot {
-  margin-bottom: 0.5px;
+.option-right {
+    padding-right: 16px;
+}
+
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
 }

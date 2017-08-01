@@ -64,6 +64,11 @@ func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
 	}
 }
 
+//DefaultLogger returns the default logger within the pkg, i.e. the one used in log.Infof....
+func DefaultLogger() *Logger {
+	return logger
+}
+
 //SetOutput sets the output of Logger l
 func (l *Logger) SetOutput(out io.Writer) {
 	l.mu.Lock()

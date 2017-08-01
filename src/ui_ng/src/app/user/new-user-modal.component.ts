@@ -29,9 +29,9 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 export class NewUserModalComponent {
     opened: boolean = false;
-    private error: any;
-    private onGoing: boolean = false;
-    private formValueChanged: boolean = false;
+    error: any;
+    onGoing: boolean = false;
+    formValueChanged: boolean = false;
 
     @Output() addNew = new EventEmitter<User>();
 
@@ -40,11 +40,11 @@ export class NewUserModalComponent {
         private msgHandler: MessageHandlerService) { }
 
     @ViewChild(NewUserFormComponent)
-    private newUserForm: NewUserFormComponent;
+    newUserForm: NewUserFormComponent;
     @ViewChild(InlineAlertComponent)
-    private inlineAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
-    private getNewUser(): User {
+    getNewUser(): User {
         return this.newUserForm.getData();
     }
 

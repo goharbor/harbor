@@ -37,3 +37,15 @@ Changelog for harbor database schema
   - alter column `name` on table `project`: varchar(30)->varchar(41)
   - create table `repository`
   - alter column `password` on table `replication_target`: varchar(40)->varchar(128)
+
+## 1.2.0
+
+  - delete column `owner_id` from table `repository`
+  - delete column `user_id` from table `access_log`
+  - delete foreign key (user_id) references user(user_id)from table `access_log`
+  - delete foreign key (project_id) references project(project_id)from table `access_log`
+  - add column `username` varchar (32) to table `access_log`
+  - alter column `realname` on table `user`: varchar(20)->varchar(255)
+  - create table `img_scan_job`
+  - create table `img_scan_overview`
+  - create table `clair_vuln_timestamp`

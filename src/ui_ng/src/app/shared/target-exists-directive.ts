@@ -30,7 +30,7 @@ export class TargetExistsValidatorDirective implements Validator, OnChanges {
   @Input() targetExists: string;
   @Input() projectId: number;
 
-  private valFn = Validators.nullValidator;
+  valFn = Validators.nullValidator;
 
   constructor(
     private projectService: ProjectService,
@@ -51,7 +51,6 @@ export class TargetExistsValidatorDirective implements Validator, OnChanges {
 
   targetExistsValidator(target: string):  ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
-      console.log('Target:' + target + ', validate value:' + control.value);
       switch(target) {
       case 'PROJECT_NAME':
         return new Promise(resolve=>{

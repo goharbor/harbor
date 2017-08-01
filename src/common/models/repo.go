@@ -20,11 +20,8 @@ import (
 
 // RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
 type RepoRecord struct {
-	RepositoryID string    `orm:"column(repository_id);pk" json:"repository_id"`
+	RepositoryID int64     `orm:"pk;auto;column(repository_id)" json:"repository_id"`
 	Name         string    `orm:"column(name)" json:"name"`
-	OwnerName    string    `orm:"-"`
-	OwnerID      int64     `orm:"column(owner_id)"  json:"owner_id"`
-	ProjectName  string    `orm:"-"`
 	ProjectID    int64     `orm:"column(project_id)"  json:"project_id"`
 	Description  string    `orm:"column(description)" json:"description"`
 	PullCount    int64     `orm:"column(pull_count)" json:"pull_count"`

@@ -24,28 +24,28 @@ import { MessageHandlerService } from '../../shared/message-handler/message-hand
 @Component({
     selector: "search-result",
     templateUrl: "search-result.component.html",
-    styleUrls: ["search-result.component.css"],
+    styleUrls: ["search.component.css"],
 
     providers: [GlobalSearchService]
 })
 
 export class SearchResultComponent implements OnInit, OnDestroy {
-    private searchResults: SearchResults = new SearchResults();
-    private originalCopy: SearchResults;
+    searchResults: SearchResults = new SearchResults();
+    originalCopy: SearchResults;
 
-    private currentTerm: string = "";
+    currentTerm: string = "";
 
     //Open or close
-    private stateIndicator: boolean = false;
+    stateIndicator: boolean = false;
     //Search in progress
-    private onGoing: boolean = false;
+    onGoing: boolean = false;
 
     //Whether or not mouse point is onto the close indicator
-    private mouseOn: boolean = false;
+    mouseOn: boolean = false;
 
     //Watch message channel
-    private searchSub: Subscription;
-    private closeSearchSub: Subscription;
+    searchSub: Subscription;
+    closeSearchSub: Subscription;
 
     constructor(
         private search: GlobalSearchService,
@@ -71,7 +71,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         }
     }
 
-    private clone(src: SearchResults): SearchResults {
+    clone(src: SearchResults): SearchResults {
         let res: SearchResults = new SearchResults();
 
         if (src) {

@@ -44,7 +44,7 @@ create table user (
 */
  email varchar(255),
  password varchar(40) NOT NULL,
- realname varchar (20) NOT NULL,
+ realname varchar (255) NOT NULL,
  comment varchar (30),
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  reset_uuid varchar(40) DEFAULT NULL,
@@ -96,15 +96,13 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id INTEGER PRIMARY KEY,
- user_id int NOT NULL,
+ username varchar (32) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
- op_time timestamp,
- FOREIGN KEY (user_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
+ op_time timestamp
 );
 
 CREATE INDEX pid_optime ON access_log (project_id, op_time);
@@ -113,14 +111,11 @@ create table repository (
  repository_id INTEGER PRIMARY KEY,
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
- owner_id int NOT NULL,
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,
- FOREIGN KEY (owner_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
  UNIQUE (name)
 );
 
@@ -155,7 +150,7 @@ create table replication_target (
  );
 
 create table replication_job (
- id INTEGER PRIMARY KEY,
+ id INTEGER PRIMARY KEY, 
  status varchar(64) NOT NULL,
  policy_id int NOT NULL,
  repository varchar(256) NOT NULL,
@@ -165,9 +160,42 @@ create table replication_job (
  update_time timestamp default CURRENT_TIMESTAMP
  );
 
+
+create table img_scan_job (
+ id INTEGER PRIMARY KEY,
+ status varchar(64) NOT NULL,
+ repository varchar(256) NOT NULL,
+ tag   varchar(128) NOT NULL,
+ digest varchar(64),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
+create table img_scan_overview (
+ id INTEGER PRIMARY KEY, 
+ image_digest varchar(128),
+ scan_job_id int NOT NULL,
+ /* 0 indicates none, the higher the number, the more severe the status */
+ severity int NOT NULL default 0,
+ /* the json string to store components severity status, currently use a json to be more flexible and avoid creating additional tables. */
+ components_overview varchar(2048),
+ /* primary key for querying details, in clair it should be the name of the "top layer" */
+ details_key varchar(128),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE(image_digest)
+ );
+
 CREATE INDEX policy ON replication_job (policy_id);
 CREATE INDEX poid_uptime ON replication_job (policy_id, update_time);
  
+create table clair_vuln_timestamp (
+id INTEGER PRIMARY KEY, 
+namespace varchar(128) NOT NULL,
+last_update timestamp NOT NULL,
+UNIQUE(namespace)
+);
+
 create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,

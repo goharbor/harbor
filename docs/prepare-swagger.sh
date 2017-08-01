@@ -7,6 +7,7 @@ rm -f *.tar.gz
 echo "Downloading Swagger UI release package..."
 wget https://github.com/swagger-api/swagger-ui/archive/v2.1.4.tar.gz -O swagger.tar.gz
 echo "Untarring Swagger UI package to the static file path..."
+mkdir -p ../src/ui/static/vendors
 tar -C ../src/ui/static/vendors -zxf swagger.tar.gz swagger-ui-2.1.4/dist
 echo "Executing some processes..."
 sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/static\/resources\/yaml\/swagger\.yaml/g' \

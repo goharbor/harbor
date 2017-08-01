@@ -29,10 +29,9 @@
                     </label>
         </div>
         <div class="form-group">
-            <label for="ldapSearchDN" class="required">{{'CONFIG.LDAP.SEARCH_DN' | translate}}</label>
-            <label for="ldapSearchDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapSearchDNInput.invalid && (ldapSearchDNInput.dirty || ldapSearchDNInput.touched)">
+            <label for="ldapSearchDN">{{'CONFIG.LDAP.SEARCH_DN' | translate}}</label>
+            <label for="ldapSearchDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
                       <input name="ldapSearchDN" type="text" #ldapSearchDNInput="ngModel" [(ngModel)]="currentConfig.ldap_search_dn.value" 
-                      required 
                       id="ldapSearchDN" 
                       size="40" [disabled]="disabled(currentConfig.ldap_search_dn)">
                       <span class="tooltip-content">
@@ -45,10 +44,9 @@
             </a>
         </div>
         <div class="form-group">
-            <label for="ldapSearchPwd" class="required">{{'CONFIG.LDAP.SEARCH_PWD' | translate}}</label>
-            <label for="ldapSearchPwd" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="ldapSearchPwdInput.invalid && (ldapSearchPwdInput.dirty || ldapSearchPwdInput.touched)">
+            <label for="ldapSearchPwd">{{'CONFIG.LDAP.SEARCH_PWD' | translate}}</label>
+            <label for="ldapSearchPwd" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
                       <input name="ldapSearchPwd" type="password" #ldapSearchPwdInput="ngModel" [(ngModel)]="currentConfig.ldap_search_password.value" 
-                      required 
                       id="ldapSearchPwd" 
                       size="40" [disabled]="disabled(currentConfig.ldap_search_password)">
                       <span class="tooltip-content">

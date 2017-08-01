@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { Configuration } from './config';
+import { Configuration } from 'harbor-ui';
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";
@@ -23,11 +23,11 @@ const ldapEndpoint = "/api/ldap/ping";
 
 @Injectable()
 export class ConfigurationService {
-    private headers: Headers = new Headers({
+    headers: Headers = new Headers({
         "Accept": 'application/json',
         "Content-Type": 'application/json'
     });
-    private options: RequestOptions = new RequestOptions({
+    options: RequestOptions = new RequestOptions({
         'headers': this.headers
     });
 

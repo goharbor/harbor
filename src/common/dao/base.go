@@ -25,8 +25,12 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// NonExistUserID : if a user does not exist, the ID of the user will be 0.
-const NonExistUserID = 0
+const (
+	// NonExistUserID : if a user does not exist, the ID of the user will be 0.
+	NonExistUserID = 0
+	// ClairDBAlias ...
+	ClairDBAlias = "clair-db"
+)
 
 // Database is an interface of different databases
 type Database interface {
@@ -36,6 +40,24 @@ type Database interface {
 	String() string
 	// Register registers the database which will be used
 	Register(alias ...string) error
+}
+
+// InitClairDB ...
+func InitClairDB(password string) error {
+	//Except for password other information will not be configurable, so keep it hard coded for 1.2.0.
+	p := &pgsql{
+		host:     "postgres",
+		port:     5432,
+		usr:      "postgres",
+		pwd:      password,
+		database: "postgres",
+		sslmode:  false,
+	}
+	if err := p.Register(ClairDBAlias); err != nil {
+		return err
+	}
+	log.Info("initialized clair databas")
+	return nil
 }
 
 // InitDatabase initializes the database
@@ -78,6 +100,14 @@ func GetOrmer() orm.Ormer {
 		globalOrm = orm.NewOrm()
 	})
 	return globalOrm
+}
+
+// ClearTable is the shortcut for test cases, it should be called only in test cases.
+func ClearTable(table string) error {
+	o := GetOrmer()
+	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	_, err := o.Raw(sql).Exec()
+	return err
 }
 
 func paginateForRawSQL(sql string, limit, offset int64) string {

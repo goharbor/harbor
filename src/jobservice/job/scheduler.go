@@ -19,17 +19,17 @@ import (
 	"time"
 )
 
-var jobQueue = make(chan int64)
+var jobQueue = make(chan Job)
 
 // Schedule put a job id into job queue.
-func Schedule(jobID int64) {
-	jobQueue <- jobID
+func Schedule(j Job) {
+	jobQueue <- j
 }
 
 // Reschedule is called by statemachine to retry a job
-func Reschedule(jobID int64) {
-	log.Debugf("Job %d will be rescheduled in 5 minutes", jobID)
+func Reschedule(j Job) {
+	log.Debugf("Job %v will be rescheduled in 5 minutes", j)
 	time.Sleep(5 * time.Minute)
-	log.Debugf("Rescheduling job %d", jobID)
-	Schedule(jobID)
+	log.Debugf("Rescheduling job %v", j)
+	Schedule(j)
 }

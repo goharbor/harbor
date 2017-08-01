@@ -17,7 +17,7 @@ import { errorHandler } from '../../shared/shared.utils';
 import { AlertType, ListMode } from '../../shared/shared.const';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { TopRepoService } from './top-repository.service';
-import { Repository } from '../repository';
+import { Repository } from 'harbor-ui';
 
 @Component({
     selector: 'top-repo',
@@ -27,7 +27,7 @@ import { Repository } from '../repository';
     providers: [TopRepoService]
 })
 export class TopRepoComponent implements OnInit{
-    private topRepos: Repository[] = [];
+    topRepos: Repository[] = [];
 
     constructor(
         private topRepoService: TopRepoService,

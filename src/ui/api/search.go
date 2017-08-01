@@ -15,78 +15,85 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/api"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // SearchAPI handles requesst to /api/search
 type SearchAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 type searchResult struct {
-	Project    []models.Project         `json:"project"`
+	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
 }
 
 // Get ...
 func (s *SearchAPI) Get() {
-	userID, _, ok := s.GetUserIDForRequest()
-	if !ok {
-		userID = dao.NonExistUserID
-	}
-
 	keyword := s.GetString("q")
+	isAuthenticated := s.SecurityCtx.IsAuthenticated()
+	isSysAdmin := s.SecurityCtx.IsSysAdmin()
 
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("failed to check whether the user %d is system admin: %v", userID, err)
-		s.CustomAbort(http.StatusInternalServerError, "internal error")
-	}
-
-	var projects []models.Project
+	var projects []*models.Project
+	var err error
 
 	if isSysAdmin {
-		projects, err = dao.GetProjects("")
+		projects, err = s.ProjectMgr.GetAll(nil)
 		if err != nil {
-			log.Errorf("failed to get all projects: %v", err)
-			s.CustomAbort(http.StatusInternalServerError, "internal error")
+			s.ParseAndHandleError("failed to get projects", err)
+			return
 		}
 	} else {
-		projects, err = dao.SearchProjects(userID)
+		projects, err = s.ProjectMgr.GetPublic()
 		if err != nil {
-			log.Errorf("failed to get user %d 's relevant projects: %v", userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "internal error")
+			s.ParseAndHandleError("failed to get projects", err)
+			return
+		}
+		if isAuthenticated {
+			mys, err := s.SecurityCtx.GetMyProjects()
+			if err != nil {
+				s.HandleInternalServerError(fmt.Sprintf(
+					"failed to get projects: %v", err))
+				return
+			}
+			exist := map[int64]bool{}
+			for _, p := range projects {
+				exist[p.ProjectID] = true
+			}
+
+			for _, p := range mys {
+				if !exist[p.ProjectID] {
+					projects = append(projects, p)
+				}
+			}
 		}
 	}
 
 	projectSorter := &models.ProjectSorter{Projects: projects}
 	sort.Sort(projectSorter)
-	projectResult := []models.Project{}
+	projectResult := []*models.Project{}
 	for _, p := range projects {
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
 			continue
 		}
 
-		if userID != dao.NonExistUserID {
-			roles, err := dao.GetUserProjectRoles(userID, p.ProjectID)
-			if err != nil {
-				log.Errorf("failed to get user's project role: %v", err)
-				s.CustomAbort(http.StatusInternalServerError, "")
-			}
+		if isAuthenticated {
+			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
 			if len(roles) != 0 {
-				p.Role = roles[0].RoleID
+				p.Role = roles[0]
 			}
 
-			if p.Role == models.PROJECTADMIN || isSysAdmin {
+			if p.Role == common.RoleProjectAdmin || isSysAdmin {
 				p.Togglable = true
 			}
 		}
@@ -113,7 +120,7 @@ func (s *SearchAPI) Get() {
 	s.ServeJSON()
 }
 
-func filterRepositories(projects []models.Project, keyword string) (
+func filterRepositories(projects []*models.Project, keyword string) (
 	[]map[string]interface{}, error) {
 
 	repositories, err := dao.GetAllRepositories()
@@ -157,18 +164,12 @@ func filterRepositories(projects []models.Project, keyword string) (
 }
 
 func getTags(repository string) ([]string, error) {
-	url, err := config.RegistryURL()
+	client, err := uiutils.NewRepositoryClientForUI("harbor-ui", repository)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := NewRepositoryClient(url, true,
-		"admin", repository, "repository", repository, "pull")
-	if err != nil {
-		return nil, err
-	}
-
-	tags, err := listTag(client)
+	tags, err := client.ListTag()
 	if err != nil {
 		return nil, err
 	}

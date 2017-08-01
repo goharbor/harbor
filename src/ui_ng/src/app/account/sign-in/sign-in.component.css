@@ -33,7 +33,7 @@
 
 .repo-container {
     width: 100%;
-    margin-top: -250px;
+    margin-top: -210px;
 }
 
 .more-info-link {
@@ -41,4 +41,10 @@
     top: 80px;
     left: 294px;
     padding-right: 36px;
+}
+
+.tm-font {
+    font-size: 14px !important;
+    position: relative;
+    top: -9px;
 }

@@ -14,7 +14,7 @@
 import { Component, Input, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { Configuration } from '../config';
+import { Configuration } from 'harbor-ui';
 
 @Component({
     selector: 'config-email',
@@ -28,7 +28,7 @@ export class ConfigurationEmailComponent {
 
     constructor() { }
 
-    private disabled(prop: any): boolean {
+    disabled(prop: any): boolean {
         return !(prop && prop.editable);
     }
 

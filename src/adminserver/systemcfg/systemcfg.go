@@ -45,6 +45,7 @@ var (
 		common.LDAPSearchPwd,
 		common.MySQLPassword,
 		common.AdminInitialPassword,
+		common.ClairDBPassword,
 	}
 
 	// all configurations need read from environment variables
@@ -116,6 +117,11 @@ var (
 			env:   "WITH_NOTARY",
 			parse: parseStringToBool,
 		},
+		common.WithClair: &parser{
+			env:   "WITH_CLAIR",
+			parse: parseStringToBool,
+		},
+		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
 	}
 
 	// configurations need read from environment variables
@@ -136,6 +142,11 @@ var (
 			env:   "WITH_NOTARY",
 			parse: parseStringToBool,
 		},
+		common.WithClair: &parser{
+			env:   "WITH_CLAIR",
+			parse: parseStringToBool,
+		},
+		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
 	}
 )
 
@@ -216,11 +227,22 @@ func initCfgStore() (err error) {
 }
 
 // LoadFromEnv loads the configurations from allEnvs, if all is false, it just loads
-// the repeatLoadEnvs
+// the repeatLoadEnvs and the env which is absent in cfgs
 func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
-	envs := repeatLoadEnvs
+	var envs map[string]interface{}
+
 	if all {
 		envs = allEnvs
+	} else {
+		envs = make(map[string]interface{})
+		for k, v := range repeatLoadEnvs {
+			envs[k] = v
+		}
+		for k, v := range allEnvs {
+			if _, exist := cfgs[k]; !exist {
+				envs[k] = v
+			}
+		}
 	}
 
 	for k, v := range envs {

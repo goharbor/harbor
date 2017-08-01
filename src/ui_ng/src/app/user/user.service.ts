@@ -27,7 +27,7 @@ const userMgmtEndpoint = '/api/users';
  */
 @Injectable()
 export class UserService {
-    private httpOptions = new RequestOptions({
+    httpOptions = new RequestOptions({
         headers: new Headers({
             "Content-Type": 'application/json'
         })
@@ -36,7 +36,7 @@ export class UserService {
     constructor(private http: Http) { }
 
     //Handle the related exceptions
-    private handleError(error: any): Promise<any> {
+    handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
 
