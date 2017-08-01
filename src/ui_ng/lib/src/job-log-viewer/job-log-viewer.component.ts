@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input } from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 
 import { JOB_LOG_VIEWER_TEMPLATE, JOB_LOG_VIEWER_STYLES } from './job-log-viewer.component.template';
 import { JobLogService } from '../service/index';
@@ -23,7 +23,8 @@ const supportSet: string[] = ["replication", "scan"];
 @Component({
     selector: 'job-log-viewer',
     template: JOB_LOG_VIEWER_TEMPLATE,
-    styles: [JOB_LOG_VIEWER_STYLES]
+    styles: [JOB_LOG_VIEWER_STYLES],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class JobLogViewerComponent {
@@ -53,7 +54,8 @@ export class JobLogViewerComponent {
 
     constructor(
         private jobLogService: JobLogService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private ref: ChangeDetectorRef
     ) { }
 
     open(jobId: number | string): void {
@@ -78,5 +80,8 @@ export class JobLogViewerComponent {
                 this.onGoing = false;
                 this.errorHandler.error(error);
             });
+
+        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+        setTimeout(()=>clearInterval(hnd), 2000);
     }
 }

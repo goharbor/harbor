@@ -44,7 +44,7 @@ export const TAG_DETAIL_HTML: string = `
                             <clr-icon shape="error" size="24" class="is-error"></clr-icon>
                         </div>
                         <div class="second-row">
-                            <clr-icon shape="exclamation-triangle" size="24" class="is-warning"></clr-icon>
+                            <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>
                         </div>
                     </div>
                     <div class="second-column">
@@ -53,10 +53,10 @@ export const TAG_DETAIL_HTML: string = `
                     </div>
                     <div class="third-column">
                         <div>
-                            <clr-icon shape="play" size="20" class="is-warning rotate-90"></clr-icon>
+                            <clr-icon shape="play" size="20" class="tip-icon-low rotate-90"></clr-icon>
                         </div>
                         <div class="second-row">
-                            <clr-icon shape="help" size="20"></clr-icon>
+                            <clr-icon shape="help" size="18" style="margin-left: 2px;"></clr-icon>
                         </div>
                     </div>
                     <div class="fourth-column">
