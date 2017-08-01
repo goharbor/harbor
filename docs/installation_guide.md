@@ -121,8 +121,8 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 #### Finishing installation and starting Harbor
 Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
-##### Default installation (without Notary)
-After version 1.1.0, Harbor has integrated with Notary, but by default the installation does not include Notary service.
+##### Default installation (without Notary/Clair)
+After version 1.1.0, Harbor has integrated with Notary and Clair, but by default the installation does not include Notary or Clair service.
 
 ```sh
     $ sudo ./install.sh
@@ -146,6 +146,15 @@ To install Harbor with Notary service, add a parameter when you run ```install.s
 
 More information about Notary and Docker Content Trust, please refer to Docker's documentation: 
 https://docs.docker.com/engine/security/trust/content_trust/
+
+##### Installation with Clair
+To install Harbor with Clair service, add a parameter when you run ```install.sh```:
+```sh
+    $ sudo ./install.sh --with-clair
+```
+
+More information about Clair, please refer to Clair's documentation: 
+https://coreos.com/clair/docs/2.0.1/
 
 For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
 
@@ -208,6 +217,20 @@ $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml dow
 $ vim harbor.cfg
 $ sudo prepare --with-notary
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml up -d
+```
+
+#### _Managing lifecycle of Harbor when it's installed with Clair_ 
+
+When Harbor is installed with Clair_, an extra template file ```docker-compose.clair.yml``` is needed for docker-compose commands. The docker-compose commands to manage the lifecycle of Harbor are:
+```
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml [ up|down|ps|stop|start ]
+```
+For example, if you want to change configuration in ```harbor.cfg``` and re-deploy Harbor when it's installed with Clair, the following commands should be used:
+```sh
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml down -v
+$ vim harbor.cfg
+$ sudo prepare --with-clair
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml up -d
 ```
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
