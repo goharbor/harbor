@@ -62,7 +62,7 @@ A project in Harbor contains all repositories of an application. No images can b
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
+You can create a project after you signed in. Check on the "Access Level" checkbox will make this project public.  
 
 ![create project](img/new_create_project.png)  
 
@@ -237,6 +237,7 @@ $ docker-compose start
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Content trust  
+**CAUTION: notary is an optional installing component, please make sure you have already enable it in your Harbor before you go through this part!**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
