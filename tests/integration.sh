@@ -41,7 +41,8 @@ echo "gs_service_client_id = $GS_CLIENT_EMAIL" >> $botofile
 echo "[GSUtil]" >> $botofile
 echo "content_language = en" >> $botofile
 echo "default_project_id = $GS_PROJECT_ID" >> $botofile
-
+container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+echo $container_ip
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
@@ -53,20 +54,20 @@ fi
 if (echo $buildinfo | grep -q "\[specific ci="); then
     buildtype=$(echo $buildinfo | grep "\[specific ci=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
-    pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
+    pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
 elif (echo $buildinfo | grep -q "\[full ci\]"); then
     upload_build=true
-    pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
+    pybot -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[BAT\]"); then
     upload_build=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     upload_build=true
     nightly_run=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif (echo $buildinfo | grep -q "\[Notary\]"); then
     upload_build=true
-    pybot --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
+    pybot -v ip:$container_ip --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
