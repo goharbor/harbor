@@ -44,8 +44,8 @@
 .statistic-item-divider {
     height: 54px;
     display: inline-block;
-    width: 1px;
-    background-color: #ccc;
+    width: 2px;
+    background-color: #bdbdbd;
     opacity: 0.55;
     margin-left: 4px;
     margin-right: 12px;
