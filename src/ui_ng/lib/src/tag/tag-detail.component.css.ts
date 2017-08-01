@@ -109,4 +109,7 @@ export const TAG_DETAIL_STYLES: string = `
 .tip-icon-medium {
     color: orange;
 }
+.tip-icon-low{
+    color:yellow;
+}
 `;
