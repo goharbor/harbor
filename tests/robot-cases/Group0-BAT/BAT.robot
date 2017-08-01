@@ -9,7 +9,8 @@ ${HARBOR_URL}  http://localhost
 
 *** Test Cases ***
 Test Case - Create An New User
-    Init Chrome Driver    ${d}=    Get Current Date    result_format=%m%s
+    Init Chrome Driver    
+	${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
