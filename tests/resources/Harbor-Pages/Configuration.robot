@@ -69,8 +69,8 @@ Set Pro Create Every One
 
 Disable Self Reg	
 	Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+    Mouse Down  xpath=${self_reg_xpath}
+    Mouse Up  xpath=${self_reg_xpath}
 	Sleep  1
 	Self Reg Should Be Disabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
@@ -78,8 +78,8 @@ Disable Self Reg
 	Sleep  1
 
 Enable Self Reg	
-	Mouse Down  xpath=//input[@id="clr-checkbox-selfReg"]
-    Mouse Up  xpath=//input[@id="clr-checkbox-selfReg"]
+	Mouse Down  xpath=${self_reg_xpath}
+    Mouse Up  xpath=${self_reg_xpath}
 	Sleep  1
 	Self Reg Should Be Enabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
@@ -87,11 +87,17 @@ Enable Self Reg
 	Sleep  1
 	
 Self Reg Should Be Disabled
-	Checkbox Should Not Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
+	Checkbox Should Not Be Selected  xpath=${self_reg_xpath}
 
 Self Reg Should Be Enabled
-	Checkbox Should Be Selected  xpath=//input[@id="clr-checkbox-selfReg"]
+	Checkbox Should Be Selected  xpath=${self_reg_xpath}
 	
+Project Creation Should Display
+    Page Should Contain Element  xpath=${project_create_xpath}
+
+Project Creation Should Not Display
+    Page Should Not Contain Element  xpath=${project_create_xpath}
+		
 ## System settings	
 Switch To System Settings
     Sleep  1
