@@ -164,8 +164,8 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 		return errors.New("Empty topic can not be notified")
 	}
 
-	nw.RLock()
 	defer nw.RUnlock()
+	nw.RLock()
 
 	var (
 		indexer  HandlerIndexer
