@@ -34,6 +34,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/service/token"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
@@ -175,7 +176,7 @@ func SyncRegistry(pm projectmanager.ProjectManager) error {
 		return err
 	}
 
-	var repoRecordsInDB []models.RepoRecord
+	var repoRecordsInDB []*models.RepoRecord
 	repoRecordsInDB, err = dao.GetAllRepositories()
 	if err != nil {
 		log.Errorf("error occurred while getting all registories. %v", err)
@@ -279,12 +280,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			}
 
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint, err := config.RegistryURL()
-			if err != nil {
-				return needsAdd, needsDel, err
-			}
-			client, err := uiutils.NewRepositoryClientForUI(endpoint, true,
-				"admin", repoInR, "pull")
+			client, err := uiutils.NewRepositoryClientForUI("harbor-ui", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -304,11 +300,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			j++
 		} else {
 			// TODO remove the workaround when the bug of registry is fixed
-			endpoint, err := config.RegistryURL()
-			if err != nil {
-				return needsAdd, needsDel, err
-			}
-			client, err := uiutils.NewRepositoryClientForUI(endpoint, true, "admin", repoInR, "pull")
+			client, err := uiutils.NewRepositoryClientForUI("harbor-ui", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -340,12 +332,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			continue
 		}
 
-		endpoint, err := config.RegistryURL()
-		if err != nil {
-			log.Errorf("failed to get registry URL: %v", err)
-			continue
-		}
-		client, err := uiutils.NewRepositoryClientForUI(endpoint, true, "admin", repoInR, "pull")
+		client, err := uiutils.NewRepositoryClientForUI("harbor-ui", repoInR)
 		if err != nil {
 			log.Errorf("failed to create repository client: %v", err)
 			continue
@@ -377,7 +364,6 @@ func projectExists(pm projectmanager.ProjectManager, repository string) (bool, e
 	return pm.Exist(project)
 }
 
-// TODO need a registry client which accept a raw token as param
 func initRegistryClient() (r *registry.Registry, err error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {
@@ -393,12 +379,8 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 
-	registryClient, err := NewRegistryClient(endpoint, true, "admin",
-		"registry", "catalog", "*")
-	if err != nil {
-		return nil, err
-	}
-	return registryClient, nil
+	authorizer := auth.NewRawTokenAuthorizer("harbor-ui", token.Registry)
+	return registry.NewRegistryWithModifiers(endpoint, true, authorizer)
 }
 
 func buildReplicationURL() string {
@@ -416,28 +398,6 @@ func buildReplicationActionURL() string {
 	return fmt.Sprintf("%s/api/jobs/replication/actions", url)
 }
 
-func getReposByProject(name string, keyword ...string) ([]string, error) {
-	repositories := []string{}
-
-	repos, err := dao.GetRepositoryByProjectName(name)
-	if err != nil {
-		return repositories, err
-	}
-
-	needMatchKeyword := len(keyword) > 0 && len(keyword[0]) != 0
-
-	for _, repo := range repos {
-		if needMatchKeyword &&
-			!strings.Contains(repo.Name, keyword[0]) {
-			continue
-		}
-
-		repositories = append(repositories, repo.Name)
-	}
-
-	return repositories, nil
-}
-
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
 	tags, err := client.ListTag()
 	if err != nil {
@@ -447,24 +407,6 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 		return false, err
 	}
 	return len(tags) != 0, nil
-}
-
-// NewRegistryClient ...
-// TODO need a registry client which accept a raw token as param
-func NewRegistryClient(endpoint string, insecure bool, username, scopeType, scopeName string,
-	scopeActions ...string) (*registry.Registry, error) {
-	authorizer := auth.NewRegistryUsernameTokenAuthorizer(username, scopeType, scopeName, scopeActions...)
-
-	store, err := auth.NewAuthorizerStore(endpoint, insecure, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := registry.NewRegistryWithModifiers(endpoint, insecure, store)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }
 
 // transformVulnerabilities transforms the returned value of Clair API to a list of VulnerabilityItem

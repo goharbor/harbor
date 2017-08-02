@@ -15,11 +15,15 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
@@ -360,4 +364,43 @@ func TestProjectLogsFilter(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 	fmt.Printf("\n")
+}
+
+func TestDeletable(t *testing.T) {
+	apiTest := newHarborAPI()
+
+	project := models.Project{
+		Name:    "project_for_test_deletable",
+		OwnerID: 1,
+	}
+	id, err := dao.AddProject(project)
+	require.Nil(t, err)
+
+	// non-exist project
+	code, del, err := apiTest.ProjectDeletable(*admin, 1000)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusNotFound, code)
+
+	// unauthorized
+	code, del, err = apiTest.ProjectDeletable(*unknownUsr, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusUnauthorized, code)
+
+	// can be deleted
+	code, del, err = apiTest.ProjectDeletable(*admin, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, code)
+	assert.True(t, del)
+
+	err = dao.AddRepository(models.RepoRecord{
+		Name:      project.Name + "/golang",
+		ProjectID: id,
+	})
+	require.Nil(t, err)
+
+	// can not be deleted as contains repository
+	code, del, err = apiTest.ProjectDeletable(*admin, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, code)
+	assert.False(t, del)
 }

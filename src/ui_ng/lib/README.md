@@ -74,8 +74,10 @@ If **projectId** is set to the id of specified project, then only show the repli
 
 **withReplicationJob** is used to determine whether or not show the replication jobs which are relevant with the selected replication rule.
 
+**readonly** is to disable all the create/edit/delete actions.
+
 ```
-<hbr-replication [projectId]="..." [withReplicationJob]='...'></hbr-replication>
+<hbr-replication [projectId]="..." [withReplicationJob]='...' [readonly]="..."></hbr-replication>
 ```
 
 * **Endpoint Management View**

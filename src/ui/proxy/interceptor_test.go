@@ -30,9 +30,10 @@ func TestMain(m *testing.M) {
 	defer notaryServer.Close()
 	NotaryEndpoint = notaryServer.URL
 	var defaultConfig = map[string]interface{}{
-		common.ExtEndpoint:   "https://" + endpoint,
-		common.WithNotary:    true,
-		common.CfgExpiration: 5,
+		common.ExtEndpoint:     "https://" + endpoint,
+		common.WithNotary:      true,
+		common.CfgExpiration:   5,
+		common.TokenExpiration: 30,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfig)
 	if err != nil {
@@ -117,6 +118,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 		common.WithNotary:      true,
 		common.CfgExpiration:   5,
 		common.AdmiralEndpoint: admiralEndpoint,
+		common.TokenExpiration: 30,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
 	if err != nil {

@@ -3,7 +3,7 @@ export const REPLICATION_TEMPLATE: string = `
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <div class="row flex-items-xs-between" style="height:32px;">
       <div class="flex-xs-middle option-left">
-        <button *ngIf="projectId" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
+        <button *ngIf="creationAvailable" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
         <create-edit-rule [projectId]="projectId" (reload)="reloadRules($event)"></create-edit-rule>
       </div>
       <div class="flex-xs-middle option-right">
@@ -20,7 +20,7 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <hbr-list-replication-rule #listReplicationRule [projectId]="projectId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
+      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between" style="height:60px;">
@@ -51,7 +51,7 @@ export const REPLICATION_TEMPLATE: string = `
         <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'operation'">{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="updateTimeComparator">{{'REPLICATION.UPDATE_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPLICATION.JOB_PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let j of jobs" [clrDgItem]='j'>
@@ -61,9 +61,12 @@ export const REPLICATION_TEMPLATE: string = `
             <clr-dg-cell>{{j.creation_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{j.update_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>
-              <a href="javascript:void(0);" (click)="viewLog(j.id)">
+             <span *ngIf="j.status=='pending'; else elseBlock" class="label">{{'REPLICATION.NO_LOGS' | translate}}</span>
+                <ng-template #elseBlock>
+                    <a href="javascript:void(0);" (click)="viewLog(j.id)">
                 <clr-icon shape="clipboard"></clr-icon>
-              </a>
+              </a></ng-template>
+              
             </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>

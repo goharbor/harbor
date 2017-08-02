@@ -6,9 +6,7 @@ export const JOB_LOG_VIEWER_TEMPLATE: string = `
         <span class="spinner spinner-md"></span>
       </div>
       <pre [hidden]="onGoing">
-        <code>
-          {{log}}
-        </code>
+<code>{{log}}</code>
       </pre>
     </div>
     <div class="modal-footer">

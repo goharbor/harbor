@@ -106,4 +106,10 @@ export const TAG_DETAIL_STYLES: string = `
     margin-left: 6px;
     font-weight: 500;
 }
+.tip-icon-medium {
+    color: orange;
+}
+.tip-icon-low{
+    color:yellow;
+}
 `;

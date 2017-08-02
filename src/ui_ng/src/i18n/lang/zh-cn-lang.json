@@ -258,10 +258,11 @@
         "STATUS": "状态",
         "OPERATION": "操作",
         "CREATION_TIME": "创建时间",
-        "END_TIME": "结束时间",
+        "UPDATE_TIME": "更新时间",
         "LOGS": "日志",
         "OF": "共计",
         "ITEMS": "条记录",
+        "NO_LOGS": "无日志",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
         "TOGGLE_DISABLE_TITLE": "停用规则",
@@ -412,7 +413,8 @@
             "SCOPE": "LDAP搜索范围"
         },
         "SCANNING": {
-            "TRIGGER_SCAN_ALL_SUCCESS": "成功启动扫描所有镜像任务!",
+            "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
             "SCAN_NOW": "开始扫描",
@@ -477,7 +479,7 @@
             "PLACEHOLDER": "没有扫描结果！",
             "COLUMN_ID": "缺陷码",
             "COLUMN_SEVERITY": "严重度",
-            "COLUMN_PACKAGE": "组",
+            "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
@@ -486,7 +488,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
+            "TOOLTIPS_TITLE": "在此镜像总共包含{{totalPackages}}{{package}},其中{{totalVulnerability}}个{{packageExt}}含有{{vulnerability}}。"
         },
         "SEVERITY": {
             "HIGH": "严重",
@@ -496,11 +498,11 @@
             "UNKNOWN": "未知",
             "NONE": "无"
         },
-        "SINGULAR": "缺陷",
-        "PLURAL": "缺陷",
-        "PLACEHOLDER": "过滤缺陷",
-        "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有",
+        "SINGULAR": "漏洞",
+        "PLURAL": "漏洞",
+        "PLACEHOLDER": "过滤漏洞",
+        "PACKAGE": "组件",
+        "PACKAGES": "组件",
         "SCAN_NOW": "扫描",
         "JOB_LOG_VIEWER": "查看扫描日志"
     },

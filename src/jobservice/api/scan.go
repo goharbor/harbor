@@ -50,7 +50,7 @@ func (isj *ImageScanJob) Post() {
 	}
 	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
 	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), data.Repo, "pull", "push", "*")
+		config.InternalTokenServiceEndpoint(), data.Repo)
 	if err != nil {
 		log.Errorf("An error occurred while creating repository client: %v", err)
 		isj.RenderError(http.StatusInternalServerError, "Failed to repository client")
