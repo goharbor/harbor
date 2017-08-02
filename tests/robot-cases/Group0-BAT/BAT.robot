@@ -129,23 +129,19 @@ Test Case - Edit Project Creation
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
 
-	#check project creation
-    Page Should Contain Element  xpath=//project//div[@class="option-left"]/button
-
-	#logout and login admin
+	Project Creation Should Display
     Logout Harbor
+
 	Sleep  3
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	Set Pro Create Admin Only
-
-	#logout and login normal user
     Logout Harbor
+
 	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
-	Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
-
+	Project Creation Should Not Display
 	Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Set Pro Create Every One
     Close browser
 
