@@ -237,7 +237,7 @@ $ docker-compose start
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Content trust  
-**NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor intance before you go through this section.**  
+**NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
