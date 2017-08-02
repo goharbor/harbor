@@ -157,3 +157,16 @@ Scan Repo
 Summary Chart Should Display
     [Arguments]  ${projectname}
     Page Should Contain Element  //clr-dg-row-master[contains(.,'${projectname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+
+Repo Click Menu
+    [Arguments]  ${projectname}
+    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+
+Scan Should Not Display
+    [Arguments]  ${projectname}
+    Page Should Not Contain Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+
+Scan Should Display
+    [Arguments]  ${projectname}
+    Page Should Contain Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+

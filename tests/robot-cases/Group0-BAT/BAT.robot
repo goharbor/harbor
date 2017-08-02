@@ -231,6 +231,58 @@ Test Case - Scan A Tag
     Summary Chart Should Display  project${d}
 	Close Browser
 
+Test Case scan config    
+    Init Chrome Driver
+    #sigin in as admin
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Click Configuration
+    Switch To Configure
+    Click Vulnerability
+    Set Scan All To None
+    Time Input Should Hidden
+    Set Scan All To Daily
+    Time Input Should Not Hidden
+    Click Scan Now
+    Next Time Should Display
+    Close Browser
+
+Test case non project admin can not scan
+    Init Chrome Driver
+    ${d}=    get current date    result_format=%m%s 
+    Create An New User  ${HARBOR_URL}  testera${d}  testera${d}@vmware.com  testera${d}  Test1@34  harbor
+    Logout Harbor
+    Create An New User  ${HARBOR_URL}  testerb${d}  testerb${d}@vmware.com  testerb${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    #project add member as admin
+    Add User To Project Admin  project${d}  testera${d}
+    Logout Harbor
+    Sign In Harbor  testera${d}  Test1@34
+    Go Into Project  project${d}
+    Expand Repo  project${d}
+    Repo Click Menu  project${d} 
+    Scan Should Display  project${d}
+    Logout Harbor
+    #change new member to developer
+    Sign In Harbor  testerb${d}  Test1@34
+    Change Project Member Role  project${d}  testera${d}  Developer
+    Logout Harbor
+    Sign In Harbor  testera${d}  Test1@34
+    Go Into Project  project${d}
+    Expand Repo  project${d}
+    Repo Click Menu  project${d} 
+    Scan Should Not Display  project${d}
+    Logout harbor
+    #change new member to guest
+    Sign In Harbor  testerb${d}  Test1@34
+    Change Project Member Role  project${d}  testera${d}  Guest
+    Logout Harbor
+    Sign In Harbor  testera${d}  Test1@34
+    Go Into Project  project${d}
+    Expand Repo  Project${d}
+    Repo Click Menu  project${d} 
+    Scan Should Not Display  project${d}
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s

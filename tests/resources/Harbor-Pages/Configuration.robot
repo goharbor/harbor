@@ -170,3 +170,26 @@ Set Scan All To Daily
 Click Scan Now
     click element  //vulnerability-config//button[contains(.,'SCAN')]
    
+#vulnerability
+Set Scan All To None
+    Click Element  //vulnerability-config//select
+    Click Element  //vulnerability-config//select/option[@value='none']
+    Sleep  1
+    Click Element  //config//div/button[contains(.,'SAVE')]
+Set Scan All To Daily
+    Click Element  //vulnerability-config//select
+    Click Element  //vulnerability-config//select/option[@value='daily']
+    Sleep  1
+    Click Element  //config//div/button[contains(.,'SAVE')]
+Click Scan Now
+    Click Element  //vulnerability-config//button[contains(.,'SCAN')]
+Time Input Should Not Hidden
+    Page Should Not Contain Element  //vulnerability-config//input[@hidden='']
+Time Input Should Hidden
+    Page Should Contain Element  //vulnerability-config//input[@hidden='']
+Next Time Should Display
+    Page Should Contain Element  //vulnerability-config/form/section/div[3]/span
+Click Vulnerability
+    Click Element  //config//li[5]
+    Sleep  1
+
