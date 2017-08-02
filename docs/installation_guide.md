@@ -311,6 +311,9 @@ hostname = 192.168.0.2:8888
 4.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle". 
 
 
+## Performance tuning
+By default, Harbor will limit the CPU quota used by Clair container to 150000 to avoid using up all the CPU resources,it is defined in the docker-compose.clair.yml file. You can modify it according to your hardware resource.
+
 ## Troubleshooting
 1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
 ```
