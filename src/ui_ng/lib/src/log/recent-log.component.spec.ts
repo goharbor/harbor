@@ -67,6 +67,7 @@ describe('RecentLogComponent (inline template)', () => {
         repo_name: "myproject/demo" + i,
         repo_tag: "N/A",
         operation: "create",
+        client: "127.0.0.1",
         op_time: "2017-04-11T10:26:22Z",
         username: "user91" + i
       };

@@ -142,6 +142,7 @@ export interface AccessLogItem {
     repo_name: string;
     repo_tag: string;
     operation: string;
+    client: string;
     op_time: string | Date;
     user_id: number;
     username: string;

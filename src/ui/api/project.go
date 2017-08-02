@@ -148,6 +148,7 @@ func (p *ProjectAPI) Post() {
 				RepoName:  pro.Name + "/",
 				RepoTag:   "N/A",
 				Operation: "create",
+				Client:    "N/A",
 				OpTime:    time.Now(),
 			}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
@@ -229,6 +230,7 @@ func (p *ProjectAPI) Delete() {
 			RepoName:  p.project.Name + "/",
 			RepoTag:   "N/A",
 			Operation: "delete",
+			Client:    "N/A",
 			OpTime:    time.Now(),
 		}); err != nil {
 			log.Errorf("failed to add access log: %v", err)

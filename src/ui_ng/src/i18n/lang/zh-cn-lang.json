@@ -193,6 +193,7 @@
         "TAGS": "标签",
         "OPERATION": "操作",
         "OPERATIONS": "操作",
+        "CLIENT": "客户端",
         "TIMESTAMP": "时间戳",
         "ALL_OPERATIONS": "所有操作",
         "PULL": "Pull",

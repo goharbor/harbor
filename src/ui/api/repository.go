@@ -263,6 +263,7 @@ func (ra *RepositoryAPI) Delete() {
 				RepoName:  repoName,
 				RepoTag:   tag,
 				Operation: "delete",
+				Client:    "N/A",
 				OpTime:    time.Now(),
 			}); err != nil {
 				log.Errorf("failed to add access log: %v", err)

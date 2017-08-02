@@ -193,6 +193,7 @@
         "TAGS": "Etiquetas",
         "OPERATION": "Operación",
         "OPERATIONS": "Operaciones",
+        "CLIENT": "Cliente",
         "TIMESTAMP": "Fecha",
         "ALL_OPERATIONS": "Todas las operaciones",
         "PULL": "Pull",

@@ -2095,6 +2095,9 @@ definitions:
       operation:
         type: string
         description: The operation against the repository in this log entry.
+      client:
+        type: string
+        description: Client IP in this log entry.
       op_time:
         type: string
         description: The time when this operation is triggered.
