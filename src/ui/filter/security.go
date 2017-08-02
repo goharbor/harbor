@@ -18,9 +18,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
+	"regexp"
 
 	beegoctx "github.com/astaxie/beego/context"
+	"github.com/docker/distribution/reference"
 	"github.com/vmware/harbor/src/common/models"
 	secstore "github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/security"
@@ -37,6 +38,11 @@ import (
 
 type key string
 
+type pathMethod struct {
+	path   string
+	method string
+}
+
 const (
 	securCtxKey key = "harbor_security_context"
 	pmKey       key = "harbor_project_manager"
@@ -44,6 +50,30 @@ const (
 
 var (
 	reqCtxModifiers []ReqCtxModifier
+	// basic auth request context modifier only takes effect on the patterns
+	// in the slice
+	basicAuthReqPatterns = []*pathMethod{
+		// create project
+		&pathMethod{
+			path:   "/api/projects",
+			method: http.MethodPost,
+		},
+		// token service
+		&pathMethod{
+			path:   "/service/token",
+			method: http.MethodGet,
+		},
+		// delete repository
+		&pathMethod{
+			path:   "/api/repositories/" + reference.NameRegexp.String(),
+			method: http.MethodDelete,
+		},
+		// delete tag
+		&pathMethod{
+			path:   "/api/repositories/" + reference.NameRegexp.String() + "/tags/" + reference.TagRegexp.String(),
+			method: http.MethodDelete,
+		},
+	}
 )
 
 // Init ReqCtxMofiers list
@@ -128,7 +158,20 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		// create a project manager with the token of the solution user.
 		// That way may cause some wrong permission promotion in some API
 		// calls, so we just handle the requests which are necessary
-		if !filterReq(ctx.Request) {
+		match := false
+		var err error
+		path := ctx.Request.URL.Path
+		for _, pattern := range basicAuthReqPatterns {
+			match, err = regexp.MatchString(pattern.path, path)
+			if err != nil {
+				log.Errorf("failed to match %s with pattern %s", path, pattern)
+				continue
+			}
+			if match {
+				break
+			}
+		}
+		if !match {
 			log.Debugf("basic auth is not supported for request %s %s, skip",
 				ctx.Request.Method, ctx.Request.URL.Path)
 			return false
@@ -175,15 +218,6 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
-}
-
-func filterReq(req *http.Request) bool {
-	path := strings.TrimRight(req.URL.Path, "/")
-	if path == "/api/projects" && req.Method == http.MethodPost ||
-		path == "/service/token" && req.Method == http.MethodGet {
-		return true
-	}
-	return false
 }
 
 type sessionReqCtxModifier struct{}
