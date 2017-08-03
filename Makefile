@@ -213,6 +213,10 @@ PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
+# migrator
+MIGRATORVERSION=1.2
+MIGRATORFLAG=false
+
 # cmds
 DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
@@ -247,6 +251,9 @@ ifeq ($(CLAIRFLAG), true)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+endif
+ifeq ($(MIGRATORFLAG), true)
+	DOCKERSAVE_PARA+= vmware/harbor-db-migrator:$(MIGRATORVERSION)
 endif
 
 version:
@@ -371,6 +378,10 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
 		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
+	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
+		echo "pulling DB migrator..."; \
+		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \
+	fi	
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz
