@@ -52,7 +52,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, releases/* ]
+      branch: [ master, drone, releases/* ]
       status: success
 
   notify-slack:
