@@ -18,7 +18,7 @@ set -x
 gsutil version -l
 set +x
 
-## --------------------------------------------- Init Env ---------------------------------------------
+## --------------------------------------------- Init Env -------------------------------------------------
 dpkg -l > package.list
 # Start Xvfb for Chrome headlesss
 Xvfb -ac :99 -screen 0 1280x1024x16 & export DISPLAY=:99
@@ -41,7 +41,8 @@ echo "gs_service_client_id = $GS_CLIENT_EMAIL" >> $botofile
 echo "[GSUtil]" >> $botofile
 echo "content_language = en" >> $botofile
 echo "default_project_id = $GS_PROJECT_ID" >> $botofile
-
+container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+echo $container_ip
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
@@ -50,23 +51,26 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
 fi
 
 # default running mode...
-if (echo $buildinfo | grep -q "\[specific ci="); then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+	## -------------- Package installer with clean code -----------------
+	echo "Package Harbor build."
+	pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+	pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif (echo $buildinfo | grep -q "\[specific ci="); then
     buildtype=$(echo $buildinfo | grep "\[specific ci=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
-    pybot --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
+    pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
 elif (echo $buildinfo | grep -q "\[full ci\]"); then
     upload_build=true
-    pybot --removekeywords TAG:secret --exclude skip tests/robot-cases
+    pybot -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[BAT\]"); then
     upload_build=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     upload_build=true
-    nightly_run=true
-    pybot --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-elif (echo $buildinfo | grep -q "\[Notary\]"); then
-    upload_build=true
-    pybot --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
+    nightly_run=false
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
@@ -88,23 +92,19 @@ else
   echo "No log output file to upload"
 fi
 
-## --------------------------------------------- Upload Harbor Build ---------------------------------------------
-if [ $upload_build == true ] && [ $rc -eq 0 ]; then
-    echo "Package Harbor build."
-    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-    mkdir -p bundle
-    cp harbor-offline-installer-*.tgz bundle
-    ls -la bundle
-    harbor_build=$(basename bundle/*)
-    gsutil cp $harbor_build gs://harbor-builds
-    echo "----------------------------------------------"
-    echo "Download harbor builds:"
-    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
-    echo "----------------------------------------------"
-    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
-else
-  echo "No harbor build to upload"
-fi
+## --------------------------------------------- Upload Harbor Build ---------------------------------------
+#if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+#    ls -la bundle
+#    harbor_build=$(basename bundle/*)
+#    gsutil cp $harbor_build gs://harbor-builds
+#    echo "----------------------------------------------"
+#    echo "Download harbor builds:"
+#    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
+#    echo "----------------------------------------------"
+#    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
+#else
+#  echo "No harbor build to upload"
+#fi
 
 ## --------------------------------------------- Sendout Email ---------------------------------------------
 if [ $nightly_run == true ]; then
@@ -118,7 +118,7 @@ if [ $nightly_run == true ]; then
     echo "Sendout Nightly Run Email success."
 fi
 
-## --------------------------------------------- Tear Down ---------------------------------------------
+## --------------------------------------------- Tear Down -------------------------------------------------
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
