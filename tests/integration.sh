@@ -51,7 +51,7 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
 fi
 
 # default running mode...
-if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == "drone" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
 	## -------------- Package installer with clean code -----------------
 	echo "Package Harbor build."
 	pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
