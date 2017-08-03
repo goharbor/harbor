@@ -27,6 +27,9 @@ import (
 	"net/http"
 )
 
+// EmptyLayerDigest is the digest for empty layer, introduced by such as "ENV ..." in a dockerfile
+const EmptyLayerDigest = "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+
 // Initializer will handle the initialise state pull the manifest, prepare token.
 type Initializer struct {
 	Context *JobContext
@@ -64,6 +67,7 @@ func (iz *Initializer) Enter() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	logger.Infof("Image: %s:%s, digest: %s", iz.Context.Repository, iz.Context.Tag, iz.Context.Digest)
 	iz.Context.token = tk
 	iz.Context.clairClient = clair.NewClient(config.ClairEndpoint(), logger)
 	iz.prepareLayers(regURL, manifest.References())
@@ -72,13 +76,16 @@ func (iz *Initializer) Enter() (string, error) {
 
 func (iz *Initializer) prepareLayers(registryEndpoint string, descriptors []distribution.Descriptor) {
 	//	logger := iz.Context.Logger
-	tokenHeader := map[string]string{"Authorization": fmt.Sprintf("Bearer %s", iz.Context.token)}
+	tokenHeader := map[string]string{"Connection": "close", "Authorization": fmt.Sprintf("Bearer %s", iz.Context.token)}
 	for _, d := range descriptors {
 		if d.MediaType == schema2.MediaTypeConfig {
 			continue
 		}
+		if string(d.Digest) == EmptyLayerDigest {
+			continue
+		}
 		l := models.ClairLayer{
-			Name:    fmt.Sprintf("%d-%s", iz.Context.JobID, d.Digest),
+			Name:    string(d.Digest),
 			Headers: tokenHeader,
 			Format:  "Docker",
 			Path:    utils.BuildBlobURL(registryEndpoint, iz.Context.Repository, string(d.Digest)),
@@ -104,7 +111,7 @@ type LayerScanHandler struct {
 func (ls *LayerScanHandler) Enter() (string, error) {
 	logger := ls.Context.Logger
 	currentLayer := ls.Context.layers[ls.Context.current]
-	logger.Infof("Entered scan layer handler, current: %d, layer name: %s", ls.Context.current, currentLayer.Name)
+	logger.Infof("Entered scan layer handler, current: %d, layer name: %s, layer path: %s", ls.Context.current, currentLayer.Name, currentLayer.Path)
 	err := ls.Context.clairClient.ScanLayer(currentLayer)
 	if err != nil {
 		logger.Errorf("Unexpected error: %v", err)
