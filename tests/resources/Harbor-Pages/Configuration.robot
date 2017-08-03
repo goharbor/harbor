@@ -157,19 +157,6 @@ Verify Email
     Textfield Value Should Be  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
     Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]	
 
-Set Scan All To None
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='none']
-    sleep  1
-    click element  //config//div/button[contains(.,'SAVE')]
-Set Scan All To Daily
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='daily']
-    sleep  1
-    click element  //config//div/button[contains(.,'SAVE')]
-Click Scan Now
-    click element  //vulnerability-config//button[contains(.,'SCAN')]
-   
 #vulnerability
 Set Scan All To None
     Click Element  //vulnerability-config//select
