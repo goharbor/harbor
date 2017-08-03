@@ -62,7 +62,6 @@ func UpdateScanOverview(digest, layerName string, l ...*log.Logger) error {
 	vulnMap := make(map[models.Severity]int)
 	features := res.Layer.Features
 	totalComponents := len(features)
-	logger.Infof("total features: %d", totalComponents)
 	var temp models.Severity
 	for _, f := range features {
 		sev := models.SevNone
@@ -72,7 +71,6 @@ func UpdateScanOverview(digest, layerName string, l ...*log.Logger) error {
 				sev = temp
 			}
 		}
-		logger.Infof("Feature: %s, Severity: %d", f.Name, sev)
 		vulnMap[sev]++
 	}
 	overallSev := models.SevNone
