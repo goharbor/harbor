@@ -434,7 +434,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.allConfig || !this.originalCopy) {
             return changes;
         }
-
         for (let prop in this.allConfig) {
             let field = this.originalCopy[prop];
             if (field && field.editable) {
@@ -500,7 +499,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isEmpty(changes)) {
             for (let prop in changes) {
                 if (this.originalCopy[prop]) {
-                    this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
+                    this.allConfig[prop] = this.clone(this.originalCopy[prop]);
+                    //this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
                 }
             }
         } else {

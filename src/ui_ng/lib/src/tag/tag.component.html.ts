@@ -40,8 +40,8 @@ export const TAG_TEMPLATE = `
         <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="t.scan_overview"></hbr-vulnerability-bar>
       </clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
-        <clr-icon shape="check" *ngSwitchCase="true" style="color: #1D5100;"></clr-icon>
-        <clr-icon shape="close" *ngSwitchCase="false" style="color: #C92100;"></clr-icon>
+        <clr-icon shape="check-circle" *ngSwitchCase="true"  size="20" style="color: #1D5100;"></clr-icon>
+        <clr-icon shape="times-circle" *ngSwitchCase="false"  size="16" style="color: #C92100;"></clr-icon>
         <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
           <clr-icon shape="help" style="color: #565656;" size="16"></clr-icon>
           <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
