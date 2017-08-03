@@ -487,8 +487,9 @@
             "FOOT_OF": "总共"
         },
         "CHART": {
-            "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像总共包含{{totalPackages}}{{package}},其中{{totalVulnerability}}个{{packageExt}}含有{{vulnerability}}。"
+            "SCANNING_TIME": "扫描完成时间:",
+            "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}."
         },
         "SEVERITY": {
             "HIGH": "严重",
