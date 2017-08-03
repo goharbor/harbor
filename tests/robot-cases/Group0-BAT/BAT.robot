@@ -9,8 +9,8 @@ ${HARBOR_URL}  http://localhost
 
 *** Test Cases ***
 Test Case - Create An New User
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
+    Init Chrome Driver    
+	${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
@@ -62,19 +62,14 @@ Test Case - Push Image
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
 
-    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log To Console  ${ip}	
 	Push image  ${ip}  tester${d}  Test1@34  test${d}  hello-world:latest
-
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/hello-world
 
 Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    Log to console  ${ip}
-			
+				
 	Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
 	Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
@@ -92,8 +87,6 @@ Test Case - User View Logs
 Test Case - Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
-    ${rc}  ${ip}=    run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'
-    Log to console  ${ip}
 
     Create An New User  url=${HARBOR_URL}  username=usera${d}  email=usera${d}@vmware.com  realname=usera${d}  newPassword=Test1@34  comment=harbor
     Logout Harbor
@@ -136,23 +129,19 @@ Test Case - Edit Project Creation
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
 
-	#check project creation
-    Page Should Contain Element  xpath=//project//div[@class="option-left"]/button
-
-	#logout and login admin
+	Project Creation Should Display
     Logout Harbor
+
 	Sleep  3
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 	Set Pro Create Admin Only
-
-	#logout and login normal user
     Logout Harbor
+
 	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
-	Page Should Not Contain Element  xpath=//project//div[@class="option-left"]/button
-
+	Project Creation Should Not Display
 	Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Set Pro Create Every One
     Close browser
 
@@ -234,7 +223,6 @@ Test Case - Create An Replication Rule New Endpoint
 Test Case - Scan A Tag
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
-    ${rc}  ${ip}=  run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'	
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
@@ -269,9 +257,6 @@ Test Case - Ldap Sign in and out
 Test Case - Admin Push Signed Image
     Switch To Notary
 
-    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}
-
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log To Console  ${output}
 		
@@ -286,36 +271,6 @@ Test Case - Admin Push Signed Image
     Should Be Equal As Integers  ${rc}  0
     #Should Contain  ${output}  sha256
 
-Test Case - Admin Push Un-Signed Image
-    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}
-	
+Test Case - Admin Push Un-Signed Image	
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
-
-#Test Case - Notary Inteceptor
-#    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
-#    Log To Console  ${output}
-#    Should Be Equal As Integers  ${rc}  0
-#
-#    Down Harbor  with_notary=true
-#    ${rc}  ${output}=  Run And Return Rc And Output  echo "PROJECT_CONTENT_TRUST=1\n" >> ./make/common/config/ui/env
-#    Log To Console  ${output}
-#    Should Be Equal As Integers  ${rc}  0
-#    ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
-#
-#    Log To Console  ${output}
-#	Up Harbor  with_notary=true
-#    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
-#    Log To Console  ${output}
-#
-#	Down Harbor  with_notary=true
-#	${rc}  ${output}=  Run And Return Rc And Output  sed "s/^PROJECT_CONTENT_TRUST=1.*/PROJECT_CONTENT_TRUST=0/g" -i ./make/common/config/ui/env
-#   Log To Console  ${output}
-#   Should Be Equal As Integers  ${rc}  0
-#    ${rc}  ${output}=  Run And Return Rc And Output  cat ./make/common/config/ui/env
-#
-#	Up Harbor  with_notary=true
-#    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-pull-image-inteceptor.sh
-#    Log To Console  ${output}
-#    Should Be Equal As Integers  ${rc}  0
