@@ -100,7 +100,19 @@ export interface ReplicationRule extends Base {
  * @export
  * @interface ReplicationJob
  */
-export interface ReplicationJob extends Base {
+export interface ReplicationJob {
+    metadata?: Metadata;
+    data: ReplicationJobItem[];
+}
+
+/**
+ * Interface for replication job item.
+ * 
+ * @export
+ * @interface ReplicationJob
+ */
+export interface ReplicationJobItem extends Base {
+    [key: string]: any | any[]
     status: string;
     repository: string;
     policy_id: number;
