@@ -83,7 +83,7 @@ func (n *NotificationHandler) Post() {
 				RepoName:  repository,
 				RepoTag:   tag,
 				Operation: action,
-				Client:    "N/A",
+				Client:    event.Request.Addr,
 				OpTime:    time.Now(),
 			}); err != nil {
 				log.Errorf("failed to add access log: %v", err)

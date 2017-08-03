@@ -34,6 +34,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/ui/config"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
+	"github.com/docker/distribution/context"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -263,7 +264,7 @@ func (ra *RepositoryAPI) Delete() {
 				RepoName:  repoName,
 				RepoTag:   tag,
 				Operation: "delete",
-				Client:    "N/A",
+				Client:    context.RemoteIP(ra.Ctx.Request),
 				OpTime:    time.Now(),
 			}); err != nil {
 				log.Errorf("failed to add access log: %v", err)

@@ -25,7 +25,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-
+	"github.com/docker/distribution/context"
 	"strconv"
 	"time"
 )
@@ -148,7 +148,7 @@ func (p *ProjectAPI) Post() {
 				RepoName:  pro.Name + "/",
 				RepoTag:   "N/A",
 				Operation: "create",
-				Client:    "N/A",
+				Client:    context.RemoteIP(p.Ctx.Request),
 				OpTime:    time.Now(),
 			}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
@@ -230,7 +230,7 @@ func (p *ProjectAPI) Delete() {
 			RepoName:  p.project.Name + "/",
 			RepoTag:   "N/A",
 			Operation: "delete",
-			Client:    "N/A",
+			Client:    context.RemoteIP(p.Ctx.Request),
 			OpTime:    time.Now(),
 		}); err != nil {
 			log.Errorf("failed to add access log: %v", err)
