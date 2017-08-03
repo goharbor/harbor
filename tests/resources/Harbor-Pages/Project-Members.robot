@@ -49,7 +49,7 @@ Go Into Project2
 		
 Add User To Project Admin
 	[Arguments]  ${project}  ${user}
-	Go Into Project2
+	Go Into Project2  ${project}
 	Sleep  2  
 	Click Element  xpath=${project_member_tag_xpath}
 	Sleep  1

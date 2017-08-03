@@ -235,7 +235,7 @@ Test Case scan config
     Init Chrome Driver
     #sigin in as admin
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    Click Configuration
+    #Click Configuration
     Switch To Configure
     Click Vulnerability
     Set Scan All To None
