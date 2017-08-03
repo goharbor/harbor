@@ -7,6 +7,17 @@ import requests
 logger = logging.getLogger(__name__)
 
 class HarborClient(object):
+    '''
+    This is a fairly lightweight python wrapper around the harbor RESTful
+    interface.
+
+    Note that not all APIs are available in all configurations. For instance,
+    most user-related APIs, including /login and /logout, are only available
+    in stand-alone mode (when not connected to an LDAP server).
+
+    See src/ui/router.go for the full API list.
+    '''
+
     def __init__(self, host, user, password, protocol="http"):
         self.host = host
         self.user = user
