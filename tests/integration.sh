@@ -69,6 +69,9 @@ elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     upload_build=true
     nightly_run=false
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif (echo $buildinfo | grep -q "\[Notary\]"); then
+    upload_build=true
+    pybot -v ip:$container_ip --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
