@@ -45,7 +45,6 @@ pipeline:
       SHELL: /bin/bash
       BUILD_NUMBER: ${DRONE_BUILD_NUMBER}
     commands:
-      - pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
       - cp harbor-offline-installer-*.tgz bundle
@@ -64,7 +63,6 @@ pipeline:
       build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.zip
     when:
       repo: vmware/harbor
-      event: [ push, pull_request, tag ]
       branch: [ master, drone, releases/*, refs/tags/* ]
       status: failure
 
