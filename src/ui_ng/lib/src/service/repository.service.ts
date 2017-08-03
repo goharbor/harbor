@@ -92,6 +92,12 @@ export class RepositoryDefaultService extends RepositoryService {
 
                 result.data = response.json() as RepositoryItem[];
 
+                if (result.metadata.xTotalCount === 0) {
+                    if (result.data && result.data.length > 0) {
+                        result.metadata.xTotalCount = result.data.length;
+                    }
+                }
+
                 return result;
             })
             .catch(error => Promise.reject(error));

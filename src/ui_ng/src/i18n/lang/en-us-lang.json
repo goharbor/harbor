@@ -487,8 +487,9 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed datetime",
-            "TOOLTIPS_TITLE": "This image includes {{totalPackages}} {{package}} with {{vulnerability}} in {{totalVulnerability}} of the {{packageExt}}."
+            "SCANNING_TIME": "Scan completed time:",
+            "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
         },
         "SEVERITY": {
             "HIGH": "high",

@@ -23,9 +23,16 @@ import { ErrorHandler } from '../error-handler/error-handler';
 
 import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
-import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
+import { ReplicationRule, ReplicationJob, Endpoint, ReplicationJobItem } from '../service/interface';
 
-import { toPromise, CustomComparator } from '../utils';
+import {
+  toPromise,
+  CustomComparator,
+  DEFAULT_PAGE_SIZE,
+  doFiltering,
+  doSorting,
+  calculatePage
+} from '../utils';
 
 import { Comparator } from 'clarity-angular';
 
@@ -33,6 +40,7 @@ import { REPLICATION_TEMPLATE } from './replication.component.html';
 import { REPLICATION_STYLE } from './replication.component.css';
 
 import { JobLogViewerComponent } from '../job-log-viewer/index';
+import { State } from "clarity-angular";
 
 const ruleStatus: { [key: string]: any } = [
   { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
@@ -63,7 +71,7 @@ export class SearchOption {
   endTime: string = '';
   endTimestamp: string = '';
   page: number = 1;
-  pageSize: number = 5;
+  pageSize: number = DEFAULT_PAGE_SIZE;
 }
 
 @Component({
@@ -93,10 +101,7 @@ export class ReplicationComponent implements OnInit {
   rules: ReplicationRule[];
   loading: boolean;
 
-  jobs: ReplicationJob[];
-
-  jobsTotalRecordCount: number;
-  jobsTotalPage: number;
+  jobs: ReplicationJobItem[];
 
   toggleJobSearchOption = optionalSearch;
   currentJobSearchOption: number;
@@ -113,6 +118,13 @@ export class ReplicationComponent implements OnInit {
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
 
+  //Server driven pagination
+  currentPage: number = 1;
+  totalCount: number = 0;
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentState: State;
+  jobsLoading: boolean = false;
+
   constructor(
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
@@ -121,6 +133,10 @@ export class ReplicationComponent implements OnInit {
 
   public get creationAvailable(): boolean {
     return !this.readonly && this.projectId ? true : false;
+  }
+
+  public get showPaginationIndex(): boolean {
+    return this.totalCount > 0;
   }
 
   ngOnInit() {
@@ -143,32 +159,78 @@ export class ReplicationComponent implements OnInit {
     }
   }
 
-  fetchReplicationJobs() {
+  //Server driven data loading
+  clrLoadJobs(state: State): void {
+    if (!state || !state.page || !this.search.ruleId) {
+      return;
+    }
+    this.currentState = state;
+
+    let pageNumber: number = calculatePage(state);
+    if (pageNumber <= 0) { pageNumber = 1; }
 
     let params: RequestQueryParams = new RequestQueryParams();
-    params.set('status', this.search.status);
-    params.set('repository', this.search.repoName);
-    params.set('start_time', this.search.startTimestamp);
-    params.set('end_time', this.search.endTimestamp);
+    //Pagination
+    params.set("page", '' + pageNumber);
+    params.set("page_size", '' + this.pageSize);
+    //Search by status
+    if (this.search.status.trim()) {
+      params.set('status', this.search.status);
+    }
+    //Search by repository
+    if (this.search.repoName.trim()) {
+      params.set('repository', this.search.repoName);
+    }
+    //Search by timestamps
+    if (this.search.startTimestamp.trim()) {
+      params.set('start_time', this.search.startTimestamp);
+    }
+    if (this.search.endTimestamp.trim()) {
+      params.set('end_time', this.search.endTimestamp);
+    }
 
-    toPromise<ReplicationJob[]>(this.replicationService
+    this.jobsLoading = true;
+    toPromise<ReplicationJob>(this.replicationService
       .getJobs(this.search.ruleId, params))
       .then(
       response => {
-        this.jobs = response;
+        this.totalCount = response.metadata.xTotalCount;
+        this.jobs = response.data;
+
+        //Do filtering and sorting
+        this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
+        this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
+
+        this.jobsLoading = false;
+
       }).catch(error => {
+        this.jobsLoading = false;
         this.errorHandler.error(error);
       });
   }
 
+  loadFirstPage(): void {
+    let st: State = this.currentState;
+    if (!st) {
+      st = {
+        page: {}
+      };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+
+    this.clrLoadJobs(st);
+  }
+
   selectOneRule(rule: ReplicationRule) {
-    if (rule) {
+    if (rule && rule.id) {
       this.search.ruleId = rule.id || '';
       this.search.repoName = '';
       this.search.status = '';
       this.currentJobSearchOption = 0;
       this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
-      this.fetchReplicationJobs();
+      this.loadFirstPage();
     }
   }
 
@@ -205,7 +267,7 @@ export class ReplicationComponent implements OnInit {
 
   doSearchJobs(repoName: string) {
     this.search.repoName = repoName;
-    this.fetchReplicationJobs();
+    this.loadFirstPage();
   }
 
   reloadRules(isReady: boolean) {
@@ -220,7 +282,21 @@ export class ReplicationComponent implements OnInit {
   }
 
   refreshJobs() {
-    this.fetchReplicationJobs();
+    this.search.repoName = "";
+    this.search.startTimestamp = "";
+    this.search.endTimestamp = "";
+    this.search.status = "";
+
+    this.currentPage = 1;
+
+    let st: State = {
+      page: {
+        from: 0,
+        to: this.pageSize - 1,
+        size: this.pageSize
+      }
+    };
+    this.clrLoadJobs(st);
   }
 
   toggleSearchJobOptionalName(option: number) {
@@ -229,12 +305,12 @@ export class ReplicationComponent implements OnInit {
 
   doJobSearchByStartTime(fromTimestamp: string) {
     this.search.startTimestamp = fromTimestamp;
-    this.fetchReplicationJobs();
+    this.loadFirstPage();
   }
 
   doJobSearchByEndTime(toTimestamp: string) {
     this.search.endTimestamp = toTimestamp;
-    this.fetchReplicationJobs();
+    this.loadFirstPage();
   }
 
   viewLog(jobId: number | string): void {

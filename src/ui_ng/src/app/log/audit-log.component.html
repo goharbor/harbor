@@ -56,9 +56,8 @@
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
-                <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span>
-                {{pagination.totalItems }} {{'AUDIT_LOG.ITEMS' | translate}}
-                <clr-dg-pagination #pagination [clrDgPageSize]="15"  [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalRecordCount"></clr-dg-pagination>
+                <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span> {{pagination.totalItems }} {{'AUDIT_LOG.ITEMS' | translate}}
+                <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalRecordCount"></clr-dg-pagination>
                 <!--{{totalRecordCount}} {{'AUDIT_LOG.ITEMS' | translate}}
                 <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>-->
             </clr-dg-footer>
