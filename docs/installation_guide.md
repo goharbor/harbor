@@ -122,7 +122,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ##### Default installation (without Notary/Clair)
-After version 1.1.0, Harbor has integrated with Notary and Clair, but by default the installation does not include Notary or Clair service.
+After version 1.1.0, Harbor has integrated with Notary and Clair (for vulnerability scanning), but by default the installation does not include Notary or Clair service.
 
 ```sh
     $ sudo ./install.sh
@@ -153,8 +153,13 @@ To install Harbor with Clair service, add a parameter when you run ```install.sh
     $ sudo ./install.sh --with-clair
 ```
 
-More information about Clair, please refer to Clair's documentation: 
+For more information about Clair, please refer to Clair's documentation: 
 https://coreos.com/clair/docs/2.0.1/
+
+**Note**: If you want to install both Notary and Clair, you can specify both parameters in the same command:
+```sh
+    $ sudo ./install.sh --with-notary --with-clair
+```
 
 For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
 
@@ -221,7 +226,7 @@ $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml up 
 
 #### _Managing lifecycle of Harbor when it's installed with Clair_ 
 
-When Harbor is installed with Clair_, an extra template file ```docker-compose.clair.yml``` is needed for docker-compose commands. The docker-compose commands to manage the lifecycle of Harbor are:
+When Harbor is installed with Clair, an extra template file ```docker-compose.clair.yml``` is needed for docker-compose commands. The docker-compose commands to manage the lifecycle of Harbor are:
 ```
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml [ up|down|ps|stop|start ]
 ```
@@ -231,6 +236,16 @@ $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml down
 $ vim harbor.cfg
 $ sudo prepare --with-clair
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml up -d
+```
+
+#### _Managing lifecycle of Harbor when it's installed with Notary and Clair_ 
+
+If you have installed Notary and Clair, you should include both components in the docker-compose and prepare commands:
+```sh
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml down -v
+$ vim harbor.cfg
+$ sudo prepare --with-notary --with-clair
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml up -d
 ```
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
@@ -312,7 +327,7 @@ hostname = 192.168.0.2:8888
 
 
 ## Performance tuning
-By default, Harbor will limit the CPU quota used by Clair container to 150000 to avoid using up all the CPU resources,it is defined in the docker-compose.clair.yml file. You can modify it according to your hardware resource.
+By default, Harbor limits the CPU usage of Clair container to 150000 and avoids its using up all the CPU resources. This is defined in the docker-compose.clair.yml file. You can modify it based on your hardware configuration.
 
 ## Troubleshooting
 1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
