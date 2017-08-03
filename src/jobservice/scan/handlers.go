@@ -27,6 +27,7 @@ import (
 	"net/http"
 )
 
+// EmptyLayerDigest is the digest for empty layer, introduced by such as "ENV ..." in a dockerfile
 const EmptyLayerDigest = "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
 
 // Initializer will handle the initialise state pull the manifest, prepare token.
