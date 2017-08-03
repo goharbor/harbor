@@ -19,6 +19,11 @@ gsutil version -l
 set +x
 
 ## --------------------------------------------- Init Env -------------------------------------------------
+if [ $DRONE_REPO != "vmware/harbor" ]; then
+  echo "Only run tests again Harbor Repo."
+  exit 1
+fi
+
 dpkg -l > package.list
 # Start Xvfb for Chrome headlesss
 Xvfb -ac :99 -screen 0 1280x1024x16 & export DISPLAY=:99
@@ -44,18 +49,14 @@ echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
 
-## --------------------------------------------- Package installer with clean code -----------------
-echo "Package Harbor build."
-pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-
 ## --------------------------------------------- Run Test Case ---------------------------------------------
-if [ $DRONE_REPO != "vmware/harbor" ]; then
-  echo "Only run tests again Harbor Repo."
-  exit 1
-fi
-
-# default running mode...
-if (echo $buildinfo | grep -q "\[specific ci="); then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+	echo "Package Harbor build."
+	## ----------- Package installer with clean code ---------------
+	pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+	echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"s/test-cases
+	pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif (echo $buildinfo | grep -q "\[specific ci="); then
     buildtype=$(echo $buildinfo | grep "\[specific ci=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
     pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
