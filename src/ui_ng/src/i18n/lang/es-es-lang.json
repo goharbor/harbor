@@ -392,7 +392,8 @@
         "ROOT_CERT": "Registro Certificado Raíz",
         "ROOT_CERT_LINK": "Descargar",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "Activar registro.",
+            "SELF_REGISTRATION_ENABLE": "Activar registro.",
+            "SELF_REGISTRATION_DISABLE": "Disable sign up.",
             "VERIFY_REMOTE_CERT": "Determina si la replicación de la imagen debería verificar el certificado de un registro Harbor remoto. Desmarque esta opción cuando el registro remoto use un certificado de confianza o autofirmado.",
             "AUTH_MODE": "Por defecto el modo de autentificación es base de datos, es decir, las credenciales se almacenan en una base de datos local. Seleccione LDAP si quiere verificar las credenciales de usuarios a través del servidor LDAP.",
             "LDAP_SEARCH_DN": "Un DN de usuario que tenga permisos para buscar el servidor LDAP/AD. Si el servidor LDAP/AD no soporta búsquedas anónimas, debería configurar este DN y ldap_search_pwd.",
