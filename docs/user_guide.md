@@ -63,7 +63,7 @@ A project in Harbor contains all repositories of an application. No images can b
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
+You can create a project after you signed in. Check on the "Access Level" checkbox will make this project public.  
 
 ![create project](img/new_create_project.png)  
 
@@ -221,7 +221,7 @@ Run the below commands on the host which Harbor is deployed on to preview what f
 ```sh
 $ docker-compose stop
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.1-photon garbage-collect --dry-run /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
 
 ```  
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
@@ -230,7 +230,7 @@ Verify the result of the above test, then use the below commands to perform garb
 
 ```sh
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.1-photon garbage-collect  /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
 
 $ docker-compose start
 ```  
@@ -238,6 +238,7 @@ $ docker-compose start
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Content trust  
+**NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
