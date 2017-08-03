@@ -44,10 +44,6 @@ echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
 
-## --------------------------------------------- Package installer with clean code -----------------
-echo "Package Harbor build."
-pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
   echo "Only run tests again Harbor Repo."
@@ -55,7 +51,13 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
 fi
 
 # default running mode...
-if (echo $buildinfo | grep -q "\[specific ci="); then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+	## -------------- Package installer with clean code -----------------
+	echo "Package Harbor build."
+	pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+	pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+elif (echo $buildinfo | grep -q "\[specific ci="); then
     buildtype=$(echo $buildinfo | grep "\[specific ci=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
     pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
@@ -69,9 +71,6 @@ elif (echo $buildinfo | grep -q "\[Nightly\]"); then
     upload_build=true
     nightly_run=false
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-elif (echo $buildinfo | grep -q "\[Notary\]"); then
-    upload_build=true
-    pybot -v ip:$container_ip --removekeywords TAG:secret tests/robot-cases/Group9-Content-trust
 else
     echo "Please specify the tests, otherwise no case will be triggered."
 fi
