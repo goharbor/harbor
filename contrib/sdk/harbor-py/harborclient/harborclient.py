@@ -12,9 +12,11 @@ class HarborClient(object):
         self.user = user
         self.password = password
         self.protocol = protocol
+        self.session_id = None
 
     def __del__(self):
-        self.logout()
+        if self.session_id:
+            self.logout()
 
     def login(self):
         login_data = requests.post('%s://%s/login' %(self.protocol, self.host),
