@@ -156,7 +156,7 @@ To install Harbor with Clair service, add a parameter when you run ```install.sh
 For more information about Clair, please refer to Clair's documentation: 
 https://coreos.com/clair/docs/2.0.1/
 
-**Note**: If you want to install both Notary and Clair, you can specify both parameters in the same command:
+**Note**: If you want to install both Notary and Clair, you must specify both parameters in the same command:
 ```sh
     $ sudo ./install.sh --with-notary --with-clair
 ```
