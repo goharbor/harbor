@@ -500,6 +500,8 @@
             "NONE": "none"
         },
         "SINGULAR": "vulnerability",
+        "OVERALL_SEVERITY": "Vulnerability Severity:",
+        "NO_VULNERABILITY": "No vulnerability",
         "PLURAL": "vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "package",
