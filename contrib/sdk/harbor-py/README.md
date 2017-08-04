@@ -2,7 +2,9 @@
 
 [harbor](https://github.com/vmware/harbor) is the enterprise-class registry server for docker distribution.
 
-[harbor-py](https://github.com/tobegit3hub/harbor-py) is the native and compatible python SDK for harbor. The supported APIs are list below.
+harbor-py is the native and compatible python SDK for harbor and is included in the harbor git repository under `contrib/sdk/harbor-py`.
+
+The supported APIs are:
 
 - [x] Projects APIs
   - [x] [Get projects](./examples/get_projects.py)
@@ -59,7 +61,7 @@ For more usage, please refer to the [examples](./examples/).
 
 ## Contribution
 
-If you have any suggestion, feel free to submit [issues](https://github.com/tobegit3hub/harbor-py/issues) or send [pull-requests](https://github.com/tobegit3hub/harbor-py/pulls) for `harbor-py`.
+If you have suggestions, feel free to submit [issues](https://github.com/vmware/harbor/issues) or send [pull-requests](https://github.com/vmware/harbor/pulls) for `harbor-py`.
 
 Publish `harbor-py` package to [pypi](https://pypi.python.org/pypi/harbor-py/) server with the following commands.
 
