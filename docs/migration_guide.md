@@ -4,6 +4,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 *If your install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.*
 
+**NOTE:** From 1.2, you need to use release version as the tag of migrator image. 'latest' is no longer used for new release.
 
 **NOTE:** You must backup your data before any data migration.
 
@@ -28,19 +29,19 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 4. Before upgrading Harbor, perform database migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub:
 
     ```
-    docker pull vmware/harbor-db-migrator
+    docker pull vmware/harbor-db-migrator:[tag]
     ```
 
 5. Back up database to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD"
 
     ```
-    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator backup
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator:[tag] backup
     ```
 
 6.  Upgrade database schema and migrate data:
 
     ```
-    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator up head
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator:[tag] up head
     ```
 
 7. Unzip the new Harbor package and change to `./harbor` as the working directory. Configure Harbor by modifying the file `harbor.cfg`,
@@ -75,7 +76,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 2. Restore database from backup file in `/path/to/backup` .
 
     ```
-    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator restore
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator:[tag] restore
     ```
 
 3. Remove current Harbor instance.
@@ -104,8 +105,8 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 ### Migration tool reference
 - Use `help` command to show instructions of the migration tool:
 
-    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx vmware/harbor-db-migrator help```
+    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx vmware/harbor-db-migrator:[tag] help```
 
 - Use `test` command to test mysql connection:
 
-    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator test```
+    ```docker run --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator:[tag] test```
