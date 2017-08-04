@@ -19,7 +19,7 @@ import {
   ViewChild,
   AfterViewChecked,
   OnInit,
-  OnDestroy
+  OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
@@ -40,7 +40,8 @@ import 'rxjs/add/operator/distinctUntilChanged';
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
-  styleUrls: ['add-member.component.css']
+  styleUrls: ['add-member.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
@@ -71,7 +72,8 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   constructor(private memberService: MemberService,
     private messageHandlerService: MessageHandlerService,
-    private translateService: TranslateService) { }
+    private translateService: TranslateService,
+    private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.nameChecker
@@ -140,6 +142,10 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
         }
       }
       );
+
+    setTimeout(() => {
+      setInterval(() => this.ref.markForCheck(), 100);
+    }, 1000);
   }
 
   onCancel() {

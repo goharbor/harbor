@@ -391,7 +391,8 @@
         "ROOT_CERT": "Registry Root Certificate",
         "ROOT_CERT_LINK": "Download",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "Enable sign up.",
+            "SELF_REGISTRATION_ENABLE": "Enable sign up.",
+            "SELF_REGISTRATION_DISABLE": "Disable sign up.",
             "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
             "AUTH_MODE": "By default the authentication mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credential against an LDAP server.",
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",

@@ -391,7 +391,8 @@
         "ROOT_CERT": "镜像库根证书",
         "ROOT_CERT_LINK": "下载",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "激活注册功能。",
+            "SELF_REGISTRATION_ENABLE": "激活注册功能。",
+            "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
             "AUTH_MODE": "默认认证模式为数据库认证，即用户凭证存储在本地数据库。如果使用LDAP来认证用户，则设置为LDAP。",
             "LDAP_SEARCH_DN": "有搜索权限的LDAP用户DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN及其密码。",
