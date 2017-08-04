@@ -380,7 +380,9 @@ func initRegistryClient() (r *registry.Registry, err error) {
 	}
 
 	authorizer := auth.NewRawTokenAuthorizer("harbor-ui", token.Registry)
-	return registry.NewRegistryWithModifiers(endpoint, true, authorizer)
+	return registry.NewRegistry(endpoint, &http.Client{
+		Transport: registry.NewTransport(registry.GetHTTPTransport(), authorizer),
+	})
 }
 
 func buildReplicationURL() string {

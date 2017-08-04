@@ -130,7 +130,10 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 		return nil, err
 	}
 
-	insecure := true
 	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
-	return registry.NewRepositoryWithModifiers(repository, endpoint, insecure, authorizer)
+	transport := registry.NewTransport(http.DefaultTransport, authorizer)
+	client := &http.Client{
+		Transport: transport,
+	}
+	return registry.NewRepository(repository, endpoint, client)
 }

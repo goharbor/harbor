@@ -25,17 +25,51 @@ import (
 	"github.com/vmware/harbor/src/jobservice/config"
 )
 
-//NewRepositoryClient create a repository client with scope type "reopsitory" and scope as the repository it would access.
+// NewRepositoryClient creates a repository client with standard token authorizer
 func NewRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
 	tokenServiceEndpoint, repository string) (*registry.Repository, error) {
-	authorizer := auth.NewStandardTokenAuthorizer(credential, insecure,
-		tokenServiceEndpoint)
+
+	transport := registry.GetHTTPTransport(insecure)
+
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: transport,
+	}, credential, tokenServiceEndpoint)
 
 	uam := &userAgentModifier{
 		userAgent: "harbor-registry-client",
 	}
 
-	return registry.NewRepositoryWithModifiers(repository, endpoint, insecure, authorizer, uam)
+	return registry.NewRepository(repository, endpoint, &http.Client{
+		Transport: registry.NewTransport(transport, authorizer, uam),
+	})
+}
+
+// NewRepositoryClientForJobservice creates a repository client that can only be used to
+// access the internal registry
+func NewRepositoryClientForJobservice(repository string) (*registry.Repository, error) {
+	endpoint, err := config.LocalRegURL()
+	if err != nil {
+		return nil, err
+	}
+
+	transport := registry.GetHTTPTransport()
+
+	credential := auth.NewCookieCredential(&http.Cookie{
+		Name:  models.UISecretCookie,
+		Value: config.JobserviceSecret(),
+	})
+
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: transport,
+	}, credential, config.InternalTokenServiceEndpoint())
+
+	uam := &userAgentModifier{
+		userAgent: "harbor-registry-client",
+	}
+
+	return registry.NewRepository(repository, endpoint, &http.Client{
+		Transport: registry.NewTransport(transport, authorizer, uam),
+	})
 }
 
 type userAgentModifier struct {
