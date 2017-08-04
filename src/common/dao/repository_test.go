@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -218,6 +219,40 @@ func TestGetRepositoriesByProject(t *testing.T) {
 	}
 
 	t.Errorf("repository %s not found", repoName)
+}
+
+func TestGetAllRepositories(t *testing.T) {
+	var reposBefore []*models.RepoRecord
+	reposBefore, err := GetAllRepositories()
+	if err != nil {
+		t.Fatalf("error occurred while getting all registories. %v", err)
+		return
+	}
+	allBefore := len(reposBefore)
+
+	for i := 0; i < 1200; i++ {
+		end := strconv.Itoa(i)
+		repoRecord := models.RepoRecord{
+			Name:      "test" + end,
+			ProjectID: 1,
+		}
+		if err := AddRepository(repoRecord); err != nil {
+			t.Fatalf("Error happens when adding the repository: %v", err)
+			return
+		}
+	}
+
+	var reposAfter []*models.RepoRecord
+	reposAfter, err2 := GetAllRepositories()
+	if err2 != nil {
+		t.Fatalf("error occurred while getting all registories. %v", err2)
+		return
+	}
+	allAfter := len(reposAfter)
+
+	if allAfter != allBefore+1200 {
+		t.Errorf("unexpected total: %d != %d", allAfter, allBefore+1200)
+	}
 }
 
 func addRepository(repository *models.RepoRecord) error {
