@@ -102,7 +102,7 @@ func GetTotalOfUsers(query *models.UserQuery) (int64, error) {
 // ListUsers lists all users according to different conditions.
 func ListUsers(query *models.UserQuery) ([]models.User, error) {
 	users := []models.User{}
-	_, err := userQueryConditions(query).
+	_, err := userQueryConditions(query).Limit(-1).
 		OrderBy("username").
 		All(&users)
 	return users, err
