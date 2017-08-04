@@ -231,9 +231,9 @@ func TestGetAllRepositories(t *testing.T) {
 	allBefore := len(reposBefore)
 
 	for i := 0; i < 1200; i++ {
-		t := strconv.Itoa(i)
+		end := strconv.Itoa(i)
 		repoRecord := models.RepoRecord{
-			Name:      "test" + t,
+			Name:      "test" + end,
 			ProjectID: 1,
 		}
 		if err := AddRepository(repoRecord); err != nil {
