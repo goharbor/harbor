@@ -210,6 +210,17 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser
 
+Test case add endpoint
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s 
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Click Replication
+    Add Endpoint  testname${d}  testurl${d}  testusername${d}  testpassword${d} 
+    Page Should Contain  ${d}
+    Search Endpoint  aaa
+    Page Should Not Contain  ${d}
+    Close Browser
+
 Test Case - Create An Replication Rule New Endpoint
     Init Chrome Driver
     ${d}=  Get current date  result_format=%m%s

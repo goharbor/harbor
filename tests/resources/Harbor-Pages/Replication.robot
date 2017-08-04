@@ -41,3 +41,24 @@ Create An New Rule With New Endpoint
 	Wait Until Page Contains  ${policy_name}
 	Wait Until Page Contains  ${policy_description}
 	Wait Until Page Contains  ${destination_name}
+
+Click Replication
+    Click Element  xpath=//nav//ul/li[2]
+    Sleep  1
+Add Endpoint
+    [arguments]  ${destination_name}  ${destination_url}  ${destination_username}  ${destination_password}
+    Click Element  xpath=//clr-icon[contains(.,'plus')]
+    Sleep  1
+    Input Text  xpath=//input[@id='destination_name']  ${destination_name}
+    Input Text  xpath=//input[@id='destination_url']  ${destination_url}}
+    Input Text  xpath=//input[@id='destination_username']  ${destination_username}
+    Input Text  xpath=//input[@id='destination_password']  ${destination_password}
+    Click Element  xpath=//replication-management//hbr-endpoint//create-edit-endpoint//button[3]
+    Sleep  1
+Search Endpoint
+    [arguments]  ${search_content}
+    Click Element  xpath=//hbr-filter//clr-icon
+    Input Text  xpath=//hbr-filter//input  ${search_content}
+    Sleep  5
+
+
