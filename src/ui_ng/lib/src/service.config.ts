@@ -3,7 +3,17 @@ import { OpaqueToken } from '@angular/core';
 export let SERVICE_CONFIG = new OpaqueToken("service.config");
 
 export interface IServiceConfig {
-    systemInfoEndpoint: string;
+    /**
+     * The base endpoint of service used to retrieve the system configuration information.
+     * The configurations may include but not limit:
+     *   Notary configurations
+     *   Registry configuration
+     *   Volume information
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    systemInfoEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the repositories of registry and/or tags of repository.
@@ -17,7 +27,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    repositoryBaseEndpoint: string;
+    repositoryBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the recent access logs.
@@ -25,7 +35,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    logBaseEndpoint: string;
+    logBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the registry targets.
@@ -38,7 +48,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    targetBaseEndpoint: string;
+    targetBaseEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle the replication rules.
@@ -50,7 +60,7 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    replicationRuleEndpoint: string;
+    replicationRuleEndpoint?: string;
 
 
     /**
@@ -60,5 +70,122 @@ export interface IServiceConfig {
      * @type {string}
      * @memberOf IServiceConfig
      */
-    replicationJobEndpoint: string;
+    replicationJobEndpoint?: string;
+
+    /**
+     * The base endpoint of the service used to handle vulnerability scanning.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    vulnerabilityScanningBaseEndpoint?: string;
+
+    /**
+     * To determine whether or not to enable the i18 multiple languages supporting.
+     * 
+     * @type {boolean}
+     * @memberOf IServiceConfig
+     */
+    enablei18Support?: boolean;
+
+    /**
+     * The cookie key used to store the current used language preference.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    langCookieKey?: string,
+
+    /**
+     * Declare what languages are supported.
+     * 
+     * @type {string[]}
+     * @memberOf IServiceConfig
+     */
+    supportedLangs?: string[],
+
+    /**
+     * Define the default language the translate service uses.
+     * 
+     * @type {string}
+     * @memberOf i18nConfig
+     */
+    defaultLang?: string;
+
+    /**
+     * To determine which loader will be used to load the required lang messages.
+     * Support two loaders:
+     *   One is 'http', use async http to load json files with the specified url/path.
+     *   Another is 'local', use local json variable to store the lang message.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    langMessageLoader?: string;
+
+    /**
+     * Define the basic url/path prefix for the loader to find the json files if the 'langMessageLoader' is 'http'.
+     * For example, 'src/i18n/langs'.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    langMessagePathForHttpLoader?: string;
+
+    /**
+     * Define the suffix of the json file names without lang name if 'langMessageLoader' is 'http'.
+     * For example, '-lang.json' is suffix of message file 'en-us-lang.json'.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    langMessageFileSuffixForHttpLoader?: string;
+
+    /**
+     * If set 'local' loader in configuration property 'langMessageLoader' to load the i18n messages,
+     * this property must be defined to tell local JSON loader where to get the related messages.
+     * E.g:
+     *   If declare the following messages storage variables,
+     * 
+     *   export const EN_US_LANG: any = {
+     *       "APP_TITLE": {
+     *           "VMW_HARBOR": "VMware Harbor",
+     *           "HARBOR": "Harbor"
+     *       }
+     *   }
+     *   
+     *   export const ZH_CN_LANG: any = {
+     *       "APP_TITLE": {
+     *           "VMW_HARBOR": "VMware Harbor中文版",
+     *           "HARBOR": "Harbor"
+     *       }
+     *   }
+     *   
+     *   then this property should be set to:
+     *   {
+     *       "en-us": EN_US_LANG,
+     *       "zh-cn": ZH_CN_LANG
+     *   };
+     *   
+     * 
+     * @type {{ [key: string]: any }}
+     * @memberOf IServiceConfig
+     */
+    localI18nMessageVariableMap?: { [key: string]: any };
+
+    /**
+     * The base endpoint of configuration service.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    configurationEndpoint?: string;
+
+    /**
+     * The base endpoint of scan job service.
+     * 
+     * @type {string}
+     * @memberof IServiceConfig
+     */
+    scanJobEndpoint?: string;
 }

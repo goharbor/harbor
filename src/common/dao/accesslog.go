@@ -15,9 +15,7 @@
 package dao
 
 import (
-	"strings"
-	"time"
-
+	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -25,212 +23,72 @@ import (
 // AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
 	o := GetOrmer()
-	p, err := o.Raw(`insert into access_log
-		 (user_id, project_id, repo_name, repo_tag, guid, operation, op_time)
-		 values (?, ?, ?, ?, ?, ?, ?)`).Prepare()
-	if err != nil {
-		return err
-	}
-	defer p.Close()
-
-	_, err = p.Exec(accessLog.UserID, accessLog.ProjectID, accessLog.RepoName, accessLog.RepoTag,
-		accessLog.GUID, accessLog.Operation, time.Now())
-
+	_, err := o.Insert(&accessLog)
 	return err
 }
 
 // GetTotalOfAccessLogs ...
-func GetTotalOfAccessLogs(query models.AccessLog) (int64, error) {
-	o := GetOrmer()
-
-	queryParam := []interface{}{}
-
-	sql := `select count(*) from access_log al 
-		where al.project_id = ?`
-	queryParam = append(queryParam, query.ProjectID)
-
-	if query.Username != "" {
-		sql = `select count(*) from access_log al 
-			left join user u 
-			on al.user_id = u.user_id 
-			where al.project_id = ? and u.username like ? `
-		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
-	}
-
-	sql += genFilterClauses(query, &queryParam)
-
-	var total int64
-	if err := o.Raw(sql, queryParam).QueryRow(&total); err != nil {
-		return 0, err
-	}
-	return total, nil
+func GetTotalOfAccessLogs(query *models.LogQueryParam) (int64, error) {
+	return logQueryConditions(query).Count()
 }
 
 //GetAccessLogs gets access logs according to different conditions
-func GetAccessLogs(query models.AccessLog, limit, offset int64) ([]models.AccessLog, error) {
-	o := GetOrmer()
+func GetAccessLogs(query *models.LogQueryParam) ([]models.AccessLog, error) {
+	qs := logQueryConditions(query).OrderBy("-op_time")
 
-	queryParam := []interface{}{}
-	sql := `select al.log_id, u.username, al.repo_name, 
-			al.repo_tag, al.operation, al.op_time 
-		from access_log al 
-		left join user u 
-		on al.user_id = u.user_id
-		where al.project_id = ? `
-	queryParam = append(queryParam, query.ProjectID)
+	if query != nil && query.Pagination != nil {
+		size := query.Pagination.Size
+		if size > 0 {
+			qs = qs.Limit(size)
 
-	if query.Username != "" {
-		sql += ` and u.username like ? `
-		queryParam = append(queryParam, "%"+escape(query.Username)+"%")
-	}
-
-	sql += genFilterClauses(query, &queryParam)
-
-	sql += ` order by al.op_time desc `
-
-	sql = paginateForRawSQL(sql, limit, offset)
-
-	logs := []models.AccessLog{}
-	_, err := o.Raw(sql, queryParam).QueryRows(&logs)
-	if err != nil {
-		return logs, err
-	}
-
-	return logs, nil
-}
-
-func genFilterClauses(query models.AccessLog, queryParam *[]interface{}) string {
-	sql := ""
-
-	if query.Operation != "" {
-		sql += ` and al.operation = ? `
-		*queryParam = append(*queryParam, query.Operation)
-	}
-	if query.RepoName != "" {
-		sql += ` and al.repo_name = ? `
-		*queryParam = append(*queryParam, query.RepoName)
-	}
-	if query.RepoTag != "" {
-		sql += ` and al.repo_tag = ? `
-		*queryParam = append(*queryParam, query.RepoTag)
-	}
-	if query.Keywords != "" {
-		sql += ` and al.operation in ( `
-		keywordList := strings.Split(query.Keywords, "/")
-		num := len(keywordList)
-		for i := 0; i < num; i++ {
-			if keywordList[i] != "" {
-				if i == num-1 {
-					sql += `?)`
-				} else {
-					sql += `?,`
-				}
-				*queryParam = append(*queryParam, keywordList[i])
+			page := query.Pagination.Page
+			if page > 0 {
+				qs = qs.Offset((page - 1) * size)
 			}
 		}
 	}
-	if query.BeginTimestamp > 0 {
-		sql += ` and al.op_time >= ? `
-		*queryParam = append(*queryParam, query.BeginTime)
-	}
-	if query.EndTimestamp > 0 {
-		sql += ` and al.op_time <= ? `
-		*queryParam = append(*queryParam, query.EndTime)
-	}
 
-	return sql
-}
-
-// AccessLog ...
-func AccessLog(username, projectName, repoName, repoTag, action string) error {
-	o := GetOrmer()
-	sql := "insert into  access_log (user_id, project_id, repo_name, repo_tag, operation, op_time) " +
-		"select (select user_id as user_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, ? "
-	_, err := o.Raw(sql, username, projectName, repoName, repoTag, action, time.Now()).Exec()
-
-	if err != nil {
-		log.Errorf("error in AccessLog: %v ", err)
-	}
-	return err
-}
-
-//GetRecentLogs returns recent logs according to parameters
-func GetRecentLogs(userID, linesNum int, startTime, endTime string) ([]models.AccessLog, error) {
 	logs := []models.AccessLog{}
-
-	isAdmin, err := IsAdminRole(userID)
-	if err != nil {
-		return logs, err
-	}
-
-	queryParam := []interface{}{}
-	sql := `select log_id, access_log.user_id, project_id, repo_name, repo_tag, GUID, operation, op_time, username 
-		from access_log 
-		join user 
-		on access_log.user_id=user.user_id `
-
-	hasWhere := false
-	if !isAdmin {
-		sql += ` where project_id in 
-			(select distinct project_id 
-				from project_member 
-				where user_id = ?) `
-		queryParam = append(queryParam, userID)
-		hasWhere = true
-	}
-
-	if startTime != "" {
-		if hasWhere {
-			sql += " and op_time >= ?"
-		} else {
-			sql += " where op_time >= ?"
-			hasWhere = true
-		}
-
-		queryParam = append(queryParam, startTime)
-	}
-
-	if endTime != "" {
-		if hasWhere {
-			sql += " and op_time <= ?"
-		} else {
-			sql += " where op_time <= ?"
-			hasWhere = true
-		}
-
-		queryParam = append(queryParam, endTime)
-	}
-
-	sql += " order by op_time desc"
-	if linesNum != 0 {
-		sql += " limit ?"
-		queryParam = append(queryParam, linesNum)
-	}
-
-	_, err = GetOrmer().Raw(sql, queryParam).QueryRows(&logs)
-	if err != nil {
-		return logs, err
-	}
-	return logs, nil
+	_, err := qs.All(&logs)
+	return logs, err
 }
 
-// GetAccessLogCreator ...
-func GetAccessLogCreator(repoName string) (string, error) {
-	o := GetOrmer()
-	sql := "select * from user where user_id = (select user_id from access_log where operation = 'push' and repo_name = ? order by op_time desc limit 1)"
+func logQueryConditions(query *models.LogQueryParam) orm.QuerySeter {
+	qs := GetOrmer().QueryTable(&models.AccessLog{})
 
-	var u []models.User
-	n, err := o.Raw(sql, repoName).QueryRows(&u)
-
-	if err != nil {
-		return "", err
-	}
-	if n == 0 {
-		return "", nil
+	if query == nil {
+		return qs
 	}
 
-	return u[0].Username, nil
+	if len(query.ProjectIDs) > 0 {
+		qs = qs.Filter("project_id__in", query.ProjectIDs)
+	}
+	if len(query.Username) != 0 {
+		qs = qs.Filter("username__contains", query.Username)
+	}
+	if len(query.Repository) != 0 {
+		qs = qs.Filter("repo_name__contains", query.Repository)
+	}
+	if len(query.Tag) != 0 {
+		qs = qs.Filter("repo_tag__contains", query.Tag)
+	}
+	operations := []string{}
+	for _, operation := range query.Operations {
+		if len(operation) > 0 {
+			operations = append(operations, operation)
+		}
+	}
+	if len(operations) > 0 {
+		qs = qs.Filter("operation__in", operations)
+	}
+	if query.BeginTime != nil {
+		qs = qs.Filter("op_time__gte", query.BeginTime)
+	}
+	if query.EndTime != nil {
+		qs = qs.Filter("op_time__lte", query.EndTime)
+	}
+
+	return qs
 }
 
 // CountPull ...

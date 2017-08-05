@@ -24,13 +24,15 @@ import (
 
 // AddRepository adds a repo to the database.
 func AddRepository(repo models.RepoRecord) error {
-	o := GetOrmer()
-	sql := "insert into repository (owner_id, project_id, name, description, pull_count, star_count, creation_time, update_time) " +
-		"select (select user_id as owner_id from user where username=?), " +
-		"(select project_id as project_id from project where name=?), ?, ?, ?, ?, ?, NULL "
+	if repo.ProjectID == 0 {
+		return fmt.Errorf("invalid project ID: %d", repo.ProjectID)
+	}
 
-	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description,
-		repo.PullCount, repo.StarCount, time.Now()).Exec()
+	o := GetOrmer()
+	now := time.Now()
+	repo.CreationTime = now
+	repo.UpdateTime = now
+	_, err := o.Insert(&repo)
 	return err
 }
 
@@ -46,10 +48,10 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 }
 
 // GetAllRepositories ...
-func GetAllRepositories() ([]models.RepoRecord, error) {
+func GetAllRepositories() ([]*models.RepoRecord, error) {
 	o := GetOrmer()
-	var repos []models.RepoRecord
-	_, err := o.QueryTable("repository").
+	var repos []*models.RepoRecord
+	_, err := o.QueryTable("repository").Limit(-1).
 		OrderBy("Name").All(&repos)
 	return repos, err
 }
@@ -77,10 +79,13 @@ func IncreasePullCount(name string) (err error) {
 			"pull_count":  orm.ColValue(orm.ColAdd, 1),
 			"update_time": time.Now(),
 		})
-	if num == 0 {
-		err = fmt.Errorf("Failed to increase repository pull count with name: %s %s", name, err.Error())
+	if err != nil {
+		return err
 	}
-	return err
+	if num == 0 {
+		return fmt.Errorf("Failed to increase repository pull count with name: %s", name)
+	}
+	return nil
 }
 
 //RepositoryExists returns whether the repository exists according to its name.
@@ -101,28 +106,19 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 	return repos, err
 }
 
-//GetTopRepos returns the most popular repositories
-func GetTopRepos(userID int, count int) ([]*models.RepoRecord, error) {
-	sql :=
-		`select r.repository_id, r.name, r.owner_id, 
-			r.project_id, r.description, r.pull_count, 
-			r.star_count, r.creation_time, r.update_time
-		from repository r
-		inner join project p on r.project_id = p.project_id
-		where (
-			p.deleted = 0 and (
-				p.public = 1 or (
-					? <> ? and (
-						exists (
-							select 1 from user u
-							where u.user_id = ? and u.sysadmin_flag = 1
-						) or exists (
-							select 1 from project_member pm
-							where pm.project_id = p.project_id and pm.user_id = ?
-		)))))
-		order by r.pull_count desc, r.name limit ?`
+//GetTopRepos returns the most popular repositories whose project ID is
+// in projectIDs
+func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, userID, NonExistUserID, userID, userID, count).QueryRows(&repositories)
+	if len(projectIDs) == 0 {
+		return repositories, nil
+	}
+
+	_, err := GetOrmer().QueryTable(&models.RepoRecord{}).
+		Filter("project_id__in", projectIDs).
+		OrderBy("-pull_count").
+		Limit(n).
+		All(&repositories)
 
 	return repositories, err
 }
@@ -136,50 +132,14 @@ func GetTotalOfRepositories(name string) (int64, error) {
 	return qs.Count()
 }
 
-// GetTotalOfPublicRepositories ...
-func GetTotalOfPublicRepositories(name string) (int64, error) {
-	params := []interface{}{}
-	sql := `select count(*) from repository r 
-		join project p 
-		on r.project_id = p.project_id and p.public = 1 `
-	if len(name) != 0 {
-		sql += ` where r.name like ?`
-		params = append(params, "%"+escape(name)+"%")
-	}
-
-	var total int64
-	err := GetOrmer().Raw(sql, params).QueryRow(&total)
-	return total, err
-}
-
-// GetTotalOfUserRelevantRepositories ...
-func GetTotalOfUserRelevantRepositories(userID int, name string) (int64, error) {
-	params := []interface{}{}
-	sql := `select count(*) 
-		from repository r 
-		join (
-			select p.project_id, p.public 
-				from project p
-				join project_member pm
-				on p.project_id = pm.project_id
-				where pm.user_id = ?
-		) as pp 
-		on r.project_id = pp.project_id `
-	params = append(params, userID)
-	if len(name) != 0 {
-		sql += ` where r.name like ?`
-		params = append(params, "%"+escape(name)+"%")
-	}
-
-	var total int64
-	err := GetOrmer().Raw(sql, params).QueryRow(&total)
-	return total, err
-}
-
 // GetTotalOfRepositoriesByProject ...
-func GetTotalOfRepositoriesByProject(projectID int64, name string) (int64, error) {
+func GetTotalOfRepositoriesByProject(projectIDs []int64, name string) (int64, error) {
+	if len(projectIDs) == 0 {
+		return 0, nil
+	}
+
 	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
-		Filter("ProjectID", projectID)
+		Filter("project_id__in", projectIDs)
 
 	if len(name) != 0 {
 		qs = qs.Filter("Name__contains", name)
@@ -200,9 +160,10 @@ func GetRepositoriesByProject(projectID int64, name string,
 	if len(name) != 0 {
 		qs = qs.Filter("Name__contains", name)
 	}
-
-	_, err := qs.Limit(limit).
-		Offset(offset).All(&repositories)
+	if limit > 0 {
+		qs = qs.Limit(limit).Offset(offset)
+	}
+	_, err := qs.All(&repositories)
 
 	return repositories, err
 }

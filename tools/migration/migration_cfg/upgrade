@@ -1,0 +1,117 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from string import Template
+import string
+import os
+import sys
+import argparse
+from io import open
+
+if sys.version_info[:3][0] == 2:
+    import ConfigParser as ConfigParser
+    import StringIO as StringIO
+
+if sys.version_info[:3][0] == 3:
+    import configparser as ConfigParser
+    import io as StringIO
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--source-loc', dest='source_loc', type=str,help="the path of Harbor 0.5.0 configuration file")
+parser.add_argument('--source-version', dest='source_ver', type=str,help="the Harbor instance is to be deployed with notary")
+parser.add_argument('--target-loc', dest='target_loc', type=str,help="the path of Harbor 1.1.x configuration file")
+parser.add_argument('--target-version', dest='target_ver', type=str, help="the Harbor instance is to be deployed with notary")
+upgrade_args = parser.parse_args()
+
+# NOTE: the script only support to upgrade from 0.5.0.to 1.1.x.
+def validate():
+    if upgrade_args.source_ver == '0.5.0' and upgrade_args.target_ver == '1.1.x':
+        return
+    raise Exception("Unable to support upgrade from %s to %s" % (upgrade_args.source_ver, upgrade_args.target_ver))
+
+validate()
+
+conf = StringIO.StringIO()
+conf.write("[configuration]\n")
+conf.write(open(upgrade_args.source_loc).read())
+conf.seek(0, os.SEEK_SET)
+rcp = ConfigParser.RawConfigParser()
+rcp.readfp(conf)
+
+hostname = rcp.get("configuration", "hostname")
+ui_url_protocol = rcp.get("configuration", "ui_url_protocol")
+email_identity = rcp.get("configuration", "email_identity")
+email_server = rcp.get("configuration", "email_server")
+email_server_port = rcp.get("configuration", "email_server_port")
+email_username = rcp.get("configuration", "email_username")
+email_password = rcp.get("configuration", "email_password")
+email_from = rcp.get("configuration", "email_from")
+email_ssl = rcp.get("configuration", "email_ssl")
+harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
+auth_mode = rcp.get("configuration", "auth_mode")
+ldap_url = rcp.get("configuration", "ldap_url")
+ldap_basedn = rcp.get("configuration", "ldap_basedn")
+ldap_uid = rcp.get("configuration", "ldap_uid")
+ldap_scope = rcp.get("configuration", "ldap_scope")
+db_password = rcp.get("configuration", "db_password")
+self_registration = rcp.get("configuration", "self_registration")
+use_compressed_js = rcp.get("configuration", "use_compressed_js")
+max_job_workers = rcp.get("configuration", "max_job_workers")
+token_expiration = rcp.get("configuration", "token_expiration")
+verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
+customize_crt = rcp.get("configuration", "customize_crt")
+project_creation_restriction = rcp.get("configuration", "project_creation_restriction")
+ssl_cert = rcp.get("configuration", "ssl_cert")
+ssl_cert_key = rcp.get("configuration", "ssl_cert_key")
+
+def delfile(src):
+    if os.path.isfile(src):
+        try:
+            os.remove(src)
+            print("Clearing the configuration file: %s" % src)
+        except:
+            pass
+    elif os.path.isdir(src):
+        for item in os.listdir(src):
+            itemsrc=os.path.join(src,item)
+            delfile(itemsrc)
+
+def render(src, dest, **kw):
+    t = Template(open(src, 'r').read())
+    with open(dest, 'w') as f:
+        f.write(t.substitute(**kw))
+    print("Generated configuration file: %s" % dest)
+
+delfile(upgrade_args.target_loc)
+
+base_dir = os.path.dirname(__file__)
+config_template = os.path.join(base_dir, "harbor_1_1_0_template")
+
+render(config_template,
+        upgrade_args.target_loc,
+        hostname=hostname,
+        ui_url_protocol=ui_url_protocol,
+        db_password=db_password,
+        use_compressed_js=use_compressed_js,
+        max_job_workers=max_job_workers,
+        customize_crt=customize_crt,
+        ssl_cert=ssl_cert,
+        ssl_cert_key=ssl_cert_key,
+        admiral_url='',
+        email_identity=email_identity,
+        email_server=email_server,
+        email_server_port=email_server_port,
+        email_username=email_username,
+        email_password=email_password,
+        email_from=email_from,
+        email_ssl=email_ssl,
+        harbor_admin_password=harbor_admin_password,
+        auth_mode=auth_mode,
+        ldap_url=ldap_url,
+        ldap_basedn=ldap_basedn,
+        ldap_uid=ldap_uid,
+        ldap_scope=ldap_scope,
+        self_registration=self_registration,
+        token_expiration=token_expiration,
+        project_creation_restriction=project_creation_restriction,
+        verify_remote_cert=verify_remote_cert
+    )

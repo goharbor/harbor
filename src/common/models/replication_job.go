@@ -22,33 +22,23 @@ import (
 )
 
 const (
-	//JobPending ...
-	JobPending string = "pending"
-	//JobRunning ...
-	JobRunning string = "running"
-	//JobError ...
-	JobError string = "error"
-	//JobStopped ...
-	JobStopped string = "stopped"
-	//JobFinished ...
-	JobFinished string = "finished"
-	//JobCanceled ...
-	JobCanceled string = "canceled"
-	//JobRetrying indicate the job needs to be retried, it will be scheduled to the end of job queue by statemachine after an interval.
-	JobRetrying string = "retrying"
-	//JobContinue is the status returned by statehandler to tell statemachine to move to next possible state based on trasition table.
-	JobContinue string = "_continue"
 	//RepOpTransfer represents the operation of a job to transfer repository to a remote registry/harbor instance.
 	RepOpTransfer string = "transfer"
 	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
 	RepOpDelete string = "delete"
 	//UISecretCookie is the cookie name to contain the UI secret
 	UISecretCookie string = "secret"
+	//RepTargetTable is the table name for replication targets
+	RepTargetTable = "replication_target"
+	//RepJobTable is the table name for replication jobs
+	RepJobTable = "replication_job"
+	//RepPolicyTable is table name for replication policies
+	RepPolicyTable = "replication_policy"
 )
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID          int64  `orm:"column(id)" json:"id"`
+	ID          int64  `orm:"pk;auto;column(id)" json:"id"`
 	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
 	ProjectName string `json:"project_name,omitempty"`
 	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
@@ -95,7 +85,7 @@ func (r *RepPolicy) Valid(v *validation.Validation) {
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove
 // a repository to/from a remote registry instance.
 type RepJob struct {
-	ID         int64    `orm:"column(id)" json:"id"`
+	ID         int64    `orm:"pk;auto;column(id)" json:"id"`
 	Status     string   `orm:"column(status)" json:"status"`
 	Repository string   `orm:"column(repository)" json:"repository"`
 	PolicyID   int64    `orm:"column(policy_id)" json:"policy_id"`
@@ -109,7 +99,7 @@ type RepJob struct {
 
 // RepTarget is the model for a replication targe, i.e. destination, which wraps the endpoint URL and username/password of a remote registry.
 type RepTarget struct {
-	ID           int64     `orm:"column(id)" json:"id"`
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	URL          string    `orm:"column(url)" json:"endpoint"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Username     string    `orm:"column(username)" json:"username"`
@@ -148,15 +138,15 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 
 //TableName is required by by beego orm to map RepTarget to table replication_target
 func (r *RepTarget) TableName() string {
-	return "replication_target"
+	return RepTargetTable
 }
 
 //TableName is required by by beego orm to map RepJob to table replication_job
 func (r *RepJob) TableName() string {
-	return "replication_job"
+	return RepJobTable
 }
 
 //TableName is required by by beego orm to map RepPolicy to table replication_policy
 func (r *RepPolicy) TableName() string {
-	return "replication_policy"
+	return RepPolicyTable
 }

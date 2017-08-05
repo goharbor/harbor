@@ -1,5 +1,11 @@
 .option-right {
-  padding-right: 16px;
-  margin-top: 22px;
-  margin-bottom: 2px;
+    padding-right: 16px;
+}
+
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
 }

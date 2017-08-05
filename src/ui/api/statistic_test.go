@@ -30,7 +30,7 @@ func TestStatisticGet(t *testing.T) {
 
 	//prepare for test
 
-	var priMyProjectCount, priMyRepoCount int32
+	var privateProjectCount, privateRepoCount int32
 	var priPublicProjectCount, priPublicRepoCount int32
 	var priTotalProjectCount, priTotalRepoCount int32
 
@@ -53,8 +53,8 @@ func TestStatisticGet(t *testing.T) {
 	} else {
 		assert.Equal(httpStatusCode, int(200), "Case 2: Get status info with admin login. (200)")
 		//fmt.Println("pri status data %+v", result)
-		priMyProjectCount = result.MyProjectCount
-		priMyRepoCount = result.MyRepoCount
+		privateProjectCount = result.PrivateProjectCount
+		privateRepoCount = result.PrivateRepoCount
 		priPublicProjectCount = result.PublicProjectCount
 		priPublicRepoCount = result.PublicRepoCount
 		priTotalProjectCount = result.TotalProjectCount
@@ -74,8 +74,8 @@ func TestStatisticGet(t *testing.T) {
 		t.Error("Error while get statistic information", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(priMyProjectCount+1, result.MyProjectCount, "MyProjectCount should be +1")
-		assert.Equal(priMyRepoCount+1, result.MyRepoCount, "MyRepoCount should be +1")
+		assert.Equal(privateProjectCount+1, result.PrivateProjectCount, "PrivateProjectCount should be +1")
+		assert.Equal(privateRepoCount, result.PrivateRepoCount)
 		assert.Equal(priPublicProjectCount, result.PublicProjectCount, "PublicProjectCount should be equal")
 		assert.Equal(priPublicRepoCount+1, result.PublicRepoCount, "PublicRepoCount should be +1")
 		assert.Equal(priTotalProjectCount+1, result.TotalProjectCount, "TotalProCount should be +1")

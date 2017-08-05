@@ -1,18 +1,42 @@
 import { TestBed, inject } from '@angular/core/testing';
 
-import { ReplicationService, ReplicationDefaultService } from './replication.service';
+import { RepositoryService, RepositoryDefaultService } from './repository.service';
+import { SharedModule } from '../shared/shared.module';
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
-describe('ReplicationService', () => {
+describe('RepositoryService', () => {
+  const mockConfig: IServiceConfig = {
+    repositoryBaseEndpoint: "/api/repositories/testing"
+  };
+
+  let config: IServiceConfig;
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{
-        provide: ReplicationService,
-        useClass: ReplicationDefaultService
-      }]
+      imports: [
+        SharedModule
+      ],
+      providers: [
+        RepositoryDefaultService,
+        {
+          provide: RepositoryService,
+          useClass: RepositoryDefaultService
+        }, {
+          provide: SERVICE_CONFIG,
+          useValue: mockConfig
+        }]
     });
+
+    config = TestBed.get(SERVICE_CONFIG);
   });
 
-  it('should ...', inject([ReplicationDefaultService], (service: ReplicationService) => {
+  it('should be initialized', inject([RepositoryDefaultService], (service: RepositoryService) => {
     expect(service).toBeTruthy();
   }));
+
+  it('should inject the right config', () => {
+    expect(config).toBeTruthy();
+    expect(config.repositoryBaseEndpoint).toEqual("/api/repositories/testing");
+  });
+
 });

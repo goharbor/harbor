@@ -1,7 +1,7 @@
 version: '2'
 services:
   registry:
-    image: library/registry:2.6.0
+    image: vmware/registry:2.6.1-photon
     restart: always
     volumes:
       - /data/registry:/storage

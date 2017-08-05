@@ -15,7 +15,10 @@
 package config
 
 import (
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -24,19 +27,33 @@ import (
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/projectmanager/db"
+	"github.com/vmware/harbor/src/ui/projectmanager/pms"
 )
 
 const (
-	defaultKeyPath   string = "/etc/ui/key"
-	secretCookieName string = "secret"
+	defaultKeyPath       string = "/etc/ui/key"
+	defaultTokenFilePath string = "/etc/ui/token/tokens.properties"
+	secretCookieName     string = "secret"
 )
 
 var (
+	// SecretStore manages secrets
+	SecretStore *secret.Store
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
-	mg                *comcfg.Manager
-	keyProvider       comcfg.KeyProvider
+	// GlobalProjectMgr is initialized based on the deploy mode
+	GlobalProjectMgr projectmanager.ProjectManager
+	mg               *comcfg.Manager
+	keyProvider      comcfg.KeyProvider
+	// AdmiralClient is initialized only under integration deploy mode
+	// and can be passed to project manager as a parameter
+	AdmiralClient *http.Client
+	// TokenReader is used in integration mode to read token
+	TokenReader pms.TokenReader
 )
 
 // Init configurations
@@ -62,6 +79,12 @@ func Init() error {
 		return err
 	}
 
+	// init secret store
+	initSecretStore()
+
+	// init project manager based on deploy mode
+	initProjectManager()
+
 	return nil
 }
 
@@ -75,6 +98,43 @@ func initKeyProvider() {
 	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
+func initSecretStore() {
+	m := map[string]string{}
+	m[JobserviceSecret()] = secret.JobserviceUser
+	SecretStore = secret.NewStore(m)
+}
+
+func initProjectManager() {
+	if !WithAdmiral() {
+		// standalone
+		log.Info("initializing the project manager based on database...")
+		GlobalProjectMgr = &db.ProjectManager{}
+		return
+	}
+
+	// integration with admiral
+	log.Info("initializing the project manager based on PMS...")
+	// TODO read ca/cert file and pass it to the TLS config
+	AdmiralClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+
+	path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+	if len(path) == 0 {
+		path = defaultTokenFilePath
+	}
+	log.Infof("service token file path: %s", path)
+	TokenReader = &pms.FileTokenReader{
+		Path: path,
+	}
+	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
+		AdmiralEndpoint(), TokenReader)
+}
+
 // Load configurations
 func Load() error {
 	_, err := mg.Load()
@@ -86,7 +146,7 @@ func Reset() error {
 	return mg.Reset()
 }
 
-// Upload uploads all system configutations to admin server
+// Upload uploads all system configurations to admin server
 func Upload(cfg map[string]interface{}) error {
 	return mg.Upload(cfg)
 }
@@ -131,6 +191,7 @@ func TokenExpiration() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return int(cfg[common.TokenExpiration].(float64)), nil
 }
 
@@ -271,6 +332,7 @@ func UISecret() string {
 
 // JobserviceSecret returns a secret to mark Jobservice when communicate with
 // other component
+// TODO replace it with method of SecretStore
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
@@ -285,18 +347,65 @@ func WithNotary() bool {
 	return cfg[common.WithNotary].(bool)
 }
 
+// WithClair returns a bool value to indicate if Harbor's deployed with Clair
+func WithClair() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return WithClair == false")
+		return false
+	}
+	return cfg[common.WithClair].(bool)
+}
+
+// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
+func ClairEndpoint() string {
+	return common.DefaultClairEndpoint
+}
+
+// ClairDBPassword returns the password for accessing Clair's DB.
+func ClairDBPassword() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[common.ClairDBPassword].(string), nil
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint")
-
+		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
 		return ""
 	}
 	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
 		cfg[common.AdmiralEndpoint] = ""
 	}
 	return cfg[common.AdmiralEndpoint].(string)
+}
+
+// ScanAllPolicy returns the policy which controls the scan all.
+func ScanAllPolicy() models.ScanAllPolicy {
+	var res models.ScanAllPolicy
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return default scan all policy, error: %v", err)
+		return models.DefaultScanAllPolicy
+	}
+	v, ok := cfg[common.ScanAllPolicy]
+	if !ok {
+		return models.DefaultScanAllPolicy
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		log.Errorf("Failed to Marshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
+		return models.DefaultScanAllPolicy
+	}
+	return res
 }
 
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.

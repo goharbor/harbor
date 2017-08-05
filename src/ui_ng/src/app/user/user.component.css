@@ -27,9 +27,13 @@
 
 .refresh-btn {
     position: absolute;
-    right: 2px;
-    top: 12px;
+    right: 6px;
+    top: 17px;
     cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
 }
 
 .hide-create {

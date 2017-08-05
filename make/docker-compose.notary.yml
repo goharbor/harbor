@@ -9,6 +9,7 @@ services:
   notary-server:
     image: vmware/notary-photon:server-0.5.0
     container_name: notary-server
+    restart: always
     networks:
       - notary-mdb
       - notary-sig
@@ -28,6 +29,7 @@ services:
   notary-signer:
     image: vmware/notary-photon:signer-0.5.0
     container_name: notary-signer
+    restart: always
     networks:
       notary-mdb:
       notary-sig:
@@ -49,6 +51,7 @@ services:
   notary-db:
     image: vmware/harbor-notary-db:mariadb-10.1.10
     container_name: notary-db
+    restart: always
     networks:
       notary-mdb:
         aliases:

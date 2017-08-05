@@ -17,17 +17,20 @@ package notary
 import (
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/notary"
 	"github.com/docker/notary/client"
 	"github.com/docker/notary/trustpinning"
 	"github.com/docker/notary/tuf/data"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/ui/config"
+	tokenutil "github.com/vmware/harbor/src/ui/service/token"
 
 	"github.com/opencontainers/go-digest"
 )
@@ -56,17 +59,37 @@ func init() {
 	trustPin = trustpinning.TrustPinConfig{}
 }
 
+// GetInternalTargets wraps GetTargets to read config values for getting full-qualified repo from internal notary instance.
+func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]Target, error) {
+	ext, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint: %v", err)
+		return nil, err
+	}
+	endpoint := strings.Split(ext, "//")[1]
+	fqRepo := path.Join(endpoint, repo)
+	return GetTargets(notaryEndpoint, username, fqRepo)
+}
+
 // GetTargets is a help function called by API to fetch signature information of a given repository.
 // Per docker's convention the repository should contain the information of endpoint, i.e. it should look
-// like "10.117.4.117/library/ubuntu", instead of "library/ubuntu" (fqRepo for fully-qualified repo)
+// like "192.168.0.1/library/ubuntu", instead of "library/ubuntu" (fqRepo for fully-qualified repo)
 func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target, error) {
 	res := []Target{}
-	authorizer := auth.NewNotaryUsernameTokenAuthorizer(username, "repository", fqRepo, "pull")
-	store, err := auth.NewAuthorizerStore(strings.Split(notaryEndpoint, "//")[1], true, authorizer)
+	t, err := tokenutil.MakeToken(username, tokenutil.Notary,
+		[]*token.ResourceActions{
+			&token.ResourceActions{
+				Type:    "repository",
+				Name:    fqRepo,
+				Actions: []string{"pull"},
+			}})
 	if err != nil {
-		return res, err
+		return nil, err
 	}
-	tr := registry.NewTransport(registry.GetHTTPTransport(true), store)
+	authorizer := &notaryAuthorizer{
+		token: t.Token,
+	}
+	tr := registry.NewTransport(registry.GetHTTPTransport(true), authorizer)
 	gun := data.GUN(fqRepo)
 	notaryRepo, err := client.NewFileCachedNotaryRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
 	if err != nil {
@@ -98,4 +121,14 @@ func DigestFromTarget(t Target) (string, error) {
 		return "", fmt.Errorf("no valid hash, expecting sha256")
 	}
 	return digest.NewDigestFromHex("sha256", hex.EncodeToString(sha)).String(), nil
+}
+
+type notaryAuthorizer struct {
+	token string
+}
+
+func (n *notaryAuthorizer) Modify(req *http.Request) error {
+	req.Header.Add(http.CanonicalHeaderKey("Authorization"),
+		fmt.Sprintf("Bearer %s", n.token))
+	return nil
 }

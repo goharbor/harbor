@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
@@ -24,21 +24,25 @@ import { State } from 'clarity-angular';
 
 @Component({
   selector: 'list-project',
-  templateUrl: 'list-project.component.html'
+  templateUrl: 'list-project.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListProjectComponent implements OnInit {
+export class ListProjectComponent {
+  _filterType: string = ProjectTypes[0];
 
+  @Input() loading: boolean = true;
   @Input() projects: Project[];
-
-
-  @Input() totalPage: number;
-  @Input() totalRecordCount: number;
-  pageOffset: number = 1;
-
-  @Input() filteredType: string;
+  @Input()
+  get filteredType(): string {
+    return this._filterType;
+  }
+  set filteredType(value: string) {
+    if (value && value.trim() !== "") {
+      this._filterType = value;
+    }
+  }
 
   @Output() paginate = new EventEmitter<State>();
-
   @Output() toggle = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
@@ -47,13 +51,14 @@ export class ListProjectComponent implements OnInit {
   constructor(
     private session: SessionService,
     private router: Router,
-    private searchTrigger: SearchTriggerService) { }
-
-  ngOnInit(): void {
+    private searchTrigger: SearchTriggerService,
+    private ref: ChangeDetectorRef) {
+    let hnd = setInterval(() => ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   get showRoleInfo(): boolean {
-    return this.filteredType === ProjectTypes[0];
+    return this.filteredType !== ProjectTypes[2];
   }
 
   public get isSystemAdmin(): boolean {
@@ -64,7 +69,7 @@ export class ListProjectComponent implements OnInit {
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(true);
 
-    let linkUrl = ['harbor', 'projects', proId, 'repository'];
+    let linkUrl = ['harbor', 'projects', proId, 'repositories'];
     this.router.navigate(linkUrl);
   }
 
@@ -73,8 +78,8 @@ export class ListProjectComponent implements OnInit {
   }
 
   newReplicationRule(p: Project) {
-    if(p) {
-      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replication?is_create=true`);
+    if (p) {
+      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replications?is_create=true`);
     }
   }
 

@@ -16,12 +16,10 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 
-import { RepositoryComponent } from './repository.component';
-import { ListRepositoryComponent } from './list-repository/list-repository.component';
+import { RepositoryPageComponent } from './repository-page.component';
 import { TagRepositoryComponent } from './tag-repository/tag-repository.component';
 import { TopRepoComponent } from './top-repo/top-repo.component';
-
-import { RepositoryService } from './repository.service';
+import { TagDetailPageComponent } from './tag-detail/tag-detail-page.component';
 
 @NgModule({
   imports: [
@@ -29,12 +27,16 @@ import { RepositoryService } from './repository.service';
     RouterModule
   ],
   declarations: [
-    RepositoryComponent,
-    ListRepositoryComponent,
+    RepositoryPageComponent,
     TagRepositoryComponent,
-    TopRepoComponent
+    TopRepoComponent,
+    TagDetailPageComponent
   ],
-  exports: [RepositoryComponent, ListRepositoryComponent, TopRepoComponent],
-  providers: [RepositoryService]
+  exports: [
+    RepositoryPageComponent,
+    TopRepoComponent,
+    TagDetailPageComponent
+  ],
+  providers: []
 })
 export class RepositoryModule { }

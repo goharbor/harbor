@@ -15,11 +15,16 @@ package api
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/tests/apitests/apilib"
+	"net/http"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 var addProject *apilib.ProjectReq
@@ -89,8 +94,7 @@ func TestAddProject(t *testing.T) {
 
 }
 
-//Get project by proName
-func TestProGetByName(t *testing.T) {
+func TestListProjects(t *testing.T) {
 	fmt.Println("\nTest for Project GET API by project name")
 	assert := assert.New(t)
 
@@ -99,29 +103,27 @@ func TestProGetByName(t *testing.T) {
 
 	//----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
-	httpStatusCode, result, err := apiTest.ProjectsGet(addProject.ProjectName, 1)
-	if err != nil {
-		t.Error("Error while search project by proName and isPublic", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
-		assert.Equal(int32(1), result[0].Public, "Public is wrong")
-		//find add projectID
-		addPID = int(result[0].ProjectId)
-	}
-	//----------------------------case 2 : Response Code=401:is_public=0----------------------------//
-	fmt.Println("case 2: respose code:401,isPublic = 0")
-	httpStatusCode, result, err = apiTest.ProjectsGet("library", 0)
-	if err != nil {
-		t.Error("Error while search project by proName and isPublic", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 200")
-	}
+	httpStatusCode, result, err := apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   addProject.ProjectName,
+			Owner:  admin.Name,
+			Public: true,
+		})
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
+	assert.Equal(int32(1), result[0].Public, "Public is wrong")
+
+	//find add projectID
+	addPID = int(result[0].ProjectId)
 
 	//-------------------case 3 :  check admin project role------------------------//
-	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *admin)
+	httpStatusCode, result, err = apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name:   addProject.ProjectName,
+			Owner:  admin.Name,
+			Public: true,
+		}, *admin)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
@@ -143,7 +145,10 @@ func TestProGetByName(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
-	httpStatusCode, result, err = apiTest.ProjectsGet(addProject.ProjectName, 0, *testUser)
+	httpStatusCode, result, err = apiTest.ProjectsGet(
+		&apilib.ProjectQuery{
+			Name: addProject.ProjectName,
+		}, *testUser)
 	if err != nil {
 		t.Error("Error while search project by proName and isPublic", err.Error())
 		t.Log(err)
@@ -264,18 +269,8 @@ func TestProHead(t *testing.T) {
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
-	//----------------------------case 3 : Response Code=401:User need to log in first..----------------------------//
-	fmt.Println("case 3: respose code:401,User need to log in first..")
-	httpStatusCode, err = apiTest.ProjectsHead(*unknownUsr, "libra")
-	if err != nil {
-		t.Error("Error while search project by proName", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
-	}
 
 	fmt.Printf("\n")
-
 }
 
 func TestToggleProjectPublicity(t *testing.T) {
@@ -313,7 +308,7 @@ func TestToggleProjectPublicity(t *testing.T) {
 	}
 	//-------------------case4: Response Code=404 Not found the project------------------------------//
 	fmt.Println("case 4: respose code:404, Not found the project")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "0", 1)
+	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "1234", 1)
 	if err != nil {
 		t.Error("Error while search project by proId", err.Error())
 		t.Log(err)
@@ -329,19 +324,19 @@ func TestProjectLogsFilter(t *testing.T) {
 
 	apiTest := newHarborAPI()
 
-	endTimestamp := time.Now().Unix()
-	startTimestamp := endTimestamp - 3600
-	accessLog := &apilib.AccessLogFilter{
+	query := &apilib.LogQuery{
 		Username:       "admin",
-		Keywords:       "",
-		BeginTimestamp: startTimestamp,
-		EndTimestamp:   endTimestamp,
+		Repository:     "",
+		Tag:            "",
+		Operation:      []string{""},
+		BeginTimestamp: 0,
+		EndTimestamp:   time.Now().Unix(),
 	}
 
 	//-------------------case1: Response Code=200------------------------------//
 	fmt.Println("case 1: respose code:200")
 	projectID := "1"
-	httpStatusCode, _, err := apiTest.ProjectLogsFilter(*admin, projectID, *accessLog)
+	httpStatusCode, _, err := apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
@@ -351,7 +346,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	//-------------------case2: Response Code=401:User need to log in first.------------------------------//
 	fmt.Println("case 2: respose code:401:User need to log in first.")
 	projectID = "1"
-	httpStatusCode, _, err = apiTest.ProjectLogsFilter(*unknownUsr, projectID, *accessLog)
+	httpStatusCode, _, err = apiTest.ProjectLogs(*unknownUsr, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
@@ -361,7 +356,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	//-------------------case3: Response Code=404:Project does not exist.-------------------------//
 	fmt.Println("case 3: respose code:404:Illegal format of provided ID value.")
 	projectID = "11111"
-	httpStatusCode, _, err = apiTest.ProjectLogsFilter(*admin, projectID, *accessLog)
+	httpStatusCode, _, err = apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
 		t.Error("Error while search access logs")
 		t.Log(err)
@@ -369,4 +364,43 @@ func TestProjectLogsFilter(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 	fmt.Printf("\n")
+}
+
+func TestDeletable(t *testing.T) {
+	apiTest := newHarborAPI()
+
+	project := models.Project{
+		Name:    "project_for_test_deletable",
+		OwnerID: 1,
+	}
+	id, err := dao.AddProject(project)
+	require.Nil(t, err)
+
+	// non-exist project
+	code, del, err := apiTest.ProjectDeletable(*admin, 1000)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusNotFound, code)
+
+	// unauthorized
+	code, del, err = apiTest.ProjectDeletable(*unknownUsr, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusUnauthorized, code)
+
+	// can be deleted
+	code, del, err = apiTest.ProjectDeletable(*admin, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, code)
+	assert.True(t, del)
+
+	err = dao.AddRepository(models.RepoRecord{
+		Name:      project.Name + "/golang",
+		ProjectID: id,
+	})
+	require.Nil(t, err)
+
+	// can not be deleted as contains repository
+	code, del, err = apiTest.ProjectDeletable(*admin, id)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, code)
+	assert.False(t, del)
 }

@@ -42,13 +42,16 @@ func main() {
 	}
 
 	initRouters()
-	job.InitWorkerPool()
+	if err := job.InitWorkerPools(); err != nil {
+		log.Fatalf("Failed to initialize worker pools, error: %v", err)
+	}
 	go job.Dispatch()
 	resumeJobs()
 	beego.Run()
 }
 
 func resumeJobs() {
+	//TODO: may need to resume scan jobs also?
 	log.Debugf("Trying to resume halted jobs...")
 	err := dao.ResetRunningJobs()
 	if err != nil {
@@ -57,8 +60,9 @@ func resumeJobs() {
 	jobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying)
 	if err == nil {
 		for _, j := range jobs {
-			log.Debugf("Resuming job: %d", j.ID)
-			job.Schedule(j.ID)
+			rj := job.NewRepJob(j.ID)
+			log.Debugf("Resuming job: %v", rj)
+			job.Schedule(rj)
 		}
 	} else {
 		log.Warningf("Failed to jobs to resume, error: %v", err)
@@ -69,6 +73,8 @@ func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		beego.LoadAppConfig("ini", configPath)
+		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+			log.Fatalf("Failed to load config file: %s, error: %v", configPath, err)
+		}
 	}
 }

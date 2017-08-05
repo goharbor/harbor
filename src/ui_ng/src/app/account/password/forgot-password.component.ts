@@ -25,14 +25,14 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 })
 export class ForgotPasswordComponent {
     opened: boolean = false;
-    private onGoing: boolean = false;
-    private email: string = "";
-    private validationState: boolean = true;
-    private isSuccess: boolean = false;
+    onGoing: boolean = false;
+    email: string = "";
+    validationState: boolean = true;
+    isSuccess: boolean = false;
 
     @ViewChild("forgotPasswordFrom") forgotPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
-    private inlineAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
     constructor(private pwdService: PasswordSettingService) { }
 

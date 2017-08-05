@@ -1,6 +1,6 @@
 LICENSE
 
-Harbor version 1.1.0 GA
+Harbor version 1.1.1 GA
 
 Copyright 2017 VMware, Inc.  All rights reserved.
 
@@ -210,7 +210,7 @@ limitations under the License.
 
 ======================================================================
 
-Harbor version 1.1.0 includes a number of components with separate copyright notices and license terms.  This product does not necessarily use all the open source components referred to below. Your use of the source code for these components is subject to the terms and conditions of the following licenses.
+Harbor version 1.1.1 includes a number of components with separate copyright notices and license terms.  This product does not necessarily use all the open source components referred to below. Your use of the source code for these components is subject to the terms and conditions of the following licenses.
 
 ======================== TABLE OF CONTENTS ============================
 
@@ -5551,6 +5551,7 @@ NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT AND DISTRIBUTION LICENSE 
 The code released under the CDDL shall be governed by the laws of the State of California (excluding conflict-of-law provisions). Any litigation relating to this License shall be subject to the jurisdiction of the Federal Courts of the Northern District of California and the state courts of the State of California, with venue lying in Santa Clara County, California.
 
 
+
 ===========================================================================
 
 
@@ -5565,4 +5566,4 @@ All such requests should clearly specify: OPEN SOURCE FILES REQUEST, Attention G
 mail a copy of the Source Files to you on a CD or equivalent physical medium. This offer to obtain a copy of the Source
 Files is valid for three years from the date you acquired this software product.
 
-[HARBOR110GASR041417]
+[HARBOR111GASR050417]

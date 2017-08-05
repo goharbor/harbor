@@ -11,31 +11,32 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export const supportedLangs = ['en-us', 'zh-cn'];
+export const supportedLangs = ['en-us', 'zh-cn', 'es-es'];
 export const enLang = "en-us";
 export const languageNames = {
   "en-us": "English",
-  "zh-cn": "中文简体"
+  "zh-cn": "中文简体",
+  "es-es": "Español"
 };
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
 };
 
-export const dismissInterval = 15 * 1000;
+export const dismissInterval = 10 * 1000;
 export const httpStatusCode = {
   "Unauthorized": 401,
   "Forbidden": 403
 };
 export const enum ConfirmationTargets {
-  EMPTY, 
-  PROJECT, 
-  PROJECT_MEMBER, 
-  USER, 
-  POLICY, 
+  EMPTY,
+  PROJECT,
+  PROJECT_MEMBER,
+  USER,
+  POLICY,
   TOGGLE_CONFIRM,
-  TARGET, 
-  REPOSITORY, 
-  TAG, 
+  TARGET,
+  REPOSITORY,
+  TAG,
   CONFIG,
   CONFIG_ROUTE,
   CONFIG_TAB
@@ -66,7 +67,10 @@ export const CookieKeyOfAdmiral = "admiral.endpoint.latest";
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+export const enum ConfirmationButtons {
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
+}
 
-export const ProjectTypes = { 0: 'PROJECT.MY_PROJECTS', 1: 'PROJECT.PUBLIC_PROJECTS' };
+export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };
 export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
 export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };

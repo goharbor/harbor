@@ -16,7 +16,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { AppConfig } from './app-config';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService } from 'ngx-cookie';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas } from './shared/shared.utils';
 
@@ -30,15 +30,15 @@ export const systemInfoEndpoint = "/api/systeminfo";
  */
 @Injectable()
 export class AppConfigService {
-    private headers = new Headers({
+    headers = new Headers({
         "Content-Type": 'application/json'
     });
-    private options = new RequestOptions({
+    options = new RequestOptions({
         headers: this.headers
     });
 
     //Store the application configuration
-    private configurations: AppConfig = new AppConfig();
+    configurations: AppConfig = new AppConfig();
 
     constructor(
         private http: Http,
