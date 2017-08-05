@@ -7,7 +7,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 **NOTE:** 
 - From v1.2 on, you need to use the release version as the tag of the migrator image. 'latest' is no longer used for new release.
 
-- You must backup your data before any data migration.
+- You must back up your data before any data migration.
 
 ### Upgrading Harbor and migrating data
 
@@ -21,7 +21,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 2.  Back up Harbor's current files so that you can roll back to the current version when it is necessary.
     ```sh
     cd ..
-    mv harbor /backup/harbor
+    mv harbor /my_backup_dir/harbor
     ```
 
 3. Get the lastest Harbor release package from Github:
@@ -87,7 +87,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 
 4. Restore the older version package of Harbor.
     ```sh
-    mv /backup/harbor harbor
+    mv /my_backup_dir/harbor harbor
     ```
 
 5. Restart Harbor service using the previous configuration.  
