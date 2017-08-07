@@ -26,6 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
+	promgr "github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 var creatorMap map[string]Creator
@@ -126,13 +127,13 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(ctx security.Context, a *token.ResourceActions) error
+	filter(ctx security.Context, pm promgr.ProjectManager, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx security.Context,
+func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
 	//Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
@@ -150,7 +151,8 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceActions) error {
+func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
+	a *token.ResourceActions) error {
 	//clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
@@ -158,6 +160,17 @@ func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceAction
 	}
 	project := img.namespace
 	permission := ""
+
+	exist, err := pm.Exist(project)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		log.Debugf("project %s does not exist, set empty permission", project)
+		a.Actions = []string{}
+		return nil
+	}
+
 	if ctx.HasAllPerm(project) {
 		permission = "RWM"
 	} else if ctx.HasWritePerm(project) {
@@ -191,6 +204,11 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 
+	pm, err := filter.GetProjectManager(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to  get project manager from request")
+	}
+
 	// for docker login
 	if !ctx.IsAuthenticated() {
 		if len(scopes) == 0 {
@@ -198,7 +216,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		}
 	}
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, ctx, g.filterMap)
+	err = filterAccess(access, ctx, pm, g.filterMap)
 	if err != nil {
 		return nil, err
 	}
