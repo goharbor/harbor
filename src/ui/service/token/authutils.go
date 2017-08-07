@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
+	promgr "github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 const (
@@ -75,7 +76,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 
 //filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
 func filterAccess(access []*token.ResourceActions, ctx security.Context,
-	filters map[string]accessFilter) error {
+	pm promgr.ProjectManager, filters map[string]accessFilter) error {
 	var err error
 	for _, a := range access {
 		f, ok := filters[a.Type]
@@ -84,7 +85,7 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 			log.Warningf("No filter found for access type: %s, skip filter, the access of resource '%s' will be set empty.", a.Type, a.Name)
 			continue
 		}
-		err = f.filter(ctx, a)
+		err = f.filter(ctx, pm, a)
 		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
 			return err
