@@ -16,12 +16,12 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.
-2. In Project replication page, add a replication rule using an exist endpoint with enable checked.  
-3. In Project replication page, add a replication rule using an exist endpoint without enable checked.  
+2. In Project replication page, add a replication rule using an existing endpoint with enable checked.  
+3. In Project replication page, add a replication rule using an existing endpoint without enable checked.  
 4. In Project replication page, add a replication rule using a new endpoint.
 5. In Project replication page, add a replication rule using a new endpoint. Provide invalid values of input to see if validation works:
 
-* endpoint name or ip address duplicate with exist endpoint.  
+* endpoint name or ip address duplicate with an existing endpoint.  
 * endpoint ip address incorrect.  
 * endpoint username or password incorrect.  
 
