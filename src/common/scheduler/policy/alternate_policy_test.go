@@ -1,12 +1,13 @@
 package policy
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 )
 
 type fakeTask struct {
-	number int
+	number int32
 }
 
 func (ft *fakeTask) Name() string {
@@ -14,8 +15,12 @@ func (ft *fakeTask) Name() string {
 }
 
 func (ft *fakeTask) Run() error {
-	ft.number++
+	atomic.AddInt32(&(ft.number), 1)
 	return nil
+}
+
+func (ft *fakeTask) Number() int32 {
+	return atomic.LoadInt32(&ft.number)
 }
 
 func TestBasic(t *testing.T) {
@@ -52,18 +57,18 @@ func TestEvaluatePolicy(t *testing.T) {
 		t.Fail()
 	}
 	ch, _ := tp.Evaluate()
-	counter := 0
+	var counter int32
 
 	for i := 0; i < 3; i++ {
 		select {
 		case <-ch:
-			counter++
+			atomic.AddInt32(&counter, 1)
 		case <-time.After(2 * time.Second):
 			continue
 		}
 	}
 
-	if counter != 3 {
+	if atomic.LoadInt32(&counter) != 3 {
 		t.Fail()
 	}
 
@@ -82,7 +87,7 @@ func TestDisablePolicy(t *testing.T) {
 		t.Fail()
 	}
 	ch, _ := tp.Evaluate()
-	counter := 0
+	var counter int32
 	terminate := make(chan bool)
 	defer func() {
 		terminate <- true
@@ -91,7 +96,7 @@ func TestDisablePolicy(t *testing.T) {
 		for {
 			select {
 			case <-ch:
-				counter++
+				atomic.AddInt32(&counter, 1)
 			case <-terminate:
 				return
 			case <-time.After(6 * time.Second):
@@ -106,9 +111,10 @@ func TestDisablePolicy(t *testing.T) {
 	//Waiting for everything is stable
 	<-time.After(1 * time.Second)
 	//Copy value
-	copiedCounter := counter
+	var copiedCounter int32
+	atomic.StoreInt32(&copiedCounter, atomic.LoadInt32(&counter))
 	time.Sleep(2 * time.Second)
-	if counter != copiedCounter {
-		t.Fatalf("Policy is still running after calling Disable() %d=%d", copiedCounter, counter)
+	if atomic.LoadInt32(&counter) != atomic.LoadInt32(&copiedCounter) {
+		t.Fatalf("Policy is still running after calling Disable() %d=%d", atomic.LoadInt32(&copiedCounter), atomic.LoadInt32(&counter))
 	}
 }
