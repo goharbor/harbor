@@ -1,12 +1,13 @@
 # Harbor upgrade and database migration guide
 
-When upgrading your existing Habor instance to a newer version, you may need to migrate the data in your database. Refer to [change log](../migration/changelog.md) to find out whether there is any change in the database. If there is, you should go through the database migration process. Since the migration may alter the database schema, you should **always** back up your data before any migration.
+When upgrading your existing Habor instance to a newer version, you may need to migrate the data in your database. Refer to [change log](../tools/migration/changelog.md) to find out whether there is any change in the database. If there is, you should go through the database migration process. Since the migration may alter the database schema, you should **always** back up your data before any migration.
 
 *If your install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.*
 
-**NOTE:** From 1.2, you need to use release version as the tag of migrator image. 'latest' is no longer used for new release.
+**NOTE:** 
+- From v1.2 on, you need to use the release version as the tag of the migrator image. 'latest' is no longer used for new release.
 
-**NOTE:** You must backup your data before any data migration.
+- You must back up your data before any data migration.
 
 ### Upgrading Harbor and migrating data
 
@@ -20,13 +21,13 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 2.  Back up Harbor's current files so that you can roll back to the current version when it is necessary.
     ```sh
     cd ..
-    mv harbor /tmp/harbor
+    mv harbor /my_backup_dir/harbor
     ```
 
 3. Get the lastest Harbor release package from Github:
    https://github.com/vmware/harbor/releases
 
-4. Before upgrading Harbor, perform database migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub:
+4. Before upgrading Harbor, perform database migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. 1.2) in the below command:
 
     ```
     docker pull vmware/harbor-db-migrator:[tag]
@@ -62,7 +63,7 @@ you must make sure **auth_mode** is set to **ldap_auth** in `harbor.cfg` before 
     ```
 	**NOTE:** After running the script, make sure you go through `harbor.cfg` to verify all the settings are correct. You can make changes to `harbor.cfg` as needed.
 
-8. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance.
+8. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If your choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
@@ -86,7 +87,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
 
 4. Restore the older version package of Harbor.
     ```sh
-    mv /tmp/harbor harbor
+    mv /my_backup_dir/harbor harbor
     ```
 
 5. Restart Harbor service using the previous configuration.  
@@ -95,6 +96,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     cd harbor
     ./install.sh
     ```
+   **Note:** If your choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.  
 
    If your previous version of Harbor was installed from source code:
     ```sh

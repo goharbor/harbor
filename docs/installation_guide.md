@@ -122,7 +122,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
 
 ##### Default installation (without Notary/Clair)
-After version 1.1.0, Harbor has integrated with Notary and Clair (for vulnerability scanning), but by default the installation does not include Notary or Clair service.
+Harbor has integrated with Notary and Clair (for vulnerability scanning). However, the default installation does not include Notary or Clair service.
 
 ```sh
     $ sudo ./install.sh
