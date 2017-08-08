@@ -59,8 +59,13 @@ func UpdateScanOverview(digest, layerName string, l ...*log.Logger) error {
 		logger.Errorf("Failed to get result from Clair, error: %v", err)
 		return err
 	}
+	compOverview, sev := transformVuln(res)
+	return dao.UpdateImgScanOverview(digest, layerName, sev, compOverview)
+}
+
+func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOverview, models.Severity) {
 	vulnMap := make(map[models.Severity]int)
-	features := res.Layer.Features
+	features := clairVuln.Layer.Features
 	totalComponents := len(features)
 	var temp models.Severity
 	for _, f := range features {
@@ -85,9 +90,8 @@ func UpdateScanOverview(digest, layerName string, l ...*log.Logger) error {
 		}
 		compSummary = append(compSummary, entry)
 	}
-	compOverview := &models.ComponentsOverview{
+	return &models.ComponentsOverview{
 		Total:   totalComponents,
 		Summary: compSummary,
-	}
-	return dao.UpdateImgScanOverview(digest, layerName, overallSev, compOverview)
+	}, overallSev
 }
