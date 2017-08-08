@@ -193,9 +193,8 @@ paths:
           description: 'Project contains policies, can not be deleted.'
         '500':
           description: Internal errors.
-  '/projects/{project_id}/publicity':
     put:
-      summary: Update properties for a selected project.
+      summary: Update publicity for a selected project.
       description: |
         This endpoint is aimed to toggle a project publicity status.
       parameters:
@@ -205,12 +204,12 @@ paths:
           format: int64
           required: true
           description: Selected project ID.
-        - name: project
+        - name: publicity
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Project'
-          description: Updates of project.
+            $ref: '#/definitions/ProjectPublicity'
+          description: Update publicity of project.
       tags:
         - Products
       responses:
@@ -2047,6 +2046,13 @@ definitions:
       automatically_scan_images_on_push:
         type: boolean
         description: Whether scan images automatically when pushing.
+  ProjectPublicity:
+    type: object
+    properties:
+       publicity:
+        type: integer
+        format: int
+        description: The publicity status of the project to be set.
   Manifest:
     type: object
     properties:
