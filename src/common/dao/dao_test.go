@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -264,14 +265,11 @@ func TestRegister(t *testing.T) {
 	}
 	newUser, err := GetUser(queryUser)
 	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
+		t.Fatalf("Error occurred in GetUser: %v", err)
 	}
-
-	if newUser.Username != username {
-		t.Errorf("Username does not match, expected: %s, actual: %s", username, newUser.Username)
-	}
-	if newUser.Email != "tester01@vmware.com" {
-		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
+	if assert.NotNil(t, newUser) {
+		assert.Equal(t, username, newUser.Username)
+		assert.Equal(t, "tester01@vmware.com", newUser.Email)
 	}
 }
 
@@ -289,7 +287,7 @@ func TestCheckUserPassword(t *testing.T) {
 	}
 	u, err := CheckUserPassword(nonExistUser)
 	if err != nil {
-		t.Errorf("Failed in CheckUserPassword: %v", err)
+		t.Fatalf("Failed in CheckUserPassword: %v", err)
 	}
 	if u != nil {
 		t.Errorf("Expected nil for Non exist user, but actual: %+v", u)
@@ -316,19 +314,20 @@ func TestUserExists(t *testing.T) {
 
 	exists, err = UserExists(models.User{Username: username}, "username")
 	if err != nil {
-		t.Errorf("Error occurred in UserExists: %v", err)
+		t.Fatalf("Error occurred in UserExists: %v", err)
 	}
 	if !exists {
 		t.Errorf("User %s was inserted but does not exist", username)
 	}
-	exists, err = UserExists(models.User{Email: "tester01@vmware.com"}, "email")
 
+	exists, err = UserExists(models.User{Email: "tester01@vmware.com"}, "email")
 	if err != nil {
-		t.Errorf("Error occurred in UserExists: %v", err)
+		t.Fatalf("Error occurred in UserExists: %v", err)
 	}
 	if !exists {
 		t.Errorf("User with email %s inserted but does not exist", "tester01@vmware.com")
 	}
+
 	exists, err = UserExists(models.User{Username: "NOTHERE"}, "username")
 	if err != nil {
 		t.Errorf("Error occurred in UserExists: %v", err)
@@ -352,12 +351,8 @@ func TestLoginByUserName(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
-	if loginUser == nil {
-		t.Errorf("No found for user logined by username and password: %v", userQuery)
-	}
-
-	if loginUser.Username != username {
-		t.Errorf("User's username does not match after login, expected: %s, actual: %s", username, loginUser.Username)
+	if assert.NotNil(t, loginUser) {
+		assert.Equal(t, username, loginUser.Username)
 	}
 }
 
@@ -375,11 +370,8 @@ func TestLoginByEmail(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
-	if loginUser == nil {
-		t.Errorf("No found for user logined by email and password : %v", userQuery)
-	}
-	if loginUser.Username != username {
-		t.Errorf("User's username does not match after login, expected: %s, actual: %s", username, loginUser.Username)
+	if assert.NotNil(t, loginUser) {
+		assert.Equal(t, username, loginUser.Username)
 	}
 }
 
@@ -394,11 +386,8 @@ func TestGetUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetUser: %v", err)
 	}
-	if currentUser == nil {
-		t.Errorf("No user found queried by user query: %+v", queryUser)
-	}
-	if currentUser.Email != "tester01@vmware.com" {
-		t.Errorf("the user's email does not match, expected: tester01@vmware.com, actual: %s", currentUser.Email)
+	if assert.NotNil(t, currentUser) {
+		assert.Equal(t, "tester01@vmware.com", currentUser.Email)
 	}
 
 	queryUser = models.User{}
@@ -409,17 +398,14 @@ func TestGetUser(t *testing.T) {
 func TestListUsers(t *testing.T) {
 	users, err := ListUsers(nil)
 	if err != nil {
-		t.Errorf("Error occurred in ListUsers: %v", err)
+		t.Fatalf("Error occurred in ListUsers: %v", err)
 	}
 	if len(users) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
 	users2, err := ListUsers(&models.UserQuery{Username: username})
-	if len(users2) != 1 {
-		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
-	}
-	if users2[0].Username != username {
-		t.Errorf("The username in result list does not match, expected: %s, actual: %s", username, users2[0].Username)
+	if assert.Equal(t, 1, len(users2)) {
+		assert.Equal(t, username, users2[0].Username)
 	}
 }
 
@@ -438,11 +424,10 @@ func TestResetUserPassword(t *testing.T) {
 
 	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "HarborTester12345"})
 	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
+		t.Fatalf("Error occurred in LoginByDb: %v", err)
 	}
-
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+	if assert.NotNil(t, loginedUser) {
+		assert.Equal(t, username, loginedUser.Username)
 	}
 }
 
@@ -450,21 +435,22 @@ func TestChangeUserPassword(t *testing.T) {
 	user := models.User{UserID: currentUser.UserID}
 	query, err := GetUser(user)
 	if err != nil {
-		t.Errorf("Error occurred when get user salt")
+		t.Fatalf("Error occurred when get user salt")
 	}
-	currentUser.Salt = query.Salt
-	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
+	if assert.NotNil(t, query) {
+		currentUser.Salt = query.Salt
+		err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
+		if err != nil {
+			t.Fatalf("Error occurred in ChangeUserPassword: %v", err)
+		}
 	}
 
 	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewHarborTester12345"})
 	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
+		t.Fatalf("Error occurred in LoginByDb: %v", err)
 	}
-
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+	if assert.NotNil(t, loginedUser) {
+		assert.Equal(t, username, loginedUser.Username)
 	}
 }
 
@@ -472,20 +458,22 @@ func TestChangeUserPasswordWithOldPassword(t *testing.T) {
 	user := models.User{UserID: currentUser.UserID}
 	query, err := GetUser(user)
 	if err != nil {
-		t.Errorf("Error occurred when get user salt")
+		t.Fatalf("Error occurred when get user salt")
 	}
-	currentUser.Salt = query.Salt
+	if assert.NotNil(t, query) {
+		currentUser.Salt = query.Salt
+		err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
+		if err != nil {
+			t.Fatalf("Error occurred in ChangeUserPassword: %v", err)
+		}
+	}
 
-	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
-	}
 	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewerHarborTester12345"})
 	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
+		t.Fatalf("Error occurred in LoginByDb: %v", err)
 	}
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+	if assert.NotNil(t, loginedUser) {
+		assert.Equal(t, username, loginedUser.Username)
 	}
 }
 
@@ -508,11 +496,8 @@ func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
-	if len(projects) != 1 {
-		t.Errorf("Expected only one project in DB, but actual: %d", len(projects))
-	}
-	if projects[0].Name != "library" {
-		t.Errorf("There name of the project does not match, expected: %s, actual: %s", "library", projects[0].Name)
+	if assert.Equal(t, 1, len(projects)) {
+		assert.Equal(t, "library", projects[0].Name)
 	}
 }
 
@@ -527,7 +512,7 @@ func TestAddProject(t *testing.T) {
 
 	_, err := AddProject(project)
 	if err != nil {
-		t.Errorf("Error occurred in AddProject: %v", err)
+		t.Fatalf("Error occurred in AddProject: %v", err)
 	}
 
 	newProject, err := GetProjectByName(projectName)
@@ -547,11 +532,8 @@ func TestGetProject(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in GetProjectByName: %v", err)
 	}
-	if currentProject == nil {
-		t.Errorf("No project found queried by project name: %v", projectName)
-	}
-	if currentProject.Name != projectName {
-		t.Errorf("Project name does not match, expected: %s, actual: %s", projectName, currentProject.Name)
+	if assert.NotNil(t, currentProject) {
+		assert.Equal(t, projectName, currentProject.Name)
 	}
 }
 
@@ -576,13 +558,10 @@ func TestGetAccessLog(t *testing.T) {
 	}
 	accessLogs, err := GetAccessLogs(query)
 	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
+		t.Fatalf("Error occurred in GetAccessLog: %v", err)
 	}
-	if len(accessLogs) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogs))
-	}
-	if accessLogs[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogs[0].RepoName)
+	if assert.Equal(t, 1, len(accessLogs)) {
+		assert.Equal(t, projectName+"/", accessLogs[0].RepoName)
 	}
 }
 
@@ -615,7 +594,7 @@ func TestAddAccessLog(t *testing.T) {
 	}
 	err = AddAccessLog(accessLog)
 	if err != nil {
-		t.Errorf("Error occurred in AddAccessLog: %v", err)
+		t.Fatalf("Error occurred in AddAccessLog: %v", err)
 	}
 
 	query := &models.LogQueryParam{
@@ -627,16 +606,11 @@ func TestAddAccessLog(t *testing.T) {
 	}
 	accessLogList, err = GetAccessLogs(query)
 	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
+		t.Fatalf("Error occurred in GetAccessLog: %v", err)
 	}
-	if len(accessLogList) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
-	}
-	if accessLogList[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
-	}
-	if accessLogList[0].RepoTag != repoTag {
-		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag, accessLogList[0].RepoTag)
+	if assert.Equal(t, 1, len(accessLogList)) {
+		assert.Equal(t, projectName+"/", accessLogList[0].RepoName)
+		assert.Equal(t, repoTag, accessLogList[0].RepoTag)
 	}
 }
 
@@ -677,7 +651,7 @@ func TestCountPull(t *testing.T) {
 
 	pullCount, err := CountPull(currentProject.Name + "/tomcat")
 	if err != nil {
-		t.Errorf("Error occurred in CountPull: %v", err)
+		t.Fatalf("Error occurred in CountPull: %v", err)
 	}
 	if pullCount != 3 {
 		t.Errorf("The access log pull count does not match, expected: 3, actual: %d", pullCount)
@@ -708,10 +682,10 @@ func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID
 	p, err := GetProjectByID(id)
 	if err != nil {
-		t.Errorf("Error in GetProjectById: %v, id: %d", err, id)
+		t.Fatalf("Error in GetProjectById: %v, id: %d", err, id)
 	}
-	if p.Name != currentProject.Name {
-		t.Errorf("project name does not match, expected: %s, actual: %s", currentProject.Name, p.Name)
+	if assert.NotNil(t, p) {
+		assert.Equal(t, currentProject.Name, p.Name)
 	}
 }
 
@@ -743,30 +717,29 @@ func TestGetUserByProject(t *testing.T) {
 func TestToggleProjectPublicity(t *testing.T) {
 	err := ToggleProjectPublicity(currentProject.ProjectID, publicityOn)
 	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
+		t.Fatalf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
 
 	currentProject, err = GetProjectByName(projectName)
 	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
+		t.Fatalf("Error occurred in GetProjectByName: %v", err)
 	}
-	if currentProject.Public != publicityOn {
-		t.Errorf("project, id: %d, its publicity is not on", currentProject.ProjectID)
+	if assert.NotNil(t, currentProject) {
+		assert.Equal(t, publicityOn, currentProject.Public)
 	}
+
 	err = ToggleProjectPublicity(currentProject.ProjectID, publicityOff)
 	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
+		t.Fatalf("Error occurred in ToggleProjectPublicity: %v", err)
 	}
 
 	currentProject, err = GetProjectByName(projectName)
 	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
+		t.Fatalf("Error occurred in GetProjectByName: %v", err)
 	}
-
-	if currentProject.Public != publicityOff {
-		t.Errorf("project, id: %d, its publicity is not off", currentProject.ProjectID)
+	if assert.NotNil(t, currentProject) {
+		assert.Equal(t, publicityOff, currentProject.Public)
 	}
-
 }
 
 /*
@@ -780,16 +753,12 @@ func TestIsProjectPublic(t *testing.T) {
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
+		t.Fatalf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
 
 	//Get the size of current user project role.
-	if len(r) != 1 {
-		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserID, currentProject.ProjectID, len(r))
-	}
-
-	if r[0].Name != "projectAdmin" {
-		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
+	if assert.Equal(t, 1, len(r)) {
+		assert.Equal(t, "projectAdmin", r[0].Name)
 	}
 }
 
@@ -818,13 +787,10 @@ func TestGetTotalOfProjects(t *testing.T) {
 func TestGetProjects(t *testing.T) {
 	projects, err := GetProjects(nil)
 	if err != nil {
-		t.Errorf("Error occurred in GetAllProjects: %v", err)
+		t.Fatalf("Error occurred in GetAllProjects: %v", err)
 	}
-	if len(projects) != 2 {
-		t.Errorf("Expected length of projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[1].Name != projectName {
-		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
+	if assert.Equal(t, 2, len(projects)) {
+		assert.Equal(t, projectName, projects[1].Name)
 	}
 }
 
@@ -834,25 +800,22 @@ func TestGetPublicProjects(t *testing.T) {
 		Public: &value,
 	})
 	if err != nil {
-		t.Errorf("Error occurred in getProjects: %v", err)
+		t.Fatalf("Error occurred in getProjects: %v", err)
 	}
-	if len(projects) != 1 {
-		t.Errorf("Expected length of projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[0].Name != "library" {
-		t.Errorf("Expected project name in the list: %s, actual: %s", "library", projects[0].Name)
+	if assert.Equal(t, 1, len(projects)) {
+		assert.Equal(t, "library", projects[0].Name)
 	}
 }
 
 func TestAddProjectMember(t *testing.T) {
 	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
 	if err != nil {
-		t.Errorf("Error occurred in AddProjectMember: %v", err)
+		t.Fatalf("Error occurred in AddProjectMember: %v", err)
 	}
 
 	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+		t.Fatalf("Error occurred in GetUserProjectRoles: %v", err)
 	}
 
 	flag := false
@@ -871,27 +834,27 @@ func TestAddProjectMember(t *testing.T) {
 func TestUpdateProjectMember(t *testing.T) {
 	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST)
 	if err != nil {
-		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
+		t.Fatalf("Error occurred in UpdateProjectMember: %v", err)
 	}
 	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+		t.Fatalf("Error occurred in GetUserProjectRoles: %v", err)
 	}
-	if roles[0].Name != "guest" {
-		t.Errorf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name)
+	if assert.Len(t, roles, 1) {
+		assert.True(t, roles[0].Name != "guest",
+			fmt.Sprintf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name))
 	}
-
 }
 
 func TestDeleteProjectMember(t *testing.T) {
 	err := DeleteProjectMember(currentProject.ProjectID, 1)
 	if err != nil {
-		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
+		t.Fatalf("Error occurred in DeleteProjectMember: %v", err)
 	}
 
 	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
 	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
+		t.Fatalf("Error occurred in GetUserProjectRoles: %v", err)
 	}
 
 	if len(roles) != 0 {
@@ -902,14 +865,14 @@ func TestDeleteProjectMember(t *testing.T) {
 func TestGetRoleByID(t *testing.T) {
 	r, err := GetRoleByID(models.PROJECTADMIN)
 	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
+		t.Fatalf("Failed to call GetRoleByID: %v", err)
 	}
 	if r == nil || r.Name != "projectAdmin" || r.RoleCode != "MDRWS" {
 		t.Errorf("Role does not match for role id: %d, actual: %+v", models.PROJECTADMIN, r)
 	}
 	r, err = GetRoleByID(9999)
 	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
+		t.Fatalf("Failed to call GetRoleByID: %v", err)
 	}
 	if r != nil {
 		t.Errorf("Role should nil for non-exist id 9999, actual: %+v", r)
@@ -919,22 +882,22 @@ func TestGetRoleByID(t *testing.T) {
 func TestToggleAdminRole(t *testing.T) {
 	err := ToggleUserAdminRole(currentUser.UserID, 1)
 	if err != nil {
-		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
+		t.Fatalf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
 	isAdmin, err := IsAdminRole(currentUser.UserID)
 	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
+		t.Fatalf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
 	if !isAdmin {
 		t.Errorf("User is not admin after toggled, user id: %d", currentUser.UserID)
 	}
 	err = ToggleUserAdminRole(currentUser.UserID, 0)
 	if err != nil {
-		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
+		t.Fatalf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
 	isAdmin, err = IsAdminRole(currentUser.UserID)
 	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
+		t.Fatalf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
 	if isAdmin {
 		t.Errorf("User is still admin after toggled, user id: %d", currentUser.UserID)
@@ -945,11 +908,11 @@ func TestChangeUserProfile(t *testing.T) {
 	user := models.User{UserID: currentUser.UserID, Email: username + "@163.com", Realname: "test", Comment: "Unit Test"}
 	err := ChangeUserProfile(user)
 	if err != nil {
-		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
+		t.Fatalf("Error occurred in ChangeUserProfile: %v", err)
 	}
 	loginedUser, err := GetUser(models.User{UserID: currentUser.UserID})
 	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
+		t.Fatalf("Error occurred in GetUser: %v", err)
 	}
 	if loginedUser != nil {
 		if loginedUser.Email != username+"@163.com" {
