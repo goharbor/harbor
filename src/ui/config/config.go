@@ -379,7 +379,7 @@ func AdmiralEndpoint() string {
 		return ""
 	}
 	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
-		cfg[common.AdmiralEndpoint] = ""
+		return ""
 	}
 	return cfg[common.AdmiralEndpoint].(string)
 }
