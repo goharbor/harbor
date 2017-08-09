@@ -18,6 +18,9 @@ import (
 	"time"
 )
 
+//RepoTable is the table name for repository
+const RepoTable = "repository"
+
 // RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
 type RepoRecord struct {
 	RepositoryID int64     `orm:"pk;auto;column(repository_id)" json:"repository_id"`
@@ -32,5 +35,5 @@ type RepoRecord struct {
 
 //TableName is required by by beego orm to map RepoRecord to table repository
 func (rp *RepoRecord) TableName() string {
-	return "repository"
+	return RepoTable
 }
