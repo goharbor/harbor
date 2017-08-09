@@ -141,20 +141,7 @@ func convertRoles(roles []string) []int {
 
 // GetAuthCtx returns the auth context of the current user
 func GetAuthCtx(client *http.Client, url, token string) (*AuthContext, error) {
-	return get(client, url, token)
-}
-
-// get the user's auth context, if the username is not provided
-// get the default auth context of the token
-func get(client *http.Client, url, token string, username ...string) (*AuthContext, error) {
-	endpoint := ""
-	if len(username) > 0 && len(username[0]) > 0 {
-		endpoint = buildSpecificUserAuthCtxURL(url, username[0])
-	} else {
-		endpoint = buildCurrentUserAuthCtxURL(url)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := http.NewRequest(http.MethodGet, buildCurrentUserAuthCtxURL(url), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -216,11 +203,6 @@ func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 
 func buildCurrentUserAuthCtxURL(url string) string {
 	return strings.TrimRight(url, "/") + "/auth/session"
-}
-
-func buildSpecificUserAuthCtxURL(url, principalID string) string {
-	return fmt.Sprintf("%s/auth/idm/principals/%s/security-context",
-		strings.TrimRight(url, "/"), principalID)
 }
 
 func buildLoginURL(url, principalID string) string {
