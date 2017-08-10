@@ -13,7 +13,7 @@
 // limitations under the License.
 import {Component, OnInit, ViewChild, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
 
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 import { Project } from './project';
 import { ProjectService } from './project.service';
@@ -47,6 +47,7 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectComponent implements OnInit, OnDestroy {
+  selfType: string;
 
   changedProjects: Project[];
   projectTypes = ProjectTypes;
@@ -62,6 +63,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   subscription: Subscription;
   loading: boolean = true;
+  selecteData:number =0;
 
   constructor(
     private projectService: ProjectService,
@@ -70,6 +72,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private deletionDialogService: ConfirmationDialogService,
     private statisticHandler: StatisticHandler,
+    private route: ActivatedRoute,
     private ref: ChangeDetectorRef) {
     this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
@@ -98,6 +101,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+     this.selfType = this.route.snapshot.paramMap.get("type");
   }
 
   ngOnDestroy(): void {
@@ -121,7 +125,18 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   retrieve(state?: State): void {
     this.projectName = "";
-    this.getProjects();
+
+    if (window.sessionStorage && window.sessionStorage["projectTypeValue"] && this.selfType) {
+      this.currentFilteredType = +window.sessionStorage["projectTypeValue"];
+      this.selecteData = this.currentFilteredType;
+      window.sessionStorage.clear();
+    }
+
+    if (this.currentFilteredType === 0) {
+      this.getProjects();
+    } else {
+      this.getProjects("", this.currentFilteredType - 1);
+    }
   }
 
   getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
@@ -174,6 +189,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
         this.getProjects();
       } else {
         this.getProjects("", this.currentFilteredType - 1);
+      }
+      this.selecteData = this.currentFilteredType;
+      if (window.sessionStorage) {
+        window.sessionStorage['projectTypeValue'] = this.currentFilteredType;
       }
     }
   }
