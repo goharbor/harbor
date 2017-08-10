@@ -13,7 +13,7 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 ### Features
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
 * **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances, with auto-retry on errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
-* **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulerabilities.
+* **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulnerabilities.
 * **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management.
 * **Image deletion & garbage collection**: Images can be deleted and their space can be recycled. 
 * **Notary**: Image authenticity can be ensured. 
