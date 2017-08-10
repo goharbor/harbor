@@ -5,6 +5,7 @@ export const TAG_STYLE = `
 
 .embeded-datagrid {
   width: 98%;
+  float:right; /*add for issue #2688*/
 }
 
 .hidden-tag {
@@ -13,7 +14,6 @@ export const TAG_STYLE = `
 
 :host >>> .datagrid {
   margin: 0;
-  border-bottom: none;
 }
 
 :host >>> .datagrid-placeholder {

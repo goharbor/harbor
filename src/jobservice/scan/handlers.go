@@ -19,12 +19,11 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/clair"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/utils"
 
+	"crypto/sha256"
 	"fmt"
-	"net/http"
 )
 
 // Initializer will handle the initialise state pull the manifest, prepare token.
@@ -41,9 +40,7 @@ func (iz *Initializer) Enter() (string, error) {
 		logger.Errorf("Failed to read regURL, error: %v", err)
 		return "", err
 	}
-	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
-	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), iz.Context.Repository, "pull")
+	repoClient, err := utils.NewRepositoryClientForJobservice(iz.Context.Repository)
 	if err != nil {
 		logger.Errorf("An error occurred while creating repository client: %v", err)
 		return "", err
@@ -64,6 +61,7 @@ func (iz *Initializer) Enter() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	logger.Infof("Image: %s:%s, digest: %s", iz.Context.Repository, iz.Context.Tag, iz.Context.Digest)
 	iz.Context.token = tk
 	iz.Context.clairClient = clair.NewClient(config.ClairEndpoint(), logger)
 	iz.prepareLayers(regURL, manifest.References())
@@ -71,14 +69,16 @@ func (iz *Initializer) Enter() (string, error) {
 }
 
 func (iz *Initializer) prepareLayers(registryEndpoint string, descriptors []distribution.Descriptor) {
-	//	logger := iz.Context.Logger
-	tokenHeader := map[string]string{"Authorization": fmt.Sprintf("Bearer %s", iz.Context.token)}
+	tokenHeader := map[string]string{"Connection": "close", "Authorization": fmt.Sprintf("Bearer %s", iz.Context.token)}
+	// form the chain by using the digests of all parent layers in the image, such that if another image is built on top of this image the layer name can be re-used.
+	shaChain := ""
 	for _, d := range descriptors {
 		if d.MediaType == schema2.MediaTypeConfig {
 			continue
 		}
+		shaChain += string(d.Digest) + "-"
 		l := models.ClairLayer{
-			Name:    fmt.Sprintf("%d-%s", iz.Context.JobID, d.Digest),
+			Name:    fmt.Sprintf("%x", sha256.Sum256([]byte(shaChain))),
 			Headers: tokenHeader,
 			Format:  "Docker",
 			Path:    utils.BuildBlobURL(registryEndpoint, iz.Context.Repository, string(d.Digest)),
@@ -104,7 +104,7 @@ type LayerScanHandler struct {
 func (ls *LayerScanHandler) Enter() (string, error) {
 	logger := ls.Context.Logger
 	currentLayer := ls.Context.layers[ls.Context.current]
-	logger.Infof("Entered scan layer handler, current: %d, layer name: %s", ls.Context.current, currentLayer.Name)
+	logger.Infof("Entered scan layer handler, current: %d, layer name: %s, layer path: %s", ls.Context.current, currentLayer.Name, currentLayer.Path)
 	err := ls.Context.clairClient.ScanLayer(currentLayer)
 	if err != nil {
 		logger.Errorf("Unexpected error: %v", err)

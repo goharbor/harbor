@@ -23,6 +23,7 @@ import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 import { CONFIGURATION_DIRECTIVES } from './config/index';
+import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 
 import {
   SystemInfoService,
@@ -40,7 +41,9 @@ import {
   ScanningResultService,
   ScanningResultDefaultService,
   ConfigurationService,
-  ConfigurationDefaultService
+  ConfigurationDefaultService,
+  JobLogService,
+  JobLogDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -51,6 +54,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { TranslateServiceInitializer } from './i18n/index';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
+import { ChannelService } from './channel/index';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -72,7 +76,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations"
+  configurationEndpoint: "/api/configurations",
+  scanJobEndpoint: "/api/jobs/scan"
 };
 
 /**
@@ -110,7 +115,10 @@ export interface HarborModuleConfig {
   scanningService?: Provider,
 
   //Service implementation for configuration
-  configService?: Provider
+  configService?: Provider,
+
+  //Service implementation for job log
+  jobLogService?: Provider
 }
 
 /**
@@ -153,7 +161,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     DATETIME_PICKER_DIRECTIVES,
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
-    CONFIGURATION_DIRECTIVES
+    CONFIGURATION_DIRECTIVES,
+    JOB_LOG_VIEWER_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -173,6 +182,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
+    JOB_LOG_VIEWER_DIRECTIVES,
     TranslateModule
   ],
   providers: []
@@ -193,6 +203,7 @@ export class HarborLibraryModule {
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
+        config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         //Do initializing
         TranslateServiceInitializer,
         {
@@ -200,7 +211,8 @@ export class HarborLibraryModule {
           useFactory: initConfig,
           deps: [TranslateServiceInitializer, SERVICE_CONFIG],
           multi: true
-        }
+        },
+        ChannelService
       ]
     };
   }
@@ -218,7 +230,9 @@ export class HarborLibraryModule {
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
-        config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService }
+        config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
+        config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
+        ChannelService
       ]
     };
   }

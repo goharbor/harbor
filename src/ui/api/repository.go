@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -189,7 +190,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -305,7 +306,7 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	client, err := ra.initRepositoryClient(repository)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to initialize the client for %s: %v",
 			repository, err))
@@ -354,7 +355,7 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	client, err := ra.initRepositoryClient(repoName)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -378,7 +379,7 @@ func assemble(client *registry.Repository, repository string,
 	var err error
 	signatures := map[string]*notary.Target{}
 	if config.WithNotary() {
-		signatures, err = getSignatures(repository, username)
+		signatures, err = getSignatures(username, repository)
 		if err != nil {
 			signatures = map[string]*notary.Target{}
 			log.Errorf("failed to get signatures of %s: %v", repository, err)
@@ -495,7 +496,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -555,16 +556,6 @@ func getManifest(client *registry.Repository,
 	}
 
 	return result, nil
-}
-
-func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint, err := config.RegistryURL()
-	if err != nil {
-		return nil, err
-	}
-
-	return uiutils.NewRepositoryClientForUI(endpoint, true, ra.SecurityCtx.GetUsername(),
-		repoName, "pull", "push", "*")
 }
 
 //GetTopRepos returns the most populor repositories
@@ -741,26 +732,44 @@ func (ra *RepositoryAPI) ScanAll() {
 		ra.HandleUnauthorized()
 		return
 	}
-	if !ra.SecurityCtx.IsSysAdmin() {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
-		return
-	}
+	projectIDStr := ra.GetString("project_id")
+	if len(projectIDStr) > 0 { //scan images under the project only.
+		pid, err := strconv.ParseInt(projectIDStr, 10, 64)
+		if err != nil || pid <= 0 {
+			ra.HandleBadRequest(fmt.Sprintf("Invalid project_id %s", projectIDStr))
+			return
+		}
+		if !ra.SecurityCtx.HasAllPerm(pid) {
+			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+			return
+		}
+		if err := uiutils.ScanImagesByProjectID(pid); err != nil {
+			log.Errorf("Failed triggering scan images in project: %d, error: %v", pid, err)
+			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+			return
+		}
+	} else { //scan all images in Harbor
+		if !ra.SecurityCtx.IsSysAdmin() {
+			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+			return
+		}
+		if !utils.ScanAllMarker().Check() {
+			log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
+			ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
+			return
+		}
 
-	if !utils.ScanAllMarker().Mark() {
-		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
-		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
-		return
-	}
-
-	if err := uiutils.ScanAllImages(); err != nil {
-		log.Errorf("Failed triggering scan all images, error: %v", err)
-		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
-		return
+		if err := uiutils.ScanAllImages(); err != nil {
+			log.Errorf("Failed triggering scan all images, error: %v", err)
+			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+			return
+		}
+		utils.ScanAllMarker().Mark()
 	}
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 
-func getSignatures(repository, username string) (map[string]*notary.Target, error) {
+func getSignatures(username, repository string) (map[string]*notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
 	if err != nil {
@@ -789,7 +798,7 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 		log.Errorf("project %s not found", project)
 		return false, "", nil
 	}
-	client, err := ra.initRepositoryClient(repository)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
 		return false, "", fmt.Errorf("failed to initialize the client for %s: %v", repository, err)
 	}

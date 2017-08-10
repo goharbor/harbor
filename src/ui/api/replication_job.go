@@ -16,8 +16,6 @@ package api
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -147,38 +145,12 @@ func (ra *RepJobAPI) GetLog() {
 	if ra.jobID == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
-
-	req, err := http.NewRequest("GET", buildJobLogURL(strconv.FormatInt(ra.jobID, 10)), nil)
+	url := buildJobLogURL(strconv.FormatInt(ra.jobID, 10), ReplicationJobType)
+	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&ra.BaseAPI))
 	if err != nil {
-		log.Errorf("failed to create a request: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
-	}
-	utils.AddUISecret(req)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
-		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
-
-		if _, err = io.Copy(ra.Ctx.ResponseWriter, resp.Body); err != nil {
-			log.Errorf("failed to write log to response; %v", err)
-			ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+		ra.RenderError(http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Errorf("failed to read reponse body: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	ra.CustomAbort(resp.StatusCode, string(b))
 }
 
 //TODO:add Post handler to call job service API to submit jobs by policy

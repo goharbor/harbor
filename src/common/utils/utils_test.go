@@ -243,3 +243,23 @@ func TestParseHarborIDOrName(t *testing.T) {
 	assert.Equal(t, int64(0), id)
 	assert.Equal(t, "project", name)
 }
+
+type testingStruct struct {
+	Name  string
+	Count int
+}
+
+func TestConvertMapToStruct(t *testing.T) {
+	dataMap := make(map[string]interface{})
+	dataMap["Name"] = "testing"
+	dataMap["Count"] = 100
+
+	obj := &testingStruct{}
+	if err := ConvertMapToStruct(obj, dataMap); err != nil {
+		t.Fatal(err)
+	} else {
+		if obj.Name != "testing" || obj.Count != 100 {
+			t.Fail()
+		}
+	}
+}

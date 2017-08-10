@@ -1,7 +1,7 @@
 export const REPLICATION_CONFIG_HTML: string = `
 <form #replicationConfigFrom="ngForm" class="compact">
 <section class="form-block" style="margin-top:0px;margin-bottom:0px;">
-<label style="font-size:14px;font-weight:600;">Image Replication</label>
+<label style="font-size:14px;font-weight:600;" *ngIf="showSubTitle">{{'CONFIG.REPLICATION' | translate}}</label>
 <div class="form-group">
   <label for="verifyRemoteCert">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
     <clr-checkbox name="verifyRemoteCert" id="verifyRemoteCert" [(ngModel)]="replicationConfig.verify_remote_cert.value" [disabled]="!editable">

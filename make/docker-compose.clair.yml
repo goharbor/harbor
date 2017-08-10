@@ -37,6 +37,7 @@ services:
     container_name: clair
     image: vmware/clair:v2.0.1-photon
     restart: always
+    cpu_quota: 150000
     depends_on:
       - postgres
     volumes:

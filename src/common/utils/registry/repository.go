@@ -59,17 +59,6 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 	return repository, nil
 }
 
-// NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
-func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
-
-	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
-	return NewRepository(name, endpoint, &http.Client{
-		Transport: transport,
-		//  for transferring large image, OS will handle i/o timeout
-		//	Timeout:   30 * time.Second,
-	})
-}
-
 func parseError(err error) error {
 	if urlErr, ok := err.(*url.Error); ok {
 		if regErr, ok := urlErr.Err.(*registry_error.HTTPError); ok {

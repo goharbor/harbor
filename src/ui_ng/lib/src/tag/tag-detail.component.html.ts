@@ -44,24 +44,24 @@ export const TAG_DETAIL_HTML: string = `
                             <clr-icon shape="error" size="24" class="is-error"></clr-icon>
                         </div>
                         <div class="second-row">
-                            <clr-icon shape="exclamation-triangle" size="24" class="is-warning"></clr-icon>
+                            <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>
                         </div>
                     </div>
                     <div class="second-column">
-                        <div>{{highCount}} {{getPackageText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
-                        <div class="second-row">{{mediumCount}} {{getPackageText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                        <div>{{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }}</div>
+                        <div class="second-row">{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }}</div>
                     </div>
                     <div class="third-column">
                         <div>
-                            <clr-icon shape="play" size="20" class="is-warning rotate-90"></clr-icon>
+                            <clr-icon shape="play" size="20" class="tip-icon-low rotate-90"></clr-icon>
                         </div>
                         <div class="second-row">
-                            <clr-icon shape="help" size="20"></clr-icon>
+                            <clr-icon shape="help" size="18" style="margin-left: 2px;"></clr-icon>
                         </div>
                     </div>
                     <div class="fourth-column">
-                        <div>{{lowCount}} {{getPackageText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
-                        <div class="second-row">{{unknownCount}} {{getPackageText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
+                        <div>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }}</div>
+                        <div class="second-row">{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }}</div>
                     </div>
                 </div>
             </div>

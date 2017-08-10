@@ -111,7 +111,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := makeToken(u, svc, ra)
+	tokenJSON, err := MakeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
@@ -217,6 +217,9 @@ func (f *fakeSecurityContext) GetUsername() string {
 func (f *fakeSecurityContext) IsSysAdmin() bool {
 	return f.isAdmin
 }
+func (f *fakeSecurityContext) IsSolutionUser() bool {
+	return false
+}
 func (f *fakeSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	return false
 }
@@ -253,19 +256,19 @@ func TestFilterAccess(t *testing.T) {
 	}
 	err = filterAccess(a1, &fakeSecurityContext{
 		isAdmin: true,
-	}, registryFilterMap)
+	}, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
 
 	err = filterAccess(a2, &fakeSecurityContext{
 		isAdmin: true,
-	}, notaryFilterMap)
+	}, nil, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
 	err = filterAccess(a3, &fakeSecurityContext{
 		isAdmin: false,
-	}, registryFilterMap)
+	}, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }

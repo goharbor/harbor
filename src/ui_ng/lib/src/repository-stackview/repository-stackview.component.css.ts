@@ -3,7 +3,6 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
   padding-right: 16px;
 }
 .sub-grid-custom {
-  position: relative;
   left: 40px;
 }
 .refresh-btn {
@@ -31,5 +30,11 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
 
 :host >>> .datagrid .datagrid-placeholder-container {
   display: none;
+}
+
+.db-status-warning {
+  position: absolute;
+  left: 24px;
+  display: inline-block;
 }
 `;

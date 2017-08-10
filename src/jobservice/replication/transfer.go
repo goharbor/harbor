@@ -132,7 +132,7 @@ func (i *Initializer) enter() (string, error) {
 	c := &http.Cookie{Name: models.UISecretCookie, Value: i.srcSecret}
 	srcCred := auth.NewCookieCredential(c)
 	srcClient, err := utils.NewRepositoryClient(i.srcURL, i.insecure, srcCred,
-		config.InternalTokenServiceEndpoint(), i.repository, "pull", "push", "*")
+		config.InternalTokenServiceEndpoint(), i.repository)
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating source repository client: %v", err)
 		return "", err
@@ -141,7 +141,7 @@ func (i *Initializer) enter() (string, error) {
 
 	dstCred := auth.NewBasicAuthCredential(i.dstUsr, i.dstPwd)
 	dstClient, err := utils.NewRepositoryClient(i.dstURL, i.insecure, dstCred,
-		"", i.repository, "pull", "push", "*")
+		"", i.repository)
 	if err != nil {
 		i.logger.Errorf("an error occurred while creating destination repository client: %v", err)
 		return "", err
@@ -212,8 +212,10 @@ func getProject(name string) (*models.Project, error) {
 		return nil, err
 	}
 
-	req.URL.Query().Set("name", name)
-	req.URL.Query().Encode()
+	q := req.URL.Query()
+	q.Set("name", name)
+	req.URL.RawQuery = q.Encode()
+
 	req.AddCookie(&http.Cookie{
 		Name:  models.UISecretCookie,
 		Value: config.JobserviceSecret(),
@@ -229,6 +231,11 @@ func getProject(name string) (*models.Project, error) {
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get project %s: %d %s",
+			name, resp.StatusCode, string(data))
 	}
 
 	list := []*models.Project{}
@@ -308,7 +315,7 @@ func (c *Checker) createProject(project *models.Project) error {
 }
 
 func buildProjectURL() string {
-	return strings.TrimRight(config.LocalUIURL(), "/") + "/api/projects/"
+	return strings.TrimRight(config.LocalUIURL(), "/") + "/api/projects"
 }
 
 // ManifestPuller pulls the manifest of a tag. And if no tag needs to be pulled,

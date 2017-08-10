@@ -59,6 +59,12 @@ You can compile the code by one of the three approaches:
       $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true
    ```
 
+*  Build, install and bring up Harbor with Clair:
+
+   ```sh
+      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 CLAIRFLAG=true
+   ```
+
 #### II. Compile code with your own Golang environment, then build Harbor
 
 * Move source code to $GOPATH
@@ -69,20 +75,20 @@ You can compile the code by one of the three approaches:
       $ mv harbor $GOPATH/src/github.com/vmware/.
    ```
 
-*  Build, install and run Harbor without Notary:
+*  Build, install and run Harbor without Notary and Clair:
 
    ```sh
       $ cd $GOPATH/src/github.com/vmware/harbor
       $ make install
    ```
 
-*  Build, install and run Harbor with Notary:
+*  Build, install and run Harbor with Notary and Clair:
 
    ```sh
       $ cd $GOPATH/src/github.com/vmware/harbor
-      $ make install -e NOTARYFLAG=true
+      $ make install -e NOTARYFLAG=true CLAIRFLAG=true
    ```   
-
+ 
 ### Verify your installation
 
 If everything worked properly, you can get the below message:
@@ -106,6 +112,7 @@ CLARITYIMAGE       | Clarity UI builder image, default: harbor-clarity-ui-builde
 DEVFLAG            | Build model flag, default: dev
 COMPILETAG         | Compile model flag, default: compile_normal (local golang build)
 NOTARYFLAG         | Notary mode flag, default: false
+CLAIRFLAG          | Clair mode flag, default: false
 HTTPPROXY          | NPM http proxy for Clarity UI builder
 REGISTRYSERVER     | Remote registry server IP address
 REGISTRYUSER       | Remote registry server user name

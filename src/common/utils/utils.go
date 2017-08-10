@@ -16,10 +16,12 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -125,6 +127,24 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 	}
 	t := time.Unix(i, 0)
 	return &t, nil
+}
+
+//ConvertMapToStruct is used to fill the specified struct with map.
+func ConvertMapToStruct(object interface{}, values interface{}) error {
+	if object == nil {
+		return errors.New("nil struct is not supported")
+	}
+
+	if reflect.TypeOf(object).Kind() != reflect.Ptr {
+		return errors.New("object should be referred by pointer")
+	}
+
+	bytes, err := json.Marshal(values)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(bytes, object)
 }
 
 // ParseProjectIDOrName parses value to ID(int64) or name(string)

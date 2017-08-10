@@ -83,8 +83,7 @@
         "PROFILE": "User Profile",
         "CHANGE_PWD": "Change Password",
         "ABOUT": "About",
-        "LOGOUT": "Log Out",
-        "ROOT_CERT": "Download Root Cert"
+        "LOGOUT": "Log Out"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "Search Harbor...",
@@ -118,7 +117,8 @@
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
         "DELETE_SUCCESS": "User deleted successfully.",
-        "ITEMS": "item(s)"
+        "ITEMS": "items",
+        "OF": "of"
     },
     "PROJECT": {
         "PROJECTS": "Projects",
@@ -144,7 +144,7 @@
         "NAME_ALREADY_EXISTS": "Project name already exists.",
         "NAME_IS_ILLEGAL": "Project name is invalid.",
         "UNKNOWN_ERROR": "An unknown error occurred while creating the project.",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
         "DELETION_TITLE": "Confirm project deletion",
         "DELETION_SUMMARY": "Do you want to delete project {{param}}?",
         "FILTER_PLACEHOLDER": "Filter Projects",
@@ -153,7 +153,8 @@
         "DELETED_SUCCESS": "Deleted project successfully.",
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules cannot be deleted.",
-        "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project."
+        "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
+        "OF": "of"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositories",
@@ -172,7 +173,7 @@
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
         "DELETE": "Delete",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
         "ACTIONS": "Actions",
         "USERNAME_IS_REQUIRED": "Username is required",
         "USERNAME_DOES_NOT_EXISTS": "Username does not exist.",
@@ -183,7 +184,8 @@
         "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
         "ADDED_SUCCESS": "Added member successfully.",
         "DELETED_SUCCESS": "Deleted member successfully.",
-        "SWITCHED_SUCCESS": "Switched member role successfully."
+        "SWITCHED_SUCCESS": "Switched member role successfully.",
+        "OF": "of"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -200,9 +202,10 @@
         "OTHERS": "Others",
         "ADVANCED": "Advanced",
         "SIMPLE": "Simple",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
         "FILTER_PLACEHOLDER": "Filter Logs",
-        "INVALID_DATE": "Invalid date."
+        "INVALID_DATE": "Invalid date.",
+        "OF": "of"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Replication Rule",
@@ -255,10 +258,11 @@
         "STATUS": "Status",
         "OPERATION": "Operation",
         "CREATION_TIME": "Start Time",
-        "END_TIME": "End Time",
+        "UPDATE_TIME": "Update Time",
         "LOGS": "Logs",
         "OF": "of",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
+        "NO_LOGS": "No log",
         "TOGGLE_ENABLE_TITLE": "Enable Rule",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project will be replicated to the destination registry. \nPlease confirm to continue.",
         "TOGGLE_DISABLE_TITLE": "Disable Rule",
@@ -274,7 +278,8 @@
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
-        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
+        "JOB_LOG_VIEWER": "View Replication Job Log"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -297,7 +302,7 @@
         "FAILED_TO_GET_TARGET": "Failed to get endpoint.",
         "CREATION_TIME": "Creation Time",
         "OF": "of",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
         "DELETED_SUCCESS": "Deleted endpoint successfully.",
@@ -332,7 +337,7 @@
         "SHOW_DETAILS": "Show Details",
         "REPOSITORIES": "Repositories",
         "OF": "of",
-        "ITEMS": "item(s)",
+        "ITEMS": "items",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
@@ -383,16 +388,21 @@
         "SCOPE_SUBTREE": "Subtree",
         "PRO_CREATION_EVERYONE": "Everyone",
         "PRO_CREATION_ADMIN": "Admin Only",
+        "ROOT_CERT": "Registry Root Certificate",
+        "ROOT_CERT_LINK": "Download",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "Enable sign up.",
+            "SELF_REGISTRATION_ENABLE": "Enable sign up.",
+            "SELF_REGISTRATION_DISABLE": "Disable sign up.",
             "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
             "AUTH_MODE": "By default the authentication mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credential against an LDAP server.",
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
             "LDAP_BASE_DN": "The base DN from which to look up a user in LDAP/AD.",
             "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD.",
-            "LDAP_SCOPE": "The scope to search for users",
+            "LDAP_SCOPE": "The scope to search for users.",
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
-            "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project."
+            "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
+            "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -405,12 +415,16 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
             "TITLE": "Vulnerability Scanning",
             "SCAN_ALL": "Scan All",
             "SCAN_NOW": "SCAN NOW",
             "NONE_POLICY": "None",
             "DAILY_POLICY": "Daily At",
-            "REFRESH_POLICY": "Upon Refresh"
+            "REFRESH_POLICY": "Upon Refresh",
+            "DB_REFRESH_TIME": "Database updated on",
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!",
+            "NEXT_SCAN": "Available after"
         },
         "TEST_MAIL_SUCCESS": "Connection to mail server is verified.",
         "TEST_LDAP_SUCCESS": "Connection to LDAP server is verified.",
@@ -456,9 +470,9 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "SCAN NOW",
+            "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
-            "ERROR": "Error",
+            "ERROR": "View Log",
             "SCANNING": "Scanning",
             "UNKNOWN": "Unknown"
         },
@@ -474,22 +488,27 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} packages with vulnerabilities across all {{totalPackages}} packages."
+            "SCANNING_TIME": "Scan completed time:",
+            "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
         },
         "SEVERITY": {
-            "HIGH": "High level",
-            "MEDIUM": "Medium level",
-            "LOW": "Low level",
-            "NEGLIGIBLE": "Negligible",
-            "UNKNOWN": "Unknown",
-            "NONE": "None"
+            "HIGH": "high",
+            "MEDIUM": "medium",
+            "LOW": "low",
+            "NEGLIGIBLE": "negligible",
+            "UNKNOWN": "unknown",
+            "NONE": "none"
         },
-        "SINGULAR": "Vulnerability",
-        "PLURAL": "Vulnerabilities",
+        "SINGULAR": "vulnerability",
+        "OVERALL_SEVERITY": "Vulnerability Severity:",
+        "NO_VULNERABILITY": "No vulnerability",
+        "PLURAL": "vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
-        "PACKAGE": "Package with",
-        "PACKAGES": "Packages with"
+        "PACKAGE": "package",
+        "PACKAGES": "packages",
+        "SCAN_NOW": "Scan",
+        "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",

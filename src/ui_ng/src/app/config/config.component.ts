@@ -32,7 +32,8 @@ import {
     ComplexValueItem,
     ReplicationConfigComponent,
     SystemSettingsComponent,
-    VulnerabilityConfigComponent
+    VulnerabilityConfigComponent,
+    ClairDBStatus
 } from 'harbor-ui';
 
 const fakePass = "aWpLOSYkIzJTTU4wMDkx";
@@ -71,11 +72,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private session: SessionService) { }
 
-    consoleTest(): void {
-        console.log(this.allConfig, this.originalCopy);
-        console.log("-------------");
-        console.log(this.getChanges());
+    public get hasAdminRole(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0;
     }
+
+    public get hasCAFile(): boolean {
+        return this.appConfigService.getConfig().has_ca_root;
+    }
+
+    public get withClair(): boolean {
+        return this.appConfigService.getConfig().with_clair;
+    }
+
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }
@@ -165,12 +174,17 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             this.replicationConfig.isValid &&
             this.systemSettingsConfig &&
             this.systemSettingsConfig.isValid &&
-            this.vulnerabilityConfig &&
-            this.vulnerabilityConfig.isValid &&
             this.mailConfig &&
             this.mailConfig.isValid() &&
             this.authConfig &&
-            this.authConfig.isValid();
+            this.authConfig.isValid() &&
+            this.isVulnerabiltyValid;
+    }
+
+    public get isVulnerabiltyValid(): boolean {
+        return !this.appConfigService.getConfig().with_clair ||
+            (this.vulnerabilityConfig &&
+                this.vulnerabilityConfig.isValid);
     }
 
     public hasChanges(): boolean {
@@ -420,7 +434,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.allConfig || !this.originalCopy) {
             return changes;
         }
-
         for (let prop in this.allConfig) {
             let field = this.originalCopy[prop];
             if (field && field.editable) {
@@ -486,7 +499,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isEmpty(changes)) {
             for (let prop in changes) {
                 if (this.originalCopy[prop]) {
-                    this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
+                    this.allConfig[prop] = this.clone(this.originalCopy[prop]);
+                    //this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
                 }
             }
         } else {

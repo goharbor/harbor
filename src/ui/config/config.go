@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultKeyPath       string = "/etc/ui/key"
-	defaultTokenFilePath string = "/etc/ui/service_token"
+	defaultTokenFilePath string = "/etc/ui/token/tokens.properties"
 	secretCookieName     string = "secret"
 )
 
@@ -52,6 +52,8 @@ var (
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
 	AdmiralClient *http.Client
+	// TokenReader is used in integration mode to read token
+	TokenReader pms.TokenReader
 )
 
 // Init configurations
@@ -126,10 +128,11 @@ func initProjectManager() {
 		path = defaultTokenFilePath
 	}
 	log.Infof("service token file path: %s", path)
+	TokenReader = &pms.FileTokenReader{
+		Path: path,
+	}
 	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
-		AdmiralEndpoint(), &pms.FileTokenReader{
-			Path: path,
-		})
+		AdmiralEndpoint(), TokenReader)
 }
 
 // Load configurations
@@ -143,7 +146,7 @@ func Reset() error {
 	return mg.Reset()
 }
 
-// Upload uploads all system configutations to admin server
+// Upload uploads all system configurations to admin server
 func Upload(cfg map[string]interface{}) error {
 	return mg.Upload(cfg)
 }
@@ -188,6 +191,7 @@ func TokenExpiration() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return int(cfg[common.TokenExpiration].(float64)), nil
 }
 
@@ -358,16 +362,24 @@ func ClairEndpoint() string {
 	return common.DefaultClairEndpoint
 }
 
+// ClairDBPassword returns the password for accessing Clair's DB.
+func ClairDBPassword() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+	return cfg[common.ClairDBPassword].(string), nil
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
-
 		return ""
 	}
 	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
-		cfg[common.AdmiralEndpoint] = ""
+		return ""
 	}
 	return cfg[common.AdmiralEndpoint].(string)
 }

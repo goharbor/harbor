@@ -49,6 +49,6 @@ func SetClairVulnTimestamp(namespace string, timestamp time.Time) error {
 func ListClairVulnTimestamps() ([]*models.ClairVulnTimestamp, error) {
 	var res []*models.ClairVulnTimestamp
 	o := GetOrmer()
-	_, err := o.QueryTable(models.ClairVulnTimestampTable).All(&res)
+	_, err := o.QueryTable(models.ClairVulnTimestampTable).Limit(-1).All(&res)
 	return res, err
 }

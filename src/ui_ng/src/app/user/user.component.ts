@@ -60,6 +60,8 @@ export class UserComponent implements OnInit, OnDestroy {
   @ViewChild(NewUserModalComponent)
   newUserDialog: NewUserModalComponent;
 
+  timerHandler: any;
+
   constructor(
     private userService: UserService,
     private translate: TranslateService,
@@ -75,8 +77,6 @@ export class UserComponent implements OnInit, OnDestroy {
         this.delUser(confirmed.data);
       }
     });
-    let hnd = setInterval(() => ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   isMySelf(uid: number): boolean {
@@ -126,11 +126,17 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.forceRefreshView(5000);
   }
 
   ngOnDestroy(): void {
     if (this.deletionSubscription) {
       this.deletionSubscription.unsubscribe();
+    }
+
+    if (this.timerHandler) {
+      clearInterval(this.timerHandler);
+      this.timerHandler = null;
     }
   }
 
@@ -143,11 +149,10 @@ export class UserComponent implements OnInit, OnDestroy {
       } else {
         this.users = users.filter(user => {
           return this.isMatchFilterTerm(terms, user.username);
-        })
+        });
+        this.forceRefreshView(5000);
       }
     });
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   //Disable the admin role for the specified user
@@ -175,8 +180,7 @@ export class UserComponent implements OnInit, OnDestroy {
       .then(() => {
         //Change view now
         user.has_admin_role = updatedUser.has_admin_role;
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 1000);
+        this.forceRefreshView(5000);
       })
       .catch(error => {
         this.msgHandler.handleError(error);
@@ -233,14 +237,15 @@ export class UserComponent implements OnInit, OnDestroy {
         this.totalCount = users.length;
         this.users = users.slice(from, to);//First page
 
+        this.forceRefreshView(5000);
+
         return users;
       })
       .catch(error => {
         this.onGoing = false;
         this.msgHandler.handleError(error);
+        this.forceRefreshView(5000);
       });
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   //Add new user
@@ -264,6 +269,7 @@ export class UserComponent implements OnInit, OnDestroy {
         this.originalUsers.then(users => {
           this.users = users.slice(state.page.from, state.page.to + 1);
         });
+        this.forceRefreshView(5000);
       } else {
         this.refreshUser(state.page.from, state.page.to + 1);
       }
@@ -276,6 +282,20 @@ export class UserComponent implements OnInit, OnDestroy {
   refresh(): void {
     this.currentPage = 1;//Refresh pagination
     this.refreshUser(0, 15);
+  }
+
+  forceRefreshView(duration: number): void {
+    //Reset timer
+    if (this.timerHandler) {
+      clearInterval(this.timerHandler);
+    }
+    this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => {
+      if (this.timerHandler) {
+        clearInterval(this.timerHandler);
+        this.timerHandler = null;
+      }
+    }, duration);
   }
 
 }

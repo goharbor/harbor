@@ -141,25 +141,7 @@ func convertRoles(roles []string) []int {
 
 // GetAuthCtx returns the auth context of the current user
 func GetAuthCtx(client *http.Client, url, token string) (*AuthContext, error) {
-	return get(client, url, token)
-}
-
-// GetAuthCtxOfUser returns the auth context of the specific user
-func GetAuthCtxOfUser(client *http.Client, url, token string, username string) (*AuthContext, error) {
-	return get(client, url, token, username)
-}
-
-// get the user's auth context, if the username is not provided
-// get the default auth context of the token
-func get(client *http.Client, url, token string, username ...string) (*AuthContext, error) {
-	endpoint := ""
-	if len(username) > 0 && len(username[0]) > 0 {
-		endpoint = buildSpecificUserAuthCtxURL(url, username[0])
-	} else {
-		endpoint = buildCurrentUserAuthCtxURL(url)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := http.NewRequest(http.MethodGet, buildCurrentUserAuthCtxURL(url), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -170,22 +152,22 @@ func get(client *http.Client, url, token string, username ...string) (*AuthConte
 }
 
 // Login with credential and returns auth context and error
-func Login(client *http.Client, url, username, password string) (*AuthContext, error) {
+func Login(client *http.Client, url, username, password, token string) (*AuthContext, error) {
 	data, err := json.Marshal(&struct {
-		Username string `json:"username"`
 		Password string `json:"password"`
 	}{
-		Username: username,
 		Password: password,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url), bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, buildLoginURL(url, username), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add(AuthTokenHeader, token)
 
 	return send(client, req)
 }
@@ -193,9 +175,11 @@ func Login(client *http.Client, url, username, password string) (*AuthContext, e
 func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Debugf("\"%s %s\" failed", req.Method, req.URL.String())
 		return nil, err
 	}
 	defer resp.Body.Close()
+	log.Debugf("\"%s %s\" %d", req.Method, req.URL.String(), resp.StatusCode)
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -221,12 +205,7 @@ func buildCurrentUserAuthCtxURL(url string) string {
 	return strings.TrimRight(url, "/") + "/auth/session"
 }
 
-func buildSpecificUserAuthCtxURL(url, principalID string) string {
+func buildLoginURL(url, principalID string) string {
 	return fmt.Sprintf("%s/auth/idm/principals/%s/security-context",
 		strings.TrimRight(url, "/"), principalID)
-}
-
-// TODO update the url
-func buildLoginURL(url string) string {
-	return strings.TrimRight(url, "/") + "/sso/login"
 }

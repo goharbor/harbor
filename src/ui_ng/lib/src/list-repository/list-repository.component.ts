@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetect
 import { Router } from '@angular/router';
 
 import { State, Comparator } from 'clarity-angular';
-import { Repository } from '../service/interface';
+import { RepositoryItem } from '../service/interface';
 
 import { LIST_REPOSITORY_TEMPLATE } from './list-repository.component.html';
 
@@ -17,7 +17,7 @@ export class ListRepositoryComponent {
   
   @Input() urlPrefix: string;
   @Input() projectId: number;
-  @Input() repositories: Repository[];
+  @Input() repositories: RepositoryItem[];
 
   @Output() delete = new EventEmitter<string>();
   @Output() paginate = new EventEmitter<State>();
@@ -26,9 +26,9 @@ export class ListRepositoryComponent {
 
   pageOffset: number = 1;
 
-  pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
+  pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
   
-  tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
+  tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
 
   constructor(
     private router: Router,

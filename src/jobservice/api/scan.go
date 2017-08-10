@@ -16,12 +16,11 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/job"
 	"github.com/vmware/harbor/src/jobservice/utils"
 )
@@ -33,8 +32,7 @@ type ImageScanJob struct {
 
 // Prepare ...
 func (isj *ImageScanJob) Prepare() {
-	//TODO Uncomment to enable security check.
-	//	isj.authenticate()
+	isj.authenticate()
 }
 
 // Post creates a scanner job and hand it to statemachine.
@@ -42,15 +40,7 @@ func (isj *ImageScanJob) Post() {
 	var data models.ImageScanReq
 	isj.DecodeJSONReq(&data)
 	log.Debugf("data: %+v", data)
-	regURL, err := config.LocalRegURL()
-	if err != nil {
-		log.Errorf("Failed to read regURL, error: %v", err)
-		isj.RenderError(http.StatusInternalServerError, "Failed to read registry URL from config")
-		return
-	}
-	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
-	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), data.Repo, "pull", "push", "*")
+	repoClient, err := utils.NewRepositoryClientForJobservice(data.Repo)
 	if err != nil {
 		log.Errorf("An error occurred while creating repository client: %v", err)
 		isj.RenderError(http.StatusInternalServerError, "Failed to repository client")
@@ -83,4 +73,18 @@ func (isj *ImageScanJob) Post() {
 	sj := job.NewScanJob(jid)
 	log.Debugf("Sent job to scheduler, job: %v", sj)
 	job.Schedule(sj)
+}
+
+// GetLog gets logs of the job
+func (isj *ImageScanJob) GetLog() {
+	idStr := isj.Ctx.Input.Param(":id")
+	jid, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing job id: %s, error: %v", idStr, err)
+		isj.RenderError(http.StatusBadRequest, "Invalid job id")
+		return
+	}
+	scanJob := job.NewScanJob(jid)
+	logFile := scanJob.LogPath()
+	isj.Ctx.Output.Download(logFile)
 }

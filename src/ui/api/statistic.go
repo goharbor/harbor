@@ -77,7 +77,7 @@ func (s *StatisticAPI) Get() {
 	statistic[PubRC] = n
 
 	if s.SecurityCtx.IsSysAdmin() {
-		n, err := dao.GetTotalOfProjects(nil)
+		n, err := s.ProjectMgr.GetTotal(nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")

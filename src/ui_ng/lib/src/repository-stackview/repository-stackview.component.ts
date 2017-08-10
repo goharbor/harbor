@@ -18,7 +18,9 @@ import {
   Repository,
   SystemInfo,
   SystemInfoService,
-  RepositoryService
+  RepositoryService,
+  RequestQueryParams,
+  RepositoryItem
 } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
 
@@ -31,6 +33,14 @@ import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { Subscription } from 'rxjs/Subscription';
 import { Tag, TagClickEvent } from '../service/interface';
+
+import { State } from "clarity-angular";
+import {
+  DEFAULT_PAGE_SIZE,
+  calculatePage,
+  doFiltering,
+  doSorting
+} from '../utils';
 
 @Component({
   selector: 'hbr-repository-stackview',
@@ -48,8 +58,10 @@ export class RepositoryStackviewComponent implements OnInit {
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
 
   lastFilteredRepoName: string;
-  repositories: Repository[];
+  repositories: RepositoryItem[];
   systemInfo: SystemInfo;
+
+  loading: boolean = true;
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
@@ -57,6 +69,11 @@ export class RepositoryStackviewComponent implements OnInit {
   pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
 
   tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
+
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentPage: number = 1;
+  totalCount: number = 0;
+  currentState: State;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -77,6 +94,16 @@ export class RepositoryStackviewComponent implements OnInit {
     return this.systemInfo ? this.systemInfo.with_clair : false;
   }
 
+  public get isClairDBReady(): boolean {
+    return this.systemInfo &&
+      this.systemInfo.clair_vulnerability_status &&
+      this.systemInfo.clair_vulnerability_status.overall_last_update > 0;
+  }
+
+  public get showDBStatusWarning(): boolean {
+    return this.withClair && !this.isClairDBReady;
+  }
+
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
       message.source === ConfirmationTargets.REPOSITORY &&
@@ -87,6 +114,12 @@ export class RepositoryStackviewComponent implements OnInit {
         .then(
         response => {
           this.refresh();
+          let st: State = this.getStateAfterDeletion();
+          if (!st) {
+            this.refresh();
+          } else {
+            this.clrLoad(st);
+          }
           this.translateService.get('REPOSITORY.DELETED_REPO_SUCCESS')
             .subscribe(res => this.errorHandler.info(res));
         }).catch(error => this.errorHandler.error(error));
@@ -104,22 +137,20 @@ export class RepositoryStackviewComponent implements OnInit {
       .catch(error => this.errorHandler.error(error));
 
     this.lastFilteredRepoName = '';
-    this.retrieve();
-  }
-
-  retrieve() {
-    toPromise<Repository[]>(this.repositoryService
-      .getRepositories(this.projectId, this.lastFilteredRepoName))
-      .then(
-      repos => this.repositories = repos,
-      error => this.errorHandler.error(error));
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   doSearchRepoNames(repoName: string) {
     this.lastFilteredRepoName = repoName;
-    this.retrieve();
+    this.currentPage = 1;
+
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    this.clrLoad(st);
   }
 
   deleteRepo(repoName: string) {
@@ -134,10 +165,70 @@ export class RepositoryStackviewComponent implements OnInit {
   }
 
   refresh() {
-    this.retrieve();
+    this.doSearchRepoNames("");
   }
 
   watchTagClickEvt(tagClickEvt: TagClickEvent): void {
     this.tagClickEvent.emit(tagClickEvt);
+  }
+
+  clrLoad(state: State): void {
+    //Keep it for future filtering and sorting
+    this.currentState = state;
+
+    let pageNumber: number = calculatePage(state);
+    if (pageNumber <= 0) { pageNumber = 1; }
+
+    //Pagination
+    let params: RequestQueryParams = new RequestQueryParams();
+    params.set("page", '' + pageNumber);
+    params.set("page_size", '' + this.pageSize);
+
+    this.loading = true;
+
+    toPromise<Repository>(this.repositoryService.getRepositories(
+      this.projectId,
+      this.lastFilteredRepoName,
+      params))
+      .then((repo: Repository) => {
+        this.totalCount = repo.metadata.xTotalCount;
+        this.repositories = repo.data;
+
+        //Do filtering and sorting
+        this.repositories = doFiltering<RepositoryItem>(this.repositories, state);
+        this.repositories = doSorting<RepositoryItem>(this.repositories, state);
+
+        this.loading = false;
+      })
+      .catch(error => {
+        this.loading = false;
+        this.errorHandler.error(error);
+      });
+
+    //Force refresh view
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 5000);
+  }
+
+  getStateAfterDeletion(): State {
+    let total: number = this.totalCount - 1;
+    if (total <= 0) { return null; }
+
+    let totalPages: number = Math.floor(total / this.pageSize);
+    let targetPageNumber: number = this.currentPage;
+
+    if (this.currentPage > totalPages) {
+      targetPageNumber = totalPages;//Should == currentPage -1
+    }
+
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = (targetPageNumber - 1) * this.pageSize;
+    st.page.to = targetPageNumber * this.pageSize - 1;
+
+    return st;
   }
 }

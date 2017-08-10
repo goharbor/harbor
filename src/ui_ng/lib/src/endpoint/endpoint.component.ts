@@ -37,153 +37,167 @@ import { toPromise, CustomComparator } from '../utils';
 import { State, Comparator } from 'clarity-angular';
 
 @Component({
-  selector: 'hbr-endpoint',
-  template: ENDPOINT_TEMPLATE,
-  styles: [ ENDPOINT_STYLE ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'hbr-endpoint',
+    template: ENDPOINT_TEMPLATE,
+    styles: [ENDPOINT_STYLE],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointComponent implements OnInit {
 
-  @ViewChild(CreateEditEndpointComponent)
-  createEditEndpointComponent: CreateEditEndpointComponent;
+    @ViewChild(CreateEditEndpointComponent)
+    createEditEndpointComponent: CreateEditEndpointComponent;
 
 
-  @ViewChild('confirmationDialog')
-  confirmationDialogComponent: ConfirmationDialogComponent;
+    @ViewChild('confirmationDialog')
+    confirmationDialogComponent: ConfirmationDialogComponent;
 
-  targets: Endpoint[];
-  target: Endpoint;
+    targets: Endpoint[];
+    target: Endpoint;
 
-  targetName: string;
-  subscription: Subscription;
+    targetName: string;
+    subscription: Subscription;
 
-  loading: boolean = false;
+    loading: boolean = false;
 
-  creationTimeComparator: Comparator<Endpoint> = new CustomComparator<Endpoint>('creation_time', 'date');
+    creationTimeComparator: Comparator<Endpoint> = new CustomComparator<Endpoint>('creation_time', 'date');
 
-  get initEndpoint(): Endpoint {
-    return {
-      endpoint: "",
-      name: "",
-      username: "",
-      password: "",
-      type: 0
-    };
-  }
+    timerHandler: any;
 
-  constructor(
-    private endpointService: EndpointService,
-    private errorHandler: ErrorHandler,
-    private translateService: TranslateService,
-    private ref: ChangeDetectorRef) {
-    let hnd = setInterval(()=>ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
-  }
+    get initEndpoint(): Endpoint {
+        return {
+            endpoint: "",
+            name: "",
+            username: "",
+            password: "",
+            type: 0
+        };
+    }
 
-  confirmDeletion(message: ConfirmationAcknowledgement) {
-    if (message &&
-      message.source === ConfirmationTargets.TARGET &&
-      message.state === ConfirmationState.CONFIRMED) {
-      
-      let targetId = message.data;
-      toPromise<number>(this.endpointService
-        .deleteEndpoint(targetId))
-        .then(
-          response => {
-            this.translateService.get('DESTINATION.DELETED_SUCCESS')
-                .subscribe(res=>this.errorHandler.info(res));
-            this.reload(true);
-          }).catch(
-          error => { 
-            if(error && error.status === 412) {
-              this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')
-                  .subscribe(res=>this.errorHandler.error(res));
-            } else {
-              this.errorHandler.error(error);
+    constructor(
+        private endpointService: EndpointService,
+        private errorHandler: ErrorHandler,
+        private translateService: TranslateService,
+        private ref: ChangeDetectorRef) {
+        this.forceRefreshView(1000);
+    }
+
+    confirmDeletion(message: ConfirmationAcknowledgement) {
+        if (message &&
+            message.source === ConfirmationTargets.TARGET &&
+            message.state === ConfirmationState.CONFIRMED) {
+
+            let targetId = message.data;
+            toPromise<number>(this.endpointService
+                .deleteEndpoint(targetId))
+                .then(
+                response => {
+                    this.translateService.get('DESTINATION.DELETED_SUCCESS')
+                        .subscribe(res => this.errorHandler.info(res));
+                    this.reload(true);
+                }).catch(
+                error => {
+                    if (error && error.status === 412) {
+                        this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')
+                            .subscribe(res => this.errorHandler.error(res));
+                    } else {
+                        this.errorHandler.error(error);
+                    }
+                });
+        }
+    }
+
+    ngOnInit(): void {
+        this.targetName = '';
+        this.retrieve();
+    }
+
+    ngOnDestroy(): void {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
+    }
+
+    retrieve(): void {
+        this.loading = true;
+        toPromise<Endpoint[]>(this.endpointService
+            .getEndpoints(this.targetName))
+            .then(
+            targets => {
+                this.targets = targets || [];
+                this.forceRefreshView(1000);
+                this.loading = false;
+            }).catch(error => {
+                this.errorHandler.error(error);
+                this.loading = false;
+            });
+    }
+
+    doSearchTargets(targetName: string) {
+        this.targetName = targetName;
+        this.retrieve();
+    }
+
+    refreshTargets() {
+        this.retrieve();
+    }
+
+    reload($event: any) {
+        this.targetName = '';
+        this.retrieve();
+    }
+
+    openModal() {
+        this.createEditEndpointComponent.openCreateEditTarget(true);
+        this.target = this.initEndpoint;
+    }
+
+    editTarget(target: Endpoint) {
+        if (target) {
+            let editable = true;
+            if (!target.id) {
+                return;
             }
-        });
+            let id: number | string = target.id;
+            toPromise<ReplicationRule[]>(this.endpointService
+                .getEndpointWithReplicationRules(id))
+                .then(
+                rules => {
+                    if (rules && rules.length > 0) {
+                        rules.forEach((rule) => editable = (rule && rule.enabled !== 1));
+                    }
+                    this.createEditEndpointComponent.openCreateEditTarget(editable, id);
+                    this.forceRefreshView(1000);
+                })
+                .catch(error => this.errorHandler.error(error));
+        }
     }
-  }
 
-  ngOnInit(): void {
-    this.targetName = '';
-    this.retrieve();
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    deleteTarget(target: Endpoint) {
+        if (target) {
+            let targetId = target.id;
+            let deletionMessage = new ConfirmationMessage(
+                'REPLICATION.DELETION_TITLE_TARGET',
+                'REPLICATION.DELETION_SUMMARY_TARGET',
+                target.name || '',
+                target.id,
+                ConfirmationTargets.TARGET,
+                ConfirmationButtons.DELETE_CANCEL);
+            this.confirmationDialogComponent.open(deletionMessage);
+        }
     }
-  }
 
-  retrieve(): void {
-    this.loading = true;
-    toPromise<Endpoint[]>(this.endpointService
-      .getEndpoints(this.targetName))
-      .then(
-      targets => {
-        this.targets = targets || [];
-        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-        setTimeout(()=>clearInterval(hnd), 1000);
-        this.loading = false;
-      }).catch(error => {
-        this.errorHandler.error(error); 
-        this.loading = false; 
-      });
-  }
-
-  doSearchTargets(targetName: string) {
-    this.targetName = targetName;
-    this.retrieve();
-  }
-
-  refreshTargets() {
-    this.retrieve();
-  }
-
-  reload($event: any) {
-    this.targetName = '';
-    this.retrieve();
-  }
-
-  openModal() {
-    this.createEditEndpointComponent.openCreateEditTarget(true);
-    this.target = this.initEndpoint;
-  }
-
-  editTarget(target: Endpoint) {
-    if(target) {
-      let editable = true;
-      if (!target.id) {
-         return;
-      } 
-      let id: number | string = target.id;
-      toPromise<ReplicationRule[]>(this.endpointService
-          .getEndpointWithReplicationRules(id))
-          .then(
-            rules=>{
-              if(rules && rules.length > 0) {
-                rules.forEach((rule)=>editable = (rule && rule.enabled !== 1));
-              }
-              this.createEditEndpointComponent.openCreateEditTarget(editable, id);
-              let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-              setTimeout(()=>clearInterval(hnd), 1000);
-            })
-          .catch(error=>this.errorHandler.error(error));
+    //Forcely refresh the view
+    forceRefreshView(duration: number): void {
+        //Reset timer
+        if (this.timerHandler) {
+            clearInterval(this.timerHandler);
+        }
+        this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => {
+            if (this.timerHandler) {
+                clearInterval(this.timerHandler);
+                this.timerHandler = null;
+            }
+        }, duration);
     }
-  }
-
-  deleteTarget(target: Endpoint) {
-    if (target) {
-      let targetId = target.id;
-      let deletionMessage = new ConfirmationMessage(
-        'REPLICATION.DELETION_TITLE_TARGET',
-        'REPLICATION.DELETION_SUMMARY_TARGET',
-        target.name || '',
-        target.id,
-        ConfirmationTargets.TARGET,
-        ConfirmationButtons.DELETE_CANCEL);
-      this.confirmationDialogComponent.open(deletionMessage);
-    }
-  }
 }

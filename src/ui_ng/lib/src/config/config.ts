@@ -100,7 +100,7 @@ export class Configuration {
         this.verify_remote_cert = new BoolValueItem(false, true);
         this.scan_all_policy = new ComplexValueItem({
             type: "daily",
-            parameters: {
+            parameter: {
                 daily_time: 0
             }
         }, true);

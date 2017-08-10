@@ -28,6 +28,12 @@ export class ConfigurationAuthComponent {
 
     @ViewChild("authConfigFrom") authForm: NgForm;
 
+    get checkboxenable(){
+        return this.currentConfig &&
+            this.currentConfig.self_registration &&
+            this.currentConfig.self_registration.value === true;
+    }
+
     constructor() { }
 
     public get showLdap(): boolean {

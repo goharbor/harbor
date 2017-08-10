@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import {Component, OnInit, ViewChild, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
 
 import { Router } from '@angular/router';
 
@@ -43,7 +43,8 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
 @Component({
   selector: 'project',
   templateUrl: 'project.component.html',
-  styleUrls: ['./project.component.css']
+  styleUrls: ['./project.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectComponent implements OnInit, OnDestroy {
 
@@ -68,7 +69,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private appConfigService: AppConfigService,
     private sessionService: SessionService,
     private deletionDialogService: ConfirmationDialogService,
-    private statisticHandler: StatisticHandler) {
+    private statisticHandler: StatisticHandler,
+    private ref: ChangeDetectorRef) {
     this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
@@ -124,7 +126,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
     this.loading = true;
-
     this.projectService
       .listProjects(name, isPublic, page, pageSize)
       .subscribe(
@@ -137,6 +138,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
         this.messageHandlerService.handleError(error);
       }
       );
+      let hnd = setInterval(()=>this.ref.markForCheck(), 100);
+      setTimeout(()=>clearInterval(hnd), 2000);
   }
 
   openModal(): void {
@@ -184,7 +187,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
         response => {
           this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
           this.statisticHandler.refresh();
-          this.getProjects("", this.currentFilteredType - 1);
+          if (this.currentFilteredType === 0) {
+            this.getProjects();
+          } else {
+            this.getProjects("", this.currentFilteredType - 1);
+          }
         },
         error => this.messageHandlerService.handleError(error)
         );

@@ -153,6 +153,7 @@ if rcp.has_option("configuration", "admiral_url"):
     admiral_url = rcp.get("configuration", "admiral_url")
 else:
     admiral_url = ""
+pg_password = rcp.get("configuration", "clair_db_password")
 secret_key = get_secret_key(secretkey_path)
 ########
 
@@ -225,13 +226,15 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         token_expiration=token_expiration,
         admiral_url=admiral_url,
         with_notary=args.notary_mode,
-        with_clair=args.clair_mode
+        with_clair=args.clair_mode,
+        pg_password=pg_password
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
-        jobservice_secret=jobservice_secret,)
+        jobservice_secret=jobservice_secret,
+        )
 
 render(os.path.join(templates_dir, "registry", 
 		"config.yml"),
@@ -370,11 +373,10 @@ if args.notary_mode:
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
 
 if args.clair_mode:
-    pg_password = "password"
     clair_temp_dir = os.path.join(templates_dir, "clair")
     clair_config_dir = prep_conf_dir(config_dir, "clair")
-    print("Copying offline data file for clair DB")
     if os.path.exists(os.path.join(clair_config_dir, "postgresql-init.d")):
+        print("Copying offline data file for clair DB")
         shutil.rmtree(os.path.join(clair_config_dir, "postgresql-init.d"))
     shutil.copytree(os.path.join(clair_temp_dir, "postgresql-init.d"), os.path.join(clair_config_dir, "postgresql-init.d"))
     postgres_env = os.path.join(clair_config_dir, "postgres_env") 

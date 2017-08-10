@@ -43,14 +43,6 @@ var (
 	digest = "sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b"
 )
 
-func TestNewRepositoryWithModifiers(t *testing.T) {
-	_, err := NewRepositoryWithModifiers("library/ubuntu",
-		"http://registry.org", true, nil)
-	if err != nil {
-		t.Fatalf("failed to create client for repository: %v", err)
-	}
-}
-
 func TestBlobExist(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path

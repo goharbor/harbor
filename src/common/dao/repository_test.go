@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -220,10 +221,54 @@ func TestGetRepositoriesByProject(t *testing.T) {
 	t.Errorf("repository %s not found", repoName)
 }
 
+func TestGetAllRepositories(t *testing.T) {
+	require := require.New(t)
+
+	var repos []*models.RepoRecord
+	repos, err := GetAllRepositories()
+	require.NoError(err)
+	allBefore := len(repos)
+
+	project1 := models.Project{
+		OwnerID: 1,
+		Name:    "projectRepo",
+		Public:  0,
+	}
+	var err2 error
+	project1.ProjectID, err2 = AddProject(project1)
+	require.NoError(err2)
+
+	for i := 0; i < 1200; i++ {
+		end := strconv.Itoa(i)
+		repoRecord := models.RepoRecord{
+			Name:      "test" + end,
+			ProjectID: project1.ProjectID,
+		}
+		err := AddRepository(repoRecord)
+		require.NoError(err)
+	}
+
+	repos, err = GetAllRepositories()
+	require.NoError(err)
+	allAfter := len(repos)
+
+	require.Equal(allAfter, allBefore+1200)
+
+	err = clearRepositoryData()
+	require.NoError(err)
+}
+
 func addRepository(repository *models.RepoRecord) error {
 	return AddRepository(*repository)
 }
 
 func deleteRepository(name string) error {
 	return DeleteRepository(name)
+}
+
+func clearRepositoryData() error {
+	if err := ClearTable(models.RepoTable); err != nil {
+		return err
+	}
+	return nil
 }

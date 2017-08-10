@@ -83,8 +83,7 @@
         "PROFILE": "用户设置",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
-        "LOGOUT": "退出",
-        "ROOT_CERT": "下载根证书"
+        "LOGOUT": "退出"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "搜索 Harbor...",
@@ -118,6 +117,7 @@
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "成功删除用户。",
+        "OF": "共计",
         "ITEMS": "条记录"
     },
     "PROJECT": {
@@ -144,6 +144,7 @@
         "NAME_ALREADY_EXISTS": "项目名称已存在。",
         "NAME_IS_ILLEGAL": "项目名称非法。",
         "UNKNOWN_ERROR": "创建项目时发生未知错误。",
+        "OF": "共计",
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
@@ -172,6 +173,7 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
+        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -200,6 +202,7 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
+        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。"
@@ -255,10 +258,11 @@
         "STATUS": "状态",
         "OPERATION": "操作",
         "CREATION_TIME": "创建时间",
-        "END_TIME": "结束时间",
+        "UPDATE_TIME": "更新时间",
         "LOGS": "日志",
         "OF": "共计",
         "ITEMS": "条记录",
+        "NO_LOGS": "无日志",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
         "TOGGLE_DISABLE_TITLE": "停用规则",
@@ -274,7 +278,8 @@
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
         "INVALID_DATE": "无效日期。",
         "PLACEHOLDER": "未发现任何复制规则!",
-        "JOB_PLACEHOLDER": "未发现任何复制任务!"
+        "JOB_PLACEHOLDER": "未发现任何复制任务!",
+        "JOB_LOG_VIEWER": "查看复制任务日志"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -383,8 +388,11 @@
         "SCOPE_SUBTREE": "子树",
         "PRO_CREATION_EVERYONE": "所有人",
         "PRO_CREATION_ADMIN": "仅管理员",
+        "ROOT_CERT": "镜像库根证书",
+        "ROOT_CERT_LINK": "下载",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "激活注册功能。",
+            "SELF_REGISTRATION_ENABLE": "激活注册功能。",
+            "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
             "AUTH_MODE": "默认认证模式为数据库认证，即用户凭证存储在本地数据库。如果使用LDAP来认证用户，则设置为LDAP。",
             "LDAP_SEARCH_DN": "有搜索权限的LDAP用户DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN及其密码。",
@@ -392,7 +400,9 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。"
+            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
+            "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -404,13 +414,17 @@
             "SCOPE": "LDAP搜索范围"
         },
         "SCANNING": {
-            "TRIGGER_SCAN_ALL_SUCCESS": "成功启动扫描所有镜像任务!",
+            "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
             "SCAN_NOW": "开始扫描",
             "NONE_POLICY": "无",
-            "DAILY_POLICY": "每日",
-            "REFRESH_POLICY": "缺陷库刷新后"
+            "DAILY_POLICY": "每日定时",
+            "REFRESH_POLICY": "缺陷库刷新后",
+            "DB_REFRESH_TIME": "数据库更新于",
+            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
+            "NEXT_SCAN": "下次可用时间"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
@@ -456,9 +470,9 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "开始扫描",
+            "STOPPED": "未扫描",
             "QUEUED": "已入队列",
-            "ERROR": "错误",
+            "ERROR": "查看日志",
             "SCANNING": "扫描中",
             "UNKNOWN": "未知"
         },
@@ -466,7 +480,7 @@
             "PLACEHOLDER": "没有扫描结果！",
             "COLUMN_ID": "缺陷码",
             "COLUMN_SEVERITY": "严重度",
-            "COLUMN_PACKAGE": "组",
+            "COLUMN_PACKAGE": "组件",
             "COLUMN_VERSION": "当前版本",
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
@@ -474,8 +488,9 @@
             "FOOT_OF": "总共"
         },
         "CHART": {
-            "SCANNING_TIME": "扫描完成",
-            "TOOLTIPS_TITLE": "在此镜像的{{totalPackages}}包中扫描出{{totalVulnerability}}个有缺陷的包。"
+            "SCANNING_TIME": "扫描完成时间:",
+            "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}."
         },
         "SEVERITY": {
             "HIGH": "严重",
@@ -485,11 +500,15 @@
             "UNKNOWN": "未知",
             "NONE": "无"
         },
-        "SINGULAR": "缺陷",
-        "PLURAL": "缺陷",
-        "PLACEHOLDER": "过滤缺陷",
-        "PACKAGE": "个组件有",
-        "PACKAGES": "个组件有"
+        "SINGULAR": "漏洞",
+        "OVERALL_SEVERITY": "漏洞严重度:",
+        "NO_VULNERABILITY": "没有漏洞",
+        "PLURAL": "漏洞",
+        "PLACEHOLDER": "过滤漏洞",
+        "PACKAGE": "组件",
+        "PACKAGES": "组件",
+        "SCAN_NOW": "扫描",
+        "JOB_LOG_VIEWER": "查看扫描日志"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送镜像",

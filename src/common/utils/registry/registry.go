@@ -33,9 +33,11 @@ type Registry struct {
 	client   *http.Client
 }
 
-var secureHTTPTransport, insecureHTTPTransport *http.Transport
+var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
 
 func init() {
+	defaultHTTPTransport = &http.Transport{}
+
 	secureHTTPTransport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
@@ -49,8 +51,11 @@ func init() {
 }
 
 // GetHTTPTransport returns HttpTransport based on insecure configuration
-func GetHTTPTransport(insecure bool) *http.Transport {
-	if insecure {
+func GetHTTPTransport(insecure ...bool) *http.Transport {
+	if len(insecure) == 0 {
+		return defaultHTTPTransport
+	}
+	if insecure[0] {
 		return insecureHTTPTransport
 	}
 	return secureHTTPTransport
@@ -69,19 +74,6 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 	}
 
 	return registry, nil
-}
-
-// NewRegistryWithModifiers returns an instance of Registry according to the modifiers
-func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modifier) (*Registry, error) {
-
-	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
-
-	return NewRegistry(endpoint, &http.Client{
-		Transport: transport,
-		// If there are hunderds of repositories in docker registry,
-		// timeout option will abort HTTP request on getting catalog
-		// Timeout:   30 * time.Second,
-	})
 }
 
 // Catalog ...

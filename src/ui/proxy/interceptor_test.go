@@ -30,9 +30,10 @@ func TestMain(m *testing.M) {
 	defer notaryServer.Close()
 	NotaryEndpoint = notaryServer.URL
 	var defaultConfig = map[string]interface{}{
-		common.ExtEndpoint:   "https://" + endpoint,
-		common.WithNotary:    true,
-		common.CfgExpiration: 5,
+		common.ExtEndpoint:     "https://" + endpoint,
+		common.WithNotary:      true,
+		common.CfgExpiration:   5,
+		common.TokenExpiration: 30,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfig)
 	if err != nil {
@@ -117,6 +118,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 		common.WithNotary:      true,
 		common.CfgExpiration:   5,
 		common.AdmiralEndpoint: admiralEndpoint,
+		common.TokenExpiration: 30,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
 	if err != nil {
@@ -131,7 +133,9 @@ func TestPMSPolicyChecker(t *testing.T) {
 	}
 
 	pm := pms.NewProjectManager(http.DefaultClient,
-		admiralEndpoint, nil)
+		admiralEndpoint, &pms.RawTokenReader{
+			Token: "token",
+		})
 	name := "project_for_test_get_sev_low"
 	id, err := pm.Create(&models.Project{
 		Name:                                       name,
@@ -180,4 +184,10 @@ func TestCopyResp(t *testing.T) {
 	copyResp(rec1, rec2)
 	assert.Equal(418, rec2.Result().StatusCode)
 	assert.Equal("mytest", rec2.Header().Get("X-Test"))
+}
+
+func TestMarshalError(t *testing.T) {
+	assert := assert.New(t)
+	js := marshalError("Not Found", 404)
+	assert.Equal("{\"code\":404,\"message\":\"Not Found\",\"details\":\"Not Found\"}", js)
 }

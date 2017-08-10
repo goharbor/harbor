@@ -11,19 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ReplicationComponent } from 'harbor-ui';
 
 @Component({
   selector: 'replicaton',
   templateUrl: 'replication-page.component.html'
 })
-export class ReplicationPageComponent implements OnInit {
+export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectIdentify: string | number;
+  @ViewChild("replicationView") replicationView: ReplicationComponent;
 
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.projectIdentify = +this.route.snapshot.parent.params['id'];
+  }
+
+  ngAfterViewInit(): void {
+    let isCreated: boolean = this.route.snapshot.queryParams['is_create'];
+    if (isCreated) {
+      if (this.replicationView) {
+        this.replicationView.openModal();
+      }
+    }
   }
 }

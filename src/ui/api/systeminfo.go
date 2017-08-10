@@ -19,11 +19,14 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
+	"sync"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	clairdao "github.com/vmware/harbor/src/common/dao/clair"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -47,6 +50,40 @@ type Storage struct {
 	Free  uint64 `json:"free"`
 }
 
+//namespaces stores all name spaces on Clair, it should be initialised only once.
+type clairNamespaces struct {
+	sync.RWMutex
+	l     []string
+	clair *clair.Client
+}
+
+func (n *clairNamespaces) get() ([]string, error) {
+	n.Lock()
+	defer n.Unlock()
+	if len(n.l) == 0 {
+		m := make(map[string]struct{})
+		if n.clair == nil {
+			n.clair = clair.NewClient(config.ClairEndpoint(), nil)
+		}
+		list, err := n.clair.ListNamespaces()
+		if err != nil {
+			return n.l, err
+		}
+		for _, n := range list {
+			ns := strings.Split(n, ":")[0]
+			m[ns] = struct{}{}
+		}
+		for k := range m {
+			n.l = append(n.l, k)
+		}
+	}
+	return n.l, nil
+}
+
+var (
+	namespaces = &clairNamespaces{}
+)
+
 //GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
 	WithNotary              bool                             `json:"with_notary"`
@@ -59,6 +96,7 @@ type GeneralInfo struct {
 	SelfRegistration        bool                             `json:"self_registration"`
 	HasCARoot               bool                             `json:"has_ca_root"`
 	HarborVersion           string                           `json:"harbor_version"`
+	NextScanAll             int64                            `json:"next_scan_all"`
 	ClairVulnStatus         *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
 }
 
@@ -140,6 +178,11 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()
+		t := utils.ScanAllMarker().Next().UTC().Unix()
+		if t < 0 {
+			t = 0
+		}
+		info.NextScanAll = t
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()
@@ -157,30 +200,47 @@ func (sia *SystemInfoAPI) getVersion() string {
 
 func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 	res := &models.ClairVulnerabilityStatus{}
-	l, err := dao.ListClairVulnTimestamps()
+	last, err := clairdao.GetLastUpdate()
 	if err != nil {
-		log.Errorf("Failed to list Clair vulnerability timestamps, error:%v", err)
-		return nil
+		log.Errorf("Failed to get last update from Clair DB, error: %v", err)
+		res.OverallUTC = 0
+	} else {
+		res.OverallUTC = last
+		log.Debugf("Clair vuln DB last update: %d", last)
 	}
-	m := make(map[string]time.Time)
-	var t time.Time
-	for _, e := range l {
-		if e.LastUpdate.After(t) {
-			t = e.LastUpdate
-		}
-		ns := strings.Split(e.Namespace, ":")
-		if ts, ok := m[ns[0]]; !ok || ts.Before(e.LastUpdate) {
-			m[ns[0]] = e.LastUpdate
-		}
-	}
-	res.Overall = &t
 	details := []models.ClairNamespaceTimestamp{}
-	for k, v := range m {
-		e := models.ClairNamespaceTimestamp{
-			Namespace: k,
-			Timestamp: v,
+	if res.OverallUTC > 0 {
+		l, err := dao.ListClairVulnTimestamps()
+		if err != nil {
+			log.Errorf("Failed to list Clair vulnerability timestamps, error:%v", err)
+			return res
 		}
-		details = append(details, e)
+		m := make(map[string]int64)
+		for _, e := range l {
+			ns := strings.Split(e.Namespace, ":")
+			//only returns the latest time of one distro, i.e. unbuntu:14.04 and ubuntu:15.4 shares one timestamp
+			el := e.LastUpdate.UTC().Unix()
+			if ts, ok := m[ns[0]]; !ok || ts < el {
+				m[ns[0]] = el
+			}
+		}
+		list, err := namespaces.get()
+		if err != nil {
+			log.Errorf("Failed to get namespace list from Clair, error: %v", err)
+		}
+		//For namespaces not reported by notifier, the timestamp will be the overall db timestamp.
+		for _, n := range list {
+			if _, ok := m[n]; !ok {
+				m[n] = res.OverallUTC
+			}
+		}
+		for k, v := range m {
+			e := models.ClairNamespaceTimestamp{
+				Namespace: k,
+				Timestamp: v,
+			}
+			details = append(details, e)
+		}
 	}
 	res.Details = details
 	return res
