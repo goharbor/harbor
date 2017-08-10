@@ -379,7 +379,7 @@ func assemble(client *registry.Repository, repository string,
 	var err error
 	signatures := map[string]*notary.Target{}
 	if config.WithNotary() {
-		signatures, err = getSignatures(repository, username)
+		signatures, err = getSignatures(username, repository)
 		if err != nil {
 			signatures = map[string]*notary.Target{}
 			log.Errorf("failed to get signatures of %s: %v", repository, err)
@@ -769,7 +769,7 @@ func (ra *RepositoryAPI) ScanAll() {
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 
-func getSignatures(repository, username string) (map[string]*notary.Target, error) {
+func getSignatures(username, repository string) (map[string]*notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
 	if err != nil {
