@@ -434,6 +434,7 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 				Version:     f.Version,
 				Severity:    clair.ParseClairSev(v.Severity),
 				Fixed:       v.FixedBy,
+				Link:        v.Link,
 				Description: v.Description,
 			}
 			res = append(res, vItem)
