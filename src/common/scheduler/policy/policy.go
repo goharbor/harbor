@@ -41,4 +41,7 @@ type Policy interface {
 	//needs to support this method. If no need, please directly return false to indicate each policies are
 	//different.
 	Equal(p Policy) bool
+
+	//IsEnabled is to indicate whether the policy is enabled or not (disabled).
+	IsEnabled() bool
 }

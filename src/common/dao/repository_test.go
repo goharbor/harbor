@@ -222,37 +222,40 @@ func TestGetRepositoriesByProject(t *testing.T) {
 }
 
 func TestGetAllRepositories(t *testing.T) {
-	var reposBefore []*models.RepoRecord
-	reposBefore, err := GetAllRepositories()
-	if err != nil {
-		t.Fatalf("error occurred while getting all registories. %v", err)
-		return
+	require := require.New(t)
+
+	var repos []*models.RepoRecord
+	repos, err := GetAllRepositories()
+	require.NoError(err)
+	allBefore := len(repos)
+
+	project1 := models.Project{
+		OwnerID: 1,
+		Name:    "projectRepo",
+		Public:  0,
 	}
-	allBefore := len(reposBefore)
+	var err2 error
+	project1.ProjectID, err2 = AddProject(project1)
+	require.NoError(err2)
 
 	for i := 0; i < 1200; i++ {
 		end := strconv.Itoa(i)
 		repoRecord := models.RepoRecord{
 			Name:      "test" + end,
-			ProjectID: 1,
+			ProjectID: project1.ProjectID,
 		}
-		if err := AddRepository(repoRecord); err != nil {
-			t.Fatalf("Error happens when adding the repository: %v", err)
-			return
-		}
+		err := AddRepository(repoRecord)
+		require.NoError(err)
 	}
 
-	var reposAfter []*models.RepoRecord
-	reposAfter, err2 := GetAllRepositories()
-	if err2 != nil {
-		t.Fatalf("error occurred while getting all registories. %v", err2)
-		return
-	}
-	allAfter := len(reposAfter)
+	repos, err = GetAllRepositories()
+	require.NoError(err)
+	allAfter := len(repos)
 
-	if allAfter != allBefore+1200 {
-		t.Errorf("unexpected total: %d != %d", allAfter, allBefore+1200)
-	}
+	require.Equal(allAfter, allBefore+1200)
+
+	err = clearRepositoryData()
+	require.NoError(err)
 }
 
 func addRepository(repository *models.RepoRecord) error {
@@ -261,4 +264,11 @@ func addRepository(repository *models.RepoRecord) error {
 
 func deleteRepository(name string) error {
 	return DeleteRepository(name)
+}
+
+func clearRepositoryData() error {
+	if err := ClearTable(models.RepoTable); err != nil {
+		return err
+	}
+	return nil
 }

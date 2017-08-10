@@ -103,7 +103,8 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             !this.onGoing &&
             this.targetForm &&
             this.targetForm.valid &&
-            this.editable;
+            this.editable &&
+            (this.targetNameHasChanged || this.endpointHasChanged);
     }
 
     public get inProgress(): boolean {

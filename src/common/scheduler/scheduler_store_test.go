@@ -5,7 +5,7 @@ import (
 )
 
 func TestPut(t *testing.T) {
-	store := NewConcurrentStore()
+	store := NewDefaultStore()
 	if store == nil {
 		t.Fatal("Failed to creat store instance")
 	}
@@ -17,7 +17,7 @@ func TestPut(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	store := NewConcurrentStore()
+	store := NewDefaultStore()
 	if store == nil {
 		t.Fatal("Failed to creat store instance")
 	}
@@ -29,7 +29,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	store := NewConcurrentStore()
+	store := NewDefaultStore()
 	if store == nil {
 		t.Fatal("Failed to creat store instance")
 	}
@@ -44,7 +44,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestExisting(t *testing.T) {
-	store := NewConcurrentStore()
+	store := NewDefaultStore()
 	if store == nil {
 		t.Fatal("Failed to creat store instance")
 	}
@@ -58,7 +58,7 @@ func TestExisting(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	store := NewConcurrentStore()
+	store := NewDefaultStore()
 	if store == nil {
 		t.Fatal("Failed to creat store instance")
 	}

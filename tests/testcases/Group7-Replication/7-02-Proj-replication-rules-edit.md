@@ -1,28 +1,28 @@
-Test 7-02 - Project replication rules edit
+Test 7-02 - Project replication rules edit  
 =======
+  
+# Purpose:  
+  
+To verify project manager can edit repliciation rules.  
+  
+# References:  
+User guide  
+  
+# Environment:  
 
-# Purpose:
-
-To verify project manager can edit repilciation rules.
-
-# References:
-User guide
-
-# Environment:
-* 
-* 
-
-# Test Steps:
-
-1. Login UI as user A(non-admin).  
-2. Verify user A has atleast a project x with the role of project admin.  
-3. In the UI goto project X and goto replication.  
-4. Select a present replication rule, choose edit.  
-5. Change some value and save.  
-
-# Expect Outcome:
-
-TBD
-
-# Possible Problems:
-
+* This test requires that at least two Harbor instances are running and available.  
+* Need at least one project that has at least one replication rule.  
+  
+# Test Steps:  
+  
+1. Login UI as admin user  
+2. In project replication page, choose a disabled rule and edit rule name, description, rule enable status and endpoint name, username, password.  
+3. In project replication page, choose an enabled rule and edit rule name, description, rule enable status and endpoint name, username, password.  
+  
+# Expect Outcome:  
+  
+* In step 2, Rule can be edited and error hint works correctly,if rule is enabled, should see jobs start.  
+* In step 3, Rule can not be edited.  
+  
+# Possible Problems:  
+None  

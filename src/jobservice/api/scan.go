@@ -21,8 +21,6 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/job"
 	"github.com/vmware/harbor/src/jobservice/utils"
 )
@@ -42,15 +40,7 @@ func (isj *ImageScanJob) Post() {
 	var data models.ImageScanReq
 	isj.DecodeJSONReq(&data)
 	log.Debugf("data: %+v", data)
-	regURL, err := config.LocalRegURL()
-	if err != nil {
-		log.Errorf("Failed to read regURL, error: %v", err)
-		isj.RenderError(http.StatusInternalServerError, "Failed to read registry URL from config")
-		return
-	}
-	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
-	repoClient, err := utils.NewRepositoryClient(regURL, false, auth.NewCookieCredential(c),
-		config.InternalTokenServiceEndpoint(), data.Repo)
+	repoClient, err := utils.NewRepositoryClientForJobservice(data.Repo)
 	if err != nil {
 		log.Errorf("An error occurred while creating repository client: %v", err)
 		isj.RenderError(http.StatusInternalServerError, "Failed to repository client")

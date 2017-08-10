@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -66,8 +67,12 @@ func (fp *fakePolicy) Equal(policy.Policy) bool {
 	return false
 }
 
+func (fp *fakePolicy) IsEnabled() bool {
+	return true
+}
+
 type fakeTask struct {
-	number int
+	number int32
 }
 
 func (ft *fakeTask) Name() string {
@@ -75,8 +80,12 @@ func (ft *fakeTask) Name() string {
 }
 
 func (ft *fakeTask) Run() error {
-	ft.number++
+	atomic.AddInt32(&(ft.number), 1)
 	return nil
+}
+
+func (ft *fakeTask) Number() int32 {
+	return atomic.LoadInt32(&(ft.number))
 }
 
 //Wacher will be tested together with scheduler.
@@ -111,34 +120,30 @@ func TestScheduler(t *testing.T) {
 	}
 
 	time.Sleep(2 * time.Second)
-	if fk.number == 100 {
+	if fk.Number() == 100 {
 		t.Fatal("Task is not triggered")
-	}
-	if DefaultScheduler.stats.Tasks == 0 {
-		t.Fail()
-	}
-	if DefaultScheduler.stats.CompletedTasks == 0 {
-		t.Fail()
 	}
 
 	if DefaultScheduler.UnSchedule(fp.Name()) != nil {
 		t.Fatal("Unschedule policy failed")
 	}
 
-	if DefaultScheduler.policies.Size() != 0 {
+	if DefaultScheduler.PolicyCount() != 0 {
 		t.Fatal("Policy count does not match after calling UnSchedule()")
 	}
+
+	var copiedValue int32
 	<-time.After(1 * time.Second)
-	copiedValue := DefaultScheduler.stats.CompletedTasks
+	atomic.StoreInt32(&copiedValue, fk.Number())
 	<-time.After(2 * time.Second)
 
-	if copiedValue != DefaultScheduler.stats.CompletedTasks {
-		t.Fatalf("Policy is still enabled after calling UnSchedule(),%d=%d", copiedValue, DefaultScheduler.stats.CompletedTasks)
+	if atomic.LoadInt32(&copiedValue) != fk.Number() {
+		t.Fatalf("Policy is still enabled after calling UnSchedule(),%d=%d", atomic.LoadInt32(&copiedValue), fk.Number())
 	}
 
 	DefaultScheduler.Stop()
 	<-time.After(1 * time.Second)
-	if DefaultScheduler.policies.Size() != 0 || DefaultScheduler.IsRunning() {
+	if DefaultScheduler.PolicyCount() != 0 || DefaultScheduler.IsRunning() {
 		t.Fatal("Scheduler is still running after stopping")
 	}
 }

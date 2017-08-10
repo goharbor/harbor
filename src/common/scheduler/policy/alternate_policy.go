@@ -2,6 +2,8 @@ package policy
 
 import (
 	"errors"
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/vmware/harbor/src/common/scheduler/task"
@@ -20,16 +22,16 @@ type AlternatePolicyConfiguration struct {
 
 //AlternatePolicy is a policy that repeatedly executing tasks with specified duration during a specified time scope.
 type AlternatePolicy struct {
+	//To sync the related operations.
+	*sync.RWMutex
+
 	//Keep the attached tasks.
-	tasks []task.Task
+	tasks task.Store
 
 	//Policy configurations.
 	config *AlternatePolicyConfiguration
 
-	//Generate time ticks with specified duration.
-	ticker *time.Ticker
-
-	//To indicated whether policy is completed.
+	//To indicated whether policy is enabled or not.
 	isEnabled bool
 
 	//Channel used to send evaluation result signals.
@@ -45,7 +47,8 @@ type AlternatePolicy struct {
 //NewAlternatePolicy is constructor of creating AlternatePolicy.
 func NewAlternatePolicy(config *AlternatePolicyConfiguration) *AlternatePolicy {
 	return &AlternatePolicy{
-		tasks:      []task.Task{},
+		RWMutex:    new(sync.RWMutex),
+		tasks:      task.NewDefaultStore(),
 		config:     config,
 		isEnabled:  false,
 		terminator: make(chan bool),
@@ -64,12 +67,7 @@ func (alp *AlternatePolicy) Name() string {
 
 //Tasks is an implementation of same method in policy interface.
 func (alp *AlternatePolicy) Tasks() []task.Task {
-	copyList := []task.Task{}
-	if alp.tasks != nil && len(alp.tasks) > 0 {
-		copyList = append(copyList, alp.tasks...)
-	}
-
-	return copyList
+	return alp.tasks.GetTasks()
 }
 
 //Done is an implementation of same method in policy interface.
@@ -83,29 +81,42 @@ func (alp *AlternatePolicy) AttachTasks(tasks ...task.Task) error {
 		return errors.New("No tasks can be attached")
 	}
 
-	alp.tasks = append(alp.tasks, tasks...)
+	alp.tasks.AddTasks(tasks...)
 
 	return nil
 }
 
 //Disable is an implementation of same method in policy interface.
 func (alp *AlternatePolicy) Disable() error {
-	//Stop the ticker
-	if alp.ticker != nil {
-		alp.ticker.Stop()
+	alp.Lock()
+	if !alp.isEnabled {
+		alp.Unlock()
+		return fmt.Errorf("Instance of policy %s is not enabled", alp.Name())
 	}
+
+	//Set state to disabled
+	alp.isEnabled = false
+	alp.Unlock()
 
 	//Stop the evaluation goroutine
 	alp.terminator <- true
-	alp.ticker = nil
 
 	return nil
 }
 
 //Evaluate is an implementation of same method in policy interface.
 func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
+	//Lock for state changing
+	defer alp.Unlock()
+	alp.Lock()
+
+	//Check if policy instance is still running
+	if alp.isEnabled {
+		return nil, fmt.Errorf("Instance of policy %s is still running", alp.Name())
+	}
+
 	//Keep idempotent
-	if alp.isEnabled && alp.evaluation != nil {
+	if alp.evaluation != nil {
 		return alp.evaluation, nil
 	}
 
@@ -113,9 +124,6 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 	alp.evaluation = make(chan bool)
 
 	go func() {
-		defer func() {
-			alp.isEnabled = false
-		}()
 		timeNow := time.Now().UTC()
 
 		//Reach the execution time point?
@@ -138,11 +146,19 @@ func (alp *AlternatePolicy) Evaluate() (<-chan bool, error) {
 		alp.evaluation <- true
 
 		//Start the ticker for repeat checking.
-		alp.ticker = time.NewTicker(alp.config.Duration)
+		tk := time.NewTicker(alp.config.Duration)
+		defer func() {
+			if tk != nil {
+				tk.Stop()
+			}
+		}()
+
 		for {
 			select {
-			case <-alp.ticker.C:
-				alp.evaluation <- true
+			case <-tk.C:
+				if alp.IsEnabled() {
+					alp.evaluation <- true
+				}
 			case <-alp.terminator:
 				return
 			}
@@ -173,4 +189,12 @@ func (alp *AlternatePolicy) Equal(p Policy) bool {
 	}
 
 	return cfg == nil || (cfg.Duration == cfg2.Duration && cfg.OffsetTime == cfg2.OffsetTime)
+}
+
+//IsEnabled is an implementation of same method in policy interface.
+func (alp *AlternatePolicy) IsEnabled() bool {
+	defer alp.RUnlock()
+	alp.RLock()
+
+	return alp.isEnabled
 }
