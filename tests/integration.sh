@@ -52,6 +52,8 @@ fi
 
 pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
 
+mkdir -p bundle
+cp harbor-offline-installer-*.tgz bundle
 ls -la bundle
 harbor_build=$(basename bundle/*)
 gsutil cp $harbor_build gs://harbor-builds
