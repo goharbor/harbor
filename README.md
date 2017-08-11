@@ -33,7 +33,7 @@ Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releas
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
-**Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
+**Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
 **Email:** harbor@ vmware.com .  
 More info on [partners and users](partners.md). 
 
@@ -46,6 +46,10 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-* Docker Registry 2.6: [docker image](https://hub.docker.com/_/registry/), [license](https://github.com/docker/distribution/blob/master/LICENSE)
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
-* NGINX 1.11.5: [docker image](https://hub.docker.com/_/nginx/), [license](https://github.com/nginxinc/docker-nginx/blob/master/LICENSE)
+
+### Commercial Support
+If you need commercial support of Harbor, please contact us for more information: harbor@ vmware.com .
+
+
+
