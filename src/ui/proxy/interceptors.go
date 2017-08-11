@@ -296,20 +296,6 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	vh.next.ServeHTTP(rw, req)
 }
 
-type funnelHandler struct {
-	next http.Handler
-}
-
-func (fu funnelHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	imgRaw := req.Context().Value(imageInfoCtxKey)
-	if imgRaw != nil {
-		log.Debugf("Return the original response as no the interceptor takes action.")
-		fu.next.ServeHTTP(rw, req)
-		return
-	}
-	fu.next.ServeHTTP(rw, req)
-}
-
 func matchNotaryDigest(img imageInfo) (bool, error) {
 	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
@@ -341,8 +327,9 @@ func matchNotaryDigest(img imageInfo) (bool, error) {
 	return false, nil
 }
 
+//A sha256 is a string with 64 characters.
 func isDigest(ref string) bool {
-	return strings.HasPrefix(ref, "sha256")
+	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
 }
 
 func copyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
