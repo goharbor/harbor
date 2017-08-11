@@ -50,6 +50,21 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
   exit 1
 fi
 
+pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+
+if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+    ls -la bundle
+    harbor_build=$(basename bundle/*)
+    gsutil cp $harbor_build gs://harbor-builds
+    echo "----------------------------------------------"
+    echo "Download harbor builds:"
+    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
+    echo "----------------------------------------------"
+    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
+else
+  echo "No harbor build to upload"
+fi
+
 # default running mode...
 if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
 	## -------------- Package installer with clean code -----------------
@@ -93,18 +108,18 @@ else
 fi
 
 ## --------------------------------------------- Upload Harbor Build ---------------------------------------
-if [ $upload_build == true ] && [ $rc -eq 0 ]; then
-    ls -la bundle
-    harbor_build=$(basename bundle/*)
-    gsutil cp $harbor_build gs://harbor-builds
-    echo "----------------------------------------------"
-    echo "Download harbor builds:"
-    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
-    echo "----------------------------------------------"
-    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
-else
-  echo "No harbor build to upload"
-fi
+#if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+#    ls -la bundle
+#    harbor_build=$(basename bundle/*)
+#    gsutil cp $harbor_build gs://harbor-builds
+#    echo "----------------------------------------------"
+#    echo "Download harbor builds:"
+#    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
+#    echo "----------------------------------------------"
+#    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
+#else
+#  echo "No harbor build to upload"
+#fi
 
 ## --------------------------------------------- Sendout Email ---------------------------------------------
 if [ $nightly_run == true ]; then
