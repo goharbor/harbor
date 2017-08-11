@@ -107,6 +107,7 @@ type VulnerabilityItem struct {
 	Pkg         string   `json:"package"`
 	Version     string   `json:"version"`
 	Description string   `json:"description"`
+	Link        string   `json:"link"`
 	Fixed       string   `json:"fixedVersion,omitempty"`
 }
 
