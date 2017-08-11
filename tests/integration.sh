@@ -93,18 +93,18 @@ else
 fi
 
 ## --------------------------------------------- Upload Harbor Build ---------------------------------------
-#if [ $upload_build == true ] && [ $rc -eq 0 ]; then
-#    ls -la bundle
-#    harbor_build=$(basename bundle/*)
-#    gsutil cp $harbor_build gs://harbor-builds
-#    echo "----------------------------------------------"
-#    echo "Download harbor builds:"
-#    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
-#    echo "----------------------------------------------"
-#    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
-#else
-#  echo "No harbor build to upload"
-#fi
+if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+    ls -la bundle
+    harbor_build=$(basename bundle/*)
+    gsutil cp $harbor_build gs://harbor-builds
+    echo "----------------------------------------------"
+    echo "Download harbor builds:"
+    echo "https://storage.googleapis.com/harbor-builds/$harbor_build"
+    echo "----------------------------------------------"
+    gsutil -D setacl public-read gs://harbor-builds/$harbor_build &> /dev/null
+else
+  echo "No harbor build to upload"
+fi
 
 ## --------------------------------------------- Sendout Email ---------------------------------------------
 if [ $nightly_run == true ]; then
