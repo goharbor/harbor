@@ -6,7 +6,7 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  EventEmitter
+  EventEmitter, OnChanges
 } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Comparator } from 'clarity-angular';
@@ -41,6 +41,8 @@ import {
   doFiltering,
   doSorting
 } from '../utils';
+import {TagService} from '../service/index';
+import {TagComponent} from '../tag/tag.component';
 
 @Component({
   selector: 'hbr-repository-stackview',
@@ -48,7 +50,9 @@ import {
   styles: [REPOSITORY_STACKVIEW_STYLES],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RepositoryStackviewComponent implements OnInit {
+export class RepositoryStackviewComponent implements OnChanges, OnInit {
+  signedArr: Array<ReposEmitData> = [ ];
+  signature: string;
 
   @Input() projectId: number;
   @Input() projectName: string = "unknown";
@@ -56,12 +60,14 @@ export class RepositoryStackviewComponent implements OnInit {
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
+  @ViewChild('tagComponent') tagComponent: TagComponent;
 
   lastFilteredRepoName: string;
   repositories: RepositoryItem[];
   systemInfo: SystemInfo;
 
   loading: boolean = true;
+  projectIdCopy: number;
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
@@ -74,12 +80,15 @@ export class RepositoryStackviewComponent implements OnInit {
   currentPage: number = 1;
   totalCount: number = 0;
   currentState: State;
+  signedNameArr: string[];
 
   constructor(
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
+    private translate: TranslateService,
+    private tagService: TagService,
     private ref: ChangeDetectorRef) { }
 
   public get registryUrl(): string {
@@ -122,15 +131,25 @@ export class RepositoryStackviewComponent implements OnInit {
           }
           this.translateService.get('REPOSITORY.DELETED_REPO_SUCCESS')
             .subscribe(res => this.errorHandler.info(res));
-        }).catch(error => this.errorHandler.error(error));
+        }).catch(error => {
+          if (error.status === "412"){
+            this.translateService.get('REPOSITORY.TAGS_SIGNED')
+                .subscribe(res => this.errorHandler.info(res));
+            return;
+          }
+          this.errorHandler.error(error);
+        });
+    }
+  }
+
+  ngOnChanges():void {
+    if (this.projectIdCopy !== this.projectId) {
+      this.refresh();
+      this.projectIdCopy = this.projectId;
     }
   }
 
   ngOnInit(): void {
-    if (!this.projectId) {
-      this.errorHandler.error('Project ID cannot be unset.');
-      return;
-    }
     //Get system info for tag views
     toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
       .then(systemInfo => this.systemInfo = systemInfo)
@@ -153,15 +172,81 @@ export class RepositoryStackviewComponent implements OnInit {
     this.clrLoad(st);
   }
 
+  saveSignatures(event: ReposEmitData): void {
+    if (this.signedArr.length) {
+      for (let i = 0, j = this.signedArr.length; i < j; i++) {
+          if (event.name === this.signedArr[i].name) {
+              this.signedArr.splice(i, 1, event);
+              return ;
+          }
+          if (event.name !== this.signedArr[i].name) {
+            this.signedArr.push(event);
+            return;
+          }
+      }
+
+    }else {
+      this.signedArr.push(event);
+    }
+  }
+
   deleteRepo(repoName: string) {
+    // get children tags data
+    if (!(this.tagComponent && this.tagComponent.repoName === repoName)) {
+      this.signature = '';
+      toPromise<Tag[]>(this.tagService
+          .getTags(repoName))
+          .then(items => {
+            this.signedNameArr = [];
+            items.forEach((t: Tag) => {
+              if (t.signature !== null) {
+                this.signedNameArr.push(t.name);
+              }
+            });
+            if (this.signedNameArr.length) {
+              this.signature = this.signedNameArr.join(',');
+              this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
+            }else {
+              this.confirmationDialogSet('DELETION_TITLE_REPO', repoName, 'REPOSITORY.DELETION_SUMMARY_REPO',   ConfirmationButtons.DELETE_CANCEL);
+            }
+      });
+    } else {
+      if (this.signedArr.length) {
+        for (let value of this.signedArr){
+            if (value.name === repoName) {
+              this.signature = value.childArr.join(',');
+              this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED',   ConfirmationButtons.CLOSE);
+              return ;
+            }else {
+              this.confirmationDialogSet('DELETION_TITLE_REPO', repoName, 'REPOSITORY.DELETION_SUMMARY_REPO',  ConfirmationButtons.DELETE_CANCEL);
+            }
+        }
+      }else {
+        this.confirmationDialogSet('DELETION_TITLE_REPO', repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
+      }
+    }
+  }
+
+  confirmationDialogSet(summaryTitle: string, repoName: string, summaryKey: string,  button: ConfirmationButtons): void {
+
+    this.translate.get(summaryKey,
+        {
+          repoName: repoName,
+          signedImages: this.signature,
+        })
+        .subscribe((res: string) => summaryKey = res);
+
     let message = new ConfirmationMessage(
-      'REPOSITORY.DELETION_TITLE_REPO',
-      'REPOSITORY.DELETION_SUMMARY_REPO',
-      repoName,
-      repoName,
-      ConfirmationTargets.REPOSITORY,
-      ConfirmationButtons.DELETE_CANCEL);
+        summaryTitle,
+        summaryKey,
+        repoName,
+        repoName,
+        ConfirmationTargets.REPOSITORY,
+        button);
     this.confirmationDialog.open(message);
+
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 5000);
   }
 
   refresh() {
@@ -175,6 +260,7 @@ export class RepositoryStackviewComponent implements OnInit {
   clrLoad(state: State): void {
     //Keep it for future filtering and sorting
     this.currentState = state;
+    this.signedArr = [];
 
     let pageNumber: number = calculatePage(state);
     if (pageNumber <= 0) { pageNumber = 1; }
@@ -230,5 +316,12 @@ export class RepositoryStackviewComponent implements OnInit {
     st.page.to = targetPageNumber * this.pageSize - 1;
 
     return st;
+  }
+}
+
+
+export class ReposEmitData {
+  constructor(public name: string,
+              public childArr: string[]) {
   }
 }
