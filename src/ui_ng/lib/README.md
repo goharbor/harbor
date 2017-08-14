@@ -1,4 +1,6 @@
 # Harbor UI library
+**NOTES: Odd version is development version and may be not stable. Even version is release version which should be stable.**
+
 Wrap the following Harbor UI components into a sharable library and published as npm package for other third-party applications to import and reuse.
 
 * Repository and tag management view
