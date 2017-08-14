@@ -94,6 +94,22 @@ func TestMatchPullManifest(t *testing.T) {
 	assert.Equal("sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", tag7)
 }
 
+func TestMatchListRepos(t *testing.T) {
+	assert := assert.New(t)
+	req1, _ := http.NewRequest("POST", "http://127.0.0.1:5000/v2/_catalog", nil)
+	res1 := MatchListRepos(req1)
+	assert.False(res1, "%s %v is not a request to list repos", req1.Method, req1.URL)
+
+	req2, _ := http.NewRequest("GET", "http://127.0.0.1:5000/v2/_catalog", nil)
+	res2 := MatchListRepos(req2)
+	assert.True(res2, "%s %v is a request to list repos", req2.Method, req2.URL)
+
+	req3, _ := http.NewRequest("GET", "https://192.168.0.5:443/v1/_catalog", nil)
+	res3 := MatchListRepos(req3)
+	assert.False(res3, "%s %v is not a request to pull manifest", req3.Method, req3.URL)
+
+}
+
 func TestEnvPolicyChecker(t *testing.T) {
 	assert := assert.New(t)
 	if err := os.Setenv("PROJECT_CONTENT_TRUST", "1"); err != nil {
@@ -190,4 +206,10 @@ func TestMarshalError(t *testing.T) {
 	assert := assert.New(t)
 	js := marshalError("Not Found", 404)
 	assert.Equal("{\"code\":404,\"message\":\"Not Found\",\"details\":\"Not Found\"}", js)
+}
+
+func TestIsDigest(t *testing.T) {
+	assert := assert.New(t)
+	assert.False(isDigest("latest"))
+	assert.True(isDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
 }

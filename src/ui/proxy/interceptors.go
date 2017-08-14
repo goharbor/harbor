@@ -8,9 +8,9 @@ import (
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
-	//	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/projectmanager"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 
 	"context"
 	"fmt"
@@ -18,6 +18,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -25,6 +26,7 @@ type contextKey string
 
 const (
 	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
+	catalogURLPattern  = `/v2/_catalog`
 	imageInfoCtxKey    = contextKey("ImageInfo")
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "harbor-ui"
@@ -52,6 +54,19 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 		return true, s[1], s[2]
 	}
 	return false, "", ""
+}
+
+// MatchListRepos checks if the request looks like a request to list repositories.
+func MatchListRepos(req *http.Request) bool {
+	if req.Method != http.MethodGet {
+		return false
+	}
+	re := regexp.MustCompile(catalogURLPattern)
+	s := re.FindStringSubmatch(req.URL.Path)
+	if len(s) == 1 {
+		return true
+	}
+	return false
 }
 
 // policyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
@@ -100,7 +115,6 @@ func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
 	}
 }
 
-// TODO: Get project manager with PM factory.
 func getPolicyChecker() policyChecker {
 	if config.WithAdmiral() {
 		return newPMSPolicyChecker(config.GlobalProjectMgr)
@@ -110,7 +124,7 @@ func getPolicyChecker() policyChecker {
 
 type imageInfo struct {
 	repository  string
-	tag         string
+	reference   string
 	projectName string
 	digest      string
 }
@@ -119,36 +133,94 @@ type urlHandler struct {
 	next http.Handler
 }
 
-//TODO: wrap a ResponseWriter to get the status code?
-
 func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	log.Debugf("in url handler, path: %s", req.URL.Path)
 	req.URL.Path = strings.TrimPrefix(req.URL.Path, RegistryProxyPrefix)
-	flag, repository, tag := MatchPullManifest(req)
+	flag, repository, reference := MatchPullManifest(req)
 	if flag {
 		components := strings.SplitN(repository, "/", 2)
 		if len(components) < 2 {
 			http.Error(rw, marshalError(fmt.Sprintf("Bad repository name: %s", repository), http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
-		rec = httptest.NewRecorder()
-		uh.next.ServeHTTP(rec, req)
-		if rec.Result().StatusCode != http.StatusOK {
-			copyResp(rec, rw)
+
+		client, err := uiutils.NewRepositoryClientForUI(tokenUsername, repository)
+		if err != nil {
+			log.Errorf("Error creating repository Client: %v", err)
+			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		digest := rec.Header().Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+		digest, _, err := client.ManifestExist(reference)
+		if err != nil {
+			log.Errorf("Failed to get digest for reference: %s, error: %v", reference, err)
+			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		img := imageInfo{
 			repository:  repository,
-			tag:         tag,
+			reference:   reference,
 			projectName: components[0],
 			digest:      digest,
 		}
+
 		log.Debugf("image info of the request: %#v", img)
 		ctx := context.WithValue(req.Context(), imageInfoCtxKey, img)
 		req = req.WithContext(ctx)
 	}
 	uh.next.ServeHTTP(rw, req)
+}
+
+type listReposHandler struct {
+	next http.Handler
+}
+
+func (lrh listReposHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	listReposFlag := MatchListRepos(req)
+	if listReposFlag {
+		rec = httptest.NewRecorder()
+		lrh.next.ServeHTTP(rec, req)
+		if rec.Result().StatusCode != http.StatusOK {
+			copyResp(rec, rw)
+			return
+		}
+		var ctlg struct {
+			Repositories []string `json:"repositories"`
+		}
+		decoder := json.NewDecoder(rec.Body)
+		if err := decoder.Decode(&ctlg); err != nil {
+			log.Errorf("Decode repositories error: %v", err)
+			copyResp(rec, rw)
+			return
+		}
+		var entries []string
+		for repo := range ctlg.Repositories {
+			log.Debugf("the repo in the reponse %s", ctlg.Repositories[repo])
+			exist := dao.RepositoryExists(ctlg.Repositories[repo])
+			if exist {
+				entries = append(entries, ctlg.Repositories[repo])
+			}
+		}
+		type Repos struct {
+			Repositories []string `json:"repositories"`
+		}
+		resp := &Repos{Repositories: entries}
+		respJSON, err := json.Marshal(resp)
+		if err != nil {
+			log.Errorf("Encode repositories error: %v", err)
+			copyResp(rec, rw)
+			return
+		}
+
+		for k, v := range rec.Header() {
+			rw.Header()[k] = v
+		}
+		clen := len(respJSON)
+		rw.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(clen))
+		rw.Write(respJSON)
+		return
+	}
+	lrh.next.ServeHTTP(rw, req)
 }
 
 type contentTrustHandler struct {
@@ -162,6 +234,10 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		return
 	}
 	img, _ := req.Context().Value(imageInfoCtxKey).(imageInfo)
+	if img.digest == "" {
+		cth.next.ServeHTTP(rw, req)
+		return
+	}
 	if !getPolicyChecker().contentTrustEnabled(img.projectName) {
 		cth.next.ServeHTTP(rw, req)
 		return
@@ -190,6 +266,10 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 	img, _ := req.Context().Value(imageInfoCtxKey).(imageInfo)
+	if img.digest == "" {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
 	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy(img.projectName)
 	if !projectVulnerableEnabled {
 		vh.next.ServeHTTP(rw, req)
@@ -197,7 +277,7 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	}
 	overview, err := dao.GetImgScanOverview(img.digest)
 	if err != nil {
-		log.Errorf("failed to get ImgScanOverview with repo: %s, tag: %s, digest: %s. Error: %v", img.repository, img.tag, img.digest, err)
+		log.Errorf("failed to get ImgScanOverview with repo: %s, reference: %s, digest: %s. Error: %v", img.repository, img.reference, img.digest, err)
 		http.Error(rw, marshalError("Failed to get ImgScanOverview.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
@@ -216,37 +296,40 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	vh.next.ServeHTTP(rw, req)
 }
 
-type funnelHandler struct {
-	next http.Handler
-}
-
-func (fu funnelHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	imgRaw := req.Context().Value(imageInfoCtxKey)
-	if imgRaw != nil {
-		log.Debugf("Return the original response as no the interceptor takes action.")
-		copyResp(rec, rw)
-		return
-	}
-	fu.next.ServeHTTP(rw, req)
-}
-
 func matchNotaryDigest(img imageInfo) (bool, error) {
 	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err
 	}
 	for _, t := range targets {
-		if t.Tag == img.tag {
-			log.Debugf("found tag: %s in notary, try to match digest.", img.tag)
+		if isDigest(img.reference) {
 			d, err := notary.DigestFromTarget(t)
 			if err != nil {
 				return false, err
 			}
-			return img.digest == d, nil
+			if img.digest == d {
+				return true, nil
+			}
+		} else {
+			if t.Tag == img.reference {
+				log.Debugf("found reference: %s in notary, try to match digest.", img.reference)
+				d, err := notary.DigestFromTarget(t)
+				if err != nil {
+					return false, err
+				}
+				if img.digest == d {
+					return true, nil
+				}
+			}
 		}
 	}
 	log.Debugf("image: %#v, not found in notary", img)
 	return false, nil
+}
+
+//A sha256 is a string with 64 characters.
+func isDigest(ref string) bool {
+	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
 }
 
 func copyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
