@@ -135,7 +135,7 @@ func (sh *SummarizeHandler) Enter() (string, error) {
 	layerName := sh.Context.layers[len(sh.Context.layers)-1].Name
 	logger.Infof("Top layer's name: %s, will use it to get the vulnerability result of image", layerName)
 	if err := clair.UpdateScanOverview(sh.Context.Digest, layerName); err != nil {
-		return "", nil
+		return "", err
 	}
 	return models.JobFinished, nil
 }

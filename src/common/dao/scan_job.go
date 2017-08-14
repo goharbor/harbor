@@ -147,8 +147,8 @@ func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compO
 	rec.DetailsKey = detailsKey
 	rec.UpdateTime = time.Now()
 
-	n, err := o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
-	if n == 0 || err != nil {
+	_, err = o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
+	if err != nil {
 		return fmt.Errorf("Failed to update scan overview record with digest: %s, error: %v", digest, err)
 	}
 	return nil
