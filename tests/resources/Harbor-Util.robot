@@ -86,7 +86,7 @@ Package Harbor Offline
 	[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
 	Log To Console  \nStart Docker Daemon
 	Start Docker Daemon Locally
-	${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
+	${rc}  ${output}=  Run And Return Rc And Output  make package_offline DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
 	Log To Console  ${rc}
 	Log  ${output}
 	Should Be Equal As Integers  ${rc}  0
