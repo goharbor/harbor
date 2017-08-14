@@ -27,17 +27,10 @@ import (
 )
 
 var (
-	// valid keys of configurations which user can modify
+	// the keys of configurations which user can modify in PUT method and user can
+	// get in GET method
 	validKeys = []string{
-		common.ExtEndpoint,
 		common.AUTHMode,
-		common.DatabaseType,
-		common.MySQLHost,
-		common.MySQLPort,
-		common.MySQLUsername,
-		common.MySQLPassword,
-		common.MySQLDatabase,
-		common.SQLiteFile,
 		common.SelfRegistration,
 		common.LDAPURL,
 		common.LDAPSearchDN,
@@ -47,8 +40,6 @@ var (
 		common.LDAPFilter,
 		common.LDAPScope,
 		common.LDAPTimeout,
-		common.TokenServiceURL,
-		common.RegistryURL,
 		common.EmailHost,
 		common.EmailPort,
 		common.EmailUsername,
@@ -58,49 +49,31 @@ var (
 		common.EmailIdentity,
 		common.ProjectCreationRestriction,
 		common.VerifyRemoteCert,
-		common.MaxJobWorkers,
 		common.TokenExpiration,
-		common.CfgExpiration,
-		common.JobLogDir,
-		common.AdminInitialPassword,
 		common.ScanAllPolicy,
 	}
 
 	stringKeys = []string{
-		common.ExtEndpoint,
 		common.AUTHMode,
-		common.DatabaseType,
-		common.MySQLHost,
-		common.MySQLUsername,
-		common.MySQLPassword,
-		common.MySQLDatabase,
-		common.SQLiteFile,
 		common.LDAPURL,
 		common.LDAPSearchDN,
 		common.LDAPSearchPwd,
 		common.LDAPBaseDN,
 		common.LDAPUID,
 		common.LDAPFilter,
-		common.TokenServiceURL,
-		common.RegistryURL,
 		common.EmailHost,
 		common.EmailUsername,
 		common.EmailPassword,
 		common.EmailFrom,
 		common.EmailIdentity,
 		common.ProjectCreationRestriction,
-		common.JobLogDir,
-		common.AdminInitialPassword,
 	}
 
 	numKeys = []string{
 		common.EmailPort,
 		common.LDAPScope,
 		common.LDAPTimeout,
-		common.MySQLPort,
-		common.MaxJobWorkers,
 		common.TokenExpiration,
-		common.CfgExpiration,
 	}
 
 	boolKeys = []string{
@@ -110,10 +83,8 @@ var (
 	}
 
 	passwordKeys = []string{
-		common.AdminInitialPassword,
 		common.EmailPassword,
 		common.LDAPSearchPwd,
-		common.MySQLPassword,
 	}
 )
 
@@ -142,13 +113,20 @@ type value struct {
 
 // Get returns configurations
 func (c *ConfigAPI) Get() {
-	cfg, err := config.GetSystemCfg()
+	configs, err := config.GetSystemCfg()
 	if err != nil {
 		log.Errorf("failed to get configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	m, err := convertForGet(cfg)
+	cfgs := map[string]interface{}{}
+	for _, k := range validKeys {
+		if v, ok := configs[k]; ok {
+			cfgs[k] = v
+		}
+	}
+
+	m, err := convertForGet(cfgs)
 	if err != nil {
 		log.Errorf("failed to convert configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
