@@ -71,7 +71,7 @@ export class TagComponent implements OnInit {
 
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
-  @Output() signatureOutput = new EventEmitter<ReposEmitData>();
+  @Output() signatureOutput = new EventEmitter<any>();
 
 
   tags: Tag[];
@@ -162,11 +162,9 @@ export class TagComponent implements OnInit {
       }
       });
       this.tags = items;
-        if (this.signatures.length) {
-          let obj: ReposEmitData;
-          obj = {name: this.repoName, childArr: this.signatures};
-          this.signatureOutput.emit(obj);
-        }
+        let obj: {[key: string]: string[]} = {};
+        obj = {[this.repoName]: this.signatures};
+        this.signatureOutput.emit(obj);
         this.loading = false;
         if (this.tags && this.tags.length === 0) {
           this.refreshRepo.emit(true);
@@ -264,11 +262,5 @@ export class TagComponent implements OnInit {
     if (tagId) {
       this.channel.publishScanEvent(this.repoName + "/" + tagId);
     }
-  }
-}
-
-export class ReposEmitData {
-  constructor(public name: string,
-              public childArr: string[]) {
   }
 }
