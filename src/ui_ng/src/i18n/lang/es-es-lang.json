@@ -322,7 +322,9 @@
         "MY_REPOSITORY": "Mi Repositorio",
         "PUBLIC_REPOSITORY": "Repositorio Público",
         "DELETION_TITLE_REPO": "Confirmar Eliminación de Repositorio",
+        "DELETION_TITLE_REPO_SIGNED": "Repository cannot be de deleted",
         "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{param}}?",
+        "DELETION_SUMMARY_REPO_SIGNED": "Repository {{repoName}} cannot be deleted because the following signed image(s) existing.\n{{signedImages}},\nYou should unsign all the signed image(s) before deleting the repository!",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
         "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",
@@ -344,7 +346,8 @@
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
         "COPY": "Copiar",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "TAGS_SIGNED": "Tag(s) are signed!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"

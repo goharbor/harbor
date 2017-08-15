@@ -321,7 +321,9 @@
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
+        "DELETION_TITLE_REPO_SIGNED": "镜像仓库删除失败",
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
+        "DELETION_SUMMARY_REPO_SIGNED": "镜像仓库 {{repoName}} 不能被删除，因为存在以下签名的镜像.\n{{signedImages}},\n你需要删除所有的签名镜像才能删除仓库!",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
@@ -343,7 +345,8 @@
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
         "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
-        "PLACEHOLDER": "未发现任何镜像库!"
+        "PLACEHOLDER": "未发现任何镜像库!",
+        "TAGS_SIGNED": "有签名的镜像!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"

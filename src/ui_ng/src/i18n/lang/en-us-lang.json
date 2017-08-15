@@ -321,7 +321,9 @@
         "MY_REPOSITORY": "My Repository",
         "PUBLIC_REPOSITORY": "Public Repository",
         "DELETION_TITLE_REPO": "Confirm Repository Deletion",
+        "DELETION_TITLE_REPO_SIGNED": "Repository cannot be de deleted",
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{param}}?",
+        "DELETION_SUMMARY_REPO_SIGNED": "Repository {{repoName}} cannot be deleted because the following signed image(s) existing.\n{{signedImages}},\nYou should unsign all the signed image(s) before deleting the repository!",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed tag cannot be deleted",
@@ -343,7 +345,8 @@
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
         "COPY": "Copy",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "TAGS_SIGNED": "Tag(s) are signed!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
