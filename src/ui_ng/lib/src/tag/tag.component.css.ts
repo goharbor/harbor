@@ -32,6 +32,14 @@ export const TAG_STYLE = `
   background-color: #eee;
 }
 
+:host >>> .datagrid .datagrid-cell {
+  min-width: 96px;
+}
+
+:host >>> .datagrid .datagrid-body .datagrid-row:first-child .datagrid-cell {
+  min-width: auto;
+}
+
 .truncated {
   display: inline-block;
   overflow: hidden;
