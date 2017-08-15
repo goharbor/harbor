@@ -211,6 +211,7 @@ export interface VulnerabilityBase {
 }
 
 export interface VulnerabilityItem extends VulnerabilityBase {
+    link: string;
     fixedVersion: string;
     layer?: string;
     description: string;
