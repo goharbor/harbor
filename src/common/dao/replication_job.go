@@ -404,11 +404,16 @@ func UpdateRepJobStatus(id int64, status string) error {
 	return err
 }
 
-// ResetRunningJobs update all running jobs status to pending
+// ResetRunningJobs update all running jobs status to pending, including replication jobs and scan jobs.
 func ResetRunningJobs() error {
 	o := GetOrmer()
 	sql := fmt.Sprintf("update replication_job set status = '%s', update_time = ? where status = '%s'", models.JobPending, models.JobRunning)
 	_, err := o.Raw(sql, time.Now()).Exec()
+	if err != nil {
+		return err
+	}
+	sql = fmt.Sprintf("update %s set status = '%s', update_time = ? where status = '%s'", models.ScanJobTable, models.JobPending, models.JobRunning)
+	_, err = o.Raw(sql, time.Now()).Exec()
 	return err
 }
 
