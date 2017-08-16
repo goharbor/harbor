@@ -312,7 +312,7 @@
         "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_DIGEST_ID": "Copy Digest ID",
+        "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Delete",
         "NAME": "Name",
         "TAGS_COUNT": "Tags",

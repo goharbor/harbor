@@ -312,7 +312,7 @@
         "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
-        "COPY_DIGEST_ID": "复制摘要ID",
+        "COPY_DIGEST_ID": "复制摘要",
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",
