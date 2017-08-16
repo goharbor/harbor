@@ -51,21 +51,30 @@ func main() {
 }
 
 func resumeJobs() {
-	//TODO: may need to resume scan jobs also?
 	log.Debugf("Trying to resume halted jobs...")
 	err := dao.ResetRunningJobs()
 	if err != nil {
 		log.Warningf("Failed to reset all running jobs to pending, error: %v", err)
 	}
-	jobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying)
+	rjobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying, models.JobRunning)
 	if err == nil {
-		for _, j := range jobs {
+		for _, j := range rjobs {
 			rj := job.NewRepJob(j.ID)
-			log.Debugf("Resuming job: %v", rj)
+			log.Debugf("Resuming replication job: %v", rj)
 			job.Schedule(rj)
 		}
 	} else {
-		log.Warningf("Failed to jobs to resume, error: %v", err)
+		log.Warningf("Failed to resume replication jobs, error: %v", err)
+	}
+	sjobs, err := dao.GetScanJobsByStatus(models.JobPending, models.JobRetrying, models.JobRunning)
+	if err == nil {
+		for _, j := range sjobs {
+			sj := job.NewScanJob(j.ID)
+			log.Debugf("Resuming scan job: %v", sj)
+			job.Schedule(sj)
+		}
+	} else {
+		log.Warningf("Failed to resume scan jobs, error: %v", err)
 	}
 }
 

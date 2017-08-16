@@ -1774,3 +1774,20 @@ func TestListScanOverviews(t *testing.T) {
 	err = ClearTable(models.ScanOverviewTable)
 	assert.Nil(err)
 }
+
+func TestGetScanJobsByStatus(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	err = UpdateScanJobStatus(id, models.JobRunning)
+	assert.Nil(err)
+	r1, err := GetScanJobsByStatus(models.JobPending, models.JobCanceled)
+	assert.Nil(err)
+	assert.Equal(0, len(r1))
+	r2, err := GetScanJobsByStatus(models.JobPending, models.JobRunning)
+	assert.Nil(err)
+	assert.Equal(1, len(r2))
+	assert.Equal(sj1.Repository, r2[0].Repository)
+}
