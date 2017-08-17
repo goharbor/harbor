@@ -47,6 +47,7 @@ import { StatisticHandler } from '../shared/statictics/statistic-handler.service
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectComponent implements OnInit, OnDestroy {
+  selecteType:number = 0;
 
   changedProjects: Project[];
   projectTypes = ProjectTypes;
@@ -121,6 +122,16 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   retrieve(state?: State): void {
     this.projectName = "";
+
+    if (window.sessionStorage && window.sessionStorage['projectTypeValue'] &&  window.sessionStorage['fromDetails']) {
+      this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
+      this.selecteType = this.currentFilteredType;
+      window.sessionStorage.removeItem('fromDetails');
+     }
+    if (this.currentFilteredType !== 0) {
+      this.getProjects('', this.currentFilteredType - 1);
+      return;
+      }
     this.getProjects();
   }
 
@@ -175,6 +186,9 @@ export class ProjectComponent implements OnInit, OnDestroy {
       } else {
         this.getProjects("", this.currentFilteredType - 1);
       }
+      if (window.sessionStorage) {
+        window.sessionStorage['projectTypeValue'] = this.currentFilteredType;
+      }
     }
   }
 
@@ -192,6 +206,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
           } else {
             this.getProjects("", this.currentFilteredType - 1);
           }
+
+          this.selecteType = this.currentFilteredType;
+            if (window.sessionStorage) {
+              window.sessionStorage['projectTypeValue'] = this.currentFilteredType;
+            }
         },
         error => this.messageHandlerService.handleError(error)
         );
