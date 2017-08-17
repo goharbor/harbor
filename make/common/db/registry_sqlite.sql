@@ -38,7 +38,7 @@ create table user (
  The 11 consist of 10 for the max value of user_id(4294967295)  
  in MySQL and 1 of '#'.
 */
- username varchar(32),
+ username varchar(255),
 /*
  11 bytes is reserved for marking the deleted users.
 */
@@ -96,7 +96,7 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 
 create table access_log (
  log_id INTEGER PRIMARY KEY,
- username varchar (32) NOT NULL,
+ username varchar (255) NOT NULL,
  project_id int NOT NULL,
  repo_name varchar (256), 
  repo_tag varchar (128),
@@ -137,7 +137,7 @@ create table replication_target (
  id INTEGER PRIMARY KEY,
  name varchar(64),
  url varchar(64),
- username varchar(40),
+ username varchar(255),
  password varchar(128),
  /*
  target_type indicates the type of target registry,

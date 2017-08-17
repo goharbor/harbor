@@ -22,6 +22,12 @@ import (
 
 // AddAccessLog persists the access logs
 func AddAccessLog(accessLog models.AccessLog) error {
+	// the max length of username in database is 255, replace the last
+	// three charaters with "..." if the length is greater than 256
+	if len(accessLog.Username) > 255 {
+		accessLog.Username = accessLog.Username[:252] + "..."
+	}
+
 	o := GetOrmer()
 	_, err := o.Insert(&accessLog)
 	return err
