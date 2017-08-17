@@ -12,8 +12,8 @@ class User(Base):
     __tablename__ = 'user'
 
     user_id = sa.Column(sa.Integer, primary_key=True)
-    username = sa.Column(sa.String(15), unique=True)
-    email = sa.Column(sa.String(30), unique=True)
+    username = sa.Column(sa.String(255), unique=True)
+    email = sa.Column(sa.String(255), unique=True)
     password = sa.Column(sa.String(40), nullable=False)
     realname = sa.Column(sa.String(255), nullable=False)
     comment = sa.Column(sa.String(30))
@@ -106,7 +106,7 @@ class ReplicationTarget(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(64))
     url = sa.Column(sa.String(64))
-    username = sa.Column(sa.String(40))
+    username = sa.Column(sa.String(255))
     password = sa.Column(sa.String(40))
     target_type = sa.Column(mysql.TINYINT(1), nullable=False, server_default=sa.text("'0'"))
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
@@ -144,7 +144,7 @@ class AccessLog(Base):
 
     user_id = sa.Column(sa.Integer, nullable=False)
     log_id = sa.Column(sa.Integer, primary_key=True)
-    username = sa.Column(sa.String(32), nullable=False)
+    username = sa.Column(sa.String(255), nullable=False)
     project_id = sa.Column(sa.Integer, nullable=False)
     repo_name = sa.Column(sa.String(256))
     repo_tag = sa.Column(sa.String(128))
