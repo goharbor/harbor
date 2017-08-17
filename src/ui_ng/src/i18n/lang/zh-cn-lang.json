@@ -321,6 +321,8 @@
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
+        "DELETION_TITLE_REPO_SIGNED": "仓库不能被删除",
+        "DELETION_SUMMARY_REPO_SIGNED": "镜像仓库 '{{repoName}}' 不能被删除，因为存在以下签名镜像.\n{{signedImages}} \n在删除镜像仓库前需先删除所有的签名镜像",
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
