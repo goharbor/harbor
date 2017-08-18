@@ -19,7 +19,7 @@ export const TAG_TEMPLATE = `
     <clr-dg-column style="min-width: 180px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 240px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 100px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 120px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" [clrDgField]="'architecture'" *ngIf="!withClair">{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
@@ -47,7 +47,7 @@ export const TAG_TEMPLATE = `
           <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
         </a>
       </clr-dg-cell>
-      <clr-dg-cell style="width: 240px;">{{t.author}}</clr-dg-cell>
+      <clr-dg-cell style="width: 100px;">{{t.author}}</clr-dg-cell>
       <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell style="width: 120px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.architecture}}</clr-dg-cell>
