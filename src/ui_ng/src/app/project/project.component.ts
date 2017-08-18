@@ -192,7 +192,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
       } else {
         this.getProjects("", this.currentFilteredType - 1);
       }
-  }
+    }
 
   toggleProject(p: Project) {
     if (p) {
