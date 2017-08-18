@@ -71,9 +71,10 @@ export class TagComponent implements OnInit {
 
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
+  @Output() signatureOutput = new EventEmitter<any>();
+
 
   tags: Tag[];
-
 
   showTagManifestOpened: boolean;
   manifestInfoTitle: string;
@@ -136,6 +137,7 @@ export class TagComponent implements OnInit {
 
   retrieve() {
     this.tags = [];
+    let signatures: string[] = [] ;
     this.loading = true;
 
     toPromise<Tag[]>(this.tagService
@@ -151,11 +153,17 @@ export class TagComponent implements OnInit {
               components: {
                 total: 0,
                 summary: []
-              }
-            };
-          }
-        });
-        this.tags = items;
+            }
+        };
+      }
+      if (t.signature !== null) {
+        signatures.push(t.name);
+      }
+      });
+      this.tags = items;
+        let signedName: {[key: string]: string[]} = {};
+        signedName[this.repoName] = signatures;
+        this.signatureOutput.emit(signedName);
         this.loading = false;
         if (this.tags && this.tags.length === 0) {
           this.refreshRepo.emit(true);

@@ -23,7 +23,7 @@ export const REPOSITORY_STACKVIEW_TEMPLATE: string = `
         <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
         <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>        
-        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" class="sub-grid-custom" [repoName]="r.name" [registryUrl]="registryUrl" [withNotary]="withNotary" [withClair]="withClair" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isEmbedded]="true"></hbr-tag>
+        <hbr-tag *clrIfExpanded ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)" class="sub-grid-custom" [repoName]="r.name" [registryUrl]="registryUrl" [withNotary]="withNotary" [withClair]="withClair" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isEmbedded]="true"></hbr-tag>
       </clr-dg-row>
       <clr-dg-footer>
         <span *ngIf="showDBStatusWarning" class="db-status-warning">

@@ -1,4 +1,4 @@
-<a *ngIf="hasSignedIn" [routerLink]="['/harbor', 'projects']">&lt; {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
+<a *ngIf="hasSignedIn" (click)="backToProject()" class="cursor">&lt; {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
 <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
 
 <h1 class="sub-header-title">{{currentProject.name}} <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span></h1>

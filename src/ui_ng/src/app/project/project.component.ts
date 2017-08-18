@@ -63,6 +63,15 @@ export class ProjectComponent implements OnInit, OnDestroy {
   subscription: Subscription;
   loading: boolean = true;
 
+  get selecteType (): number {
+    return this.currentFilteredType;
+  }
+  set selecteType(_project: number) {
+    if (window.sessionStorage) {
+      window.sessionStorage['projectTypeValue'] = _project;
+    }
+  }
+
   constructor(
     private projectService: ProjectService,
     private messageHandlerService: MessageHandlerService,
@@ -98,6 +107,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (window.sessionStorage && window.sessionStorage['projectTypeValue'] &&  window.sessionStorage['fromDetails']) {
+      this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
+      window.sessionStorage.removeItem('fromDetails');
+    }
   }
 
   ngOnDestroy(): void {
@@ -121,6 +134,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   retrieve(state?: State): void {
     this.projectName = "";
+    if (this.currentFilteredType !== 0) {
+      this.getProjects('', this.currentFilteredType - 1);
+      return;
+      }
     this.getProjects();
   }
 
