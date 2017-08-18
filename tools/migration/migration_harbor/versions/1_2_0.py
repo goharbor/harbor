@@ -46,7 +46,7 @@ def upgrade():
     op.drop_constraint('access_log_ibfk_2', 'access_log', type_='foreignkey')
 
 	#add colume username to access_log
-    op.add_column('access_log', sa.Column('username', mysql.VARCHAR(32), nullable=False))
+    op.add_column('access_log', sa.Column('username', mysql.VARCHAR(255), nullable=False))
     
 	#init username
     session.query(AccessLog).update({AccessLog.username: ""})
@@ -56,6 +56,12 @@ def upgrade():
     for user in user_all:
         session.query(AccessLog).filter(AccessLog.user_id == user.user_id).update({AccessLog.username: user.username}, synchronize_session='fetch')
 	
+    #update user.username length to 255
+    op.alter_column('user', 'username', type_=sa.String(255), existing_type=sa.String(32))
+	
+    #update replication_target.username length to 255
+    op.alter_column('replication_target', 'username', type_=sa.String(255), existing_type=sa.String(40))
+
     op.drop_column("access_log", "user_id")
     op.drop_column("repository", "owner_id")
 
