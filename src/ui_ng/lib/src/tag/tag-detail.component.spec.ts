@@ -91,6 +91,7 @@ describe('TagDetailComponent (inline template)', () => {
         id: "CVE-2016-" + (8859 + i),
         severity: i % 2 === 0 ? VulnerabilitySeverity.HIGH : VulnerabilitySeverity.MEDIUM,
         package: "package_" + i,
+        link: "https://security-tracker.debian.org/tracker/CVE-2016-4484",
         layer: "layer_" + i,
         version: '4.' + i + ".0",
         fixedVersion: '4.' + i + '.11',

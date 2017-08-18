@@ -57,6 +57,17 @@ func GetScanJobsByDigest(digest string, limit ...int) ([]*models.ScanJob, error)
 	return res, err
 }
 
+// GetScanJobsByStatus return a list of scan jobs with any of the given statuses in param
+func GetScanJobsByStatus(status ...string) ([]*models.ScanJob, error) {
+	var res []*models.ScanJob
+	var t []interface{}
+	for _, s := range status {
+		t = append(t, interface{}(s))
+	}
+	_, err := scanJobQs().Filter("status__in", t...).All(&res)
+	return res, err
+}
+
 // UpdateScanJobStatus updates the status of a scan job.
 func UpdateScanJobStatus(id int64, status string) error {
 	o := GetOrmer()
@@ -147,8 +158,8 @@ func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compO
 	rec.DetailsKey = detailsKey
 	rec.UpdateTime = time.Now()
 
-	n, err := o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
-	if n == 0 || err != nil {
+	_, err = o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
+	if err != nil {
 		return fmt.Errorf("Failed to update scan overview record with digest: %s, error: %v", digest, err)
 	}
 	return nil

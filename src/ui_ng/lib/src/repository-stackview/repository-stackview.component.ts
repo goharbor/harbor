@@ -6,7 +6,7 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  EventEmitter
+  EventEmitter, OnChanges, SimpleChanges
 } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Comparator } from 'clarity-angular';
@@ -41,6 +41,7 @@ import {
   doFiltering,
   doSorting
 } from '../utils';
+import {TagService} from '../service/index';
 
 @Component({
   selector: 'hbr-repository-stackview',
@@ -48,7 +49,8 @@ import {
   styles: [REPOSITORY_STACKVIEW_STYLES],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RepositoryStackviewComponent implements OnInit {
+export class RepositoryStackviewComponent implements OnChanges, OnInit {
+  signedCon: {[key: string]: any | string[]} = {};
 
   @Input() projectId: number;
   @Input() projectName: string = "unknown";
@@ -80,6 +82,8 @@ export class RepositoryStackviewComponent implements OnInit {
     private translateService: TranslateService,
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
+    private translate: TranslateService,
+    private tagService: TagService,
     private ref: ChangeDetectorRef) { }
 
   public get registryUrl(): string {
@@ -122,15 +126,24 @@ export class RepositoryStackviewComponent implements OnInit {
           }
           this.translateService.get('REPOSITORY.DELETED_REPO_SUCCESS')
             .subscribe(res => this.errorHandler.info(res));
-        }).catch(error => this.errorHandler.error(error));
+        }).catch(error => {
+          if (error.status === "412"){
+            this.translateService.get('REPOSITORY.TAGS_SIGNED')
+                .subscribe(res => this.errorHandler.info(res));
+            return;
+          }
+          this.errorHandler.error(error);
+        });
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['projectId'] && changes['projectId'].currentValue) {
+      this.refresh();
     }
   }
 
   ngOnInit(): void {
-    if (!this.projectId) {
-      this.errorHandler.error('Project ID cannot be unset.');
-      return;
-    }
     //Get system info for tag views
     toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
       .then(systemInfo => this.systemInfo = systemInfo)
@@ -153,15 +166,64 @@ export class RepositoryStackviewComponent implements OnInit {
     this.clrLoad(st);
   }
 
+  saveSignatures(event: {[key: string]: string[]}): void {
+    Object.assign(this.signedCon, event);
+  }
+
   deleteRepo(repoName: string) {
-    let message = new ConfirmationMessage(
-      'REPOSITORY.DELETION_TITLE_REPO',
-      'REPOSITORY.DELETION_SUMMARY_REPO',
-      repoName,
-      repoName,
-      ConfirmationTargets.REPOSITORY,
-      ConfirmationButtons.DELETE_CANCEL);
-    this.confirmationDialog.open(message);
+    if (this.signedCon[repoName]) {
+      this.signedDataSet(repoName);
+      } else {
+      this.getTagInfo(repoName).then(() => {
+        this.signedDataSet(repoName);
+      });
+    }
+  }
+  getTagInfo(repoName: string): Promise<void> {
+     // this.signedNameArr = [];
+    this.signedCon[repoName] = [];
+     return toPromise<Tag[]>(this.tagService
+            .getTags(repoName))
+            .then(items => {
+              items.forEach((t: Tag) => {
+                if (t.signature !== null) {
+                  this.signedCon[repoName].push(t.name);
+                }
+              });
+            })
+            .catch(error => this.errorHandler.error(error));
+  }
+
+  signedDataSet(repoName: string): void {
+    let signature: string = '';
+    if (this.signedCon[repoName].length === 0) {
+      this.confirmationDialogSet('DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
+      return;
+    }
+    signature = this.signedCon[repoName].join(',');
+    this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
+  }
+
+  confirmationDialogSet(summaryTitle: string, signature: string, repoName: string, summaryKey: string,  button: ConfirmationButtons): void {
+    this.translate.get(summaryKey,
+        {
+          repoName: repoName,
+          signedImages: signature,
+        })
+        .subscribe((res: string) => {
+          summaryKey = res;
+          let message = new ConfirmationMessage(
+              summaryTitle,
+              summaryKey,
+              repoName,
+              repoName,
+              ConfirmationTargets.REPOSITORY,
+              button);
+          this.confirmationDialog.open(message);
+
+          let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          setTimeout(() => clearInterval(hnd), 5000);
+    });
   }
 
   refresh() {
@@ -194,6 +256,7 @@ export class RepositoryStackviewComponent implements OnInit {
         this.totalCount = repo.metadata.xTotalCount;
         this.repositories = repo.data;
 
+        this.signedCon = {};
         //Do filtering and sorting
         this.repositories = doFiltering<RepositoryItem>(this.repositories, state);
         this.repositories = doSorting<RepositoryItem>(this.repositories, state);
@@ -232,3 +295,4 @@ export class RepositoryStackviewComponent implements OnInit {
     return st;
   }
 }
+

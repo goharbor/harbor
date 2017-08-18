@@ -377,11 +377,11 @@ func assemble(client *registry.Repository, repository string,
 	tags []string, username string) []*tagResp {
 
 	var err error
-	signatures := map[string]*notary.Target{}
+	signatures := map[string][]notary.Target{}
 	if config.WithNotary() {
 		signatures, err = getSignatures(username, repository)
 		if err != nil {
-			signatures = map[string]*notary.Target{}
+			signatures = map[string][]notary.Target{}
 			log.Errorf("failed to get signatures of %s: %v", repository, err)
 		}
 	}
@@ -410,9 +410,11 @@ func assemble(client *registry.Repository, repository string,
 
 		// signature, compare both digest and tag
 		if config.WithNotary() {
-			if signature, ok := signatures[item.Digest]; ok {
-				if item.Name == signature.Tag {
-					item.Signature = signature
+			if sigs, ok := signatures[item.Digest]; ok {
+				for _, sig := range sigs {
+					if item.Name == sig.Tag {
+						item.Signature = &sig
+					}
 				}
 			}
 		}
@@ -769,20 +771,20 @@ func (ra *RepositoryAPI) ScanAll() {
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 
-func getSignatures(username, repository string) (map[string]*notary.Target, error) {
+func getSignatures(username, repository string) (map[string][]notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
 	if err != nil {
 		return nil, err
 	}
 
-	signatures := map[string]*notary.Target{}
+	signatures := map[string][]notary.Target{}
 	for _, tgt := range targets {
 		digest, err := notary.DigestFromTarget(tgt)
 		if err != nil {
 			return nil, err
 		}
-		signatures[digest] = &tgt
+		signatures[digest] = append(signatures[digest], tgt)
 	}
 
 	return signatures, nil
