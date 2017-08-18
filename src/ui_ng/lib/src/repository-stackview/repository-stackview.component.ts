@@ -138,7 +138,7 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['projectId']) {
+    if (changes['projectId'] && changes['projectId'].currentValue) {
       this.refresh();
     }
   }
@@ -171,24 +171,11 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
   }
 
   deleteRepo(repoName: string) {
-    // get children tags data
-
-    let signature: string = '';
     if (this.signedCon[repoName]) {
-      if (this.signedCon[repoName].length === 0) {
-        this.confirmationDialogSet('DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
-        return;
-      }
-      signature = this.signedCon[repoName].join(',');
-      this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
-    } else {
+      this.signedDataSet(repoName);
+      } else {
       this.getTagInfo(repoName).then(() => {
-        if (this.signedCon[repoName].length) {
-          signature = this.signedCon[repoName].join(',');
-          this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
-        } else {
-          this.confirmationDialogSet('DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
-        }
+        this.signedDataSet(repoName);
       });
     }
   }
@@ -205,6 +192,16 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
               });
             })
             .catch(error => this.errorHandler.error(error));
+  }
+
+  signedDataSet(repoName: string): void {
+    let signature: string = '';
+    if (this.signedCon[repoName].length === 0) {
+      this.confirmationDialogSet('DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
+      return;
+    }
+    signature = this.signedCon[repoName].join(',');
+    this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
   }
 
   confirmationDialogSet(summaryTitle: string, signature: string, repoName: string, summaryKey: string,  button: ConfirmationButtons): void {
