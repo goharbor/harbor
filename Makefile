@@ -94,7 +94,7 @@ NEWCLARITYVERSION=
 #clair parameters
 CLAIRVERSION=v2.0.1-photon
 CLAIRFLAG=false
-CLAIRDBVERSION=9.6.3-photon
+CLAIRDBVERSION=9.6.4-photon
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
