@@ -264,7 +264,7 @@ Clair depends on the vulnerability metadata to complete the analysis process. Af
 The 'database not fully ready' warning message is also displayed in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'** for your awareness.
 ![browse project](img/clair_not_ready2.png)
 
-Once the database is ready, an overall database updated timestamp will be shown in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**. Click on the timestamp drop-down list, the timestamps of different namespaces are listed.
+Once the database is ready, an overall database updated timestamp will be shown in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**. 
 ![browse project](img/clair_ready.png)
 
 **Scanning an image** 
