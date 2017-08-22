@@ -67,6 +67,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     return this.currentFilteredType;
   }
   set selecteType(_project: number) {
+    this.currentFilteredType = _project;
     if (window.sessionStorage) {
       window.sessionStorage['projectTypeValue'] = _project;
     }
@@ -183,16 +184,14 @@ export class ProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  doFilterProjects($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
+  doFilterProjects(): void {
       this.projectName = "";
-      this.currentFilteredType = +$event.target["value"];
+      this.currentFilteredType = this.selecteType;
       if (this.currentFilteredType === 0) {
         this.getProjects();
       } else {
         this.getProjects("", this.currentFilteredType - 1);
       }
-    }
   }
 
   toggleProject(p: Project) {
