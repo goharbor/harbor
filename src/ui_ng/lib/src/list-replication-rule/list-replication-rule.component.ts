@@ -11,7 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  OnInit,
+  EventEmitter,
+  ViewChild,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnChanges,
+  SimpleChange,
+  SimpleChanges
+} from '@angular/core';
 
 import { ReplicationService } from '../service/replication.service';
 import { ReplicationRule } from '../service/interface';
@@ -36,10 +48,10 @@ import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.componen
   template: LIST_REPLICATION_RULE_TEMPLATE,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListReplicationRuleComponent implements OnInit {
+export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   nullTime: string = '0001-01-01T00:00:00Z';
-  
+
   @Input() projectId: number;
   @Input() selectedId: number | string;
   @Input() withReplicationJob: boolean;
@@ -53,7 +65,7 @@ export class ListReplicationRuleComponent implements OnInit {
   @Output() toggleOne = new EventEmitter<ReplicationRule>();
   @Output() redirect = new EventEmitter<ReplicationRule>();
 
-  projectScope: boolean;
+  projectScope: boolean = false;
 
   rules: ReplicationRule[];
   changedRules: ReplicationRule[];
@@ -64,7 +76,7 @@ export class ListReplicationRuleComponent implements OnInit {
 
   @ViewChild('deletionConfirmDialog')
   deletionConfirmDialog: ConfirmationDialogComponent;
-  
+
   startTimeComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>('start_time', 'date');
   enabledComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>('enabled', 'number');
 
@@ -72,56 +84,72 @@ export class ListReplicationRuleComponent implements OnInit {
     private replicationService: ReplicationService,
     private translateService: TranslateService,
     private errorHandler: ErrorHandler,
-    private ref: ChangeDetectorRef) {  
-    setInterval(()=>ref.markForCheck(), 500);
+    private ref: ChangeDetectorRef) {
+    setInterval(() => ref.markForCheck(), 500);
   }
 
   ngOnInit(): void {
-    this.projectScope = (!this.projectId);
-    this.retrieveRules();
+    //Global scope
+    if (!this.projectScope) {
+      this.retrieveRules();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    let proIdChange: SimpleChange = changes["projectId"];
+    if (proIdChange) {
+      if (proIdChange.currentValue !== proIdChange.previousValue) {
+        if (proIdChange.currentValue) {
+          this.projectId = proIdChange.currentValue;
+          this.projectScope = true; //Scope is project, not global list
+          //Initially load the replication rule data
+          this.retrieveRules();
+        }
+      }
+    }
   }
 
   retrieveRules(ruleName: string = ''): void {
     this.loading = true;
     toPromise<ReplicationRule[]>(this.replicationService
-        .getReplicationRules(this.projectId, ruleName))
-        .then(rules=>{
-            this.rules = rules || [];
-            if(this.rules && this.rules.length > 0) {
-              this.selectedId = this.rules[0].id || '';
-              this.selectOne.emit(this.rules[0]);
-            }
-            this.changedRules =  this.rules;
-            this.loading = false;
-          }
-        ).catch(error=>{
-          this.errorHandler.error(error);
-          this.loading = false;
-        });
-  } 
+      .getReplicationRules(this.projectId, ruleName))
+      .then(rules => {
+        this.rules = rules || [];
+        if (this.rules && this.rules.length > 0) {
+          this.selectedId = this.rules[0].id || '';
+          this.selectOne.emit(this.rules[0]);
+        }
+        this.changedRules = this.rules;
+        this.loading = false;
+      }
+      ).catch(error => {
+        this.errorHandler.error(error);
+        this.loading = false;
+      });
+  }
 
   filterRuleStatus(status: string) {
-    if(status === 'all') {
+    if (status === 'all') {
       this.changedRules = this.rules;
     } else {
-      this.changedRules = this.rules.filter(policy=>policy.enabled === +status);
+      this.changedRules = this.rules.filter(policy => policy.enabled === +status);
     }
   }
 
   toggleConfirm(message: ConfirmationAcknowledgement) {
-    if(message &&
-      message.source === ConfirmationTargets.TOGGLE_CONFIRM && 
+    if (message &&
+      message.source === ConfirmationTargets.TOGGLE_CONFIRM &&
       message.state === ConfirmationState.CONFIRMED) {
       let rule: ReplicationRule = message.data;
-      if(rule) {
+      if (rule) {
         rule.enabled = rule.enabled === 0 ? 1 : 0;
         toPromise<any>(this.replicationService
           .enableReplicationRule(rule.id || '', rule.enabled))
-          .then(() => 
+          .then(() =>
             this.translateService.get('REPLICATION.TOGGLED_SUCCESS')
-                .subscribe(res=>this.errorHandler.info(res)))
+              .subscribe(res => this.errorHandler.info(res)))
           .catch(error => this.errorHandler.error(error));
-        }
+      }
     }
   }
 
@@ -133,13 +161,13 @@ export class ListReplicationRuleComponent implements OnInit {
         .deleteReplicationRule(message.data))
         .then(() => {
           this.translateService.get('REPLICATION.DELETED_SUCCESS')
-              .subscribe(res=>this.errorHandler.info(res));
+            .subscribe(res => this.errorHandler.info(res));
           this.reload.emit(true);
         })
         .catch(error => {
-          if(error && error.status === 412) {
+          if (error && error.status === 412) {
             this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')
-                .subscribe(res=>this.errorHandler.error(res));
+              .subscribe(res => this.errorHandler.error(res));
           } else {
             this.errorHandler.error(error);
           }
@@ -163,7 +191,7 @@ export class ListReplicationRuleComponent implements OnInit {
   toggleRule(rule: ReplicationRule) {
     let toggleConfirmMessage: ConfirmationMessage = new ConfirmationMessage(
       rule.enabled === 1 ? 'REPLICATION.TOGGLE_DISABLE_TITLE' : 'REPLICATION.TOGGLE_ENABLE_TITLE',
-      rule.enabled === 1 ? 'REPLICATION.CONFIRM_TOGGLE_DISABLE_POLICY': 'REPLICATION.CONFIRM_TOGGLE_ENABLE_POLICY',
+      rule.enabled === 1 ? 'REPLICATION.CONFIRM_TOGGLE_DISABLE_POLICY' : 'REPLICATION.CONFIRM_TOGGLE_ENABLE_POLICY',
       rule.name || '',
       rule,
       ConfirmationTargets.TOGGLE_CONFIRM
