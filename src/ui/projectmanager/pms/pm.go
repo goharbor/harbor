@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -30,6 +31,8 @@ import (
 	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const dupProjectPattern = `Project name '\w+' is already used`
 
 // ProjectManager implements projectmanager.ProjecdtManager interface
 // base on project management service
@@ -366,6 +369,33 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 
 	b, err := p.send(http.MethodPost, "/projects", bytes.NewBuffer(data))
 	if err != nil {
+		// when creating a project with a duplicate name in Admiral, a 500 error
+		// with a specific message will be returned for now.
+		// Maybe a 409 error will be returned if Admiral team finds the way to
+		// return a specific code in Xenon.
+		// The following codes convert both those two errors to DupProjectErr
+		httpErr, ok := err.(*er.HTTPError)
+		if !ok {
+			return 0, err
+		}
+
+		if httpErr.StatusCode == http.StatusConflict {
+			return 0, er.DupProjectErr
+		}
+
+		if httpErr.StatusCode != http.StatusInternalServerError {
+			return 0, err
+		}
+
+		match, e := regexp.MatchString(dupProjectPattern, httpErr.Detail)
+		if e != nil {
+			log.Errorf("failed to match duplicate project mattern: %v", e)
+		}
+
+		if match {
+			err = er.DupProjectErr
+		}
+
 		return 0, err
 	}
 
