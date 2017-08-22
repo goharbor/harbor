@@ -67,7 +67,7 @@ func ScanAllMarker() *TimeMarker {
 			}
 		} else {
 			scanAllMarker = &TimeMarker{
-				interval: 30 * time.Minute,
+				interval: 2 * time.Hour,
 			}
 		}
 	})
