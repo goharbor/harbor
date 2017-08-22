@@ -16,11 +16,16 @@ package db
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // ProjectManager implements pm.PM interface based on database
 type ProjectManager struct{}
@@ -105,7 +110,21 @@ func (p *ProjectManager) Create(project *models.Project) (int64, error) {
 		UpdateTime:   t,
 	}
 
-	return dao.AddProject(*pro)
+	id, err := dao.AddProject(*pro)
+	if err != nil {
+		dup, e := regexp.MatchString(dupProjectPattern, err.Error())
+		if e != nil {
+			log.Errorf("failed to match duplicate project pattern: %v", e)
+		}
+
+		if dup {
+			err = errutil.ErrDupProject
+		}
+
+		return 0, err
+	}
+
+	return id, nil
 }
 
 // Delete ...

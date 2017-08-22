@@ -23,6 +23,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 
@@ -44,7 +45,6 @@ type ProjectAPI struct {
 const projectNameMaxLen int = 30
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
-const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -130,8 +130,7 @@ func (p *ProjectAPI) Post() {
 		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
-		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
-		if dup {
+		if err == errutil.ErrDupProject {
 			log.Debugf("conflict %s", pro.Name)
 			p.RenderError(http.StatusConflict, "")
 		} else {
