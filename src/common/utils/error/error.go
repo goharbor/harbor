@@ -19,6 +19,7 @@ import (
 	"fmt"
 )
 
+// DupProjectErr is the error returned when creating a duplicate project
 var DupProjectErr = errors.New("duplicate project")
 
 // HTTPError : if response is returned but the status code is not 200, an Error instance will be returned
