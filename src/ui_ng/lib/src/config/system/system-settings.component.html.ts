@@ -21,7 +21,7 @@ export const SYSTEM_SETTINGS_HTML: string = `
    </div>
    <div class="form-group" *ngIf="canDownloadCert">
       <label for="certDownloadLink" class="required">{{'CONFIG.ROOT_CERT' | translate}}</label>
-      <a #certDownloadLink href="/api/systeminfo/getcert" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
+      <a #certDownloadLink [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
        <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
          <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
          <span class="tooltip-content">{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
