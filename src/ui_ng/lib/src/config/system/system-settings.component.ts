@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, Inject } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { SYSTEM_SETTINGS_HTML } from './system-settings.component.html';
 import { Configuration } from '../config';
 import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
+import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
 
 @Component({
     selector: 'system-settings',
@@ -12,6 +13,7 @@ import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
 })
 export class SystemSettingsComponent {
     config: Configuration;
+    downloadLink: string = "/api/systeminfo/getcert";
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
 
     @Input()
@@ -41,5 +43,11 @@ export class SystemSettingsComponent {
 
     get canDownloadCert(): boolean {
         return this.hasAdminRole && this.hasCAFile;
+    }
+
+    constructor( @Inject(SERVICE_CONFIG) private configInfo: IServiceConfig) {
+        if (this.configInfo && this.configInfo.systemInfoEndpoint) {
+            this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
+        }
     }
 }
