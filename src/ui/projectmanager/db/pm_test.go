@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -166,6 +167,19 @@ func TestCreateAndDelete(t *testing.T) {
 	})
 	assert.Nil(t, err)
 	assert.Nil(t, pm.Delete(id))
+
+	// duplicate project name
+	id, err = pm.Create(&models.Project{
+		Name:      "test",
+		OwnerName: "admin",
+	})
+	assert.Nil(t, err)
+	defer pm.Delete(id)
+	_, err = pm.Create(&models.Project{
+		Name:      "test",
+		OwnerName: "admin",
+	})
+	assert.Equal(t, errutil.ErrDupProject, err)
 }
 
 func TestUpdate(t *testing.T) {

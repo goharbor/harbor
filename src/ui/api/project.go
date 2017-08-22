@@ -130,7 +130,7 @@ func (p *ProjectAPI) Post() {
 		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
-		if err == errutil.DupProjectErr {
+		if err == errutil.ErrDupProject {
 			log.Debugf("conflict %s", pro.Name)
 			p.RenderError(http.StatusConflict, "")
 		} else {

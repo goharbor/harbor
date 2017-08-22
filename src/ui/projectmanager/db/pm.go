@@ -118,7 +118,7 @@ func (p *ProjectManager) Create(project *models.Project) (int64, error) {
 		}
 
 		if dup {
-			err = errutil.DupProjectErr
+			err = errutil.ErrDupProject
 		}
 
 		return 0, err

@@ -380,7 +380,7 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 		}
 
 		if httpErr.StatusCode == http.StatusConflict {
-			return 0, er.DupProjectErr
+			return 0, er.ErrDupProject
 		}
 
 		if httpErr.StatusCode != http.StatusInternalServerError {
@@ -393,7 +393,7 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 		}
 
 		if match {
-			err = er.DupProjectErr
+			err = er.ErrDupProject
 		}
 
 		return 0, err
