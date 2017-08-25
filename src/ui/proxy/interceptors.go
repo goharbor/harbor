@@ -281,9 +281,10 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		http.Error(rw, marshalError("Failed to get ImgScanOverview.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
-	if overview == nil {
+	// severity is 0 means that the image fails to scan or not scanned successfully.
+	if overview == nil || overview.Sev == 0 {
 		log.Debugf("cannot get the image scan overview info, failing the response.")
-		http.Error(rw, marshalError("Cannot get the image scan overview info.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("Cannot get the image severity.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
 		return
 	}
 	imageSev := overview.Sev
