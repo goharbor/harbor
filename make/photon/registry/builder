@@ -59,4 +59,4 @@ rm -rf $TEMP
 rm -rf binary
 
 echo 'Push image to docker hub.'
-../../pushimage.sh $PHOTONIMAGE USERNAME PASSWORD
+../../pushimage.sh $PHOTONIMAGE $USERNAME $PASSWORD
