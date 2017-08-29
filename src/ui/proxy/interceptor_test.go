@@ -205,7 +205,7 @@ func TestCopyResp(t *testing.T) {
 func TestMarshalError(t *testing.T) {
 	assert := assert.New(t)
 	js := marshalError("Not Found")
-	assert.Equal("{\"errors\":[{\"code\":\"UNKNOWN\",\"message\":\"Not Found\",\"detail\":\"Not Found\"}]}", js)
+	assert.Equal("{\"errors\":[{\"code\":\"PROJECT_POLICY_VIOLATION",\"message\":\"Not Found\",\"detail\":\"Not Found\"}]}", js)
 }
 
 func TestIsDigest(t *testing.T) {

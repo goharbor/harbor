@@ -345,7 +345,7 @@ func marshalError(msg string) string {
 		Errors []JSONError `json:"errors,omitempty"`
 	}
 	tmpErrs.Errors = append(tmpErrs.Errors, JSONError{
-		Code:    "UNKNOWN",
+		Code:    "PROJECT_POLICY_VIOLATION",
 		Message: msg,
 		Detail:  msg,
 	})
