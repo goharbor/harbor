@@ -134,8 +134,12 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		r := repositories[i]
 		p, _ := utils.ParseRepository(r.Name)
 		d := strings.Compare(p, projects[j].Name)
-		if d < 0 {
+		if d != 0 {
 			i++
+                        if j == len(projects){
+				j=0
+				i++
+			}
 			continue
 		} else if d == 0 {
 			i++
@@ -154,10 +158,8 @@ func filterRepositories(projects []*models.Project, keyword string) (
 				return nil, err
 			}
 			entry["tags_count"] = len(tags)
-
+                        j=0
 			result = append(result, entry)
-		} else {
-			j++
 		}
 	}
 	return result, nil
