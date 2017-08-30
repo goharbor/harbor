@@ -973,6 +973,11 @@ paths:
         one by one in background, so there's no way to track the overall status
         of the "scan all" action.  Only system adim has permission to call this
         API.  
+      parameters:
+        - name: project_id
+          in: query
+          type: integer
+          description: When this parm is set only the images under the project identified by the project_id will be scanned.
       responses:
         '202':
           description: >-
@@ -1217,7 +1222,7 @@ paths:
           description: User need to login first.
         '500':
           description: Unexpected internal errors.
-  '/jobs/replication/{id}':
+  /jobs/replication/{id}:
     delete:
       summary: Delete specific ID job.
       description: |
@@ -1242,7 +1247,7 @@ paths:
           description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
-  '/jobs/replication/{id}/log':
+  /jobs/replication/{id}/log:
     get:
       summary: Get job logs.
       description: |
@@ -1267,6 +1272,32 @@ paths:
           description: The specific repository ID's log does not exist.
         '500':
           description: Unexpected internal errors.
+  /jobs/scan/{id}/log:
+    get:
+      summary: Get job logs.
+      description: |
+        This endpoint let user get scan job logs filtered by specific ID.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant job ID
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get job log successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '404':
+          description: The specific repository ID's log does not exist.
+        '500':
+          description: Unexpected internal errors.
+      
   /policies/replication:
     get:
       summary: List filters policies by name and project_id
@@ -1327,7 +1358,7 @@ paths:
             project and target.
         '500':
           description: Unexpected internal errors.
-  '/policies/replication/{id}':
+  /policies/replication/{id}:
     get:
       summary: Get replication policy.
       description: |
@@ -1387,7 +1418,7 @@ paths:
             project and target.
         '500':
           description: Unexpected internal errors.
-  '/policies/replication/{id}/enablement':
+  /policies/replication/{id}/enablement:
     put:
       summary: Put modifies enablement of the policy.
       description: |
@@ -1821,7 +1852,7 @@ paths:
         '200':
           description: Get system configurations successfully. The response body is a map.
           schema:
-            type: object
+            $ref: '#/definitions/Configurations'
         '401':
           description: User need to log in first.
         '403':
@@ -1840,15 +1871,8 @@ paths:
           in: body
           required: true
           schema:
-            type: object
-          description: >-
-            The configurations map need to be modified, the following are keys
-            "auth_mode", "email_from", "email_host", "email_identity",
-            "email_password", "email_port", "email_ssl", "email_username",
-            "ldap_base_dn", "ldap_filter", "ldap_scope", "ldap_search_dn",
-            "ldap_search_password", "ldap_timeout", "ldap_uid", "ldap_url",
-            "project_creation_restriction", "self_registration",
-            "verify_remote_cert".
+            $ref: '#/definitions/Configurations'
+          description: The configuration map can contain a subset of the attributes of the schema, which are to be updated.
       responses:
         '200':
           description: Modify system configurations successfully.
@@ -2679,3 +2703,76 @@ definitions:
         description: >-
           The version which the vulnerability is fixed, this is an optional
           property.
+  Configurations:
+    type: object
+    properties:
+      auth_mode:
+        type: string
+        description: The auth mode of current system, such as "db_auth", "ldap_auth"
+      email_from:
+        type: string
+        description: The sender name for Email notification.
+      email_host:
+        type: string
+        description: The hostname of SMTP server that sends Email notification.
+      email_port:
+        type: integer
+        description: The port of SMTP server.
+      email_identity:
+        type: string
+        description: By default it's empty so the email_username is picked.
+      email_username:
+        type: string
+        description: The username for authenticate against SMTP server.
+      email_ssl:
+        type: boolean
+        description: When it's set to true the system will access Email server via TLS by default.  If it's set to false, it still will handle "STARTTLS" from server side.
+      ldap_url:
+        type: string
+        description: The URL of LDAP server.
+      ldap_base_dn:
+        type: string
+        description: The Base DN for LDAP binding.
+      ldap_filter:
+        type: string
+        description: The filter for LDAP binding.
+      ldap_scope:
+        type: integer
+        description: 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE
+      ldap_uid:
+        type: string
+        description: The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"
+      ldap_search_dn:
+        type: string
+        description: The DN of the user to do the search.
+      ldap_timeout:
+        type: integer
+        description: timeout in seconds for connection to LDAP server.
+      project_creation_restriction:
+        type: string
+        description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      self_registration:
+        type: boolean
+        description: Whether the Harbor instance supports self-registration.  If it's set to false, admin need to add user to the instance.
+      token_expiration:
+        type: integer
+        description: The expiration time of the token for internal Registry, in minutes.
+      verify_remote_cert:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access a remote Harbor instance for replication.
+      scan_all_policy:
+        type: object
+        properties:
+          type:
+            type: string
+            description: The type of scan all policy, currently the valid values are "none" and "daily"
+          parameter:
+            type: object
+            properties:
+              daily_time:
+                type: integer
+                description: The offest in seconds of UTC 0 o'clock, only valid when the policy type is "daily"
+            description: The parameters of the policy, the values are dependant on the type of the policy.
+          
+      
+    
