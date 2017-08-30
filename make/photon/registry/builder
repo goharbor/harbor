@@ -53,10 +53,12 @@ docker rmi -f registry-golang
 echo "Build registry binary success, then to build photon image..."
 cd $cur
 echo $PHOTONIMAGE
+cp $TEMP/cmd/registry/config-example.yml config.yml
 docker build -f Dockerfile -t $PHOTONIMAGE .
 
 rm -rf $TEMP
 rm -rf binary
+rm -rf config.yml
 
 echo 'Push image to docker hub.'
-../../pushimage.sh $PHOTONIMAGE USERNAME PASSWORD
+../../pushimage.sh $PHOTONIMAGE $USERNAME $PASSWORD
