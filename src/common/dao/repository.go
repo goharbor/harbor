@@ -48,10 +48,10 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 }
 
 // GetAllRepositories ...
-func GetAllRepositories() ([]models.RepoRecord, error) {
+func GetAllRepositories() ([]*models.RepoRecord, error) {
 	o := GetOrmer()
-	var repos []models.RepoRecord
-	_, err := o.QueryTable("repository").
+	var repos []*models.RepoRecord
+	_, err := o.QueryTable("repository").Limit(-1).
 		OrderBy("Name").All(&repos)
 	return repos, err
 }
@@ -79,10 +79,13 @@ func IncreasePullCount(name string) (err error) {
 			"pull_count":  orm.ColValue(orm.ColAdd, 1),
 			"update_time": time.Now(),
 		})
-	if num == 0 {
-		err = fmt.Errorf("Failed to increase repository pull count with name: %s %s", name, err.Error())
+	if err != nil {
+		return err
 	}
-	return err
+	if num == 0 {
+		return fmt.Errorf("Failed to increase repository pull count with name: %s", name)
+	}
+	return nil
 }
 
 //RepositoryExists returns whether the repository exists according to its name.
@@ -157,9 +160,10 @@ func GetRepositoriesByProject(projectID int64, name string,
 	if len(name) != 0 {
 		qs = qs.Filter("Name__contains", name)
 	}
-
-	_, err := qs.Limit(limit).
-		Offset(offset).All(&repositories)
+	if limit > 0 {
+		qs = qs.Limit(limit).Offset(offset)
+	}
+	_, err := qs.All(&repositories)
 
 	return repositories, err
 }

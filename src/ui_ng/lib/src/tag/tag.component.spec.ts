@@ -15,6 +15,9 @@ import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 import { FILTER_DIRECTIVES } from '../filter/index'
 
 import { Observable, Subscription } from 'rxjs/Rx';
+import { ChannelService } from '../channel/index';
+
+import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 describe('TagComponent (inline template)', () => {
 
@@ -48,10 +51,12 @@ describe('TagComponent (inline template)', () => {
         TagComponent,
         ConfirmationDialogComponent,
         VULNERABILITY_DIRECTIVES,
-        FILTER_DIRECTIVES
+        FILTER_DIRECTIVES,
+        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,
+        ChannelService,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService }

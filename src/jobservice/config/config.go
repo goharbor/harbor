@@ -170,5 +170,5 @@ func InternalTokenServiceEndpoint() string {
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
 func ClairEndpoint() string {
-	return "http://clair:6060"
+	return common.DefaultClairEndpoint
 }

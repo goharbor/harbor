@@ -29,6 +29,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -54,22 +55,53 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetResourceActions(t *testing.T) {
-	s := []string{"registry:catalog:*", "repository:10.117.4.142/notary-test/hello-world-2:pull,push"}
-	expectedRA := [2]token.ResourceActions{
-		token.ResourceActions{
+	cases := map[string]*token.ResourceActions{
+		"::": &token.ResourceActions{
+			Type:    "",
+			Name:    "",
+			Actions: []string{},
+		},
+		"repository": &token.ResourceActions{
+			Type:    "repository",
+			Name:    "",
+			Actions: []string{},
+		},
+		"repository:": &token.ResourceActions{
+			Type:    "repository",
+			Name:    "",
+			Actions: []string{},
+		},
+		"repository:library/hello-world": &token.ResourceActions{
+			Type:    "repository",
+			Name:    "library/hello-world",
+			Actions: []string{},
+		},
+		"repository:library/hello-world:": &token.ResourceActions{
+			Type:    "repository",
+			Name:    "library/hello-world",
+			Actions: []string{},
+		},
+		"repository:library/hello-world:pull,push": &token.ResourceActions{
+			Type:    "repository",
+			Name:    "library/hello-world",
+			Actions: []string{"pull", "push"},
+		},
+		"registry:catalog:*": &token.ResourceActions{
 			Type:    "registry",
 			Name:    "catalog",
 			Actions: []string{"*"},
 		},
-		token.ResourceActions{
+		"repository:192.168.0.1:443/library/hello-world:pull,push": &token.ResourceActions{
 			Type:    "repository",
-			Name:    "10.117.4.142/notary-test/hello-world-2",
+			Name:    "192.168.0.1:443/library/hello-world",
 			Actions: []string{"pull", "push"},
 		},
 	}
-	ra := GetResourceActions(s)
-	assert.Equal(t, *ra[0], expectedRA[0], "The Resource Action mismatch")
-	assert.Equal(t, *ra[1], expectedRA[1], "The Resource Action mismatch")
+
+	for k, v := range cases {
+		r := GetResourceActions([]string{k})[0]
+		assert.EqualValues(t, v, r)
+	}
 }
 
 func getKeyAndCertPath() (string, string) {
@@ -110,7 +142,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := makeToken(u, svc, ra)
+	tokenJSON, err := MakeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
@@ -216,6 +248,9 @@ func (f *fakeSecurityContext) GetUsername() string {
 func (f *fakeSecurityContext) IsSysAdmin() bool {
 	return f.isAdmin
 }
+func (f *fakeSecurityContext) IsSolutionUser() bool {
+	return false
+}
 func (f *fakeSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	return false
 }
@@ -224,6 +259,12 @@ func (f *fakeSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 }
 func (f *fakeSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return false
+}
+func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
+	return nil, nil
+}
+func (f *fakeSecurityContext) GetProjectRoles(interface{}) []int {
+	return nil
 }
 
 func TestFilterAccess(t *testing.T) {
@@ -246,19 +287,19 @@ func TestFilterAccess(t *testing.T) {
 	}
 	err = filterAccess(a1, &fakeSecurityContext{
 		isAdmin: true,
-	}, registryFilterMap)
+	}, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
 
 	err = filterAccess(a2, &fakeSecurityContext{
 		isAdmin: true,
-	}, notaryFilterMap)
+	}, nil, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
 	err = filterAccess(a3, &fakeSecurityContext{
 		isAdmin: false,
-	}, registryFilterMap)
+	}, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }

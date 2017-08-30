@@ -86,8 +86,8 @@ func (pa *RepPolicyAPI) List() {
 	for _, policy := range policies {
 		project, err := pa.ProjectMgr.Get(policy.ProjectID)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf(
-				"failed to get project %d: %v", policy.ProjectID, err))
+			pa.ParseAndHandleError(fmt.Sprintf(
+				"failed to get project %d", policy.ProjectID), err)
 			return
 		}
 		if project != nil {
@@ -118,8 +118,8 @@ func (pa *RepPolicyAPI) Post() {
 
 	project, err := pa.ProjectMgr.Get(policy.ProjectID)
 	if err != nil {
-		log.Errorf("failed to get project %d: %v", policy.ProjectID, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		pa.ParseAndHandleError(fmt.Sprintf("failed to get project %d", policy.ProjectID), err)
+		return
 	}
 
 	if project == nil {

@@ -101,7 +101,7 @@ export class TagDetailComponent implements OnInit {
 
     public get scanCompletedDatetime(): Date {
         return this.tagDetails && this.tagDetails.scan_overview ?
-            this.tagDetails.scan_overview.update_time : new Date();
+            this.tagDetails.scan_overview.update_time : null;
     }
 
     public get suffixForHigh(): string {

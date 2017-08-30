@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { ReplicationJob, ReplicationRule } from './interface';
+import { ReplicationJob, ReplicationRule, ReplicationJobItem } from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http, RequestOptions } from '@angular/http';
@@ -109,11 +109,21 @@ export abstract class ReplicationService {
      * @abstract
      * @param {(number | string)} ruleId
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<ReplicationJob> | Promise<ReplicationJob[]> | ReplicationJob)}
+     * @returns {(Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob)}
      * 
      * @memberOf ReplicationService
      */
-    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[];
+    abstract getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob;
+
+    /**
+     * Get the log of the specified job.
+     * 
+     * @abstract
+     * @param {(number | string)} jobId 
+     * @returns {(Observable<string> | Promise<string> | string)} 
+     * @memberof ReplicationService
+     */
+    abstract getJobLog(jobId: number | string): Observable<string> | Promise<string> | string;
 }
 
 /**
@@ -228,7 +238,7 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] {
+    public getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob {
         if (!ruleId || ruleId <= 0) {
             return Promise.reject('Bad argument');
         }
@@ -239,7 +249,40 @@ export class ReplicationDefaultService extends ReplicationService {
 
         queryParams.set('policy_id', '' + ruleId);
         return this.http.get(this._jobBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
-            .then(response => response.json() as ReplicationJob[])
+            .then(response => {
+                let result: ReplicationJob = {
+                    metadata: {
+                        xTotalCount: 0
+                    },
+                    data: []
+                };
+
+                if (response && response.headers) {
+                    let xHeader: string = response.headers.get("X-Total-Count");
+                    if (xHeader) {
+                        result.metadata.xTotalCount = parseInt(xHeader, 0);
+                    }
+                }
+                result.data = response.json() as ReplicationJobItem[];
+                if (result.metadata.xTotalCount === 0) {
+                    if (result.data && result.data.length > 0) {
+                        result.metadata.xTotalCount = result.data.length;
+                    }
+                }
+
+                return result;
+            })
+            .catch(error => Promise.reject(error));
+    }
+
+    public getJobLog(jobId: number | string): Observable<string> | Promise<string> | string {
+        if (!jobId || jobId <= 0) {
+            return Promise.reject('Bad argument');
+        }
+
+        let logUrl: string = `${this._jobBaseUrl}/${jobId}/log`;
+        return this.http.get(logUrl).toPromise()
+            .then(response => response.text())
             .catch(error => Promise.reject(error));
     }
 }

@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ListRepositoryComponent } from './list-repository.component';
-import { Repository } from '../service/interface';
+import { Repository, RepositoryItem } from '../service/interface';
 
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
@@ -19,7 +19,7 @@ describe('ListRepositoryComponent (inline template)', () => {
   let comp: ListRepositoryComponent;
   let fixture: ComponentFixture<ListRepositoryComponent>;
 
-  let mockData: Repository[] = [
+  let mockData: RepositoryItem[] = [
     {
       "id": 11,
       "name": "library/busybox",

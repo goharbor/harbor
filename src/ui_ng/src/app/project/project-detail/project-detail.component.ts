@@ -57,4 +57,11 @@ export class ProjectDetailComponent {
     return this.sessionService.getCurrentUser() != null;
   }
 
+  backToProject(): void {
+    if (window.sessionStorage) {
+      window.sessionStorage.setItem('fromDetails', 'true');
+    }
+    this.router.navigate(['/harbor', 'projects']);
+  }
+
 }

@@ -48,6 +48,9 @@ func GetSystemLdapConf() (models.LdapConf, error) {
 	}
 
 	ldap, err := config.LDAP()
+	if err != nil {
+		return ldapConfs, err
+	}
 
 	ldapConfs.LdapURL = ldap.URL
 	ldapConfs.LdapSearchDn = ldap.SearchDN

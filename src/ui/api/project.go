@@ -23,12 +23,18 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 
 	"strconv"
 	"time"
 )
+
+type deletableResp struct {
+	Deletable bool   `json:"deletable"`
+	Message   string `json:"message"`
+}
 
 // ProjectAPI handles request to /api/projects/{} /api/projects/{}/logs
 type ProjectAPI struct {
@@ -39,7 +45,6 @@ type ProjectAPI struct {
 const projectNameMaxLen int = 30
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
-const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -59,8 +64,7 @@ func (p *ProjectAPI) Prepare() {
 
 		project, err := p.ProjectMgr.Get(id)
 		if err != nil {
-			p.HandleInternalServerError(fmt.Sprintf("failed to get project %d: %v",
-				id, err))
+			p.ParseAndHandleError(fmt.Sprintf("failed to get project %d", id), err)
 			return
 		}
 
@@ -79,12 +83,18 @@ func (p *ProjectAPI) Post() {
 		p.HandleUnauthorized()
 		return
 	}
-
-	onlyAdmin, err := config.OnlyAdminCreateProject()
-	if err != nil {
-		log.Errorf("failed to determine whether only admin can create projects: %v", err)
-		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	var onlyAdmin bool
+	var err error
+	if config.WithAdmiral() {
+		onlyAdmin = true
+	} else {
+		onlyAdmin, err = config.OnlyAdminCreateProject()
+		if err != nil {
+			log.Errorf("failed to determine whether only admin can create projects: %v", err)
+			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 	}
+
 	if onlyAdmin && !p.SecurityCtx.IsSysAdmin() {
 		log.Errorf("Only sys admin can create project")
 		p.RenderError(http.StatusForbidden, "Only system admin can create project")
@@ -101,8 +111,8 @@ func (p *ProjectAPI) Post() {
 
 	exist, err := p.ProjectMgr.Exist(pro.Name)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			pro.Name, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			pro.Name), err)
 		return
 	}
 	if exist {
@@ -120,12 +130,11 @@ func (p *ProjectAPI) Post() {
 		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
 	})
 	if err != nil {
-		log.Errorf("Failed to add project, error: %v", err)
-		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
-		if dup {
+		if err == errutil.ErrDupProject {
+			log.Debugf("conflict %s", pro.Name)
 			p.RenderError(http.StatusConflict, "")
 		} else {
-			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+			p.ParseAndHandleError("failed to add project", err)
 		}
 		return
 	}
@@ -157,8 +166,7 @@ func (p *ProjectAPI) Head() {
 
 	project, err := p.ProjectMgr.Get(name)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get project %s: %v",
-			name, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to get project %s", name), err)
 		return
 	}
 
@@ -198,27 +206,18 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	contains, err := projectContainsRepo(p.project.Name)
+	result, err := deletable(p.project.ProjectID)
 	if err != nil {
-		log.Errorf("failed to check whether project %s contains any repository: %v", p.project.Name, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
+		return
 	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
-	}
-
-	contains, err = projectContainsPolicy(p.project.ProjectID)
-	if err != nil {
-		log.Errorf("failed to check whether project %s contains any policy: %v", p.project.Name, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
-	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
+	if !result.Deletable {
+		p.CustomAbort(http.StatusPreconditionFailed, result.Message)
 	}
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
-		p.HandleInternalServerError(
-			fmt.Sprintf("failed to delete project %d: %v", p.project.ProjectID, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
 		return
 	}
 
@@ -236,22 +235,57 @@ func (p *ProjectAPI) Delete() {
 	}()
 }
 
-func projectContainsRepo(name string) (bool, error) {
-	repositories, err := getReposByProject(name)
-	if err != nil {
-		return false, err
+// Deletable ...
+func (p *ProjectAPI) Deletable() {
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.HandleUnauthorized()
+		return
 	}
 
-	return len(repositories) > 0, nil
+	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
+		p.HandleForbidden(p.SecurityCtx.GetUsername())
+		return
+	}
+
+	result, err := deletable(p.project.ProjectID)
+	if err != nil {
+		p.HandleInternalServerError(fmt.Sprintf(
+			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
+		return
+	}
+
+	p.Data["json"] = result
+	p.ServeJSON()
 }
 
-func projectContainsPolicy(id int64) (bool, error) {
-	policies, err := dao.GetRepPolicyByProject(id)
+func deletable(projectID int64) (*deletableResp, error) {
+	count, err := dao.GetTotalOfRepositoriesByProject([]int64{projectID}, "")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return len(policies) > 0, nil
+	if count > 0 {
+		return &deletableResp{
+			Deletable: false,
+			Message:   "the project contains repositories, can not be deleled",
+		}, nil
+	}
+
+	policies, err := dao.GetRepPolicyByProject(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(policies) > 0 {
+		return &deletableResp{
+			Deletable: false,
+			Message:   "the project contains replication rules, can not be deleled",
+		}, nil
+	}
+
+	return &deletableResp{
+		Deletable: true,
+	}, nil
 }
 
 // List ...
@@ -283,7 +317,7 @@ func (p *ProjectAPI) List() {
 		// not login, only get public projects
 		base.Public = true
 	} else {
-		if !p.SecurityCtx.IsSysAdmin() {
+		if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
 			// login, but not system admin, get public projects and
 			// projects that the user is member of
 			base.Member = p.SecurityCtx.GetUsername()
@@ -293,25 +327,19 @@ func (p *ProjectAPI) List() {
 
 	total, err := p.ProjectMgr.GetTotal(query, base)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get total of projects: %v", err))
+		p.ParseAndHandleError("failed to get total of projects", err)
 		return
 	}
 
 	projects, err := p.ProjectMgr.GetAll(query, base)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v", err))
+		p.ParseAndHandleError("failed to get projects", err)
 		return
 	}
 
 	for _, project := range projects {
 		if p.SecurityCtx.IsAuthenticated() {
-			roles, err := p.ProjectMgr.GetRoles(p.SecurityCtx.GetUsername(), project.ProjectID)
-			if err != nil {
-				p.HandleInternalServerError(fmt.Sprintf("failed to get roles of user %s to project %d: %v",
-					p.SecurityCtx.GetUsername(), project.ProjectID, err))
-				return
-			}
-
+			roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
 			if len(roles) != 0 {
 				project.Role = roles[0]
 			}
@@ -359,8 +387,8 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 		&models.Project{
 			Public: req.Public,
 		}); err != nil {
-		p.HandleInternalServerError(fmt.Sprintf("failed to update project %d: %v",
-			p.project.ProjectID, err))
+		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
+			p.project.ProjectID), err)
 		return
 	}
 }

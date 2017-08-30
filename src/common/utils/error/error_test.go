@@ -18,7 +18,7 @@ import (
 )
 
 func TestError(t *testing.T) {
-	err := &Error{
+	err := &HTTPError{
 		StatusCode: 404,
 		Detail:     "not found",
 	}

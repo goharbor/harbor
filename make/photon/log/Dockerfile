@@ -1,12 +1,5 @@
-FROM library/photon:1.0
+FROM vmware/rsyslog-photon:8.15.0
 
-# run logrotate hourly, disable imklog model, provides TCP/UDP syslog reception
-RUN tdnf install -y cronie rsyslog shadow tar gzip \
-	&& mkdir /etc/rsyslog.d/ \
-    && mkdir /var/spool/rsyslog \
-    && groupadd syslog \
-    && useradd -g syslog syslog
-    
 ADD make/common/log/rsyslog.conf /etc/rsyslog.conf
 
 # rotate logs weekly

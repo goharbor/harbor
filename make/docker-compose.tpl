@@ -11,7 +11,7 @@ services:
     networks:
       - harbor
   registry:
-    image: vmware/registry:2.6.1-photon
+    image: vmware/registry:2.6.2-photon
     container_name: registry
     restart: always
     volumes:
@@ -77,7 +77,7 @@ services:
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
-      - /data/service_token:/etc/ui/service_token:z
+      - /data/psc/:/etc/ui/token/:z
     networks:
       - harbor
     depends_on:

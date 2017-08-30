@@ -1,0 +1,30 @@
+Convert To Lowercase
+Convert To Uppercase
+Decode Bytes To String
+Encode String To Bytes
+Fetch From Left
+Fetch From Right
+Generate Random String
+Get Line
+Get Line Count
+Get Lines Containing String
+Get Lines Matching Pattern
+Get Lines Matching Regexp
+Get Regexp Matches
+Get Substring
+Remove String
+Remove String Using Regexp
+Replace String
+Replace String Using Regexp
+Should Be Byte String
+Should Be Lowercase
+Should Be String
+Should Be Titlecase
+Should Be Unicode String
+Should Be Uppercase
+Should Not Be String
+Split String
+Split String From Right
+Split String To Characters
+Split To Lines
+Strip String 

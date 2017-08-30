@@ -12,13 +12,14 @@ export interface Base {
 }
 
 /**
- * Interface for Repository
+ * Interface for Repository Info
  * 
  * @export
  * @interface Repository
  * @extends {Base}
  */
-export interface Repository extends Base {
+export interface RepositoryItem extends Base {
+    [key: string]: any | any[]
     name: string;
     tags_count: number;
     owner_id?: number;
@@ -26,6 +27,17 @@ export interface Repository extends Base {
     description?: string;
     star_count?: number;
     pull_count?: number;
+}
+
+/**
+ * Interface for repository
+ * 
+ * @export
+ * @interface Repository
+ */
+export interface Repository {
+    metadata?: Metadata;
+    data: RepositoryItem[];
 }
 
 /**
@@ -88,7 +100,19 @@ export interface ReplicationRule extends Base {
  * @export
  * @interface ReplicationJob
  */
-export interface ReplicationJob extends Base {
+export interface ReplicationJob {
+    metadata?: Metadata;
+    data: ReplicationJobItem[];
+}
+
+/**
+ * Interface for replication job item.
+ * 
+ * @export
+ * @interface ReplicationJob
+ */
+export interface ReplicationJobItem extends Base {
+    [key: string]: any | any[]
     status: string;
     repository: string;
     policy_id: number;
@@ -124,7 +148,7 @@ export interface AccessLog {
  * @interface AccessLogItem
  */
 export interface AccessLogItem {
-    [key: string]: any
+    [key: string]: any | any[]
     log_id: number;
     project_id: number;
     repo_name: string;
@@ -155,6 +179,24 @@ export interface SystemInfo {
     self_registration?: boolean;
     has_ca_root?: boolean;
     harbor_version?: string;
+    clair_vulnerability_status?: ClairDBStatus;
+    next_scan_all?: number;
+}
+
+/**
+ * Clair database status info.
+ * 
+ * @export
+ * @interface ClairDetail
+ */
+export interface ClairDetail {
+    namespace: string;
+    last_update: number;
+}
+
+export interface ClairDBStatus {
+    overall_last_update: number;
+    details: ClairDetail[];
 }
 
 export enum VulnerabilitySeverity {
@@ -169,6 +211,7 @@ export interface VulnerabilityBase {
 }
 
 export interface VulnerabilityItem extends VulnerabilityBase {
+    link: string;
     fixedVersion: string;
     layer?: string;
     description: string;

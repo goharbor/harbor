@@ -22,13 +22,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
 )
 
 var (
 	client      = http.DefaultClient
 	endpoint    = "http://127.0.0.1:8282"
 	tokenReader = &RawTokenReader{
-		Token: "",
+		Token: "token",
 	}
 )
 
@@ -195,7 +196,7 @@ func TestGet(t *testing.T) {
 
 	// get by invalid ID
 	project, err := pm.Get(int64(0))
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, project)
 
 	// get by invalid name
@@ -223,7 +224,7 @@ func TestIsPublic(t *testing.T) {
 	assert.False(t, public)
 
 	// non-exist project
-	public, err = pm.IsPublic(int64(0))
+	public, err = pm.IsPublic(int64(2))
 	assert.Nil(t, err)
 	assert.False(t, public)
 
@@ -271,7 +272,7 @@ func TestExist(t *testing.T) {
 	assert.False(t, exist)
 
 	// non-exist project
-	exist, err = pm.Exist(int64(0))
+	exist, err = pm.Exist(int64(2))
 	assert.Nil(t, err)
 	assert.False(t, exist)
 
@@ -290,33 +291,6 @@ func TestExist(t *testing.T) {
 	exist, err = pm.Exist(name)
 	assert.Nil(t, err)
 	assert.True(t, exist)
-}
-
-func TestGetRoles(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	// nil username, nil project
-	roles, err := pm.GetRoles("", nil)
-	assert.Nil(t, err)
-	assert.Zero(t, len(roles))
-
-	// non-exist project
-	_, err = pm.GetRoles("user01", "non_exist_project")
-	assert.NotNil(t, err)
-
-	// exist project
-	name := "project_for_test_get_roles"
-	id, err := pm.Create(&models.Project{
-		Name: name,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	roles, err = pm.GetRoles("user01", id)
-	assert.Nil(t, err)
-	assert.Zero(t, len(roles))
-
-	// TODO add test cases for real role of user
 }
 
 func TestGetPublic(t *testing.T) {
@@ -348,11 +322,6 @@ func TestGetPublic(t *testing.T) {
 	assert.True(t, found)
 }
 
-// TODO add test case
-func TestGetByMember(t *testing.T) {
-
-}
-
 func TestCreate(t *testing.T) {
 	pm := NewProjectManager(client, endpoint, tokenReader)
 
@@ -376,6 +345,12 @@ func TestCreate(t *testing.T) {
 	assert.True(t, project.PreventVulnerableImagesFromRunning)
 	assert.Equal(t, "medium", project.PreventVulnerableImagesFromRunningSeverity)
 	assert.True(t, project.AutomaticallyScanImagesOnPush)
+
+	// duplicate project name
+	_, err = pm.Create(&models.Project{
+		Name: name,
+	})
+	assert.Equal(t, errutil.ErrDupProject, err)
 }
 
 func TestDelete(t *testing.T) {
@@ -490,12 +465,6 @@ func TestGetTotal(t *testing.T) {
 	total2, err := pm.GetTotal(nil)
 	require.Nil(t, err)
 	assert.Equal(t, total1+1, total2)
-}
-
-func TestGetHasReadPerm(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-	_, err := pm.GetHasReadPerm()
-	assert.NotNil(t, err)
 }
 
 func delete(t *testing.T, id int64) {

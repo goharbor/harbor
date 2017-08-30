@@ -172,4 +172,20 @@ export interface IServiceConfig {
      * @memberOf IServiceConfig
      */
     localI18nMessageVariableMap?: { [key: string]: any };
+
+    /**
+     * The base endpoint of configuration service.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    configurationEndpoint?: string;
+
+    /**
+     * The base endpoint of scan job service.
+     * 
+     * @type {string}
+     * @memberof IServiceConfig
+     */
+    scanJobEndpoint?: string;
 }

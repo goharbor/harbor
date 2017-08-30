@@ -98,6 +98,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			return nil, err
 		}
 		u.UserID = currentUser.UserID
+		u.HasAdminRole = currentUser.HasAdminRole
 	} else {
 		userID, err := ldapUtils.ImportUser(ldapUsers[0])
 		if err != nil {

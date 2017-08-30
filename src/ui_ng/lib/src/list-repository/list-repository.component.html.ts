@@ -13,7 +13,7 @@ export const LIST_REPOSITORY_TEMPLATE = `
      <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
-    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}
+    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
     {{pagination.totalItems}}{{'REPOSITORY.ITEMS' | translate}}
     <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
   </clr-dg-footer>

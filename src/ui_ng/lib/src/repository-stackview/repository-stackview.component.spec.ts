@@ -9,7 +9,7 @@ import { TagComponent } from '../tag/tag.component';
 import { FilterComponent } from '../filter/filter.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Repository, Tag, SystemInfo } from '../service/interface';
+import { Repository, RepositoryItem, Tag, SystemInfo } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
@@ -17,6 +17,7 @@ import { SystemInfoService, SystemInfoDefaultService } from '../service/system-i
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
+import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 import { click } from '../utils';
 
@@ -44,7 +45,7 @@ describe('RepositoryComponentStackview (inline template)', () => {
     "harbor_version": "v1.1.1-rc1-160-g565110d"
   };
 
-  let mockRepoData: Repository[] = [
+  let mockRepoData: RepositoryItem[] = [
     {
       "id": 1,
       "name": "library/busybox",
@@ -64,6 +65,11 @@ describe('RepositoryComponentStackview (inline template)', () => {
       "tags_count": 1
     }
   ];
+
+  let mockRepo: Repository = {
+    metadata: {xTotalCount: 2},
+    data: mockRepoData
+  };
 
   let mockTagData: Tag[] = [
     {
@@ -96,7 +102,8 @@ describe('RepositoryComponentStackview (inline template)', () => {
         FilterComponent,
         VULNERABILITY_DIRECTIVES,
         PUSH_IMAGE_BUTTON_DIRECTIVES,
-        INLINE_ALERT_DIRECTIVES
+        INLINE_ALERT_DIRECTIVES,
+        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,
@@ -117,7 +124,7 @@ describe('RepositoryComponentStackview (inline template)', () => {
     repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
     systemInfoService = fixtureRepo.debugElement.injector.get(SystemInfoService);
 
-    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepoData));
+    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
     fixtureRepo.detectChanges();
   });

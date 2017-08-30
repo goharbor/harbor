@@ -15,7 +15,7 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs/Subscription';
 
-import { Configuration } from '../config';
+import { Configuration } from 'harbor-ui';
 
 @Component({
     selector: 'config-auth',
@@ -27,6 +27,12 @@ export class ConfigurationAuthComponent {
     @Input("ldapConfig") currentConfig: Configuration = new Configuration();
 
     @ViewChild("authConfigFrom") authForm: NgForm;
+
+    get checkboxenable(){
+        return this.currentConfig &&
+            this.currentConfig.self_registration &&
+            this.currentConfig.self_registration.value === true;
+    }
 
     constructor() { }
 

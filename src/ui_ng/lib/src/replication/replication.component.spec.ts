@@ -18,6 +18,8 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
+import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
+import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
 
 describe('Replication Component (inline template)', ()=>{
 
@@ -63,7 +65,7 @@ describe('Replication Component (inline template)', ()=>{
     }
   ];
 
-  let mockJobs: ReplicationJob[] = [
+  let mockJobs: ReplicationJobItem[] = [
     {
         "id": 1,
         "status": "error",
@@ -92,6 +94,11 @@ describe('Replication Component (inline template)', ()=>{
         "tags": null
     }
   ];
+
+  let mockJob: ReplicationJob = {
+    metadata: {xTotalCount: 3},
+    data: mockJobs
+  };
 
   let mockEndpoints: Endpoint[] = [
     {
@@ -175,13 +182,15 @@ describe('Replication Component (inline template)', ()=>{
         ConfirmationDialogComponent,
         DatePickerComponent,
         FilterComponent,
-        InlineAlertComponent
+        InlineAlertComponent,
+        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService }
+        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));
@@ -196,7 +205,7 @@ describe('Replication Component (inline template)', ()=>{
     replicationService = fixture.debugElement.injector.get(ReplicationService);
            
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
-    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJobs));
+    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
     
     fixture.detectChanges();
     fixture.whenStable().then(()=>{

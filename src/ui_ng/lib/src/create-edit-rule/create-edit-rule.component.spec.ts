@@ -14,12 +14,18 @@ import { DatePickerComponent } from '../datetime-picker/datetime-picker.componen
 import { DateValidatorDirective } from '../datetime-picker/date-validator.directive';
 import { FilterComponent } from '../filter/filter.component';
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
-import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
+import { ReplicationRule, ReplicationJob, Endpoint, ReplicationJobItem } from '../service/interface';
 
 import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
+import { 
+  ReplicationService, 
+  ReplicationDefaultService,
+  JobLogService,
+  JobLogDefaultService
+ } from '../service/index';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
+import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 
 describe('CreateEditRuleComponent (inline template)', ()=>{
 
@@ -65,7 +71,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
     }
   ];
 
-  let mockJobs: ReplicationJob[] = [
+  let mockJobs: ReplicationJobItem[] = [
     {
         "id": 1,
         "status": "stopped",
@@ -91,6 +97,11 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
         "tags": null  
     }
   ];
+
+  let mockJob: ReplicationJob = {
+    metadata: {xTotalCount: 3},
+    data: mockJobs
+  };
 
   let mockEndpoints: Endpoint[] = [
     {
@@ -175,13 +186,15 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
         ConfirmationDialogComponent,
         DatePickerComponent,
         FilterComponent,
-        InlineAlertComponent
+        InlineAlertComponent,
+        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService }
+        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));
@@ -197,7 +210,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
    
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
     spyOneRule = spyOn(replicationService, 'getReplicationRule').and.returnValue(Promise.resolve(mockRule));
-    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJobs));
+    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
     fixture.detectChanges();
   });
 

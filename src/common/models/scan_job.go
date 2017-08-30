@@ -46,6 +46,18 @@ const (
 	SevHigh
 )
 
+//String is the output function for sererity variable
+func (sev Severity) String() string {
+	name := []string{"negligible", "unknown", "low", "medium", "high"}
+	i := int64(sev)
+	switch {
+	case i >= 1 && i <= int64(SevHigh):
+		return name[i-1]
+	default:
+		return "unknown"
+	}
+}
+
 //TableName is required by by beego orm to map ScanJob to table img_scan_job
 func (s *ScanJob) TableName() string {
 	return ScanJobTable
@@ -53,7 +65,8 @@ func (s *ScanJob) TableName() string {
 
 //ImgScanOverview mapped to a record of image scan overview.
 type ImgScanOverview struct {
-	Digest          string              `orm:"pk;column(image_digest)" json:"image_digest"`
+	ID              int64               `orm:"pk;auto;column(id)" json:"-"`
+	Digest          string              `orm:"column(image_digest)" json:"image_digest"`
 	Status          string              `orm:"-" json:"scan_status"`
 	JobID           int64               `orm:"column(scan_job_id)" json:"job_id"`
 	Sev             int                 `orm:"column(severity)" json:"severity"`
@@ -94,6 +107,7 @@ type VulnerabilityItem struct {
 	Pkg         string   `json:"package"`
 	Version     string   `json:"version"`
 	Description string   `json:"description"`
+	Link        string   `json:"link"`
 	Fixed       string   `json:"fixedVersion,omitempty"`
 }
 

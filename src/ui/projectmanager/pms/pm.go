@@ -22,15 +22,17 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/security/authcontext"
+	"github.com/vmware/harbor/src/common/utils"
 	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const dupProjectPattern = `Project name '\w+' is already used`
 
 // ProjectManager implements projectmanager.ProjecdtManager interface
 // base on project management service
@@ -74,14 +76,54 @@ func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, erro
 	return convert(project)
 }
 
+// get Admiral project with Harbor project ID or name
 func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
+	// if token is provided, search project from my projects list first
+	if len(p.getToken()) != 0 {
+		project, err := p.getFromMy(projectIDOrName)
+		if err != nil {
+			return nil, err
+		}
+		if project != nil {
+			return project, nil
+		}
+	}
+
+	// try to get project from public projects list
+	return p.getFromPublic(projectIDOrName)
+}
+
+// call GET /projects?$filter=xxx eq xxx, the API can only filter projects
+// which the user is a member of
+func (p *ProjectManager) getFromMy(projectIDOrName interface{}) (*project, error) {
+	return p.getAdmiralProject(projectIDOrName, false)
+}
+
+// call GET /projects?public=true&$filter=xxx eq xxx
+func (p *ProjectManager) getFromPublic(projectIDOrName interface{}) (*project, error) {
+	project, err := p.getAdmiralProject(projectIDOrName, true)
+	if project != nil {
+		// the projects returned by GET /projects?public=true&xxx have no
+		// "public" property, populate it here
+		project.Public = true
+	}
+	return project, err
+}
+
+func (p *ProjectManager) getAdmiralProject(projectIDOrName interface{}, public bool) (*project, error) {
 	m := map[string]string{}
-	if id, ok := projectIDOrName.(int64); ok {
+
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		return nil, err
+	}
+	if id > 0 {
 		m["customProperties.__projectIndex"] = strconv.FormatInt(id, 10)
-	} else if name, ok := projectIDOrName.(string); ok {
-		m["name"] = name
 	} else {
-		return nil, fmt.Errorf("unsupported type: %v", projectIDOrName)
+		m["name"] = name
+	}
+	if public {
+		m["public"] = "true"
 	}
 
 	projects, err := p.filter(m)
@@ -111,7 +153,11 @@ func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
 		} else {
 			query += "&"
 		}
-		query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
+		if k == "public" {
+			query += fmt.Sprintf("%s=%s", k, v)
+		} else {
+			query += fmt.Sprintf("$filter=%s eq '%s'", k, v)
+		}
 	}
 
 	if len(query) == 0 {
@@ -210,6 +256,7 @@ func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	if project == nil {
 		return false, nil
 	}
@@ -227,6 +274,7 @@ func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
 	return project != nil, nil
 }
 
+/*
 // GetRoles gets roles that the user has to the project
 // This method is used in GET /projects API.
 // Jobservice calls GET /projects API to get information of source
@@ -279,6 +327,7 @@ func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) 
 
 	return roles, nil
 }
+*/
 
 func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (string, error) {
 	pro, err := p.get(projectIDOrName)
@@ -301,30 +350,6 @@ func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 	})
 }
 
-// GetByMember ...
-func (p *ProjectManager) GetByMember(username string) ([]*models.Project, error) {
-	projects := []*models.Project{}
-	ctx, err := authcontext.GetAuthCtxOfUser(p.endpoint, p.getToken(), username)
-	if err != nil {
-		return projects, err
-	}
-
-	names, err := ctx.GetMyProjects()
-	if err != nil {
-		return projects, err
-	}
-
-	for _, name := range names {
-		project, err := p.Get(name)
-		if err != nil {
-			return projects, err
-		}
-		projects = append(projects, project)
-	}
-
-	return projects, nil
-}
-
 // Create ...
 func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 	proj := &project{
@@ -344,6 +369,33 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 
 	b, err := p.send(http.MethodPost, "/projects", bytes.NewBuffer(data))
 	if err != nil {
+		// when creating a project with a duplicate name in Admiral, a 500 error
+		// with a specific message will be returned for now.
+		// Maybe a 409 error will be returned if Admiral team finds the way to
+		// return a specific code in Xenon.
+		// The following codes convert both those two errors to DupProjectErr
+		httpErr, ok := err.(*er.HTTPError)
+		if !ok {
+			return 0, err
+		}
+
+		if httpErr.StatusCode == http.StatusConflict {
+			return 0, er.ErrDupProject
+		}
+
+		if httpErr.StatusCode != http.StatusInternalServerError {
+			return 0, err
+		}
+
+		match, e := regexp.MatchString(dupProjectPattern, httpErr.Detail)
+		if e != nil {
+			log.Errorf("failed to match duplicate project mattern: %v", e)
+		}
+
+		if match {
+			err = er.ErrDupProject
+		}
+
 		return 0, err
 	}
 
@@ -384,7 +436,7 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 			m["name"] = query.Name
 		}
 		if query.Public != nil {
-			m["isPublic"] = strconv.FormatBool(*query.Public)
+			m["public"] = strconv.FormatBool(*query.Public)
 		}
 	}
 
@@ -409,11 +461,6 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
 	projects, err := p.GetAll(query)
 	return int64(len(projects)), err
-}
-
-// GetHasReadPerm ...
-func (p *ProjectManager) GetHasReadPerm(username ...string) ([]*models.Project, error) {
-	return nil, errors.New("GetHasReadPerm is unsupported")
 }
 
 func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, error) {
@@ -441,7 +488,7 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &er.Error{
+		return nil, &er.HTTPError{
 			StatusCode: resp.StatusCode,
 			Detail:     string(b),
 		}

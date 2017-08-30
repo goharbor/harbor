@@ -83,8 +83,7 @@
         "PROFILE": "Perfil de usuario",
         "CHANGE_PWD": "Cambiar contraseña",
         "ABOUT": "Acerca de",
-        "LOGOUT": "Cerrar sesión",
-        "ROOT_CERT": "Descargar Certificado Raíz"
+        "LOGOUT": "Cerrar sesión"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "Buscar en Harbor...",
@@ -118,7 +117,8 @@
         "DELETION_TITLE": "Confirmar eliminación de usuario",
         "DELETION_SUMMARY": "¿Quiere eliminar el usuario {{param}}?",
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
-        "ITEMS": "elemento(s)"
+        "ITEMS": "elementos",
+        "OF": "of"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
@@ -144,7 +144,7 @@
         "NAME_ALREADY_EXISTS": "Ya existe un proyecto con ese nombre.",
         "NAME_IS_ILLEGAL": "El nombre del proyecto no es valido.",
         "UNKNOWN_ERROR": "Ha ocurrido un error al crear el proyecto.",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "DELETION_TITLE": "Confirmar eliminación del proyecto",
         "DELETION_SUMMARY": "¿Quiere eliminar el proyecto {{param}}?",
         "FILTER_PLACEHOLDER": "Filtrar proyectos",
@@ -153,7 +153,8 @@
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "FAILED_TO_DELETE_PROJECT": "Los proyectos que contienen repositorios o reglas de replicación no pueden eliminarse.",
-        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos."
+        "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
+        "OF": "of"
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositorios",
@@ -172,7 +173,7 @@
         "DEVELOPER": "Desarrollador",
         "GUEST": "Invitado",
         "DELETE": "Eliminar",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "ACTIONS": "Acciones",
         "USERNAME_IS_REQUIRED": "El nombre de usuario es obligatorio",
         "USERNAME_DOES_NOT_EXISTS": "Ese nombre de usuario no existe.",
@@ -183,7 +184,8 @@
         "DELETION_SUMMARY": "¿Quiere eliminar el miembro {{param}} del proyecto?",
         "ADDED_SUCCESS": "Miembro añadido satisfactoriamente.",
         "DELETED_SUCCESS": "Miembro eliminado satisfactoriamente",
-        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente."
+        "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
+        "OF": "of"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -200,9 +202,10 @@
         "OTHERS": "Otros",
         "ADVANCED": "Avanzado",
         "SIMPLE": "Simple",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "FILTER_PLACEHOLDER": "Filtrar logs",
-        "INVALID_DATE": "Fecha invalida."
+        "INVALID_DATE": "Fecha invalida.",
+        "OF": "of"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "Reglas de Replicación",
@@ -255,10 +258,11 @@
         "STATUS": "Estado",
         "OPERATION": "Operación",
         "CREATION_TIME": "Fecha de Inicio",
-        "END_TIME": "Fecha de Finalización",
+        "UPDATE_TIME": "Update time",
         "LOGS": "Logs",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "NO_LOGS": "No log",
+        "ITEMS": "elementos",
         "TOGGLE_ENABLE_TITLE": "Activar Regla",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "Después de la activación de esta regla, todos los repositorios de este proyecto serán replicados al registro de destino.\nPor favor, confirme para continuar.",
         "TOGGLE_DISABLE_TITLE": "Desactivar Regla",
@@ -274,7 +278,8 @@
         "FOUND_ERROR_IN_JOBS": "Se han encontrado errores en el trabajo de replicación. Por favor, compruébelos.",
         "INVALID_DATE": "Fecha invalida.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
-        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!"
+        "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
+        "JOB_LOG_VIEWER": "View Replication Job Log"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -297,7 +302,7 @@
         "FAILED_TO_GET_TARGET": "Fallo al obtener el endpoint.",
         "CREATION_TIME": "Fecha de creación",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "CREATED_SUCCESS": "Endpoint creado satisfactoriamente.",
         "UPDATED_SUCCESS": "Endpoint actualizado satisfactoriamente.",
         "DELETED_SUCCESS": "Endpoint eliminado satisfactoriamente.",
@@ -317,7 +322,9 @@
         "MY_REPOSITORY": "Mi Repositorio",
         "PUBLIC_REPOSITORY": "Repositorio Público",
         "DELETION_TITLE_REPO": "Confirmar Eliminación de Repositorio",
-        "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{param}}?",
+        "DELETION_TITLE_REPO_SIGNED": "Repository cannot be deleted",
+        "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
+        "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{repoName}}?",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
         "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",
@@ -333,7 +340,7 @@
         "SHOW_DETAILS": "Mostrar Detalles",
         "REPOSITORIES": "Repositorios",
         "OF": "of",
-        "ITEMS": "elemento(s)",
+        "ITEMS": "elementos",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
@@ -384,8 +391,11 @@
         "SCOPE_SUBTREE": "Subárbol",
         "PRO_CREATION_EVERYONE": "Todos",
         "PRO_CREATION_ADMIN": "Solo Administradores",
+        "ROOT_CERT": "Registro Certificado Raíz",
+        "ROOT_CERT_LINK": "Descargar",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "Activar registro.",
+            "SELF_REGISTRATION_ENABLE": "Activar registro.",
+            "SELF_REGISTRATION_DISABLE": "Disable sign up.",
             "VERIFY_REMOTE_CERT": "Determina si la replicación de la imagen debería verificar el certificado de un registro Harbor remoto. Desmarque esta opción cuando el registro remoto use un certificado de confianza o autofirmado.",
             "AUTH_MODE": "Por defecto el modo de autentificación es base de datos, es decir, las credenciales se almacenan en una base de datos local. Seleccione LDAP si quiere verificar las credenciales de usuarios a través del servidor LDAP.",
             "LDAP_SEARCH_DN": "Un DN de usuario que tenga permisos para buscar el servidor LDAP/AD. Si el servidor LDAP/AD no soporta búsquedas anónimas, debería configurar este DN y ldap_search_pwd.",
@@ -393,7 +403,9 @@
             "LDAP_UID": "El atributo usado en una búsqueda para encontrar un usuario. Debe ser el uid, cn, email, sAMAccountName u otro atributo dependiendo del LDAP/AD.",
             "LDAP_SCOPE": "El ámbito de búsqueda para usuarios",
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
-            "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos."
+            "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
+            "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -403,6 +415,19 @@
             "FILTER": "LDAP Filtro",
             "UID": "LDAP UID",
             "SCOPE": "LDAP Ámbito"
+        },
+        "SCANNING": {
+            "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
+            "TITLE": "Vulnerability Scanning",
+            "SCAN_ALL": "Scan All",
+            "SCAN_NOW": "SCAN NOW",
+            "NONE_POLICY": "None",
+            "DAILY_POLICY": "Daily At",
+            "REFRESH_POLICY": "Upon Refresh",
+            "DB_REFRESH_TIME": "Database updated on",
+            "DB_NOT_READY": "Vulnerability database might not be fully ready!",
+            "NEXT_SCAN": "Available after"
         },
         "TEST_MAIL_SUCCESS": "La conexión al servidor de correo ha sido verificada.",
         "TEST_LDAP_SUCCESS": "La conexión al servidor LDAP ha sido verificada.",
@@ -446,9 +471,9 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "PENDING": "SCAN NOW",
+            "STOPPED": "Not Scanned",
             "QUEUED": "Queued",
-            "ERROR": "Error",
+            "ERROR": "View Log",
             "SCANNING": "Scanning",
             "UNKNOWN": "Unknown"
         },
@@ -464,22 +489,27 @@
             "FOOT_OF": "of"
         },
         "CHART": {
-            "SCANNING_TIME": "Scan completed",
-            "TOOLTIPS_TITLE": "This tag has {{totalVulnerability}} packages with vulnerabilities across all {{totalPackages}} packages."
+            "SCANNING_TIME": "Scan completed time:",
+            "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
         },
         "SEVERITY": {
-            "HIGH": "High level",
-            "MEDIUM": "Medium level",
-            "LOW": "Low level",
-            "NEGLIGIBLE": "Negligible",
-            "UNKNOWN": "Unknown",
-            "NONE": "None"
+            "HIGH": "high",
+            "MEDIUM": "medium",
+            "LOW": "low",
+            "NEGLIGIBLE": "negligible",
+            "UNKNOWN": "unknown",
+            "NONE": "none"
         },
-        "SINGULAR": "Vulnerability",
-        "PLURAL": "Vulnerabilities",
+        "SINGULAR": "vulnerability",
+        "OVERALL_SEVERITY": "Vulnerability Severity:",
+        "NO_VULNERABILITY": "No vulnerability",
+        "PLURAL": "vulnerabilities",
         "PLACEHOLDER": "Filter Vulnerabilities",
-        "PACKAGE": "Package with",
-        "PACKAGES": "Packages with"
+        "PACKAGE": "package",
+        "PACKAGES": "packages",
+        "SCAN_NOW": "Scan",
+        "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Image",

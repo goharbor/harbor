@@ -17,39 +17,49 @@ import { NgModel } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
 
-import { ListReplicationRuleComponent} from '../list-replication-rule/list-replication-rule.component';
+import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
 import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { ErrorHandler } from '../error-handler/error-handler';
 
 import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
-import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
+import { ReplicationRule, ReplicationJob, Endpoint, ReplicationJobItem } from '../service/interface';
 
-import { toPromise, CustomComparator } from '../utils';
+import {
+  toPromise,
+  CustomComparator,
+  DEFAULT_PAGE_SIZE,
+  doFiltering,
+  doSorting,
+  calculatePage
+} from '../utils';
 
 import { Comparator } from 'clarity-angular';
 
 import { REPLICATION_TEMPLATE } from './replication.component.html';
 import { REPLICATION_STYLE } from './replication.component.css';
 
-const ruleStatus: {[key: string]: any} = [
-  { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS'},
-  { 'key': '1', 'description': 'REPLICATION.ENABLED'},
-  { 'key': '0', 'description': 'REPLICATION.DISABLED'}
+import { JobLogViewerComponent } from '../job-log-viewer/index';
+import { State } from "clarity-angular";
+
+const ruleStatus: { [key: string]: any } = [
+  { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
+  { 'key': '1', 'description': 'REPLICATION.ENABLED' },
+  { 'key': '0', 'description': 'REPLICATION.DISABLED' }
 ];
 
-const jobStatus: {[key: string]: any} = [
+const jobStatus: { [key: string]: any } = [
   { 'key': 'all', 'description': 'REPLICATION.ALL' },
-  { 'key': 'pending',  'description': 'REPLICATION.PENDING' },
-  { 'key': 'running',  'description': 'REPLICATION.RUNNING' },
-  { 'key': 'error',    'description': 'REPLICATION.ERROR' },
+  { 'key': 'pending', 'description': 'REPLICATION.PENDING' },
+  { 'key': 'running', 'description': 'REPLICATION.RUNNING' },
+  { 'key': 'error', 'description': 'REPLICATION.ERROR' },
   { 'key': 'retrying', 'description': 'REPLICATION.RETRYING' },
-  { 'key': 'stopped' , 'description': 'REPLICATION.STOPPED' },
+  { 'key': 'stopped', 'description': 'REPLICATION.STOPPED' },
   { 'key': 'finished', 'description': 'REPLICATION.FINISHED' },
-  { 'key': 'canceled', 'description': 'REPLICATION.CANCELED' }  
+  { 'key': 'canceled', 'description': 'REPLICATION.CANCELED' }
 ];
 
-const optionalSearch: {} = {0: 'REPLICATION.ADVANCED', 1: 'REPLICATION.SIMPLE'};
+const optionalSearch: {} = { 0: 'REPLICATION.ADVANCED', 1: 'REPLICATION.SIMPLE' };
 
 export class SearchOption {
   ruleId: number | string;
@@ -61,169 +71,251 @@ export class SearchOption {
   endTime: string = '';
   endTimestamp: string = '';
   page: number = 1;
-  pageSize: number = 5;
+  pageSize: number = DEFAULT_PAGE_SIZE;
 }
 
 @Component({
   selector: 'hbr-replication',
   template: REPLICATION_TEMPLATE,
-  styles: [ REPLICATION_STYLE ]
+  styles: [REPLICATION_STYLE]
 })
 export class ReplicationComponent implements OnInit {
-   
-   @Input() projectId: number | string;
-   @Input() withReplicationJob: boolean;
 
-   @Output() redirect = new  EventEmitter<ReplicationRule>();
+  @Input() projectId: number | string;
+  @Input() withReplicationJob: boolean;
+  @Input() readonly: boolean;
 
-   search: SearchOption = new SearchOption();
+  @Output() redirect = new EventEmitter<ReplicationRule>();
 
-   ruleStatus = ruleStatus;
-   currentRuleStatus: {key: string, description: string};
+  search: SearchOption = new SearchOption();
 
-   jobStatus = jobStatus;
-   currentJobStatus: {key: string, description: string};
+  ruleStatus = ruleStatus;
+  currentRuleStatus: { key: string, description: string };
 
-   changedRules: ReplicationRule[];
-   initSelectedId: number | string;
+  jobStatus = jobStatus;
+  currentJobStatus: { key: string, description: string };
 
-   rules: ReplicationRule[];   
-   loading: boolean;
+  changedRules: ReplicationRule[];
+  initSelectedId: number | string;
 
-   jobs: ReplicationJob[];  
+  rules: ReplicationRule[];
+  loading: boolean;
 
-   jobsTotalRecordCount: number;
-   jobsTotalPage: number;
+  jobs: ReplicationJobItem[];
 
-   toggleJobSearchOption = optionalSearch;
-   currentJobSearchOption: number;
+  toggleJobSearchOption = optionalSearch;
+  currentJobSearchOption: number;
 
-   @ViewChild(ListReplicationRuleComponent)
-   listReplicationRule: ListReplicationRuleComponent;
+  @ViewChild(ListReplicationRuleComponent)
+  listReplicationRule: ListReplicationRuleComponent;
 
-   @ViewChild(CreateEditRuleComponent) 
-   createEditPolicyComponent: CreateEditRuleComponent;
+  @ViewChild(CreateEditRuleComponent)
+  createEditPolicyComponent: CreateEditRuleComponent;
 
-   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
-   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
+  @ViewChild("replicationLogViewer")
+  replicationLogViewer: JobLogViewerComponent;
 
-   constructor(
-     private errorHandler: ErrorHandler,
-     private replicationService: ReplicationService,
-     private translateService: TranslateService) {
-   }
+  creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
+  updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
 
-   ngOnInit() {
-     this.currentRuleStatus = this.ruleStatus[0];
-     this.currentJobStatus  = this.jobStatus[0];
-     this.currentJobSearchOption = 0;
-   }
+  //Server driven pagination
+  currentPage: number = 1;
+  totalCount: number = 0;
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentState: State;
+  jobsLoading: boolean = false;
 
-   openModal(): void {
-     this.createEditPolicyComponent.openCreateEditRule(true);
-   }
+  constructor(
+    private errorHandler: ErrorHandler,
+    private replicationService: ReplicationService,
+    private translateService: TranslateService) {
+  }
 
-   openEditRule(rule: ReplicationRule) {
-     if(rule) {
-       let editable = true;
-       if(rule.enabled === 1) {
-         editable = false;
-       }
-       this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
-     }
-   }
+  public get creationAvailable(): boolean {
+    return !this.readonly && this.projectId ? true : false;
+  }
 
-   fetchReplicationJobs() { 
-          
-     let params: RequestQueryParams = new RequestQueryParams();
-     params.set('status', this.search.status);
-     params.set('repository', this.search.repoName);
-     params.set('start_time', this.search.startTimestamp);
-     params.set('end_time', this.search.endTimestamp);
-     
-     toPromise<ReplicationJob[]>(this.replicationService
-       .getJobs(this.search.ruleId, params))
-       .then(
-         response=>{
-           this.jobs = response;   
-         }).catch(error=>{
-           this.errorHandler.error(error);
-         });
-   }
+  public get showPaginationIndex(): boolean {
+    return this.totalCount > 0;
+  }
 
-   selectOneRule(rule: ReplicationRule) {
-     if (rule) {
-       this.search.ruleId = rule.id || '';
-       this.search.repoName = '';
-       this.search.status = '';
-       this.currentJobSearchOption = 0;
-       this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' }; 
-       this.fetchReplicationJobs();
-     }
-   }
+  ngOnInit() {
+    this.currentRuleStatus = this.ruleStatus[0];
+    this.currentJobStatus = this.jobStatus[0];
+    this.currentJobSearchOption = 0;
+  }
 
-   customRedirect(rule: ReplicationRule) {
-     this.redirect.emit(rule);
-   }
-   
-   doSearchRules(ruleName: string) {
-     this.search.ruleName = ruleName;
-     this.listReplicationRule.retrieveRules(ruleName);
-   }
+  openModal(): void {
+    this.createEditPolicyComponent.openCreateEditRule(true);
+  }
 
-   doFilterRuleStatus($event: any) {
-     if ($event && $event.target && $event.target["value"]) {
-       let status = $event.target["value"];
-       this.currentRuleStatus = this.ruleStatus.find((r: any)=>r.key === status);
-       this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
-     }
-   }
+  openEditRule(rule: ReplicationRule) {
+    if (rule) {
+      let editable = true;
+      if (rule.enabled === 1) {
+        editable = false;
+      }
+      this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
+    }
+  }
 
-   doFilterJobStatus($event: any) {
-     if ($event && $event.target && $event.target["value"]) {
-       let status = $event.target["value"];
-      
-       this.currentJobStatus = this.jobStatus.find((r: any)=>r.key === status);
-       if(this.currentJobStatus.key === 'all') {
-         status = '';
-       }
-       this.search.status = status;
-       this.doSearchJobs(this.search.repoName);
-       
-     }
-   }
+  //Server driven data loading
+  clrLoadJobs(state: State): void {
+    if (!state || !state.page || !this.search.ruleId) {
+      return;
+    }
+    this.currentState = state;
 
-   doSearchJobs(repoName: string) {
-     this.search.repoName = repoName;
-     this.fetchReplicationJobs();
-   }
+    let pageNumber: number = calculatePage(state);
+    if (pageNumber <= 0) { pageNumber = 1; }
 
-   reloadRules(isReady: boolean) {
-     if(isReady) {
-       this.search.ruleName = '';
-       this.listReplicationRule.retrieveRules(this.search.ruleName);
-     }
-   }
+    let params: RequestQueryParams = new RequestQueryParams();
+    //Pagination
+    params.set("page", '' + pageNumber);
+    params.set("page_size", '' + this.pageSize);
+    //Search by status
+    if (this.search.status.trim()) {
+      params.set('status', this.search.status);
+    }
+    //Search by repository
+    if (this.search.repoName.trim()) {
+      params.set('repository', this.search.repoName);
+    }
+    //Search by timestamps
+    if (this.search.startTimestamp.trim()) {
+      params.set('start_time', this.search.startTimestamp);
+    }
+    if (this.search.endTimestamp.trim()) {
+      params.set('end_time', this.search.endTimestamp);
+    }
 
-   refreshRules() {
-     this.listReplicationRule.retrieveRules();
-   }
+    this.jobsLoading = true;
+    toPromise<ReplicationJob>(this.replicationService
+      .getJobs(this.search.ruleId, params))
+      .then(
+      response => {
+        this.totalCount = response.metadata.xTotalCount;
+        this.jobs = response.data;
 
-   refreshJobs() {
-     this.fetchReplicationJobs();
-   }
+        //Do filtering and sorting
+        this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
+        this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
-   toggleSearchJobOptionalName(option: number) {
-     (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
-   }
+        this.jobsLoading = false;
 
-   doJobSearchByStartTime(fromTimestamp: string) {
-     this.search.startTimestamp = fromTimestamp;
-     this.fetchReplicationJobs();
-   }
+      }).catch(error => {
+        this.jobsLoading = false;
+        this.errorHandler.error(error);
+      });
+  }
 
-   doJobSearchByEndTime(toTimestamp: string) {
-     this.search.endTimestamp = toTimestamp;
-     this.fetchReplicationJobs();
-   }
+  loadFirstPage(): void {
+    let st: State = this.currentState;
+    if (!st) {
+      st = {
+        page: {}
+      };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+
+    this.clrLoadJobs(st);
+  }
+
+  selectOneRule(rule: ReplicationRule) {
+    if (rule && rule.id) {
+      this.search.ruleId = rule.id || '';
+      this.search.repoName = '';
+      this.search.status = '';
+      this.currentJobSearchOption = 0;
+      this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
+      this.loadFirstPage();
+    }
+  }
+
+  customRedirect(rule: ReplicationRule) {
+    this.redirect.emit(rule);
+  }
+
+  doSearchRules(ruleName: string) {
+    this.search.ruleName = ruleName;
+    this.listReplicationRule.retrieveRules(ruleName);
+  }
+
+  doFilterRuleStatus($event: any) {
+    if ($event && $event.target && $event.target["value"]) {
+      let status = $event.target["value"];
+      this.currentRuleStatus = this.ruleStatus.find((r: any) => r.key === status);
+      this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
+    }
+  }
+
+  doFilterJobStatus($event: any) {
+    if ($event && $event.target && $event.target["value"]) {
+      let status = $event.target["value"];
+
+      this.currentJobStatus = this.jobStatus.find((r: any) => r.key === status);
+      if (this.currentJobStatus.key === 'all') {
+        status = '';
+      }
+      this.search.status = status;
+      this.doSearchJobs(this.search.repoName);
+
+    }
+  }
+
+  doSearchJobs(repoName: string) {
+    this.search.repoName = repoName;
+    this.loadFirstPage();
+  }
+
+  reloadRules(isReady: boolean) {
+    if (isReady) {
+      this.search.ruleName = '';
+      this.listReplicationRule.retrieveRules(this.search.ruleName);
+    }
+  }
+
+  refreshRules() {
+    this.listReplicationRule.retrieveRules();
+  }
+
+  refreshJobs() {
+    this.search.repoName = "";
+    this.search.startTimestamp = "";
+    this.search.endTimestamp = "";
+    this.search.status = "";
+
+    this.currentPage = 1;
+
+    let st: State = {
+      page: {
+        from: 0,
+        to: this.pageSize - 1,
+        size: this.pageSize
+      }
+    };
+    this.clrLoadJobs(st);
+  }
+
+  toggleSearchJobOptionalName(option: number) {
+    (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
+  }
+
+  doJobSearchByStartTime(fromTimestamp: string) {
+    this.search.startTimestamp = fromTimestamp;
+    this.loadFirstPage();
+  }
+
+  doJobSearchByEndTime(toTimestamp: string) {
+    this.search.endTimestamp = toTimestamp;
+    this.loadFirstPage();
+  }
+
+  viewLog(jobId: number | string): void {
+    if (this.replicationLogViewer) {
+      this.replicationLogViewer.open(jobId);
+    }
+  }
 }

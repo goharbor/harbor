@@ -81,7 +81,7 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
-REGISTRYVERSION=2.6.1-photon
+REGISTRYVERSION=2.6.2-photon
 NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
@@ -92,9 +92,9 @@ REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
 
 #clair parameters
-CLAIRVERSION=v2.0.0
+CLAIRVERSION=v2.0.1-photon
 CLAIRFLAG=false
-CLAIRDBVERSION=9.6.3-photon
+CLAIRDBVERSION=9.6.4-photon
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -213,6 +213,10 @@ PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
+# migrator
+MIGRATORVERSION=1.2
+MIGRATORFLAG=false
+
 # cmds
 DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
@@ -243,10 +247,13 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= quay.io/coreos/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= vmware/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+endif
+ifeq ($(MIGRATORFLAG), true)
+	DOCKERSAVE_PARA+= vmware/harbor-db-migrator:$(MIGRATORVERSION)
 endif
 
 version:
@@ -368,9 +375,13 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
-		$(DOCKERPULL) quay.io/coreos/clair:$(CLAIRVERSION); \
+		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
 		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
+	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
+		echo "pulling DB migrator..."; \
+		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \
+	fi	
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz

@@ -25,4 +25,5 @@ func initRouters() {
 	beego.Router("/api/jobs/replication/:id/log", &api.ReplicationJob{}, "get:GetLog")
 	beego.Router("/api/jobs/replication/actions", &api.ReplicationJob{}, "post:HandleAction")
 	beego.Router("/api/jobs/scan", &api.ImageScanJob{})
+	beego.Router("/api/jobs/scan/:id/log", &api.ImageScanJob{}, "get:GetLog")
 }

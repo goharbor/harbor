@@ -24,11 +24,8 @@ type ProjectManager interface {
 	Get(projectIDOrName interface{}) (*models.Project, error)
 	IsPublic(projectIDOrName interface{}) (bool, error)
 	Exist(projectIDOrName interface{}) (bool, error)
-	GetRoles(username string, projectIDOrName interface{}) ([]int, error)
 	// get all public project
 	GetPublic() ([]*models.Project, error)
-	// get projects which the user is a member of
-	GetByMember(username string) ([]*models.Project, error)
 	Create(*models.Project) (int64, error)
 	Delete(projectIDOrName interface{}) error
 	Update(projectIDOrName interface{}, project *models.Project) error
@@ -36,8 +33,4 @@ type ProjectManager interface {
 	GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error)
 	// GetTotal returns the total count according to the query parameters
 	GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error)
-	// GetHasReadPerm returns a project list which the user has read
-	// permission of. The list should contains all public projects and
-	// projects which the user is a member of if the username is not nil
-	GetHasReadPerm(username ...string) ([]*models.Project, error)
 }

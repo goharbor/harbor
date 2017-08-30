@@ -79,7 +79,7 @@ export class ListProjectComponent {
 
   newReplicationRule(p: Project) {
     if (p) {
-      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replication?is_create=true`);
+      this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replications?is_create=true`);
     }
   }
 

@@ -13,9 +13,20 @@
 // limitations under the License.
 import { Component } from '@angular/core';
 
+import {Router,ActivatedRoute} from "@angular/router";
+import {ReplicationRule} from "harbor-ui";
+
 @Component({
   selector: 'total-replication',
   templateUrl: 'total-replication-page.component.html'
 })
 export class TotalReplicationPageComponent {
+
+  constructor(private router: Router,
+              private activeRoute: ActivatedRoute){}
+  customRedirect(rule: ReplicationRule): void {
+    if (rule) {
+      this.router.navigate(['../../projects', rule.project_id, "replications"],  { relativeTo: this.activeRoute });
+    }
+  }
 }
