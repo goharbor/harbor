@@ -289,4 +289,4 @@ Test Case - Admin Push Un-Signed Image
     Log To Console  ${output}
 
 Test Case - Clean Harbor Images	
-    Down Harbor
+    Down Harbor  with_notary=true
