@@ -65,6 +65,7 @@ type Email struct {
 	SSL      bool   `json:"ssl"`
 	Identity string `json:"identity"`
 	From     string `json:"from"`
+	Insecure bool   `json:"insecure"`
 }
 
 /*
