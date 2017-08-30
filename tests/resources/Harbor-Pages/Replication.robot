@@ -36,7 +36,7 @@ Create An New Rule With New Endpoint
     Input text  xpath=${destination_username_xpath}  ${destination_username}
     Input text  xpath=${destination_password_xpath}  ${destination_password}
     Click element  xpath=${replicaton_save_xpath}
-    Sleep  2
+    Sleep  5
 	Capture Page Screenshot  rule_${policy_name}.png
 	Wait Until Page Contains  ${policy_name}
 	Wait Until Page Contains  ${policy_description}
