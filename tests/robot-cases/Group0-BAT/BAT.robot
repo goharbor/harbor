@@ -289,5 +289,4 @@ Test Case - Admin Push Un-Signed Image
     Log To Console  ${output}
 
 Test Case - Clean Harbor Images	
-    ${rc}  ${output}=  Run And Return Rc And Output  Down Harbor
-    Log To Console  ${output}
+    Down Harbor
