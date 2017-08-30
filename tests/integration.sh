@@ -75,7 +75,7 @@ echo $rc
 
 timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".zip"
-zip -9 $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/*/*.log /data/config/*
+zip -9 $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/*/*.log /data/config/* /data/job_logs/*
 if [ -f "$outfile" ]; then
   gsutil cp $outfile gs://harbor-ci-logs
   echo "----------------------------------------------"
