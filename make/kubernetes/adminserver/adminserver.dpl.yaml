@@ -1,0 +1,219 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: adminserver-dpl
+  labels:
+    name: adminserver-dpl 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: adminserver-apps
+    spec:
+      containers:
+      - name: adminserver-app
+        image: vmware/harbor-adminserver:v1.2.0-rc1
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: MYSQL_HOST
+            valueFrom:
+              configMapKeyRef:
+               name: harbor-adminserver-config
+               key: MYSQL_HOST
+          - name: MYSQL_PORT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: MYSQL_PORT
+          - name: MYSQL_USR
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: MYSQL_USR
+          - name: MYSQL_PWD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: MYSQL_PWD
+          - name: REGISTRY_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: REGISTRY_URL
+          - name: HARBOR_REG_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: HARBOR_REG_URL
+          - name: HARBOR_ADMIN_PASSWORD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: HARBOR_ADMIN_PASSWORD
+          - name: AUTH_MODE
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: AUTH_MODE
+          - name: LDAP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_URL 
+          - name: LDAP_SEARCH_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_SEARCH_DN 
+          - name: LDAP_SEARCH_PWD
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_SEARCH_PWD 
+          - name: LDAP_BASE_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_BASE_DN 
+          - name: LDAP_FILTER
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_FILTER 
+          - name: LDAP_UID
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_UID 
+          - name: LDAP_SCOPE
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-adminserver-config
+                key: LDAP_SCOPE 
+          - name: LOG_LEVEL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: LOG_LEVEL
+          - name: LDAP_TIMEOUT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: LDAP_TIMEOUT
+          - name: UI_SECRET
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: UI_SECRET
+          - name: GODEBUG
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: GODEBUG
+          - name: EXT_ENDPOINT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EXT_ENDPOINT
+          - name: TOKEN_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: TOKEN_URL
+          - name: SELF_REGISTRATION
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: SELF_REGISTRATION
+          - name: VERIFY_REMOTE_CERT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: VERIFY_REMOTE_CERT
+          - name: TOKEN_EXPIRATION
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: TOKEN_EXPIRATION
+          - name: PROJECT_CREATION_RESTRICTION
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: PROJECT_CREATION_RESTRICTION
+          - name: MAX_JOB_WORKERS
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: MAX_JOB_WORKERS
+          - name: EMAIL_PWD
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_PWD
+          - name: EMAIL_PORT
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_PORT
+          - name: EMAIL_HOST
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_HOST
+          - name: EMAIL_FROM
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_FROM
+          - name: EMAIL_USR
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_USR
+          - name: EMAIL_IDENTITY
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_IDENTITY
+          - name: EMAIL_SSL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: EMAIL_SSL
+          - name: ADMIRAL_URL
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: ADMIRAL_URL
+          - name: WITH_NOTARY
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: WITH_NOTARY
+          - name: SECRET_KEY
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-adminserver-config
+               key: SECRET_KEY
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/adminserver/config
+        - name: key
+          mountPath: /etc/adminserver/key
+          subPath: key
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-adminserver-config
+          items:
+          - key: config
+            path: config.json
+      - name: key
+        configMap:
+          name: harbor-adminserver-config
+          items:
+          - key: SECRET_KEY
+            path: key

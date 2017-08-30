@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-dpl
+  labels:
+    name: nginx-dpl 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: nginx-apps
+    spec:
+      containers:
+      - name: nginx-app
+        image: vmware/nginx:1.11.5-patched
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-nginx-config
+          items:
+          - key: config
+            path: nginx.conf
+          - key: pkey
+            path: https.key
+          - key: cert
+            path: https.crt
