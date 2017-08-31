@@ -23,6 +23,15 @@ There are some args of the python script:
 - -c: Path to https certification. This arg can overwrite the value of `ssl_cert` in `harbor.cfg`.
 - -s: Path to secret key. Must be 16 characters. If you don't set it, the script will generate it automatically. 
 
+If you want to set cert file in registry container, you have to set following values in `harbor.cfg` or set cert file in registry.cm.yml manually.
+- crt_country
+- crt_state
+- crt_location
+- crt_organization
+- crt_organizationalunit
+- crt_commonname
+- crt_email 
+
 #### Basic Configuration
 These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kubernetes.
 - `make/harbor.cfg`: Basic config of Harbor. Please refer to `harbor.cfg`.
