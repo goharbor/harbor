@@ -287,3 +287,6 @@ Test Case - Admin Push Signed Image
 Test Case - Admin Push Un-Signed Image	
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
+
+Test Case - Clean Harbor Images	
+    Down Harbor  with_notary=true

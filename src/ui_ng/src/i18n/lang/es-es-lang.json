@@ -324,7 +324,7 @@
         "DELETION_TITLE_REPO": "Confirmar Eliminación de Repositorio",
         "DELETION_TITLE_REPO_SIGNED": "Repository cannot be deleted",
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
-        "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{param}}?",
+        "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{repoName}}?",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
         "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",

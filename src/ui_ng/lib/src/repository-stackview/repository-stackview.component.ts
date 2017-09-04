@@ -197,11 +197,11 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
   signedDataSet(repoName: string): void {
     let signature: string = '';
     if (this.signedCon[repoName].length === 0) {
-      this.confirmationDialogSet('DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
+      this.confirmationDialogSet('REPOSITORY.DELETION_TITLE_REPO', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
       return;
     }
     signature = this.signedCon[repoName].join(',');
-    this.confirmationDialogSet('DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
+    this.confirmationDialogSet('REPOSITORY.DELETION_TITLE_REPO_SIGNED', signature, repoName, 'REPOSITORY.DELETION_SUMMARY_REPO_SIGNED', ConfirmationButtons.CLOSE);
   }
 
   confirmationDialogSet(summaryTitle: string, signature: string, repoName: string, summaryKey: string,  button: ConfirmationButtons): void {
