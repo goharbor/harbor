@@ -93,7 +93,7 @@ script:
   - sudo ./ldapprepare.sh 
   - sudo ./admiral.sh 
   - cd .. 
-  - go test -i ./src/ui ./src/adminserver ./src/jobservice
+  - go test -race -i ./src/ui ./src/adminserver ./src/jobservice
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
