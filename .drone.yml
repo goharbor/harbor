@@ -59,7 +59,7 @@ pipeline:
     webhook: ${SLACK_URL}
     username: drone
     template: >
-      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.zip
+      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
     when:
       repo: vmware/harbor
       branch: [ master, release-*, refs/tags/* ]
