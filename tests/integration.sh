@@ -50,7 +50,7 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
   exit 1
 fi
 
-if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "releases/"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
 	## -------------- Package installer with clean code -----------------
 	echo "Package Harbor build."
 	pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
@@ -74,8 +74,8 @@ rc="$?"
 echo $rc
 
 timestamp=$(date +%s)
-outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".zip"
-zip -9 $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/*/*.log /data/config/* /data/job_logs/*
+outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".tar.gz"
+tar -zcvf $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/* /data/config/* /data/job_logs/*
 if [ -f "$outfile" ]; then
   gsutil cp $outfile gs://harbor-ci-logs
   echo "----------------------------------------------"
