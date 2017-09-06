@@ -51,7 +51,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, releases/*, refs/tags/* ]
+      branch: [ master, release-*, refs/tags/* ]
       status: success
 
   notify-slack:
@@ -59,11 +59,11 @@ pipeline:
     webhook: ${SLACK_URL}
     username: drone
     template: >
-      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.zip
+      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
     when:
       repo: vmware/harbor
-      branch: [ master, releases/*, refs/tags/* ]
-      status: failure
+      branch: [ master, release-*, refs/tags/* ]
+      status: [ failure, success ]
 
   publish-gcs-builds:
     image: maplain/drone-gcs:latest
@@ -76,7 +76,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, releases/* ]
+      branch: [ master, release-* ]
       status: success
 
   publish-gcs-releases:
@@ -90,7 +90,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ refs/tags/* ]
+      branch: [ release-*, refs/tags/* ]
       status: success
 
   trigger:
@@ -103,5 +103,5 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, releases/*, refs/tags/* ]
+      branch: [ master, release-*, refs/tags/* ]
       status: success
