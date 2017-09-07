@@ -110,6 +110,14 @@ export)
     echo $rc
     exit $rc
     ;;
+mapprojects)
+    echo "Performing map projects..."
+    ./mapprojects --dbuser ${DB_USR} --dbpwd ${DB_PWD} --mapprojectsfile ${MAPPROJECTFILE}
+    rc="$?"
+    echo "Map projects performed."
+    echo $rc
+    exit $rc
+    ;;
 restore)
     echo "Performing restore..."
     mysql $DBCNF < ./backup/registry.sql
