@@ -15,7 +15,7 @@ class Parameters(object):
         self.admiral_endpoint = ''
         self.tokenfile = ''
         self.projectsfile = ''
-        self.mappingprojectsfile = ''
+        self.mapprojectsfile = ''
         self.init_from_input()
 
     @staticmethod
@@ -25,13 +25,13 @@ class Parameters(object):
         parser.add_option("-a", "--admiralendpoint", dest="admiral_endpoint", help="admiral endpoint")
         parser.add_option("-t", "--tokenfile", dest="tokenfile", help="the path of token file")
         parser.add_option("-f", "--projectsfile", dest="projectsfile", help="the path of exported json file")
-        parser.add_option("-m", "--mappingprojectsfile", dest="mappingprojectsfile", help="the path of output projects file for mapping project id")
+        parser.add_option("-m", "--mapprojectsfile", dest="mapprojectsfile", help="the path of output projects file for mapping project id")
 
         (options, args) = parser.parse_args()
-        return (options.admiral_endpoint, options.tokenfile, options.projectsfile, options.mappingprojectsfile)
+        return (options.admiral_endpoint, options.tokenfile, options.projectsfile, options.mapprojectsfile)
 
     def init_from_input(self):
-        (self.admiral_endpoint, self.tokenfile, self.projectsfile, self.mappingprojectsfile) = Parameters.parse_input()
+        (self.admiral_endpoint, self.tokenfile, self.projectsfile, self.mapprojectsfile) = Parameters.parse_input()
 
 class Project:
     def __init__(self, project_id, name, public):
@@ -96,7 +96,7 @@ def main():
 
         admiral.import_project(projects_import_list)
 			
-        with open(commandline_input.mappingprojectsfile, 'w') as outfile:
+        with open(commandline_input.mapprojectsfile, 'w') as outfile:
             json.dump({'map_projects': [project.__dict__ for project in projects_import_list]}, outfile, sort_keys=True, indent=4)			
 
     except Exception, e:
