@@ -15,6 +15,7 @@ class Parameters(object):
         self.admiral_endpoint = ''
         self.tokenfile = ''
         self.projectsfile = ''
+        self.mapprojectsfile = ''
         self.init_from_input()
 
     @staticmethod
@@ -24,17 +25,20 @@ class Parameters(object):
         parser.add_option("-a", "--admiralendpoint", dest="admiral_endpoint", help="admiral endpoint")
         parser.add_option("-t", "--tokenfile", dest="tokenfile", help="the path of token file")
         parser.add_option("-f", "--projectsfile", dest="projectsfile", help="the path of exported json file")
+        parser.add_option("-m", "--mapprojectsfile", dest="mapprojectsfile", help="the path of output projects file for mapping project id")
 
         (options, args) = parser.parse_args()
-        return (options.admiral_endpoint, options.tokenfile, options.projectsfile)
+        return (options.admiral_endpoint, options.tokenfile, options.projectsfile, options.mapprojectsfile)
 
     def init_from_input(self):
-        (self.admiral_endpoint, self.tokenfile, self.projectsfile) = Parameters.parse_input()
+        (self.admiral_endpoint, self.tokenfile, self.projectsfile, self.mapprojectsfile) = Parameters.parse_input()
 
 class Project:
-    def __init__(self, name, public):
+    def __init__(self, project_id, name, public):
+	self.project_id = project_id
         self.project_name = name
         self.public = public
+        self.index_id = ''
 
 class Admiral:
     def __init__(self, admiral_url, token):
@@ -52,7 +56,9 @@ class Admiral:
         request.add_header('Content-Length', data_len)
 
         try:
-            urllib2.urlopen(request, context=ssl._create_unverified_context())
+            response = urllib2.urlopen(request, context=ssl._create_unverified_context())
+            response_obj = response.read()
+            project.index_id = json.loads(response_obj)['customProperties']['__projectIndex']
         except Exception, e:
             if not retry:
                 logger.error("failed to import project: %s, admiral_endpoint: %s, error: %s " % (project.project_name, self.admiral_url, str(e)))
@@ -86,9 +92,12 @@ def main():
 
         projects_import_list = []
         for item in project_data['projects']:
-        	projects_import_list.append(Project(item['project_name'], item['public']))
+            projects_import_list.append(Project(item['project_id'], item['project_name'], item['public']))
 
         admiral.import_project(projects_import_list)
+			
+        with open(commandline_input.mapprojectsfile, 'w') as outfile:
+            json.dump({'map_projects': [project.__dict__ for project in projects_import_list]}, outfile, sort_keys=True, indent=4)			
 
     except Exception, e:
         logger.error("failed to import project, admiral_endpoint: %s, error: %s " % (commandline_input.admiral_endpoint, str(e)))
