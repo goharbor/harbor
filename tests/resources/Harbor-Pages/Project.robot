@@ -21,73 +21,77 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Create An New Project
-	[Arguments]  ${projectname}  ${public}=false
-	Sleep  1
-	Click Button  css=${create_project_button_css}
-	Sleep  1
-	Log To Console  Project Name: ${projectname}
-	Input Text  xpath=${project_name_xpath}  ${projectname}
-	Sleep  3
-	Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
-	Click Element  css=${project_save_css}
-	Sleep  4
-	Wait Until Page Contains  ${projectname}
-	Wait Until Page Contains  Project Admin
-	
+    [Arguments]  ${projectname}  ${public}=false
+    Sleep  1
+    Click Button  css=${create_project_button_css}
+    Sleep  1
+    Log To Console  Project Name: ${projectname}
+    Input Text  xpath=${project_name_xpath}  ${projectname}
+    Sleep  3
+    Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
+    Click Element  css=${project_save_css}
+    Sleep  4
+    Wait Until Page Contains  ${projectname}
+    Wait Until Page Contains  Project Admin
+
 Create An New Project With New User
-	[Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
-	Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
+    [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
+    Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
-	Create An New Project  ${projectname}  ${public}
+    Create An New Project  ${projectname}  ${public}
     Sleep  1	
 
 #It's the log of project.
 Go To Project Log
-	Click Element  xpath=//project-detail//ul/li[3]
-	Sleep  2
-	
+    Click Element  xpath=//project-detail//ul/li[3]
+    Sleep  2
+
+Switch To Member
+    Click Element  xpath=//project-detail//li[2]
+    Sleep  1
+
 Switch To Log
-	Click Element  xpath=${log_xpath}
-	Sleep  1
+    Click Element  xpath=${log_xpath}
+    Sleep  1
 
 Switch To Replication
-	Click Element  xpath=${replication_xpath}
-	Sleep  1
+    Click Element  xpath=${replication_xpath}
+    Sleep  1
 
 Back To projects
-	Click Element  xpath=${projects_xpath}
-	Sleep  1
+    Click Element  xpath=${projects_xpath}
+    Sleep  1
 
 Project Should Display
-	[Arguments]  ${projectname}
-	Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    [Arguments]  ${projectname}
+    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Project Should Not Display
-	[Arguments]  ${projectname}
-	Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    [Arguments]  ${projectname}
+    Page Should Not Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Search Private Projects
-	Click element  xpath=//select
-	Click element  xpath=//select/option[@value=1]
-	Sleep  1
-	Capture Page Screenshot  SearchPrivateProjects.png
+    Click element  xpath=//select
+    Click element  xpath=//select/option[@value=1]
+    Sleep  1
+    Capture Page Screenshot  SearchPrivateProjects.png
 
 Make Project Private
-	[Arguments]  ${projectname}
-	Sleep  1
-	Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-	Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    [Arguments]  ${projectname}
+    Sleep  1
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
 
 Make Project Public
-	[Arguments]  ${projectname}
-	Sleep  1
-	Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-	Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    [Arguments]  ${projectname}
+    Sleep  1
+    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
 
 Delete Repo
-	[Arguments]  ${projectname}
-	Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
+    [Arguments]  ${projectname}
+    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
     Sleep  1
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
@@ -95,18 +99,18 @@ Delete Repo
     Sleep  2
 
 Advanced Search Should Display
-	Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
+    Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
 
 # it's not a common keywords, only used into log case.	
 Do Log Advanced Search
-	Capture Page Screenshot  LogAdvancedSearch.png
-	Sleep  1
-	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
-	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"push")]
-	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"create")]
-	Page Should Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
-	Sleep  1
-	Click Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
+    Capture Page Screenshot  LogAdvancedSearch.png
+    Sleep  1
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"pull")]
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"push")]
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"create")]
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"delete")]
+    Sleep  1
+    Click Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
     Sleep  1
     Click Element  xpath=//project-detail//audit-log//clr-dropdown/button
     Sleep  1
@@ -147,13 +151,13 @@ Expand Repo
     [Arguments]  ${projectname}
     Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
     sleep  1
-	
+
 Scan Repo
     [Arguments]  ${projectname}
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
     Sleep  15
-	
+
 Summary Chart Should Display
     [Arguments]  ${projectname}
     Page Should Contain Element  //clr-dg-row-master[contains(.,'${projectname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
