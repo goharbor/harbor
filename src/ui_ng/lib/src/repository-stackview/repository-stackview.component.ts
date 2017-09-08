@@ -68,9 +68,9 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
 
-  pullCountComparator: Comparator<Repository> = new CustomComparator<Repository>('pull_count', 'number');
+  pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
 
-  tagsCountComparator: Comparator<Repository> = new CustomComparator<Repository>('tags_count', 'number');
+  tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
@@ -277,7 +277,7 @@ export class RepositoryStackviewComponent implements OnChanges, OnInit {
     let total: number = this.totalCount - 1;
     if (total <= 0) { return null; }
 
-    let totalPages: number = Math.floor(total / this.pageSize);
+    let totalPages: number = Math.ceil(total / this.pageSize);
     let targetPageNumber: number = this.currentPage;
 
     if (this.currentPage > totalPages) {

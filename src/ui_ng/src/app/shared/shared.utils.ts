@@ -14,6 +14,8 @@
 import { NgForm } from '@angular/forms';
 import { httpStatusCode, AlertType } from './shared.const';
 import { MessageService } from '../global-message/message.service';
+import { Comparator, State } from 'clarity-angular';
+
 /**
  * To handle the error message body
  * 
@@ -106,4 +108,130 @@ export const maintainUrlQueryParmas = function (uri: string, key: string, value:
             return uri + separator + key + "=" + value + hash;
         }
     }
+}
+
+//Copy from ui library utils.ts
+
+/**
+ * Calculate page number by state
+ */
+export function calculatePage(state: State): number {
+    if (!state || !state.page) {
+        return 1;
+    }
+
+    return Math.ceil((state.page.to + 1) / state.page.size);
+}
+
+/**
+ * Comparator for fields with specific type.
+ *  
+ */
+export class CustomComparator<T> implements Comparator<T> {
+
+    fieldName: string;
+    type: string;
+
+    constructor(fieldName: string, type: string) {
+        this.fieldName = fieldName;
+        this.type = type;
+    }
+
+    compare(a: { [key: string]: any | any[] }, b: { [key: string]: any | any[] }) {
+        let comp = 0;
+        if (a && b) {
+            let fieldA = a[this.fieldName];
+            let fieldB = b[this.fieldName];
+            switch (this.type) {
+                case "number":
+                    comp = fieldB - fieldA;
+                    break;
+                case "date":
+                    comp = new Date(fieldB).getTime() - new Date(fieldA).getTime();
+                    break;
+            }
+        }
+        return comp;
+    }
+}
+
+/**
+ * Filter columns via RegExp
+ * 
+ * @export
+ * @param {State} state 
+ * @returns {void} 
+ */
+export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
+    if (!items || items.length === 0) {
+        return items;
+    }
+
+    if (!state || !state.filters || state.filters.length === 0) {
+        return items;
+    }
+
+    state.filters.forEach((filter: {
+        property: string;
+        value: string;
+    }) => {
+        items = items.filter(item => regexpFilter(filter["value"], item[filter["property"]]));
+    });
+
+    return items;
+}
+
+/**
+ * Match items via RegExp
+ * 
+ * @export
+ * @param {string} terms 
+ * @param {*} testedValue 
+ * @returns {boolean} 
+ */
+export function regexpFilter(terms: string, testedValue: any): boolean {
+    let reg = new RegExp('.*' + terms + '.*', 'i');
+    return reg.test(testedValue);
+}
+
+/**
+ * Sorting the data by column
+ * 
+ * @export
+ * @template T 
+ * @param {T[]} items 
+ * @param {State} state 
+ * @returns {T[]} 
+ */
+export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
+    if (!items || items.length === 0) {
+        return items;
+    }
+    if (!state || !state.sort) {
+        return items;
+    }
+
+    return items.sort((a: T, b: T) => {
+        let comp: number = 0;
+        if (typeof state.sort.by !== "string") {
+            comp = state.sort.by.compare(a, b);
+        } else {
+            let propA = a[state.sort.by.toString()], propB = b[state.sort.by.toString()];
+            if (typeof propA === "string") {
+                comp = propA.localeCompare(propB);
+            } else {
+                if (propA > propB) {
+                    comp = 1;
+                } else if (propA < propB) {
+                    comp = -1;
+                }
+            }
+        }
+
+        if (state.sort.reverse) {
+            comp = -comp;
+        }
+
+        return comp;
+    });
 }
