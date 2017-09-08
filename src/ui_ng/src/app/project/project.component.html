@@ -13,7 +13,7 @@
             </div>
             <div class="option-right">
                 <div class="select" style="float: left; left:-6px; top:8px;">
-                    <select (change)="doFilterProjects($event)" [(ngModel)]="selecteType">
+                    <select (change)="doFilterProjects()" [(ngModel)]="selecteType">
                     <option value="0" [selected]="currentFilteredType === 0">{{projectTypes[0] | translate}}</option>
                     <option value="1">{{projectTypes[1] | translate}}</option>
                     <option value="2">{{projectTypes[2] | translate}}</option>
@@ -25,6 +25,6 @@
                 </span>
             </div>
         </div>
-        <list-project [projects]="changedProjects" [filteredType]="projectTypes[currentFilteredType]" (toggle)="toggleProject($event)" (delete)="deleteProject($event)" (paginate)="retrieve($event)" [loading]="loading"></list-project>
+        <list-project></list-project>
     </div>
 </div>

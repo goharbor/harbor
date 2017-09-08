@@ -11,44 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {Component, OnInit, ViewChild, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
-
+import { Component, OnInit, ViewChild, OnDestroy} from '@angular/core';
 import { Router } from '@angular/router';
-
 import { Project } from './project';
-import { ProjectService } from './project.service';
-
 import { CreateProjectComponent } from './create-project/create-project.component';
-
 import { ListProjectComponent } from './list-project/list-project.component';
-
-import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { Message } from '../global-message/message';
-
-import { Response } from '@angular/http';
-
-import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../shared/shared.const';
-
-import { Subscription } from 'rxjs/Subscription';
-
-import { State } from 'clarity-angular';
-
 import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
 import { ProjectTypes } from '../shared/shared.const';
-import { StatisticHandler } from '../shared/statictics/statistic-handler.service';
 
 @Component({
   selector: 'project',
   templateUrl: 'project.component.html',
-  styleUrls: ['./project.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./project.component.css']
 })
-export class ProjectComponent implements OnInit, OnDestroy {
-
-  changedProjects: Project[];
+export class ProjectComponent implements OnInit {
   projectTypes = ProjectTypes;
 
   @ViewChild(CreateProjectComponent)
@@ -60,62 +37,27 @@ export class ProjectComponent implements OnInit, OnDestroy {
   currentFilteredType: number = 0;//all projects
   projectName: string = "";
 
-  subscription: Subscription;
   loading: boolean = true;
 
-  get selecteType (): number {
+  get selecteType(): number {
     return this.currentFilteredType;
   }
   set selecteType(_project: number) {
+    this.currentFilteredType = _project;
     if (window.sessionStorage) {
       window.sessionStorage['projectTypeValue'] = _project;
     }
   }
 
   constructor(
-    private projectService: ProjectService,
-    private messageHandlerService: MessageHandlerService,
     private appConfigService: AppConfigService,
-    private sessionService: SessionService,
-    private deletionDialogService: ConfirmationDialogService,
-    private statisticHandler: StatisticHandler,
-    private ref: ChangeDetectorRef) {
-    this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
-      if (message &&
-        message.state === ConfirmationState.CONFIRMED &&
-        message.source === ConfirmationTargets.PROJECT) {
-        let projectId = message.data;
-        this.projectService
-          .deleteProject(projectId)
-          .subscribe(
-          response => {
-            this.messageHandlerService.showSuccess('PROJECT.DELETED_SUCCESS');
-            this.retrieve();
-            this.statisticHandler.refresh();
-          },
-          error => {
-            if (error && error.status === 412) {
-              this.messageHandlerService.showError('PROJECT.FAILED_TO_DELETE_PROJECT', '');
-            } else {
-              this.messageHandlerService.handleError(error);
-            }
-          }
-          );
-      }
-    });
-
+    private sessionService: SessionService) {
   }
 
   ngOnInit(): void {
-    if (window.sessionStorage && window.sessionStorage['projectTypeValue'] &&  window.sessionStorage['fromDetails']) {
+    if (window.sessionStorage && window.sessionStorage['projectTypeValue'] && window.sessionStorage['fromDetails']) {
       this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
       window.sessionStorage.removeItem('fromDetails');
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
     }
   }
 
@@ -132,105 +74,29 @@ export class ProjectComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  retrieve(state?: State): void {
-    this.projectName = "";
-    if (this.currentFilteredType !== 0) {
-      this.getProjects('', this.currentFilteredType - 1);
-      return;
-      }
-    this.getProjects();
-  }
-
-  getProjects(name?: string, isPublic?: number, page?: number, pageSize?: number): void {
-    this.loading = true;
-    this.projectService
-      .listProjects(name, isPublic, page, pageSize)
-      .subscribe(
-      response => {
-        this.changedProjects = response.json();
-        this.loading = false;
-      },
-      error => {
-        this.loading = false;
-        this.messageHandlerService.handleError(error);
-      }
-      );
-      let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-      setTimeout(()=>clearInterval(hnd), 2000);
-  }
-
   openModal(): void {
     this.creationProject.newProject();
   }
 
   createProject(created: boolean) {
     if (created) {
-      this.retrieve();
-      this.statisticHandler.refresh();
+      this.refresh();
     }
   }
 
   doSearchProjects(projectName: string): void {
     this.projectName = projectName;
-    if (projectName === "") {
-      if (this.currentFilteredType === 0) {
-        this.getProjects();
-      } else {
-        this.getProjects(projectName, this.currentFilteredType - 1);
-      }
-    } else {
-      this.getProjects(projectName);
-    }
+    this.listProject.doSearchProject(this.projectName);
   }
 
-  doFilterProjects($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
-      this.projectName = "";
-      this.currentFilteredType = +$event.target["value"];
-      if (this.currentFilteredType === 0) {
-        this.getProjects();
-      } else {
-        this.getProjects("", this.currentFilteredType - 1);
-      }
-    }
-  }
-
-  toggleProject(p: Project) {
-    if (p) {
-      p.public === 0 ? p.public = 1 : p.public = 0;
-      this.projectService
-        .toggleProjectPublic(p.project_id, p.public)
-        .subscribe(
-        response => {
-          this.messageHandlerService.showSuccess('PROJECT.TOGGLED_SUCCESS');
-          this.statisticHandler.refresh();
-          if (this.currentFilteredType === 0) {
-            this.getProjects();
-          } else {
-            this.getProjects("", this.currentFilteredType - 1);
-          }
-        },
-        error => this.messageHandlerService.handleError(error)
-        );
-    }
-  }
-
-  deleteProject(p: Project) {
-    let deletionMessage = new ConfirmationMessage(
-      'PROJECT.DELETION_TITLE',
-      'PROJECT.DELETION_SUMMARY',
-      p.name,
-      p.project_id,
-      ConfirmationTargets.PROJECT,
-      ConfirmationButtons.DELETE_CANCEL
-    );
-    this.deletionDialogService.openComfirmDialog(deletionMessage);
+  doFilterProjects(): void {
+    this.listProject.doFilterProject(this.selecteType);
   }
 
   refresh(): void {
     this.currentFilteredType = 0;
-    this.retrieve();
-    this.statisticHandler.refresh();
+    this.projectName = "";
+    this.listProject.refresh();
   }
 
 }
