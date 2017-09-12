@@ -24,7 +24,7 @@ ${HARBOR_URL}  http://localhost
 *** Test Cases ***
 Test Case - Create An New User
     Init Chrome Driver    
-	${d}=    Get Current Date    result_format=%m%s
+    ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
@@ -64,7 +64,7 @@ Test Case - User View Projects
     Create An New Project  test${d}2
     Create An New Project  test${d}3
     Switch To Log
-	Capture Page Screenshot  UserViewProjects.png
+    Capture Page Screenshot  UserViewProjects.png
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
@@ -76,7 +76,7 @@ Test Case - Push Image
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}
 
-	Push image  ${ip}  tester${d}  Test1@34  test${d}  hello-world:latest
+    Push image  ${ip}  tester${d}  Test1@34  test${d}  hello-world:latest
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/hello-world
 
@@ -84,18 +84,18 @@ Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 				
-	Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
+   Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
-	Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
+    Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     
-	Go Into Project  project${d}
-	Delete Repo  project${d}
+    Go Into Project  project${d}
+    Delete Repo  project${d}
 	
-	Go To Project Log
-	Advanced Search Should Display
+    Go To Project Log
+    Advanced Search Should Display
 	
-	Do Log Advanced Search
+    Do Log Advanced Search
     Close Browser
 	
 Test Case - Manage project publicity
@@ -135,25 +135,25 @@ Test Case - Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Display  project${d}
-	Close Browser
+    Close Browser
 
 Test Case - Edit Project Creation
-	# create normal user and login
+    # create normal user and login
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
 
-	Project Creation Should Display
+    Project Creation Should Display
     Logout Harbor
 
-	Sleep  3
+    Sleep  3
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-	Set Pro Create Admin Only
+    Set Pro Create Admin Only
     Logout Harbor
 
-	Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
-	Project Creation Should Not Display
-	Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
+    Project Creation Should Not Display
+    Logout Harbor
 
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Set Pro Create Every One
@@ -163,16 +163,16 @@ Test Case - Edit Self-Registration
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Disable Self Reg
-	Logout Harbor
+    Logout Harbor
 
     Sign Up Should Not Display
 
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-	Switch To Configure
+    Switch To Configure
     Self Reg Should Be Disabled
     Sleep  1
 
-	#restore setting
+    #restore setting
     Enable Self Reg
     Close Browser
 
@@ -197,13 +197,13 @@ Test Case - Edit Email Settings
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
-	Switch To Email
+    Switch To Email
     Config Email
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
-	Switch To Email
+    Switch To Email
     Verify Email
 
     Close Browser
@@ -211,15 +211,15 @@ Test Case - Edit Email Settings
 Test Case - Edit Token Expire
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-	Switch To System Settings
-	Modify Token Expiration  20
+    Switch To System Settings
+    Modify Token Expiration  20
     Logout Harbor
 
-	Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-	Switch To System Settings
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch To System Settings
     Token Must Be Match  20
 
-	#reset to default
+    #reset to default
     Modify Token Expiration  30
     Close Browser
 
@@ -228,10 +228,10 @@ Test Case - Create An Replication Rule New Endpoint
     ${d}=  Get current date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Create An New Project  project${d}
-	Go Into Project  project${d}
+    Go Into Project  project${d}
     Switch To Replication
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
-	Close Browser
+    Close Browser
 
 Test Case - Scan A Tag
     Init Chrome Driver
@@ -242,7 +242,33 @@ Test Case - Scan A Tag
     Expand Repo  project${d}
     Scan Repo  project${d}
     Summary Chart Should Display  project${d}
-	Close Browser
+    Close Browser
+
+Test Case-Manage Project Member
+    Init Chrome Driver
+    ${d}=    Get current Date  result_format=%m%s
+
+    Create An New Project With New User  url=${HARBOR_URL}  username=alice${d}  email=alice${d}@vmware.com  realname=alice${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push image  ip=${ip}  user=alice${d}  pwd=Test1@34  project=project${d}  image=hello-world
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=bob${d}  email=bob${d}@vmware.com  realname=bob${d}  newPassword=Test1@34  comment=habor
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=carol${d}  email=carol${d}@vmware.com  realname=carol${d}  newPassword=Test1@34  comment=harbor
+    Logout Harbor
+
+    User Should Be Owner Of Project  alice${d}  Test1@34  project${d}
+    User Should Not Be A Member Of Project  bob${d}  Test1@34  project${d}
+    Manage Project Member  alice${d}  Test1@34  project${d}  bob${d}  Add
+    User Should Be Guest  bob${d}  Test1@34  project${d}
+    Change User Role In Project  alice${d}  Test1@34  project${d}  bob${d}  Developer
+    User Should Be Developer  bob${d}  Test1@34  project${d}
+    Change User Role In Project  alice${d}  Test1@34  project${d}  bob${d}  Admin
+    User Should Be Admin  bob${d}  Test1@34  project${d}  carol${d}
+    Manage Project Member  alice${d}  Test1@34  project${d}  bob${d}  Remove
+    User Should Not Be A Member Of Project  bob${d}  Test1@34  project${d}
+    User Should Be Guest  carol${d}  Test1@34  project${d}
+
+    Close Browser
 
 Test Case - Assign Sys Admin
     Init Chrome Driver
@@ -273,7 +299,7 @@ Test Case - Admin Push Signed Image
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log To Console  ${output}
 		
-	Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
+    Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
 	
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
     Log To Console  ${output}
