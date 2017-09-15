@@ -2586,6 +2586,9 @@ definitions:
       name:
         type: string
         description: The name of the tag.
+      size:
+        type: integer
+        description: The size of the image.
       architecture:
         type: string
         description: The architecture of the image.
