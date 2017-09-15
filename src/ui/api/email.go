@@ -51,7 +51,7 @@ func (e *EmailAPI) Prepare() {
 func (e *EmailAPI) Ping() {
 	var host, username, password, identity string
 	var port int
-	var ssl bool
+	var ssl, insecure bool
 	body := e.Ctx.Input.CopyBody(1 << 32)
 	if body == nil || len(body) == 0 {
 		cfg, err := config.Email()
@@ -66,6 +66,7 @@ func (e *EmailAPI) Ping() {
 		password = cfg.Password
 		identity = cfg.Identity
 		ssl = cfg.SSL
+		insecure = cfg.Insecure
 	} else {
 		settings := &struct {
 			Host     string  `json:"email_host"`
@@ -74,6 +75,7 @@ func (e *EmailAPI) Ping() {
 			Password *string `json:"email_password"`
 			SSL      bool    `json:"email_ssl"`
 			Identity string  `json:"email_identity"`
+			Insecure bool    `json:"email_insecure"`
 		}{}
 		e.DecodeJSONReq(&settings)
 
@@ -98,11 +100,12 @@ func (e *EmailAPI) Ping() {
 		password = *settings.Password
 		identity = settings.Identity
 		ssl = settings.SSL
+		insecure = settings.Insecure
 	}
 
 	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	if err := email.Ping(addr, identity, username,
-		password, pingEmailTimeout, ssl, false); err != nil {
+		password, pingEmailTimeout, ssl, insecure); err != nil {
 		log.Debugf("ping %s failed: %v", addr, err)
 		e.CustomAbort(http.StatusBadRequest, err.Error())
 	}
