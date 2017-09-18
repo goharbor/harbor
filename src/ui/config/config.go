@@ -298,6 +298,7 @@ func Email() (*models.Email, error) {
 	email.SSL = cfg[common.EmailSSL].(bool)
 	email.From = cfg[common.EmailFrom].(string)
 	email.Identity = cfg[common.EmailIdentity].(string)
+	email.Insecure = cfg[common.EmailInsecure].(bool)
 
 	return email, nil
 }

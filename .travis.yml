@@ -93,16 +93,17 @@ script:
   - sudo ./ldapprepare.sh 
   - sudo ./admiral.sh 
   - cd .. 
-  - go test -i ./src/ui ./src/adminserver ./src/jobservice
+  - go test -race -i ./src/ui ./src/adminserver ./src/jobservice
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
 
   - docker-compose -f make/docker-compose.test.yml down
   - sudo rm -rf /data/config/*  
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true
-  
-  - docker ps
+  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
+  - sleep 10  
+  - docker ps 
+  - ./tests/validatecontainers.sh
   - ./tests/notarytest.sh
   - ./tests/swaggerchecker.sh
   - ./tests/startuptest.sh
